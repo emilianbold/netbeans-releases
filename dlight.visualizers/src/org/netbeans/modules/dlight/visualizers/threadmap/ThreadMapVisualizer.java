@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
@@ -127,12 +128,11 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsTimelinePanelContainer.setLayout(new BorderLayout());
         threadsTimelinePanelContainer.add(threadsPanel, BorderLayout.CENTER);
+        threadsTimelinePanelContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         threadsPanel.addThreadsMonitoringActionListener(this);
 
         setLayout(new BorderLayout());
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);
-        JPanel callStack = new JPanel();
-        add(callStack, BorderLayout.SOUTH);
     }
 
     public void init() {
