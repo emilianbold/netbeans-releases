@@ -480,8 +480,7 @@ public class ModuleListTest extends TestBase {
         Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
             public Boolean run() throws IOException {
                 ProjectXMLManager pxm = new ProjectXMLManager(p);
-                String[] newPP = new String[] { "org.example.module1a" };
-                pxm.replacePublicPackages(newPP);
+                pxm.replacePublicPackages(Collections.singleton("org.example.module1a"));
                 return true;
             }
         });
