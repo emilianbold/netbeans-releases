@@ -611,7 +611,9 @@ public class JiraRepository extends Repository {
             super(JiraRepository.this.getUrl());
         }
         protected Issue createIssue(TaskData taskData) {
-            return new NbJiraIssue(taskData, JiraRepository.this);
+            NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
+            org.netbeans.modules.jira.issue.JiraIssueProvider.getInstance().notifyIssueCreated(issue);
+            return issue;
         }
         protected void setTaskData(Issue issue, TaskData taskData) {
             ((NbJiraIssue)issue).setTaskData(taskData);

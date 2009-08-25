@@ -76,6 +76,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -248,6 +249,21 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         // store issues
         if (!issuesToRemove.isEmpty()) {
             saveIntern();
+        }
+    }
+
+    /**
+     * Call when an issue is loaded for the first time.
+     * @param issue cannot be null
+     */
+    public void notifyIssueCreated (NbJiraIssue issue) {
+        URL url = getUrl(issue);
+        JiraLazyIssue lazyIssue = null;
+        synchronized (LOCK) {
+            lazyIssue = watchedIssues.get(url.toString());
+        }
+        if (lazyIssue != null) {
+            lazyIssue.setIssueReference(issue);
         }
     }
 
@@ -512,6 +528,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         private WeakReference<JiraRepository> repositoryRef;
         private final JiraIssueProvider provider;
         private WeakReference<NbJiraIssue> issueRef;
+        private PropertyChangeListener issueListener;
 
         public JiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
             super(JiraIssueProvider.getUrl(issue), issue.getDisplayName());
@@ -519,6 +536,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             this.provider = provider;
             this.repositoryRef = new WeakReference<JiraRepository>(issue.getRepository());
             this.issueRef = new WeakReference<NbJiraIssue>(issue);
+            attachIssueListener(issue);
         }
 
         public JiraLazyIssue (String name, URL url, String issueKey, JiraRepository repository, JiraIssueProvider provider) {
@@ -543,7 +561,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                 } else {
                     issue = provider.getIssue(repository, issueKey);
                 }
-                issueRef = new WeakReference<NbJiraIssue>(issue);
+                setIssueReference(issue);
             }
             return issue;
         }
@@ -551,6 +569,45 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         private JiraRepository getRepository() {
             JiraRepository repository = repositoryRef.get();
             return repository;
+        }
+
+        /**
+         * Sets the reference to the issue and attaches an issue listener
+         * @param issue if null then this only clears the reference.
+         */
+        private void setIssueReference (NbJiraIssue issue) {
+            issueRef = new WeakReference<NbJiraIssue>(issue);
+            if (issue != null) {
+                applyChangesFor(issue);
+                attachIssueListener(issue);
+            }
+        }
+
+        private void attachIssueListener (NbJiraIssue issue) {
+            if (issueListener == null) {
+                issueListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        NbJiraIssue issue = issueRef.get();
+                        if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
+                            // issue has somehow changed, checks for its changes and apply them in the tasklist
+                            applyChangesFor(issue);
+                        }
+                    }
+                };
+            }
+            LOG.log(Level.FINE, "attachIssueListener: on issue {0}", issue.toString());
+            issue.addPropertyChangeListener(WeakListeners.propertyChange(issueListener, issue));
+        }
+
+        private void applyChangesFor (NbJiraIssue issue) {
+            boolean requiresSave = false;
+            if (!getName().equals(issue.getDisplayName())) {
+                setName(issue.getDisplayName());
+                requiresSave = true;
+            }
+            if (requiresSave) {
+                provider.saveIntern();
+            }
         }
 
         @Override
