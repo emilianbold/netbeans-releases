@@ -36,16 +36,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -53,14 +55,14 @@ import org.openide.filesystems.FileObject;
  */
 public class JsfIndex {
 
-     private final QuerySupport index;
+    private final QuerySupport index;
 
     /** Creates a new instance of JsIndex */
     private JsfIndex(QuerySupport index) {
         this.index = index;
     }
 
-    public static JsfIndex get(FileObject[] roots) {
+    private static JsfIndex get(FileObject[] roots) {
         try {
             return new JsfIndex(QuerySupport.forRoots(JsfIndexer.Factory.NAME,
                     JsfIndexer.Factory.VERSION,
@@ -72,9 +74,47 @@ public class JsfIndex {
 
     }
 
-    public static JsfIndex get(HtmlParserResult result){
+    public static JsfIndex get(WebModule wm) {
+        return get(wm.getDocumentBase());
+    }
+
+    public static JsfIndex get(HtmlParserResult result) {
         FileObject file = result.getSnapshot().getSource().getFileObject();
+        return get(file);
+
+    }
+    public static JsfIndex get(FileObject file) {
         return get(ClassPath.getClassPath(file, ClassPath.SOURCE).getRoots());
     }
+
+    public Collection<String> getAllCompositeLibraryNames() {
+        Collection<String> libNames = new ArrayList<String>();
+        try {
+            Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, "", QuerySupport.Kind.PREFIX, CompositeComponentModel.LIBRARY_NAME_KEY);
+            for (IndexResult result : results) {
+                String libraryName = result.getValue(CompositeComponentModel.LIBRARY_NAME_KEY);
+                libNames.add(libraryName);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return libNames;
+    }
+
+    public Collection<String> getCompositeLibraryComponents(String libraryName) {
+        Collection<String> components = new ArrayList<String>();
+        try {
+            Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT, CompositeComponentModel.LIBRARY_NAME_KEY);
+            for (IndexResult result : results) {
+                FileObject file = result.getFile();
+                components.add(file.getName());
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return components;
+    }
+    
+
 
 }
