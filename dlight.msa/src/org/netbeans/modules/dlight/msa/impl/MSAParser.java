@@ -80,7 +80,7 @@ public final class MSAParser extends DtraceParser {
     private final ThreadMapDataStorage storage;
     private final long deltaTime;
     long lastTimestamp = 0;
-    long perodFirstTimestamp = Long.MAX_VALUE;
+    long periodFirstTimestamp = Long.MAX_VALUE;
 
     public MSAParser(TimeDuration frequency, DataTableMetadata metadata) {
         super(metadata);
@@ -120,8 +120,8 @@ public final class MSAParser extends DtraceParser {
             return null;
         }
 
-        if (perodFirstTimestamp > timestamp && timestamp > lastTimestamp){
-            perodFirstTimestamp = timestamp;
+        if (periodFirstTimestamp > timestamp && timestamp > lastTimestamp){
+            periodFirstTimestamp = timestamp;
         }
 
         ThreadInfoImpl threadInfo = storage.getThreadInfo(threadID);
@@ -170,7 +170,7 @@ public final class MSAParser extends DtraceParser {
             int aggregatedStates[] = new int[10];
             for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
                 int[] states = entry.getValue();
-                ThreadStateImpl state = new ThreadStateImpl(perodFirstTimestamp, states);
+                ThreadStateImpl state = new ThreadStateImpl(periodFirstTimestamp, states);
                 //System.err.println(state);
                 storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);
                 for (int i = 3; i < 13; ++i) {
@@ -189,7 +189,7 @@ public final class MSAParser extends DtraceParser {
                     finished.remove(entry.getKey());
                     ThreadInfoImpl info = storage.getThreadInfo(entry.getKey());
                     if (info != null) {
-                        storage.addThreadState(info, new FinishedState(perodFirstTimestamp));
+                        storage.addThreadState(info, new FinishedState(periodFirstTimestamp));
                         info.setFinishTime(entry.getValue());
                     }
                 }
@@ -212,7 +212,7 @@ public final class MSAParser extends DtraceParser {
                 values.add(aggregatedStates[i]);
             }
             //System.err.println(values);
-            perodFirstTimestamp = Long.MAX_VALUE;
+            periodFirstTimestamp = Long.MAX_VALUE;
             return new DataRow(COLUMN_NAMES, values);
         } else {
             return null;
