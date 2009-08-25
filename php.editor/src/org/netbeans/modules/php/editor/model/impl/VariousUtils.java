@@ -230,6 +230,7 @@ public class VariousUtils {
     public static List<? extends TypeScope> getType(FileScope topScope, VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
         List<? extends TypeScope> recentTypes = Collections.emptyList();
         List<? extends TypeScope> oldRecentTypes = Collections.emptyList();
+        Stack<VariableName> fldVarStack = new Stack<VariableName>();
         
         if (semiTypeName != null && semiTypeName.contains("@")) {
             String operation = null;
@@ -320,23 +321,28 @@ public class VariousUtils {
                     } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         String varName = frag;
-                        if (varScope instanceof MethodScope) {//NOI18N
-                            MethodScope mScope = (MethodScope) varScope;
-                            if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
-                                String clsName = ((ClassScope) mScope.getInScope()).getName();
-                                newRecentTypes.addAll(CachingSupport.getClasses(clsName, topScope));
+                        VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
+                        if (var != null) {
+                           if (i+2 < len && VariousUtils.FIELD_TYPE_PREFIX.startsWith(fragments[i+1])) {
+                            fldVarStack.push(var);
+                           }
+                            final String checkName = var.getName() + String.valueOf(offset);
+                           boolean added = recursionDetection.add(checkName);
+                            try {
+                                if (added) {
+                                    newRecentTypes.addAll(var.getTypes(offset));
+                                } 
+                            } finally {
+                                recursionDetection.remove(checkName);
                             }
                         }
+
                         if (newRecentTypes.isEmpty()) {
-                            VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
-                            if (var != null) {
-                                boolean added = recursionDetection.add(var.getName());
-                                try {
-                                    if (added) {
-                                        newRecentTypes.addAll(var.getTypes(offset));
-                                    }
-                                } finally {
-                                    recursionDetection.remove(var.getName());
+                            if (varScope instanceof MethodScope) {//NOI18N
+                                MethodScope mScope = (MethodScope) varScope;
+                                if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
+                                    String clsName = ((ClassScope) mScope.getInScope()).getName();
+                                    newRecentTypes.addAll(CachingSupport.getClasses(clsName, topScope));
                                 }
                             }
                         }
@@ -344,6 +350,7 @@ public class VariousUtils {
                         operation = null;
                         
                     } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
+                        VariableName var = fldVarStack.isEmpty() ? null : fldVarStack.pop();
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         String fldName = frag;
                         if (!fldName.startsWith("$")) {//NOI18N
@@ -354,7 +361,11 @@ public class VariousUtils {
                                 ClassScope cls = (ClassScope) type;
                                 Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, topScope, PHPIndex.ANY_ATTR);
                                 for (FieldElement fieldElement : inheritedFields) {
-                                    newRecentTypes.addAll(fieldElement.getTypes(offset));
+                                    if (var != null) {
+                                        newRecentTypes.addAll(var.getFieldTypes(fieldElement, offset));
+                                    } else {
+                                        newRecentTypes.addAll(fieldElement.getTypes(offset));
+                                    }
                                 }
                             }
                         }

@@ -37,12 +37,15 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.model.impl;
+
+import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
  *
  * @author Radek Matous
  */
-public interface FieldElement extends ClassMemberElement, TypeAssignments {
-    PhpModifiers getPhpModifiers();
+interface VariableNameFactory extends VariableScope  {
+    VariableNameImpl createElement(Variable node);
 }

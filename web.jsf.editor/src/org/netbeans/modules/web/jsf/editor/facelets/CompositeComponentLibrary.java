@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,15 +34,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.web.jsf.editor.facelets;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
 /**
  *
- * @author Radek Matous
+ * @author marekfukala
  */
-public interface FieldElement extends ClassMemberElement, TypeAssignments {
-    PhpModifiers getPhpModifiers();
+public class CompositeComponentLibrary extends FaceletsLibrary {
+
+    private final String COMPOSITE_LIBRARY_NS_PREFIX = "http://java.sun.com/jsf/composite/"; //NOI18N
+
+    private String libraryName;
+
+    //for undeclared libraries w/o prefix
+    public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
+        this(support, libraryName, null);
+    }
+
+    public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName, String namespace) {
+        super(support, namespace);
+        this.libraryName = libraryName;
+    }
+
+    @Override
+    public String getNamespace() {
+        return COMPOSITE_LIBRARY_NS_PREFIX + getLibraryName();
+    }
+
+    public String getLibraryName() {
+        return libraryName;
+    }
+
+    @Override
+    public Collection<NamedComponent> getComponents() {
+        Collection<String> componentNames = support.getJsfSupport().getIndex().getCompositeLibraryComponents(getLibraryName());
+        Collection<NamedComponent> components = new ArrayList<NamedComponent>();
+        for(String compName : componentNames) {
+            //TODO fix this - there needs to be a special component type for the composite components / files
+            //which lazy loads its properties from a parser result (the not indexed data)
+            NamedComponent comp = new NamedComponent(compName);
+            components.add(comp);
+        }
+        return components;
+    }
+
+    @Override
+    public TldLibrary getAssociatedTLDLibrary() {
+        return null;
+    }
+
 }

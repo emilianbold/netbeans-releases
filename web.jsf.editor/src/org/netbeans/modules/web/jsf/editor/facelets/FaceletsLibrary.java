@@ -37,40 +37,22 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
-public class FaceletsLibrary {
+public abstract class FaceletsLibrary {
 
-    private boolean compositeLibrary;
+    protected FaceletsLibrarySupport support;
     private String namespace;
-    private FaceletsLibrarySupport support;
-    private final Collection<NamedComponent> components = new ArrayList<NamedComponent>();
 
     public FaceletsLibrary(FaceletsLibrarySupport support, String namespace) {
-        this(support, namespace, false);
-    }
-
-    public FaceletsLibrary(FaceletsLibrarySupport support, String namespace, boolean compositeLibrary) {
-        this.support = support;
         this.namespace = namespace;
-        this.compositeLibrary = compositeLibrary;
+        this.support = support;
     }
 
-    //for default libraries
-    void setComponents(Collection<NamedComponent> components) {
-        this.components.addAll(components);
-    }
+    public abstract Collection<NamedComponent> getComponents();
 
-    public Collection<NamedComponent> getComponents() {
-        return Collections.unmodifiableCollection(components);
-    }
-
-    public boolean isCompositeLibrary() {
-        return compositeLibrary;
-    }
+    public abstract TldLibrary getAssociatedTLDLibrary();
 
     public String getNamespace() {
         return namespace;
@@ -84,20 +66,19 @@ public class FaceletsLibrary {
         return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDisplayName() : getNamespace();
     }
 
-    public TldLibrary getAssociatedTLDLibrary() {
-        return support.getJsfSupport().getTldLibraries().get(getNamespace());
-    }
-    
-    @Override
+     @Override
     public boolean equals(Object obj) {
+         if(!(obj instanceof FaceletsLibrary)) {
+             return false;
+         }
+         FaceletsLibrary other = (FaceletsLibrary)obj;
         if (obj == null) {
             return false;
         }
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final FaceletsLibrary other = (FaceletsLibrary) obj;
-        if ((this.namespace == null) ? (other.namespace != null) : !this.namespace.equals(other.namespace)) {
+        if ((this.getNamespace() == null) ? (other.getNamespace() != null) : !this.getNamespace().equals(other.getNamespace())) {
             return false;
         }
         return true;
@@ -106,69 +87,15 @@ public class FaceletsLibrary {
     @Override
     public int hashCode() {
         int hash = 7;
+        hash = 79 * hash + (this.namespace != null ? this.namespace.hashCode() : 0);
         return hash;
-    }
-
-
-    void putConverter(String name, String id) {
-        components.add(new Converter(name, id, null));
-    }
-
-    void putConverter(String name, String id, Class handlerClass) {
-        components.add(new Converter(name, id, handlerClass));
-    }
-
-    void putValidator(String name, String id) {
-        components.add(new Validator(name, id, null));
-    }
-
-    void putValidator(String name, String id, Class handlerClass) {
-        components.add(new Validator(name, id, handlerClass));
-    }
-
-    void putBehavior(String name, String id) {
-        components.add(new Behavior(name, id, null));
-    }
-
-    void putBehavior(String name, String id, Class handlerClass) {
-        components.add(new Behavior(name, id, handlerClass));
-    }
-
-    void putTagHandler(String name, Class type) {
-        components.add(new TagHandler(name, type));
-    }
-
-    void putComponent(String name, String componentType,
-            String rendererType) {
-        components.add(new Component(name, componentType, rendererType, null));
-    }
-
-    void putComponent(String name, String componentType,
-            String rendererType, Class handlerClass) {
-        components.add(new Component(name, componentType, rendererType, handlerClass));
-    }
-
-    void putUserTag(String name, URL source) {
-        components.add(new UserTag(name, source));
-    }
-
-    void putFunction(String name, Method method) {
-        components.add(new Function(name, method));
-    }
-
-    public NamedComponent createNamedComponent(String name) {
-        return new NamedComponent(name);
-    }
-
-    public Function createFunction(String name, Method method) {
-        return new Function(name, method);
     }
 
     public class NamedComponent {
 
         protected String name;
 
-        private NamedComponent(String name) {
+        protected NamedComponent(String name) {
             this.name = name;
         }
 
@@ -235,7 +162,7 @@ public class FaceletsLibrary {
 
     public class Converter extends BaseComponent {
 
-        private Converter(String name, String id, Class handlerClass) {
+        protected Converter(String name, String id, Class handlerClass) {
             super(name, id, handlerClass);
         }
 
@@ -250,7 +177,7 @@ public class FaceletsLibrary {
 
     public class Validator extends BaseComponent {
 
-        private Validator(String name, String id, Class handlerClass) {
+        protected Validator(String name, String id, Class handlerClass) {
             super(name, id, handlerClass);
         }
 
@@ -263,7 +190,7 @@ public class FaceletsLibrary {
 
     public class Behavior extends BaseComponent {
 
-        private Behavior(String name, String id, Class handlerClass) {
+        protected Behavior(String name, String id, Class handlerClass) {
             super(name, id, handlerClass);
         }
 
@@ -278,7 +205,7 @@ public class FaceletsLibrary {
 
         protected Class type;
 
-        private TagHandler(String name, Class type) {
+        protected TagHandler(String name, Class type) {
             super(name);
             this.type = type;
         }
@@ -303,7 +230,7 @@ public class FaceletsLibrary {
         protected String rendererType;
         protected Class handlerClass;
 
-        private Component(String name, String componentType, String rendererType, Class handlerClass) {
+        protected Component(String name, String componentType, String rendererType, Class handlerClass) {
             super(name);
             this.componentType = componentType;
             this.rendererType = rendererType;
@@ -338,7 +265,7 @@ public class FaceletsLibrary {
 
         protected URL source;
 
-        private UserTag(String name, URL source) {
+        protected UserTag(String name, URL source) {
             super(name);
             this.source = source;
         }
@@ -361,7 +288,7 @@ public class FaceletsLibrary {
 
         protected Method function;
 
-        private Function(String name, Method function) {
+        protected Function(String name, Method function) {
             super(name);
             this.function = function;
         }

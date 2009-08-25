@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -50,13 +52,14 @@ import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
  * @author Radek Matous
  */
-final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableContainerImpl {
+final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableNameFactory {
     private String classNormName;
 
     //new contructors
@@ -77,6 +80,16 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
         return retval;
+    }
+
+    @Override
+    public Collection<? extends VariableName> getDeclaredVariables() {
+        final Scope inScope = getInScope();
+        if (inScope instanceof ClassScope) {
+            ClassScope classScope = (ClassScope) inScope;
+            return ModelUtils.merge(classScope.getDeclaredVariables(), super.getDeclaredVariables());
+        }
+        return Collections.emptyList();
     }
 
 
