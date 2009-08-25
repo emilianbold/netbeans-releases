@@ -315,10 +315,12 @@ public abstract class OperationWizardModel {
                 //filter out eager invisible modules, which are covered by other invisible
                 for (UpdateElement v : invisible) {
                     OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                    container.add(v);
-                    for (OperationInfo<InstallSupport> info : container.listAll()) {
-                        if (info.getUpdateElement() != v) {
-                            realInvisible.remove(info.getUpdateElement());
+                    if (v.getUpdateUnit().getInstalled() != null) {
+                        container.add(v);
+                        for (OperationInfo<InstallSupport> info : container.listAll()) {
+                            if (info.getUpdateElement() != v) {
+                                realInvisible.remove(info.getUpdateElement());
+                            }
                         }
                     }
                 }
