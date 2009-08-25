@@ -140,6 +140,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private boolean             suspendedNoFire;
     /** Suspend was requested while this thread was suspended, but looked like running to others. */
     private boolean             suspendRequested;
+    private boolean             initiallySuspended;
     private int                 suspendCount;
     private Operation           currentOperation;
     private List<Operation>     lastOperations;
@@ -177,6 +178,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             threadName = ThreadReferenceWrapper.name(threadReference);
             suspended = ThreadReferenceWrapper.isSuspended(threadReference);
             suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+            initiallySuspended = suspended;
         } catch (IllegalThreadStateExceptionWrapper itsex) {
             initFailed = true;
         } catch (ObjectCollectedExceptionWrapper ex) {
@@ -660,6 +662,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
             //System.err.println("suspend("+getName()+") suspended = true");
             suspended = true;
+            initiallySuspended = false;
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         } catch (InternalExceptionWrapper ex) {
@@ -931,7 +934,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         // Keep the thread look like running until we get a firing notification
         accessLock.writeLock().lock();
         loggerS.fine("["+threadName+"]: "+"notifySuspendedNoFire() suspended = "+suspended+", suspendCount = "+suspendCount);
-        if (suspended && suspendCount > 0) {
+        if (suspended && suspendCount > 0 && !initiallySuspended) {
             loggerS.fine("["+threadName+"]: notifySuspendedNoFire(): SETTING suspendRequested = "+true);
             suspendRequested = true; // The thread was just suspended, leave it suspended afterwards.
         }
@@ -944,6 +947,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         loggerS.fine("["+threadName+"]: "+"notifySuspended(doFire = "+doFire+", explicitelyPaused = "+explicitelyPaused+")");
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
+        initiallySuspended = false;
         try {
             loggerS.fine("["+threadName+"]: (notifySuspended() BEGIN) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire);
             if (explicitelyPaused && !suspended && suspendedNoFire) {

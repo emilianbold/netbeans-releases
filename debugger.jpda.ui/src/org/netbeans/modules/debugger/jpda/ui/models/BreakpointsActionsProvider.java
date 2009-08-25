@@ -141,7 +141,14 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         if (helpCtx == null) {
             helpCtx = new HelpCtx ("debug.add.breakpoint");  // NOI18N
         }
-        final Controller[] cPtr = new Controller[] { (Controller) c };
+        Controller cc;
+        if (c instanceof ControllerProvider) {
+            cc = ((ControllerProvider) c).getController();
+        } else {
+            cc = (Controller) c;
+        }
+
+        final Controller[] cPtr = new Controller[] { cc };
         final DialogDescriptor[] descriptorPtr = new DialogDescriptor[1];
         final Dialog[] dialogPtr = new Dialog[1];
         ActionListener buttonsActionListener = new ActionListener() {
