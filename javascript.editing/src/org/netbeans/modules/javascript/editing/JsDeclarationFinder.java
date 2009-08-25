@@ -108,7 +108,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 range = getReferenceSpan(ts, th, lexOffset);
             }
         }
-
+        
         return range;
     }
 
