@@ -88,7 +88,7 @@ public class OutlineOperator extends JTableOperator {
      *
      * @return Outline component
      */
-    protected Outline getOutline()
+    public Outline getOutline()
     {
         return (Outline)getSource();
     }
@@ -179,7 +179,7 @@ public class OutlineOperator extends JTableOperator {
      * @param inIndex
      * @return
      */
-    public OutlineNode getRootNode(final String isName, final int inIndex)
+    public OutlineNode getRootNode(String isName, int inIndex)
     {
         TreePath lrParentPath = new TreePath(getOutline().getOutlineModel().getRoot());
 
@@ -205,6 +205,19 @@ public class OutlineOperator extends JTableOperator {
         }
 
         return findNextPathElement(irParentPath, isPath);
+    }
+
+    /**
+     *
+     * Tries to find a the defined path beginning from the root node.
+     *
+     * @param isPath node name or a list of nodes separated by "|"
+     * @return found path
+     */
+    public TreePath findPath(String isPath)
+    {
+        TreePath lrParentPath = new TreePath(getOutline().getOutlineModel().getRoot());
+        return findPath(lrParentPath, isPath);
     }
 
     /**
@@ -336,6 +349,22 @@ public class OutlineOperator extends JTableOperator {
         }
 
         return lnRowspan;
+    }
+
+    public void selectPath(TreePath irPath)
+    {
+        Point lrLocation = getLocationForPath(irPath);
+
+        if (!lrLocation.equals(new Point(-1, -1)))
+            this.selectCell(lrLocation.y, lrLocation.x);
+    }
+
+    public void scrollToPath(TreePath irPath)
+    {
+        Point lrLocation = getLocationForPath(irPath);
+
+        if (!lrLocation.equals(new Point(-1, -1)))
+            this.scrollToCell(lrLocation.y, lrLocation.x);
     }
 
     //Mappings

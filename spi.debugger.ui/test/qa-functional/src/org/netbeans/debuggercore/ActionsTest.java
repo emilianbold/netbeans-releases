@@ -68,7 +68,7 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author cincura, ehucka, Jiri Vagner, cyhelsky
  */
-public class ActionsTest extends JellyTestCase {
+public class ActionsTest extends DebuggerTestCase {
 
 
     public static final String[] tests = new String[] {
@@ -90,17 +90,8 @@ public class ActionsTest extends JellyTestCase {
 
     /** setUp method  */
     public void setUp() throws IOException {
-
-
-
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");
-    }
-
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
     }
 
     public void testCheckEnabledActions() throws Throwable {
@@ -171,7 +162,7 @@ public class ActionsTest extends JellyTestCase {
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
 
             //source popup menu actions
-            JPopupMenuOperator operator = new JPopupMenuOperator(JPopupMenuOperator.callPopup(eo, 50, 50));
+            JPopupMenuOperator operator = new JPopupMenuOperator(JPopupMenuOperator.callPopup(eo, 100, 100));
             Utilities.verifyPopup(operator,
                     new String[]{
                         debugActionName,
