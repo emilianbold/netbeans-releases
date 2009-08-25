@@ -418,6 +418,7 @@ public class ELExpression {
                 else {
                     addPart(result, removeQuotes( expression.substring(i+1, index )));
                     expression = expression.substring( index +1);
+                    previousLeftBracket = false;
                     i=0;
                     continue;
                 }
