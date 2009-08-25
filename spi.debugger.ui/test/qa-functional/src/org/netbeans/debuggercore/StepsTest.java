@@ -43,7 +43,6 @@ import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
@@ -55,13 +54,19 @@ import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author felipee
  */
-public class StepsTest extends JellyTestCase {
+public class StepsTest extends DebuggerTestCase {
+
+    private static String[] tests = new String[]{
+        "testStepInto",
+      /*  "testStepOver",
+        "testRunToCursor",
+        "testStepOut",
+        "testStepOverExpression"*/
+    };
 
     public StepsTest(String name) {
         super(name);
@@ -72,40 +77,27 @@ public class StepsTest extends JellyTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(StepsTest.class).addTest(
-            "testStepInto",
-            "testStepOver",
-            "testRunToCursor",
-            "testStepOut",
-            "testStepOverExpression"
-            ).enableModules(".*").clusters(".*"));
+        return createModuleTest(StepsTest.class, tests);
     }
 
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");
-    }
-
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
     }
 
 public void testStepInto() throws Throwable {
         try {
             Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+            new OpenAction().performAPI(beanNode); // NOI18N            
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
-            new StepIntoAction().performMenu();
+            new StepIntoAction().perform();
+            Thread.sleep(2000);
             assertTrue("CurrentPC annotation is not on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
             assertTrue("Call Site annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CallSite"));
         } catch (Throwable th) {
