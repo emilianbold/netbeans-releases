@@ -422,23 +422,48 @@ public class LineBreakpoint extends JPDABreakpoint {
        // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
        private FileObject fo;
        private ChangeListener registryListener;
+       private FileChangeListener fileListener;
        
        public LineBreakpointImpl(String url) {
             super(url);
-            try {
-                fo = URLMapper.findFileObject(new URL(url));
-                if (fo != null) {
-                    fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
-                    registryListener = WeakListeners.change(this, DataObject.getRegistry());
-                    DataObject.getRegistry().addChangeListener(registryListener);
+            if (url.length() > 0) {
+                try {
+                    fo = URLMapper.findFileObject(new URL(url));
+                    if (fo != null) {
+                        fileListener = WeakListeners.create(FileChangeListener.class, this, fo);
+                        fo.addFileChangeListener(fileListener);
+                        registryListener = WeakListeners.change(this, DataObject.getRegistry());
+                        DataObject.getRegistry().addChangeListener(registryListener);
+                    }
+                } catch (MalformedURLException ex) {
+                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+                } catch (IllegalArgumentException ex) {
+                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
                 }
-            } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
-            } catch (IllegalArgumentException ex) {
-                ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
             }
         }
-        
+
+        @Override
+        public void setURL(String url) {
+            if (fo != null) {
+                fo.removeFileChangeListener(fileListener);
+            }
+            super.setURL(url);
+            if (url.length() > 0) {
+                try {
+                    fo = URLMapper.findFileObject(new URL(url));
+                    if (fo != null) {
+                        fileListener = WeakListeners.create(FileChangeListener.class, this, fo);
+                        fo.addFileChangeListener(fileListener);
+                    }
+                } catch (MalformedURLException ex) {
+                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+                } catch (IllegalArgumentException ex) {
+                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+                }
+            }
+        }
+
         public int compareTo(Object o) {
             if (o instanceof LineBreakpointImpl) {
                 LineBreakpoint lbthis = this;
@@ -518,8 +543,12 @@ public class LineBreakpoint extends JPDABreakpoint {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                if (fo != null) {
+                    fo.removeFileChangeListener(fileListener);
+                }
                 FileObject newFO = ((DataObject) evt.getSource()).getPrimaryFile();
-                newFO.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
+                fileListener = WeakListeners.create(FileChangeListener.class, this, newFO);
+                newFO.addFileChangeListener(fileListener);
                 try {
                     this.setURL(newFO.getURL().toString());
                 } catch (FileStateInvalidException ex) {
