@@ -28,16 +28,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package enterprise.servlet_stateless_war;
+package servlet.stateless;
 
 import java.io.*;
 import javax.ejb.EJB;
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-
-
-import enterprise.servlet_stateless_ejb.*;
 
 // Though it is perfectly fine to declare the dependency on the bean
 // at the type level, it is not required for stateless session bean
@@ -55,7 +52,7 @@ public class Servlet2Stateless
     // dependency on the bean must be declared at the type level
 
     @EJB
-    private StatelessSession sless;
+    private StatelessSessionBean sless;
 
     @Override
     public void service(HttpServletRequest req, HttpServletResponse resp)
