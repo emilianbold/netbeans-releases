@@ -49,10 +49,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
@@ -170,41 +167,25 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         if (webModule == null)
             return null;
 
-//        FileObject webDir = webModule.getDocumentBase ();
-//        if (webDir==null) return null;
-//        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
-
-        FileObject webInf = webModule.getWebInf();
-        if (webInf == null)
-            return null;
-
-        FileObject fo = webInf.getFileObject(FILE_DD);
-        if (fo == null)
-            return null;
 
         ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
         String className = classPath.getResourceName(javaClass,'.',false);
         try {
-            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
-            Servlet[] servlets = webApp.getServlet();
-            java.util.List<String> mappingList = new java.util.ArrayList<String>();
-            for (int i=0;i<servlets.length;i++) {
-                if (className.equals(servlets[i].getServletClass())) {
-                    String servletName=servlets[i].getServletName();
-                    ServletMapping[] maps  = webApp.getServletMapping();
-                    for (int j=0;j<maps.length;j++) {
-                        if (maps[j].getServletName().equals(servletName)) {
-                            String urlPattern = maps[j].getUrlPattern();
-                            if (urlPattern!=null)
-                                mappingList.add(urlPattern);
-                        }
-                    }
+            List<ServletInfo> servlets =
+                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
+            List<String> mappingList = new ArrayList<String>();
+            for (ServletInfo si : servlets) {
+                if (className.equals(si.getServletClass())) {
+                    mappingList.addAll(si.getUrlPatterns());
                 }
             }
             String[] mappings = new String[mappingList.size()];
             mappingList.toArray(mappings);
             return mappings;
-        } catch (java.io.IOException ex) {return null;}
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     public String convert(String action, Lookup lookup) {
@@ -226,7 +207,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                                         Boolean.TRUE.equals(fo.getAttribute("org.netbeans.modules.web.IsServletFile"))) {//NOI18N
                                     return action + ".deploy"; //NOI18N
                                 }
-                                if (isDDServlet(lookup, fo, relPath))  {
+                                WebModule webModule = WebModule.getWebModule(fo);
+                                if (isServletFile(webModule, fo))  {
                                     try {
                                         fo.setAttribute("org.netbeans.modules.web.IsServletFile", Boolean.TRUE); //NOI18N
                                     } catch (IOException ex) {
@@ -248,37 +230,32 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         return null;
     }
 
-    private boolean isDDServlet(Lookup context, FileObject javaClass, String relPath) {
-        WebModule webModule = WebModule.getWebModule(javaClass);
-        if (webModule == null) {
+    private static boolean isServletFile(WebModule webModule, FileObject javaClass) {
+        if (webModule == null || javaClass == null) {
             return false;
         }
 
-        FileObject webInfDir = webModule.getWebInf();
-        if (webInfDir == null) {
+        ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
+        if (classPath == null) {
+            return false;
+        }
+        String className = classPath.getResourceName(javaClass,'.',false);
+        if (className == null) {
             return false;
         }
 
-        FileObject fo = webInfDir.getFileObject(FILE_DD);
-        if (fo == null) {
-            return false;
-        }
-
-        // #117888
-        String className = relPath.replace('/', '.').replaceFirst("\\.java$", ""); // is there a better way how to do it?
         try {
-            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
-            Servlet servlet = (Servlet) webApp.findBeanByName("Servlet", "ServletClass", className); //NOI18N
-            if (servlet != null) {
-                return true;
-            } else {
-                return false;
+            List<ServletInfo> servlets =
+                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
+            for (ServletInfo si : servlets) {
+                if (className.equals(si.getServletClass())) {
+                    return true;
+                }
             }
-
-        } catch (IOException ex) {
-            return false;
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
         }
-
+        return false;
     }
 
 }
