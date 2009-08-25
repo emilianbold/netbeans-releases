@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
@@ -99,22 +101,22 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
             registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
-        } else if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_SEEN_CHANGED)) {
+        } else if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } 
     }
 
     List<QueryResultHandle> getQueryResults() {
         List<QueryResultHandle> ret = new ArrayList<QueryResultHandle>();
-        QueryResultHandle qh = QueryResultHandleImpl.forStatus(query, Issue.ISSUE_STATUS_ALL);
+        QueryResultHandle qh = QueryResultHandleImpl.forStatus(query, IssueCache.ISSUE_STATUS_ALL);
         if(qh != null) {
             ret.add(qh);
         }
-        qh = QueryResultHandleImpl.forStatus(query, Issue.ISSUE_STATUS_NOT_SEEN);
+        qh = QueryResultHandleImpl.forStatus(query, IssueCache.ISSUE_STATUS_NOT_SEEN);
         if(qh != null) {
             ret.add(qh);
         }
-        qh = QueryResultHandleImpl.forStatus(query, Issue.ISSUE_STATUS_NEW);
+        qh = QueryResultHandleImpl.forStatus(query, IssueCache.ISSUE_STATUS_NEW);
         if(qh != null) {
             ret.add(qh);
         }
@@ -129,9 +131,10 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     }
 
     private void registerIssues() {
-        issues = query.getIssues(Issue.ISSUE_STATUS_ALL);
+        issues = query.getIssues(IssueCache.ISSUE_STATUS_ALL);
         for (Issue issue : issues) {
             issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
+            IssueCacheUtils.addCacheListener(issue, this);
         }
     }
 

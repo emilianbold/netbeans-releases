@@ -46,20 +46,21 @@ import org.eclipse.core.runtime.NullProgressMonitor;
  * @author tomas
  */
 public interface TestConstants {
-    public static final String TEST_PROJECT = "TestProduct";
+    public static final String TEST_PROJECT = "unittest";
 //    public static final String REPO_PASSWD  = "kenai";
-    public static final String REPO_PASSWD  = "dilino";
-    public static final String REPO_HOST     = "192.168.0.102";
+    public static final String REPO_PASSWD  = "unittest";
+    public static final String REPO_HOST     = "kenai-test.czech.sun.com";
     public static final String REPO_URL     = "http://" + REPO_HOST + "/bugzilla";
-    public static final String REPO_USER    = "dil@dil.com";
-    public static final String REPO_USER_NAME    = "dilino";
-    public static final String REPO_USER2    = "dil2@dil.com";
-    public static final String REPO_USER2_NAME    = "dilino2";
-    public static final String REPO_USER3    = "dil3@dil.com";
-    public static final String REPO_USER4    = "dil4@dil.com";
+    public static final String REPO_USER    = "unittest@unit.test";
+    public static final String REPO_USER_NAME    = "Mr. Unit Test Sr.";
+    public static final String REPO_USER2    = "unittest2@unit.test";
+    public static final String REPO_USER2_NAME    = "Mr. Unit Test Jr.";
+    public static final String REPO_USER3    = "unittest3@unit.test";
+    public static final String REPO_USER4    = "unittest4@unit.test";
 
     public static final String ISSUE_SEVERITY    = "bug";
     public static final String ISSUE_DESCRIPTION = "big bug";
 
     static NullProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
+
 }

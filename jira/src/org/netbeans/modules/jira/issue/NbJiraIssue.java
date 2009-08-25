@@ -85,11 +85,13 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskCommentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -785,16 +787,15 @@ public class NbJiraIssue extends Issue {
         }
         return controller;
     }
-
-    @Override
+    
     public String getRecentChanges() {
-        if(wasSeen()) {
+        if(IssueCacheUtils.wasSeen(this)) {
             return "";                                                          // NOI18N
         }
         int status = repository.getIssueCache().getStatus(getID());
-        if(status == Issue.ISSUE_STATUS_NEW) {
+        if(status == IssueCache.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
-        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             Map<String, String> seenAtributes = getSeenAttributes();
             assert seenAtributes != null;
@@ -1192,12 +1193,8 @@ public class NbJiraIssue extends Issue {
             repository.refreshAllQueries();
         }
 
-        try {
-            seenAtributes = null;
-            setSeen(true);
-        } catch (IOException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
+        seenAtributes = null;
+        IssueCacheUtils.setSeen(this, true);
 
         return true;
     }
