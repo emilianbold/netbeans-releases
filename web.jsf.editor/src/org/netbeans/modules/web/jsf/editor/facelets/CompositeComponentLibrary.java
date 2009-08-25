@@ -41,7 +41,6 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
 /**
