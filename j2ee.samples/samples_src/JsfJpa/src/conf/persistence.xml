@@ -33,10 +33,10 @@
   <persistence-unit name="jsf-jpa-war" transaction-type="JTA">
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties>
-      <property name="toplink.ddl-generation" value="drop-and-create-tables"/>
-      <!-- Switch to use this property if target server is GlassFish V3 with EclipseLink
+      <!-- use this property if target server is GlassFish V3 with EclipseLink -->
       <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
-      -->
+      <!-- use this property if toplink is a target server persistence provider
+      <property name="toplink.ddl-generation" value="drop-and-create-tables"/> -->
     </properties>
   </persistence-unit>
 </persistence>

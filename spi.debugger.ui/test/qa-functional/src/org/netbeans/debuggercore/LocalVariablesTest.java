@@ -47,24 +47,31 @@ import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author ehucka, Jiri Vagner, cyhelsky
  */
-public class LocalVariablesTest extends JellyTestCase {
+public class LocalVariablesTest extends DebuggerTestCase {
     
+    private static String[] tests = new String[]{
+        "testLocalVariablesThisNode",
+        "testLocalVariablesStaticNode",
+        "testLocalVariablesStaticInherited",
+        "testLocalVariablesInheritedNode",
+        "testLocalVariablesExtended",
+        "testLocalVariablesValues",
+        "testLocalVariablesSubExpressions"
+    };
+
     public final String version;
     
     String projectPropertiesTitle;
@@ -107,38 +114,17 @@ public class LocalVariablesTest extends JellyTestCase {
      * @return
      */
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(LocalVariablesTest.class).addTest(
-                "testLocalVariablesThisNode",
-                "testLocalVariablesStaticNode",
-                "testLocalVariablesStaticInherited",
-                "testLocalVariablesInheritedNode",
-                "testLocalVariablesExtended",
-                "testLocalVariablesValues",
-                "testLocalVariablesSubExpressions"
-                )
-                .enableModules(".*")
-                .clusters(".*"));
+        return createModuleTest(LocalVariablesTest.class, tests);
     }
     
     /**
      *
      */
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
-        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");        
     }
-    
-    /**
-     *
-     */
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
-    }
-    
+        
     /**
      *
      */
@@ -187,11 +173,11 @@ public class LocalVariablesTest extends JellyTestCase {
                 }
             }
             expandNodes();
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            checkTreeTableLine(jTableOperator, 2, "Vpublic", "String", "\"Public Variable\"");
-            checkTreeTableLine(jTableOperator, 3, "Vprotected", "String", "\"Protected Variable\"");
-            checkTreeTableLine(jTableOperator, 4, "Vprivate", "String", "\"Private Variable\"");
-            checkTreeTableLine(jTableOperator, 5, "VpackagePrivate", "String", "\"Package-private Variable\"");
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            checkOutlineTableLine(outlineOp, 3, "Vpublic", "String", "\"Public Variable\"");
+            checkOutlineTableLine(outlineOp, 4, "Vprotected", "String", "\"Protected Variable\"");
+            checkOutlineTableLine(outlineOp, 5, "Vprivate", "String", "\"Private Variable\"");
+            checkOutlineTableLine(outlineOp, 6, "VpackagePrivate", "String", "\"Package-private Variable\"");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -219,11 +205,11 @@ public class LocalVariablesTest extends JellyTestCase {
                 }
             }
             expandNodes();
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            checkTreeTableLine(jTableOperator, 10, "Spublic", "String", "\"Public Variable\"");
-            checkTreeTableLine(jTableOperator, 11, "Sprotected", "String", "\"Protected Variable\"");
-            checkTreeTableLine(jTableOperator, 12, "Sprivate", "String", "\"Private Variable\"");
-            checkTreeTableLine(jTableOperator, 13, "SpackagePrivate", "String", "\"Package-private Variable\"");
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            checkOutlineTableLine(outlineOp, 11, "Spublic", "String", "\"Public Variable\"");
+            checkOutlineTableLine(outlineOp, 12, "Sprotected", "String", "\"Protected Variable\"");
+            checkOutlineTableLine(outlineOp, 13, "Sprivate", "String", "\"Private Variable\"");
+            checkOutlineTableLine(outlineOp, 14, "SpackagePrivate", "String", "\"Package-private Variable\"");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -251,11 +237,11 @@ public class LocalVariablesTest extends JellyTestCase {
                 }
             }
             expandNodes();
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            checkTreeTableLine(jTableOperator, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
-            checkTreeTableLine(jTableOperator, 16, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
-            checkTreeTableLine(jTableOperator, 17, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
-            checkTreeTableLine(jTableOperator, 18, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            checkOutlineTableLine(outlineOp, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
+            checkOutlineTableLine(outlineOp, 16, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
+            checkOutlineTableLine(outlineOp, 17, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
+            checkOutlineTableLine(outlineOp, 18, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -282,11 +268,11 @@ public class LocalVariablesTest extends JellyTestCase {
                 }
             }
             expandNodes();
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            checkTreeTableLine(jTableOperator, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
-            checkTreeTableLine(jTableOperator, 21, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
-            checkTreeTableLine(jTableOperator, 22, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
-            checkTreeTableLine(jTableOperator, 23, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            checkOutlineTableLine(outlineOp, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
+            checkOutlineTableLine(outlineOp, 21, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
+            checkOutlineTableLine(outlineOp, 22, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
+            checkOutlineTableLine(outlineOp, 23, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -315,62 +301,62 @@ public class LocalVariablesTest extends JellyTestCase {
             }
             expandNodes();
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-            int count = 0;
-            checkTreeTableLine(jTableOperator, count++, "this", "MemoryView", null);
-            checkTreeTableLine(jTableOperator, count++, "timer", null, "null");
-            checkTreeTableLine(jTableOperator, count++, "Vpublic", "String", "\"Public Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "Vprotected", "String", "\"Protected Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "Vprivate", "String", "\"Private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "Static", null, null);
-            checkTreeTableLine(jTableOperator, count++, "bundle", "PropertyResourceBundle", null);
-            assertTrue("Node bundle has no child nodes", hasChildNodes("this|Static|bundle", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "msgMemory", "MessageFormat", null);
-            assertTrue("Node msgMemory has no child nodes", hasChildNodes("this|Static|msgMemory", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "UPDATE_TIME", "int", "1000");
-            checkTreeTableLine(jTableOperator, count++, "Spublic", "String", "\"Public Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "Sprotected", "String", "\"Protected Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "Sprivate", "String", "\"Private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "class$java$lang$Runtime", "Class", "class java.lang.Runtime");
-            assertTrue("Node class$java$lang$Runtime has no child nodes", hasChildNodes("this|Static|class$java$lang$Runtime", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "Inherited", null, null);
-            checkTreeTableLine(jTableOperator, count++, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-            checkTreeTableLine(jTableOperator, count++, "clazz", "Class", "class java.lang.Runtime");
-            assertTrue("Node clazz has no child nodes", hasChildNodes("clazz", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "string", "String", "\"Hi!\"");
-            checkTreeTableLine(jTableOperator, count++, "n", "int", "50");
-            checkTreeTableLine(jTableOperator, count++, "llist", "LinkedList", null);
-            assertTrue("Node llist has no child nodes", hasChildNodes("llist", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "alist", "ArrayList", null);
-            assertTrue("Node alist has no child nodes", hasChildNodes("alist", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "vec", "Vector", null);
-            assertTrue("Node vec has no child nodes", hasChildNodes("vec", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "hmap", "HashMap", null);
-            assertTrue("Node hmap has no child nodes", hasChildNodes("hmap", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "htab", "Hashtable", null);
-            assertTrue("Node htab has no child nodes", hasChildNodes("htab", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "tmap", "TreeMap", null);
-            assertTrue("Node tmap has no child nodes", hasChildNodes("tmap", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "hset", "HashSet", null);
-            assertTrue("Node hset has no child nodes", hasChildNodes("hset", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "tset", "TreeSet", null);
-            assertTrue("Node tset has no child nodes", hasChildNodes("tset", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "policko", "int[]", null);
-            assertTrue("Node policko has no child nodes", hasChildNodes("policko", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "pole", "int[]", null);
-            assertTrue("Node pole has no child nodes", hasChildNodes("pole", treeTableOperator));
-            checkTreeTableLine(jTableOperator, count++, "d2", "int[][]", null);
-            assertTrue("Node d2 has no child nodes", hasChildNodes("d2", treeTableOperator));
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            
+            int count = 1;
+            checkOutlineTableLine(outlineOp, count++, "this", "MemoryView", null);
+            checkOutlineTableLine(outlineOp, count++, "timer", null, "null");
+            checkOutlineTableLine(outlineOp, count++, "Vpublic", "String", "\"Public Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "Vprotected", "String", "\"Protected Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "Vprivate", "String", "\"Private Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "Static", null, null);
+            checkOutlineTableLine(outlineOp, count++, "bundle", "PropertyResourceBundle", null);
+            assertTrue("Node bundle has no child nodes", hasChildNodes("this|Static|bundle", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "msgMemory", "MessageFormat", null);
+            assertTrue("Node msgMemory has no child nodes", hasChildNodes("this|Static|msgMemory", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "UPDATE_TIME", "int", "1000");
+            checkOutlineTableLine(outlineOp, count++, "Spublic", "String", "\"Public Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "Sprotected", "String", "\"Protected Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "Sprivate", "String", "\"Private Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
+            //checkOutlineTableLine(outlineOp, count++, "class$java$lang$Runtime", "Class", "class java.lang.Runtime");
+            //assertTrue("Node class$java$lang$Runtime has no child nodes", hasChildNodes("this|Static|class$java$lang$Runtime", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "Inherited", null, null);
+            checkOutlineTableLine(outlineOp, count++, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+            checkOutlineTableLine(outlineOp, count++, "clazz", "Class", "class java.lang.Runtime");
+            assertTrue("Node clazz has no child nodes", hasChildNodes("clazz", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "string", "String", "\"Hi!\"");
+            checkOutlineTableLine(outlineOp, count++, "n", "int", "50");
+            checkOutlineTableLine(outlineOp, count++, "llist", "LinkedList", null);
+            assertTrue("Node llist has no child nodes", hasChildNodes("llist", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "alist", "ArrayList", null);
+            assertTrue("Node alist has no child nodes", hasChildNodes("alist", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "vec", "Vector", null);
+            assertTrue("Node vec has no child nodes", hasChildNodes("vec", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "hmap", "HashMap", null);
+            assertTrue("Node hmap has no child nodes", hasChildNodes("hmap", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "htab", "Hashtable", null);
+            assertTrue("Node htab has no child nodes", hasChildNodes("htab", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "tmap", "TreeMap", null);
+            assertTrue("Node tmap has no child nodes", hasChildNodes("tmap", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "hset", "HashSet", null);
+            assertTrue("Node hset has no child nodes", hasChildNodes("hset", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "tset", "TreeSet", null);
+            assertTrue("Node tset has no child nodes", hasChildNodes("tset", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "policko", "int[]", null);
+            assertTrue("Node policko has no child nodes", hasChildNodes("policko", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "pole", "int[]", null);
+            assertTrue("Node pole has no child nodes", hasChildNodes("pole", outlineOp));
+            checkOutlineTableLine(outlineOp, count++, "d2", "int[][]", null);
+            assertTrue("Node d2 has no child nodes", hasChildNodes("d2", outlineOp));
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -458,20 +444,19 @@ public class LocalVariablesTest extends JellyTestCase {
             //new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
             
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            int count = 0;
-            checkTreeTableLine(jTableOperator, count++, "Before call to 'println()'", null, null);
-            checkTreeTableLine(jTableOperator, count++, "Arguments", null, null);
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            int count = 1; //line 0 is the New Watch Expression line by default
+            checkOutlineTableLine(outlineOp, count++, "Before call to 'println()'", null, null);
+            checkOutlineTableLine(outlineOp, count++, "Arguments", null, null);
 
             if (version.equals("jdk16")) {
-                checkTreeTableLine(jTableOperator, count++, "Return values history", null, null);            
-                checkTreeTableLine(jTableOperator, count++, "return <init>()", null, null);
-                checkTreeTableLine(jTableOperator, count++, "return <init>()", null, null);
-                checkTreeTableLine(jTableOperator, count++, "return <init>()", null, null);
-                checkTreeTableLine(jTableOperator, count++, "return format()", "String", null);
-
-                // TODO: Enable after fix of issue 132886 
-                //checkTreeTableLine(jTableOperator, count++, "return println()", "String", null);
+                checkOutlineTableLine(outlineOp, count++, "Return values history", null, null);
+                checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
+                checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
+                checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
+                checkOutlineTableLine(outlineOp, count++, "return format()", "String", null);
+ 
+                checkOutlineTableLine(outlineOp, count++, "return println()", "String", null);
             }
             
             
@@ -482,20 +467,20 @@ public class LocalVariablesTest extends JellyTestCase {
     }
     
     /**
-     * check values in TreeTable line
-     * @param table
+     * check values in Outline line
+     * @param outline
      * @param lineNumber
      * @param name
      * @param type
      * @param value
      */
-    protected void checkTreeTableLine(JTableOperator table, int lineNumber, String name, String type, String value) {
+    protected void checkOutlineTableLine(OutlineOperator outline, int lineNumber, String name, String type, String value) {
         try {
-            table.scrollToCell(lineNumber, 0);
+            outline.scrollToCell(lineNumber, 0);
             org.openide.nodes.Node.Property property;
             String string = null;
-            assertTrue("Node " + name + " not displayed in Local Variables view", name.equals(table.getValueAt(lineNumber, 0).toString()));
-            property = (org.openide.nodes.Node.Property)table.getValueAt(lineNumber, 1);
+            assertTrue("Node " + name + " not displayed in Local Variables view", name.equals(outline.getValueAt(lineNumber, 0).toString()));
+            property = (org.openide.nodes.Node.Property)outline.getValueAt(lineNumber, 1);
             string = property.getValue().toString();
             int maxWait = 100;
             while (string.equals(Utilities.evaluatingPropertyText) && maxWait > 0) {
@@ -504,7 +489,7 @@ public class LocalVariablesTest extends JellyTestCase {
             }
             assertTrue("Node " + name + " has wrong type in Local Variables view (displayed: " + string + ", expected: " + type + ")",
                     (type == null) || type.equals(string));
-            property = (org.openide.nodes.Node.Property)table.getValueAt(lineNumber, 2);
+            property = (org.openide.nodes.Node.Property)outline.getValueAt(lineNumber, 2);
             string = property.getValue().toString();
             maxWait = 100;
             while (string.equals(Utilities.evaluatingPropertyText) && maxWait > 0) {
@@ -520,8 +505,8 @@ public class LocalVariablesTest extends JellyTestCase {
         }
     }
     
-    protected boolean hasChildNodes(String nodePath, TreeTableOperator jTableOperator) {
-        org.netbeans.jellytools.nodes.Node node = new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), nodePath);
+    protected boolean hasChildNodes(String nodePath, OutlineOperator outlineOp) {
+        OutlineNode node = new OutlineNode(outlineOp, nodePath);
         node.select();
         return !node.isLeaf();
     }

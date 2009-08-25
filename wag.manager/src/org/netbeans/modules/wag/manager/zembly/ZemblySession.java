@@ -89,24 +89,32 @@ public class ZemblySession {
         return instance;
     }
 
-    public void login() {
-        // TODO:
+    public void login(String username, char[] password) {
+          // TODO:
         // 1. Check login status
         // 2. Single sign on
         // 3. Log into zembly and retrieve OAuth tokens
         // 4. Prompt user is SSO credential is invalid
         if (userInfo == null) {
             // For local testing
-            //userInfo = zemblyLogin("root@webonweb.org", "rootroot");
-            userInfo = new ZemblyUserInfo();
-            userInfo.setUserid("914986440");
-            userInfo.setUsername("spunky");
+            userInfo = zemblyLogin(username, new String(password));
+            //userInfo = new ZemblyUserInfo();
+            //userInfo.setUserid("914986440");
+            //userInfo.setUsername("spunky");
         }
+    }
+
+    public void login() {
+      
     }
 
     public void logout() {
     }
 
+    public boolean isLoggedIn() {
+        return userInfo != null;
+    }
+   
     public ZemblyUserInfo getUserInfo() {
         return userInfo;
     }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package helloworld;
+package org.netbeans.debuggercore;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-
-import javax.ws.rs.Path;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Produces;
-import javax.ws.rs.Consumes;
+import java.io.IOException;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.JemmyProperties;
 
 /**
- * REST Web Service
  *
- * @author mkuchtiak
+ * @author Vojtech.Sigler@sun.com
  */
+public class DebuggerTestCase extends JellyTestCase {
 
-@Stateless
-@Path("/helloWorld")
-public class HelloWorldResource {
+    private static boolean initialized = false;
 
-    @EJB
-    private NameStorageBean nameStorage;
-    /**
-     * Retrieves representation of an instance of helloworld.HelloWorldResource
-     * @return an instance of java.lang.String
+    /** constructor required by JUnit
+     * @param testName method name to be used as testcase
      */
-    @GET
-    @Produces("text/html")
-    public String getXml() {
-        return "<html><body><h1>Hello "+nameStorage.getName()+"!</h1></body></html>";
+    public DebuggerTestCase(String testName) {
+        super(testName);
     }
 
-    /**
-     * PUT method for updating an instance of HelloWorldResource
-     * @param content representation for the resource
-     * @return an HTTP response with content of the updated or created resource.
-     */
-    @PUT
-    @Consumes("text/plain")
-    public void putXml(String content) {
-        nameStorage.setName(content);
+    @Override
+    public void setUp() throws IOException
+    {
+        //if run for the first time, open test project and clean+build
+        if (!initialized)
+        {
+            openDataProjects(Utilities.testProjectName);
+            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+            Utilities.cleanBuildTestProject();
+            initialized = true;
+        }
+
     }
+
+    @Override
+    public void tearDown()
+    {
+        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
+        Utilities.endAllSessions();
+        Utilities.deleteAllBreakpoints();
+    }
+
 }
