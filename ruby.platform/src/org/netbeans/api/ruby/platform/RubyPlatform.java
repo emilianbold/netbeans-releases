@@ -812,12 +812,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     private void checkGemAndReport(final String gemName, final Pattern gemVersion, final StringBuilder errors) {
-        VersionPredicate predicate = new VersionPredicate() {
-            public boolean isRight(final String version) {
-                return gemVersion.matcher(version).matches();
-            }
-        };
-        if (!getGemManager().isGemInstalledForPlatform(gemName, predicate)) {
+        if (!checkGem(gemName, gemVersion)) {
             errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion.toString()));
             errors.append("<br>"); // NOI18N
         }
