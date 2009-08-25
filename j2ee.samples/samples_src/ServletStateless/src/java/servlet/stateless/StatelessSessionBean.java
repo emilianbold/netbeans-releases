@@ -28,13 +28,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package enterprise.servlet_stateless_ejb;
+package servlet.stateless;
 
 import javax.ejb.Stateless;
 
 @Stateless
-public class StatelessSessionBean
-    implements StatelessSession {
+public class StatelessSessionBean {
 
     public String sayHello(String name) {
         return "Hello, " + name + "!\n";
