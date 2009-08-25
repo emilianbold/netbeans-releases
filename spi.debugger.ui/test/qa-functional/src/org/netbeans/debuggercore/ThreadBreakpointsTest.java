@@ -47,7 +47,6 @@ import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -55,10 +54,8 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 
 
@@ -66,7 +63,14 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author ehucka, Revision Petr Cyhelsky
  */
-public class ThreadBreakpointsTest extends JellyTestCase {
+public class ThreadBreakpointsTest extends DebuggerTestCase {
+
+    private static String[] tests = new String[]{
+        "testThreadBreakpointCreation",
+        "testThreadBreakpointFunctionality",
+        //TODO: update, right now it does not make sense
+        //"testThreadBreakpointFunctionalityHitCount"
+    };
 
     //MainWindowOperator.StatusTextTracer stt = null;
     /**
@@ -90,13 +94,7 @@ public class ThreadBreakpointsTest extends JellyTestCase {
      * @return
      */
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ThreadBreakpointsTest.class).addTest(
-                    "testThreadBreakpointCreation",
-                    "testThreadBreakpointFunctionality",
-                    "testThreadBreakpointFunctionalityHitCount"
-                )
-            .enableModules(".*").clusters(".*"));
+        return createModuleTest(ThreadBreakpointsTest.class, tests);
     }
 
     /**
@@ -104,18 +102,8 @@ public class ThreadBreakpointsTest extends JellyTestCase {
      */
     @Override
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  ####### ");
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
     }
 
     /**
@@ -157,18 +145,18 @@ public class ThreadBreakpointsTest extends JellyTestCase {
 
             Utilities.startDebugger();
             try {
-                Utilities.waitStatusText("Thread breakpoint hit by thread ");
+                Utilities.waitStatusText("Thread main stopped.");
             } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread main (started).", 2)) {
                     System.err.println(e.getMessage());
                     throw e;
                 }
             }
             new ContinueAction().perform();
             try {
-                Utilities.waitStatusText("Thread breakpoint hit by thread ");
+                Utilities.waitStatusText("Thread Thread-0 stopped ");
             } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread Thread-0 (started).", 5)) {
                     System.err.println(e.getMessage());
                     throw e;
                 }
@@ -200,9 +188,9 @@ public class ThreadBreakpointsTest extends JellyTestCase {
 
             Utilities.startDebugger();
             try {
-                Utilities.waitStatusText("Thread breakpoint hit by thread ");
+                Utilities.waitStatusText("Thread main stopped.");
             } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread ", 2)) {
                     System.err.println(e.getMessage());
                     throw e;
                 }
