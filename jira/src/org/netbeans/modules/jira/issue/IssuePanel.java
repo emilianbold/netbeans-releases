@@ -45,8 +45,11 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -79,6 +82,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -609,6 +613,22 @@ public class IssuePanel extends javax.swing.JPanel {
                     subTaskTable = new JTable();
                     subTaskTable.setDefaultRenderer(JiraStatus.class, new StatusRenderer());
                     subTaskTable.setDefaultRenderer(Priority.class, new PriorityRenderer());
+                    subTaskTable.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (e.getClickCount() == 2) {
+                                Point p = e.getPoint();
+                                int row = subTaskTable.rowAtPoint(p);
+                                TableModel model = subTaskTable.getModel();
+                                final String issueKey = (String)model.getValueAt(row,0);
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                   public void run() {
+                                       issue.getRepository().getIssue(issueKey).open();
+                                   }
+                                });
+                            }
+                        }
+                    });
                     subTaskScrollPane = new JScrollPane(subTaskTable);
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
