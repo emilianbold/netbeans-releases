@@ -382,6 +382,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
             public void run() {
                 // reset header and description text
+                projectImage.setIcon(null);
                 projectsDetailsHeader.setText(proj.getDisplayName());
                 try {
                     projectsDetailsText.setText(proj.getDescription().replaceAll("\r?\n", " ").replaceAll("\r", " ")); //NOI18N

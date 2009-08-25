@@ -121,6 +121,8 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                 innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_CHATROOM")); //NOI18N
                 if (chats.length > 0) {
                     innerStr += String.format("<input type=\"reset\" id=\"" + CHAT_BUTTON + "\" value=\"%s\"><br>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_ENTER_CHATROOM")); //NOI18N
+                } else {
+                    innerStr += String.format("<i>%s</i><br>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_NO_CHAT"));
                 }
             }
         } catch (KenaiException ex) {
@@ -277,6 +279,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
             public void run() {
                 commChannelsDisplayer.setText(_istr);
+                commChannelsDisplayer.setCaretPosition(0);
                 HTMLDocument htm = (HTMLDocument) commChannelsDisplayer.getDocument();
                 Element e = htm.getElement(CHAT_BUTTON);
                 if (e != null) {
