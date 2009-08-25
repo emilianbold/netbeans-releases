@@ -49,6 +49,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.openide.util.Exceptions;
@@ -877,13 +878,13 @@ public abstract class FileSystem implements Serializable {
     */
     static abstract class EventDispatcher extends Object implements Runnable {
         public final void run() {
-            dispatch(false);
+            dispatch(false, null);
         }
 
         /** @param onlyPriority if true then invokes only priority listeners
          *  else all listeners are invoked.
          */
-        protected abstract void dispatch(boolean onlyPriority);
+        protected abstract void dispatch(boolean onlyPriority, Collection<Runnable> postNotify);
 
         /** @param propID  */
         protected abstract void setAtomicActionLink(EventControl.AtomicActionLink propID);
@@ -898,7 +899,7 @@ public abstract class FileSystem implements Serializable {
             this.fStatusEvent = fStatusEvent;
         }
 
-        protected void dispatch(boolean onlyPriority) {
+        protected void dispatch(boolean onlyPriority, Collection<Runnable> postNotify) {
             if (onlyPriority) {
                 return;
             }
