@@ -37,14 +37,59 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor;
+package org.netbeans.modules.web.jsf.editor.hints;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author marekfukala
  */
-public class JsfConstants {
+public abstract class HintsProvider {
 
-    public  static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
+    public abstract List<Hint> compute(RuleContext context);
+
+    protected static ErrorRule DEFAULT_ERROR_RULE = new Rule(HintSeverity.ERROR, true);
+    protected static ErrorRule DEFAULT_WARNING_RULE = new Rule(HintSeverity.WARNING, true);
+
+    protected static final int DEFAULT_ERROR_HINT_PRIORITY = 50;
+
+    protected static final class Rule implements ErrorRule {
+
+        private HintSeverity severity;
+        private boolean showInTasklist;
+
+        private Rule(HintSeverity severity, boolean showInTaskList) {
+            this.severity = severity;
+            this.showInTasklist = showInTaskList;
+        }
+
+        public Set<?> getCodes() {
+            return Collections.emptySet();
+        }
+
+        public boolean appliesTo(RuleContext context) {
+            return true;
+        }
+
+        public String getDisplayName() {
+            return "jsf"; //NOI18N //does this show up anywhere????
+        }
+
+        public boolean showInTasklist() {
+            return showInTasklist;
+        }
+
+        public HintSeverity getDefaultSeverity() {
+            return severity;
+        }
+        
+    }
 
 }

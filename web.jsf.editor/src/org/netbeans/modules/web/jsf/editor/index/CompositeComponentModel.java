@@ -52,7 +52,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.editor.JsfConstants;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -188,7 +188,7 @@ public class CompositeComponentModel extends JsfPageModel {
 
         @Override
         public JsfPageModel getModel(HtmlParserResult result) {
-            AstNode node = result.root(JsfConstants.COMPOSITE_LIBRARY_NS); //NOI18N
+            AstNode node = result.root(JsfUtils.COMPOSITE_LIBRARY_NS); //NOI18N
             FileObject file = result.getSnapshot().getSource().getFileObject();
 
             //check whether the file lies in appropriate library folder

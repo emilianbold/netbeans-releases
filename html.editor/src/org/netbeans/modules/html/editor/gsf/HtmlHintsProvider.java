@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
@@ -138,6 +139,12 @@ public class HtmlHintsProvider implements HintsProvider {
 
             hints.add(h);
         }
+
+        //html extensions
+        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+            ext.computeErrors(manager, context, hints, unhandled);
+        }
+
     }
 
     /**

@@ -50,7 +50,11 @@ import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -92,11 +96,17 @@ public abstract class HtmlExtension {
 
     public abstract List<CompletionItem> completeAttributeValue(CompletionContext context);
 
+    //hyperlinking
     public abstract OffsetRange getReferenceSpan(Document doc, int caretOffset);
 
     public abstract DeclarationLocation findDeclaration(ParserResult info, int caretOffset);
 
-    
+    //errors, hints
+    public abstract void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled);
+
+
+    //--------------------
+
     public static class CompletionContext {
 
         private HtmlParserResult result;

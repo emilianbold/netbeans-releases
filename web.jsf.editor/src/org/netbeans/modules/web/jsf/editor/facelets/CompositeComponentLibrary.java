@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfConstants;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
@@ -71,7 +71,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     @Override
     public String getNamespace() {
-        return JsfConstants.COMPOSITE_LIBRARY_NS + "/" + getLibraryName();
+        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + getLibraryName();
     }
 
     @Override
@@ -141,8 +141,9 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 String msgNoTld = NbBundle.getBundle(JsfCompletionItem.class).getString("MSG_NO_TLD"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
+                    boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
                     String description = getAttributesDescription(model);
-                    attrs.add(new Attribute(attrname, description, false));
+                    attrs.add(new Attribute(attrname, description, required));
                 }
 
                 StringBuffer sb = new StringBuffer();

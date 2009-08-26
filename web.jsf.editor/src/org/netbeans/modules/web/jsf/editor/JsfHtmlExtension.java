@@ -62,7 +62,11 @@ import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
@@ -78,6 +82,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -366,6 +371,9 @@ public class JsfHtmlExtension extends HtmlExtension {
                 if (lib instanceof CompositeComponentLibrary) {
                     String tagName = leaf.getNameWithoutPrefix();
                     CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
+                    if(component == null) {
+                        return DeclarationLocation.NONE;
+                    }
                     FileObject file = component.getComponentModel().getSourceFile();
 
                     //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
@@ -390,7 +398,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                                         Result result = resultIterator.getParserResult(caretOffset);
                                         if(result instanceof HtmlParserResult) {
                                             HtmlParserResult hresult = (HtmlParserResult)result;
-                                            AstNode root = hresult.root(JsfConstants.COMPOSITE_LIBRARY_NS);
+                                            AstNode root = hresult.root(JsfUtils.COMPOSITE_LIBRARY_NS);
                                             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
                                                 public void visit(AstNode node) {
                                                     if(node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
@@ -476,6 +484,13 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         return OffsetRange.NONE;
 
-
     }
+
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        //just delegate to the hints registry and add all gathered results
+        hints.addAll(HintsRegistry.getDefault().gatherHints(context));
+    }
+
+
+
 }
