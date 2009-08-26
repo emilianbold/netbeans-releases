@@ -37,38 +37,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.editor;
+package org.netbeans.modules.php.editor;
 
-import java.util.List;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.php.api.editor.PhpElement;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
 
 /**
- * SPI for extending PHP editor.
- * @since 1.13
+ * Convert {@link PhpElement PHP element} to {@link CompletionProposal}.
  * @author Tomas Mysik
  */
-public abstract class EditorExtender {
+public final class PhpElementCompletionItem {
 
-    /**
-     * Get the list of {@link PhpElement PHP elements} to be added to the code completion.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @return list of {@link PhpElement PHP elements} to be added to the code completion.
-     */
-    public abstract List<PhpElement> getElementsForCodeCompletion(FileObject fo);
+    private PhpElementCompletionItem() {
+    }
 
-    /**
-     * Get the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @param variableName the name of a variable
-     * @return the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known
-     */
-    public abstract PhpClass getClass(FileObject fo, String variableName);
+    static CompletionProposal fromPhpElement(PhpElement element, CompletionRequest request) {
+        assert element != null;
+        if (element instanceof PhpVariable) {
+            return new PhpVariableCompletionItem((PhpVariable) element, request);
+        }
+        throw new IllegalArgumentException("Unsupported PHP element type (only variables are currently supported): " + element);
+    }
+
+    private static final class PhpVariableCompletionItem extends PHPCompletionItem.VariableItem {
+        private final PhpVariable variable;
+
+        public PhpVariableCompletionItem(PhpVariable variable, CompletionRequest request) {
+            super(new IndexedConstant(variable.getName(), null, null, null, variable.getOffset(), 0, null), request);
+            this.variable = variable;
+        }
+
+        private PhpVariableCompletionItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            variable = null;
+        }
+
+        @Override
+        protected String getTypeName() {
+            return variable.getFullyQualifiedName();
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
+    }
 }

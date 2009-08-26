@@ -37,38 +37,49 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.editor;
+package org.netbeans.modules.php.symfony.editor;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI for extending PHP editor.
- * @since 1.13
  * @author Tomas Mysik
  */
-public abstract class EditorExtender {
+public class SymfonyEditorExtender extends EditorExtender {
+    private static final String TEMPLATES = "templates"; // NOI18N
+    private static final List<PhpElement> ELEMENTS = Arrays.<PhpElement>asList(
+            new PhpVariable("$sf_user", "sfUser"), // NOI18N
+            new PhpVariable("$sf_request", "sfWebRequest"), // NOI18N
+            new PhpVariable("$sf_response", "sfWebResponse")); // NOI18N
 
-    /**
-     * Get the list of {@link PhpElement PHP elements} to be added to the code completion.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @return list of {@link PhpElement PHP elements} to be added to the code completion.
-     */
-    public abstract List<PhpElement> getElementsForCodeCompletion(FileObject fo);
+    @Override
+    public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+        if (isView(fo)) {
+            return ELEMENTS;
+        }
+        return Collections.emptyList();
+    }
 
-    /**
-     * Get the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @param variableName the name of a variable
-     * @return the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known
-     */
-    public abstract PhpClass getClass(FileObject fo, String variableName);
+    @Override
+    public PhpClass getClass(FileObject fo, String variableName) {
+        if (isView(fo)) {
+            for (PhpElement element : ELEMENTS) {
+                if (element.getName().equals(variableName)) {
+                    return new PhpClass(element.getName(), element.getFullyQualifiedName());
+                }
+            }
+        }
+        return null;
+    }
+
+    // try to be as fast as possible...
+    private boolean isView(FileObject fo) {
+        return TEMPLATES.equals(fo.getParent().getNameExt());
+    }
 }

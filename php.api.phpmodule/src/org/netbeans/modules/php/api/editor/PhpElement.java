@@ -13,6 +13,14 @@ public abstract class PhpElement {
     private final int offset;
     private final String description;
 
+    protected PhpElement(String name, String fullyQualifiedName) {
+        this(name, fullyQualifiedName, -1, null);
+    }
+
+    protected PhpElement(String name, String fullyQualifiedName, String description) {
+        this(name, fullyQualifiedName, -1, description);
+    }
+
     protected PhpElement(String name, String fullyQualifiedName, int offset) {
         this(name, fullyQualifiedName, offset, null);
     }

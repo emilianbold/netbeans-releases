@@ -62,6 +62,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.Scope;
@@ -503,6 +504,16 @@ public class VariousUtils {
                                 stack.push(type.getName());
                                 operation = null;
                             }
+                        } else if (varScope instanceof NamespaceScope) {
+                            NamespaceScope nScope = (NamespaceScope) varScope;
+                            VariableName varName = ModelUtils.getFirst(nScope.getDeclaredVariables(), frag);
+                            if (varName != null) {
+                                type = ModelUtils.getFirst(varName.getTypes(offset));
+                                if (type != null) {
+                                    stack.push(type.getName());
+                                    operation = null;
+                                }
+                            }
                         }
                         if (type == null) {
                             List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), frag);
@@ -787,6 +798,17 @@ public class VariousUtils {
             String retval = metaAll.toString();
             if (retval != null) {
                 return retval;
+            }
+        }
+        return null;
+    }
+
+    // XXX
+    public static String getVariableName(String semiType) {
+        if (semiType != null) {
+            String prefix = "@" + VariousUtils.VAR_TYPE_PREFIX; // NOI18N
+            if (semiType.startsWith(prefix)) {
+                return semiType.substring(prefix.length(), semiType.lastIndexOf("@")); // NOI18N
             }
         }
         return null;

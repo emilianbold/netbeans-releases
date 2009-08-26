@@ -37,38 +37,45 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.editor;
+package org.netbeans.modules.php.project.api;
 
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI for extending PHP editor.
- * @since 1.13
+ * @since 2.17
  * @author Tomas Mysik
  */
-public abstract class EditorExtender {
+public final class PhpEditorExtender {
+    private static final EditorExtender EMPTY_EDITOR_EXTENDER = new EmptyEditorExtender();
 
-    /**
-     * Get the list of {@link PhpElement PHP elements} to be added to the code completion.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @return list of {@link PhpElement PHP elements} to be added to the code completion.
-     */
-    public abstract List<PhpElement> getElementsForCodeCompletion(FileObject fo);
+    private PhpEditorExtender() {
+    }
 
-    /**
-     * Get the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @param variableName the name of a variable
-     * @return the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known
-     */
-    public abstract PhpClass getClass(FileObject fo, String variableName);
+    public static EditorExtender forFileObject(FileObject fo) {
+        PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fo);
+        if (phpProject == null) {
+            return EMPTY_EDITOR_EXTENDER;
+        }
+        EditorExtender editorExtender = phpProject.getLookup().lookup(EditorExtender.class);
+        assert editorExtender != null : "Editor extender must be found for " + phpProject;
+        return editorExtender;
+    }
+
+    private static final class EmptyEditorExtender extends EditorExtender {
+        @Override
+        public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public PhpClass getClass(FileObject fo, String variableName) {
+            return null;
+        }
+    }
 }

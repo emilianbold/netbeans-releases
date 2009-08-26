@@ -37,38 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.editor;
+package org.netbeans.modules.php.project;
 
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI for extending PHP editor.
- * @since 1.13
  * @author Tomas Mysik
  */
-public abstract class EditorExtender {
+public class PhpEditorExtender extends EditorExtender {
 
-    /**
-     * Get the list of {@link PhpElement PHP elements} to be added to the code completion.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @return list of {@link PhpElement PHP elements} to be added to the code completion.
-     */
-    public abstract List<PhpElement> getElementsForCodeCompletion(FileObject fo);
+    private final PhpProject project;
 
-    /**
-     * Get the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @param variableName the name of a variable
-     * @return the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known
-     */
-    public abstract PhpClass getClass(FileObject fo, String variableName);
+    public PhpEditorExtender(PhpProject project) {
+        assert project != null;
+        this.project = project;
+    }
+
+    @Override
+    public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+        List<PhpElement> elements = new LinkedList<PhpElement>();
+        PhpModule module = project.getPhpModule();
+        for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
+            EditorExtender editorExtender = frameworkProvider.getEditorExtender(module);
+            if (editorExtender != null) {
+                elements.addAll(editorExtender.getElementsForCodeCompletion(fo));
+            }
+        }
+        return elements;
+    }
+
+    @Override
+    public PhpClass getClass(FileObject fo, String variableName) {
+        PhpModule module = project.getPhpModule();
+        for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
+            EditorExtender editorExtender = frameworkProvider.getEditorExtender(module);
+            if (editorExtender != null) {
+                PhpClass phpClass = editorExtender.getClass(fo, variableName);
+                if (phpClass != null) {
+                    return phpClass;
+                }
+            }
+        }
+        return null;
+    }
 }

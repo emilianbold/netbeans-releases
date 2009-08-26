@@ -53,6 +53,14 @@ public final class PhpClass extends PhpElement {
     private final Collection<Field> fields = new LinkedList<Field>();
     private final Collection<Method> methods = new LinkedList<Method>();
 
+    public PhpClass(String name, String fullyQualifiedName, String description) {
+        super(name, fullyQualifiedName, description);
+    }
+
+    public PhpClass(String name, String fullyQualifiedName) {
+        super(name, fullyQualifiedName);
+    }
+
     public PhpClass(String name, String fullyQualifiedName, int offset) {
         this(name, fullyQualifiedName, offset, null);
     }
@@ -70,6 +78,14 @@ public final class PhpClass extends PhpElement {
         return addField(name, fullyQualifiedName, offset, null);
     }
 
+    public PhpClass addField(String name, String fullyQualifiedName) {
+        return addField(name, fullyQualifiedName, -1, null);
+    }
+
+    public PhpClass addField(String name, String fullyQualifiedName, String description) {
+        return addField(name, fullyQualifiedName, -1, description);
+    }
+
     public PhpClass addMethod(String name, String fullyQualifiedName, int offset, String description) {
         methods.add(new Method(name, fullyQualifiedName, offset, description));
         return this;
@@ -77,6 +93,14 @@ public final class PhpClass extends PhpElement {
 
     public PhpClass addMethod(String name, String fullyQualifiedName, int offset) {
         return addMethod(name, fullyQualifiedName, offset, null);
+    }
+
+    public PhpClass addMethod(String name, String fullyQualifiedName) {
+        return addMethod(name, fullyQualifiedName, -1, null);
+    }
+
+    public PhpClass addMethod(String name, String fullyQualifiedName, String description) {
+        return addMethod(name, fullyQualifiedName, -1, description);
     }
 
     public Collection<Field> getFields() {

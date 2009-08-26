@@ -46,6 +46,14 @@ package org.netbeans.modules.php.api.editor;
  */
 public final class PhpFunction extends PhpElement {
 
+    public PhpFunction(String name, String fullyQualifiedName, String description) {
+        super(name, fullyQualifiedName, description);
+    }
+
+    public PhpFunction(String name, String fullyQualifiedName) {
+        super(name, fullyQualifiedName);
+    }
+
     public PhpFunction(String name, String fullyQualifiedName, int offset, String description) {
         super(name, fullyQualifiedName, offset, description);
     }

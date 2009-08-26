@@ -508,6 +508,7 @@ public class PhpProject implements Project {
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
                 new PhpModuleImpl(this),
+                new PhpEditorExtender(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(this, getSourceRoots(), getTestRoots(), getSeleniumRoots()),

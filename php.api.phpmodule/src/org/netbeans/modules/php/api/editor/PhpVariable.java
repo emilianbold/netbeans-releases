@@ -40,11 +40,19 @@
 package org.netbeans.modules.php.api.editor;
 
 /**
- * Class representing a PHP local varible.
+ * Class representing a PHP local variable.
  * @since 1.13
  * @author Tomas Mysik
  */
 public final class PhpVariable extends PhpElement {
+
+    public PhpVariable(String name, String fullyQualifiedName, String description) {
+        super(name, fullyQualifiedName, description);
+    }
+
+    public PhpVariable(String name, String fullyQualifiedName) {
+        super(name, fullyQualifiedName);
+    }
 
     public PhpVariable(String name, String fullyQualifiedName, int offset, String description) {
         super(name, fullyQualifiedName, offset, description);
