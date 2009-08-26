@@ -45,7 +45,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -53,7 +53,6 @@ import javax.xml.XMLConstants;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -71,7 +70,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.BuiltInTypeFolderNode;
-import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -85,7 +84,7 @@ import org.openide.nodes.FilterNode.Children;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
+public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent> {
 
     private Node inlineSchemaFolderNode;
     private Node builtinSchemaFolderNode;
@@ -93,17 +92,17 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
     private WSDLModel model;
     private List<Class<? extends SchemaComponent>> filters;
     private Project project;
-    
+
     public ElementOrTypeChooserHelper(WSDLModel model) {
         this.model = model;
     }
-    
+
     //Called from wizard. the model may not be in the project, if created in temporary location
     public ElementOrTypeChooserHelper(Project project, WSDLModel model) {
         this.model = model;
         this.project = project;
     }
-    
+
     @Override
     public void populateNodes(Node parentNode) {
         ArrayList<Node> chooserFolders = new ArrayList<Node>();
@@ -122,13 +121,13 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             }
         } else {
             FileObject wsdlFile = model.getModelSource().getLookup().lookup(FileObject.class);
-            if(wsdlFile != null) {
+            if (wsdlFile != null) {
                 catalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFile);
                 wsdlProject = FileOwnerQuery.getOwner(wsdlFile);
             }
         }
         if (wsdlProject != null) {
-            projectsFolderNode = new FolderNode(new Children.Array()); 
+            projectsFolderNode = new FolderNode(new Children.Array());
             projectsFolderNode.setDisplayName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_ByFile_DisplayName"));
             LogicalViewProvider viewProvider = wsdlProject.getLookup().lookup(LogicalViewProvider.class);
 
@@ -138,10 +137,10 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             nodes.add(projectNode);
             Node catalogNode = getCatalogNode(wsdlProject, filters);
             if (catalogNode != null) {
-                projectNode.getChildren().add(new Node[] {catalogNode});
+                projectNode.getChildren().add(new Node[]{catalogNode});
             }
-            
-            
+
+
             if (catalogSupport != null) {
                 Set refProjects = catalogSupport.getProjectReferences();
                 if (refProjects != null && refProjects.size() > 0) {
@@ -154,7 +153,7 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             }
             projectsFolderNode.getChildren().add(nodes.toArray(new Node[nodes.size()]));
         }
-        
+
         if (model != null) {
             Definitions def = model.getDefinitions();
             if (def.getTypes() != null) {
@@ -183,35 +182,36 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
                 }
             }
         }
-        
+
         builtinSchemaFolderNode = new BuiltInTypeFolderNode();
-        
-        
+
+
         if (projectsFolderNode != null) {
             chooserFolders.add(projectsFolderNode);
         }
         if (inlineSchemaFolderNode != null) {
             chooserFolders.add(inlineSchemaFolderNode);
         }
-        
+
         chooserFolders.add(builtinSchemaFolderNode);
-        
+
         parentNode.getChildren().add(chooserFolders.toArray(new Node[chooserFolders.size()]));
     }
-    
 
     @Override
     public Node selectNode(SchemaComponent comp) {
-        if (comp == null) return null;
+        if (comp == null) {
+            return null;
+        }
         Node selected = null;
         if (comp != null) {
-            String tns = comp.getModel().getSchema().getTargetNamespace();
+            String tns = Utility.getTargetNamespace(comp.getModel());
             if (tns != null) {
                 if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(tns)) {
                     selected = selectNode(builtinSchemaFolderNode, comp);
                 } else {
                     if (inlineSchemaFolderNode == null || (selected = selectNode(inlineSchemaFolderNode, comp)) == null) {
-                        selected = projectsFolderNode != null ? selectNode(projectsFolderNode , comp) : null;
+                        selected = projectsFolderNode != null ? selectNode(projectsFolderNode, comp) : null;
                     }
                 }
             } else {
@@ -226,24 +226,25 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
 
     private Node getCatalogNode(Project wsdlProject, List<Class<? extends SchemaComponent>> filters) {
         CatalogHelper helper = new CatalogHelper(wsdlProject);
-        
+
         List<CatalogEntry> references = helper.getReferencedResources(SCHEMA_FILE_EXTENSION);
-        if (references == null || references.isEmpty()) return null;
-        
-        Node node = new CatalogNode(new CatalogChildren(project, helper, references, filters));
+        if (references == null || references.isEmpty()) {
+            return null;
+        }
+
+        Node node = new CatalogNode(new CatalogChildren(helper, references, filters));
         node.setName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_RemoteReferences"));
         return node;
     }
-    
+
     class CatalogChildren extends Children.Keys<CatalogEntry> {
-        private Project wsdlProject;
+
         List<Class<? extends SchemaComponent>> schemaComponentFilters;
         private List<CatalogEntry> entries;
         private Set<CatalogEntry> emptySet = Collections.emptySet();
         private CatalogHelper helper;
-        
-         public CatalogChildren (Project project, CatalogHelper helper, List<CatalogEntry> entries, List<Class<? extends SchemaComponent>> filters) {
-            this.wsdlProject = project;
+
+        public CatalogChildren(CatalogHelper helper, List<CatalogEntry> entries, List<Class<? extends SchemaComponent>> filters) {
             this.schemaComponentFilters = filters;
             this.entries = entries;
             this.helper = helper;
@@ -254,17 +255,24 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             FileObject fo = helper.getFileObject(entry);
             ModelSource modelSource = Utilities.getModelSource(fo, true);
             if (modelSource != null) {
-                SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
-                if (schemaModel.getState() == SchemaModel.State.VALID) {
-                    CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(schemaModel, schemaComponentFilters, Lookup.EMPTY);
-                    return new Node[]{new FileNode(
-                                factory.createNode(schemaModel.getSchema()),
-                                CatalogHelper.getFileName(entry.getSource()))
-                            };
+                SchemaModel sModel =
+                        SchemaModelFactory.getDefault().getModel(modelSource);
+                if (sModel != null && sModel.getState() == State.VALID) {
+                    Schema schema = sModel.getSchema();
+                    if (schema != null) {
+                        CategorizedSchemaNodeFactory factory =
+                                new CategorizedSchemaNodeFactory(
+                                sModel, schemaComponentFilters, Lookup.EMPTY);
+                        return new Node[]{new FileNode(factory.createNode(schema),
+                                    CatalogHelper.getFileName(entry.getSource()))
+                                };
+                    }
                 }
             }
             Node brokenReference = new AbstractNode(LEAF);
-            brokenReference.setName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_InvalidReference"));;
+            brokenReference.setName(NbBundle.getMessage(
+                    ElementOrTypeChooserHelper.class, "LBL_InvalidReference"));
+            ;
             return new Node[]{brokenReference};
         }
 
@@ -285,7 +293,7 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             this.setKeys(keys);
         }
     }
-    
+
     private Node selectNode(Node parentNode, SchemaComponent element) {
         org.openide.nodes.Children children = parentNode.getChildren();
         for (Node node : children.getNodes()) {
@@ -297,11 +305,11 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             if (sc == null) {
                 sc = node.getLookup().lookup(SchemaComponent.class);
             }
-            
+
             if (sc == element) {
                 return node;
             }
-            
+
             Node node1 = null;
             if ((node1 = selectNode(node, element)) != null) {
                 return node1;
@@ -309,43 +317,50 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
         }
         return null;
     }
-    
+
     class CatalogNode extends FolderNode {
 
         public CatalogNode(Children.Keys children) {
             super(children);
         }
-        
     }
-    
+
     class SchemaProjectFolderNode extends FilterNode {
+
         public SchemaProjectFolderNode(Node original, Project project, List<Class<? extends SchemaComponent>> filters) {
-            super(original, new SchemaProjectFolderChildren(project, filters));
+            super(original, new SchemaProjectFolderChildren(original, project, filters));
         }
     }
-    
+
     class SchemaProjectFolderChildren extends Children.Keys<FileObject> {
 
         private final FileObject projectDir;
-        private final Project wsdlProject;
         private final List<Class<? extends SchemaComponent>> schemaComponentFilters;
         private Set<FileObject> emptySet = Collections.emptySet();
+        private final Node original;
 
-        public SchemaProjectFolderChildren (Project project, List<Class<? extends SchemaComponent>> filters) {
-            this.wsdlProject = project;
+        public SchemaProjectFolderChildren(Node original, Project project, List<Class<? extends SchemaComponent>> filters) {
             this.schemaComponentFilters = filters;
             this.projectDir = project.getProjectDirectory();
+            this.original = original;
         }
 
         @Override
         public Node[] createNodes(FileObject fo) {
-            ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false); 
-            SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
-            CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(schemaModel, schemaComponentFilters, Lookup.EMPTY);
-            return new Node[] {new FileNode(
-                    factory.createNode(schemaModel.getSchema()), 
-                    FileUtil.getRelativePath(projectDir, fo))};
-
+            ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
+            SchemaModel sModel = SchemaModelFactory.getDefault().getModel(modelSource);
+            if (sModel != null) {
+                Schema schema = sModel.getSchema();
+                if (schema != null) {
+                    CategorizedSchemaNodeFactory factory =
+                            new CategorizedSchemaNodeFactory(
+                            sModel, schemaComponentFilters, Lookup.EMPTY);
+                    return new Node[]{new FileNode(factory.createNode(schema),
+                                FileUtil.getRelativePath(projectDir, fo))};
+                }
+            }
+            //
+            return null;
         }
 
         @Override
@@ -362,16 +377,21 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
         private void resetKeys() {
             ArrayList<FileObject> keys = new ArrayList<FileObject>();
 
-            List<SourceGroup> roots = Utility.getSourceRoots(wsdlProject);
-            for (SourceGroup srcGrp : roots) {
-                FileObject rootFolder = srcGrp.getRootFolder();
-                List<File> files = getFilesFromNonBuildFolders(rootFolder, new SchemaFileFilter());
+            Set<FileObject> validFolders = new HashSet<FileObject>();
+            populateValidFolders(original, validFolders);
+            Set<File> alreadyAddedFiles = new HashSet<File>();
+            for (FileObject rootFolder : validFolders) {
+                List<File> files = recursiveListFiles(FileUtil.toFile(rootFolder), new SchemaFileFilter());
                 for (File file : files) {
+                    if (alreadyAddedFiles.contains(file)) continue;
                     FileObject fileobj = FileUtil.toFileObject(file);
-                    ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fileobj, false);
-                    SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
-                    if (schemaModel != null && schemaModel.getState() == Model.State.VALID && schemaModel.getSchema().getTargetNamespace() != null) {
-                        keys.add(fileobj);
+                    ModelSource mSource = Utilities.getModelSource(fileobj, false);
+                    if (mSource != null) {
+                        SchemaModel sModel = SchemaModelFactory.getDefault().getModel(mSource);
+                        if (sModel != null && Utility.getTargetNamespace(sModel) != null) {
+                            alreadyAddedFiles.add(file);
+                            keys.add(fileobj);
+                        }
                     }
                 }
             }
@@ -379,9 +399,8 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
         }
 
     }
-    
     public static final String SCHEMA_FILE_EXTENSION = "xsd";
-    
+
     static class SchemaFileFilter implements FileFilter {
 
         public boolean accept(File pathname) {
@@ -389,24 +408,23 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             String fileName = pathname.getName();
             String fileExtension = null;
             int dotIndex = fileName.lastIndexOf('.');
-            if(dotIndex != -1) {
-                fileExtension = fileName.substring(dotIndex +1);
+            if (dotIndex != -1) {
+                fileExtension = fileName.substring(dotIndex + 1);
             }
 
-            if(fileExtension != null 
-                    && (fileExtension.equalsIgnoreCase(SCHEMA_FILE_EXTENSION))) {
+            if (fileExtension != null && (fileExtension.equalsIgnoreCase(SCHEMA_FILE_EXTENSION))) {
                 result = true;
             }
 
             return result;
         }
     }
-    
-    
+
     static class InlineTypesFolderNode extends FilterNode {
+
         private Collection<Schema> mSchemas;
         private List<Class<? extends SchemaComponent>> filters;
-        
+
         public InlineTypesFolderNode(Node node, Collection<Schema> schemas, List<Class<? extends SchemaComponent>> filters) {
             super(node);
             mSchemas = schemas;
@@ -415,13 +433,11 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             setChildren(new TypesChildren());
         }
 
-
         class TypesChildren extends Children.Keys<Schema> {
 
             Set<Schema> set = Collections.emptySet();
-            
-            public TypesChildren() {
 
+            public TypesChildren() {
             }
 
             @Override
@@ -429,10 +445,9 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
                 CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
                         key.getModel(), filters, Lookup.EMPTY);
                 Node node = factory.createNode(key);
-                return new Node[] { node };
+                return new Node[]{node};
 
             }
-
 
             @Override
             protected void addNotify() {
@@ -448,8 +463,6 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             private void resetKeys() {
                 this.setKeys(mSchemas);
             }
-
         }
     }
-    
 }

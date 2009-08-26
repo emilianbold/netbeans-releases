@@ -57,9 +57,10 @@ import org.netbeans.modules.wag.manager.util.Utilities;
  */
 public class ItemInfoRetriever {
 
-    private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec";
+    private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec"; //NOI18N
     private static final String NAME_ATTR = "name";     //NOI18N
     private static final String PATH_ATTR = "path";     //NOI18N
+    private static final String REQUIRED_ATTR = "required"; //NOI18N
     private static final String ITEM_URI_PARAM = "itemURI"; //NOI18N
     private static final String VERSION_PARAM = "version";  //NOI18N
     private static final String UUID_ATTR = "uuid";         //NOI18N
@@ -117,6 +118,7 @@ public class ItemInfoRetriever {
                     WagServiceParameter wp = new WagServiceParameter();
                     wp.setName(p.getString(NAME_ATTR));
                     wp.setType(p.getString(TYPE_ATTR));
+                    wp.setRequired(p.getBoolean(REQUIRED_ATTR));
                     wagParams.add(wp);
                 }
 

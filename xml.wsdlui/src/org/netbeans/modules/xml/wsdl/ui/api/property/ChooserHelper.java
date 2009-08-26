@@ -22,76 +22,71 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 public abstract class ChooserHelper<T extends Component> {
-    
+
     public abstract void populateNodes(Node parentNode);
 
     public abstract Node selectNode(T comp);
-    
-   
+
     /*
      * Filternode to make the nodes look enabled.
      */
     public static class EnabledNode extends FilterNode {
+
         private static Pattern pattern = Pattern.compile("(^<font.*>)(.*)(<.*>$)");
 
         public EnabledNode(Node node) {
             super(node, new EnabledChildren(node));
         }
-        
+
         @Override
-        public String getHtmlDisplayName()
-        {
+        public String getHtmlDisplayName() {
             //strips off font tag, to make it not grey. IZ  
             String retValue = super.getHtmlDisplayName();
-            if(retValue == null) retValue = getDisplayName();
-            
-            
-            if(retValue != null) {
-                Matcher matcher  = pattern.matcher(retValue);
+            if (retValue == null) {
+                retValue = getDisplayName();
+            }
+
+
+            if (retValue != null) {
+                Matcher matcher = pattern.matcher(retValue);
                 if (matcher.find()) {
                     return matcher.group(2);
                 }
             }
             return retValue;
         }
-        
-        
     }
-    
+
     private static class EnabledChildren extends FilterNode.Children {
 
         public EnabledChildren(Node node) {
             super(node);
         }
-        
+
         @Override
         protected Node copyNode(Node node) {
             return new EnabledNode(node);
         }
-        
     }
-    
-    
+
     static class DirFileFilter implements FileFilter {
 
         public boolean accept(File pathname) {
             return pathname.isDirectory();
         }
     }
-
-    
 
     class FileNode extends FilterNode {
 
@@ -101,7 +96,7 @@ public abstract class ChooserHelper<T extends Component> {
             super(original, new FileNodeChildren(original, level));
             displayName = path;
         }
-        
+
         public FileNode(Node original, String path) {
             this(original, path, 1);
         }
@@ -110,19 +105,16 @@ public abstract class ChooserHelper<T extends Component> {
         public String getDisplayName() {
             return displayName;
         }
-
-
-
     }
 
     static class FileNodeChildren extends FilterNode.Children {
 
         int level = 1;
-        
+
         public FileNodeChildren(Node node) {
             super(node);
         }
-        
+
         public FileNodeChildren(Node node, int level) {
             super(node);
             this.level = level;
@@ -132,7 +124,6 @@ public abstract class ChooserHelper<T extends Component> {
         protected Node copyNode(Node key) {
             return new CategoryFilterNode(key, level - 1);
         }
-
     }
 
     static class CategoryFilterNode extends FilterNode {
@@ -140,8 +131,6 @@ public abstract class ChooserHelper<T extends Component> {
         public CategoryFilterNode(Node node, int level) {
             super(node, new CategoryFilterChildren(node, level));
         }
-
-
     }
 
     static class CategoryFilterChildren extends FilterNode.Children {
@@ -160,7 +149,6 @@ public abstract class ChooserHelper<T extends Component> {
             }
             return new CategoryFilterNode(key, level - 1);
         }
-
     }
 
     static class ChildLessNode extends FilterNode {
@@ -168,10 +156,8 @@ public abstract class ChooserHelper<T extends Component> {
         public ChildLessNode(Node node) {
             super(node, Children.LEAF);
         }
-
     }
 
-    
     protected List<File> recursiveListFiles(File file, FileFilter filter) {
         List<File> files = new ArrayList<File>();
         if (file != null && file.isDirectory()) {
@@ -189,23 +175,26 @@ public abstract class ChooserHelper<T extends Component> {
                 }
             }
         }
-        
+
         return files;
     }
 
-
-    protected List<File> getFilesFromNonBuildFolders(FileObject rootFolder, FileFilter filter) {
-        List<File> result = new ArrayList<File>();
-        Enumeration<? extends FileObject> folders = rootFolder.getFolders(false);
-        while (folders.hasMoreElements()) {
-            FileObject fo = folders.nextElement();
-            //IZ 161095: Need to hard code for now, as I could not find a way to get the name of build folder for a project is.
-            if (fo.getName().equals("build")) {
-                continue;
+    /**
+     * Gets folders defined in the logical view provider.
+     * This reliably seems to filter off non source folders.
+     * @param node
+     * @param validFolders
+     */
+    protected void populateValidFolders(Node node, Set<FileObject> validFolders) {
+        org.openide.nodes.Children children = node.getChildren();
+        for (Node childNode : children.getNodes()) {
+            DataObject dobj = childNode.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                FileObject fo = dobj.getLookup().lookup(FileObject.class);
+                if (fo != null && fo.isFolder() && !validFolders.contains(fo)) {
+                    validFolders.add(fo);
+                }
             }
-            List<File> files = recursiveListFiles(FileUtil.toFile(fo), filter);
-            result.addAll(files);
         }
-        return result;
     }
 }
