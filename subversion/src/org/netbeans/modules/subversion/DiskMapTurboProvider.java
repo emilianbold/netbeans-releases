@@ -75,7 +75,7 @@ class DiskMapTurboProvider implements TurboProvider {
         initCacheStore();
     }
 
-    private synchronized Map<File, FileInformation>  getAllModifiedValues() {
+    public synchronized Map<File, FileInformation>  getAllModifiedValues() {
         if (modifiedFilesChanged() || cachedValues == null) {
             HashMap<File, FileInformation> modifiedValues = new HashMap<File, FileInformation>();
             if (!cacheStore.isDirectory()) {
@@ -153,7 +153,7 @@ class DiskMapTurboProvider implements TurboProvider {
 
     }
 
-    private Map<File, FileInformation> getCachedValues() {
+    public Map<File, FileInformation> getCachedValues() {
         if (cachedValues != null) {
             return cachedValues;
         }
