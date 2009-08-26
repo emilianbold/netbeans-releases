@@ -237,34 +237,46 @@ public class LuceneIndex implements IndexImpl {
 
     /**
      * Checks if the lucene index is valid.
-     * @param tryOpen if true the index is opened to verify integrity otherwise
-     * only segment names are checked.
-     * @return tru when index is valid
+     * @return true when index is valid
      * @throws IOException when index is already closed
      */
-    public boolean isValid (final boolean tryOpen) throws IOException {
+    public boolean isValid () throws IOException {
         checkPreconditions();
-       return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<Boolean>() {
+        boolean res = LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<Boolean>() {
             public Boolean run() throws IOException {
-                boolean res = false;
-                try {
-                    res = IndexReader.indexExists(directory);
-                } catch (IOException e) {
-                    //Directory does not exist, no need to call clear
-                    return res;
-                }
-                if (res && tryOpen) {
+                return LuceneIndex.this.valid;
+            }
+        });
+        if (res) {
+            return res;
+        }
+        res = LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Boolean>() {
+            public Boolean run() throws IOException {
+                boolean res = directory.list().length == 0;
+                if (!res) {
                     try {
-                        getReader(false);
-                    } catch (java.io.IOException e) {
-                        res = false;
-                        clear();
+                        res = IndexReader.indexExists(directory);
+                    } catch (IOException e) {
+                        //Directory does not exist, no need to call clear
+                        //pass res == false
+                    }
+                    if (res) {
+                        try {
+                            getReader(false);
+                        } catch (java.io.IOException e) {
+                            res = false;
+                            clear();
+                        } catch (RuntimeException e) {
+                            res = false;
+                            clear();
+                        }
                     }
                 }
+                LuceneIndex.this.valid = res;
                 return res;
             }
-        }).booleanValue();
-        
+        });
+        return res;
     }
     
     public void close() throws IOException {
@@ -293,6 +305,7 @@ public class LuceneIndex implements IndexImpl {
     private volatile Directory directory;
     private volatile IndexReader reader; //Cache, do not use this directly, use getReader
     private volatile boolean closed;
+    private boolean valid;
 
     private static final LMListener lmListener = new LMListener();
 

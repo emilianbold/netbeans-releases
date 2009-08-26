@@ -4,6 +4,6 @@ OpenIDE-Module-Layer: org/netbeans/modules/javacard/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javacard/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
 OpenIDE-Module-Provides: org.netbeans.modules.javacard.JavacardPlatform
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 AutoUpdate-Show-In-Client: false
 

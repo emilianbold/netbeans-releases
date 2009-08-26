@@ -166,6 +166,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
@@ -1702,6 +1703,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             } else {
                 return null;
             }
+        }
+
+        // Label Variables
+        ObjectVariable labeledVar = evaluationContext.getDebugger().getLabeledVariable(identifier);
+        if (labeledVar != null) {
+            return ((JDIVariable)labeledVar).getJDIValue();
         }
 
         TreePath currentPath = getCurrentPath();

@@ -157,11 +157,11 @@ public class RefineSearchDlg extends JPanel implements ActionListener {
     }
 
     private void refineSearchResult() {
-        searchResults.removeResults(Arrays.asList(searchResult));
+        searchResults.removeItems(Arrays.asList(searchResult));
 
         String query = searchQueryTF.getText().trim();
         int maxResults = Integer.parseInt(maxResultsTF.getText().trim());
-        searchResults.addResults(Arrays.asList(new WagSearchResult(query, maxResults)));
+        searchResults.addItems(Arrays.asList(new WagSearchResult(query, maxResults)));
     }
 
     /** XXX once we implement context sensitive help, change the return */

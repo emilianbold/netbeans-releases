@@ -46,8 +46,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.netbeans.modules.wag.manager.model.WagApi;
 import org.netbeans.modules.wag.manager.model.WagDomain;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -78,7 +78,7 @@ public class DomainRetriever {
             System.out.println("all domains: " + result);
             return parseAllDomains(result);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -96,7 +96,7 @@ public class DomainRetriever {
             System.out.println("your domains: " + result);
             return parseYourDomains(result);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -120,7 +120,7 @@ public class DomainRetriever {
 
             return domains;
         } catch (JSONException ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -143,7 +143,7 @@ public class DomainRetriever {
 
             return domains;
         } catch (JSONException ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();

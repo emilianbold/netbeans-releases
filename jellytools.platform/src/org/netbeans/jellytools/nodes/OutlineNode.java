@@ -74,6 +74,12 @@ public class OutlineNode {
         _treePath = getOutline().findPath(irParentNode.getTreePath(), isPath);
     }
 
+    public OutlineNode(OutlineOperator irOutline, String isPath)
+    {
+        _outline = irOutline;
+        _treePath = getOutline().findPath(isPath);
+    }
+
     public OutlineOperator getOutline()
     {
         return _outline;
@@ -101,6 +107,17 @@ public class OutlineNode {
     {
         getOutline().expandPath(getTreePath());
         getOutline().waitExpanded(getTreePath());        
+    }
+
+    public void select()
+    {
+        getOutline().selectPath(getTreePath());
+    }
+
+    public boolean isLeaf()
+    {
+        Object lrLastElem = getTreePath().getLastPathComponent();
+        return getOutline().getOutline().getOutlineModel().getChildCount(lrLastElem) < 1;
     }
 
 }

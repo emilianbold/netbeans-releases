@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -114,7 +116,7 @@ public class IndexNode extends BaseNode {
     }
 
     private void updateProperties(Index index) {
-        PropertySupport ps = new PropertySupport.Name(this);
+        PropertySupport.Name ps = new PropertySupport.Name(this);
         addProperty(ps);
 
         addProperty(UNIQUE, UNIQUEDESC, Boolean.class, index.isUnique(), false);
@@ -172,6 +174,7 @@ public class IndexNode extends BaseNode {
             SystemAction.get(RefreshAction.class).performAction(new Node[] { refreshNode } );
             
         } catch (DDLException e) {
+            Logger.getLogger(IndexNode.class.getName()).log(Level.INFO, e + " while deleting index " + getName());
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
             Exceptions.printStackTrace(e);

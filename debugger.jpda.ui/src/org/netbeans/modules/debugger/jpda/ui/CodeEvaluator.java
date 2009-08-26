@@ -178,7 +178,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             public void actionPerformed(ActionEvent e) {
                 if ("pressed".equals(e.getActionCommand())) {
                     JComponent jc = (JComponent) e.getSource();
-                    Point p = new Point(jc.getWidth(), jc.getHeight());
+                    Point p = new Point(0, 0);
                     SwingUtilities.convertPointToScreen(p, jc);
                     if (!ButtonPopupSwitcher.isShown()) {
                         SwitcherTableItem[] items = createSwitcherItems();

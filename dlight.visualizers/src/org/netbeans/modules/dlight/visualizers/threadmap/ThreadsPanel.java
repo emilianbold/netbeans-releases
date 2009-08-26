@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -46,6 +47,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -79,7 +82,6 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -105,7 +107,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -138,7 +139,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String TIMELINE_COLUMN_NAME = messages.getString("ThreadsPanel_TimelineColumnName"); // NOI18N
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
-    //private static final String THREAD_DETAILS_ITEM = messages.getString("ThreadsPanel_ThreadDetailsItem"); // NOI18N
+    private static final String SHOW_LEGEND = messages.getString("ThreadsPanel_ShowLegend"); // NOI18N
+    private static final String CLOSE_LEGEND_TOOLTIP = messages.getString("ThreadsPanel_CloseLegendToolTip"); // NOI18N
     private static final String TABLE_ACCESS_NAME = messages.getString("ThreadsPanel_TableAccessName"); // NOI18N
     private static final String TABLE_ACCESS_DESCR = messages.getString("ThreadsPanel_TableAccessDescr"); // NOI18N
     private static final String COMBO_ACCESS_NAME = messages.getString("ThreadsPanel_ComboAccessName"); // NOI18N
@@ -152,10 +154,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String ENABLE_THREADS_MONITORING_BUTTON_ACCESS_NAME = messages.getString("ThreadsPanel_EnableThreadsMonitoringAccessName"); // NOI18N
     private static final String SHOW_LABEL_TEXT = messages.getString("ThreadsPanel_ShowLabelText"); // NOI18N
     private static final String VIEW_MODE_LABEL_TEXT = messages.getString("ThreadsPanel_ViewModeLabelText"); // NOI18N
-    private static final String MODE_MSA_TEXT = messages.getString("ThreadsPanel_ModeMSACheckboxText"); // NOI18N
-    private static final String MODE_MSA_TOOLTIP = messages.getString("ThreadsPanel_ModeMSACheckboxTooltip"); // NOI18N
-    private static final String FULL_MSA_TEXT = messages.getString("ThreadsPanel_FullMSACheckboxText"); // NOI18N
-    private static final String FULL_MSA_TOOLTIP = messages.getString("ThreadsPanel_FullMSACheckboxTooltip"); // NOI18N
     // -----
     private static final int NAME_COLUMN_INDEX = 0;
     private static final int DISPLAY_COLUMN_INDEX = 1;
@@ -183,10 +181,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JLabel enableThreadsMonitoringLabel2;
     private JLabel enableThreadsMonitoringLabel3;
     private JPanel legendPanel;
-    private JCheckBox modeMSA;
-    private JCheckBox fullMSA;
     private JMenuItem showOnlySelectedThreads;
-    private JMenuItem showThreadsDetails;
+    private JMenuItem showLegend;
     private JPanel contentPanel; // panel with CardLayout containing threadsTable & enable threads profiling notification and button
     private JPanel notificationPanel;
     private JPopupMenu popupMenu;
@@ -210,6 +206,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private String selectedViewMode = VIEW_MODE_SIMPLE;
     private final List<String> fullMSAModeValues = Arrays.asList(VIEW_MODE_MSA_FULL, VIEW_MODE_SIMPLE_FULL_MSA);
     private final List<String> msaModeValues = Arrays.asList(VIEW_MODE_MSA, VIEW_MODE_MSA_FULL);
+    private boolean isShowLegend = true;
 
     /**
      * Creates a new threads panel that displays threads timeline from data provided
@@ -411,6 +408,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BorderLayout());
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         bottomPanel.add(legendPanel, BorderLayout.EAST);
 
 //        JPanel MSAPanel = new JPanel();
@@ -518,6 +516,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         scaleToFitButton.addActionListener(this);
         threadsSelectionCombo.addActionListener(this);
         showOnlySelectedThreads.addActionListener(this);
+        showLegend.addActionListener(this);
         viewModeSelectionCombo.addActionListener(this);
         viewModeSelectionCombo.setSelectedIndex(NbPreferences.forModule(getClass()).getInt("ViewMode", 0)); // NOI18N
 
@@ -546,6 +545,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
                     if (selectedRow != -1) {
                         Rectangle cellRect = table.getCellRect(selectedRow, 0, false);
+                        showLegend.setVisible(!isShowLegend);
                         popupMenu.show(e.getComponent(), ((cellRect.x + table.getSize().width) > 50) ? 50 : 5, cellRect.y);
                     }
                 }
@@ -575,6 +575,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
                 if (clickedLine != -1) {
                     if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
+                        showLegend.setVisible(!isShowLegend);
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     } else if ((e.getModifiers() == InputEvent.BUTTON1_MASK)){
                         if (e.getClickCount() == 1){
@@ -625,22 +626,61 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     private void initLegend(boolean isFull){
         legendPanel.removeAll();
+        if (!isShowLegend) {
+            return;
+        }
+        JPanel container;
+        JButton close = new JButton(new ImageIcon(ThreadsPanel.class.getResource("/org/netbeans/modules/dlight/visualizers/threadmap/resources/win_close_enabled.png"))) { // NOI18N
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(12,12);
+            }
+        };
+        close.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                isShowLegend = false;
+                initLegend(isFullMode());
+                refreshUI();
+                viewPort.repaint();
+            }
+        });
+        close.setToolTipText(CLOSE_LEGEND_TOOLTIP);
+        close.setContentAreaFilled(false);
+        legendPanel.setLayout(new GridBagLayout());
+        GridBagConstraints constraints;
+        constraints = new GridBagConstraints(1, 0, //int gridx, int gridy,
+                            1, 1, //int gridwidth, int gridheight,
+                            0.0, 0.0, //double weightx, double weighty,
+                            GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, //int anchor, int fill,
+                            new Insets(2,6,0,0), 0, 0); //Insets insets, int ipadx, int ipady);
+        legendPanel.add(close, constraints);
         if (!isFull) {
-            JPanel container = new JPanel();
+            container = new JPanel();
+            container.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             container.add(createLegendLabel(ThreadState.MSAState.Running, ThreadStateResources.THREAD_RUNNING));
             container.add(createLegendLabel(ThreadState.MSAState.Blocked, ThreadStateResources.THREAD_BLOCKED));
             container.add(createLegendLabel(ThreadState.MSAState.Waiting, ThreadStateResources.THREAD_WAITING));
             container.add(createLegendLabel(ThreadState.MSAState.Sleeping, ThreadStateResources.THREAD_SLEEPING));
-            legendPanel.add(container, BorderLayout.CENTER);
+            constraints = new GridBagConstraints(0, 0, //int gridx, int gridy,
+                            1, 1, //int gridwidth, int gridheight,
+                            0.0, 0.0, //double weightx, double weighty,
+                            GridBagConstraints.WEST, GridBagConstraints.NONE, //int anchor, int fill,
+                            new Insets(0,0,0,0), 0, 0); //Insets insets, int ipadx, int ipady);
+            legendPanel.add(container, constraints);
         } else {
-            JPanel container = new JPanel();
+            container = new JPanel();
             container.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateResources.THREAD_RUNNING_USER));
             container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateResources.THREAD_RUNNING_SYSTEM));
             container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateResources.THREAD_RUNNING_OTHER));
             container.add(createLegendLabel(ThreadState.MSAState.WaitingCPU, ThreadStateResources.THREAD_WAITING_CPU));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserLock, ThreadStateResources.THREAD_SLEEP_USE_LOCK));
-            legendPanel.add(container, BorderLayout.NORTH);
+            constraints = new GridBagConstraints(0, 0, //int gridx, int gridy,
+                            1, 1, //int gridwidth, int gridheight,
+                            0.0, 0.0, //double weightx, double weighty,
+                            GridBagConstraints.WEST, GridBagConstraints.NONE, //int anchor, int fill,
+                            new Insets(0,0,0,0), 0, 0); //Insets insets, int ipadx, int ipady);
+            legendPanel.add(container, constraints);
             container = new JPanel();
             container.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateResources.THREAD_THREAD_STOPPED));
@@ -648,7 +688,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserDataPageFault, ThreadStateResources.THREAD_SLEEPING_USER_DATA_PAGE_FAULT));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserTextPageFault, ThreadStateResources.THREAD_SLEEPING_USER_TEXT_PAGE_FAULT));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingKernelPageFault, ThreadStateResources.THREAD_SLEEPING_KERNEL_PAGE_FAULT));
-            legendPanel.add(container, BorderLayout.SOUTH);
+            constraints = new GridBagConstraints(0, 1, //int gridx, int gridy,
+                            1, 1, //int gridwidth, int gridheight,
+                            0.0, 0.0, //double weightx, double weighty,
+                            GridBagConstraints.WEST, GridBagConstraints.NONE, //int anchor, int fill,
+                            new Insets(0,0,0,0), 0, 0); //Insets insets, int ipadx, int ipady);
+            legendPanel.add(container, constraints);
         }
     }
 
@@ -789,8 +834,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             threadsSelectionCombo.setModel(comboModelWithSelection);
             threadsSelectionCombo.setSelectedItem(VIEW_THREADS_SELECTION);
             table.clearSelection();
-        } else if (e.getSource() == showThreadsDetails) {
-            performDefaultAction();
+        } else if (e.getSource() == showLegend) {
+            isShowLegend = true;
+            initLegend(isFullMode());
+            refreshUI();
+            viewPort.repaint();
         }else if (e.getSource() == viewModeSelectionCombo){
             selectedViewMode = viewModeSelectionCombo.getSelectedItem() + "";
             NbPreferences.forModule(getClass()).putInt("ViewMode", viewModeSelectionCombo.getSelectedIndex()); // NOI18N
@@ -966,17 +1014,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         JPopupMenu popup = new JPopupMenu();
 
         showOnlySelectedThreads = new JMenuItem(SELECTED_THREADS_ITEM);
-
-        // not supported detailed action
-        //if (detailsCallback != null) {
-        //    Font boldfont = popup.getFont().deriveFont(Font.BOLD);
-        //    showThreadsDetails = new JMenuItem(THREAD_DETAILS_ITEM);
-        //    showThreadsDetails.setFont(boldfont);
-        //    popup.add(showThreadsDetails);
-        //    popup.add(new JSeparator());
-        //}
+        showLegend = new JMenuItem(SHOW_LEGEND);
 
         popup.add(showOnlySelectedThreads);
+        popup.add(showLegend);
 
         return popup;
     }

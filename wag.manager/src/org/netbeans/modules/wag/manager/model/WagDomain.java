@@ -48,7 +48,7 @@ import org.netbeans.modules.wag.manager.zembly.ZemblySession;
  */
 public class WagDomain extends WagItems<WagApi> implements Comparable<WagDomain>  {
 
-    private static final String PROP_NAME = "wagDomain";  //NOI18N
+    private static final String PROP_NAME = "domain";  //NOI18N
 
     private String name;
     private String path;

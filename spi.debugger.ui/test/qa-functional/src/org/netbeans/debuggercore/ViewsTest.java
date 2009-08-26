@@ -60,8 +60,28 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 
-public class ViewsTest extends JellyTestCase {
-    
+public class ViewsTest extends DebuggerTestCase {
+
+    private static String[] tests16 = new String[]{
+        "testViewsDefaultOpen",
+        "testViewsCallStack",
+        "testViewsHeapWalker1",
+        "testViewsThreads",
+        "testViewsSessions",
+        "testViewsSources",
+        "testViewsClose"
+    };
+
+    private static String[] tests15 = new String[]{
+        "testViewsDefaultOpen",
+        "testViewsCallStack",
+        "testViewsClasses",
+        "testViewsThreads",
+        "testViewsSessions",
+        "testViewsSources",
+        "testViewsClose"
+    };
+
     public ViewsTest(String name) {
         super(name);
     }
@@ -72,50 +92,21 @@ public class ViewsTest extends JellyTestCase {
     
     public static Test suite() {
         String vers = System.getProperty("java.version");
-        if (vers.startsWith("1.6")) {
-            return NbModuleSuite.create(
-               NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
-                    "testViewsDefaultOpen",
-                    "testViewsCallStack",
-                    "testViewsHeapWalker1",
-                    "testViewsThreads",
-                    "testViewsSessions",
-                    "testViewsSources",
-                    "testViewsClose")
-                .enableModules(".*")
-                .clusters(".*")
-            
-            );
-        } else {
-            return NbModuleSuite.create(
-               NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
-                    "testViewsDefaultOpen",
-                    "testViewsCallStack",
-                    "testViewsClasses",
-                    "testViewsThreads",
-                    "testViewsSessions",
-                    "testViewsSources",
-                    "testViewsClose")
-                .enableModules(".*")
-                .clusters(".*")
-            
-            );
-        }
+        String[] tests;
+        if (vers.startsWith("1.6")) 
+            tests = tests16;
+        else
+            tests = tests15;
+
+        return createModuleTest(ViewsTest.class, tests);
                 
     }     
     
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
-        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");        
     }
-    
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
-    }
-    
+        
     public void testViewsDefaultOpen() throws Throwable {
         try {
             //open source

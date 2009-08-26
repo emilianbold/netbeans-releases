@@ -40,8 +40,11 @@
  */
 package org.openide.filesystems;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -77,7 +80,7 @@ class FCLSupport {
         }
     }
 
-    final void dispatchEvent(FileEvent fe, Op operation) {
+    final void dispatchEvent(FileEvent fe, Op operation, Collection<Runnable> postNotify) {
         List<FileChangeListener> fcls;
 
         synchronized (this) {
@@ -89,14 +92,14 @@ class FCLSupport {
         }
 
         for (FileChangeListener l : fcls) {
-            dispatchEvent(l, fe, operation);
+            dispatchEvent(l, fe, operation, postNotify);
         }
     }
 
-    final static void dispatchEvent(final FileChangeListener fcl, final FileEvent fe, final Op operation) {
+    final static void dispatchEvent(final FileChangeListener fcl, final FileEvent fe, final Op operation, Collection<Runnable> postNotify) {
         boolean async = fe.isAsynchronous();
         DispatchEventWrapper dw = new DispatchEventWrapper(fcl, fe, operation);
-        dw.dispatchEvent(async);
+        dw.dispatchEvent(async, postNotify);
     }
     
     /** @return true if there is a listener
@@ -114,17 +117,18 @@ class FCLSupport {
             this.fe =fe;
             this.operation =operation;
         }
-        void dispatchEvent(boolean async) {
+        void dispatchEvent(boolean async, Collection<Runnable> postNotify) {
             if (async) {
                 q.offer(this);
                 task.schedule(300);
             } else {
-                dispatchEventImpl(fcl, fe, operation);
+                dispatchEventImpl(fcl, fe, operation, postNotify);
             }
         }        
         
-        private void dispatchEventImpl(FileChangeListener fcl, FileEvent fe, Op operation) {
+        private void dispatchEventImpl(FileChangeListener fcl, FileEvent fe, Op operation, Collection<Runnable> postNotify) {
             try {
+                fe.setPostNotify(postNotify);
                 switch (operation) {
                     case DATA_CREATED:
                         fcl.fileDataCreated(fe);
@@ -149,6 +153,8 @@ class FCLSupport {
                 }
             } catch (RuntimeException x) {
                 Exceptions.printStackTrace(x);
+            } finally {
+                fe.setPostNotify(null);
             }
         }
         
@@ -158,9 +164,13 @@ class FCLSupport {
     private static RequestProcessor.Task task = RP.create(new Runnable() {
         public void run() {
             DispatchEventWrapper dw = q.poll();
+            Set<Runnable> post = new HashSet<Runnable>();
             while (dw != null) {
-                dw.dispatchEvent(false);
+                dw.dispatchEvent(false, post);
                 dw = q.poll();
+            }
+            for (Runnable r : post) {
+                r.run();
             }
         }
     });           

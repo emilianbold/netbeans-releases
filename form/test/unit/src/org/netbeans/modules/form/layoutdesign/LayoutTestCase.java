@@ -48,11 +48,11 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.*;
 import junit.framework.TestCase;
 import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormModel;
@@ -67,7 +67,7 @@ public abstract class LayoutTestCase extends TestCase {
     protected LayoutModel lm = null;
     protected LayoutDesigner ld = null;
     
-    protected URL url = getClass().getClassLoader().getResource("");
+    protected URL url;
     
     protected FileObject startingFormFile;
     protected File expectedLayoutFile;
@@ -84,12 +84,20 @@ public abstract class LayoutTestCase extends TestCase {
     
     protected LayoutComponent lc = null;
     
-    protected String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
+    protected String goldenFilesPath = "../../../test/unit/data/goldenfiles/";
 
     protected String className;
     
     public LayoutTestCase(String name) {
         super(name);
+        String resName = LayoutTestCase.class.getName().replace('.', '/') + ".class";
+        URL url = getClass().getClassLoader().getResource(resName);
+        String urlStr = url.toExternalForm();
+        try {
+            this.url = new URL(urlStr.substring(0, urlStr.indexOf(resName)));
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+        }
     }
     
     

@@ -45,15 +45,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.openide.util.Exceptions;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -268,8 +265,6 @@ public class EditorWindowOperator {
     public static void selectDocument(String name) {
         btDown().push();
 
-
-        JComponentOperator jComp = new JComponentOperator(MainWindowOperator.getDefault());
 
         JListOperator listOper = new JListOperator(MainWindowOperator.getDefault());
 

@@ -76,6 +76,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.javacard.api.ProjectKind;
+import org.netbeans.modules.javacard.project.deps.ui.DependenciesNode;
 import org.netbeans.modules.javacard.project.libraries.LibrariesManager;
 import org.netbeans.modules.javacard.project.libraries.LibrariesManager.ErrFile;
 import org.netbeans.modules.javacard.project.ui.JarOrDirectoryFilter;
@@ -169,7 +170,8 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
             } else if (key instanceof ImportantFilesKey) {
                 return new ImportantFilesNode(project);
             } else if (key instanceof LibrariesKey) {
-                return new LibrariesNode(project);
+//                return new LibrariesNode(project);
+                return new DependenciesNode(project);
             } else if (key instanceof ScriptsWebPagesKey) {
                 try {
                     return new ScriptsNode(project.getProjectDirectory().getFileObject(
@@ -364,114 +366,6 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
                 }
                 return true;
             }
-        }
-    }
-
-    private static class LibrariesNode extends AbstractNode {
-
-        LibrariesNode(JCProject project) {
-            super(Children.create(new LibrariesChildFactory(project), true), Lookups.singleton(project));
-            setDisplayName(NbBundle.getMessage(LibrariesNode.class, "LIBRARIES")); //NOI18N
-        }
-
-        @Override
-        public Image getIcon(int type) {
-            Icon icon = UIManager.getIcon("Tree.closedIcon"); //NOI18N
-            Image img = icon == null ? super.getIcon(type) : ImageUtilities.icon2Image(icon);
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/javacard/resources/libraries-badge.png"); //NOI18N
-            Image result = ImageUtilities.mergeImages(img, badge, 8, 8);
-            return result;
-        }
-
-        @Override
-        public Image getOpenedIcon(int type) {
-            Icon icon = UIManager.getIcon("Tree.openIcon"); //NOI18N
-            Image img = icon == null ? super.getOpenedIcon(type) : ImageUtilities.icon2Image(icon);
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/javacard/resources/libraries-badge.png"); //NOI18N
-            Image result = ImageUtilities.mergeImages(img, badge, 8, 8);
-            return result;
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            return new Action[]{new AddProjectAction(), new AddJARAction()};
-        }
-    }
-
-    public static class AddJARAction extends Single<JCProject> {
-
-        AddJARAction() {
-            super(JCProject.class, NbBundle.getMessage(AddJARAction.class, "ACTION_ADD_JAR"), null);
-        }
-
-        @Override
-        protected void actionPerformed(final JCProject target) {
-            File[] files;
-            if ((files = new FileChooserBuilder(LibrariesNode.class).setFileFilter(new JarOrDirectoryFilter()).setTitle(getValue(NAME).toString()).showMultiOpenDialog()) != null) {
-                if (files.length > 0) {
-                    target.getLookup().lookup(LibrariesManager.class).addToProjectClasspath(files);
-                }
-            }
-        }
-    }
-
-    public static final class AddProjectAction extends Single<JCProject> {
-
-        AddProjectAction() {
-            super(JCProject.class, NbBundle.getMessage(AddJARAction.class, "ACTION_ADD_PROJECT"), null);
-        }
-
-        @Override
-        protected void actionPerformed(JCProject target) {
-            JFileChooser chooser = ProjectChooser.projectChooser();
-            if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(WindowManager.getDefault().getMainWindow())) {
-                File[] files = chooser.getSelectedFiles();
-                target.getLookup().lookup(LibrariesManager.class).addProjectsToClasspath(files);
-            }
-        }
-    }
-
-    private static class LibrariesChildFactory extends ChildFactory.Detachable<File> implements ChangeListener {
-
-        private JCProject project;
-
-        LibrariesChildFactory(JCProject project) {
-            this.project = project;
-        }
-
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            SubprojectProvider prov = project.getLookup().lookup(SubprojectProvider.class);
-            prov.addChangeListener(this);
-        }
-
-        @Override
-        protected void removeNotify() {
-            SubprojectProvider prov = project.getLookup().lookup(SubprojectProvider.class);
-            prov.removeChangeListener(this);
-            super.removeNotify();
-        }
-
-        @Override
-        protected boolean createKeys(List<File> l) {
-            l.addAll(project.getLookup().lookup(LibrariesManager.class).getSubprojectArtifacts(true, true));
-            return true;
-        }
-
-        @Override
-        protected Node createNodeForKey(File key) {
-            return key instanceof ErrFile ? new ErrNode(((ErrFile) key).val, project)
-                    : new LibNode(key, project);
-        }
-
-        @Override
-        protected Node createWaitNode() {
-            return new WaitNode();
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            refresh(false);
         }
     }
 

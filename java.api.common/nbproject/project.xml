@@ -199,6 +199,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.apisupport.project</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.hudson.ant</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>

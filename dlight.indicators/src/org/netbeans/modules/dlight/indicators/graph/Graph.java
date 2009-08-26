@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.dlight.indicators.graph;
 
+import org.netbeans.modules.dlight.indicators.ValueFormatter;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.Graphics;
 import java.util.List;
 import javax.swing.JComponent;
@@ -50,16 +52,12 @@ import javax.swing.JComponent;
  */
 public class Graph extends JComponent {
 
-    public interface LabelRenderer {
-        String render(int value);
-    }
-
     private final GraphPainter graph;
     private int upperLimit;
     private Axis hAxis;
     private Axis vAxis;
 
-    public Graph(int scale, LabelRenderer renderer, List<GraphDescriptor> descriptors) {
+    public Graph(int scale, ValueFormatter renderer, List<TimeSeriesDescriptor> descriptors) {
         upperLimit = scale;
         graph = new GraphPainter(renderer, descriptors);
         setOpaque(true);

@@ -255,7 +255,7 @@ made subject to such option by the copyright holder.
     </target>
 
     
-    <target name="chmod-executables" depends="-init-executables" if="has.executables">
+    <target name="chmod-executables" depends="-init-executables">
         <chmod perm="a+x" dir="${cluster}">
             <fileset refid="module.executable.files"/>
         </chmod>

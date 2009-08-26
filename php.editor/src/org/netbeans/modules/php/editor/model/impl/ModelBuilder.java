@@ -71,12 +71,12 @@ class ModelBuilder {
     private NamespaceScopeImpl defaultNamespaceScope;
     private Stack<ScopeImpl> currentScope;
     private Program program;
-    private final Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
+    private final Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
 
     ModelBuilder(FileScopeImpl fileScope) {
         this.fileScope = fileScope;
         this.currentScope = new Stack<ScopeImpl>();
-        this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();
+        this.vars = new HashMap<VariableNameFactory, Map<String, VariableNameImpl>>();
         setCurrentScope(fileScope);
         setCurrentScope(namespaceScope = defaultNamespaceScope = new NamespaceScopeImpl(fileScope));
     }
@@ -182,7 +182,7 @@ class ModelBuilder {
     /**
      * @return the vars
      */
-    Map<VariableContainerImpl, Map<String, VariableNameImpl>> getVars() {
+    Map<VariableNameFactory, Map<String, VariableNameImpl>> getVars() {
         return vars;
     }
 }
