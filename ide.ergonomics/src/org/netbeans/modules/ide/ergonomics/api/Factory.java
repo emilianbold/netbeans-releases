@@ -40,7 +40,7 @@
 package org.netbeans.modules.ide.ergonomics.api;
 
 import java.io.IOException;
-import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemanWizardIterator;
+import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemandWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -59,6 +59,6 @@ public final class Factory {
      * @throws java.io.IOException 
      */
     public static WizardDescriptor.InstantiatingIterator newProject (FileObject fo) throws IOException {
-        return FeatureOnDemanWizardIterator.newProject(fo);
+        return FeatureOnDemandWizardIterator.newProject(fo);
     }
 }
