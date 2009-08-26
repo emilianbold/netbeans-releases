@@ -125,7 +125,7 @@ public class TestDriveDlg extends JPanel implements ActionListener {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_test_websvcdb");
+        return null;
     }
 
     /** This method is called from within the constructor to
@@ -149,7 +149,7 @@ public class TestDriveDlg extends JPanel implements ActionListener {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "jLabel2");
 
         setToolTipText("null");
-        setPreferredSize(new java.awt.Dimension(600, 800));
+        setPreferredSize(new java.awt.Dimension(700, 800));
 
         org.openide.awt.Mnemonics.setLocalizedText(paramLabel, org.openide.util.NbBundle.getMessage(TestDriveDlg.class, "LBL_Parameters")); // NOI18N
 
@@ -186,12 +186,12 @@ public class TestDriveDlg extends JPanel implements ActionListener {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, paramLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, paramLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
                     .add(testButton)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, resultLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, resultLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -208,7 +208,7 @@ public class TestDriveDlg extends JPanel implements ActionListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(resultLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

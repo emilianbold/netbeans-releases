@@ -46,7 +46,9 @@ import java.util.Collection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.wag.manager.model.WagService;
+import org.netbeans.modules.xml.text.api.XMLFormatUtil;
 
 /**
  *
@@ -81,7 +83,11 @@ public class TestDriver {
                     }
                 case APPLICATION_XML:
                 case TEXT_XML:
-                    return response.getString();
+                    BaseDocument doc = new BaseDocument(true, "text/xml"); //NOI18N
+                    doc.insertString(0, response.getString(), null);
+                    XMLFormatUtil.reformat(doc, 0, doc.getLength());
+                    
+                    return doc.getText(0, doc.getLength());
                 default:
                     return response.getString();
             }
