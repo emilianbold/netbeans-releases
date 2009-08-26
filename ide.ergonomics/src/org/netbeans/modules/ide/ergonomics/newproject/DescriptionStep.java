@@ -194,7 +194,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
 
     public void readSettings (WizardDescriptor settings) {
         wd = settings;
-        Object o = settings.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
+        Object o = settings.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
         FileObject fileObject = (FileObject) o;
         info = FoDFileSystem.getInstance ().whichProvides(fileObject);
@@ -203,13 +203,13 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
 
     public void storeSettings (WizardDescriptor settings) {
         if (forEnable != null && ! forEnable.isEmpty ()) {
-            settings.putProperty (FeatureOnDemanWizardIterator.CHOSEN_ELEMENTS_FOR_ENABLE, forEnable);
+            settings.putProperty (FeatureOnDemandWizardIterator.CHOSEN_ELEMENTS_FOR_ENABLE, forEnable);
             fireChange ();
         }
     }
 
     private void waitForDelegateWizard () {
-        Object o = wd.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
+        Object o = wd.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject :
             o + " is not null and instanceof FileObject";
         String templateResource = ((FileObject) o).getPath ();
@@ -240,7 +240,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 fo = FileUtil.getConfigFile(templateResource);
                 iterator = readWizard(fo);
             }
-            if (iterator instanceof FeatureOnDemanWizardIterator) {
+            if (iterator instanceof FeatureOnDemandWizardIterator) {
                 Logger LOG = Logger.getLogger(DescriptionStep.class.getName());
                 LOG.warning(
                     "There is still wrong interator " + // NOI18N
@@ -279,7 +279,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             }
         }
         iterator.initialize (wd);
-        wd.putProperty (FeatureOnDemanWizardIterator.DELEGATE_ITERATOR, iterator);
+        wd.putProperty (FeatureOnDemandWizardIterator.DELEGATE_ITERATOR, iterator);
         fireChange ();
     }
     
@@ -289,7 +289,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         }
 
         Object o = fo.getAttribute ("instantiatingIterator");
-        if (o == null || (o instanceof FeatureOnDemanWizardIterator)) {
+        if (o == null || (o instanceof FeatureOnDemandWizardIterator)) {
             Object twi = fo.getAttribute ("templateWizardIterator");
             if (twi != null) {
                 o = twi;
