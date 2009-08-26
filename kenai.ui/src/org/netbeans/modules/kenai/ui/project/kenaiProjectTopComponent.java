@@ -61,6 +61,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Top component which displays something.
+ * @author Petr Dvorak (Petr.Dvorak@sun.com)
  */
 @ConvertAsProperties(
     dtd="-//org.netbeans.modules.kenai.ui.project//kenaiProject//EN",
@@ -93,7 +94,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         setToolTipText(NbBundle.getMessage(kenaiProjectTopComponent.class, "HINT_kenaiProjectTopComponent")); //NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         instProj = proj;
-        addSpecificContent(proj);
+        addSpecificContent();
         Kenai.getDefault().addPropertyChangeListener(this);
     }
 
@@ -135,14 +136,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         setLayout(new java.awt.BorderLayout());
 
         containingPanel.setBackground(new java.awt.Color(255, 255, 255));
-        containingPanel.setMinimumSize(new java.awt.Dimension(820, 475));
-        containingPanel.setPreferredSize(new java.awt.Dimension(820, 489));
+        containingPanel.setMinimumSize(new java.awt.Dimension(600, 405));
 
         generalDetailsPanel.setBackground(java.awt.SystemColor.control);
         generalDetailsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         generalDetailsPanel.setMaximumSize(new java.awt.Dimension(20800, 200));
-        generalDetailsPanel.setMinimumSize(new java.awt.Dimension(800, 200));
-        generalDetailsPanel.setPreferredSize(new java.awt.Dimension(800, 200));
+        generalDetailsPanel.setMinimumSize(new java.awt.Dimension(600, 200));
+        generalDetailsPanel.setPreferredSize(new java.awt.Dimension(600, 200));
         generalDetailsPanel.setLayout(new java.awt.BorderLayout());
 
         projectDescription.setBackground(java.awt.SystemColor.control);
@@ -150,7 +150,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         projectDescription.setLayout(new java.awt.BorderLayout());
 
         webLinks.setOpaque(false);
-        webLinks.setPreferredSize(new java.awt.Dimension(496, 70));
+        webLinks.setPreferredSize(new java.awt.Dimension(10, 70));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.jLabel1.text")); // NOI18N
 
@@ -179,7 +179,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     .add(wwwLabel)
                     .add(wikiLabel)
                     .add(downloadsLabel))
-                .addContainerGap(418, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -200,7 +200,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel3)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {downloadsLabel, jLabel1, jLabel2, jLabel3, wikiLabel, wwwLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -208,9 +208,10 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         projectDescription.add(webLinks, java.awt.BorderLayout.PAGE_END);
 
         jPanel1.setOpaque(false);
+        jPanel1.setPreferredSize(new java.awt.Dimension(25, 126));
 
         projectsDetailsHeader.setBackground(java.awt.SystemColor.control);
-        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18));
         org.openide.awt.Mnemonics.setLocalizedText(projectsDetailsHeader, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsHeader.text")); // NOI18N
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -234,8 +235,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(projectsDetailsHeader)
-                .addContainerGap(588, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                .addContainerGap(453, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -243,7 +244,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(projectsDetailsHeader)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE))
         );
 
         projectDescription.add(jPanel1, java.awt.BorderLayout.CENTER);
@@ -292,8 +293,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             .add(org.jdesktop.layout.GroupLayout.TRAILING, containingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 804, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 804, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE))
                 .addContainerGap())
         );
         containingPanelLayout.setVerticalGroup(
@@ -302,7 +303,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -411,8 +412,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                             projectImage.setIcon(ico);
                         }
                     });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) { // image load failed - use default image instead
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            projectImage.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/default.jpg", false)); //NOI18N
+                        }
+                    });
                 }
             }
         });
@@ -472,8 +478,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         }
     }
 
-    private void addSpecificContent(KenaiProject proj) {
-        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_COMMUNICATE"), new ForumsAndMailingListsPanel(proj)); //NOI18N
+    private void addSpecificContent() {
+        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_COMMUNICATE"), new ForumsAndMailingListsPanel()); //NOI18N
+        dynamicContentPane.add("Develop", new SourcesInformationPanel()); //NOI18N
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -481,5 +488,4 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             reinitialize(instProj, true);
         }
     }
-
 }
