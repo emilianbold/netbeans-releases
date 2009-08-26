@@ -118,6 +118,9 @@ public class AstUtilities {
      */
     private static final boolean INCLUDE_DEFS_PREFIX = false;
 
+    private static final String[] ATTR_ACCESSORS = {"attr", "attr_reader", "attr_accessor", "attr_writer",
+        "attr_internal", "attr_internal_accessor", "attr_internal_reader", "attr_internal_writer"};
+
     /**
      * Tries to cast the given <code>result</code> to <code>RubyParseResult</code> 
      * and returns it. Returns <code>null</code> if it wasn't an instance of <code>RubyParseResult</code>.
@@ -1475,30 +1478,33 @@ public class AstUtilities {
     }
 
     public static boolean isAttr(Node node) {
-        if (!(node instanceof FCallNode || node instanceof VCallNode)) {
+        if (!isCallNode(node)) {
             return false;
         }
 
+        return isNodeNameIn(node, ATTR_ACCESSORS);
+    }
+
+    public static boolean isActiveRecordAssociation(Node node) {
+        if (!isCallNode(node)) {
+            return false;
+        }
+        return isNodeNameIn(node, ActiveRecordAssociationFinder.AR_ASSOCIATIONS);
+    }
+
+    private static boolean isNodeNameIn(Node node, String... names) {
         String name = getName(node);
-
-        if (name.startsWith("attr")) { // NOI18N
-
-            if ("attr".equals(name) || "attr_reader".equals(name) || // NOI18N
-                    "attr_accessor".equals(name) || "attr_writer".equals(name) || // NOI18N
-                  // Rails: Special definitions which builds methods that have actual fields
-                  // backing the attribute. Important to include these since they're
-                  // used for key Rails members like headers, session, etc.
-                    "attr_internal".equals(name) || "attr_internal_reader".equals(name) ||
-                    "attr_internal_writer".equals(name) || // NOI18N
-                    "attr_internal_accessor".equals(name)) { // NOI18N
-
+        for (String each : names) {
+            if (each.equals(name)) {
                 return true;
             }
         }
-
         return false;
     }
 
+    private static boolean isCallNode(Node node) {
+        return node instanceof FCallNode || node instanceof VCallNode;
+    }
     public static SymbolNode[] getAttrSymbols(Node node) {
         assert isAttr(node);
 
