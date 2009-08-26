@@ -66,7 +66,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
-import org.netbeans.modules.java.source.usages.Pair;
 
 /**
  *

@@ -327,19 +327,23 @@ public class LuceneIndex implements IndexImpl {
 
     // called under LuceneIndexManager.writeAccess
     private void _clear() throws IOException {
-        _close();
+        _closeReader();
         try {
-            final String[] content = this.directory.list();
             boolean dirty = false;
-            for (String file : content) {
-                try {
-                    directory.deleteFile(file);
-                } catch (IOException e) {
-                    //Some temporary files
-                    if (directory.fileExists(file)) {
-                        dirty = true;
+            try {
+                final String[] content = this.directory.list();                
+                for (String file : content) {
+                    try {
+                        directory.deleteFile(file);
+                    } catch (IOException e) {
+                        //Some temporary files
+                        if (directory.fileExists(file)) {
+                            dirty = true;
+                        }
                     }
                 }
+            } finally {
+                _closeDirectory();
             }
             if (dirty) {
                 //Try to delete dirty files and log what's wrong
@@ -378,15 +382,27 @@ public class LuceneIndex implements IndexImpl {
     // called under LuceneIndexManager.writeAccess
     private void _close() throws IOException {
         try {
-            if (reader != null) {
-                reader.close();
-                reader = null;
-            }
+            _closeReader();
         } finally {
-           directory.close();
-           closed = true;
+           _closeDirectory();
         }
     }
+
+    // called under LuceneIndexManager.writeAccess
+    private void _closeReader() throws IOException {
+        if (reader != null) {
+            reader.close();
+            reader = null;
+        }
+    }
+
+    // called under LuceneIndexManager.writeAccess
+    private void _closeDirectory() throws IOException {
+        directory.close();
+        closed = true;
+    }
+
+
 
     // called under LuceneIndexManager.readAccess
     private static List<IndexDocumentImpl> _query(
