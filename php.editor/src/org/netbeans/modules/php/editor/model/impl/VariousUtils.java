@@ -380,8 +380,13 @@ public class VariousUtils {
             NamespaceIndexFilter filter = new NamespaceIndexFilter(semiTypeName);
             QualifiedName qn = QualifiedName.create(semiTypeName);
             final QualifiedNameKind kind = qn.getKind();
-            final String query = kind.isUnqualified() ? semiTypeName : filter.getName();
+            String query = kind.isUnqualified() ? semiTypeName : filter.getName();
             List<? extends TypeScope> retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, topScope));
+            if (retval.isEmpty() && varScope instanceof  MethodScope) {
+                query = translateSpecialClassName(varScope, query);
+                retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, topScope));
+            }
+
             if (!kind.isUnqualified()) {
                 retval = filter.filterModelElements(retval, true);
             }
@@ -712,7 +717,7 @@ public class VariousUtils {
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token)) {
-                            metaAll.insert(0, buildStaticClassName(varScope, token.text().toString()));
+                            metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
                             state = State.CLASSNAME;
                         }
@@ -815,22 +820,21 @@ public class VariousUtils {
         return true;
     }
 
-    private static String buildStaticClassName(Scope scp, String staticClzName) {
+    private static String translateSpecialClassName(Scope scp, String clsName) {
         if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
             ClassScope csi = (ClassScope) msi.getInScope();
-            if ("self".equals(staticClzName)) {
-                staticClzName = csi.getName();
-            } else if ("parent".equals(staticClzName)) {
+            if ("self".equals(clsName) || "this".equals(clsName)) {//NOI18N
+                clsName = csi.getName();
+            } else if ("parent".equals(clsName)) {
                 ClassScope clzScope = ModelUtils.getFirst(csi.getSuperClasses());
                 if (clzScope != null) {
-                    staticClzName = clzScope.getName();
+                    clsName = clzScope.getName();
                 }
             }
         }
-        return staticClzName;
+        return clsName;
     }
-
 
     private static boolean moveToOffset(TokenSequence<PHPTokenId> tokenSequence, final int offset) {
         return tokenSequence == null || tokenSequence.move(offset) < 0;
