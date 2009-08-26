@@ -46,7 +46,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ide.ergonomics.newproject.DescriptionStep;
-import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemanWizardIterator;
+import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemandWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -72,7 +72,7 @@ public class WizardDeadTest extends NbTestCase {
     public void testDescriptionStep() throws InterruptedException, InvocationTargetException, IOException {
         final WizardDescriptor wd = new WizardDescriptor(new Panel[0]);
         FileObject fob = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
-        wd.putProperty(FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE, fob);
+        wd.putProperty(FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE, fob);
 
         DescriptionStep step = new DescriptionStep(true);
         step.readSettings(wd);

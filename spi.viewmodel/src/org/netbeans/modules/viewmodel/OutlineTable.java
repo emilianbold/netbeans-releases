@@ -779,18 +779,18 @@ ExplorerManager.Provider, PropertyChangeListener {
     
     @Override
     public void addNotify () {
-        super.addNotify ();
         TopComponent.getRegistry ().addPropertyChangeListener (this);
         ExplorerUtils.activateActions(getExplorerManager (), true);
         getExplorerManager ().addPropertyChangeListener (this);
+        super.addNotify ();
     }
     
     @Override
     public void removeNotify () {
+        super.removeNotify ();
         TopComponent.getRegistry ().removePropertyChangeListener (this);
         ExplorerUtils.activateActions(getExplorerManager (), false);
         getExplorerManager ().removePropertyChangeListener (this);
-        super.removeNotify ();
     }
     
     public boolean isExpanded (Object node) {
