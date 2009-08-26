@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.j2ee.ear;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
@@ -76,11 +77,17 @@ public class EarRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
         ModelHandle handle = context.lookup(ModelHandle.class);
         Project project = context.lookup(Project.class);
         final EarRunCustomizerPanel panel =  new EarRunCustomizerPanel(handle, project);
-        category.setOkButtonListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.applyChanges();
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    panel.applyChangesInAWT();
+                } else {
+                    panel.applyChanges();
+                }
             }
-        });
+        };
+        category.setOkButtonListener(listener);
+        category.setStoreListener(listener);
         return panel;
     }
     
