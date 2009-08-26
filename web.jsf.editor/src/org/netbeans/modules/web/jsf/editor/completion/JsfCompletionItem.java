@@ -194,7 +194,7 @@ public class JsfCompletionItem {
                 //there is TLD available
                 String descr = tag.getDescription();
                 if(descr == null) {
-                    NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD_ITEM_DESCR"); //NOI18N
+                    sb.append(NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD_ITEM_DESCR")); //NOI18N
                 } else {
                     sb.append(descr);
                 }

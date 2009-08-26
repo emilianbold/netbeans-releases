@@ -115,6 +115,25 @@ public class JsfIndex {
         return components;
     }
     
+    public CompositeComponentModel getCompositeComponentModel(String libraryName, String componentName) {
+        try {
+            Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT, 
+                    CompositeComponentModel.LIBRARY_NAME_KEY,
+                    CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
+                    CompositeComponentModel.HAS_IMPLEMENTATION_KEY);
+            for (IndexResult result : results) {
+                FileObject file = result.getFile(); //expensive? use result.getRelativePath?
+                String fileName = file.getName();
+                //the filename w/o extenstion is the component name
+                if(fileName.equals(componentName)) {
+                    return (CompositeComponentModel)JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).loadFromIndex(result);
+                }
 
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 
 }

@@ -103,6 +103,10 @@ public class AstNode {
         this.isEmpty = isEmpty;
     }
 
+    public String getNamespace() {
+        return (String)getRootNode().getProperty(NAMESPACE_PROPERTY);
+    }
+
     public AstNode getMatchingTag() {
         return matchingNode;
     }
