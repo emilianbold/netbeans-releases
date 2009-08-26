@@ -69,7 +69,6 @@ import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -1340,6 +1339,7 @@ public final class WebProject implements Project, AntProjectListener {
         private boolean checked = false;
         private boolean isArchive = false;
         private boolean isEE5 = false;
+        private boolean serverSupportsEJB31 = false;
 
         public String[] getRecommendedTypes() {
             checkEnvironment();
@@ -1347,7 +1347,11 @@ public final class WebProject implements Project, AntProjectListener {
                 return TYPES_ARCHIVE;
             } else if (projectCap.isEjb31LiteSupported()){
                 List<String> list = new ArrayList(Arrays.asList(TYPES));
-                list.addAll(Arrays.asList(TYPES_EJB));
+                if (projectCap.isEjb31Supported() || serverSupportsEJB31){
+                    list.addAll(Arrays.asList(TYPES_EJB));
+                } else {
+                    list.addAll(Arrays.asList(TYPES_EJB_LITE));
+                }
                 return list.toArray(new String[list.size()]);
             }else{
                 return TYPES;
@@ -1360,12 +1364,13 @@ public final class WebProject implements Project, AntProjectListener {
                 return PRIVILEGED_NAMES_ARCHIVE;
             } else {
                 List<String> list;
-                if (projectCap.isEjb31Supported()) {
+                if (projectCap.isEjb31LiteSupported()) {
                     list = getPrivilegedTemplatesEE5();
-                    list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
-                } else if (projectCap.isEjb31LiteSupported()){
-                    list = getPrivilegedTemplatesEE5();
-                    list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
+                    if (projectCap.isEjb31Supported() || serverSupportsEJB31){
+                        list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
+                    } else {
+                        list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
+                    }
                 } else if (isEE5){
                     list = getPrivilegedTemplatesEE5();
                 } else {
@@ -1385,6 +1390,7 @@ public final class WebProject implements Project, AntProjectListener {
                 projectCap = J2eeProjectCapabilities.forProject(project);
                 Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
                 isEE5 = profile == Profile.JAVA_EE_5;
+                serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL);
                 checked = true;
             }
         }
