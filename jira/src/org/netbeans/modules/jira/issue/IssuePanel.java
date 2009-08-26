@@ -1916,9 +1916,10 @@ public class IssuePanel extends javax.swing.JPanel {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
             final Resolution resolution = panel.getSelectedResolution();
+            final String comment = panel.getComment();
             submitChange(new Runnable() {
                 public void run() {
-                    issue.resolve(resolution, null);
+                    issue.resolve(resolution, comment);
                     issue.submitAndRefresh();
                 }
             }, message);
@@ -1942,9 +1943,10 @@ public class IssuePanel extends javax.swing.JPanel {
         if (newResolution != null) {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
+            final String comment = panel.getComment();
             submitChange(new Runnable() {
                 public void run() {
-                    issue.close(newResolution, null);
+                    issue.close(newResolution, comment);
                     issue.submitAndRefresh();
                 }
             }, message);
