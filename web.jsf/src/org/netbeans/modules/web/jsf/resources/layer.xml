@@ -153,6 +153,16 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>
             </file>
+            <file name="faces-config.xml" url="templates/dummy.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="position" intvalue="70"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/FacesConfig.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.FacesConfigIterator"/>
+            </file>
         </folder>
         <folder name="Persistence">
             <file name="JsfFromDB" url="templates/dummy.template">
