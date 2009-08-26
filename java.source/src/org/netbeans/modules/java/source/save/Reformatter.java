@@ -514,7 +514,7 @@ public class Reformatter implements ReformatTask {
                 if (accept(SEMICOLON) == SEMICOLON) {
                     semiRead = true;
                 } else {
-                    rollback(index, col, d);
+                    rollback(index, c, d);
                     semiRead = false;
                 }
                 blankLines(cs.getBlankLinesAfterClass());
