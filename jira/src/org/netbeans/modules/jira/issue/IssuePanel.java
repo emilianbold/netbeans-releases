@@ -1855,7 +1855,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     handle.finish();
                     if(ret) {
                         reloadFormInAWT(true);
-                        if (wasNew && (issue.getParentKey() != null)) {
+                        if (wasNew && (issue.getParentKey() != null) && (issue.getParentKey().trim().length() > 0)) {
                             Issue parent = issue.getRepository().getIssue(issue.getParentKey());
                             parent.refresh();
                         }
