@@ -58,9 +58,11 @@ import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -238,6 +240,11 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         if (configFile==null) {
+            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig()) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile"));
+                return false;
+            }
             return true;
         }
         

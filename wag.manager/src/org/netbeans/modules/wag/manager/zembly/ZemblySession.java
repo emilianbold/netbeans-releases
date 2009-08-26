@@ -46,11 +46,10 @@ import com.zembly.oauth.core.UrlConnection;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -70,6 +69,8 @@ public class ZemblySession {
     private DomainRetriever domainRetriever;
     private ContentRetriever contentRetriever;
     private UserServiceRetriever userServiceRetriever;
+    private RankingRetriever rankingRetriever;
+    private ItemInfoRetriever itemInfoRetriever;
     private ZemblyUserInfo userInfo;
 
     // For local testing
@@ -88,25 +89,32 @@ public class ZemblySession {
         return instance;
     }
 
-    public void login() {
-        // TODO:
+    public void login(String username, char[] password) {
+          // TODO:
         // 1. Check login status
         // 2. Single sign on
         // 3. Log into zembly and retrieve OAuth tokens
         // 4. Prompt user is SSO credential is invalid
         if (userInfo == null) {
             // For local testing
-            //userInfo = zemblyLogin("root@webonweb.org", "rootroot");
-            //userInfo = zemblyLogin("peter.liu@sun.com", "foobar");
-            userInfo = new ZemblyUserInfo();
-            userInfo.setUserid("914986440");
-            userInfo.setUsername("spunky");
+            userInfo = zemblyLogin(username, new String(password));
+            //userInfo = new ZemblyUserInfo();
+            //userInfo.setUserid("914986440");
+            //userInfo.setUsername("spunky");
         }
+    }
+
+    public void login() {
+      
     }
 
     public void logout() {
     }
 
+    public boolean isLoggedIn() {
+        return userInfo != null;
+    }
+   
     public ZemblyUserInfo getUserInfo() {
         return userInfo;
     }
@@ -151,7 +159,27 @@ public class ZemblySession {
 
         return userServiceRetriever;
     }
-    
+
+    public RankingRetriever getRankingRetriever() {
+        login();
+
+        if (rankingRetriever == null) {
+            rankingRetriever = new RankingRetriever(getZembly());
+        }
+
+        return rankingRetriever;
+    }
+
+    public ItemInfoRetriever getItemInfoRetriever() {
+        login();
+
+        if (itemInfoRetriever == null) {
+            itemInfoRetriever = new ItemInfoRetriever(getZembly());
+        }
+
+        return itemInfoRetriever;
+    }
+
     private ZemblyUserInfo zemblyLogin(String username, String password) {
         List<Parameter> params = new ArrayList<Parameter>();
         params.add(new Parameter("email", username));
@@ -166,8 +194,7 @@ public class ZemblySession {
 
             return parseUserInfo(result.getString());
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(ZemblySession.class.getName()).log(Level.SEVERE, null, ex);
+            Utilities.handleException(ex);
         }
 
         return null;
@@ -183,7 +210,7 @@ public class ZemblySession {
                 config.setConsumerKey(userInfo.getKey());
                 config.setConsumerSecret(userInfo.getSecret());
             } catch (Exception ex) {
-                // ignore
+                //ignore
             }
         }
 
@@ -210,7 +237,7 @@ public class ZemblySession {
             System.out.println("userInfo: " + userInfo);
             return userInfo;
         } catch (JSONException ex) {
-
+            Utilities.handleException(ex);
         }
 
         return null;

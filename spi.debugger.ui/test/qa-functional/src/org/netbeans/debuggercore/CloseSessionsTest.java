@@ -65,7 +65,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 
 
-public class CloseSessionsTest extends JellyTestCase {
+public class CloseSessionsTest extends DebuggerTestCase {
 
     public CloseSessionsTest(String name) {
         super(name);
@@ -86,26 +86,22 @@ public class CloseSessionsTest extends JellyTestCase {
     /** setUp method  */
     @Override
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");
     }
 
     @Override
     public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        if (getName().equals("testPause")) {
-            Utilities.deleteAllBreakpoints();
-        }
+        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");        
     }
 
 
 
     public void testAllSessionsClosed() throws Throwable {
         try {
-            //open source
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            //open source            
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
+            new OpenAction().perform(beanNode); // NOI18N
             EditorOperator eo = new EditorOperator("MemoryView.java");
             try {
                 eo.clickMouse(50,50,1);

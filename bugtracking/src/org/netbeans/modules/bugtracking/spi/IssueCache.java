@@ -146,6 +146,9 @@ public abstract class IssueCache<T> {
     }
 
     public void setSeen(String id, boolean seen) throws IOException {
+        if (id == null) {
+            return;
+        }
         BugtrackingManager.LOG.log(Level.FINE, "setting seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         assert !SwingUtilities.isEventDispatchThread();
         synchronized(CACHE_LOCK) {

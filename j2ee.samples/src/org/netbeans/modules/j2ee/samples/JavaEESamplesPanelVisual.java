@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.samples;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -51,6 +53,7 @@ import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -254,10 +257,10 @@ public class JavaEESamplesPanelVisual extends JPanel implements DocumentListener
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        
+
         if (!isJavaEECapableServerRegistered()){
             wizardDescriptor.putProperty(WizardProperties.WIZARD_ERROR_MSG,
-                    NbBundle.getMessage(JavaEESamplesPanelVisual.class, "ERR_MissingJavaEE5AppServer"));
+                    NbBundle.getMessage(JavaEESamplesPanelVisual.class, "ERR_MissingJavaEE6AppServer"));
             
             return false;
         }
@@ -424,11 +427,15 @@ public class JavaEESamplesPanelVisual extends JPanel implements DocumentListener
     }
 
     private boolean isJavaEECapableServerRegistered() {
-        for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()){
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            
-            if (j2eePlatform.getSupportedProfiles().contains(Profile.JAVA_EE_5)){
-                return true;
+        for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
+            try {
+                J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+
+                if (j2eePlatform.getSupportedProfiles().contains(Profile.JAVA_EE_6_WEB)){
+                    return true;
+                }
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger(JavaEESamplesPanelVisual.class.getName()).log(Level.INFO, "Cannot find registerred JavaEE 6 server", ex);
             }
         }
         

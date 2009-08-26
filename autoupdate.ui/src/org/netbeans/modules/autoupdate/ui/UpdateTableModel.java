@@ -86,7 +86,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
             return ;
         }
         super.setValueAt(anValue, row, col);
-        Unit.Update u = (Unit.Update) getUnitAtRow(row);
+        Unit u = getUnitAtRow(row);
         assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
         boolean beforeMarked = u.isMarked();
         u.setMarked(!beforeMarked);
@@ -102,7 +102,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
     public Object getValueAt(int row, int col) {
         Object res = null;
         if (isExpansionControlAtRow(row)) return "";//NOI18N
-        Unit.Update u = (Unit.Update) getUnitAtRow(row);
+        Unit u = getUnitAtRow(row);
         switch (col) {
         case 0 :
             res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;

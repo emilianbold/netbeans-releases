@@ -39,16 +39,13 @@
 package org.netbeans.modules.wag.manager.zembly;
 
 import com.zembly.gateway.client.Zembly;
-import com.zembly.oauth.api.Parameter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagService;
-import org.netbeans.modules.wag.manager.model.WagServiceParameter;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -57,21 +54,12 @@ import org.netbeans.modules.wag.manager.model.WagServiceParameter;
 public class UserServiceRetriever {
 
     private static final String GET_USER_OWNED_ITEMS_URI = "platform.user.GetUserOwnedItems"; // NOI18N
-    private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec";
     private static final String ITEM_TYPE_PARAM = "itemType";     //NOI18N
     private static final String ITEM_TYPE_VALUE = "[\"SERVICE\"]";    //NOI18N
     private static final String SHOW_DRAFTS_PARAM = "showDrafts";   //NOI18N
     private static final String SHOW_DRAFTS_VALUE = "true";        //NOI18N
     private static final String USERID_PARAM = "userid";        //NOI18N
-    private static final String NAME_ATTR = "name";     //NOI18N
-    private static final String PATH_ATTR = "path";     //NOI18N
     private static final String ITEMS_ATTR = "items";   //NOI18N
-    private static final String ITEM_URI_PARAM = "itemURI";
-    private static final String VERSION_PARAM = "version";
-    private static final String UUID_ATTR = "uuid";
-    private static final String PARAMETERS_ATTR = "parameters";
-    private static final String TYPE_ATTR = "type";
-    private static final String URL_ATTR = "url";
  
     private Zembly zembly;
 
@@ -94,7 +82,7 @@ public class UserServiceRetriever {
 
             return parseYourServices(result, username);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -102,51 +90,14 @@ public class UserServiceRetriever {
 
     private Collection<WagService> parseYourServices(String data, String username) {
         try {
-            Collection<WagService> services = new ArrayList<WagService>();
-            Collection<Parameter> params = new ArrayList<Parameter>();
-
+          
             JSONTokener parser = new JSONTokener(data);
             JSONObject obj = (JSONObject) parser.nextValue();
             JSONArray items = (JSONArray) obj.getJSONArray(ITEMS_ATTR);
 
-           for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-
-                WagService svc = new WagService();
-                services.add(svc);
-                String name = item.getString(NAME_ATTR);
-                svc.setDisplayName(name);
-                svc.setCallableName(username + "." + name);
-                String uri = item.getString(PATH_ATTR);
-                svc.setUuid(item.getString(UUID_ATTR));
-
-                params.clear();
-                params.add(Parameter.create(ITEM_URI_PARAM, uri));
-                params.add(Parameter.create(VERSION_PARAM, "latest"));
-                String result = zembly.callService(GET_ITEM_INFO_URI, params);
-                //System.out.println("result = " + result);
-                parser = new JSONTokener(result);
-
-                JSONObject info = (JSONObject) parser.nextValue();
-                svc.setUrl(info.getString(URL_ATTR));
-                JSONArray svcParams = info.getJSONArray(PARAMETERS_ATTR);
-                List<WagServiceParameter> wagParams = new ArrayList<WagServiceParameter>();
-                svc.setParameters(wagParams);
-                for (int j = 0; j < svcParams.length(); j++) {
-                    JSONObject p = svcParams.getJSONObject(j);
-                    WagServiceParameter wp = new WagServiceParameter();
-                    wp.setName(p.getString(NAME_ATTR));
-                    wp.setType(p.getString(TYPE_ATTR));
-                    wagParams.add(wp);
-                }
-
-                System.out.println("service: " + svc);
-            }
-
-
-            return services;
+            return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();

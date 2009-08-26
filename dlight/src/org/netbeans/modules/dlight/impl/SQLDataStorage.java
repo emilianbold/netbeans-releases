@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.dlight.impl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -155,18 +153,18 @@ public abstract class SQLDataStorage implements DataStorage {
     protected static final HashMap<Class, String> classToType = new HashMap<Class, String>();
     private boolean enabled = false;
     private AsyncThread asyncThread = null;
-    private final Map<String, PreparedStatement> stmts;
 
     static {
+        classToType.put(Byte.class, "tinyint"); // NOI18N
+        classToType.put(Short.class, "smallint"); // NOI18N
         classToType.put(Integer.class, "int"); //NOI18N
-        classToType.put(Double.class, "double"); //NOI18N
-        classToType.put(Float.class, "double"); //NOI18N
         classToType.put(Long.class, "bigint"); //NOI18N
+        classToType.put(Double.class, "double"); //NOI18N
+        classToType.put(Float.class, "real"); //NOI18N
         classToType.put(String.class, "varchar"); //NOI18N
     }
 
     protected SQLDataStorage() {
-        stmts = new HashMap<String, PreparedStatement>();
         insertPreparedStatments = new HashMap<String, PreparedStatement>();
     }
 
@@ -332,7 +330,7 @@ public abstract class SQLDataStorage implements DataStorage {
 
         ResultSet rs = null;
         try {
-            rs = connection.prepareCall(sqlQuery).executeQuery();
+            rs = connection.createStatement().executeQuery(sqlQuery);
         } catch (SQLException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -340,27 +338,17 @@ public abstract class SQLDataStorage implements DataStorage {
         return rs;
     }
 
-    protected final Connection getConnection() {
-        return connection;
+    public void executeUpdate(String sql) throws SQLException {
+        Statement stmt = connection.createStatement();
+        try {
+            stmt.executeUpdate(sql);
+        } finally {
+            stmt.close();
+        }
     }
 
-    public final void execute(BufferedReader reader) throws SQLException, IOException {
-        String line;
-        StringBuilder buf = new StringBuilder();
-        Statement s = connection.createStatement();
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("-- ")) { //NOI18N
-                continue;
-            }
-            buf.append(line);
-            if (line.endsWith(";")) { //NOI18N
-                String sql = buf.toString();
-                buf.setLength(0);
-                String sqlToExecute = sql.substring(0, sql.length() - 1) + getSQLQueriesDelimeter();
-                s.execute(sqlToExecute);
-            }
-        }
-        s.close();
+    protected final Connection getConnection() {
+        return connection;
     }
 
     protected final void execute(String sql) throws SQLException {
@@ -432,14 +420,11 @@ public abstract class SQLDataStorage implements DataStorage {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("SQL: prepare statement " + sql); //NOI18N
         }
-        PreparedStatement stmt = stmts.get(sql);
-        if (stmt == null) {
-            if (sql.startsWith("INSERT INTO ")) { //NOI18N
-                stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            } else {
-                stmt = connection.prepareStatement(sql);
-            }
-            stmts.put(sql, stmt);
+        PreparedStatement stmt;
+        if (sql.startsWith("INSERT INTO ")) { //NOI18N
+            stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        } else {
+            stmt = connection.prepareStatement(sql);
         }
         return stmt;
     }

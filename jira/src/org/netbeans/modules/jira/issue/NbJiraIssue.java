@@ -143,7 +143,7 @@ public class NbJiraIssue extends Issue {
     static final int FIELD_STATUS_MODIFIED = 4;
     private Map<String, String> seenAtributes;
 
-    enum IssueField {
+    public enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
         SUMMARY(JiraAttribute.SUMMARY.id(), "LBL_SUMMARY"),
         DESCRIPTION(JiraAttribute.DESCRIPTION.id(), "LBL_DESCRIPTION"),
@@ -404,7 +404,7 @@ public class NbJiraIssue extends Issue {
      * @param spentTime in seconds
      * @param comment
      */
-    void addWorkLog (Date startDate, long spentTime, String comment) {
+    public void addWorkLog (Date startDate, long spentTime, String comment) {
         if(startDate != null) {
             TaskAttribute attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
             TaskAttributeMapper mapper = taskData.getAttributeMapper();
@@ -482,18 +482,7 @@ public class NbJiraIssue extends Issue {
         }
         TaskAttribute rta = taskData.getRoot();
 
-        Map<String, TaskOperation> operations = getAvailableOperations();
-        TaskOperation operation = null;
-        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
-            String operationLabel = entry.getValue().getLabel();
-            if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": resolving issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
-            }
-            if (JiraUtils.isResolveOperation(operationLabel)) {
-                operation = entry.getValue();
-                break;
-            }
-        }
+        TaskOperation operation = getResolveOperation();
         if (operation == null) {
             throw new IllegalStateException("Resolve operation not permitted"); //NOI18N
         } else {
@@ -976,6 +965,14 @@ public class NbJiraIssue extends Issue {
         return getFieldValue(taskData, IssueField.KEY);
     }
 
+    /**
+     * Returns true if resolve currently is allowed
+     * @return
+     */
+    public boolean isResolveAllowed() {
+        return getResolveOperation() != null;
+    }
+
     // XXX fields logic - 100% bugzilla overlap
     /**
      * Returns the value represented by the given field
@@ -1083,7 +1080,23 @@ public class NbJiraIssue extends Issue {
         return sb.toString();
     }
 
-    void setFieldValue(IssueField f, String value) {
+    private TaskOperation getResolveOperation () {
+        TaskOperation operation = null;
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": resolving issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isResolveOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        return operation;
+    }
+
+    public void setFieldValue(IssueField f, String value) {
         if(f.isReadOnly()) {
             assert false : "can't set value into IssueField " + f.name();       // NOI18N
             return;
@@ -1122,7 +1135,7 @@ public class NbJiraIssue extends Issue {
         return taskData;
     }
 
-    boolean submitAndRefresh() {
+    public boolean submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         final boolean wasNew = taskData.isNew();

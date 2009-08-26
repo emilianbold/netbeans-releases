@@ -647,7 +647,7 @@ public class NbJiraIssueTest extends NbTestCase {
 
     private JiraRepository getRepository() {
         if (repository == null) {
-            repository = new JiraRepository("jira", REPO_URL, REPO_USER, REPO_PASSWD, null, null);
+            repository = new JiraRepository("jira", "jira", REPO_URL, REPO_USER, REPO_PASSWD, null, null);
         }
         return repository;
     }

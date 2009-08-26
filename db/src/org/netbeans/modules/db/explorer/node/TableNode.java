@@ -41,10 +41,13 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -57,6 +60,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
@@ -119,7 +124,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
     }
 
     private void updateProperties(Table table) {
-        PropertySupport ps = new PropertySupport.Name(TableNode.this);
+        PropertySupport.Name ps = new PropertySupport.Name(TableNode.this);
         addProperty(ps);
 
         addProperty(CATALOG, CATALOGDESC, String.class, false, getCatalogName());
@@ -153,6 +158,9 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
 
             command.setObjectOwner(schemaName);
             command.execute();
+        } catch (DDLException e) {
+            Logger.getLogger(TableNode.class.getName()).log(Level.INFO, e + " while deleting table " + getName());
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }

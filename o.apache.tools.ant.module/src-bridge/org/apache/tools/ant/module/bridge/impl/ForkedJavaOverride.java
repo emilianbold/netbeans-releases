@@ -43,7 +43,6 @@ import org.apache.tools.ant.module.run.StandardLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
 import org.apache.tools.ant.taskdefs.Java;
-import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.Redirector;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputWriter;
@@ -108,6 +107,12 @@ public class ForkedJavaOverride extends Java {
         private String outEncoding = System.getProperty("file.encoding"); // NOI18N
         private String errEncoding = System.getProperty("file.encoding"); // NOI18N
 
+        // #158492. In Ant 1.8.0 output redirection cannot be distinguished by OutputStream subclass type
+        // (LogOutputStream vs OutputStreamFunneler$Funnel) as OutputStreamFunneler$Funnel is
+        // used in both cases
+        private boolean delegateOutputStream = true;
+        private boolean delegateErrorStream = true;
+
         public NbRedirector(Task task) {
             super(task);
         }
@@ -125,6 +130,38 @@ public class ForkedJavaOverride extends Java {
         public @Override synchronized void setErrorEncoding(String errorEncoding) {
             errEncoding = errorEncoding;
             super.setErrorEncoding(errorEncoding);
+        }
+
+        @Override
+        public void setOutput(File out) {
+            if (out != null) {
+                delegateOutputStream = false;
+            }
+            super.setOutput(out);
+        }
+
+        @Override
+        public synchronized void setOutput(File[] out) {
+            if (out != null && out.length > 0) {
+                delegateOutputStream = false;
+            }
+            super.setOutput(out);
+        }
+
+        @Override
+        public void setError(File error) {
+            if (error != null) {
+                delegateErrorStream = false;
+            }
+            super.setError(error);
+        }
+
+        @Override
+        public synchronized void setError(File[] error) {
+            if (error != null && error.length > 0) {
+                delegateOutputStream = false;
+            }
+            super.setError(error);
         }
 
         private class NbOutputStreamHandler implements ExecuteStreamHandler {
@@ -154,7 +191,7 @@ public class ForkedJavaOverride extends Java {
             public void setProcessOutputStream(InputStream inputStream) throws IOException {
                 OutputStream os = getOutputStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream) {
+                if (os == null || delegateOutputStream) {
                     os = AntBridge.delegateOutputStream(false);
                     logLevel = Project.MSG_INFO;
                 }
@@ -166,7 +203,7 @@ public class ForkedJavaOverride extends Java {
             public void setProcessErrorStream(InputStream inputStream) throws IOException {
                 OutputStream os = getErrorStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream) {
+                if (os == null || delegateErrorStream) {
                     os = AntBridge.delegateOutputStream(true);
                     logLevel = Project.MSG_WARN;
                 }

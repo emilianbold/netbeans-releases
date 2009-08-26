@@ -94,6 +94,7 @@ public class AtomicActionTest extends NbTestCase {
             }
         });
         assertTrue(tcl.deleteNotification);
+        assertTrue("Notified about end of delivery", tcl.over);
         tcl.reset();
         assertNotNull(FileUtil.createData(root, "data"));        
 
@@ -116,16 +117,27 @@ public class AtomicActionTest extends NbTestCase {
             }
         });
         assertTrue(tcl.deleteNotification);
+        assertTrue("Notified about end of delivery", tcl.over);
     }
     
-    private static class TestChangeListener extends FileChangeAdapter {
+    private static class TestChangeListener extends FileChangeAdapter
+    implements Runnable {
         private boolean deleteNotification;
+        private boolean over;
         @Override
         public void fileDeleted(FileEvent fe) {
+            assertFalse("Delivery of events is not over yet", over);
             deleteNotification = true;
+            fe.runWhenDeliveryOver(this);
         }
         public void reset() {
             deleteNotification = false;
+            over = false;
+        }
+
+        public void run() {
+            assertFalse("Over not set yet", over);
+            over = true;
         }
     }    
 }

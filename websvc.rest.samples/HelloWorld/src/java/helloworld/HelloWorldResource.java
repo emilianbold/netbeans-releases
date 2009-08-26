@@ -41,13 +41,14 @@
 
 package helloworld;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.core.Context;
 
 /**
  * REST Web Service
@@ -55,12 +56,12 @@ import javax.ws.rs.core.Context;
  * @author mkuchtiak
  */
 
+@Stateless
 @Path("/helloWorld")
 public class HelloWorldResource {
-    // A Servlet-based implementation supports injection of the following Servlet-defined types:
-    // ServletConfig, ServletContext, HttpServletRequest and HttpServletResponse.
-    @Context
-    private HttpServletRequest request;
+
+    @EJB
+    private NameStorageBean nameStorage;
     /**
      * Retrieves representation of an instance of helloworld.HelloWorldResource
      * @return an instance of java.lang.String
@@ -68,25 +69,17 @@ public class HelloWorldResource {
     @GET
     @Produces("text/html")
     public String getXml() {
-        String name = (String)request.getSession(true).getAttribute("name");
-        if (name == null) {
-            name = "World!";
-        }
-        return "<html><body><h1>Hello "+name+"</body></h1></html>";
+        return "<html><body><h1>Hello "+nameStorage.getName()+"!</h1></body></html>";
     }
 
     /**
-     * PUT method for updating or creating an instance of HelloWorldResource
+     * PUT method for updating an instance of HelloWorldResource
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
     @Consumes("text/plain")
     public void putXml(String content) {
-        if (content.trim().length() == 0) {
-            request.getSession(true).invalidate();
-        } else {
-            request.getSession(true).setAttribute("name", content);
-        }
+        nameStorage.setName(content);
     }
 }

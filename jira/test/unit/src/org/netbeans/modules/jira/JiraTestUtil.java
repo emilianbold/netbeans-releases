@@ -291,7 +291,7 @@ public class JiraTestUtil {
 
     public static JiraRepository getRepository() {
         if(repository == null) {
-            repository = new JiraRepository("jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
+            repository = new JiraRepository("jira", "jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
         }
         return repository;
     }

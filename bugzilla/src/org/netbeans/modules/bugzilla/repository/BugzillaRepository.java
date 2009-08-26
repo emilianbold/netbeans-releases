@@ -98,17 +98,19 @@ public class BugzillaRepository extends Repository {
     private final Set<BugzillaQuery> queriesToRefresh = new HashSet<BugzillaQuery>(3);
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
+    private String id;
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
 
-    public BugzillaRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword) {
-        this(repoName, url, user, password, httpUser, httpPassword, false);
+    public BugzillaRepository(String id, String repoName, String url, String user, String password, String httpUser, String httpPassword) {
+        this(id, repoName, url, user, password, httpUser, httpPassword, false);
     }
 
-    public BugzillaRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
+    public BugzillaRepository(String id, String repoName, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         this();
+        this.id = id;
         name = repoName;
         if(user == null) {
             user = "";                                                          // NOI18N
@@ -117,6 +119,14 @@ public class BugzillaRepository extends Repository {
             password = "";                                                      // NOI18N
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
+    }
+
+    @Override
+    public String getID() {
+        if(id == null) {
+            id = name + System.currentTimeMillis();
+        }
+        return id;
     }
 
     public TaskRepository getTaskRepository() {
@@ -324,15 +334,15 @@ public class BugzillaRepository extends Repository {
     }
 
     public void saveQuery(BugzillaQuery query) {
-        assert name != null;
-        BugzillaConfig.getInstance().putQuery(this, query); // XXX display name ????
+        assert id != null;
+        BugzillaConfig.getInstance().putQuery(this, query); 
         getQueriesIntern().add(query);
     }
 
     private Set<Query> getQueriesIntern() {
         if(queries == null) {
             queries = new HashSet<Query>(10);
-            String[] qs = BugzillaConfig.getInstance().getQueries(name);
+            String[] qs = BugzillaConfig.getInstance().getQueries(id);
             for (String queryName : qs) {
                 BugzillaQuery q = BugzillaConfig.getInstance().getQuery(this, queryName);
                 if(q != null ) {

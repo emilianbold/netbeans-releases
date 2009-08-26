@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
  */
 public class WagUserServices extends WagItems<WagService> {
 
-    public static final String PROP_NAME = "domains";  //NOI18N
+    public static final String PROP_NAME = "userServices";  //NOI18N
 
     public String getDisplayName() {
         return NbBundle.getMessage(WagUserServices.class, "User_Services");
