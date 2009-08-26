@@ -439,6 +439,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
             // copy faces-config.xml
             File fileConfig = new File(FileUtil.toFile(webModule.getWebInf()), "faces-config.xml"); // NOI18N
+            boolean createFacesConfig = false;
             if (!fileConfig.exists()) {
                 // Fix Issue#105180, new project wizard lets me select both jsf and visual jsf.
                 // The new faces-config.xml template contains no elements;
@@ -452,11 +453,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         else
                             facesConfigTemplate = "faces-config_1_2.xml"; //NOI18N
                     }
+                    if (!profile.equals(Profile.JAVA_EE_6_FULL) && !profile.equals(Profile.JAVA_EE_6_WEB) && !isJSF20) {
+                        createFacesConfig = true;
+                    }
                 }
-                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
-                FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
-                createFile(target, content, "UTF-8"); //NOI18N
+                if (createFacesConfig) {
+                    String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
+                    FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
+                }
             }
+
             //If Facelets enabled need to add view-handler
             if (panel.isEnableFacelets()) {
                 FileObject files[] = ConfigurationUtils.getFacesConfigFiles(webModule);
