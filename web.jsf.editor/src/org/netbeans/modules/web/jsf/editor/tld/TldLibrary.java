@@ -79,6 +79,9 @@ public class TldLibrary {
         return new TldLibrary(content);
     }
 
+    protected TldLibrary() {
+    }
+
     private TldLibrary(FileObject definitionFile) throws TldLibraryException {
         this.definitionFile = definitionFile;
         parseLibrary();
@@ -226,13 +229,13 @@ public class TldLibrary {
         return nodes;
     }
 
-    public static class Tag {
+    public class Tag {
 
         private String name;
         private String description;
         private Collection<Attribute> attrs;
 
-        Tag(String name, String description, Collection<Attribute> attrs) {
+        public Tag(String name, String description, Collection<Attribute> attrs) {
             this.name = name;
             this.description = description;
             this.attrs = attrs;
@@ -263,13 +266,13 @@ public class TldLibrary {
 
     }
 
-    public static class Attribute {
+    public class Attribute {
         
         private String name;
         private String description;
         private boolean required;
 
-        Attribute(String name, String description, boolean required) {
+        public Attribute(String name, String description, boolean required) {
             this.name = name;
             this.description = description;
             this.required = required;
