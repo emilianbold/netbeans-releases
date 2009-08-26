@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
@@ -59,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
@@ -120,6 +122,15 @@ class ModelBuilder {
         setCurrentScope(classScope);
         occurencesBuilder.prepare(node,classScope);
         return classScope;
+    }
+
+    void build(PHPDocTag node,  OccurenceBuilder occurencesBuilder) {
+        MagicMethodDeclarationInfo info = MagicMethodDeclarationInfo.create(node);
+        if (info != null) {
+            MethodScopeImpl methodScope = new MethodScopeImpl(getCurrentScope(), info);
+            occurencesBuilder.prepare(info, methodScope);
+        }
+
     }
 
      MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder) {

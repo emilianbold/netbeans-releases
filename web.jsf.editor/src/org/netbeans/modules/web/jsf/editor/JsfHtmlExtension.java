@@ -49,15 +49,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -65,10 +71,12 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
+import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.filesystems.FileObject;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation.
@@ -297,7 +305,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
         FaceletsLibrary flib = libs.get(namespace);
         TldLibrary lib = flib.getAssociatedTLDLibrary();
-        
+
         if (lib != null) {
             TldLibrary.Tag tag = lib.getTags().get(tagName);
             if (tag != null) {
@@ -335,5 +343,66 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public DeclarationLocation findDeclaration(ParserResult result, int caretOffset) {
+        assert result instanceof HtmlParserResult;
+
+        HtmlParserResult htmlresult = (HtmlParserResult) result;
+        AstNode leaf = htmlresult.findLeaf(caretOffset);
+        if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
+            String namespace = leaf.getNamespace();
+            FaceletsLibrary lib = JsfSupport.findFor(result.getSnapshot().getSource()).getFaceletsLibraries().get(namespace);
+            if (lib != null) {
+                if (lib instanceof CompositeComponentLibrary) {
+                    String tagName = leaf.getNameWithoutPrefix();
+                    CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
+                    FileObject file = component.getComponentModel().getSourceFile();
+                    if (file != null) {
+                        return new DeclarationLocation(file, 0);
+                    }
+
+                } else {
+                    //TODO - normal components hyperlinking - mostly nav. to java classes
+                    }
+            }
+
+        }
+
+
+        return DeclarationLocation.NONE;
+
+    }
+
+    @Override
+    public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        List<TokenSequence> seqs = th.embeddedTokenSequences(caretOffset, false);
+        TokenSequence ts = null;
+        for (TokenSequence _ts : seqs) {
+            if (_ts.language() == HTMLTokenId.language()) {
+                ts = _ts;
+                break;
+            }
+        }
+
+        if (ts == null) {
+            return OffsetRange.NONE;
+        }
+
+        ts.move(caretOffset);
+        if (ts.moveNext() || ts.movePrevious()) {
+            Token t = ts.token();
+            if (t.id() == HTMLTokenId.TAG_OPEN) {
+                if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
+                    return new OffsetRange(ts.offset(), ts.offset() + t.length());
+                }
+            }
+        }
+
+        return OffsetRange.NONE;
+
+
     }
 }

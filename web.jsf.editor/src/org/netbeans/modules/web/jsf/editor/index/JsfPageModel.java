@@ -47,8 +47,17 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
  */
 public abstract class JsfPageModel {
 
+//    private long timestamp;
+
+    public JsfPageModel() {
+//        this.timestamp = System.currentTimeMillis();
+    }
+
     public abstract void storeToIndex(IndexDocument document);
 
-//    public abstract void loadFromIndex();
+//    /** returns the time of the model creation */
+//    public long timestamp()  {
+//        return timestamp;
+//    }
 
 }

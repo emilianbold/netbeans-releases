@@ -77,6 +77,7 @@ import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
@@ -111,6 +112,7 @@ class OccurenceBuilder {
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
     private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
     private Map<ASTNodeInfo<MethodDeclaration>, MethodScope> methodDeclarations;
+    private Map<MagicMethodDeclarationInfo, MethodScope> magicMethodDeclarations;
     private Map<ASTNodeInfo<MethodInvocation>, Scope> methodInvocations;
     private Map<ASTNodeInfo<Identifier>, ClassConstantElement> classConstantDeclarations;
     private Map<ASTNodeInfo<FunctionInvocation>, Scope> fncInvocations;
@@ -145,6 +147,7 @@ class OccurenceBuilder {
         this.fncDeclarations = new HashMap<ASTNodeInfo<FunctionDeclaration>, FunctionScope>();
         this.staticMethodInvocations = new HashMap<ASTNodeInfo<StaticMethodInvocation>, Scope>();
         this.methodDeclarations = new HashMap<ASTNodeInfo<MethodDeclaration>, MethodScope>();
+        this.magicMethodDeclarations = new HashMap<MagicMethodDeclarationInfo, MethodScope>();
         this.methodInvocations = new HashMap<ASTNodeInfo<MethodInvocation>, Scope>();
         this.fieldInvocations = new HashMap<ASTNodeInfo<FieldAccess>, Scope>();
         this.staticFieldInvocations = new HashMap<ASTNodeInfo<StaticFieldAccess>, Scope>();
@@ -337,6 +340,12 @@ class OccurenceBuilder {
             setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
+    void prepare(MagicMethodDeclarationInfo node, MethodScope scope) {
+        if (canBePrepared(node.getOriginalNode(), scope)) {
+            magicMethodDeclarations.put(node, scope);
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
+        }
+    }
 
     void prepare(ClassConstantDeclarationInfo constantNodeInfo, ClassConstantElement scope) {
         if (constantNodeInfo != null && canBePrepared(constantNodeInfo.getOriginalNode(), scope)) {
@@ -405,6 +414,14 @@ class OccurenceBuilder {
     private void buildMethodDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             ASTNodeInfo<MethodDeclaration> nodeInfo = entry.getKey();
+            if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+        }
+    }
+    private void buildMagicMethodDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        for (Entry<MagicMethodDeclarationInfo, MethodScope> entry : magicMethodDeclarations.entrySet()) {
+            MagicMethodDeclarationInfo nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
                 fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
@@ -827,6 +844,7 @@ class OccurenceBuilder {
                 case METHOD:
                     buildMethodInvocations(currentContextInfo, fileScope);
                     buildMethodDeclarations(currentContextInfo, fileScope);
+                    buildMagicMethodDeclarations(currentContextInfo, fileScope);
                     break;
                 case INCLUDE:
                     buildIncludes(currentContextInfo, fileScope);
