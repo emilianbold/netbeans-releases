@@ -42,14 +42,12 @@ import com.zembly.gateway.client.Zembly;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagApi;
 import org.netbeans.modules.wag.manager.model.WagService;
-import org.netbeans.modules.wag.manager.model.WagServiceParameter;
 import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
@@ -57,17 +55,13 @@ import org.netbeans.modules.wag.manager.util.Utilities;
  * @author peterliu
  */
 public class ContentRetriever {
-    private static final String BASE_URL = "http://zembly.com/things";      //NOI18N
     private static final String LIST_CONTENTS_URI = "platform.repository.ListContents"; //NOI18N
     private static final String ITEM_URI_PARAM = "itemURI";     //NOI18N
     private static final String APIS_ATTR = "apis";     //NOI18N
     private static final String SERVICES_ATTR = "services";     //NOI18N
     private static final String NAME_ATTR = "name";     //NOI18N
     private static final String PATH_ATTR = "path";     //NOI18N
-    private static final String PARAMETERS_ATTR = "parameters";     //NOI18N
-    private static final String TYPE_ATTR = "type";     //NOI18N
-    private static final String UUID_ATTR = "uuid";     //NOI18N
-    
+  
     private Zembly zembly;
 
     public ContentRetriever(Zembly zembly) {
@@ -77,11 +71,11 @@ public class ContentRetriever {
     private String retrieveContent(String path) {
         try {
             String result = zembly.callService(LIST_CONTENTS_URI,
-                    new String[][]{{"itemURI", path}});
+                    new String[][]{{ITEM_URI_PARAM, path}});
 
             return result;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return "";
@@ -112,7 +106,7 @@ public class ContentRetriever {
 
             return apis;
         } catch (JSONException ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -120,46 +114,13 @@ public class ContentRetriever {
 
     private Collection<WagService> parseServices(String data, String parentPath) {
         try {
-            Collection<WagService> services = new ArrayList<WagService>();
-
             JSONTokener parser = new JSONTokener(data);
             JSONObject obj = (JSONObject) parser.nextValue();
             JSONArray items = obj.getJSONArray(SERVICES_ATTR);
 
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-
-                WagService svc = new WagService();
-                services.add(svc);
-                String name = item.getString(NAME_ATTR);
-                svc.setDisplayName(name);
-                String path = parentPath + "/" + name;
-
-                // We derive the URL from the path instead of calling GetItemInfo.
-                svc.setUrl(BASE_URL + path);
-                svc.setCallableName(Utilities.convertToCallableName(path));
-
-                svc.setUuid(item.getString(UUID_ATTR));
-
-                JSONArray svcParams = item.getJSONArray(PARAMETERS_ATTR);
-                List<WagServiceParameter> wagParams = new ArrayList<WagServiceParameter>();
-                svc.setParameters(wagParams);
-
-                for (int j = 0; j < svcParams.length(); j++) {
-                    JSONObject p = svcParams.getJSONObject(j);
-                    WagServiceParameter wp = new WagServiceParameter();
-                    wp.setName(p.getString(NAME_ATTR));
-                    wp.setType(p.getString(TYPE_ATTR));
-                    wagParams.add(wp);
-                }
-
-                System.out.println("service: " + svc);
-            }
-
-            return services;
+            return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
         } catch (Exception ex) {
-             ex.printStackTrace();
-            // TODO: need to handle exception
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();

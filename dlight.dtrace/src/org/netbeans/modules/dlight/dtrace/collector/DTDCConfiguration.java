@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.dtrace.collector;
 
 import java.net.URL;
 import java.util.Arrays;
-import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;

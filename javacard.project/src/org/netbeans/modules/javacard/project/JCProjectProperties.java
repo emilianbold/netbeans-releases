@@ -49,6 +49,7 @@ import org.netbeans.modules.javacard.api.JavacardPlatform;
 import org.netbeans.modules.javacard.constants.JCConstants;
 import org.netbeans.modules.javacard.constants.PlatformTemplateWizardKeys;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.project.deps.DependenciesProvider.Receiver;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -72,6 +73,11 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import org.netbeans.modules.javacard.project.deps.ArtifactKind;
+import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
+import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
+import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
+import org.openide.util.Cancellable;
 
 /**
  *
@@ -219,6 +225,7 @@ public class JCProjectProperties {
                                         AntProjectHelper.PROJECT_PROPERTIES_PATH,
                                         props);
                             }
+                            storeDependencies();
                             return result;
                         }
                     });
@@ -227,6 +234,21 @@ public class JCProjectProperties {
             Exceptions.printStackTrace(me);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        }
+    }
+
+    private void storeDependencies() throws IOException {
+        ResolvedDependencies d;
+        synchronized (this) {
+            d = this.deps;
+        }
+        System.err.println("store dependencies: " + d);
+        if (d != null && d.isModified()) {
+            System.err.println("deps modified - saving");
+            d.save();
+            legacyStoreDependencies(d);
+        } else {
+            System.err.println("not saving dependencies");
         }
     }
 
@@ -335,6 +357,96 @@ public class JCProjectProperties {
             if (JAVAC_SOURCE_MODEL != null) {
                 JAVAC_SOURCE_MODEL.platformChanged();
             }
+        }
+    }
+
+    /**
+     * Get the dependencies for the project, resolving all libraries and
+     * projects.  Since this involves extensive I/O, reading project.xml
+     * and project.properties and looking up files and projects to match
+     * them, this method is asynchronous.  You pass in a receiver;  the I/O
+     * will be done on a background thread, and when completed, the receiver
+     * will be passed the resulting dependencies.
+     * <p/>
+     * After the first call, the dependencies are held permanently for the
+     * lifetime of this object (so they may be modified, checked for modifications
+     * and saved if necessary).  Subsequent calls will result in synchronous
+     * calls to the passed receiver, passing in the dependencies in question.
+     * <p/>
+     * Note:  As noted in the Javadoc for ResolvedDependencies, it is not
+     * a good idea to hold a reference to an instance of ResolvedDependencies
+     * unless you need to because it may be modified.  It holds references
+     * to projects, etc. which take up memory.
+     *
+     * @param r An object which will be passed the resolved dependencies
+     * once they have been fully resolved
+     * @return A Cancellable if the dependencies have not been fetched yet;
+     * otherwise it will invoke r.receive() with the previously stored
+     * dependencies and return null.
+     */
+    public Cancellable getDependencies(DependenciesProvider.Receiver r) {
+        ResolvedDependencies d = null;
+        synchronized (this) {
+            if (deps != null) {
+                d = deps;
+            }
+        }
+        if (d != null) {
+            r.receive(d);
+            return null;
+        }
+        DependenciesProvider p = project.getLookup().lookup(DependenciesProvider.class);
+        if (p != null) {
+            R receiver = new R(r);
+            return p.requestDependencies(receiver);
+        }
+        return null;
+    }
+
+    ResolvedDependencies deps;
+
+    @Deprecated
+    private void legacyStoreDependencies(ResolvedDependencies d) {
+        //XXX DELETE THIS ONCE BUILD SCRIPT IS UPDATED.  THIS IS ONLY
+        //SO THAT EXISTING BUILDS WITH DEPEDENCIES WILL WORK WITH THE NEW
+        //METADATA USING THE OLD build-impl.xsl that looks for a hardcoded
+        //class.path property
+        StringBuilder sb = new StringBuilder();
+        for (ResolvedDependency dep : d.all()) {
+            String path = dep.getPath(ArtifactKind.ORIGIN);
+            if (path != null) {
+                if (sb.length() > 0) {
+                    sb.append (File.pathSeparatorChar);
+                    sb.append (path);
+                }
+            }
+        }
+        EditableProperties p = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.put("class.path", sb.toString()); //NOI18N
+    }
+
+    private class R implements DependenciesProvider.Receiver {
+        private final Receiver r;
+
+        private R(Receiver r) {
+            this.r = r;
+        }
+        public void receive (ResolvedDependencies deps) {
+            ResolvedDependencies d = deps;
+            synchronized (JCProjectProperties.this) {
+                if (JCProjectProperties.this.deps == null) {
+                    d = JCProjectProperties.this.deps = deps;
+                } else {
+                    d = JCProjectProperties.this.deps;
+                }
+            }
+            System.err.println("Project Properties deps loaded as " + d);
+            System.err.println("Passing " + d + " to " + r);
+            r.receive(d);
+        }
+
+        public boolean failed (Throwable failure) {
+            return r.failed(failure);
         }
     }
 }

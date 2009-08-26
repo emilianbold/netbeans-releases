@@ -66,6 +66,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,6 +81,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.editor.AtomicLockEvent;
@@ -195,7 +197,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         synchronized (this) {
             beforeInitialScanStarted = state == State.CREATED || state == State.STARTED;
         }
-        return beforeInitialScanStarted || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
+
+        // #168272
+        boolean openingProjects;
+        try {
+            Future<Project []> f = OpenProjects.getDefault().openProjects();
+            openingProjects = !f.isDone() || f.get().length > 0;
+        } catch (Exception ie) {
+            openingProjects = true;
+        }
+
+        return (beforeInitialScanStarted && openingProjects) || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
     }
 
     // returns false when timed out

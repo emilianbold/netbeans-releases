@@ -347,6 +347,9 @@ public class CCKit extends NbEditorKit {
                             loop:
                             while (cppTokenSequence.movePrevious() && cppTokenSequence.offset() >= lastSepOffset) {
                                 switch (cppTokenSequence.token().id()) {
+                                    case RPAREN:
+                                    case RBRACKET:
+                                        break loop;
                                     case CLASS:
                                     case UNION:
                                     case STRUCT:

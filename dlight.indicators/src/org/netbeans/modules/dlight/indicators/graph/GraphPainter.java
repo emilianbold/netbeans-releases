@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.indicators.graph;
 
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -49,7 +50,7 @@ import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.List;
-import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
+import org.netbeans.modules.dlight.indicators.ValueFormatter;
 
 /**
  * A delegate that is responsible for painting,
@@ -68,8 +69,8 @@ class GraphPainter {
     private static final Stroke BALL_STROKE = new BasicStroke(1.0f);
     private static final Stroke LINE_STROKE = new BasicStroke(GraphConfig.LINE_WIDTH);
 
-    private final LabelRenderer renderer;
-    private final List<GraphDescriptor> descriptors;
+    private final ValueFormatter renderer;
+    private final List<TimeSeriesDescriptor> descriptors;
     private final int seriesCount;
 
     private CyclicArray<float[]> data;
@@ -77,7 +78,7 @@ class GraphPainter {
 
 //    private BufferedImage cachedImage;
 
-    public GraphPainter(LabelRenderer renderer, List<GraphDescriptor> descriptors) {
+    public GraphPainter(ValueFormatter renderer, List<TimeSeriesDescriptor> descriptors) {
         this.descriptors = descriptors;
         this.renderer = renderer;
         seriesCount = descriptors.size();
@@ -111,7 +112,7 @@ class GraphPainter {
         float relLimit = 0;
         for (int i = 0; i < data.length; ++i) {
             float value = data[i];
-            GraphDescriptor descriptor = descriptors.get(i);
+            TimeSeriesDescriptor descriptor = descriptors.get(i);
             switch (descriptor.getKind()) {
                 case ABS_SURFACE:
                 case LINE:
@@ -249,15 +250,15 @@ class GraphPainter {
                     float[] values = data.get(firstSample + i);
                     float value = values[ser];
                     int bonus = 0;
-                    if (descriptors.get(ser).getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                    if (descriptors.get(ser).getKind() == TimeSeriesDescriptor.Kind.REL_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors.get(j).getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                            if (descriptors.get(j).getKind() == TimeSeriesDescriptor.Kind.REL_SURFACE) {
                                 value += values[j];
                             }
                         }
-                    } else if (descriptors.get(ser).getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                    } else if (descriptors.get(ser).getKind() == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors.get(j).getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                            if (descriptors.get(j).getKind() == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
                                 bonus += 2;
                             }
                         }
@@ -349,7 +350,7 @@ class GraphPainter {
      * @param y  coordinate of label middle line
      */
     private void paintVLabel(Graphics g, int value, int x, int y, int alpha, FontMetrics fm) {
-        String text = renderer == null? Integer.toString(value) : renderer.render(value);
+        String text = renderer == null? Integer.toString(value) : renderer.format(value);
         int length = fm.stringWidth(text);
         g.setColor(transparent(GraphConfig.TEXT_COLOR, alpha));
         g.drawString(text, x - length, y + fm.getAscent() / 2);

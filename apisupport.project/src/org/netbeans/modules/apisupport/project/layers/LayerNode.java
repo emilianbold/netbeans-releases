@@ -59,6 +59,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -154,8 +155,8 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         }
                         // just this project's source path, whole cp is too slow
-                        ClassPathProviderImpl cppi = p.getLookup().lookup(ClassPathProviderImpl.class);
-                        ClassPath srcPath = cppi.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
+                        ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
+                        ClassPath srcPath = cpp.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
                         layerfs = handle.layer(false, srcPath);
                         setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
                         Project p = FileOwnerQuery.getOwner(handle.getLayerFile());

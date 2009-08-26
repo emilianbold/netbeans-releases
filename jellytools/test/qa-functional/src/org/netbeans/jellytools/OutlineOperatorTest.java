@@ -49,6 +49,7 @@ import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
 /**
@@ -157,17 +158,22 @@ public class OutlineOperatorTest extends JellyTestCase {
                 Bundle.getString("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view"));
 
         Thread.sleep(5000);
+
         OutlineOperator lrOVO = new OutlineOperator(tco);
 
         lrOVO.getRootNode("test").expand();
 
         lrOVO.getRootNode("test", 1).expand();
 
-        OutlineNode node = lrOVO.getRootNode("test", 2);
+        OutlineNode node = lrOVO.getRootNode("test",2);
+
+        node.expand();
 
         OutlineNode newNode = new OutlineNode(node, "test");
 
         newNode.callPopup();
+
+        Thread.sleep(5000);
 
     }
 }

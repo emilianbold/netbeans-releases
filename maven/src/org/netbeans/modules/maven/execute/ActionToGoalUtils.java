@@ -105,37 +105,30 @@ public final class ActionToGoalUtils {
         RunConfig rc = configs.getActiveConfiguration().createConfigForDefaultAction(action, project, lookup);
         
         if (rc == null) {
-            UserActionGoalProvider user = project.getLookup().lookup(UserActionGoalProvider.class);
-            rc = user.createConfigForDefaultAction(action, project, lookup);
-            if (rc == null) {
-                // for build and rebuild check the pom for default goal and run that one..
-                if (ActionProvider.COMMAND_BUILD.equals(action) ||
-                        ActionProvider.COMMAND_REBUILD.equals(action)) {
-                    Build bld = project.getOriginalMavenProject().getBuild();
-                    if (bld != null) {
-                        String goal = bld.getDefaultGoal();
-                        if (goal != null && goal.trim().length() > 0) {
-                            BeanRunConfig brc = new BeanRunConfig();
-                            brc.setExecutionDirectory(FileUtil.toFile(project.getProjectDirectory()));
-                            brc.setProject(project);
-                            StringTokenizer tok = new StringTokenizer(goal, " ", false); //NOI18N
-                            List<String> toRet = new ArrayList<String>();
-                            while (tok.hasMoreTokens()) {
-                                toRet.add(tok.nextToken());
-                            }
-                            if (ActionProvider.COMMAND_REBUILD.equals(action)) {
-                                toRet.add(0, "clean"); //NOI18N 
-                            }
-                            brc.setGoals(toRet);
-                            brc.setExecutionName(project.getName());
-                            brc.setProperties(new Properties());
-                            brc.setActivatedProfiles(Collections.<String>emptyList());
-                            rc= brc;
+            // for build and rebuild check the pom for default goal and run that one..
+            if (ActionProvider.COMMAND_BUILD.equals(action) || ActionProvider.COMMAND_REBUILD.equals(action)) {
+                Build bld = project.getOriginalMavenProject().getBuild();
+                if (bld != null) {
+                    String goal = bld.getDefaultGoal();
+                    if (goal != null && goal.trim().length() > 0) {
+                        BeanRunConfig brc = new BeanRunConfig();
+                        brc.setExecutionDirectory(FileUtil.toFile(project.getProjectDirectory()));
+                        brc.setProject(project);
+                        StringTokenizer tok = new StringTokenizer(goal, " ", false); //NOI18N
+                        List<String> toRet = new ArrayList<String>();
+                        while (tok.hasMoreTokens()) {
+                            toRet.add(tok.nextToken());
                         }
+                        if (ActionProvider.COMMAND_REBUILD.equals(action)) {
+                            toRet.add(0, "clean"); //NOI18N
+                            }
+                        brc.setGoals(toRet);
+                        brc.setExecutionName(project.getName());
+                        brc.setProperties(new Properties());
+                        brc.setActivatedProfiles(Collections.<String>emptyList());
+                        rc = brc;
                     }
                 }
-                
-
             }
         }
         if(rc==null){
@@ -163,10 +156,8 @@ public final class ActionToGoalUtils {
         if (configs.getActiveConfiguration().isActionEnable(action, project, lookup)) {
             return true;
         }
-        
-        //check UserActionGoalProvider first
-        UserActionGoalProvider user = project.getLookup().lookup(UserActionGoalProvider.class);
-        if (user.isActionEnable(action, project, lookup)) {
+        //check fallback default config as well..
+        if (configs.getDefaultConfig().isActionEnable(action, project, lookup)) {
             return true;
         }
 
@@ -192,22 +183,16 @@ public final class ActionToGoalUtils {
     public static NetbeansActionMapping getActiveMapping(String action, Project project, M2Configuration configuration) {
         NetbeansActionMapping na = null;
         if (configuration != null) {
-            // this parameter is somewhat suspicuous, not idea when it could be ever used from the customizer..
             na = configuration.getMappingForAction(action, project);
         }
         if (na == null) {
-            UserActionGoalProvider user = project.getLookup().lookup(UserActionGoalProvider.class);
-            na = user.getMappingForAction(action, project);
-            if (na == null) {
-                na = getDefaultMapping(action, project);
-            }
+            na = getDefaultMapping(action, project);
         }
         return na;
     }
 
     public static NetbeansActionMapping[] getActiveCustomMappings(NbMavenProjectImpl project) {
         M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
-        UserActionGoalProvider user = project.getLookup().lookup(UserActionGoalProvider.class);
         List<NetbeansActionMapping> toRet = new ArrayList<NetbeansActionMapping>();
         List<String> names = new ArrayList<String>();
         // first add all project specific custom actions.
@@ -215,7 +200,7 @@ public final class ActionToGoalUtils {
             toRet.add(map);
             names.add(map.getActionName());
         }
-        for (NetbeansActionMapping map : user.getCustomMappings()) {
+        for (NetbeansActionMapping map : configs.getDefaultConfig().getCustomMappings()) {
             toRet.add(map);
             names.add(map.getActionName());
         }

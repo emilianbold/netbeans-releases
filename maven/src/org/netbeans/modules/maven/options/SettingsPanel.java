@@ -585,7 +585,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         try {
             ActionToGoalMapping mappings = new NetbeansBuildActionXpp3Reader().read(new StringReader(provider.getRawMappingsAsString()));
             ActionMappings panel = new ActionMappings(mappings);
-            panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SettingsPanel.class, "ACSD_Global"));
             DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_Global"));
             Object retVal = DialogDisplayer.getDefault().notify(dd);

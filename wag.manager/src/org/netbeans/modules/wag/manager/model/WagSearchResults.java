@@ -45,7 +45,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -66,41 +65,19 @@ public class WagSearchResults extends WagItems<WagSearchResult> {
     public static final String XML_EXT = "xml"; //NOI18N
     public static final String PROP_NAME = "searchResults";
 
-    public WagSearchResults() {
-        super();
-        load();
-    }
-
     public String getDisplayName() {
         return NbBundle.getMessage(WagSearchResults.class, "Search_Node");
     }
 
-
     public String getDescription() {
         return NbBundle.getMessage(WagSearchResults.class, "Search_Node_Desc");
-    }
-    
-    public void addResults(Collection<WagSearchResult> resultsToAdd) {
-        SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(items);
-        items.addAll(resultsToAdd);
-        fireChange(old, Collections.unmodifiableSortedSet(items));
-    }
-
-    public void removeResults(Collection<WagSearchResult> resultsToRemove) {
-        SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(items);
-        items.removeAll(resultsToRemove);
-        fireChange(old, Collections.unmodifiableSortedSet(items));
-    }
-
-    @Override
-    protected void fireChange(Object old, Object neu) {
-        super.fireChange(old, neu);
-        save();
     }
 
     @Override
     public void refresh() {
-        // noop
+        State oldState = state;
+        state = State.INITIALIZED;
+        fireChange(oldState, state);
     }
 
     protected Collection<WagSearchResult> loadItems() {

@@ -963,6 +963,7 @@ public final class NbModuleProject implements Project {
     private final class LocalizedBundleInfoProvider implements LocalizedBundleInfo.Provider {
 
         private LocalizedBundleInfo bundleInfo;
+        private FileObject manifestFO;
 
         public LocalizedBundleInfo getLocalizedBundleInfo() {
             if (bundleInfo == null) {
@@ -975,11 +976,18 @@ public final class NbModuleProject implements Project {
                     bundleInfo.addPropertyChangeListener(getLookup().lookup(Info.class));
                 }
                 if (mf != null) {
-                    getManifestFile().addFileChangeListener(new FileChangeAdapter() {
+                    manifestFO = getManifestFile();
+                    manifestFO.addFileChangeListener(new FileChangeAdapter() {
                         public @Override void fileChanged(FileEvent fe) {
                             // cannot reload manifest-dependent things immediately (see 67961 for more details)
                             bundleInfo = null;
                         }
+
+                        @Override
+                        public void fileDeleted(FileEvent fe) {
+                            manifestFO = null;
+                        }
+
                     });
                 }
             }

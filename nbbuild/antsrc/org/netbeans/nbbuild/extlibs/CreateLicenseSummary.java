@@ -70,6 +70,7 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.netbeans.nbbuild.JUnitReportWriter;
@@ -292,7 +293,13 @@ public class CreateLicenseSummary extends Task {
 
     private void findBinaries(File d, Map<String,Map<String,String>> binaries2LicenseHeaders, Map<Long,Map<String,String>> crc2LicenseHeaders,
             Map<Long,String> crc2Binary, String prefix, StringBuilder testBinariesAreUnique, List<String> ignoredPatterns) throws IOException {
+        if (prefix.length() > 1000) {
+            log("#170823: possible loop in " + prefix, Project.MSG_WARN);
+        }
         String[] kids = d.list();
+        if (kids == null) {
+            throw new IOException("Could not list " + d);
+        }
         Arrays.sort(kids);
         for (String n : kids) {
             File f = new File(d, n);
