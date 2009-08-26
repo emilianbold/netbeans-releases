@@ -57,6 +57,8 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     private final TokenFactory<SQLTokenId> factory;
     private State state = State.INIT;
     private int startQuoteChar = -1;
+    /** MySQL data type (#152751). */
+    private static final String MEDIUMINT = "MEDIUMINT";  //NOI18N
 
     public SQLLexer(LexerRestartInfo<SQLTokenId> info) {
         this.info = info;
@@ -159,10 +161,19 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in a string literal.
                 case ISI_STRING:
                     switch (actChar) {
+                        case '\\': // NOI18N
+                            // escape possible single quote #152325
+                            state = State.ISA_BACK_SLASH_IN_STRING;
+                            break;
                         case '\'': // NOI18N
                             state = State.INIT;
                             return factory.createToken(SQLTokenId.STRING);
                     }
+                    break;
+
+                // If we are after a back slash (\) in string.
+                case ISA_BACK_SLASH_IN_STRING:
+                    state = State.ISI_STRING;
                     break;
 
                 // If we are currently in an identifier (e.g. a variable name),
@@ -305,6 +316,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 break;
 
             case ISI_STRING:
+            case ISA_BACK_SLASH_IN_STRING:
                 id = SQLTokenId.INCOMPLETE_STRING; // XXX or string?
                 part = PartType.START;
                 break;
@@ -363,7 +375,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     }
 
     private static SQLTokenId testKeyword(CharSequence value) {
-        if (SQLKeywords.isSQL99Keyword(value.toString())) {
+        if (SQLKeywords.isSQL99Keyword(value.toString()) || MEDIUMINT.equalsIgnoreCase(value.toString())) {
             return SQLTokenId.KEYWORD;
         } else {
             return SQLTokenId.IDENTIFIER;
@@ -385,6 +397,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         ISA_ZERO, // after '0'
         ISI_INT, // integer number
         ISI_DOUBLE, // double number
-        ISA_DOT // after '.'
+        ISA_DOT, // after '.'
+        ISA_BACK_SLASH_IN_STRING // after \ in string
     }
 }
