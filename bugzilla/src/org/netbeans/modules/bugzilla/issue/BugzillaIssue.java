@@ -67,10 +67,12 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -331,20 +333,22 @@ public class BugzillaIssue extends Issue {
         return attributes;
     }
 
-    @Override
     public void setSeen(boolean seen) throws IOException {
-        super.setSeen(seen);
+        IssueCacheUtils.setSeen(this, seen);
     }
 
-    @Override
+    private boolean wasSeen() {
+        return IssueCacheUtils.wasSeen(this);
+    }
+
     public String getRecentChanges() {
         if(wasSeen()) {
             return "";                                                          // NOI18N
         }
         int status = repository.getIssueCache().getStatus(getID());
-        if(status == Issue.ISSUE_STATUS_NEW) {
+        if(status == IssueCache.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
-        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
             for (IssueField f : IssueField.values()) {

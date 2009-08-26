@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import com.sun.org.apache.bcel.internal.generic.LOOKUPSWITCH;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
@@ -64,7 +65,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -73,8 +74,10 @@ import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -173,6 +176,10 @@ public class BugzillaRepository extends Repository {
         }
         resetRepository();
         Bugzilla.getInstance().removeRepository(this);
+    }
+
+    public Lookup getLookup() {
+        return Lookups.singleton(getIssueCache());
     }
 
     synchronized void resetRepository() {
@@ -423,6 +430,10 @@ public class BugzillaRepository extends Repository {
         }
         protected void setTaskData(Issue issue, TaskData taskData) {
             ((BugzillaIssue)issue).setTaskData(taskData); 
+        }
+        @Override
+        protected String getRecentChanges(Issue issue) {
+            return ((BugzillaIssue)issue).getRecentChanges();
         }
     }
 

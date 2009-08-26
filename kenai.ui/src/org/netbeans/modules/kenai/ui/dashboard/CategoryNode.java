@@ -37,67 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.ui.treelist.LeafNode;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 
 /**
+ * Category Node. E.g. My Projects, Open Projects
  *
- * @author Tomas Stupka
+ * @author Jan Becicka
  */
-public class KenaiConfiguration extends BugzillaConfiguration {
-    private List<String> products;
-    private BugzillaRepository repository;
+public class CategoryNode extends LeafNode {
 
-    /** one instance for all kenai repositories */
-    private static RepositoryConfiguration rc;
+    private JPanel panel;
+    private JLabel lblUser;
+    private String categoryName;
 
-    public KenaiConfiguration(BugzillaRepository repository, String product) {
-        this.repository = repository;
-        ArrayList<String> l = new ArrayList<String>();
-        l.add(product);
-        this.products = Collections.unmodifiableList(l);
+    private final Object LOCK = new Object();
+
+    public CategoryNode( DashboardImpl dashboard, String name ) {
+        super( null );
+        this.categoryName = name;
     }
 
     @Override
-    public List<String> getProducts() {
-        ensureProduct();
-        return products;
-    }
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        synchronized (LOCK) {
+            if (null == panel) {
+                panel = new JPanel(new BorderLayout());
+                panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+                panel.setOpaque(false);
 
-    @Override
-    public List<String> getComponents(String product) {
-        ensureProduct();
-        return super.getComponents(product);
-    }
-
-    @Override
-    public List<String> getVersions(String product) {
-        ensureProduct();
-        return super.getVersions(product);
-    }
-
-    private synchronized void ensureProduct() {
-        List<String> knownProducts = super.getProducts();
-        for (String product : products) {
-            if(!knownProducts.contains(product)) {
-                initialize(repository, true);
-                break;
+                lblUser = new TreeLabel(categoryName);
+                panel.add(lblUser, BorderLayout.WEST);
+                lblUser.setFont(lblUser.getFont().deriveFont(Font.BOLD));
             }
+            if (isSelected) {
+                lblUser.setForeground(ColorManager.getDefault().getDisabledColor().darker().darker());
+            } else {
+                lblUser.setForeground(ColorManager.getDefault().getDefaultBackground());
+            }
+            return panel;
         }
     }
-
-    @Override
-    protected RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) {
-        if(rc == null) {
-            rc = super.getRepositoryConfiguration(repository, forceRefresh);
-        }
-        return rc;
-    }
-
 }
