@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.ui.issue.cache;
 
 import org.netbeans.modules.bugtracking.util.*;
 import java.io.BufferedInputStream;
@@ -68,7 +68,7 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.IssueCache.IssueEntry;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueEntry;
 import org.openide.util.RequestProcessor.Task;
 
 /**
