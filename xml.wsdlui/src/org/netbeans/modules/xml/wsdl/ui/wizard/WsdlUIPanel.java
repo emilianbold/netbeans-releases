@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -62,7 +61,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
@@ -272,7 +270,6 @@ public class WsdlUIPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         schemaLB = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
@@ -354,6 +351,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
 
         DefaultComboBoxModel model = new DefaultComboBoxModel(protocols);
         bindingComboBox.setModel(model);
+        bindingComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.bindingComboBox.toolTipText")); // NOI18N
         bindingComboBox.setEnabled(false);
         bindingComboBox.setName("bindingComboBox"); // NOI18N
         model.setSelectedItem(defaultSelection);
@@ -373,8 +371,8 @@ public class WsdlUIPanel extends javax.swing.JPanel {
                     .add(bindingTypeLabel))
                 .add(62, 62, 62)
                 .add(bindingConfigurationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(bindingComboBox, 0, 503, Short.MAX_VALUE)
-                    .add(bindingTypePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)))
+                    .add(bindingComboBox, 0, 497, Short.MAX_VALUE)
+                    .add(bindingTypePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)))
         );
         bindingConfigurationPanelLayout.setVerticalGroup(
             bindingConfigurationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -389,6 +387,9 @@ public class WsdlUIPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        bindingLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.bindingLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bindingComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.bindingComboBox.AccessibleContext.accessibleName")); // NOI18N
+
         wsdlTypeLabel.setLabelFor(abstractWSDLChoice);
         org.openide.awt.Mnemonics.setLocalizedText(wsdlTypeLabel, org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.wsdlTypeLabel.text")); // NOI18N
         wsdlTypeLabel.setName("wsdlTypeLabel"); // NOI18N
@@ -396,6 +397,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         wsdlTypeGroup.add(abstractWSDLChoice);
         abstractWSDLChoice.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(abstractWSDLChoice, org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.abstractWSDLChoice.text")); // NOI18N
+        abstractWSDLChoice.setToolTipText(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.abstractWSDLChoice.toolTipText")); // NOI18N
         abstractWSDLChoice.setActionCommand(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.abstractWSDLChoice.actionCommand")); // NOI18N
         abstractWSDLChoice.setName("abstractWSDLChoice"); // NOI18N
         abstractWSDLChoice.addActionListener(new java.awt.event.ActionListener() {
@@ -406,6 +408,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
 
         wsdlTypeGroup.add(concreteWSDLChoice);
         org.openide.awt.Mnemonics.setLocalizedText(concreteWSDLChoice, org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.concreteWSDLChoice.text")); // NOI18N
+        concreteWSDLChoice.setToolTipText(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.concreteWSDLChoice.toolTipText")); // NOI18N
         concreteWSDLChoice.setActionCommand(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.concreteWSDLChoice.actionCommand")); // NOI18N
         concreteWSDLChoice.setName("concreteWSDLChoice"); // NOI18N
         concreteWSDLChoice.addActionListener(new java.awt.event.ActionListener() {
@@ -428,8 +431,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(abstractWSDLChoice)
                             .add(concreteWSDLChoice)
-                            .add(nsTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                            .add(nsTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)))
                     .add(bindingConfigurationPanel, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -455,6 +457,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         namespaceLB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "HINT_targetNamespace")); // NOI18N
         nsTF.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.nsTF.AccessibleContext.accessibleName")); // NOI18N
         nsTF.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "HINT_targetNamespace")); // NOI18N
+        wsdlTypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.wsdlTypeLabel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
