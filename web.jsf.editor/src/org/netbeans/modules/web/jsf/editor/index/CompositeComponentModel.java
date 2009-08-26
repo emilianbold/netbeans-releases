@@ -52,6 +52,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.editor.JsfConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -182,13 +183,12 @@ public class CompositeComponentModel extends JsfPageModel {
     public static class Factory extends JsfPageModelFactory {
 
         private static final String COMPOSITE_ATTRIBUTE_TAG_NAME = "attribute"; //NOI18N
-        private static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
         private static final String INTERFACE_TAG_NAME = "interface"; //NOI18N
         private static final String IMPLEMENTATION_TAG_NAME = "implementation"; //NOI18N
 
         @Override
         public JsfPageModel getModel(HtmlParserResult result) {
-            AstNode node = result.root(COMPOSITE_LIBRARY_NS); //NOI18N
+            AstNode node = result.root(JsfConstants.COMPOSITE_LIBRARY_NS); //NOI18N
             FileObject file = result.getSnapshot().getSource().getFileObject();
 
             //check whether the file lies in appropriate library folder

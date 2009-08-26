@@ -67,16 +67,23 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation.
@@ -346,10 +353,11 @@ public class JsfHtmlExtension extends HtmlExtension {
     }
 
     @Override
-    public DeclarationLocation findDeclaration(ParserResult result, int caretOffset) {
+    public DeclarationLocation findDeclaration(ParserResult result, final int caretOffset) {
         assert result instanceof HtmlParserResult;
 
         HtmlParserResult htmlresult = (HtmlParserResult) result;
+        Snapshot snapshot = result.getSnapshot();
         AstNode leaf = htmlresult.findLeaf(caretOffset);
         if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
             String namespace = leaf.getNamespace();
@@ -359,8 +367,60 @@ public class JsfHtmlExtension extends HtmlExtension {
                     String tagName = leaf.getNameWithoutPrefix();
                     CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
                     FileObject file = component.getComponentModel().getSourceFile();
+
+                    //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
+                    int astOffset = snapshot.getEmbeddedOffset(caretOffset);
+
+                    int jumpOffset = 0;
+                    TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
+                    htmlTs.move(astOffset);
+                    if(htmlTs.moveNext() || htmlTs.movePrevious()) {
+                        if(htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
+                            //jumpOffset = 0;
+                        } else if(htmlTs.token().id() == HTMLTokenId.ARGUMENT){
+                            final String attributeName = htmlTs.token().text().toString();
+                            //find the attribute in the interface
+
+                            Source source = Source.create(file);
+                            final int[] attrOffset = new int[1];
+                            try {
+                                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                                    @Override
+                                    public void run(ResultIterator resultIterator) throws Exception {
+                                        Result result = resultIterator.getParserResult(caretOffset);
+                                        if(result instanceof HtmlParserResult) {
+                                            HtmlParserResult hresult = (HtmlParserResult)result;
+                                            AstNode root = hresult.root(JsfConstants.COMPOSITE_LIBRARY_NS);
+                                            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+                                                public void visit(AstNode node) {
+                                                    if(node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
+                                                        for(AstNode child : node.children()) {
+                                                            if(child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
+                                                                String nameAttr = (String)child.getAttribute("name");
+                                                                if(nameAttr != null && nameAttr.equals(attributeName)) {
+                                                                    //we found it
+                                                                    attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            } catch (ParseException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            jumpOffset = attrOffset[0];
+
+                        }
+                    }
+
+
                     if (file != null) {
-                        return new DeclarationLocation(file, 0);
+                        return new DeclarationLocation(file, jumpOffset);
                     }
 
                 } else {
@@ -397,6 +457,19 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (t.id() == HTMLTokenId.TAG_OPEN) {
                 if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
                     return new OffsetRange(ts.offset(), ts.offset() + t.length());
+                }
+            } else if (t.id() == HTMLTokenId.ARGUMENT) {
+                int from = ts.offset();
+                int to = from + t.text().length();
+                //try to find the tag and check if there is a prefix
+                while (ts.movePrevious()) {
+                    if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                        if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
+                            return new OffsetRange(from, to);
+                        } else {
+                            break;
+                        }
+                    }
                 }
             }
         }
