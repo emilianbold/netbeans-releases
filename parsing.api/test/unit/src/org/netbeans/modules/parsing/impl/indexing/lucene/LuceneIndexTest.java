@@ -139,8 +139,15 @@ public class LuceneIndexTest extends NbTestCase {
 
         //Broken index => invalid
         clearValidityCache();
-        File[] files = indexFolder.listFiles();
-        FileOutputStream out = new FileOutputStream(files[0]);
+        File bt = null;;
+        for (File file : indexFolder.listFiles()) {
+            if (file.getName().endsWith(".cfs")) {
+                bt = file;
+                break;
+            }
+        }
+        assertNotNull(bt);
+        FileOutputStream out = new FileOutputStream(bt);
         try {
             out.write(new byte[] {0,0,0,0,0,0,0,0,0,0}, 0, 10);
         } finally {
