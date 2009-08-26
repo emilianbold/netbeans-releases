@@ -2076,7 +2076,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     String sourceName = f.getSourceName(null);
                     int ext = sourceName.lastIndexOf('.');
                     if (ext > 0) {
-                        String extension = sourceName.substring(ext);
+                        String extension = sourceName.substring(++ext);
                         extension = extension.toUpperCase();
                         if (!"JAVA".equals(extension)) {    // NOI18N
                             l = Collections.singletonList(extension);

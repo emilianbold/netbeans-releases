@@ -51,6 +51,7 @@ import java.io.OutputStreamWriter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
@@ -943,17 +944,8 @@ public class WebProjectUtilities {
 
             //change profile if required
             if (isFullRequired){
-                Set<Profile> supportedProfiles = new HashSet<Profile>();
-                UpdateHelper helper = project.getUpdateHelper();
-                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                String serverInstanceID = privateProps.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
-                try {
-                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
-                    supportedProfiles = j2eePlatform.getSupportedProfiles();
-                } catch (InstanceRemovedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                if (supportedProfiles.contains(Profile.JAVA_EE_6_FULL)){
+                if (Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL)){
+                    UpdateHelper helper = project.getUpdateHelper();
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM, Profile.JAVA_EE_6_FULL.toPropertiesString());
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);

@@ -448,6 +448,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 Arity arity = Arity.UNKNOWN;
                 DeclarationLocation location = findMethod(parserResult, root, name, arity);
 
+                // search for AR associations
+                if (location == DeclarationLocation.NONE) {
+                    location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
+                }
+
                 if (location == DeclarationLocation.NONE) {
                     location = findInstance(parserResult, root, name);
                 }

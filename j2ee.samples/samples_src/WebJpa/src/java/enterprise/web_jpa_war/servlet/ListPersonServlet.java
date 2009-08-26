@@ -33,6 +33,7 @@ package enterprise.web_jpa_war.servlet;
 import java.io.*;
 import java.util.List;
 import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import javax.persistence.PersistenceUnit;
@@ -42,6 +43,7 @@ import javax.persistence.EntityManager;
 /**
  * The servlet class to list Persons from database
  */
+@WebServlet(name="ListPersonServlet", urlPatterns={"/ListPerson"})
 public class ListPersonServlet extends HttpServlet {
     
     @PersistenceUnit

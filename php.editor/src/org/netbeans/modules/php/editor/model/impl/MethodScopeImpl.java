@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
@@ -65,6 +66,11 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     //new contructors
     MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, returnType);
+        assert inScope instanceof TypeScope;
+        classNormName = inScope.getNormalizedName();
+    }
+    MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
+        super(inScope, nodeInfo);
         assert inScope instanceof TypeScope;
         classNormName = inScope.getNormalizedName();
     }

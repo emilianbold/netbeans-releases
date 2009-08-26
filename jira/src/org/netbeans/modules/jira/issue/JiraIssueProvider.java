@@ -65,6 +65,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
@@ -495,7 +496,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         // XXX is there a simpler way to obtain an issue?
         int status = repository.getIssueCache().getStatus(issueKey);
         final NbJiraIssue[] issue = new NbJiraIssue[1];
-        if (status == Issue.ISSUE_STATUS_UNKNOWN) { // not yet cached
+        if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
                 public void run() {
                     LOG.log(Level.FINE, "getIssue: creating issue {0}", repository.getUrl() + "#" + issueKey); //NOI18N

@@ -46,13 +46,11 @@ import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.Log;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
 
@@ -61,7 +59,8 @@ import org.netbeans.swing.outline.OutlineModel;
  * e.g. in debugger views.
  *
  *
- * Warning: Do not use yet!! Incomplete, under development and most probably still buggy!
+ * Warning: Do not use yet unless really neccessary!! Incomplete,
+ * under development and most probably still buggy!
  *
  * @author Vojtech.Sigler@sun.com
  */

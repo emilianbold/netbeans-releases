@@ -172,6 +172,16 @@ public class ProjectAccessorImpl extends ProjectAccessor {
         return null;
     }
 
+    @Override
+    public Action getBookmarkAction(ProjectHandle project) {
+        return new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet. Please vote for http://kenai.com/jira/browse/KENAI-735");
+            }
+        };
+    }
+
     private static class RefreshAction extends AbstractAction {
 
         private final ProjectHandle project;
