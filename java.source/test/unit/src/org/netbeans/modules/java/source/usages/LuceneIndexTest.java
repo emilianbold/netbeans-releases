@@ -42,9 +42,14 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -61,6 +66,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
+import org.netbeans.modules.java.source.usages.Pair;
 
 /**
  *
@@ -132,8 +138,8 @@ public class LuceneIndexTest extends NbTestCase {
     
     
     private static void compareIndeces (final File file1, final File file2) throws IOException {
-        Directory dir1 = FSDirectory.getDirectory(file1,false);
-        Directory dir2 = FSDirectory.getDirectory(file2,false);
+        Directory dir1 = FSDirectory.getDirectory(file1);
+        Directory dir2 = FSDirectory.getDirectory(file2);
         IndexReader in1 = IndexReader.open(dir1);
         try {
             IndexReader in2 = IndexReader.open(dir2);
@@ -190,6 +196,80 @@ public class LuceneIndexTest extends NbTestCase {
             m1.put (key, value);
         }
         return m1;
+    }
+
+    public void testIsValid() throws Exception {
+        final File wd = getWorkDir();
+        final File cache = new File(wd,"cache");
+        final File indexFolder = new File (cache,"refs");
+        cache.mkdirs();
+        final LuceneIndex index = (LuceneIndex) LuceneIndex.create(cache);
+        //Empty index => invalid
+        assertFalse(index.isValid(true));
+
+        clearValidityCache(index);
+        Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
+        List<String> xref = new LinkedList<String>();
+        String sym = "";
+        String ident = "";
+        refs.put(Pair.<String,String>of("A", null), new Object[]{xref,sym,ident});
+        Set<Pair<String,String>> toDel = new HashSet<Pair<String,String>>();
+        index.store(refs, toDel);       
+        //Existing index => valid
+        assertTrue(index.isValid(true));
+        assertTrue(indexFolder.listFiles().length>0);
+
+        clearValidityCache(index);
+        createLock(index);
+        //Index with orphan lock => invalid
+        assertFalse(index.isValid(true));
+        assertTrue(indexFolder.listFiles().length==0);
+
+        clearValidityCache(index);
+        index.store(refs, toDel);
+        assertTrue(index.isValid(true));
+        assertTrue(indexFolder.listFiles().length>0);
+
+        //Broken index => invalid
+        clearValidityCache(index);
+        File bt = null;;
+        for (File file : indexFolder.listFiles()) {
+            if (file.getName().endsWith(".cfs")) {
+                bt = file;
+                break;
+            }
+        }
+        assertNotNull(bt);
+        FileOutputStream out = new FileOutputStream(bt);
+        try {
+            out.write(new byte[] {0,0,0,0,0,0,0,0,0,0}, 0, 10);
+        } finally {
+            out.close();
+        }
+        assertFalse(index.isValid(true));
+        assertTrue(indexFolder.listFiles().length==0);
+
+    }
+
+
+    private void createLock(final LuceneIndex index) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
+        final Class<LuceneIndex> li = LuceneIndex.class;
+        final java.lang.reflect.Field directory = li.getDeclaredField("directory");   //NOI18N
+        directory.setAccessible(true);
+        Directory dir = (Directory) directory.get(index);
+        dir.makeLock("test").obtain();   //NOI18N
+    }
+
+
+    private void clearValidityCache(final LuceneIndex index) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
+        final Class<LuceneIndex> li = LuceneIndex.class;
+        final java.lang.reflect.Field reader = li.getDeclaredField("reader");   //NOI18N
+        reader.setAccessible(true);
+        IndexReader r = (IndexReader) reader.get(index);
+        if (r != null) {
+            r.close();
+        }
+        reader.set(index,null);
     }
     
 }
