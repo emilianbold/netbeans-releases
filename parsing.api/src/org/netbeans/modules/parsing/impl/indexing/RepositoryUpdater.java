@@ -2062,6 +2062,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     findDependencies(url, depCtx, null, null);
                 }
 
+                Controller controller = (Controller)IndexingController.getDefault();
+                synchronized (controller) {
+                    controller.roots2Dependencies = Collections.unmodifiableMap(depCtx.newRoots2Deps);
+                }
+                
                 try {
                     depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
                 } catch (final TopologicalSortException tse) {
@@ -2917,6 +2922,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private final class Controller extends IndexingController {
 
+        private Map<URL, List<URL>>roots2Dependencies = Collections.emptyMap();
+
         public Controller() {
             super();
             RepositoryUpdater.this.start(false);
@@ -2938,8 +2945,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         @Override
-        public Map<URL, List<URL>> getRootDependencies() {
-            return new HashMap<URL, List<URL>>(RepositoryUpdater.this.scannedRoots2Dependencies);
+        public synchronized Map<URL, List<URL>> getRootDependencies() {
+            return roots2Dependencies;
         }
 
         @Override

@@ -135,6 +135,10 @@ public class SourceAnalyser {
     public boolean isValid () throws IOException {
         return this.index.isValid(true);
     }
+
+    public boolean isEmpty () throws IOException {
+        return !this.index.isValid(false);
+    }
     
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
         final CompileTuple tuple,
