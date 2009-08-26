@@ -37,72 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.chat;
+package org.netbeans.modules.kenai.ui.dashboard;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.ui.treelist.LeafNode;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 
 /**
+ * Category Node. E.g. My Projects, Open Projects
  *
  * @author Jan Becicka
  */
-public class GroupListItem implements ContactListItem {
+public class CategoryNode extends LeafNode {
 
-    private FakeRosterGroup group;
-    private static ImageIcon GROUP = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chatroom_online.png"));
+    private JPanel panel;
+    private JLabel lblUser;
+    private String categoryName;
 
+    private final Object LOCK = new Object();
 
-    public GroupListItem(FakeRosterGroup group) {
-        this.group = group;
+    public CategoryNode( DashboardImpl dashboard, String name ) {
+        super( null );
+        this.categoryName = name;
     }
 
     @Override
-    public String toString() {
-        try {
-            return "<html><b>"+ 
-                    Kenai.getDefault().getProject(group.getName()).getDisplayName() +
-                    "</b><i> (chat room)</i></html>";
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        synchronized (LOCK) {
+            if (null == panel) {
+                panel = new JPanel(new BorderLayout());
+                panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+                panel.setOpaque(false);
+
+                lblUser = new TreeLabel(categoryName);
+                panel.add(lblUser, BorderLayout.WEST);
+                lblUser.setFont(lblUser.getFont().deriveFont(Font.BOLD));
+            }
+            if (isSelected) {
+                lblUser.setForeground(ColorManager.getDefault().getDisabledColor().darker().darker());
+            } else {
+                lblUser.setForeground(ColorManager.getDefault().getDefaultBackground());
+            }
+            return panel;
         }
-        return null;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final GroupListItem other = (GroupListItem) obj;
-        if (this.group != other.group && (this.group == null || !this.group.equals(other.group))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + (this.group != null ? this.group.hashCode() : 0);
-        return hash;
-    }
-
-    public void openChat() {
-        ChatTopComponent.findInstance().setActiveGroup(group.getName());
-    }
-
-    public Icon getIcon() {
-        return GROUP;
-    }
-
-    public boolean hasMessages() {
-        return ChatNotifications.getDefault().getMessagingHandle(group.getName()).getNewMessageCount()>0;
     }
 }

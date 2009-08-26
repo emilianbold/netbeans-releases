@@ -91,7 +91,7 @@ public class ChatNotifications {
         if (r != null) {
             r.disposeNotification();
             r.notifyMessagesRead();
-            groupMessages.remove(name);
+            //groupMessages.remove(name);
         }
     }
 
