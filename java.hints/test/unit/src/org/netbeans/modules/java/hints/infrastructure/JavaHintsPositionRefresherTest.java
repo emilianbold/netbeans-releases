@@ -99,7 +99,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml"},
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml", "org/netbeans/modules/java/hints/resources/layer.xml"},
                 new Object[]{JavaDataLoader.class,
                 new MimeDataProvider() {
                 public Lookup getLookup(MimePath mimePath) {
@@ -187,9 +187,9 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         return ctx;
     }
 
-//    public void testOverride0() throws Exception {
-//        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "");
-//    }
+    public void testEmpty() throws Exception {
+        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "1:20-1:32:verifier:Empty statement after 'while'");
+    }
 
     public void testErrorHint0() throws Exception {
         performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");

@@ -73,7 +73,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
@@ -217,7 +216,7 @@ public class LuceneIndex implements IndexImpl {
         assert root != null;
         try {
             indexFolder = new File(root.toURI());
-            directory = FSDirectory.getDirectory(indexFolder, NoLockFactory.getNoLockFactory());
+            directory = createDirectory(indexFolder);
         } catch (URISyntaxException e) {
             IOException ioe = new IOException();
             ioe.initCause(e);
@@ -251,25 +250,36 @@ public class LuceneIndex implements IndexImpl {
             return res;
         }
         res = LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Boolean>() {
-            public Boolean run() throws IOException {
+            public Boolean run() throws IOException {                
                 boolean res = directory.list().length == 0;
                 if (!res) {
-                    try {
-                        res = IndexReader.indexExists(directory);
-                    } catch (IOException e) {
-                        //Directory does not exist, no need to call clear
-                        //pass res == false
-                    }
+                    final Collection<? extends String> locks = getOrphanLock();
+                    res = locks.isEmpty();
                     if (res) {
                         try {
-                            getReader(false);
-                        } catch (java.io.IOException e) {
-                            res = false;
-                            clear();
-                        } catch (RuntimeException e) {
-                            res = false;
-                            clear();
+                            res = IndexReader.indexExists(directory);
+                        } catch (IOException e) {
+                            //Directory does not exist, no need to call clear
+                            //pass res == false
                         }
+                        if (res) {
+                            try {
+                                getReader(false);
+                            } catch (java.io.IOException e) {
+                                res = false;
+                                clear();
+                            } catch (RuntimeException e) {
+                                res = false;
+                                clear();
+                            }
+                        }
+                    }
+                    else {
+                        LOGGER.warning("Broken (locked) index folder: " + indexFolder.getAbsolutePath());   //NOI18N
+                        for (String lockName : locks) {
+                            directory.deleteFile(lockName);
+                        }
+                        clear();
                     }
                 }
                 LuceneIndex.this.valid = res;
@@ -298,6 +308,7 @@ public class LuceneIndex implements IndexImpl {
 
     /* package */ static final int VERSION = 1;
     private static final int MAX_DOCS = 2000;
+    private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
 
     private final File indexFolder;
 
@@ -316,19 +327,23 @@ public class LuceneIndex implements IndexImpl {
 
     // called under LuceneIndexManager.writeAccess
     private void _clear() throws IOException {
-        _close();
+        _closeReader();
         try {
-            final String[] content = this.directory.list();
             boolean dirty = false;
-            for (String file : content) {
-                try {
-                    directory.deleteFile(file);
-                } catch (IOException e) {
-                    //Some temporary files
-                    if (directory.fileExists(file)) {
-                        dirty = true;
+            try {
+                final String[] content = this.directory.list();                
+                for (String file : content) {
+                    try {
+                        directory.deleteFile(file);
+                    } catch (IOException e) {
+                        //Some temporary files
+                        if (directory.fileExists(file)) {
+                            dirty = true;
+                        }
                     }
                 }
+            } finally {
+                _closeDirectory();
             }
             if (dirty) {
                 //Try to delete dirty files and log what's wrong
@@ -359,7 +374,7 @@ public class LuceneIndex implements IndexImpl {
             }
         } finally {
             //Need to recreate directory, see issue: #148374
-            this.directory = FSDirectory.getDirectory(indexFolder, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+            this.directory = createDirectory(indexFolder);
             closed = false;
         }
     }
@@ -367,15 +382,27 @@ public class LuceneIndex implements IndexImpl {
     // called under LuceneIndexManager.writeAccess
     private void _close() throws IOException {
         try {
-            if (reader != null) {
-                reader.close();
-                reader = null;
-            }
+            _closeReader();
         } finally {
-           directory.close();
-           closed = true;
+           _closeDirectory();
         }
     }
+
+    // called under LuceneIndexManager.writeAccess
+    private void _closeReader() throws IOException {
+        if (reader != null) {
+            reader.close();
+            reader = null;
+        }
+    }
+
+    // called under LuceneIndexManager.writeAccess
+    private void _closeDirectory() throws IOException {
+        directory.close();
+        closed = true;
+    }
+
+
 
     // called under LuceneIndexManager.readAccess
     private static List<IndexDocumentImpl> _query(
@@ -542,6 +569,7 @@ public class LuceneIndex implements IndexImpl {
     }
 
     // called under LuceneIndexManager.writeAccess
+    // Always has to invalidate the cached reader
     private void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, LMListener lmListener) throws IOException {
         LOGGER.log(Level.FINE, "Flushing: {0}", indexFolder); //NOI18N
         try {
@@ -623,9 +651,8 @@ public class LuceneIndex implements IndexImpl {
     }
 
     // called under LuceneIndexManager.readAccess or LuceneIndexManager.writeAccess
-    private IndexReader getReader(boolean detach) throws IOException {
+    private synchronized IndexReader getReader(boolean detach) throws IOException {
         IndexReader r = reader;
-
         if (r == null) {
             boolean exists = IndexReader.indexExists(this.directory);
             if (exists) {
@@ -633,38 +660,38 @@ public class LuceneIndex implements IndexImpl {
                 try {
                     //It's important that no Query will get access to original IndexReader
                     //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                    r = new NoNormsReader(IndexReader.open(this.directory));
+                    r = reader = new NoNormsReader(IndexReader.open(this.directory));
                 } catch (IOException ioe) {
                     throw annotateException(ioe, indexFolder);
-                }
-
-                synchronized (this) {
-                    if (reader == null) {
-                        reader = r;
-                    } else {
-                        try {
-                            r.close();
-                        } catch (IOException ioe) {
-                            LOGGER.log(Level.WARNING, null, ioe);
-                            // log, but carry on
-                        }
-
-                        r = reader;
-                    }
                 }
             } else {
                 LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
             }
         }
-
         if (detach) {
-            synchronized (this) {
-                reader = null;
-            }
+            reader = null;
         }
-
         return r;
     }
+
+    private static Directory createDirectory(final File indexFolder) throws IOException {
+        assert indexFolder != null;
+        FSDirectory directory  = FSDirectory.getDirectory(indexFolder);
+        directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
+        return directory;
+    }
+
+    private Collection<? extends String> getOrphanLock () {
+        final String[] content = indexFolder.list();
+        final List<String> locks = new LinkedList<String>();
+        for (String name : content) {
+            if (name.startsWith(CACHE_LOCK_PREFIX)) {
+                locks.add(name);
+            }
+        }
+        return locks;
+    }
+
 
     @Override
     public String toString () {
