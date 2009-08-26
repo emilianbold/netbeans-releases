@@ -95,11 +95,11 @@ public final class DualPaneSupport<T> extends JSplitPane {
         V convert(U obj);
     }
 
-    public static<V> DualPaneSupport forExplorerManager(
+    public static<V> DualPaneSupport<V> forExplorerManager(
             final JComponent component, final ExplorerManager explorerManager,
             final Renderer<V> detailsRenderer,
             final DataAdapter<Node, V> dataAdapter) {
-        final DualPaneSupport dualPaneSupport = new DualPaneSupport(component, detailsRenderer);
+        final DualPaneSupport<V> dualPaneSupport = new DualPaneSupport<V>(component, detailsRenderer);
         explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
