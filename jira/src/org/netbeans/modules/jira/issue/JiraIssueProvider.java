@@ -321,11 +321,13 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                     boolean isKenai = false;
                     if (issue instanceof KenaiJiraLazyIssue) {
                         JiraRepository repo = issue.getRepository();
-                        if (repo == null || !(repo instanceof KenaiRepository)) {
+                        if (repo != null && !(repo instanceof KenaiRepository)) {
                             LOG.warning("saveIntern: KenaiJiraIssue has no kenai repository: " + repo); //NOI18N
                         } else {
                             // kenai repository is identified by project's name, not by it's url
-                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + ((KenaiRepository) repo).getDisplayName();
+                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + (repo == null
+                                    ? ((KenaiJiraLazyIssue)issue).projectName
+                                    : ((KenaiRepository) repo).getDisplayName());
                             isKenai = true;
                         }
                     } else {
