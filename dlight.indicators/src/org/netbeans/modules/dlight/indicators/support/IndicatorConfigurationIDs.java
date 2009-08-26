@@ -45,5 +45,5 @@ package org.netbeans.modules.dlight.indicators.support;
 public interface IndicatorConfigurationIDs {
     static final String CLOCK_ID = "DLightClockIndicatorConfiguration"; //NOI18N
     static final String BAR_ID = "DLightBarIndicatorConfigurationID"; //NOI18N
-    static final String PLOT_ID = "DLightPlotIndicatorConfigurationID"; //NOI18N
+    static final String TIMESERIES_ID = "DLightTimeSeriesIndicatorConfigurationID"; //NOI18N
 }

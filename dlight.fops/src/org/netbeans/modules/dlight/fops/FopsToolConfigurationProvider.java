@@ -53,11 +53,11 @@ import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.ValueFormatter;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -120,6 +120,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         Column openStackColumn = new Column("open_stack_id", Long.class, getMessage("Column.OpenStack"), null); // NOI18N
         Column closeStackColumn = new Column("close_stack_id", Long.class, getMessage("Column.CloseStack"), null); // NOI18N
+        Column statusColumn = new Column("status", String.class, getMessage("Column.Status"), null); // NOI18N
 
         DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
                 Arrays.asList(
@@ -128,36 +129,43 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                         new Column("bytes_written", Long.class, getMessage("Column.BytesWritten"), null), // NOI18N
                         openStackColumn,
                         closeStackColumn,
-                        new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
-                "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
+                        statusColumn),
+                "SELECT file, bytes_read, bytes_written, open_stack_id, close_stack_id, CASEWHEN(open_failed, 'err', CASEWHEN(open_seen AND NOT close_seen, 'warn', 'ok')) AS status FROM " + // NOI18N
+                "(SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
                 "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
                 "SUM(CASEWHEN(operation='open', stack_id, 0)) AS open_stack_id, " + // NOI18N
                 "SUM(CASEWHEN(operation='close', stack_id, 0)) AS close_stack_id, " + // NOI18N
-                "BOOL_OR(operation='close') AS closed " + // NOI18N
-                "FROM fops GROUP BY sid, file " + // NOI18N
-                "ORDER BY closed ASC", // NOI18N
+                "SUM(CASEWHEN(operation='open', timestamp, 0)) AS open_timestamp, " + // NOI18N
+                "BOOL_OR(operation='open') AS open_seen, " + // NOI18N
+                "BOOL_OR(operation='open' AND sid=0) AS open_failed, " + // NOI18N
+                "BOOL_OR(operation='close') AS close_seen " + // NOI18N
+                "FROM fops GROUP BY sid, file) ORDER BY open_timestamp, file", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
 
-        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), BINARY_ORDER, // NOI18N
-                Arrays.asList(
-                        new GraphDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), GraphDescriptor.Kind.LINE), // NOI18N
-                        new GraphDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), GraphDescriptor.Kind.LINE)), // NOI18N
-                new DataRowToIOPlot(opColumn, sizeColumn, fileCountColumn));
-        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
-                new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0)))); // NOI18N
+        TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setTitle(getMessage("Indicator.Title")); // NOI18N
+        indicatorConfiguration.setGraphScale(BINARY_ORDER);
+        indicatorConfiguration.addTimeSeriesDescriptors(
+                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), TimeSeriesDescriptor.Kind.LINE), // NOI18N
+                new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
+        indicatorConfiguration.setDataRowHandler(
+                new DataRowToFops(opColumn, sizeColumn, fileCountColumn));
+        indicatorConfiguration.addDetailDescriptors(
+                new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
-        indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
-            public String render(int value) {
+        indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
+            public String format(int value) {
                 return formatValue(value);
             }
         });
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
-        tableConfiguration.setHiddenColumnNames(Arrays.asList(openStackColumn.getColumnName(), closeStackColumn.getColumnName()));
+        tableConfiguration.setHiddenColumnNames(Arrays.asList(openStackColumn.getColumnName(), closeStackColumn.getColumnName(), statusColumn.getColumnName()));
+        tableConfiguration.setNodeColumnIcon(statusColumn.getColumnName(), "org/netbeans/modules/dlight/fops/resources"); // NOI18N
         tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
         tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
         tableConfiguration.setDualPaneMode(true);
@@ -188,7 +196,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         return nf.format(dbl) + SUFFIXES[i];
     }
 
-    private static class DataRowToIOPlot implements DataRowToPlot {
+    private static class DataRowToFops implements DataRowToTimeSeries {
 
         private final String opColumn;
         private final String sizeColumn;
@@ -197,7 +205,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         private long writes;
         private long fileCount;
 
-        public DataRowToIOPlot(Column opColumn, Column sizeColumn, Column fileCountColumn) {
+        public DataRowToFops(Column opColumn, Column sizeColumn, Column fileCountColumn) {
             this.opColumn = opColumn.getColumnName();
             this.sizeColumn = sizeColumn.getColumnName();
             this.fileCountColumn = fileCountColumn.getColumnName();

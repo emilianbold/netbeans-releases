@@ -232,6 +232,13 @@ public final class TaskListProvider extends PushTaskScanner {
         refreshTasks(false);
     }
 
+    /*
+     * Schedules a refresh of issue tasks.
+     */
+    public void refresh () {
+        refreshTasks(false);
+    }
+
     private void removeCachedTasks (LazyIssue... issues) {
         synchronized (cachedTasks) {
             for (LazyIssue issue : issues) {

@@ -198,18 +198,20 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
-                    Model model = ModelFactory.getModel(request.result);
-                    NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
-                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
+                    if (!(elem instanceof IndexedNamespace)) {
+                        Model model = ModelFactory.getModel(request.result);
+                        NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
+                        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
 
-                    if (namespaceScope != null) {
-                        LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
-                        QualifiedName fqna = QualifiedName.create(false, segments);
-                        if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
-                            QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
-                            if (suffix != null) {
-                                template.append(suffix.toString());
-                                break;
+                        if (namespaceScope != null) {
+                            LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                            QualifiedName fqna = QualifiedName.create(false, segments);
+                            if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
+                                QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                                if (suffix != null) {
+                                    template.append(suffix.toString());
+                                    break;
+                                }
                             }
                         }
                     }

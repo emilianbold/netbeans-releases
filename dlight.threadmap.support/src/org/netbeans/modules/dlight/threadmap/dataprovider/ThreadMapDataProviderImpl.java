@@ -38,15 +38,25 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.threadmap.api.ThreadData;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 
@@ -58,19 +68,106 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
     }
 
-    public ThreadMapData queryData(ThreadMapDataQuery query) {
-        if (storage == null) {
+    public ThreadMapData queryData(final ThreadMapDataQuery query) {
+        if (!query.isSampling() && storage == null) {
             throw new NullPointerException("No STORAGE"); // NOI18N
         }
+        if (query.isSampling() && stackDataStorage == null && storage != null) {
+            return storage.queryThreadMapData(query);
+        }
+        if (query.isSampling() && stackDataStorage != null) {
+            final Collection<ThreadSnapshot> snapshots =
+                    stackDataStorage.getThreadSnapshots(
+                    new ThreadSnapshotQuery(false, new ThreadSnapshotQuery.TimeFilter(query.getTimeFrom(), query.getTimeTo(), ThreadSnapshotQuery.TimeFilter.Mode.LAST)));
+            //now we should create ThreadMapData
+            ThreadMapData result = new ThreadMapData() {
 
-        return storage.queryThreadMapData(query);
+                public List<ThreadData> getThreadsData() {
+                    List<ThreadData> result = new ArrayList<ThreadData>();
+                    for (final ThreadSnapshot snapshot : snapshots){
+                        ThreadData data = new ThreadData() {
+
+                            public ThreadInfo getThreadInfo() {
+                                return snapshot.getThreadInfo();
+                            }
+
+                            public List<ThreadState> getThreadState() {
+                                ThreadState result = new ThreadState() {
+
+                                    public int size() {
+                                        return 1;
+                                    }
+
+                                    public MSAState getMSAState(int index, boolean full) {
+                                        return snapshot.getState();
+                                    }
+
+                                    public byte getState(int index) {
+                                        return  ThreadState.POINTS;
+                                    }
+
+                                    public long getTimeStamp(int index) {
+                                        return snapshot.getTimestamp();
+                                    }
+
+                                    public long getTimeStamp() {
+                                        return snapshot.getTimestamp();
+                                    }
+
+                                    public int getSamplingStateIndex(boolean full) {
+                                        return 0;
+                                    }
+                                };
+                                return Arrays.asList(result);
+                            }
+
+                        };
+                        result.add(data);
+                    }
+
+                    return result;
+                }
+
+                public TimeDuration getPrecision() {
+                    return new TimeDuration(TimeUnit.SECONDS, 1);
+                }
+
+                public boolean isSamplingMode() {
+                    return true;
+                }
+            };
+            return result ;
+        }
+        if (storage != null) {
+            return storage.queryThreadMapData(query);
+        }
+        return null;
+
+        //   return storage.queryThreadMapData(query);
+
+
+
     }
 
-    public ThreadDump getThreadDump(ThreadDumpQuery query){
+    public ThreadDump getThreadDump(final ThreadDumpQuery query) {
         if (stackDataStorage == null) {
             return null;
         }
         return stackDataStorage.getThreadDump(query);
+//      TODO: try the new getThreadSnapshots() method
+//        final long timestamp = query.getThreadState().getTimeStamp();
+//        final List<ThreadSnapshot> result = stackDataStorage.getThreadSnapshots(
+//                new ThreadSnapshotQuery(query.isFullMode(), new ThreadSnapshotQuery.ThreadFilter(query.getShowThreads()), new ThreadSnapshotQuery.TimeFilter(-1, timestamp, ThreadSnapshotQuery.TimeFilter.Mode.LAST)));
+//        return new ThreadDump() {
+//
+//            public long getTimestamp() {
+//                return timestamp;
+//            }
+//
+//            public List<ThreadSnapshot> getThreadStates() {
+//                return result;
+//            }
+//        };
     }
 
     public void attachTo(DataStorage storage) {
@@ -83,6 +180,4 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     public void dataFiltersChanged(List<DataFilter> newSet) {
     }
-
- 
 }

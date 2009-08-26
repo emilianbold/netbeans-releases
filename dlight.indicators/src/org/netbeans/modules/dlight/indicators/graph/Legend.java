@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -63,7 +65,7 @@ import javax.swing.SwingUtilities;
  */
 public class Legend extends JPanel {
 
-    public Legend(List<GraphDescriptor> graphs, List<DetailDescriptor> details) {
+    public Legend(List<TimeSeriesDescriptor> graphs, List<DetailDescriptor> details) {
         super(new GridBagLayout());
 
         setBackground(GraphConfig.LEGEND_COLOR);
@@ -74,7 +76,7 @@ public class Legend extends JPanel {
         setOpaque(true);
         GridBagConstraints c;
 
-        for (GraphDescriptor graph : graphs) {
+        for (TimeSeriesDescriptor graph : graphs) {
             JLabel label = new JLabel(graph.getDisplayName(), new ColorIcon(graph.getColor()), SwingConstants.LEADING);
             label.setForeground(GraphConfig.TEXT_COLOR);
             label.setFont(label.getFont().deriveFont(10f));

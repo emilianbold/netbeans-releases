@@ -58,7 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  *
  * @author Radek Matous
  */
-class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableContainerImpl {
+class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableNameFactory {
     private List<? extends Parameter> paremeters;
     String returnType;
 
@@ -171,33 +171,13 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     }
 
     public Collection<? extends VariableName> getDeclaredVariables() {
-        return getAllVariablesImpl();
-    }
-
-    public Collection<? extends VariableName> findDeclaredVariables(String... queryName) {
-        return getVariablesImpl(queryName);
-    }
-
-    public Collection<? extends VariableName> findDeclaredVariables(QuerySupport.Kind nameKind, String... queryName) {
-        return findDeclaredVariables(nameKind, queryName);
-    }
-
-    public Collection<? extends VariableName> getAllVariablesImpl() {
-        return getVariablesImpl();
-    }
-
-    public Collection<? extends VariableName> getVariablesImpl(String... queryName) {
-        return getVariablesImpl(QuerySupport.Kind.EXACT, queryName);
-    }
-
-    public Collection<? extends VariableName> getVariablesImpl(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.VARIABLE)  &&
-                        (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
+                return element.getPhpKind().equals(PhpKind.VARIABLE);
             }
         });
     }
+
     public VariableNameImpl createElement(Variable node) {
         VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);

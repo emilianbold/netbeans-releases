@@ -50,6 +50,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
+import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsf.editor.tld.TldClassPathSupport;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.filesystems.FileObject;
@@ -137,6 +138,10 @@ public class JsfSupport {
     /** Library's uri to library map */
     public Map<String, FaceletsLibrary> getFaceletsLibraries() {
         return faceletsLibrarySupport.getLibraries();
+    }
+
+    public JsfIndex getIndex() {
+        return JsfIndex.get(wm);
     }
 
 
