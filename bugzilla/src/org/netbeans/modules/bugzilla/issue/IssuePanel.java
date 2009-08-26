@@ -86,6 +86,8 @@ import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -166,17 +168,30 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getSource() != IssuePanel.this.issue) {
+                return;
+            }
+            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                updateFieldStatuses();
+            }
+        }
+    };
+
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
             issue.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                         reloadFormInAWT(false);
-                    } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
-                        updateFieldStatuses();
                     }
                 }
             });
+
+            IssueCacheUtils.removeCacheListener(issue, cacheListener);
+            IssueCacheUtils.addCacheListener(issue, cacheListener);
+
             summaryField.getDocument().addDocumentListener(new DocumentListener() {
                 public void insertUpdate(DocumentEvent e) {
                     changedUpdate(e);
