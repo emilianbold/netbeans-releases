@@ -45,8 +45,11 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -79,6 +82,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -361,7 +365,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reloading = true;
 
         boolean isNew = issue.getTaskData().isNew();
-        headerLabel.setVisible(!isNew);
+        headerLabel.setVisible(!isNew || issue.isSubtask());
         createdLabel.setVisible(!isNew);
         createdField.setVisible(!isNew);
         updatedLabel.setVisible(!isNew);
@@ -504,6 +508,9 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
             statusField.setText(STATUS_OPEN);
             fixPrefSize(statusField);
+            if (issue.isSubtask()) {
+                headerLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.newSubtask")); // NOI18N
+            }
         } else {
             ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
             // Header label
@@ -606,6 +613,22 @@ public class IssuePanel extends javax.swing.JPanel {
                     subTaskTable = new JTable();
                     subTaskTable.setDefaultRenderer(JiraStatus.class, new StatusRenderer());
                     subTaskTable.setDefaultRenderer(Priority.class, new PriorityRenderer());
+                    subTaskTable.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (e.getClickCount() == 2) {
+                                Point p = e.getPoint();
+                                int row = subTaskTable.rowAtPoint(p);
+                                TableModel model = subTaskTable.getModel();
+                                final String issueKey = (String)model.getValueAt(row,0);
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                   public void run() {
+                                       issue.getRepository().getIssue(issueKey).open();
+                                   }
+                                });
+                            }
+                        }
+                    });
                     subTaskScrollPane = new JScrollPane(subTaskTable);
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -1801,6 +1824,7 @@ public class IssuePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 boolean ret = false;
+                boolean wasNew = issue.isNew();
                 try {
                     ret = issue.submitAndRefresh();
                     for (File attachment : attachmentsPanel.getNewAttachments()) {
@@ -1819,6 +1843,10 @@ public class IssuePanel extends javax.swing.JPanel {
                     handle.finish();
                     if(ret) {
                         reloadFormInAWT(true);
+                        if (wasNew && (issue.getParentKey() != null)) {
+                            Issue parent = issue.getRepository().getIssue(issue.getParentKey());
+                            parent.refresh();
+                        }
                     }
                 }
             }

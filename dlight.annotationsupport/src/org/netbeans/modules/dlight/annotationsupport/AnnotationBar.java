@@ -17,15 +17,15 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Element;
@@ -41,6 +41,7 @@ import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
 /**
  *
@@ -77,6 +78,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     private Color backgroundColor = Color.WHITE;
     private Color foregroundColor = Color.BLACK;
     private Color selectedColor = Color.BLUE;
+    private Color metricsFG = null;
+    private Color metricsBG = null;
+    private Color textHighlightFG = null;
+    private Color textHighlightBG = null;
     /**
      * Most recent status message.
      */
@@ -91,6 +96,45 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 //    this.setLayout(new BorderLayout());
 //    this.add(mainPanel, BorderLayout.CENTER);
+    }
+
+    private void getColors() {
+        EditorSettings editorSettings = EditorSettings.getDefault();
+        Map<String, AttributeSet> map = editorSettings.getHighlightings(editorSettings.getCurrentFontColorProfile());
+        AttributeSet aSet = map.get("dlight-metrics-annotations"); // NOI18N
+        metricsFG = (Color) aSet.getAttribute(StyleConstants.Foreground);
+        metricsBG = (Color) aSet.getAttribute(StyleConstants.Background);
+        aSet = map.get("dlight-metrics-text-highlighting"); // NOI18N
+        textHighlightFG = (Color) aSet.getAttribute(StyleConstants.Foreground);
+        textHighlightBG = (Color) aSet.getAttribute(StyleConstants.Background);
+    }
+
+    private Color getMetricsFGColor() {
+        if (metricsFG == null) {
+            getColors();
+        }
+        return metricsFG;
+    }
+
+    private Color getMetricsBGColor() {
+        if (metricsBG == null) {
+            getColors();
+        }
+        return metricsBG;
+    }
+
+    private Color getTextHighlightFGColor() {
+        if (textHighlightFG == null) {
+            getColors();
+        }
+        return textHighlightFG;
+    }
+
+    private Color getTextHighlightBGColor() {
+        if (textHighlightBG == null) {
+            getColors();
+        }
+        return textHighlightBG;
     }
 
     /**
@@ -119,7 +163,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     private int getBarWidth() {
         String sample = fileAnnotationInfo.getLineAnnotationInfo().get(0).getAnnotation();
         int cwidth = getGraphics().getFontMetrics().charWidth('X');
-        return sample.length()*cwidth + 4; // thp: controls bar width
+        return sample.length() * cwidth + 4; // thp: controls bar width
     }
 
     /**
@@ -131,17 +175,17 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         this.fileAnnotationInfo = fileAnnotationInfo;
         setToolTipText(fileAnnotationInfo.getTooltip());
         annotated = true;
-//    elementAnnotations = null;
 
         doc.addDocumentListener(this);
         textComponent.addComponentListener(this);
         editorUI.addPropertyChangeListener(this);
+        EditorSettings.getDefault().addPropertyChangeListener(this);
 
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
         int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
-            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 235, 255)); // thp: controls color of text hightligting block and lines
-            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip()));
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), getTextHighlightBGColor()); // thp: controls color of text hightligting block and lines
+            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip(), getMetricsFGColor()));
         }
 
         AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
@@ -153,11 +197,21 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 
     public void unAnnotate() {
         annotated = false;
-//    elementAnnotations = null;
+
+        for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255));
+        }
+
+        List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
+        AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+        if (amp != null) {
+            amp.setMarks(marks);
+        }
 
         doc.removeDocumentListener(this);
         textComponent.removeComponentListener(this);
         editorUI.removePropertyChangeListener(this);
+        EditorSettings.getDefault().removePropertyChangeListener(this);
 
         revalidate();  // resize the component
 
@@ -278,7 +332,9 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
-            g.setColor(Color.MAGENTA);
+            if (getMetricsFGColor() != null) {
+                g.setColor(getMetricsFGColor());
+            }
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
         }
 //    String annotation = "CPU 23s/";  // NOI18N
@@ -318,6 +374,19 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
                 release();
             }
         }
+        if ("editorFontColors".equals(id)) {  // NOI18N
+            if (evt.getNewValue() != null && ((String)evt.getNewValue()).equals("NetBeans")) { // NOI18N
+                metricsFG = null;
+                metricsBG = null;
+                textHighlightFG = null;
+                textHighlightBG = null;
+
+                if (annotated) {
+                    unAnnotate();
+                    annotate(fileAnnotationInfo);
+                }
+            }
+        }
     }
 
     /**
@@ -339,10 +408,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 //      latestAnnotationTask.cancel();
 //    }
 
-    AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
-    if (amp != null) {
-      amp.setMarks(Collections.<AnnotationMark>emptyList());
-    }
+        AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+        if (amp != null) {
+            amp.setMarks(Collections.<AnnotationMark>emptyList());
+        }
 
         clearRecentFeedback();
     }
