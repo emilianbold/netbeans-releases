@@ -55,7 +55,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
