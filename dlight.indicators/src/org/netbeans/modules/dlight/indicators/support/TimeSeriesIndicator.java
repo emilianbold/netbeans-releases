@@ -204,4 +204,9 @@ public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConf
     public JComponent getComponent() {
         return panel;
     }
+
+    @Override
+    public JComponent getAuxComponent() {
+        return manager.getComponent();
+    }
 }

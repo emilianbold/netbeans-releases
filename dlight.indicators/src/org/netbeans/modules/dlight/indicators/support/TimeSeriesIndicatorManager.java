@@ -38,43 +38,84 @@
  */
 package org.netbeans.modules.dlight.indicators.support;
 
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
+import javax.swing.JScrollBar;
 import org.netbeans.modules.dlight.indicators.graph.Range;
 
 /**
  * @author Alexey Vladykin
  */
-public class TimeSeriesIndicatorManager {
+public class TimeSeriesIndicatorManager extends JScrollBar implements AdjustmentListener {
+
+    private static final int EXTENT = 10;
 
     private final List<TimeSeriesIndicator> indicators;
     private int viewportStart;
     private int viewportEnd;
     private int dataStart;
     private int dataEnd;
+    private boolean autoscroll;
+    private boolean isAdjusting;
 
     public TimeSeriesIndicatorManager() {
+        super(JScrollBar.HORIZONTAL);
         indicators = new ArrayList<TimeSeriesIndicator>();
+        addAdjustmentListener(this);
     }
 
     public synchronized void addIndicator(TimeSeriesIndicator indicator) {
         dataStart = dataEnd = 0;
         viewportStart = 0;
-        viewportEnd = 10;
+        viewportEnd = EXTENT;
         indicator.setViewport(new Range<Integer>(viewportStart, viewportEnd));
         indicator.setSelection(new Range<Integer>(null, null));
         indicators.add(indicator);
+        adjust();
+    }
+
+    public JComponent getComponent() {
+        return this;
     }
 
     public synchronized void tick(TimeSeriesIndicator indicator, int time) {
         dataEnd = Math.max(dataEnd, time);
-        // default behavior: scroll to show last 10 seconds
-        if (viewportEnd < time) {
-            viewportStart += time - viewportEnd;
-            viewportEnd = time;
+        if (autoscroll) {
+            // default behavior: scroll to show last 10 seconds
+            if (viewportEnd < time) {
+                viewportStart += time - viewportEnd;
+                viewportEnd = time;
+            }
+            updateIndicators();
         }
+        adjust();
+    }
+
+    private void updateIndicators() {
         for (TimeSeriesIndicator i : indicators) {
             i.setViewport(new Range<Integer>(viewportStart, viewportEnd));
+        }
+    }
+
+    private void adjust() {
+        isAdjusting = true;
+        setMinimum(Math.min(dataStart, viewportStart));
+        setMaximum(Math.max(dataEnd, viewportEnd));
+        setValue(viewportStart);
+        setVisibleAmount(viewportEnd - viewportStart);
+        autoscroll = (dataEnd <= viewportEnd);
+        isAdjusting = false;
+    }
+
+    public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
+        if (!isAdjusting) {
+            viewportStart = e.getValue();
+            viewportEnd = viewportStart + EXTENT;
+            adjust();
+            updateIndicators();
         }
     }
 }
