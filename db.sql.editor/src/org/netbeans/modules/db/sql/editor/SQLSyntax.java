@@ -75,6 +75,8 @@ public class SQLSyntax extends Syntax {
     private static final int ISA_BACK_SLASH_IN_STRING = 38; // after \ in string
 
     private int startQuoteChar = -1;
+    /** MySQL data type (#152751). */
+    private static final String MEDIUMINT = "MEDIUMINT";  //NOI18N
 
     /** 
      * Creates a new instance of SQLSyntax 
@@ -479,7 +481,7 @@ public class SQLSyntax extends Syntax {
     public TokenID matchKeyword(char[] buffer, int offset, int len) {
         String keywordCandidate = new String(buffer, offset, len);
         
-        if (SQLKeywords.isSQL99Keyword(keywordCandidate)) {
+        if (SQLKeywords.isSQL99Keyword(keywordCandidate) || MEDIUMINT.equalsIgnoreCase(keywordCandidate)) {
             return SQLTokenContext.KEYWORD;
         }
         
