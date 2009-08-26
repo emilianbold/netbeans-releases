@@ -64,7 +64,7 @@ public class PhpEditorExtender extends EditorExtender {
     public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
         List<PhpElement> elements = new LinkedList<PhpElement>();
         PhpModule module = project.getPhpModule();
-        for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
+        for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
             EditorExtender editorExtender = frameworkProvider.getEditorExtender(module);
             if (editorExtender != null) {
                 elements.addAll(editorExtender.getElementsForCodeCompletion(fo));
@@ -76,7 +76,7 @@ public class PhpEditorExtender extends EditorExtender {
     @Override
     public PhpClass getClass(FileObject fo, String variableName) {
         PhpModule module = project.getPhpModule();
-        for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
+        for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
             EditorExtender editorExtender = frameworkProvider.getEditorExtender(module);
             if (editorExtender != null) {
                 PhpClass phpClass = editorExtender.getClass(fo, variableName);

@@ -47,10 +47,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
@@ -60,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
@@ -88,12 +93,18 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -118,6 +129,8 @@ public class PhpProject implements Project {
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
 
+    static final Logger LOGGER = Logger.getLogger(PhpProject.class.getName());
+
     final AntProjectHelper helper;
     final UpdateHelper updateHelper;
     private final ReferenceHelper refHelper;
@@ -141,6 +154,13 @@ public class PhpProject implements Project {
     final Object ignoredFoldersLock = new Object();
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
     private final PropertyChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
+
+    // frameworks
+    final Object frameworksLock = new Object();
+    // @GuardedBy(frameworksLock)
+    volatile List<PhpFrameworkProvider> frameworks;
+    private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
+    private final LookupListener frameworksListener = new FrameworksListener();
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -221,6 +241,7 @@ public class PhpProject implements Project {
                     synchronized (PhpProject.this) {
                         if (sourcesDirectory == null) {
                             sourcesDirectory = resolveSourcesDirectory();
+                            sourcesDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, sourcesDirectory));
                         }
                     }
                     return null;
@@ -403,7 +424,7 @@ public class PhpProject implements Project {
 
     private void putIgnoredFrameworkFiles(Set<File> ignored) {
         PhpModule phpModule = getPhpModule();
-        for (PhpFrameworkProvider provider : ProjectPropertiesSupport.getFrameworks(this)) {
+        for (PhpFrameworkProvider provider : getFrameworks()) {
             PhpModuleIgnoredFilesExtender ignoredFilesExtender = provider.getIgnoredFilesExtender(phpModule);
             if (ignoredFilesExtender == null) {
                 continue;
@@ -426,6 +447,27 @@ public class PhpProject implements Project {
             ignored.add(itemsIterator.next());
         }
         return ignored;
+    }
+
+    public List<PhpFrameworkProvider> getFrameworks() {
+        if (frameworks == null) {
+            synchronized (frameworksLock) {
+                if (frameworks == null) {
+                    frameworks = new LinkedList<PhpFrameworkProvider>();
+                    PhpModule phpModule = getPhpModule();
+                    for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
+                        if (frameworkProvider.isInPhpModule(phpModule)) {
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getName(), getSourcesDirectory()));
+                            }
+                            frameworks.add(frameworkProvider);
+                        }
+                    }
+                }
+            }
+        }
+        assert frameworks != null;
+        return new ArrayList<PhpFrameworkProvider>(frameworks);
     }
 
     /*
@@ -570,11 +612,15 @@ public class PhpProject implements Project {
             testsDirectory = null;
             seleniumDirectory = null;
             ignoredFolders = null;
+            frameworks = null;
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
+            LOGGER.fine("Adding frameworks listener for " + sourcesDirectory);
+            PhpFrameworks.addFrameworksListener(frameworksListener);
             // do it in a background thread
             getIgnoredFiles();
+            getFrameworks();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
@@ -603,6 +649,11 @@ public class PhpProject implements Project {
         }
 
         protected void projectClosed() {
+            assert sourcesDirectory != null;
+            sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
+            LOGGER.fine("Removing frameworks listener for " + sourcesDirectory);
+            PhpFrameworks.removeFrameworksListener(frameworksListener);
+
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
@@ -671,6 +722,46 @@ public class PhpProject implements Project {
                 ignoredFolders = null;
                 ignoredFoldersChangeSupport.fireChange();
             }
+        }
+    }
+
+    // if source folder changes, reset frameworks (new framework can be found in project)
+    private final class SourceDirectoryFileChangeListener implements FileChangeListener {
+
+        public void fileFolderCreated(FileEvent fe) {
+            processFileChange();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            processFileChange();
+        }
+
+        public void fileChanged(FileEvent fe) {
+            processFileChange();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            processFileChange();
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            processFileChange();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // probably not interesting for us
+        }
+
+        void processFileChange() {
+            LOGGER.fine("file change, frameworks back to null");
+            frameworks = null;
+        }
+    }
+
+    private final class FrameworksListener implements LookupListener {
+        public void resultChanged(LookupEvent ev) {
+            LOGGER.fine("frameworks change, frameworks back to null");
+            frameworks = null;
         }
     }
 }
