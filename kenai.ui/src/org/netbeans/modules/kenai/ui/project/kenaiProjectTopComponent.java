@@ -61,6 +61,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Top component which displays something.
+ * @author Petr Dvorak (Petr.Dvorak@sun.com)
  */
 @ConvertAsProperties(
     dtd="-//org.netbeans.modules.kenai.ui.project//kenaiProject//EN",
@@ -93,7 +94,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         setToolTipText(NbBundle.getMessage(kenaiProjectTopComponent.class, "HINT_kenaiProjectTopComponent")); //NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         instProj = proj;
-        addSpecificContent(proj);
+        addSpecificContent();
         Kenai.getDefault().addPropertyChangeListener(this);
     }
 
@@ -136,7 +137,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
         containingPanel.setBackground(new java.awt.Color(255, 255, 255));
         containingPanel.setMinimumSize(new java.awt.Dimension(600, 405));
-        containingPanel.setPreferredSize(new java.awt.Dimension(620, 410));
 
         generalDetailsPanel.setBackground(java.awt.SystemColor.control);
         generalDetailsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -478,8 +478,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         }
     }
 
-    private void addSpecificContent(KenaiProject proj) {
-        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_COMMUNICATE"), new ForumsAndMailingListsPanel(proj)); //NOI18N
+    private void addSpecificContent() {
+        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_COMMUNICATE"), new ForumsAndMailingListsPanel()); //NOI18N
+        dynamicContentPane.add("Develop", new SourcesInformationPanel()); //NOI18N
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -487,5 +488,4 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             reinitialize(instProj, true);
         }
     }
-
 }
