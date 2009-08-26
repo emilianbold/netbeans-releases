@@ -43,6 +43,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -149,7 +150,7 @@ public class ReconfigureAction extends NodeAction {
             cFlags = "-g3 -gdwarf-2"; // NOI18N
             cxxFlags = "-g3 -gdwarf-2"; // NOI18N
         }
-        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, getLegend(reconfigurator));
+        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, reconfigurator.getRestOptions(), getLegend(reconfigurator));
         JButton runButton = new JButton(NbBundle.getMessage(getClass(), "ReconfigureButton")); // NOI18N
         runButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ReconfigureButtonAD")); // NOI18N
         Object options[] =  new Object[]{runButton, DialogDescriptor.CANCEL_OPTION};
@@ -164,91 +165,20 @@ public class ReconfigureAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
-            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags());
+            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getOtherOptions());
         }
         running = false;
     }
 
     private String getLegend(ReconfigureProject reconfigurator){
-        DataObject dao = reconfigurator.getImportant();
-        if (dao == null) {
-            return ""; // NOI18N
-        }
-        String lastFlags = reconfigurator.getLastFlags();
-        if (lastFlags == null) {
-            return ""; // NOI18N
-        }
-        String mime = dao.getPrimaryFile().getMIMEType();
-        String lastCFlags = null;
-        String lastCppFlags = null;
-        String lastCCompiler = null;
-        String lastCppCompiler = null;
-        if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-            lastCFlags = getFlags(lastFlags, "CFLAGS="); // NOI18N
-            lastCppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
-            lastCCompiler = getFlags(lastFlags, "CC="); // NOI18N
-            lastCppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
-        } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-            lastCFlags = getFlags(lastFlags, "-DCMAKE_C_FLAGS_DEBUG="); // NOI18N
-            lastCppFlags = getFlags(lastFlags, "-DCMAKE_CXX_FLAGS_DEBUG="); // NOI18N
-            lastCCompiler = getFlags(lastFlags, "-DCMAKE_C_COMPILER="); // NOI18N
-            lastCppCompiler = getFlags(lastFlags, "-DCMAKE_CXX_COMPILER="); // NOI18N
-        } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-            lastCFlags = getFlags(lastFlags, "QMAKE_CFLAGS="); // NOI18N
-            lastCppFlags = getFlags(lastFlags, "QMAKE_CXXFLAGS="); // NOI18N
-            lastCCompiler = getFlags(lastFlags, "QMAKE_CC="); // NOI18N
-            lastCppCompiler = getFlags(lastFlags, "QMAKE_CXX="); // NOI18N
-        } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
-            return ""; // NOI18N
-        }
-        if (lastCFlags != null && lastCppFlags != null && lastCCompiler != null && lastCppCompiler != null) {
-            return NbBundle.getMessage(getClass(), "ReconfigureLegend", lastCCompiler+"/"+lastCppCompiler, lastCFlags, lastCppFlags); // NOI18N
+        CompilerOptions options = reconfigurator.getLastCompilerOptions();
+        if (options != null && options.CFlags != null && options.CppFlags != null &&
+            options.CCompiler != null && options.CppCompiler != null) {
+            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler+"/"+options.CppCompiler, options.CFlags, options.CppFlags); // NOI18N
         }
         return ""; // NOI18N
     }
 
-    private String getFlags(String flags, String key){
-        int i = flags.indexOf(key);
-        if (i >= 0) {
-            if (key.charAt(key.length()-1)=='=') { // NOI18N
-                String rest = flags.substring(i+key.length());
-                if (rest.startsWith("\"")){ // NOI18N
-                    int j = rest.indexOf('"',1); // NOI18N
-                    if (j > 0) {
-                        return rest.substring(1,j);
-                    }
-                } else {
-                    int j = rest.indexOf(' ',1); // NOI18N
-                    if (j > 0) {
-                        return rest.substring(0,j);
-                    } else {
-                        return rest;
-                    }
-                }
-            } else {
-                String rest = flags.substring(i+key.length());
-                if (rest.startsWith(" ")){ // NOI18N
-                    rest = rest.substring(1);
-                    if (rest.startsWith("\"")){ // NOI18N
-                        int j = rest.indexOf('"',1); // NOI18N
-                        if (j > 0) {
-                            return rest.substring(1,j);
-                        }
-                    } else {
-                        int j = rest.indexOf(' ',1); // NOI18N
-                        if (j > 0) {
-                            return rest.substring(0,j);
-                        } else {
-                            return rest;
-                        }
-                    }
-                } else if (rest.length()==0) {
-                    return ""; // NOI18N
-                }
-            }
-        }
-        return null;
-    }
 
     @Override
     protected boolean asynchronous() {
