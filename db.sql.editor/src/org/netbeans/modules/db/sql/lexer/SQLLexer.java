@@ -57,6 +57,8 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     private final TokenFactory<SQLTokenId> factory;
     private State state = State.INIT;
     private int startQuoteChar = -1;
+    /** MySQL data type (#152751). */
+    private static final String MEDIUMINT = "MEDIUMINT";  //NOI18N
 
     public SQLLexer(LexerRestartInfo<SQLTokenId> info) {
         this.info = info;
@@ -373,7 +375,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     }
 
     private static SQLTokenId testKeyword(CharSequence value) {
-        if (SQLKeywords.isSQL99Keyword(value.toString())) {
+        if (SQLKeywords.isSQL99Keyword(value.toString()) || MEDIUMINT.equalsIgnoreCase(value.toString())) {
             return SQLTokenId.KEYWORD;
         } else {
             return SQLTokenId.IDENTIFIER;
