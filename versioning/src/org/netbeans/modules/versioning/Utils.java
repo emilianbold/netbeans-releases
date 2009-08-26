@@ -125,9 +125,14 @@ public class Utils {
         String ancestorPath = ancestor.getAbsolutePath();
         if(Utilities.isWindows()) {
             if(filePath.indexOf("~") < 0 && ancestorPath.indexOf("~") < 0) {
-                if(!filePath.toUpperCase().startsWith(ancestorPath.toUpperCase())) {
+                if(filePath.length() < ancestorPath.length()) {
                     return false;
                 }
+            }
+        } else if (Utilities.isMac()) {
+            // Mac is not case sensitive, cannot use the else statement
+            if(filePath.length() < ancestorPath.length()) {
+                return false;
             }
         } else {
             if(!filePath.startsWith(ancestorPath)) {

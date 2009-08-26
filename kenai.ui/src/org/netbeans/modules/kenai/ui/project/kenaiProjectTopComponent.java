@@ -138,13 +138,14 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         containingPanel.setMinimumSize(new java.awt.Dimension(820, 475));
         containingPanel.setPreferredSize(new java.awt.Dimension(820, 489));
 
-        generalDetailsPanel.setBackground(java.awt.SystemColor.controlHighlight);
+        generalDetailsPanel.setBackground(java.awt.SystemColor.control);
         generalDetailsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         generalDetailsPanel.setMaximumSize(new java.awt.Dimension(20800, 200));
         generalDetailsPanel.setMinimumSize(new java.awt.Dimension(800, 200));
         generalDetailsPanel.setPreferredSize(new java.awt.Dimension(800, 200));
         generalDetailsPanel.setLayout(new java.awt.BorderLayout());
 
+        projectDescription.setBackground(java.awt.SystemColor.control);
         projectDescription.setOpaque(false);
         projectDescription.setLayout(new java.awt.BorderLayout());
 
@@ -178,7 +179,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     .add(wwwLabel)
                     .add(wikiLabel)
                     .add(downloadsLabel))
-                .addContainerGap(416, Short.MAX_VALUE))
+                .addContainerGap(418, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -199,7 +200,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel3)))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {downloadsLabel, jLabel1, jLabel2, jLabel3, wikiLabel, wwwLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -208,6 +209,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
         jPanel1.setOpaque(false);
 
+        projectsDetailsHeader.setBackground(java.awt.SystemColor.control);
         projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(projectsDetailsHeader, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsHeader.text")); // NOI18N
 
@@ -216,13 +218,14 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         jScrollPane1.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jScrollPane1.setOpaque(false);
 
-        projectsDetailsText.setBackground(java.awt.SystemColor.controlHighlight);
+        projectsDetailsText.setBackground(java.awt.SystemColor.control);
         projectsDetailsText.setColumns(20);
         projectsDetailsText.setEditable(false);
         projectsDetailsText.setLineWrap(true);
         projectsDetailsText.setRows(3);
         projectsDetailsText.setWrapStyleWord(true);
         projectsDetailsText.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        projectsDetailsText.setMargin(new java.awt.Insets(0, 0, 0, 10));
         jScrollPane1.setViewportView(projectsDetailsText);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -230,10 +233,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectsDetailsHeader)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE))
-                .addContainerGap())
+                .add(projectsDetailsHeader)
+                .addContainerGap(588, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -241,14 +243,14 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(projectsDetailsHeader)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE))
         );
 
         projectDescription.add(jPanel1, java.awt.BorderLayout.CENTER);
 
         generalDetailsPanel.add(projectDescription, java.awt.BorderLayout.CENTER);
 
+        imagePanel.setBackground(java.awt.SystemColor.control);
         imagePanel.setOpaque(false);
         imagePanel.setPreferredSize(new java.awt.Dimension(200, 200));
 
@@ -290,8 +292,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             .add(org.jdesktop.layout.GroupLayout.TRAILING, containingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 803, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 803, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 804, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 804, Short.MAX_VALUE))
                 .addContainerGap())
         );
         containingPanelLayout.setVerticalGroup(
@@ -300,7 +302,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -382,6 +384,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
             public void run() {
                 // reset header and description text
+                projectImage.setIcon(null);
                 projectsDetailsHeader.setText(proj.getDisplayName());
                 try {
                     projectsDetailsText.setText(proj.getDescription().replaceAll("\r?\n", " ").replaceAll("\r", " ")); //NOI18N
