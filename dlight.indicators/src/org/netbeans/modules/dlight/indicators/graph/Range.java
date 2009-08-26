@@ -38,41 +38,34 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.Color;
-
 /**
- * Provides common colors for graph painting.
+ * Range of numeric values.
  *
  * @author Alexey Vladykin
  */
-public final class GraphConfig {
+public final class Range<T extends Number & Comparable<? super T>> {
 
-    public static final float FONT_SIZE = 10.0f;
-    public static final float LINE_WIDTH = 2.0f;
-    public static final int GRID_SIZE = 10;
-    public static final int BALL_SIZE = 5;
-    public static final int STEP_SIZE = 5;
+    private final T start;
+    private final T end;
 
-    public static final int GRAPH_WIDTH = 80;
-    public static final int GRAPH_HEIGHT = 80;
+    public Range(T start, T end) {
+        if (start != null && end != null && 0 < start.compareTo(end)) {
+            throw new IllegalArgumentException("Must be start <= end"); // NOI18N
+        }
+        this.start = start;
+        this.end = end;
+    }
 
-    public static final int LEGEND_WIDTH = 80;
-    public static final int LEGEND_HEIGHT = 80;
+    public T getStart() {
+        return start;
+    }
 
-    public static final int VERTICAL_AXIS_WIDTH = 30;
-    public static final int HORIZONTAL_AXIS_HEIGHT = 30;
+    public T getEnd() {
+        return end;
+    }
 
-//    public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
-//    public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
-//    public static final Color COLOR_3 = new Color(0xFF, 0xC7, 0x26);
-//    public static final Color COLOR_4 = new Color(0xB2, 0xBC, 0x00);
-
-    public static final Color BORDER_COLOR = new Color(0x72, 0x8A, 0x84);
-    public static final Color GRADIENT_BOTTOM_COLOR = new Color(0xD6, 0xE3, 0xF3);
-    public static final Color GRADIENT_TOP_COLOR = Color.WHITE;
-    public static final Color GRID_COLOR = new Color(0xD7, 0xE0, 0xE3);
-    public static final Color LEGEND_COLOR = Color.WHITE;
-    public static final Color TEXT_COLOR = new Color(0x31, 0x4E, 0x72);
-
-    private GraphConfig() {}
+    @Override
+    public String toString() {
+        return String.valueOf(start) + ".." + String.valueOf(end); // NOI18N
+    }
 }
