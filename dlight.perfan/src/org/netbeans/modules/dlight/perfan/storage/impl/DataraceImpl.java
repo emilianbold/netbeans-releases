@@ -191,5 +191,9 @@ public final class DataraceImpl implements Datarace {
         public MemoryAccessType getMemoryAccessType() {
             return memoryAccessType;
         }
+
+        public long getTimestamp() {
+            return 0;
+        }
+        }
     }
-}

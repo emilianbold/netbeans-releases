@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

@@ -42,7 +42,9 @@
 package org.openide.filesystems;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * @author  rmatous
@@ -197,14 +199,17 @@ class EventControl {
 
     private LinkedList<FileSystem.EventDispatcher> invokeDispatchers(boolean priority, LinkedList<FileSystem.EventDispatcher> reqQueueCopy) {
         LinkedList<FileSystem.EventDispatcher> newEnum = new LinkedList<FileSystem.EventDispatcher>();
-
+        Set<Runnable> postNotify = new LinkedHashSet<Runnable>();
         while ((reqQueueCopy != null) && !reqQueueCopy.isEmpty()) {
             FileSystem.EventDispatcher r = reqQueueCopy.removeFirst();
-            r.dispatch(priority);
+            r.dispatch(priority, postNotify);
 
             if (priority) {
                 newEnum.add(r);
             }
+        }
+        for (Runnable r : postNotify) {
+            r.run();
         }
 
         return newEnum;
@@ -214,7 +219,7 @@ class EventControl {
     private synchronized boolean postponeFiring(FileSystem.EventDispatcher disp) {
         if (priorityRequests == 0) {
             disp.setAtomicActionLink(currentAtomAction);
-            disp.dispatch(true);
+            disp.dispatch(true, null);
         }
 
         if (requestsQueue != null) {

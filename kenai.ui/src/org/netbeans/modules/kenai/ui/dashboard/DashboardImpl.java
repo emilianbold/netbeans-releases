@@ -43,7 +43,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.*;
@@ -54,10 +53,8 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -94,7 +91,7 @@ public final class DashboardImpl extends Dashboard {
     private static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     private static final String PREF_COUNT = "count"; //NOI18N
     private static final String PREF_ID = "id"; //NOI18N
-    private static final String PREF_IGNORED_PROJECTS = "ignoredProjects"; // NOI18N
+    private static final String PREF_PRIVATE_PROJECTS = "privateProjects"; // NOI18N
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -108,14 +105,12 @@ public final class DashboardImpl extends Dashboard {
     private RequestProcessor requestProcessor = new RequestProcessor("Kenai Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
-    private final ArrayList<ProjectHandle> allProjects = new ArrayList<ProjectHandle>(50);
-    private final Set<String> ignoredProjectIds = new HashSet<String>(50);
+    private final ArrayList<ProjectHandle> openProjects = new ArrayList<ProjectHandle>(50);
     private final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
     private boolean memberProjectsLoaded = false;
     private boolean otherProjectsLoaded = false;
-    private boolean ignoredProjectsLoaded = false;
 
     private static final long TIMEOUT_INTERVAL_MILLIS = TreeListNode.TIMEOUT_INTERVAL_MILLIS;
 
@@ -125,6 +120,9 @@ public final class DashboardImpl extends Dashboard {
     private final UserNode userNode;
     private final ErrorNode memberProjectsError;
     private final ErrorNode otherProjectsError;
+
+    private final CategoryNode openProjectsNode;
+    private final CategoryNode myProjectsNode;
 
     private final Object LOCK = new Object();
 
@@ -148,6 +146,13 @@ public final class DashboardImpl extends Dashboard {
         userNode = new UserNode(this);
         userNode.set(login, false);
         model.addRoot(-1, userNode);
+        openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"));
+        model.addRoot(-1, openProjectsNode);
+
+        myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"));
+        if (login!=null) {
+            model.addRoot(-1, myProjectsNode);
+        }
 
         memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenMemberProjects"), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -163,16 +168,26 @@ public final class DashboardImpl extends Dashboard {
             }
         });
 
-        kenai.addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
+        kenai.addPropertyChangeListener(new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent pce) {
-                final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
-                if (newValue==null) {
-                    setUser(null);
-                } else {
-                    setUser(new LoginHandleImpl(newValue.getUserName()));
+                if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
+
+                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
+                    if (newValue == null) {
+                        setUser(null);
+                    } else {
+                        setUser(new LoginHandleImpl(newValue.getUserName()));
+                    }
+                    loadingFinished();
+                } else if (Kenai.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
+                    loadingStarted();
+                } else if (Kenai.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
+                    loadingFinished();
                 }
             }
         });
+
     }
 
     public static DashboardImpl getInstance() {
@@ -235,22 +250,31 @@ public final class DashboardImpl extends Dashboard {
             this.login = login;
             
             if (login==null) {
+
+                //
                 //remove private project from dashboard
                 //private projects are visible only for
                 //authenticated user who is member of this project
-                Iterator<ProjectHandle> ph = allProjects.iterator();
+                Iterator<ProjectHandle> ph = openProjects.iterator();
                 while (ph.hasNext()) {
                     final ProjectHandle next = ph.next();
                     if (next.isPrivate()) {
                         removeProjectsFromModel(Collections.singletonList(next));
                         ph.remove();
                     }
-                    storeAllProjects();
+                    //storeAllProjects();
                 }
+                removeMemberProjectsFromModel(memberProjects);
+                memberProjects.clear();
+
+                model.removeRoot(myProjectsNode);
+            } else {
+                model.addRoot(-1, myProjectsNode);
             }
-            memberProjects.clear();
+//            removeMemberProjectsFromModel(memberProjects);
+//            memberProjects.clear();
             memberProjectsLoaded = false;
-            userNode.set(login, !allProjects.isEmpty());
+            userNode.set(login, !openProjects.isEmpty());
             if( isOpened() ) {
                 if( null != login ) {
                     startLoadingMemberProjects(false);
@@ -270,20 +294,18 @@ public final class DashboardImpl extends Dashboard {
      */
     public void addProject( ProjectHandle project, boolean isMemberProject ) {
         synchronized( LOCK ) {
-            if( allProjects.contains(project) )
+            if( openProjects.contains(project) )
                 return;
 
-            ignoredProjectIds.remove(project.getId());
             if( isMemberProject && memberProjectsLoaded && !memberProjects.contains(project) ) {
                 memberProjects.add(project);
             }
-            storeIgnoredProjects();
-            allProjects.add(project);
+            openProjects.add(project);
             storeAllProjects();
             ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
             tmp.add(project);
             addProjectsToModel(-1, tmp);
-            userNode.set(login, !allProjects.isEmpty());
+            userNode.set(login, !openProjects.isEmpty());
             switchMemberProjects();
             if( isOpened() ) {
                 switchContent();
@@ -294,13 +316,10 @@ public final class DashboardImpl extends Dashboard {
 
     public void removeProject( ProjectHandle project ) {
         synchronized( LOCK ) {
-            if( !allProjects.contains(project) ) {
+            if( !openProjects.contains(project) ) {
                 return;
             }
-            allProjects.remove(project);
-
-            ignoredProjectIds.add(project.getId());
-            storeIgnoredProjects();
+            openProjects.remove(project);
 
             storeAllProjects();
             ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
@@ -343,10 +362,11 @@ public final class DashboardImpl extends Dashboard {
     void refreshProjects() {
         changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
+            removeMemberProjectsFromModel(memberProjects);
             memberProjects.clear();
             memberProjectsLoaded = false;
-            removeProjectsFromModel(allProjects);
-            allProjects.clear();
+            removeProjectsFromModel(openProjects);
+            openProjects.clear();
             otherProjectsLoaded = false;
             if( isOpened() ) {
                 startLoadingAllProjects(true);
@@ -376,10 +396,6 @@ public final class DashboardImpl extends Dashboard {
     public JComponent getComponent() {
         synchronized( LOCK ) {
             opened = true;
-            if( !ignoredProjectsLoaded ) {
-                loadIgnoredProjects();
-            }
-
             requestProcessor.post(new Runnable() {
                 public void run() {
                     UIUtils.waitStartupFinished();
@@ -400,10 +416,12 @@ public final class DashboardImpl extends Dashboard {
         synchronized( LOCK ) {
             if( !model.getRootNodes().contains(userNode) ) {
                 model.addRoot(0, userNode);
+                model.addRoot(1, openProjectsNode);
+                //model.addRoot(-1, myProjectsNode);
             }
-            if( model.getSize() > 1 )
+            if( model.getSize() > 2 )
                 return;
-            addProjectsToModel(-1, allProjects);
+            addProjectsToModel(-1, openProjects);
         }
     }
 
@@ -413,7 +431,7 @@ public final class DashboardImpl extends Dashboard {
                 boolean isEmpty = true;
 
                 synchronized( LOCK ) {
-                    isEmpty = null == DashboardImpl.this.login && allProjects.isEmpty();
+                    isEmpty = null == DashboardImpl.this.login && openProjects.isEmpty();
                 }
 
                 boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
@@ -454,6 +472,8 @@ public final class DashboardImpl extends Dashboard {
         LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardImpl.class, "LBL_WhatIsKenai"), createWhatIsKenaiAction() ); //NOI18N
 
         model.removeRoot(userNode);
+        model.removeRoot(myProjectsNode);
+        model.removeRoot(openProjectsNode);
         userNode.set(null, false);
         res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
         res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
@@ -485,37 +505,14 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
-    private void loadIgnoredProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_IGNORED_PROJECTS); //NOI18N
-        ignoredProjectIds.clear();
-        int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
-
-        for( int i=0; i<count; i++ ) {
-            String id = prefs.get(PREF_ID+i, null); //NOI18N
-            if( null != id && id.trim().length() > 0 ) {
-                ignoredProjectIds.add( id.trim() );
-            }
-        }
-        ignoredProjectsLoaded = true;
-    }
-
-    private void storeIgnoredProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_IGNORED_PROJECTS); //NOI18N
-        prefs.putInt(PREF_COUNT, ignoredProjectIds.size()); //NOI18N
-        int index = 0;
-        for( String id : ignoredProjectIds ) {
-            prefs.put(PREF_ID+index++, id); //NOI18N
-        }
-    }
-
     private void storeAllProjects() {
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS); //NOI18N
         int index = 0;
-        for( ProjectHandle project : allProjects ) {
+        for( ProjectHandle project : openProjects ) {
             //do not store private projects
-            if (!project.isPrivate()) {
+//            if (!project.isPrivate()) {
                 prefs.put(PREF_ID+index++, project.getId()); //NOI18N
-            }
+//            }
         }
         //store size
         prefs.putInt(PREF_COUNT, index); //NOI18N
@@ -523,17 +520,16 @@ public final class DashboardImpl extends Dashboard {
 
     private void setOtherProjects(ArrayList<ProjectHandle> projects) {
         synchronized( LOCK ) {
-            removeProjectsFromModel( allProjects );
+            removeProjectsFromModel( openProjects );
+            openProjects.clear();
             for( ProjectHandle p : projects ) {
-                if( ignoredProjectIds.contains(p.getId()) )
-                    continue;
-                if( !allProjects.contains( p ) )
-                    allProjects.add( p );
+                if( !openProjects.contains( p ) )
+                    openProjects.add( p );
             }
-            Collections.sort(allProjects);
+            Collections.sort(openProjects);
             otherProjectsLoaded = true;
-            addProjectsToModel( -1, allProjects );
-            userNode.set(login, !allProjects.isEmpty());
+            addProjectsToModel( -1, openProjects );
+            userNode.set(login, !openProjects.isEmpty());
             storeAllProjects();
 
             switchMemberProjects();
@@ -581,19 +577,18 @@ public final class DashboardImpl extends Dashboard {
                 }
             }
 
-            removeProjectsFromModel( allProjects );
+            removeMemberProjectsFromModel(memberProjects );
             memberProjects.clear();
             memberProjects.addAll(projects);
             memberProjectsLoaded = true;
             for( ProjectHandle p : projects ) {
-                ignoredProjectIds.remove(p.getId());
-                if( !allProjects.contains(p) )
-                    allProjects.add(p);
+                if( !memberProjects.contains(p) )
+                    memberProjects.add(p);
             }
-            Collections.sort(allProjects);
-            storeAllProjects();
-            addProjectsToModel( -1, allProjects );
-            userNode.set(login, !allProjects.isEmpty());
+            Collections.sort(memberProjects);
+//            storeAllProjects();
+            addMemberProjectsToModel(-1, memberProjects );
+            userNode.set(login, !memberProjects.isEmpty());
 
             switchMemberProjects();
 
@@ -606,7 +601,13 @@ public final class DashboardImpl extends Dashboard {
 
     private void addProjectsToModel( int index, List<ProjectHandle> projects ) {
         for( ProjectHandle p : projects ) {
-            model.addRoot( index, new ProjectNode(p) );
+            model.addRoot(2,new ProjectNode(p));
+        }
+    }
+
+    private void addMemberProjectsToModel( int index, List<ProjectHandle> projects ) {
+        for( ProjectHandle p : projects ) {
+            model.addRoot(index, new MyProjectNode(p) );
         }
     }
 
@@ -615,6 +616,22 @@ public final class DashboardImpl extends Dashboard {
         for( TreeListNode root : model.getRootNodes() ) {
             if( root instanceof ProjectNode ) {
                 ProjectNode pn = (ProjectNode) root;
+
+                if( projects.contains( pn.getProject() ) ) {
+                    nodesToRemove.add(root);
+                }
+            }
+        }
+        for( TreeListNode node : nodesToRemove ) {
+            model.removeRoot(node);
+        }
+    }
+
+    private void removeMemberProjectsFromModel( List<ProjectHandle> projects ) {
+        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
+        for( TreeListNode root : model.getRootNodes() ) {
+            if( root instanceof MyProjectNode ) {
+                MyProjectNode pn = (MyProjectNode) root;
 
                 if( projects.contains( pn.getProject() ) ) {
                     nodesToRemove.add(root);
@@ -666,7 +683,7 @@ public final class DashboardImpl extends Dashboard {
                         if (handle!=null) {
                             projects.add(handle);
                         } else {
-                            projects=null;
+                            //projects=null;
                         }
                     }
                     res[0] = projects;

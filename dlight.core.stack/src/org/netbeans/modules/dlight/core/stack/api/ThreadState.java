@@ -60,7 +60,7 @@ public interface ThreadState {
         Sleeping(3, 4, 5, 7), // sleep()
         Waiting(8), // pthread_join, for example
         Blocked(6), // on some mutex
-        Stopped, // lwp_suspend()
+        Stopped(9), // lwp_suspend()
         END_SHORT_LIST,
         // Long states list ...
         START_LONG_LIST,

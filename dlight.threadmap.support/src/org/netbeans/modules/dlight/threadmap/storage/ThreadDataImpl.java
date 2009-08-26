@@ -43,18 +43,18 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
-import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadData;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
 public final class ThreadDataImpl implements ThreadData {
 
     private final ThreadInfoImpl threadInfo;
-    private final List<ThreadStateImpl> states;
+    private final List<ThreadState> states;
     private final List<ThreadState> pstates;
 
     public ThreadDataImpl(ThreadInfoImpl threadInfo) {
         this.threadInfo = threadInfo;
-        this.states = new ArrayList<ThreadStateImpl>();
+        this.states = new ArrayList<ThreadState>();
         pstates = Collections.<ThreadState>unmodifiableList(states);
     }
 
@@ -66,7 +66,7 @@ public final class ThreadDataImpl implements ThreadData {
         return pstates;
     }
 
-    void addState(ThreadStateImpl state) {
+    void addState(ThreadState state) {
         states.add(state);
     }
 

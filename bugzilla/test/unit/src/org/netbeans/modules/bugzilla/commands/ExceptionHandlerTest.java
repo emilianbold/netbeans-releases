@@ -89,24 +89,24 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     }
 
     public void testIsLoginHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", REPO_URL, "XXX", "XXX", null, null);
+        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, "XXX", "XXX", null, null);
         assertHandler(repository, "LoginHandler");
 
-        repository = new BugzillaRepository("bgzll", REPO_URL, REPO_USER, "XXX", null, null);
+        repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, REPO_USER, "XXX", null, null);
         assertHandler(repository, "LoginHandler");
         
     }
 
     public void testIsNotFoundHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "http://crap", null, null, null, null);
+        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", "http://crap", null, null, null, null);
         assertHandler(repository, "NotFoundHandler");
     }
 
     public void testIsDefaultHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", null, null, null, null, null);
+        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", null, null, null, null, null);
         assertHandler(repository, "DefaultHandler");
 
-        repository = new BugzillaRepository("bgzll", "crap", null, null, null, null);
+        repository = new BugzillaRepository("bgzll", "bgzll", "crap", null, null, null, null);
         assertHandler(repository, "DefaultHandler");
 
         // XXX need more tests

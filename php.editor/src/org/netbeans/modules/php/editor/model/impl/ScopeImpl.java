@@ -113,7 +113,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
 
     @SuppressWarnings("unchecked")
     static <T extends ModelElement> Collection<? extends T> filter(final Collection<? extends ModelElement> original,
-            final ElementFilter<ModelElement> filter) {
+            final ElementFilter<T> filter) {
         Set<T> retval = new HashSet<T>();
         for (ModelElement baseElement : original) {
             boolean accepted = filter.isAccepted(baseElement);
@@ -125,7 +125,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
 
     static interface ElementFilter<T extends ModelElement> {
-        boolean isAccepted(T element);
+        boolean isAccepted(ModelElement element);
     }
 
 

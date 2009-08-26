@@ -97,7 +97,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
 
             public JComponent call() throws Exception {
                 FoDFileSystem.getInstance().refresh();
-                waitForDelegateWizard ();
+                    waitForDelegateWizard ();
                 return new JLabel(" ");
             }
         }, autoEnable);
@@ -171,11 +171,16 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             configPanel.setPanelName(name);
             panel.replaceComponents(configPanel);
             forEnable = elems;
+            fireChange ();
         } else {
             FoDFileSystem.getInstance().refresh();
-            waitForDelegateWizard ();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    waitForDelegateWizard ();
+                    fireChange ();
+                }
+            });
         }
-        fireChange ();
     }
     
     private FindComponentModules getFinder () {

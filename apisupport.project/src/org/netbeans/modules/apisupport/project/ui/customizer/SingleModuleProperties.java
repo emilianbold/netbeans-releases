@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
@@ -60,11 +59,12 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -84,8 +84,15 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
@@ -93,6 +100,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.w3c.dom.Element;
 
 /**
  * Provides convenient access to a lot of NetBeans Module's properties.
@@ -100,15 +108,14 @@ import org.openide.util.Utilities;
  * @author Martin Krauskopf
  */
 public final class SingleModuleProperties extends ModuleProperties {
-    
-    private static final String[] IDE_TOKENS = new String[] {
+
+    private static final String[] IDE_TOKENS = new String[]{
         "org.openide.modules.os.Windows", // NOI18N
-        "org.openide.modules.os.Unix",  // NOI18N
+        "org.openide.modules.os.Unix", // NOI18N
         "org.openide.modules.os.MacOSX", // NOI18N
-        "org.openide.modules.os.PlainUnix",  // NOI18N
+        "org.openide.modules.os.PlainUnix", // NOI18N
         "org.openide.modules.os.OS2" // NOI18N
     };
-    
     // property keys for project.properties
     public static final String BUILD_COMPILER_DEBUG = "build.compiler.debug"; // NOI18N
     public static final String BUILD_COMPILER_DEPRECATION = "build.compiler.deprecation"; // NOI18N
@@ -124,11 +131,8 @@ public final class SingleModuleProperties extends ModuleProperties {
     public static final String SPEC_VERSION_BASE = "spec.version.base"; // NOI18N
     /** @see "#66278" */
     public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; // NOI18N
-    
     static final String[] SOURCE_LEVELS = {"1.4", "1.5", "1.6"}; // NOI18N
-    
     private final static Map<String, String> DEFAULTS;
-    
     private boolean majorReleaseVersionChanged;
     private boolean specificationVersionChanged;
     private boolean implementationVersionChange;
@@ -146,14 +150,12 @@ public final class SingleModuleProperties extends ModuleProperties {
         map.put(NBM_NEEDS_RESTART, "false"); // NOI18N
         DEFAULTS = Collections.unmodifiableMap(map);
     }
-    
     // helpers for storing and retrieving real values currently stored on the disk
     private NbModuleProvider.NbModuleType moduleType;
     private SuiteProvider suiteProvider;
     private ProjectXMLManager projectXMLManager;
     private final LocalizedBundleInfo.Provider bundleInfoProvider;
     private LocalizedBundleInfo bundleInfo;
-    
     // keeps current state of the user changes
     private String majorReleaseVersion;
     private String specificationVersion;
@@ -165,28 +167,23 @@ public final class SingleModuleProperties extends ModuleProperties {
     private NbPlatform originalPlatform;
     private JavaPlatform activeJavaPlatform;
     private boolean javaPlatformChanged; // #115989
-    
     /** package name / selected */
     private SortedSet<String> availablePublicPackages;
-    
     private String[] allTokens;
-    
     /** Unmodifiable sorted set of all categories in the module's universe. */
     private SortedSet<String> modCategories;
-    
     /** Unmodifiable sorted set of all dependencies in the module's universe. */
     private Set<ModuleDependency> universeDependencies;
-    
     // models
     private PublicPackagesTableModel publicPackagesModel;
     private DependencyListModel dependencyListModel;
     private FriendListModel friendListModel;
     private RequiredTokenListModel requiredTokensListModel;
-    
+    private DefaultListModel wrappedJarsListModel;
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
-    
+
     /**
      * Returns an instance of SingleModuleProperties for the given project.
      */
@@ -195,7 +192,10 @@ public final class SingleModuleProperties extends ModuleProperties {
         return new SingleModuleProperties(project.getHelper(), project.evaluator(), sp, Util.getModuleType(project),
                 project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
     }
-    
+    private ReferenceHelper refHelper;
+    private UpdateHelper updHelper;
+    private ClassPathSupport cps;
+
     /**
      * Creates a new instance of SingleModuleProperties
      */
@@ -207,7 +207,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         this.bundleInfoProvider = bundleInfoProvider;
         refresh(moduleType, sp);
     }
-    
+
     protected void refresh(NbModuleProvider.NbModuleType moduleType,
             SuiteProvider suiteProvider) {
         reloadProperties();
@@ -220,10 +220,12 @@ public final class SingleModuleProperties extends ModuleProperties {
         dependencyListModel = null;
         friendListModel = null;
         requiredTokensListModel = null;
+        wrappedJarsListModel = null;
         projectXMLManager = null;
         if (isSuiteComponent()) {
-            if (getSuiteDirectory() != null)
+            if (getSuiteDirectory() != null) {
                 ModuleList.refreshModuleListForRoot(getSuiteDirectory());
+            }
         } else if (isStandalone()) {
             ModuleList.refreshModuleListForRoot(getProjectDirectoryFile());
         }
@@ -277,34 +279,33 @@ public final class SingleModuleProperties extends ModuleProperties {
     void resetUniverseDependencies() {
         universeDependencies = null;
     }
-    
+
     Map<String, String> getDefaultValues() {
         return DEFAULTS;
     }
-    
+
     LocalizedBundleInfo getBundleInfo() {
         return bundleInfo;
     }
-    
+
     // ---- READ ONLY start
-    
     /** Returns code name base of the module this instance managing. */
     String getCodeNameBase() {
         return getProjectXMLManager().getCodeNameBase();
     }
-    
+
     String getJarFile() {
         return getHelper().resolveFile(getEvaluator().evaluate("${cluster}/${module.jar}")).getAbsolutePath(); // NOI18N
     }
-    
+
     String getSuiteDirectoryPath() {
         return getSuiteDirectory() != null ? getSuiteDirectory().getPath() : null;
     }
-    
+
     File getSuiteDirectory() {
         return suiteProvider != null ? suiteProvider.getSuiteDirectory() : null;
     }
-    
+
     /** Call only for suite component modules. */
     SuiteProject getSuite() {
         assert isSuiteComponent();
@@ -319,15 +320,14 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return suite;
     }
-    
+
     // ---- READ ONLY end
-    
     /** Check whether the active platform is valid. */
     boolean isActivePlatformValid() {
         NbPlatform plaf = getActivePlatform();
         return plaf == null || plaf.isValid();
     }
-    
+
     /**
      * Returns currently set platform. i.e. platform set in the
      * <em>Libraries</em> panel. Note that it could be <code>null</code> for
@@ -340,7 +340,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return activePlatform;
     }
-    
+
     void setActivePlatform(NbPlatform newPlaf) {
         if (this.activePlatform != newPlaf) {
             NbPlatform oldPlaf = this.activePlatform;
@@ -351,11 +351,11 @@ public final class SingleModuleProperties extends ModuleProperties {
             firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);
         }
     }
-    
+
     JavaPlatform getActiveJavaPlatform() {
         return activeJavaPlatform;
     }
-    
+
     void setActiveJavaPlatform(JavaPlatform nue) {
         JavaPlatform old = activeJavaPlatform;
         if (nue != old) {
@@ -364,44 +364,44 @@ public final class SingleModuleProperties extends ModuleProperties {
             javaPlatformChanged = true;
         }
     }
-    
+
     String getMajorReleaseVersion() {
         return majorReleaseVersion;
     }
-    
+
     void setMajorReleaseVersion(String ver) {
         if (!Utilities.compareObjects(majorReleaseVersion, ver)) {
             majorReleaseVersion = ver;
             majorReleaseVersionChanged = true;
         }
     }
-    
+
     String getSpecificationVersion() {
         return specificationVersion;
     }
-    
+
     void setSpecificationVersion(String ver) {
         if (!Utilities.compareObjects(specificationVersion, ver)) {
             specificationVersion = ver;
             specificationVersionChanged = true;
         }
     }
-    
+
     String getImplementationVersion() {
         return implementationVersion;
     }
-    
+
     void setImplementationVersion(String ver) {
         if (!Utilities.compareObjects(implementationVersion, ver)) {
             implementationVersion = ver;
             implementationVersionChange = true;
         }
     }
-    
+
     String getProvidedTokens() {
         return provTokensString;
     }
-    
+
     void setProvidedTokens(String tokens) {
         if (!Utilities.compareObjects(provTokensString, tokens)) {
             provTokensString = tokens;
@@ -419,15 +419,15 @@ public final class SingleModuleProperties extends ModuleProperties {
             autoUpdateShowInClientChanged = true;
         }
     }
-    
+
     boolean isStandalone() {
         return moduleType == NbModuleProvider.STANDALONE;
     }
-    
+
     boolean isNetBeansOrg() {
         return moduleType == NbModuleProvider.NETBEANS_ORG;
     }
-    
+
     boolean isSuiteComponent() {
         return moduleType == NbModuleProvider.SUITE_COMPONENT;
     }
@@ -438,7 +438,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             return false;
         }
         Set<ModuleDependency> deps = depsModel.getDependencies();
-        for (Iterator it = deps.iterator(); it.hasNext(); ) {
+        for (Iterator it = deps.iterator(); it.hasNext();) {
             ModuleDependency dep = (ModuleDependency) it.next();
             if (dep.hasImplementationDepedendency()) {
                 return true;
@@ -446,7 +446,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return false;
     }
-    
+
     private ProjectXMLManager getProjectXMLManager() {
         if (projectXMLManager == null) {
             try {
@@ -457,7 +457,49 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return projectXMLManager;
     }
-    
+
+    ReferenceHelper getRefHelper() {
+        if (refHelper == null) {
+            refHelper = new ReferenceHelper(
+                    getHelper(),
+                    ProjectUtils.getAuxiliaryConfiguration(getProject()),
+                    getEvaluator());
+        }
+        return refHelper;
+    }
+
+    UpdateHelper getUpdateHelper() {
+        if (updHelper == null) {
+            updHelper = new UpdateHelper(new UpdateImplementation() {
+
+                public boolean isCurrent() {
+                    // XXX is metadata version update needed? Currently not supported here
+                    return true;
+                }
+
+                public boolean canUpdate() {
+                    assert false : "Should not get called";
+                    return false;
+                }
+
+                public void saveUpdate(EditableProperties props) throws IOException {
+                    assert false : "Should not get called";
+                }
+
+                public Element getUpdatedSharedConfigurationData() {
+                    assert false : "Should not get called";
+                    return null;
+                }
+
+                public EditableProperties getUpdatedProjectProperties() {
+                    assert false : "Should not get called";
+                    return null;
+                }
+            }, getHelper());
+        }
+        return updHelper;
+    }
+
     /**
      * Returns list model of module's dependencies regarding the currently
      * selected platform.
@@ -470,13 +512,16 @@ public final class SingleModuleProperties extends ModuleProperties {
                             getProjectXMLManager().getDirectDependencies(getActivePlatform()), true);
                     // add listener and fire DEPENDENCIES_PROPERTY when deps are changed
                     dependencyListModel.addListDataListener(new ListDataListener() {
+
                         public void contentsChanged(ListDataEvent e) {
                             firePropertyChange(DEPENDENCIES_PROPERTY, null,
                                     getDependenciesListModel());
                         }
+
                         public void intervalAdded(ListDataEvent e) {
                             contentsChanged(null);
                         }
+
                         public void intervalRemoved(ListDataEvent e) {
                             contentsChanged(null);
                         }
@@ -491,7 +536,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return dependencyListModel;
     }
-    
+
     /**
      * Returns a set of available {@link ModuleDependency modules dependencies}
      * in the module's universe according to the currently selected {@link
@@ -511,7 +556,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     Set<ModuleDependency> getUniverseDependencies(
             final boolean filterExcludedModules, final boolean apiProvidersOnly) {
         assert !SwingUtilities.isEventDispatchThread() :
-            "SingleModuleProperties.getUniverseDependencies() cannot be called from EDT"; // NOI18N
+                "SingleModuleProperties.getUniverseDependencies() cannot be called from EDT"; // NOI18N
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
@@ -559,7 +604,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return Collections.unmodifiableSet(result);
     }
-    
+
     /**
      * Delegates to {@link #getUniverseDependencies(boolean, boolean)} with
      * <code>false</code> as a second parameter.
@@ -567,7 +612,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     Set<ModuleDependency> getUniverseDependencies(final boolean filterExcludedModules) {
         return getUniverseDependencies(filterExcludedModules, false);
     }
-    
+
     public static boolean isExcluded(ModuleEntry me, Collection<String> disabledModules, Collection<String> enabledClusters, Collection<String> disabledClusters) {
         if (disabledModules.contains(me.getCodeNameBase())) {
             return true;
@@ -581,6 +626,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return false;
     }
+
     static boolean clusterMatch(Collection<String> enabledClusters, String clusterName) { // #73706
         String baseName = clusterBaseName(clusterName);
         for (String c : enabledClusters) {
@@ -590,11 +636,12 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return false;
     }
+
     static String clusterBaseName(String clusterName) {
         // when changing, change also org.netbeans.nbbuild.ModuleSelector
         return clusterName.replaceFirst("[0-9.]+$", ""); // NOI18N
     }
-    
+
     /**
      * Returns sorted arrays of CNBs of available friends for this module.
      */
@@ -617,28 +664,76 @@ public final class SingleModuleProperties extends ModuleProperties {
         } // else standalone module - leave empty (see the UI spec)
         return set.toArray(new String[set.size()]);
     }
-    
+
     FriendListModel getFriendListModel() {
         if (friendListModel == null) {
             friendListModel = new FriendListModel(getProjectXMLManager().getFriends());
         }
         return friendListModel;
     }
-    
+
     RequiredTokenListModel getRequiredTokenListModel() {
         if (requiredTokensListModel == null) {
             requiredTokensListModel = new RequiredTokenListModel(requiredTokens);
         }
         return requiredTokensListModel;
     }
-    
+    private final String CPEXT = "CPEXT";    // NOI18N  // just an arbitrary string
+
+    private ClassPathSupport getClassPathSupport() {
+        if (cps == null) {
+            ClassPathSupport.Callback cback = new ClassPathSupport.Callback() {
+
+                public void readAdditionalProperties(List<Item> items, String projectXMLElement) {
+                    if (CPEXT.equals(projectXMLElement)) {
+                        for (Item item : items) {
+                            // file ref properties for <cp-e> jars so that CPS can handle src&javadoc
+                            String ref = getRefHelper().createForeignFileReferenceAsIs(item.getFilePath(), null);
+                            item.setReference(ref);
+                            item.initSourceAndJavadoc(getHelper());
+                        }
+                    }
+                }
+
+                public void storeAdditionalProperties(List<Item> items, String projectXMLElement) {
+                    if (CPEXT.equals(projectXMLElement)) {
+                        for (Item item : items) {
+                            // remove file ref properties for <cp-e> jars, keep only src&javadoc
+                            if (item.getReference() != null) {
+                                getRefHelper().destroyReference(item.getReference());
+                            }
+                        }
+                    }
+                }
+            };
+            cps = new ClassPathSupport(getEvaluator(), getRefHelper(), getHelper(), getUpdateHelper(), cback);
+        }
+        return cps;
+    }
+
+    private Iterator<Item> getCPExtIterator() {
+        StringBuilder sb = new StringBuilder();
+        String[] cpExt = SuiteUtils.getAntProperty(Arrays.asList(getProjectXMLManager().getBinaryOrigins()));
+        for (String s : cpExt) {
+            sb.append(s);
+        }
+        return getClassPathSupport().itemsIterator(sb.toString(), CPEXT);
+    }
+
+    DefaultListModel getWrappedJarsListModel() {
+        if (wrappedJarsListModel == null) {
+            wrappedJarsListModel = ClassPathUiSupport.createListModel(getCPExtIterator());
+        }
+        return wrappedJarsListModel;
+    }
+
     // XXX should be probably moved into ModuleList
     String[] getAllTokens() {
         if (allTokens == null) {
             try {
                 SortedSet<String> provTokens = new TreeSet<String>();
                 provTokens.addAll(Arrays.asList(IDE_TOKENS));
-                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
+                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext();) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     provTokens.addAll(Arrays.asList(me.getProvidedTokens()));
                 }
@@ -651,25 +746,33 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return allTokens;
     }
-    
+
     PublicPackagesTableModel getPublicPackagesModel() {
         if (publicPackagesModel == null) {
             publicPackagesModel = new PublicPackagesTableModel(loadPublicPackages());
         }
         return publicPackagesModel;
     }
-    
-    /** Loads a map of package-isSelected entries. */
+
+    /** Loads a map of package -&gt; isSelected entries.
+     * Available packages are loaded from currently wrapped JARs (via {@link #getWrappedJarsListModel()})
+     * plus project sources, selected packages are loaded from <tt>project.xml</tt>.
+     * @see #loadAvailablePackages()
+     * @return Map of package -&gt; isSelected entries
+     */
     private Map<String, Boolean> loadPublicPackages() {
-        Collection<String> selectedPackages = getSelectedPackages();
+        return loadPublicPackages(getSelectedPackages());
+    }
+
+    private Map<String, Boolean> loadPublicPackages(Collection<String> selectedPackages) {
         Map<String, Boolean> publicPackages = new TreeMap<String, Boolean>();
-        for (Iterator<String> it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
+        for (Iterator<String> it = getAvailablePublicPackages().iterator(); it.hasNext();) {
             String pkg = it.next();
             publicPackages.put(pkg, Boolean.valueOf(selectedPackages.contains(pkg)));
         }
         return publicPackages;
     }
-    
+
     private Collection<String> getSelectedPackages() {
         Collection<String> sPackages = new HashSet<String>();
         ManifestManager.PackageExport[] pexports = getProjectXMLManager().getPublicPackages();
@@ -688,28 +791,61 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return sPackages;
     }
-    
+
+    private ListDataListener wrappedJarsListener;
+
     /**
      * Returns set of all available public packages for the project.
      */
     Set<String> getAvailablePublicPackages() {
         if (availablePublicPackages == null) {
-            availablePublicPackages = Util.scanProjectForPackageNames(getProjectDirectoryFile());
+            availablePublicPackages = Util.scanProjectForPackageNames(getProjectDirectoryFile(), false);
+            // #66188: add c-p-e packages from ClassPathSupport so that they can be updated while customizer is open
+            for (Iterator<Item> it = ClassPathUiSupport.getIterator(getWrappedJarsListModel());
+                    it.hasNext();) {
+                Item item = it.next();
+                Util.scanJarForPackageNames(availablePublicPackages, item.getResolvedFile());
+            }
+            if (wrappedJarsListener == null) {
+                wrappedJarsListener = new ListDataListener() {
+                    private void process(ListDataEvent e) {
+                        availablePublicPackages = null;
+                        if (publicPackagesModel != null) {
+                            publicPackagesModel.reloadData(loadPublicPackages(publicPackagesModel.getSelectedPackages()));
+                        }
+                    }
+                    public void intervalAdded(ListDataEvent e) {
+                        process(e);
+                    }
+
+                    public void intervalRemoved(ListDataEvent e) {
+                        process(e);
+                    }
+
+                    public void contentsChanged(ListDataEvent e) {
+                        process(e);
+                    }
+                };
+                getWrappedJarsListModel().addListDataListener(wrappedJarsListener);
+            }
         }
         return availablePublicPackages;
     }
-    
-    @Override void storeProperties() throws IOException {
+
+    @Override
+    void storeProperties() throws IOException {
         super.storeProperties();
-        
+
         // Store chnages in manifest
         storeManifestChanges();
-        
+
         // store localized info
         if (bundleInfo != null && bundleInfo.isModified()) {
             bundleInfo.store();
         } // XXX else ignore for now but we could save into some default location
-        
+
+        ProjectXMLManager pxm = getProjectXMLManager();
+
         // Store project.xml changes
         // store module dependencies
         DependencyListModel dependencyModel = getDependenciesListModel();
@@ -717,21 +853,58 @@ public final class SingleModuleProperties extends ModuleProperties {
             Set<ModuleDependency> depsToSave = new TreeSet<ModuleDependency>(dependencyModel.getDependencies());
 
             logNetBeansAPIUsage("DEPENDENCIES", dependencyModel.getDependencies()); // NOI18N
-            
-            getProjectXMLManager().replaceDependencies(depsToSave);
+
+            pxm.replaceDependencies(depsToSave);
         }
-        String[] friends = getFriendListModel().getFriends();
-        String[] publicPkgs = getPublicPackagesModel().getSelectedPackages();
+        Set<String> friends = getFriendListModel().getFriends();
+        Set<String> publicPkgs = getPublicPackagesModel().getSelectedPackages();
         boolean refreshModuleList = false;
         if (getPublicPackagesModel().isChanged() || getFriendListModel().isChanged()) {
-            if (friends.length > 0) { // store friends packages
-                getProjectXMLManager().replaceFriends(friends, publicPkgs);
+            if (friends.size() > 0) { // store friends packages
+                pxm.replaceFriends(friends, publicPkgs);
             } else { // store public packages
-                getProjectXMLManager().replacePublicPackages(publicPkgs);
+                pxm.replacePublicPackages(publicPkgs);
             }
             refreshModuleList = true;
         }
-        
+
+        // store class-path-extensions + its src & javadoc
+        if (cps != null && wrappedJarsListModel != null) {
+            final List<Item> cpExtList = ClassPathUiSupport.getList(wrappedJarsListModel);
+            Map<String, String> newCpExt = new HashMap<String, String>();
+
+            for (Item item : cpExtList) {
+                String binPath = item.getFilePath();
+                if (binPath != null && binPath.startsWith(Util.CPEXT_BINARY_PATH)) {
+                    String runtimePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + binPath.substring(Util.CPEXT_BINARY_PATH.length());
+                    newCpExt.put(runtimePath, binPath);
+                }
+            }
+
+            // delete removed JARs, remove any remaining exported packages and src&javadoc refs left
+            Iterator<Item> it = getCPExtIterator();
+            HashSet<String> jarsSet = new HashSet<String>(newCpExt.values());
+            while (it.hasNext()) {
+                Item item = it.next();
+                if (!jarsSet.contains(item.getFilePath())) {
+                    File f = new File(getProjectDirectoryFile(), item.getFilePath());
+                    FileObject toDel = FileUtil.toFileObject(f);
+                    if (toDel != null) {
+                        Set<String> pp = new HashSet<String>();
+                        Util.scanJarForPackageNames(pp, f);
+                        // TODO delete packages
+//                        getPublicPackagesModel().reloadData(null)
+                        // XXX doesn't work yet: toDel.delete();
+                    }
+                    assert item.getReference() != null : "getCPExtIterator() initializes references to wrapped JARs";
+                    item.removeSourceAndJavadoc(getUpdateHelper());
+                    getRefHelper().destroyReference(item.getReference());
+                }
+            }
+            cps.encodeToStrings(cpExtList, CPEXT);
+            pxm.replaceClassPathExtensions(newCpExt);
+        }
+
         if (isStandalone()) {
             ModuleProperties.storePlatform(getHelper(), getActivePlatform());
             if (javaPlatformChanged) {
@@ -751,7 +924,6 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
         }
     }
-    
     /** UI Logger for apisupport */
     static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.apisupport"); // NOI18N
 
@@ -766,11 +938,11 @@ public final class SingleModuleProperties extends ModuleProperties {
                 cnbs.add(cnb);
             }
         }
-        
+
         if (cnbs.isEmpty()) {
             return;
         }
-        
+
         LogRecord rec = new LogRecord(Level.CONFIG, msg);
         rec.setParameters(cnbs.toArray(new String[0]));
         rec.setResourceBundleName(SingleModuleProperties.class.getPackage().getName() + ".Bundle"); // NOI18N
@@ -778,7 +950,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         rec.setLoggerName(UI_LOG.getName());
         UI_LOG.log(rec);
     }
-    
+
     /**
      * Store appropriately properties regarding the manifest file.
      */
@@ -794,9 +966,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         boolean changed = false;
         if (majorReleaseVersionChanged) {
-            String module = "".equals(getMajorReleaseVersion()) ?
-                getCodeNameBase() :
-                getCodeNameBase() + '/' + getMajorReleaseVersion();
+            String module = "".equals(getMajorReleaseVersion()) ? getCodeNameBase() : getCodeNameBase() + '/' + getMajorReleaseVersion();
             setManifestAttribute(em, ManifestManager.OPENIDE_MODULE, module);
             changed = true;
         }
@@ -835,7 +1005,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             Util.storeManifest(manifestFO, em);
         }
     }
-    
+
     // XXX should be something similar provided be EditableManifest?
     private void setManifestAttribute(EditableManifest em, String key, String value) {
         assert value != null;
@@ -847,12 +1017,12 @@ public final class SingleModuleProperties extends ModuleProperties {
             em.setAttribute(key, value, null);
         }
     }
-    
+
     // package provide for unit test
     File getManifestFile() {
         return getHelper().resolveFile(getEvaluator().getProperty("manifest.mf")); // NOI18N
     }
-    
+
     /**
      * Returns a set of all available categories in the module's universe
      * according to the currently selected platform ({@link
@@ -863,25 +1033,25 @@ public final class SingleModuleProperties extends ModuleProperties {
      */
     SortedSet<String> getModuleCategories() {
         assert !SwingUtilities.isEventDispatchThread() :
-            "SingleModuleProperties.getModuleCategories() cannot be called from EDT"; // NOI18N
+                "SingleModuleProperties.getModuleCategories() cannot be called from EDT"; // NOI18N
         if (modCategories == null && !reloadModuleListInfo()) {
             return new TreeSet<String>();
         }
         return modCategories;
     }
-    
+
     /**
      * Prepare all ModuleDependencies from this module's universe. Also prepare
      * all categories. <strong>Package-private only for unit tests.</strong>
      */
     boolean reloadModuleListInfo() {
         assert !SwingUtilities.isEventDispatchThread() :
-            "SingleModuleProperties.reloadModuleListInfo() cannot be called from EDT"; // NOI18N
+                "SingleModuleProperties.reloadModuleListInfo() cannot be called from EDT"; // NOI18N
         if (isActivePlatformValid()) {
             try {
                 SortedSet<String> allCategories = new TreeSet<String>(Collator.getInstance());
                 Set<ModuleDependency> allDependencies = new HashSet<ModuleDependency>();
-                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
+                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext();) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     if (!me.getCodeNameBase().equals(getCodeNameBase())) {
                         allDependencies.add(new ModuleDependency(me));
@@ -900,7 +1070,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return false;
     }
-    
+
     /**
      * Helper method to get the <code>ModuleList</code> for the project this
      * instance manage. <strong>Package-private only for unit tests.</strong>
@@ -919,7 +1089,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             return ModuleList.getModuleList(getProjectDirectoryFile());
         }
     }
-    
+
     /**
      * Just use a combination of evaluator and resolver. May return
      * <code>null</code> if evaluating fails.
@@ -928,7 +1098,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         String evaluated = getEvaluator().evaluate(currentLicence);
         return evaluated == null ? null : getHelper().resolveFile(evaluated);
     }
-    
+
     Project getProject() {
         Project p = null;
         try {
@@ -938,5 +1108,22 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return p;
     }
-    
+
+    /**
+     * Adds all packages from given JARs to {@link #getPublicPackagesModel()}.
+     * Does not store to project.xml
+     * @param jars
+     * @return Number of actually added packages.
+     */
+    int exportPackagesFromJars(List<File> jars) {
+        PublicPackagesTableModel model = getPublicPackagesModel();
+        Set<String> pkgs = new HashSet<String>(model.getSelectedPackages());
+        int origC = pkgs.size();
+        for (File jar : jars) {
+            Util.scanJarForPackageNames(pkgs, jar);
+        }
+        model.reloadData(loadPublicPackages(pkgs));
+        return pkgs.size() - origC;
+    }
+
 }

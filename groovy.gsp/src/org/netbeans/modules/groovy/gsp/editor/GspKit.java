@@ -65,7 +65,7 @@ import org.netbeans.modules.csl.core.SelectCodeElementAction;
 import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
-import org.netbeans.modules.html.editor.HtmlKit;
+import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.openide.util.Exceptions;
 

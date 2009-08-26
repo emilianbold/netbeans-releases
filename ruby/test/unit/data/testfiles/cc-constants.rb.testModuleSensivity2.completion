@@ -1,0 +1,6 @@
+Code completion result for source line:
+puts Colors::|BLUE
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CONSTANT   BLUE                                       null
+CONSTANT   GREEN                                      null
+CONSTANT   RED                                        null
