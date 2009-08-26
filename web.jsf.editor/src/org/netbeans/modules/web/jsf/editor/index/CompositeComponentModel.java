@@ -39,13 +39,18 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,30 +61,61 @@ import org.openide.filesystems.FileUtil;
  */
 public class CompositeComponentModel extends JsfPageModel {
 
-    //index
+    //index keys
     static final String LIBRARY_NAME_KEY = "library"; //NOI18N
-    private static final String INTERFACE_ATTRIBUTES_KEY = "interface_attributes"; //NOI18N
-    private static final String HAS_IMPLEMENTATION_KEY = "has_implementation"; //NOI18N
+    static final String INTERFACE_ATTRIBUTES_KEY = "interface_attributes"; //NOI18N
+    static final String HAS_IMPLEMENTATION_KEY = "has_implementation"; //NOI18N
 
+    //other
     private static final String RESOURCES_FOLDER_NAME = "resources"; //NOI18N
     private static final char VALUES_SEPARATOR = ','; //NOI18N
+    private static final char ATTRIBUTES_SEPARATOR = ';'; //NOI18N
+    private static final char KEY_VALUE_SEPARATOR = '='; //NOI18N
+
+
+    private static final Collection<String> COMPOSITE_ATTRIBUTE_TAG_ATTRIBUTES =
+            Arrays.asList(new String[]{"name", "targets", "default", "displayName", "expert",
+                "method-signature", "preferred", "required", "shortDescription", "type"}); //NOI18N
     
-    protected Collection<String> attributes;
+    protected Collection<Map<String, String>> attributes;
     protected boolean hasImplementation;
     protected FileObject sourceFile;
+    protected String relativePath;
 
-    public CompositeComponentModel(FileObject file, Collection<String> attributes, boolean hasImplementation) {
+    public CompositeComponentModel(FileObject file, Collection<Map<String, String>> attributes, boolean hasImplementation) {
+        this(file, null, attributes, hasImplementation);
+    }
+
+    public CompositeComponentModel(FileObject file, String relativePath, Collection<Map<String, String>> attributes, boolean hasImplementation) {
+        super();
         this.attributes = attributes;
         this.hasImplementation = hasImplementation;
         this.sourceFile = file;
+        this.relativePath = relativePath;
     }
 
+    public String getComponentName() {
+        return sourceFile.getName();
+    }
+
+    public FileObject getSourceFile() {
+        return sourceFile;
+    }
+
+    public String getRelativePath() {
+        return relativePath;
+    }
+    
     public boolean isHasImplementation() {
         return hasImplementation;
     }
 
-    public Collection<String> getInterfaceAttributes() {
+    public Collection<Map<String, String>> getExistingInterfaceAttributes() {
         return attributes;
+    }
+
+    public Collection<String> getPossibleAttributeTagAttributes() {
+        return COMPOSITE_ATTRIBUTE_TAG_ATTRIBUTES;
     }
 
     @Override
@@ -90,11 +126,22 @@ public class CompositeComponentModel extends JsfPageModel {
 
         //store attributes
         StringBuffer buf = new StringBuffer();
-        Iterator<String> itr = attributes.iterator();
-        while(itr.hasNext()) {
-            buf.append(itr.next());
-            if(itr.hasNext()) {
-                buf.append(VALUES_SEPARATOR);
+        Iterator<Map<String, String>> itr = attributes.iterator();
+        while (itr.hasNext()) {
+            Map<String, String> attrs = itr.next();
+            Iterator<String> attrsKeysItr = attrs.keySet().iterator();
+            while (attrsKeysItr.hasNext()) {
+                String key = attrsKeysItr.next();
+                String value = attrs.get(key);
+                buf.append(key);
+                buf.append(KEY_VALUE_SEPARATOR);
+                buf.append(value);
+                if (attrsKeysItr.hasNext()) {
+                    buf.append(VALUES_SEPARATOR);
+                }
+            }
+            if (itr.hasNext()) {
+                buf.append(ATTRIBUTES_SEPARATOR);
             }
         }
         document.addPair(INTERFACE_ATTRIBUTES_KEY, buf.toString(), false, true);
@@ -134,11 +181,10 @@ public class CompositeComponentModel extends JsfPageModel {
 
     public static class Factory extends JsfPageModelFactory {
 
+        private static final String COMPOSITE_ATTRIBUTE_TAG_NAME = "attribute"; //NOI18N
         private static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
         private static final String INTERFACE_TAG_NAME = "interface"; //NOI18N
         private static final String IMPLEMENTATION_TAG_NAME = "implementation"; //NOI18N
-        private static final String ATTRIBUTE_TAG_NAME = "attribute"; //NOI18N
-        private static final String ATTRIBUTE_TAG_NAME_ATTR = "name"; //NOI18N
 
         @Override
         public JsfPageModel getModel(HtmlParserResult result) {
@@ -150,7 +196,8 @@ public class CompositeComponentModel extends JsfPageModel {
                 return null;
             }
 
-            final Collection<String> interfaceAttrs = new ArrayList<String>();
+            //composite:attribute tag -> map of its attributes
+            final Collection<Map<String, String>> interfaceAttrs = new ArrayList<Map<String, String>>();
             final boolean[] hasInterface = new boolean[1];
             final boolean[] hasImplementation = new boolean[1];
 
@@ -160,11 +207,13 @@ public class CompositeComponentModel extends JsfPageModel {
                     if (node.getNameWithoutPrefix().equals(INTERFACE_TAG_NAME)) {
                         hasInterface[0] = true;
                         for (AstNode child : node.children()) {
-                            if (child.getNameWithoutPrefix().equals(ATTRIBUTE_TAG_NAME)) {
-                                String name = child.getAttribute(ATTRIBUTE_TAG_NAME_ATTR).toString();
-                                if (name != null) {
-                                    interfaceAttrs.add(name);
+                            if (child.getNameWithoutPrefix().equals(COMPOSITE_ATTRIBUTE_TAG_NAME)) {
+                                //found composite:attribute tag
+                                Map<String, String> attrs = new HashMap<String, String>();
+                                for (String attrKey : child.getAttributeKeys()) {
+                                    attrs.put(attrKey, child.getAttribute(attrKey).toString());
                                 }
+                                interfaceAttrs.add(attrs);
                             }
                         }
                     } else if (node.getNameWithoutPrefix().equals(IMPLEMENTATION_TAG_NAME)) {
@@ -174,12 +223,35 @@ public class CompositeComponentModel extends JsfPageModel {
             });
 
             if (hasInterface[0]) {
-                ;
                 return new CompositeComponentModel(file, interfaceAttrs, hasImplementation[0]);
             }
 
             return null;
 
         }
+
+        @Override
+        public JsfPageModel loadFromIndex(IndexResult result) {
+            String attrs = result.getValue(INTERFACE_ATTRIBUTES_KEY);
+            boolean hasImplementation = Boolean.parseBoolean(result.getValue(HAS_IMPLEMENTATION_KEY));
+            Collection<Map<String,String>> parsedAttrs = new ArrayList<Map<String,String>>();
+            //parse attributes
+            StringTokenizer st = new StringTokenizer(attrs, Character.valueOf(ATTRIBUTES_SEPARATOR).toString());
+            while(st.hasMoreTokens()) {
+                String attrText = st.nextToken();
+                Map<String, String> pairs = new HashMap<String,String>();
+                StringTokenizer st2 = new StringTokenizer(attrText, Character.valueOf(VALUES_SEPARATOR).toString());
+                while(st2.hasMoreTokens()) {
+                    String pair = st2.nextToken();
+                    String key = pair.substring(0, pair.indexOf(KEY_VALUE_SEPARATOR));
+                    String value = pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1);
+                    pairs.put(key, value);
+                }
+                parsedAttrs.add(pairs);
+            }
+            return new CompositeComponentModel(result.getFile(), result.getRelativePath(), parsedAttrs, hasImplementation);
+
+        }
+        
     }
 }

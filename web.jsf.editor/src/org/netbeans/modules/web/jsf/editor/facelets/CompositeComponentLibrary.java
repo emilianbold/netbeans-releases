@@ -36,12 +36,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
+import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
+import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.netbeans.modules.web.jsf.editor.tld.TldLibrary.Tag;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,8 +56,8 @@ import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
     private final String COMPOSITE_LIBRARY_NS_PREFIX = "http://java.sun.com/jsf/composite/"; //NOI18N
-
     private String libraryName;
+    private TldLibrary generatedDescribingLibrary;
 
     //for undeclared libraries w/o prefix
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
@@ -68,18 +74,21 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         return COMPOSITE_LIBRARY_NS_PREFIX + getLibraryName();
     }
 
+    @Override
+    public String getDisplayName() {
+        return getLibraryName();
+    }
+
     public String getLibraryName() {
         return libraryName;
     }
 
     @Override
     public Collection<NamedComponent> getComponents() {
-        Collection<String> componentNames = support.getJsfSupport().getIndex().getCompositeLibraryComponents(getLibraryName());
+        Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
         Collection<NamedComponent> components = new ArrayList<NamedComponent>();
-        for(String compName : componentNames) {
-            //TODO fix this - there needs to be a special component type for the composite components / files
-            //which lazy loads its properties from a parser result (the not indexed data)
-            NamedComponent comp = new NamedComponent(compName);
+        for (String compName : componentNames) {
+            NamedComponent comp = new CompositeComponent(compName);
             components.add(comp);
         }
         return components;
@@ -87,7 +96,110 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     @Override
     public TldLibrary getAssociatedTLDLibrary() {
-        return null;
+        TldLibrary tldlib = support.getJsfSupport().getTldLibraries().get(getNamespace());
+        if (tldlib != null) {
+            //ohh, someone made a TLD for us, nice...
+            return tldlib;
+        }
+        //most cases, no tld, generate something so the completion and other stuff works
+        //todo - implement reasonable caching
+//        if (generatedDescribingLibrary == null) {
+        generatedDescribingLibrary = new CCTldLibrary();
+//        }
+        return generatedDescribingLibrary;
     }
 
+    private JsfIndex index() {
+        return support.getJsfSupport().getIndex();
+    }
+
+    public class CompositeComponent extends NamedComponent {
+
+        public CompositeComponent(String name) {
+            super(name);
+        }
+
+        public CompositeComponentModel getComponentModel() {
+            return index().getCompositeComponentModel(getLibraryName(), name);
+        }
+
+    }
+
+    private class CCTldLibrary extends TldLibrary {
+
+        private Map<String, Tag> tags = new HashMap<String, Tag>();
+
+        public CCTldLibrary() {
+            init();
+        }
+
+        private void init() {
+            Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
+            for (String cname : componentNames) {
+                CompositeComponentModel model = index().getCompositeComponentModel(getLibraryName(), cname);
+                Collection<Attribute> attrs = new ArrayList<Attribute>();
+                String msgNoTld = NbBundle.getBundle(JsfCompletionItem.class).getString("MSG_NO_TLD"); //NOI18N
+                for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
+                    String attrname = attrsMap.get("name"); //NOI18N
+                    String description = getAttributesDescription(model);
+                    attrs.add(new Attribute(attrname, description, false));
+                }
+
+                StringBuffer sb = new StringBuffer();
+                sb.append("<div><b>Composite component source: </b>");
+                sb.append(model.getRelativePath());
+                sb.append("</div>");
+                sb.append(getAttributesDescription(model));
+                sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
+
+                Tag t = new Tag(cname, sb.toString(), attrs);
+                tags.put(cname, t);
+            }
+        }
+
+        private String getAttributesDescription(CompositeComponentModel model) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("<p><b>Tag attributes:</b>");
+            sb.append("<table border=\"1\">"); //NOI18N
+
+            for (Map<String, String> descr : model.getExistingInterfaceAttributes()) {
+                sb.append("<tr>"); //NOI18N
+                sb.append("<td>"); //NOI18N
+                sb.append("<div style=\"font-weight: bold\">"); //NOI18N
+                String attrname = descr.get("name"); //NOI18N);
+                sb.append(attrname);
+                sb.append("</div>"); //NOI18N
+                sb.append("</td>"); //NOI18N
+                sb.append("<td>"); //NOI18N
+
+                sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
+                for (String key : descr.keySet()) {
+                    if (key.equals("name")) {
+                        continue; //skip name
+                    }
+                    String val = descr.get(key);
+                    sb.append("<tr><td><b>");
+                    sb.append(key);
+                    sb.append("</b></td><td>");
+                    sb.append(val);
+                    sb.append("</td></tr>");
+                }
+                sb.append("</table>"); //NOI18N
+
+
+                sb.append("</td>"); //NOI18N
+                sb.append("</tr>"); //NOI18N
+                }
+            sb.append("</table>"); //NOI18N
+            sb.append("</p>"); //NOI18N
+
+
+            return sb.toString();
+        }
+
+        @Override
+        public Map<String, Tag> getTags() {
+            return tags;
+        }
+    }
 }

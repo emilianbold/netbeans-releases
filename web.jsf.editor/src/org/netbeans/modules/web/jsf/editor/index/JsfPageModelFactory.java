@@ -42,6 +42,7 @@ package org.netbeans.modules.web.jsf.editor.index;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -65,6 +66,17 @@ public abstract class JsfPageModelFactory {
         return models;
     }
 
+    public static JsfPageModelFactory getFactory(Class modelFactoryClass) {
+        for(JsfPageModelFactory factory : FACTORIES) {
+            if(factory.getClass().equals(modelFactoryClass)) {
+                return factory;
+            }
+        }
+        return null;
+    }
+
     public abstract JsfPageModel getModel(HtmlParserResult result);
 
+    public abstract JsfPageModel loadFromIndex(IndexResult result);
+    
 }
