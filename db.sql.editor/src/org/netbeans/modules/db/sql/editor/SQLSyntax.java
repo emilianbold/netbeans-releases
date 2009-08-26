@@ -72,6 +72,7 @@ public class SQLSyntax extends Syntax {
     private static final int ISA_SEMICOLON = 35; //after ';'
     private static final int ISA_LPAREN = 36; //after (
     private static final int ISA_RPAREN = 37; //after )
+    private static final int ISA_BACK_SLASH_IN_STRING = 38; // after \ in string
 
     private int startQuoteChar = -1;
 
@@ -85,6 +86,7 @@ public class SQLSyntax extends Syntax {
     /**
      * Parse the next token
      */
+    @Override
     protected TokenID parseToken() {
         char actChar; //the current character
 
@@ -174,12 +176,21 @@ public class SQLSyntax extends Syntax {
                 
                 //if we are currently in a string literal
                 case ISI_STRING:
-                    switch (actChar) { 
+                    switch (actChar) {
+                        case '\\': // NOI18N
+                            // escape possible single quote #152325
+                            state = ISA_BACK_SLASH_IN_STRING;
+                            break;
                         case '\'': // NOI18N
                             offset++;
                             state = INIT;
                             return SQLTokenContext.STRING;
                     }
+                    break;
+
+                // If we are after a back slash (\) in string.
+                case ISA_BACK_SLASH_IN_STRING:
+                    state = ISI_STRING;
                     break;
 
                 //if we are currently in an identifier (e.g. a variable name)
@@ -334,6 +345,7 @@ public class SQLSyntax extends Syntax {
                 // stay in block-comment state
                 return SQLTokenContext.BLOCK_COMMENT; 
             case ISI_STRING:
+            case ISA_BACK_SLASH_IN_STRING:
                 return SQLTokenContext.INCOMPLETE_STRING;
             case ISA_ZERO:
             case ISI_INT:
@@ -371,6 +383,7 @@ public class SQLSyntax extends Syntax {
     /**
      * Returns the state name for the state id
      */
+    @Override
     public String getStateName(int stateNumber) {
         switch(stateNumber) {
         case ISI_WHITESPACE:

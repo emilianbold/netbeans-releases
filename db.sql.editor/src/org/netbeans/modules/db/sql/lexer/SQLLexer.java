@@ -159,10 +159,19 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in a string literal.
                 case ISI_STRING:
                     switch (actChar) {
+                        case '\\': // NOI18N
+                            // escape possible single quote #152325
+                            state = State.ISA_BACK_SLASH_IN_STRING;
+                            break;
                         case '\'': // NOI18N
                             state = State.INIT;
                             return factory.createToken(SQLTokenId.STRING);
                     }
+                    break;
+
+                // If we are after a back slash (\) in string.
+                case ISA_BACK_SLASH_IN_STRING:
+                    state = State.ISI_STRING;
                     break;
 
                 // If we are currently in an identifier (e.g. a variable name),
@@ -305,6 +314,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 break;
 
             case ISI_STRING:
+            case ISA_BACK_SLASH_IN_STRING:
                 id = SQLTokenId.INCOMPLETE_STRING; // XXX or string?
                 part = PartType.START;
                 break;
@@ -385,6 +395,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         ISA_ZERO, // after '0'
         ISI_INT, // integer number
         ISI_DOUBLE, // double number
-        ISA_DOT // after '.'
+        ISA_DOT, // after '.'
+        ISA_BACK_SLASH_IN_STRING // after \ in string
     }
 }
