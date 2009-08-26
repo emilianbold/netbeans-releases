@@ -87,11 +87,11 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
-                m.setMessageCount(-1);
-                m.setOnlineCount(-3);
-                return m;
-            }
+                    MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
+                    m.setMessageCount(-1);
+                    m.setOnlineCount(-3);
+                    return m;
+                }
 
             return ChatNotifications.getDefault().getMessagingHandle(project.getId());
         }
