@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.j2ee.web;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
@@ -76,11 +77,19 @@ public class WebRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
         ModelHandle handle = context.lookup(ModelHandle.class);
         final Project prj = context.lookup(Project.class);
         final WebRunCustomizerPanel panel = new WebRunCustomizerPanel(handle, prj);
-        category.setOkButtonListener(new ActionListener() {
+        ActionListener listener = new ActionListener() {
+            private String contextPath;
             public void actionPerformed(ActionEvent arg0) {
-                panel.applyChanges();
+                if (SwingUtilities.isEventDispatchThread()) {
+                    contextPath = panel.applyChangesInAWT();
+                } else {
+                    assert contextPath != null;
+                    panel.applyChanges(contextPath);
+                }
             }
-        });
+        };
+        category.setOkButtonListener(listener);
+        category.setStoreListener(listener);
         return panel;
     }
     
