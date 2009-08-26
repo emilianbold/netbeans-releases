@@ -58,10 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-/**
- * Wizard to create a new Make project.
- */
-public final class FeatureOnDemanWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+public final class FeatureOnDemandWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
     public static final String CHOSEN_ELEMENTS_FOR_INSTALL = "chosen-elements-for-install"; // NOI18N
     public static final String CHOSEN_ELEMENTS_FOR_ENABLE = "chosen-elements-for-enable"; // NOI18N
     public static final String APPROVED_ELEMENTS = "approved-elements"; // NOI18N
@@ -73,7 +70,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     private FileObject template;
     private boolean autoEnable = true;
     
-    public FeatureOnDemanWizardIterator (FileObject template) {
+    public FeatureOnDemandWizardIterator (FileObject template) {
         this.template = template;
     }
     
@@ -90,7 +87,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
         if (obj != null) {
             return null;
         }
-        return new FeatureOnDemanWizardIterator (fo);
+        return new FeatureOnDemandWizardIterator (fo);
     }
     
     private static WizardDescriptor.InstantiatingIterator getRealNewMakeProjectWizardIterator (FileObject template) {
@@ -107,7 +104,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
             assert o != null && o instanceof WizardDescriptor.InstantiatingIterator :
                 o + " is not null and instanceof WizardDescriptor.InstantiatingIterator";
             WizardDescriptor.InstantiatingIterator iterator = (WizardDescriptor.InstantiatingIterator) o;
-            if (! FeatureOnDemanWizardIterator.class.equals (o.getClass ())) {
+            if (! FeatureOnDemandWizardIterator.class.equals (o.getClass ())) {
                 return iterator;
             }
         }
@@ -119,7 +116,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
             panels.add (new DescriptionStep (autoEnable));
             names = new String [] {
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
+                NbBundle.getMessage (FeatureOnDemandWizardIterator.class, "DescriptionStep_Name"),
             
             };
             String[] steps = new String [panels.size ()];
@@ -149,8 +146,8 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
             panels.add (new DescriptionStep (autoEnable));
             panels.add (new EnableStep ());
             names = new String [] {
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "EnableStep_Name"),
+                NbBundle.getMessage (FeatureOnDemandWizardIterator.class, "DescriptionStep_Name"),
+                NbBundle.getMessage (FeatureOnDemandWizardIterator.class, "EnableStep_Name"),
             
             };
             String[] steps = new String [panels.size ()];
