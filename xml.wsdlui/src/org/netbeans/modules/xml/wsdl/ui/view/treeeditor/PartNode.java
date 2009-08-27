@@ -354,12 +354,12 @@ public class PartNode extends WSDLNamedElementNode<Part> {
         NamedComponentReference<GlobalElement> element = mWSDLConstruct.getElement();
         String decoration = null;
         if (type != null && type.get() != null) {
-            String tns = type.get().getModel().getSchema().getTargetNamespace();
+            String tns = Utility.getTargetNamespace(type.get().getModel());
 /*            decoration = NbBundle.getMessage(PartNode.class, "LBL_Typeof", 
                     Utility.getNameAndDropPrefixIfInCurrentModel(tns, type.get().getName(), mWSDLConstruct.getModel()));*/
             decoration = Utility.getNameAndDropPrefixIfInCurrentModel(tns, type.get().getName(), mWSDLConstruct.getModel());
         } else if (element != null && element.get() != null) {
-            String tns = element.get().getModel().getSchema().getTargetNamespace();
+            String tns = Utility.getTargetNamespace(element.get().getModel());
             /*decoration = NbBundle.getMessage(PartNode.class, "LBL_Typeof", 
                     Utility.getNameAndDropPrefixIfInCurrentModel(tns, element.get().getName(), mWSDLConstruct.getModel()));*/
             decoration = Utility.getNameAndDropPrefixIfInCurrentModel(tns, element.get().getName(), mWSDLConstruct.getModel());

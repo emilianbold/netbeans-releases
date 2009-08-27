@@ -60,12 +60,12 @@ public class LoginPanel extends javax.swing.JPanel {
     private static URL registerUrl;
     static {
         try {
-            forgetPasswordUrl = new URL("https://kenai.com/people/forgot_password");
+            forgetPasswordUrl = new URL("https://zembly.com");
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
         try {
-            registerUrl = new URL("https://kenai.com/people/signup");
+            registerUrl = new URL("https://zembly.com");
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -26,6 +26,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.openide.util.NbBundle;
 
 public class ElementOrType {
@@ -40,7 +41,8 @@ public class ElementOrType {
     public ElementOrType(GlobalElement ele, Map<String, String> namespaceToPrefixMap) {
         mElement = ele;
         this.namespaceToPrefixMap = namespaceToPrefixMap;
-        namespacePrefix = generateNamespacePrefixIfNotPresent(mElement.getModel().getSchema().getTargetNamespace());
+        String ns = Utility.getTargetNamespace(mElement.getModel());
+        namespacePrefix = generateNamespacePrefixIfNotPresent(ns);
         localPart = mElement.getName();
     }
     
@@ -49,7 +51,8 @@ public class ElementOrType {
     public ElementOrType(GlobalType type, Map<String, String> namespaceToPrefixMap) {
         mType = type;
         this.namespaceToPrefixMap = namespaceToPrefixMap;
-        namespacePrefix = generateNamespacePrefixIfNotPresent(mType.getModel().getSchema().getTargetNamespace());
+        String ns = Utility.getTargetNamespace(mType.getModel());
+        namespacePrefix = generateNamespacePrefixIfNotPresent(ns);
         localPart = mType.getName();
     }
     
@@ -97,7 +100,9 @@ public class ElementOrType {
         String nsPrefix = namespaceToPrefixMap.get(namespace);
         if (nsPrefix == null) {
             nsPrefix = generateNamespacePrefix(null);
-            namespaceToPrefixMap.put(namespace, nsPrefix);
+            if (namespace != null && nsPrefix != null) {
+                namespaceToPrefixMap.put(namespace, nsPrefix);
+            }
         }
         return nsPrefix;
     }
