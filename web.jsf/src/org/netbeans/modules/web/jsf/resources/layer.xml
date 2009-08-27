@@ -112,6 +112,23 @@ made subject to such option by the copyright holder.
         <folder name="JSF">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
             <attr name="position" intvalue="700"/>
+            <!-- JSF From Entity Templates -->
+            <folder name="JSF_From_Entity">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
+                <file name="table.ftl" url="../palette/items/resources/table.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="view.ftl" url="../palette/items/resources/view.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="edit.ftl" url="../palette/items/resources/edit.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
             <!-- JSP Page --> 
             <file name="JSP.jsp" url="templates/JSP.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
@@ -173,6 +190,8 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="400"/>
             <file name="JsfForm.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfForm.xml"/>
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
+            <file name="JsfFormFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfFormFromEntity.xml"/>
+            <file name="JsfTableFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTableFromEntity.xml"/>
         </folder>
     </folder>
    
