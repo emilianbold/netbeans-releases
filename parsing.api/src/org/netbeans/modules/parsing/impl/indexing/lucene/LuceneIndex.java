@@ -178,7 +178,7 @@ public class LuceneIndex implements IndexImpl {
             public List<IndexDocumentImpl> run() throws IOException {
                 checkPreconditions();
                 
-                final IndexReader r = getReader(false);
+                final IndexReader r = getReader();
                 if (r != null) {
                     // index exists
                     return _query(r, fieldName, value, kind, fieldsToLoad);
@@ -264,7 +264,7 @@ public class LuceneIndex implements IndexImpl {
                         }
                         if (res) {
                             try {
-                                getReader(false);
+                                getReader();
                             } catch (java.io.IOException e) {
                                 res = false;
                                 clear();
@@ -551,59 +551,34 @@ public class LuceneIndex implements IndexImpl {
         }
         return result;
     }
-
-    private static void deleteFile (final IndexReader in, final Searcher searcher, final String toRemoveItem) throws IOException {
-        Hits hits = searcher.search(DocumentUtil.sourceNameQuery(toRemoveItem));
-        //Create copy of hists
-        int[] dindx = new int[hits.length()];
-        int dindxLength = 0;
-        for (int i=0; i<dindx.length; i++) {
-            dindx[dindxLength++] = hits.id(i);
-        }
-        for (int i=0; i<dindxLength; i++) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Deleting from index: " + toRemoveItem + ", lucene document idx=" + dindx[i]); //NOI18N
-            }
-            in.deleteDocument (dindx[i]);
-        }
-    }
-
+    
     // called under LuceneIndexManager.writeAccess
     // Always has to invalidate the cached reader
     private void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, LMListener lmListener) throws IOException {
         LOGGER.log(Level.FINE, "Flushing: {0}", indexFolder); //NOI18N
         try {
-            //assert ClassIndexManager.getDefault().holdsWriteLock();
-            //1) delete all documents from to delete and toAdd
-            final IndexReader in = getReader(true);
-            if (in != null) {
-                try {
-                    final Searcher searcher = new IndexSearcher (in);
-                    try {
-                        for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
-                            String toRemoveItem = it.next();
-                            it.remove();
-                            deleteFile (in, searcher, toRemoveItem);
-                        }
-                        for (LuceneDocument toRemoveItem : toAdd) {
-                            deleteFile(in, searcher, toRemoveItem.getSourceName());
-                        }
-                    } finally {
-                        searcher.close();
-                    }
-                } finally {
-                    in.close();
-                }
-            }
-            
-            //2) add all documents form to add
-            IndexWriter out = new IndexWriter(
+            assert LuceneIndexManager.getDefault().holdsWriteLock();
+            boolean exists = IndexReader.indexExists(this.directory);
+            final IndexWriter out = new IndexWriter(
                 directory, // index directory
                 false, // auto-commit each flush
-                new KeywordAnalyzer(),
-                in == null // open existing or create new index
+                new KeywordAnalyzer(), //analyzer to tokenize fields
+                !exists // open existing or create new index
             );
             try {
+                //1) delete all documents from to delete and toAdd
+                if (exists) {
+                    for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
+                        String toRemoveItem = it.next();
+                        it.remove();
+                        out.deleteDocuments(DocumentUtil.sourceNameQuery(toRemoveItem));
+                    }
+                    for (LuceneDocument toRemoveItem : toAdd) {
+                        out.deleteDocuments(DocumentUtil.sourceNameQuery(toRemoveItem.getSourceName()));
+                    }
+                }
+            
+                //2) add all documents form to add
                 if (debugIndexMerging) {
                     out.setInfoStream (System.err);
                 }
@@ -636,7 +611,11 @@ public class LuceneIndex implements IndexImpl {
                     memDir = null;
                 }
             } finally {
-                out.close();
+                try {
+                    out.close();
+                } finally {
+                    refreshReader();
+                }
             }
         } finally {
             LOGGER.log(Level.FINE, "Index flushed: {0}", indexFolder); //NOI18N
@@ -651,7 +630,7 @@ public class LuceneIndex implements IndexImpl {
     }
 
     // called under LuceneIndexManager.readAccess or LuceneIndexManager.writeAccess
-    private synchronized IndexReader getReader(boolean detach) throws IOException {
+    private synchronized IndexReader getReader() throws IOException {
         IndexReader r = reader;
         if (r == null) {
             boolean exists = IndexReader.indexExists(this.directory);
@@ -667,11 +646,18 @@ public class LuceneIndex implements IndexImpl {
             } else {
                 LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
             }
-        }
-        if (detach) {
-            reader = null;
-        }
+        }        
         return r;
+    }
+
+    private synchronized void refreshReader() throws IOException {
+        if (reader != null) {
+            final IndexReader newReader = reader.reopen();
+            if (newReader != reader) {
+                reader.close();
+                reader = newReader;
+            }
+        }
     }
 
     private static Directory createDirectory(final File indexFolder) throws IOException {
@@ -839,6 +825,15 @@ public class LuceneIndex implements IndexImpl {
                 this.norms = null;
             }
             super.doClose();
+        }
+
+        @Override
+        public IndexReader reopen() throws IOException {
+            final IndexReader newIn = in.reopen();
+            if (newIn == in) {
+                return this;
+            }
+            return new NoNormsReader(newIn);
         }
 
         /**
