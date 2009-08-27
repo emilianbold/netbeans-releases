@@ -195,6 +195,10 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
     }
 
+    public void testWrongpackage() throws Exception {
+        performTest("test/Test.java", "|\npublic class Test {\n }", "0:0-1:0:error:Incorrect Package");
+    }
+
     private void performTest(String fileName , String code, String expected) throws Exception {
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
