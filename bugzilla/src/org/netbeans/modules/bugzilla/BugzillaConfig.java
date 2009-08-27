@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -50,6 +54,8 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.bugzilla.util.FileUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
@@ -68,6 +74,8 @@ public class BugzillaConfig {
     private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
     private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
+    private static final String TASKLISTISSUES_STORAGE_FILE = "tasklistissues.data"; //NOI18N
+    private static final Level LOG_LEVEL = BugzillaUtil.isAssertEnabled() ? Level.SEVERE : Level.INFO;
 
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
@@ -255,5 +263,120 @@ public class BugzillaConfig {
             priorityIcons.put("P5", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p5.png", true)); // NOI18N
         }
         return priorityIcons.get(priority);
+    }
+
+    /**
+     * Saves issue attributes permanently
+     * @param issues
+     */
+    public void setTaskListIssues(HashMap<String, List<String>> issues) {
+        Bugzilla.LOG.fine("setTaskListIssues: saving issues");              //NOI18N
+        File f = new File(getNBConfigPath());
+        f.mkdirs();
+        if (!f.canWrite()) {
+            Bugzilla.LOG.warning("setTaskListIssues: Cannot create perm storage"); //NOI18N
+            return;
+        }
+        java.io.ObjectOutputStream out = null;
+        File file = new File(f, TASKLISTISSUES_STORAGE_FILE + ".tmp");
+        boolean success = false;
+        try {
+            // saving to a temp file
+            out = new java.io.ObjectOutputStream(new java.io.BufferedOutputStream(new java.io.FileOutputStream(file)));
+            out.writeInt(issues.size());
+            for (Map.Entry<String, List<String>> entry : issues.entrySet()) {
+                out.writeUTF(entry.getKey());
+                out.writeInt(entry.getValue().size());
+                for (String issueAttributes : entry.getValue()) {
+                    out.writeUTF(issueAttributes);
+                }
+            }
+            success = true;
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(LOG_LEVEL, null, ex);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        if (success) {
+            success = false;
+            // rename the temp file to the permanent one
+            File newFile = new File(f, TASKLISTISSUES_STORAGE_FILE);
+            try {
+                FileUtils.renameFile(file, newFile);
+            } catch (IOException ex) {
+                Bugzilla.LOG.log(LOG_LEVEL, null, ex);
+                success = false;
+            }
+        }
+        if (!success) {
+            Bugzilla.LOG.warning("setTaskListIssues: could not save issues"); //NOI18N
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
+        }
+    }
+
+    /**
+     * Loads issues from a permanent storage
+     * @return
+     */
+    public Map<String, List<String>> getTaskListIssues () {
+        Bugzilla.LOG.fine("loadTaskListIssues: loading issues");            //NOI18N
+        File f = new File(getNBConfigPath());
+        java.io.ObjectInputStream ois = null;
+        File file = new File(f, TASKLISTISSUES_STORAGE_FILE);
+        if (!file.canRead()) {
+            Bugzilla.LOG.fine("loadTaskListIssues: no saved data");         //NOI18N
+            return Collections.emptyMap();
+        }
+        try {
+            ois = new java.io.ObjectInputStream(new java.io.BufferedInputStream(new java.io.FileInputStream(file)));
+            int size = ois.readInt();
+            Bugzilla.LOG.fine("loadTaskListIssues: loading " + size + " records"); //NOI18N
+            HashMap<String, List<String>> issuesPerRepo = new HashMap<String, List<String>>(size);
+            while (size-- > 0) {
+                String repoUrl = ois.readUTF();
+                Bugzilla.LOG.fine("loadTaskListIssues: loading issues for " + repoUrl); //NOI18N
+                int issueCount = ois.readInt();
+                Bugzilla.LOG.fine("loadTaskListIssues: loading " + issueCount + " issues"); //NOI18N
+                LinkedList<String> issues = new LinkedList<String>();
+                while (issueCount-- > 0) {
+                    issues.add(ois.readUTF());
+                }
+                issuesPerRepo.put(repoUrl, issues);
+            }
+            return issuesPerRepo;
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(LOG_LEVEL, null, ex);
+        } finally {
+            if (ois != null) {
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Returns the path for the Bugzilla configuration directory.
+     *
+     * @return the path
+     *
+     */
+    private static String getNBConfigPath() {
+        //T9Y - nb bugzilla confing should be changable
+        String t9yNbConfigPath = System.getProperty("netbeans.t9y.bugzilla.nb.config.path"); //NOI18N
+        if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
+            return t9yNbConfigPath;
+        }
+        String nbHome = System.getProperty("netbeans.user");            //NOI18N
+        return nbHome + "/config/issue-tracking/org-netbeans-modules-bugzilla"; //NOI18N
     }
 }

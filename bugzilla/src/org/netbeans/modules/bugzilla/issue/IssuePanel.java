@@ -119,6 +119,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private boolean reloading;
     private boolean skipReload;
     private boolean usingTargetMilestones;
+    private PropertyChangeListener tasklistListener;
 
     public IssuePanel() {
         initComponents();
@@ -812,11 +813,35 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private void attachTasklistListener (BugzillaIssueProvider provider) {
+        if (tasklistListener == null) { // is not attached yet
+            // listens on events comming from the tasklist, like when an issue is removed, etc.
+            // needed to correctly update tasklistButton label and status
+            tasklistListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (BugzillaIssueProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
+                        Runnable inAWT = new Runnable() {
+                            public void run() {
+                                updateTasklistButton();
+                            }
+                        };
+                        if (EventQueue.isDispatchThread()) {
+                            inAWT.run();
+                        } else {
+                            EventQueue.invokeLater(inAWT);
+                        }
+                    }
+                }
+            };
+            provider.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(tasklistListener, provider));
+        }
+    }
+
     private void updateTasklistButton() {
         tasklistButton.setEnabled(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-/*                BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
+                BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
                 if (provider == null || issue.isNew()) { // do not enable button for new issues
                     return;
                 }
@@ -831,7 +856,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         tasklistButton.setText(tasklistMessage);
                         tasklistButton.setEnabled(true);
                     }
-                });*/
+                });
             }
         });
     }
@@ -1875,13 +1900,13 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void tasklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tasklistButtonActionPerformed
         tasklistButton.setEnabled(false);
-/*        BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
+        BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
         if (provider.isAdded(issue)) {
             provider.remove(issue);
         } else {
             attachTasklistListener(provider);
             provider.add(issue, true);
-        }*/
+        }
         updateTasklistButton();
     }//GEN-LAST:event_tasklistButtonActionPerformed
 

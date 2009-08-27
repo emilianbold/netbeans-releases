@@ -65,4 +65,8 @@ public class ActiveRecordAssociationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/ar-associations/project.rb", ":us^er", "user.rb", 0);
     }
 
+    public void testHasManyWithClassName() throws Exception {
+        checkDeclaration("testfiles/ar-associations/user.rb", ":det^ails", "user_detail.rb", 0);
+    }
+
 }

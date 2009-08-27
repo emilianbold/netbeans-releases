@@ -120,6 +120,15 @@ public final class KenaiFeature {
     }
 
     /**
+     * extended type.
+     * @return type of scm repository. Possible values are
+     * "mercurial", "git", "cvs", "subversion" and "other".
+     */
+    public String getExtendedType() {
+        return featureData.repository_type;
+    }
+
+    /**
      * getter for service name
      * @return name of service
      * @see KenaiService.Names

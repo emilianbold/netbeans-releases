@@ -49,6 +49,9 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -57,19 +60,19 @@ import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Radek Matous
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.php.project.spi.PhpUnitSupport.class)
-public class PhpUnitSupportImpl implements PhpUnitSupport {
+@ServiceProvider(service = EditorSupport.class)
+public class EditorSupportImpl implements EditorSupport {
 
-    public Collection<? extends String> getClassNames(final FileObject fo) {
-        final List<String> retval = new ArrayList<String>();
+    public Collection<PhpClass> getClasses(FileObject fo) {
+        final List<PhpClass> retval = new ArrayList<PhpClass>();
         Source source = Source.create(fo);
         if (source != null) {
             try {
@@ -82,7 +85,10 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
                             FileScope fileScope = model.getFileScope();
                             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
                             for (ClassScope classScope : allClasses) {
-                                retval.add(classScope.getName());
+                                retval.add(new PhpClass(
+                                        classScope.getName(),
+                                        classScope.getNamespaceName().append(classScope.getName()).toFullyQualified().toString(),
+                                        classScope.getOffset()));
                             }
                         }
                     }
@@ -94,15 +100,14 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
         return retval;
     }
 
-    public Collection<? extends FileObject> filesForClassName(FileObject sourceRootDirectory,
-            final String clsName) {
-        if (sourceRootDirectory.isData()) {
-            throw new IllegalArgumentException("sourceRootDirectory must be a folder");
+    public Collection<FileObject> filesForClass(FileObject sourceRoot, PhpClass phpClass) {
+        if (sourceRoot.isData()) {
+            throw new IllegalArgumentException("sourceRoot must be a folder");
         }
         final List<FileObject> retval = new ArrayList<FileObject>();
 
-        PHPIndex index = PHPIndex.get(Collections.singletonList(sourceRootDirectory));
-        Collection<IndexedClass> classes = index.getClasses(null, clsName, QuerySupport.Kind.EXACT);
+        PHPIndex index = PHPIndex.get(Collections.singletonList(sourceRoot));
+        Collection<IndexedClass> classes = index.getClasses(null, phpClass.getName(), QuerySupport.Kind.EXACT);
         for (IndexedClass indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();
             if (fo != null && fo.isValid()) {
@@ -110,5 +115,9 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
             }
         }
         return retval;
+    }
+
+    public PhpElement getElement() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
