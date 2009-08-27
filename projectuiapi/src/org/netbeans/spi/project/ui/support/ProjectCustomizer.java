@@ -492,6 +492,9 @@ public final class ProjectCustomizer {
 
     /*private*/ static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider, Lookup.Provider {
 
+        /** @see CompositeCategoryProvider */
+        private static final String SELF = "Self"; // NOI18N
+
         private final Lookup context;
         private final Map<ProjectCustomizer.Category,CompositeCategoryProvider> category2provider;
         private final DataFolder folder;
@@ -538,8 +541,8 @@ public final class ProjectCustomizer {
                     CompositeCategoryProvider sProvider = null;
                     DataObject subDobs[] = ((DataFolder) dob).getChildren();
                     for (DataObject subDob : subDobs) {
-                        if (subDob.getName().equals("Self")) { // NOI18N
-                            InstanceCookie cookie = subDob.getCookie(InstanceCookie.class);
+                        if (subDob.getName().equals(SELF)) {
+                            InstanceCookie cookie = subDob.getLookup().lookup(InstanceCookie.class);
                             if (cookie != null && CompositeCategoryProvider.class.isAssignableFrom(cookie.instanceClass())) {
                                 sProvider = (CompositeCategoryProvider) cookie.instanceCreate();
                             }
@@ -555,8 +558,8 @@ public final class ProjectCustomizer {
                     toRet.add(cat);
                     category2provider.put(cat, prov);
                 }
-                if (!dob.getName().equals("Self")) { // NOI18N
-                    InstanceCookie cook = dob.getCookie(InstanceCookie.class);
+                if (!dob.getName().equals(SELF)) {
+                    InstanceCookie cook = dob.getLookup().lookup(InstanceCookie.class);
                     if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
                         CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
                         if (provider != null) {
