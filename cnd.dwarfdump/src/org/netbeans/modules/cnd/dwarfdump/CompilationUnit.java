@@ -88,6 +88,7 @@ public class CompilationUnit {
     
     private DwarfAbbriviationTable abbr_table = null;
     private DwarfStatementList statement_list = null;
+    private DwarfLineInfoSection lineInfoSection = null;
     private DwarfMacinfoTable macrosTable = null;
     private DwarfNameLookupTable pubnamesTable = null;
     private long debugInfoOffset;
@@ -102,6 +103,10 @@ public class CompilationUnit {
         this.unit_offset = unitOffset;
         readCompilationUnitHeader();
         root = getDebugInfo(false);
+    }
+
+    public int getDataEncoding(){
+        return reader.getDataEncoding();
     }
 
     public String getProducer() throws IOException {
@@ -379,6 +384,13 @@ public class CompilationUnit {
         return statement_list;
     }
     
+    public DwarfLineInfoSection getLineInfoSection() throws IOException{
+        if (statement_list == null) {
+            initStatementList();
+        }
+        return lineInfoSection;
+    }
+
     public DwarfMacinfoTable getMacrosTable() throws IOException {
         if (macrosTable == null) {
             initMacrosTable();
@@ -467,7 +479,7 @@ public class CompilationUnit {
     }
     
     private void initStatementList() throws IOException {
-        DwarfLineInfoSection lineInfoSection = (DwarfLineInfoSection)reader.getSection(SECTIONS.DEBUG_LINE);
+        lineInfoSection = (DwarfLineInfoSection)reader.getSection(SECTIONS.DEBUG_LINE);
         
         if (root == null) {
             return;

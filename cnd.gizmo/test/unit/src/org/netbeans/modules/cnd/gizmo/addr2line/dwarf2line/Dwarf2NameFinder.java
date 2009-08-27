@@ -21,7 +21,7 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.netbeans.modules.cnd.gizmo.addr2line;
+package org.netbeans.modules.cnd.gizmo.addr2line.dwarf2line;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -304,7 +304,9 @@ public class Dwarf2NameFinder {
                                     lineNumber = prev_lineno;
                                     sourceFile = (String) ((prev_fileno >= 0 && prev_fileno < fnames.size())
                                             ? fnames.get(prev_fileno) : define_file);
-                                    logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
+                                    if (Configuration.DEBUG) {
+                                        logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
+                                    }
 
                                     cache.put(base_address, address,
                                             new CacheEntry(fnames, section, header));
@@ -337,14 +339,14 @@ public class Dwarf2NameFinder {
                                 // XXX this might not be correct, as there can be more
                                 // than one of these instructions in a single compilation
                                 // unit.
-                                if (!scan_only && address > target) {
-                                    if (Configuration.DEBUG) {
-                                        logger.log(DEBUG, "not in this unit base=0x{0}, target=0x{1}", // NOI18N
-                                                new Object[]{Long.toHexString(address),
-                                                    Long.toHexString(target)});
-                                    }
-                                    return false;
-                                }
+                                //if (!scan_only && address > target) {
+                                //    if (Configuration.DEBUG) {
+                                //        logger.log(DEBUG, "not in this unit base=0x{0}, target=0x{1}", // NOI18N
+                                //                new Object[]{Long.toHexString(address),
+                                //                    Long.toHexString(target)});
+                                //    }
+                                //    return false;
+                                //}
                                 break;
 
                             case DW_LNE_define_file:
@@ -375,7 +377,9 @@ public class Dwarf2NameFinder {
                             lineNumber = prev_lineno;
                             sourceFile = (String) ((prev_fileno >= 0 && prev_fileno < fnames.size())
                                     ? fnames.get(prev_fileno) : define_file);
-                            logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
+                            if (Configuration.DEBUG) {
+                                logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
+                            }
 
                             cache.put(base_address, address,
                                     new CacheEntry(fnames, section, header));
@@ -492,7 +496,9 @@ public class Dwarf2NameFinder {
                     lineNumber = new_addr == target ? new_line : lineno;
                     sourceFile = (String) ((fileno >= 0 && fileno < fnames.size())
                             ? fnames.get(fileno) : define_file);
-                    logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
+                    if (Configuration.DEBUG) {
+                        logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
+                    }
 
                     cache.put(base_address, new_addr,
                             new CacheEntry(fnames, section, header));
