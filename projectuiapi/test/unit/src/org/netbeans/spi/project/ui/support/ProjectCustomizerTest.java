@@ -46,7 +46,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -103,27 +102,90 @@ public class ProjectCustomizerTest extends NbTestCase {
     
     public void testReadCategories() throws Exception {
         FileObject customizerFO = FileUtil.createFolder(FileUtil.getConfigRoot(), "Projects/test/Customizer");
-        FileObject testFO = customizerFO.createFolder("TestCategory");
-        testFO.setAttribute("displayName", "Test Category");
-        InstanceDataObject.create(DataFolder.findFolder(testFO), "Self", TestCompositeCategoryProvider.class);
+        // - One         | one
+        // + Category #1 | two
+        //   - Three     | three
+        // + Category #2 |
+        //   - Four      | four
+        InstanceDataObject.create(DataFolder.findFolder(customizerFO), null, TestCCP1.class).getPrimaryFile().setAttribute("position", 100);
+        FileObject catFO = customizerFO.createFolder("Category1");
+        catFO.setAttribute("displayName", "Category #1");
+        catFO.setAttribute("position", 200);
+        InstanceDataObject.create(DataFolder.findFolder(catFO), "Self", TestCCP2.class);
+        InstanceDataObject.create(DataFolder.findFolder(catFO), null, TestCCP3.class);
+        catFO = customizerFO.createFolder("Category2");
+        catFO.setAttribute("displayName", "Category #2");
+        catFO.setAttribute("position", 300);
+        InstanceDataObject.create(DataFolder.findFolder(catFO), null, TestCCP4.class);
         DelegateCategoryProvider dcp = new DelegateCategoryProvider(DataFolder.findFolder(customizerFO), null);
         Category categories[] = dcp.readCategories(DataFolder.findFolder(customizerFO));
         assertNotNull(categories);
-        assertEquals(1, categories.length);
-        assertEquals("TestCategory", categories[0].getDisplayName());
+        assertEquals(3, categories.length);
+        assertEquals("one", categories[0].getName());
+        assertEquals("One", categories[0].getDisplayName());
+        assertEquals("one", dcp.create(categories[0]).getName());
+        assertEquals("Category1", categories[1].getName());
         /* XXX does not work yet because ExternalUtil.MainFS does not provide a FS.Status:
-        assertEquals("Test Category", categories[0].getDisplayName());
+        assertEquals("Category #1", categories[1].getDisplayName());
          */
-        JComponent jc = dcp.create(categories[0]);
-        assertTrue(jc instanceof JButton);
+        assertEquals("two", dcp.create(categories[1]).getName());
+        Category[] subcategories = categories[1].getSubcategories();
+        assertEquals(1, subcategories.length);
+        assertEquals("three", subcategories[0].getName());
+        assertEquals("Three", subcategories[0].getDisplayName());
+        assertEquals("three", dcp.create(subcategories[0]).getName());
+        assertEquals("Category2", categories[2].getName());
+        /*
+        assertEquals("Category #2", categories[2].getDisplayName());
+         */
+        assertEquals(null, dcp.create(categories[2]).getName());
+        subcategories = categories[2].getSubcategories();
+        assertEquals(1, subcategories.length);
+        assertEquals("four", subcategories[0].getName());
+        assertEquals("Four", subcategories[0].getDisplayName());
+        assertEquals("four", dcp.create(subcategories[0]).getName());
     }
-
-    public static class TestCompositeCategoryProvider implements CompositeCategoryProvider {
-        public Category createCategory(Lookup context) {
-            throw new AssertionError();
+    private static abstract class TestCCP implements CompositeCategoryProvider {
+        final String name;
+        TestCCP(String name) {
+            this.name = name;
         }
         public JComponent createComponent(Category category, Lookup context) {
-            return new JButton();
+            JComponent c = new JPanel();
+            c.setName(name);
+            return c;
+        }
+    }
+    public static class TestCCP1 extends TestCCP {
+        public TestCCP1() {
+            super("one");
+        }
+        public Category createCategory(Lookup context) {
+            return Category.create("one", "One", null);
+        }
+    }
+    public static class TestCCP2 extends TestCCP {
+        public TestCCP2() {
+            super("two");
+        }
+        public Category createCategory(Lookup context) {
+            throw new AssertionError("Self");
+        }
+    }
+    public static class TestCCP3 extends TestCCP {
+        public TestCCP3() {
+            super("three");
+        }
+        public Category createCategory(Lookup context) {
+            return Category.create("three", "Three", null);
+        }
+    }
+    public static class TestCCP4 extends TestCCP {
+        public TestCCP4() {
+            super("four");
+        }
+        public Category createCategory(Lookup context) {
+            return Category.create("four", "Four", null);
         }
     }
     
