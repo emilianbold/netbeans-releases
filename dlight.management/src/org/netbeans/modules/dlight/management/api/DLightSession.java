@@ -532,13 +532,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             addDataFilterListener(idp);
         }
 
-        //and now if we have collectors which cannot be attached let's substitute target
-        //the question is is it possible in case target is the whole system: WebTierTarget
-        //or SystemTarget
-        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
-            ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
-        }
-
         // at the end, initialize data filters (_temporarily_ here, as info
         // about filters is stored in target's info...
 
@@ -550,7 +543,13 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 dataFiltersSupport.addFilter(filter);
             }
         }
-
+        //Do it at the very end to apply filters
+        //and now if we have collectors which cannot be attached let's substitute target
+        //the question is is it possible in case target is the whole system: WebTierTarget
+        //or SystemTarget
+        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
+            ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
+        }
         return true;
 
 //    activeTasks = new ArrayList<DLightExecutorTask>();
