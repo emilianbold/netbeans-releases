@@ -48,7 +48,28 @@ made subject to such option by the copyright holder.
       <local-wsdl-file>localhost_8080/StockQuoteService/StockService.wsdl</local-wsdl-file>
       <package-name forceReplace="true">org.netbeans.identity.samples</package-name>
       <catalog-file>catalog.xml</catalog-file>
-      <handler-binding-file>StockService_handler.xml</handler-binding-file>
+      <wsimport-options>
+        <wsimport-option>
+          <wsimport-option-name>extension</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>verbose</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>wsdlLocation</wsimport-option-name>
+          <wsimport-option-value>http://localhost:8080/StockQuoteService/StockService?wsdl</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>xendorsed</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>package</wsimport-option-name>
+          <wsimport-option-value>org.netbeans.identity.samples</wsimport-option-value>
+        </wsimport-option>
+      </wsimport-options>
     </client>
   </clients>
 </jax-ws>
