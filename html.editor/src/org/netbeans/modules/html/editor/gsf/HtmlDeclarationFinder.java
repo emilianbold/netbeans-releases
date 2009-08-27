@@ -40,9 +40,11 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 
 /**
@@ -63,7 +65,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
      *   a valid DeclarationLocation.
      */
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
-        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(XHTML_MIMETYPE)) {
+        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(info.getSnapshot().getSource().getMimeType())) {
             DeclarationLocation loc = ext.findDeclaration(info, caretOffset);
             if(loc != null) {
                 return loc;
@@ -87,7 +89,8 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
      *   otherwise return the character range for the given hyperlink tokens
      */
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(XHTML_MIMETYPE)) {
+        String mimeType = NbEditorUtilities.getMimeType(doc);
+        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(mimeType)) {
             OffsetRange range = ext.getReferenceSpan(doc, caretOffset);
             if(range != null) {
                 return range;

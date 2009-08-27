@@ -39,7 +39,10 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Set;
+import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.HashNode;
 import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -88,13 +91,51 @@ final class ActiveRecordAssociationFinder {
         return null;
     }
 
-    private String getClassNameFor(Node associationNode) {
-        String className = AstUtilities.getName(closest);
-        if (className.length() == 0) {
-            return className;
+    private String getExplicitySpecifiedClassName(Node associationNode) {
+        if (associationNode.childNodes().isEmpty()) {
+            return null;
         }
-        className = Character.toUpperCase(className.charAt(0)) + className.substring(1);
+        ArrayNode parameters = (ArrayNode) associationNode.childNodes().get(0);
+        for (Node param : parameters.childNodes()) {
+            if (!(param instanceof HashNode)) {
+                continue;
+            }
+            HashNode hash = (HashNode) param;
+            if (hash.childNodes().isEmpty()) {
+                continue;
+            }
+            Node hashParams = param.childNodes().get(0);
+            if (hashParams.childNodes().size() < 2) {
+                continue;
+            }
+            for (int i = 0; i < hashParams.childNodes().size(); i++) {
+                Node each = hashParams.childNodes().get(i);
+                if ("class_name".equals(AstUtilities.getName(each)) &&  hashParams.childNodes().size() > i + 1) {
+                    Node value = hashParams.childNodes().get(i + 1);
+                    if (value instanceof StrNode) {
+                        return ((StrNode) value).getValue();
+                    } else {
+                        return AstUtilities.getName(value);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getClassNameFor(Node associationNode) {
+        // first check whether class_name is explicitly specified,
+        // e.g. has_many :details, class_name => "UserDetail"
+        String className = getExplicitySpecifiedClassName(associationNode);
+        if (className == null) {
+            className = AstUtilities.getName(closest);
+            if (className.length() == 0) {
+                return className;
+            }
+            className = Character.toUpperCase(className.charAt(0)) + className.substring(1);
+        }
         String associationName = AstUtilities.getName(associationNode);
+        //XXX: need to singularize here for real
         if ((HAS_MANY.equals(associationName) || HAS_AND_BELONGS_TO_MANY.equals(associationName))
                 && className.length() > 1
                 && className.endsWith("s")) { //NOI18N

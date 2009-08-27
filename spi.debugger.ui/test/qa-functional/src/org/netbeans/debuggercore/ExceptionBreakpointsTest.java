@@ -79,7 +79,7 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
         "testExceptionBreakpointMatchClasses",
         "testExceptionBreakpointExcludeClasses",
         "testExceptionBreakpointHitCount",
-        "testConditionalExceptionBreakpoint" 
+        "testConditionalExceptionBreakpoint"
     };
 
     /**
@@ -195,6 +195,7 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
             new JTextFieldOperator(dialog, 1).setText("java.lang.ClassLoader");
             dialog.ok();
+            new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             try {
                 Utilities.waitStatusText("Thread main stopped at ClassLoader.java");

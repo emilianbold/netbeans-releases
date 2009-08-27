@@ -48,6 +48,7 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -58,6 +59,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
@@ -80,7 +82,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerSources extends JPanel implements SourcesFolderProvider, HelpCtx.Provider {
-    private static final long serialVersionUID = -58846454454544071L;
+    private static final long serialVersionUID = -5884643669887545071L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
     private final CopyFilesVisual copyFilesVisual;
@@ -95,6 +97,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
 
+        // disabled for now
+        phpVersionLabel.setVisible(false);
+        phpVersionComboBox.setVisible(false);
+        phpVersionInfoLabel.setVisible(false);
+
         this.category = category;
         this.properties = properties;
 
@@ -102,6 +109,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         initProjectAndSources();
         webRootTextField.setText(getWebRoot());
         originalCopySrcFiles = initCopyFiles();
+        initPhpVersion();
         initTags();
 
         final LocalServer copyTarget = initCopyTarget();
@@ -142,9 +150,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         ChangeListener defaultChangeListener = new DefaultChangeListener();
         copyFilesVisual.addChangeListener(defaultChangeListener);
         webRootTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
-        ActionListener defaultActionListener = new DefaultActionListener();
-        shortTagsCheckBox.addActionListener(defaultActionListener);
-        aspTagsCheckBox.addActionListener(defaultActionListener);
+        ItemListener defaultItemListener = new DefaultItemListener();
+        phpVersionComboBox.addItemListener(defaultItemListener);
+        shortTagsCheckBox.addItemListener(defaultItemListener);
+        aspTagsCheckBox.addItemListener(defaultItemListener);
 
         // check init values
         validateFields();
@@ -196,6 +205,14 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         if (testDirectory != null) {
             testFolderTextField.setText(FileUtil.getFileDisplayName(testDirectory));
         }
+    }
+
+    private void initPhpVersion() {
+        DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(PhpVersion.values());
+        PhpVersion phpVersion = ProjectPropertiesSupport.getPhpVersion(properties.getProject());
+        assert phpVersion != null;
+        comboBoxModel.setSelectedItem(phpVersion);
+        phpVersionComboBox.setModel(comboBoxModel);
     }
 
     private void initTags() {
@@ -308,6 +325,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         properties.setWebRoot(webRoot);
         properties.setShortTags(String.valueOf(shortTagsCheckBox.isSelected()));
         properties.setAspTags(String.valueOf(aspTagsCheckBox.isSelected()));
+        properties.setPhpVersion(((PhpVersion) phpVersionComboBox.getSelectedItem()).name());
     }
 
     private File getSrcDir() {
@@ -363,78 +381,17 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         sourceFolderTextField = new javax.swing.JTextField();
         testFolderLabel = new javax.swing.JLabel();
         testFolderTextField = new javax.swing.JTextField();
-        encodingComboBox = new javax.swing.JComboBox();
-        copyFilesPanel = new javax.swing.JPanel();
         webRootLabel = new javax.swing.JLabel();
-        webRootButton = new javax.swing.JButton();
         webRootTextField = new javax.swing.JTextField();
+        webRootButton = new javax.swing.JButton();
+        copyFilesPanel = new javax.swing.JPanel();
         encodingLabel = new javax.swing.JLabel();
+        encodingComboBox = new javax.swing.JComboBox();
+        phpVersionLabel = new javax.swing.JLabel();
+        phpVersionComboBox = new javax.swing.JComboBox();
+        phpVersionInfoLabel = new javax.swing.JLabel();
         shortTagsCheckBox = new javax.swing.JCheckBox();
         aspTagsCheckBox = new javax.swing.JCheckBox();
-
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return aspTagsCheckBox;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return aspTagsCheckBox;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return aspTagsCheckBox;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  shortTagsCheckBox){
-                    return aspTagsCheckBox;
-                }
-                if(aComponent ==  encodingComboBox){
-                    return shortTagsCheckBox;
-                }
-                if(aComponent ==  projectFolderTextField){
-                    return sourceFolderTextField;
-                }
-                if(aComponent ==  sourceFolderTextField){
-                    return testFolderTextField;
-                }
-                if(aComponent ==  testFolderTextField){
-                    return webRootTextField;
-                }
-                if(aComponent ==  webRootButton){
-                    return encodingComboBox;
-                }
-                if(aComponent ==  webRootTextField){
-                    return webRootButton;
-                }
-                return aspTagsCheckBox;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  aspTagsCheckBox){
-                    return shortTagsCheckBox;
-                }
-                if(aComponent ==  shortTagsCheckBox){
-                    return encodingComboBox;
-                }
-                if(aComponent ==  sourceFolderTextField){
-                    return projectFolderTextField;
-                }
-                if(aComponent ==  testFolderTextField){
-                    return sourceFolderTextField;
-                }
-                if(aComponent ==  webRootTextField){
-                    return testFolderTextField;
-                }
-                if(aComponent ==  encodingComboBox){
-                    return webRootButton;
-                }
-                if(aComponent ==  webRootButton){
-                    return webRootTextField;
-                }
-                return aspTagsCheckBox;//end getComponentBefore
-
-            }}
-        );
 
         projectFolderLabel.setLabelFor(projectFolderTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/customizer/Bundle"); // NOI18N
@@ -452,10 +409,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
 
         testFolderTextField.setEditable(false);
 
-        copyFilesPanel.setLayout(new java.awt.BorderLayout());
-
         webRootLabel.setLabelFor(webRootTextField);
         org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
+
+        webRootTextField.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(webRootButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_BrowseWebRoot")); // NOI18N
         webRootButton.addActionListener(new java.awt.event.ActionListener() {
@@ -464,10 +421,16 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
             }
         });
 
-        webRootTextField.setEditable(false);
+        copyFilesPanel.setLayout(new java.awt.BorderLayout());
 
         encodingLabel.setLabelFor(encodingComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Encoding")); // NOI18N
+
+        phpVersionLabel.setLabelFor(phpVersionComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(phpVersionLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(phpVersionInfoLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.text")); // NOI18N
+        phpVersionInfoLabel.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(shortTagsCheckBox, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_ShortTagsEnabled")); // NOI18N
 
@@ -483,30 +446,31 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(projectFolderLabel)
                             .add(sourceFolderLabel)
-                            .add(webRootLabel))
+                            .add(webRootLabel)
+                            .add(encodingLabel)
+                            .add(phpVersionLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                            .add(testFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
                                 .add(webRootTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(webRootButton))
-                            .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                            .add(testFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(encodingLabel)
-                        .add(40, 40, 40)
-                        .add(encodingComboBox, 0, 280, Short.MAX_VALUE)))
+                            .add(encodingComboBox, 0, 280, Short.MAX_VALUE)
+                            .add(phpVersionComboBox, 0, 280, Short.MAX_VALUE)
+                            .add(phpVersionInfoLabel)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
                 .add(0, 0, 0))
-            .add(layout.createSequentialGroup()
-                .add(shortTagsCheckBox)
-                .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(aspTagsCheckBox)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(testFolderLabel)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(shortTagsCheckBox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -526,19 +490,24 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(webRootLabel)
-                    .add(webRootButton)
-                    .add(webRootTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(webRootTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(webRootButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(encodingLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(phpVersionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(phpVersionLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(phpVersionInfoLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(shortTagsCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(aspTagsCheckBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(aspTagsCheckBox))
         );
 
         projectFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.projectFolderLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -553,18 +522,18 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         testFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
         testFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         testFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        encodingComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_Encoding")); // NOI18N
-        encodingComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_Encoding")); // NOI18N
-        copyFilesPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleName")); // NOI18N
-        copyFilesPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleDescription")); // NOI18N
         webRootLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleName")); // NOI18N
         webRootLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        webRootButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_Browse")); // NOI18N
-        webRootButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_BrowseWebRoot")); // NOI18N
         webRootTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootTextField.AccessibleContext.accessibleName")); // NOI18N
         webRootTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        webRootButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_Browse")); // NOI18N
+        webRootButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_BrowseWebRoot")); // NOI18N
+        copyFilesPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleName")); // NOI18N
+        copyFilesPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleDescription")); // NOI18N
         encodingLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.encodingLabel.AccessibleContext.accessibleName")); // NOI18N
         encodingLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.encodingLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        encodingComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_Encoding")); // NOI18N
+        encodingComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_Encoding")); // NOI18N
         shortTagsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleName")); // NOI18N
         shortTagsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         aspTagsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.aspTagsCheckBox.AccessibleContext.accessibleName")); // NOI18N
@@ -588,6 +557,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     private javax.swing.JPanel copyFilesPanel;
     private javax.swing.JComboBox encodingComboBox;
     private javax.swing.JLabel encodingLabel;
+    private javax.swing.JComboBox phpVersionComboBox;
+    private javax.swing.JLabel phpVersionInfoLabel;
+    private javax.swing.JLabel phpVersionLabel;
     private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JTextField projectFolderTextField;
     private javax.swing.JCheckBox shortTagsCheckBox;
@@ -618,11 +590,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         }
     }
 
-    private class DefaultActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+    private class DefaultItemListener implements ItemListener {
+        public void itemStateChanged(ItemEvent e) {
             validateFields();
         }
-
     }
 
     public HelpCtx getHelpCtx() {

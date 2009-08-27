@@ -126,11 +126,15 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
+                <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
+                <package>org.netbeans.modules.php.api.editor</package>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.util</package>
                 <package>org.netbeans.modules.php.spi.commands</package>
+                <package>org.netbeans.modules.php.spi.editor</package>
                 <package>org.netbeans.modules.php.spi.phpmodule</package>
             </friend-packages>
         </data>
