@@ -71,6 +71,7 @@ import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -224,6 +225,15 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                     }
                 }
             }
+        } else if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+            // kenai issues need instantiated repository so they can be shown in tasklist
+            // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
+            // when user loggs in so the repository can be created.
+            rp.post(new Runnable() { // do not block here
+                public void run() {
+                    notifyKenaiLogin();
+                }
+            });
         }
     }
 
@@ -412,6 +422,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
     private void addKenaiIssues (Map<String, List<String>> repositoryIssues) {
         // now what remains are kenai issues and non-existant repositories
+        boolean kenaiIssueAdded = false;
         for (Map.Entry<String, List<String>> e : repositoryIssues.entrySet()) {
             String projectName = e.getKey();
             if (projectName.startsWith(KENAI_REPOSITORY_IDENT_PREFIX)) { // is kenai
@@ -439,9 +450,14 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                             continue;
                         }
                         add(issueName, issueUrl, issueKey, projectName);
+                        kenaiIssueAdded = true;
                     }
                 }
             }
+        }
+        if (kenaiIssueAdded) {
+            Kenai.getDefault().removePropertyChangeListener(this);
+            Kenai.getDefault().addPropertyChangeListener(this);
         }
     }
 
@@ -517,6 +533,20 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         NbJiraIssue issue = lazyIssue.issueRef.get();
         if (issue != null) {
             support.firePropertyChange(PROPERTY_ISSUE_REMOVED, issue, null);
+        }
+    }
+
+    /*
+     * Notifies all kenai issues that user has logged on. Private kenai projects cannot be instantiated without being logged in
+     * and issue tracking repository cannot be created.
+     */
+    private void notifyKenaiLogin () {
+        synchronized (LOCK) {
+            for (JiraLazyIssue issue : watchedIssues.values()) {
+                if (issue instanceof KenaiJiraLazyIssue) {
+                    ((KenaiJiraLazyIssue) issue).notifyKenaiLogin();
+                }
+            }
         }
     }
 
@@ -731,6 +761,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     private static final class KenaiJiraLazyIssue extends JiraLazyIssue {
 
         private final String projectName;
+        private boolean loginStatusChanged = true;
 
         public KenaiJiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
             super(issue, provider);
@@ -749,11 +780,14 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
             Repository repo = null;
-            try {
-                LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
-                repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
-            } catch (KenaiException ex) {
-                LOG.log(Level.INFO, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+            if (loginStatusChanged) {
+                try {
+                    LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
+                    repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
+                } catch (KenaiException ex) {
+                    LOG.log(Level.INFO, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+                }
+                loginStatusChanged = false;
             }
             if (repo != null && repo instanceof KenaiRepository) {
                 kenaiRepo = (KenaiRepository) repo;
@@ -783,6 +817,11 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                 }
             }
             return repoUrl;
+        }
+
+        private void notifyKenaiLogin () {
+            loginStatusChanged = true;
+            setValid(false);
         }
     }
 }
