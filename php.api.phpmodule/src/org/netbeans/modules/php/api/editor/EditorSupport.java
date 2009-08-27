@@ -37,59 +37,37 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.phpmodule;
+package org.netbeans.modules.php.api.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.Parameters;
-import org.openide.util.lookup.Lookups;
+import java.util.Collection;
+import org.openide.filesystems.FileObject;
 
 /**
- * This class provides access to the list of registered PHP frameworks.
- * <p>
- * The path is "{@value #FRAMEWORK_PATH}" on SFS.
+ * Helper editor class that can be found in the default lookup.
+ * @since 1.13
  * @author Tomas Mysik
  */
-public final class PhpFrameworks {
-
-    public static final String FRAMEWORK_PATH = "PHP/Frameworks"; //NOI18N
-
-    private static final Lookup.Result<PhpFrameworkProvider> FRAMEWORKS = Lookups.forPath(FRAMEWORK_PATH).lookupResult(PhpFrameworkProvider.class);
-
-    private PhpFrameworks() {
-    }
+public interface EditorSupport {
 
     /**
-     * Get all registered {@link PhpFrameworkProvider}s.
-     * @return a list of all registered {@link PhpFrameworkProvider}s; never null.
+     * Get {@link PhpClass PHP classes} from the given {@link FileObject file object}.
+     * @param fo {@link FileObject file object} source file to investigate
+     * @return collection of {@link PhpClass PHP classes}, never <code>null</code>
      */
-    public static List<PhpFrameworkProvider> getFrameworks() {
-        return new ArrayList<PhpFrameworkProvider>(FRAMEWORKS.allInstances());
-    }
+    Collection<PhpClass> getClasses(FileObject fo);
 
     /**
-     * Add {@link LookupListener listener} to be notified when frameworks change
-     * (new framework added, existing removed).
-     * @param listener {@link LookupListener listener} to be added
-     * @since 1.14
-     * @see #removeFrameworksListener(LookupListener)
+     * Collects files containg the given {@link PhpClass PHP class}.
+     * @param sourceRoot directory representing source root or test root
+     * @param phpClass {@link PhpClass PHP class} to search for
+     * @return collection of {@link FileObject file objects} containing the {@link PhpClass PHP class}, never <code>null</code>
+     * @see #getClasses(FileObject)
      */
-    public static void addFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.addLookupListener(listener);
-    }
+    Collection<FileObject> filesForClass(FileObject sourceRoot, PhpClass phpClass);
 
     /**
-     * Remove {@link LookupListener listener}.
-     * @param listener {@link LookupListener listener} to be removed
-     * @since 1.14
-     * @see #addFrameworksListener(LookupListener)
+     * Get {@link PhpElement PHP element} for the current caret position.
+     * @return {@link PhpElement PHP element}, can be <code>null</code> if not in any
      */
-    public static void removeFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.removeLookupListener(listener);
-    }
+    PhpElement getElement();
 }

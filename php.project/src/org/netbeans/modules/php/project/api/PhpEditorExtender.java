@@ -37,30 +37,45 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.spi;
+package org.netbeans.modules.php.project.api;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Radek Matous
+ * @since 2.17
+ * @author Tomas Mysik
  */
-public interface PhpUnitSupport {
-    /**
-     * Get the names of PHP classes from the given {@link FileObject file object}.
-     * @param fo {@link FileObject file object} source file to investigate.
-     * @return collection of class names, never <code>null</code>.
-     */
-    Collection<? extends String> getClassNames(final FileObject fo);
-    /**
-     * Collects files contating class name
-     * @param fo directory representing source root or test root
-     * @param clsName
-     * @return collection of {@link FileObject file objects} containing the class
-     * with passed clsName, never <code>null</code>.
-     */
+public final class PhpEditorExtender {
+    private static final EditorExtender EMPTY_EDITOR_EXTENDER = new EmptyEditorExtender();
 
-    Collection<? extends FileObject> filesForClassName(final FileObject fo,
-            final String clsName);
+    private PhpEditorExtender() {
+    }
+
+    public static EditorExtender forFileObject(FileObject fo) {
+        PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fo);
+        if (phpProject == null) {
+            return EMPTY_EDITOR_EXTENDER;
+        }
+        EditorExtender editorExtender = phpProject.getLookup().lookup(EditorExtender.class);
+        assert editorExtender != null : "Editor extender must be found for " + phpProject;
+        return editorExtender;
+    }
+
+    private static final class EmptyEditorExtender extends EditorExtender {
+        @Override
+        public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public PhpClass getClass(FileObject fo, String variableName) {
+            return null;
+        }
+    }
 }

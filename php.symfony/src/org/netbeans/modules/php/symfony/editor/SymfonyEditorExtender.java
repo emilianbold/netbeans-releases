@@ -37,59 +37,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.phpmodule;
+package org.netbeans.modules.php.symfony.editor;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.Parameters;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * This class provides access to the list of registered PHP frameworks.
- * <p>
- * The path is "{@value #FRAMEWORK_PATH}" on SFS.
  * @author Tomas Mysik
  */
-public final class PhpFrameworks {
+public class SymfonyEditorExtender extends EditorExtender {
+    private static final String TEMPLATES = "templates"; // NOI18N
+    private static final List<PhpElement> ELEMENTS = Arrays.<PhpElement>asList(
+            new PhpVariable("$sf_user", "sfUser"), // NOI18N
+            new PhpVariable("$sf_request", "sfWebRequest"), // NOI18N
+            new PhpVariable("$sf_response", "sfWebResponse")); // NOI18N
 
-    public static final String FRAMEWORK_PATH = "PHP/Frameworks"; //NOI18N
-
-    private static final Lookup.Result<PhpFrameworkProvider> FRAMEWORKS = Lookups.forPath(FRAMEWORK_PATH).lookupResult(PhpFrameworkProvider.class);
-
-    private PhpFrameworks() {
+    @Override
+    public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+        if (isView(fo)) {
+            return ELEMENTS;
+        }
+        return Collections.emptyList();
     }
 
-    /**
-     * Get all registered {@link PhpFrameworkProvider}s.
-     * @return a list of all registered {@link PhpFrameworkProvider}s; never null.
-     */
-    public static List<PhpFrameworkProvider> getFrameworks() {
-        return new ArrayList<PhpFrameworkProvider>(FRAMEWORKS.allInstances());
+    @Override
+    public PhpClass getClass(FileObject fo, String variableName) {
+        if (isView(fo)) {
+            for (PhpElement element : ELEMENTS) {
+                if (element.getName().equals(variableName)) {
+                    return new PhpClass(element.getName(), element.getFullyQualifiedName());
+                }
+            }
+        }
+        return null;
     }
 
-    /**
-     * Add {@link LookupListener listener} to be notified when frameworks change
-     * (new framework added, existing removed).
-     * @param listener {@link LookupListener listener} to be added
-     * @since 1.14
-     * @see #removeFrameworksListener(LookupListener)
-     */
-    public static void addFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.addLookupListener(listener);
-    }
-
-    /**
-     * Remove {@link LookupListener listener}.
-     * @param listener {@link LookupListener listener} to be removed
-     * @since 1.14
-     * @see #addFrameworksListener(LookupListener)
-     */
-    public static void removeFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.removeLookupListener(listener);
+    // try to be as fast as possible...
+    private boolean isView(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        return TEMPLATES.equals(file.getParentFile().getName());
     }
 }

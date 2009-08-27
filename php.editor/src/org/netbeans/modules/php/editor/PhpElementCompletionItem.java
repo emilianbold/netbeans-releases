@@ -37,59 +37,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.phpmodule;
+package org.netbeans.modules.php.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.Parameters;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
 
 /**
- * This class provides access to the list of registered PHP frameworks.
- * <p>
- * The path is "{@value #FRAMEWORK_PATH}" on SFS.
+ * Convert {@link PhpElement PHP element} to {@link CompletionProposal}.
  * @author Tomas Mysik
  */
-public final class PhpFrameworks {
+public final class PhpElementCompletionItem {
 
-    public static final String FRAMEWORK_PATH = "PHP/Frameworks"; //NOI18N
-
-    private static final Lookup.Result<PhpFrameworkProvider> FRAMEWORKS = Lookups.forPath(FRAMEWORK_PATH).lookupResult(PhpFrameworkProvider.class);
-
-    private PhpFrameworks() {
+    private PhpElementCompletionItem() {
     }
 
-    /**
-     * Get all registered {@link PhpFrameworkProvider}s.
-     * @return a list of all registered {@link PhpFrameworkProvider}s; never null.
-     */
-    public static List<PhpFrameworkProvider> getFrameworks() {
-        return new ArrayList<PhpFrameworkProvider>(FRAMEWORKS.allInstances());
+    static CompletionProposal fromPhpElement(PhpElement element, CompletionRequest request) {
+        assert element != null;
+        if (element instanceof PhpVariable) {
+            return new PhpVariableCompletionItem((PhpVariable) element, request);
+        }
+        throw new IllegalArgumentException("Unsupported PHP element type (only variables are currently supported): " + element);
     }
 
-    /**
-     * Add {@link LookupListener listener} to be notified when frameworks change
-     * (new framework added, existing removed).
-     * @param listener {@link LookupListener listener} to be added
-     * @since 1.14
-     * @see #removeFrameworksListener(LookupListener)
-     */
-    public static void addFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.addLookupListener(listener);
-    }
+    private static final class PhpVariableCompletionItem extends PHPCompletionItem.VariableItem {
+        private final PhpVariable variable;
 
-    /**
-     * Remove {@link LookupListener listener}.
-     * @param listener {@link LookupListener listener} to be removed
-     * @since 1.14
-     * @see #addFrameworksListener(LookupListener)
-     */
-    public static void removeFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.removeLookupListener(listener);
+        public PhpVariableCompletionItem(PhpVariable variable, CompletionRequest request) {
+            super(new IndexedConstant(variable.getName(), null, null, null, variable.getOffset(), 0, null), request);
+            this.variable = variable;
+        }
+
+        private PhpVariableCompletionItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            variable = null;
+        }
+
+        @Override
+        protected String getTypeName() {
+            return variable.getFullyQualifiedName();
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
     }
 }

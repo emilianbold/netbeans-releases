@@ -550,6 +550,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.type(true);
+            formatter.appendText(getTypeName());
+            formatter.type(false);
+            formatter.appendText(" "); //NOI18N
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+
+            return formatter.getText();
+        }
+
+        protected String getTypeName() {
             final ElementHandle elem = getElement();
             String typeName = null;
             if (elem instanceof IndexedConstant) {
@@ -561,16 +573,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (typeName == null) {
                 typeName = "?"; //NOI18N
             }
-
-            formatter.type(true);
-            formatter.appendText(typeName);
-            formatter.type(false);
-            formatter.appendText(" "); //NOI18N
-            formatter.name(getKind(), true);
-            formatter.appendText(getName());
-            formatter.name(getKind(), false);
-
-            return formatter.getText();
+            return typeName;
         }
 
         public ElementKind getKind() {

@@ -37,59 +37,38 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.phpmodule;
+package org.netbeans.modules.php.spi.editor;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.Parameters;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpElement;
+import org.openide.filesystems.FileObject;
 
 /**
- * This class provides access to the list of registered PHP frameworks.
- * <p>
- * The path is "{@value #FRAMEWORK_PATH}" on SFS.
+ * SPI for extending PHP editor.
+ * @since 1.13
  * @author Tomas Mysik
  */
-public final class PhpFrameworks {
-
-    public static final String FRAMEWORK_PATH = "PHP/Frameworks"; //NOI18N
-
-    private static final Lookup.Result<PhpFrameworkProvider> FRAMEWORKS = Lookups.forPath(FRAMEWORK_PATH).lookupResult(PhpFrameworkProvider.class);
-
-    private PhpFrameworks() {
-    }
+public abstract class EditorExtender {
 
     /**
-     * Get all registered {@link PhpFrameworkProvider}s.
-     * @return a list of all registered {@link PhpFrameworkProvider}s; never null.
+     * Get the list of {@link PhpElement PHP elements} to be added to the code completion.
+     * <p>
+     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
+     * Future changes to be more general are probable.
+     * @param fo {@link FileObject file object} in which the code completion is invoked
+     * @return list of {@link PhpElement PHP elements} to be added to the code completion.
      */
-    public static List<PhpFrameworkProvider> getFrameworks() {
-        return new ArrayList<PhpFrameworkProvider>(FRAMEWORKS.allInstances());
-    }
+    public abstract List<PhpElement> getElementsForCodeCompletion(FileObject fo);
 
     /**
-     * Add {@link LookupListener listener} to be notified when frameworks change
-     * (new framework added, existing removed).
-     * @param listener {@link LookupListener listener} to be added
-     * @since 1.14
-     * @see #removeFrameworksListener(LookupListener)
+     * Get the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known.
+     * <p>
+     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
+     * Future changes to be more general are probable.
+     * @param fo {@link FileObject file object} in which the code completion is invoked
+     * @param variableName the name of a variable
+     * @return the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known
      */
-    public static void addFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.addLookupListener(listener);
-    }
-
-    /**
-     * Remove {@link LookupListener listener}.
-     * @param listener {@link LookupListener listener} to be removed
-     * @since 1.14
-     * @see #addFrameworksListener(LookupListener)
-     */
-    public static void removeFrameworksListener(LookupListener listener) {
-        Parameters.notNull("listener", listener);
-        FRAMEWORKS.removeLookupListener(listener);
-    }
+    public abstract PhpClass getClass(FileObject fo, String variableName);
 }
