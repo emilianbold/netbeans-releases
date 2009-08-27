@@ -43,8 +43,8 @@ package org.netbeans.modules.j2ee.persistence.wizard;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -53,6 +53,8 @@ import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -82,6 +84,7 @@ public class EntityClosure {
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
+    private Set<Entity> availableEntityInstances = new HashSet<Entity>();
     private Set<String> availableEntities = new HashSet<String>();
     private Set<String> wantedEntities = new HashSet<String>();
     private Set<String> selectedEntities = new HashSet<String>();
@@ -90,7 +93,7 @@ public class EntityClosure {
     private boolean closureEnabled = true;
     private Project project;
     
-    private final MetadataModelReadHelper<EntityMappingsMetadata, List<String>> readHelper;
+    private final MetadataModelReadHelper<EntityMappingsMetadata, List<Entity>> readHelper;
     
     private final MetadataModel<EntityMappingsMetadata> model;
     
@@ -99,19 +102,17 @@ public class EntityClosure {
         ec.initialize();
         return ec;
     }
+
+    public static ComboBoxModel getAsComboModel(EntityClosure ec) {
+        return new EntityClosureComboBoxModel(ec);
+    }
     
     private EntityClosure(EntityClassScope entityClassScope, Project project) {
         this.model = entityClassScope.getEntityMappingsModel(true);
         this.project = project;
-        readHelper = MetadataModelReadHelper.create(model, new MetadataModelAction<EntityMappingsMetadata, List<String>>() {
-            public List<String> run(EntityMappingsMetadata metadata) {
-                List<String> result = new ArrayList<String>();
-                for (Entity entity : metadata.getRoot().getEntity()) {
-                    String className = entity.getClass2();
-                    result.add(className);
-                }
-                Collections.sort(result);
-                return result;
+        readHelper = MetadataModelReadHelper.create(model, new MetadataModelAction<EntityMappingsMetadata, List<Entity>>() {
+            public List<Entity> run(EntityMappingsMetadata metadata) {
+                return Arrays.<Entity>asList(metadata.getRoot().getEntity());
             }
         });
     }
@@ -123,7 +124,7 @@ public class EntityClosure {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             try {
-                                addAvaliableEntities(new HashSet<String>(readHelper.getResult()));
+                                addAvaliableEntities(new HashSet<Entity>(readHelper.getResult()));
                                 changeSupport.fireChange();
                             } catch (ExecutionException e) {
                                 Exceptions.printStackTrace(e);
@@ -136,8 +137,11 @@ public class EntityClosure {
         readHelper.start();
     }
     
-    public void addAvaliableEntities(Set<String> entities) {
-        availableEntities.addAll(entities);
+    public void addAvaliableEntities(Set<Entity> entities) {
+        availableEntityInstances.addAll(entities);
+        for (Entity en : entities) {
+            availableEntities.add(en.getClass2());
+        }
         availableEntities.removeAll(selectedEntities);
         changeSupport.fireChange();
     }
@@ -148,6 +152,10 @@ public class EntityClosure {
     
     public Set<String> getAvailableEntities() {
         return availableEntities;
+    }
+
+    public Set<Entity> getAvailableEntityInstances() {
+        return availableEntityInstances;
     }
     
     public Set<String> getWantedEntities() {
@@ -438,4 +446,46 @@ public class EntityClosure {
             return result;
         }
     }
+
+    private static class EntityClosureComboBoxModel extends DefaultComboBoxModel implements ChangeListener {
+
+        private EntityClosure entityClosure;
+        private List<String> entities = new ArrayList<String>();
+
+        EntityClosureComboBoxModel(EntityClosure entityClosure) {
+            this.entityClosure = entityClosure;
+            entityClosure.addChangeListener(this);
+            refresh();
+        }
+
+        @Override
+        public int getSize() {
+            return entities.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            return entities.get(index);
+        }
+
+        /**
+         * @return the fully qualified names of the entities in this model.
+         */
+        public List<String> getEntityClasses() {
+            return entities;
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            refresh();
+        }
+
+        private void refresh() {
+            int oldSize = getSize();
+            entities = new ArrayList<String>(entityClosure.getAvailableEntities());
+            Collections.sort(entities);
+            fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
+        }
+    }
+
+
 }
