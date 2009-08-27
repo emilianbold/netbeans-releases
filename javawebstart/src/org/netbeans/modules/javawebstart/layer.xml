@@ -111,8 +111,7 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
                 <folder name="Application">
-                    <file name="WebStart.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javawebstart.ui.customizer.JWSCompositeCategoryProvider.createWebStart"/>
+                    <file name="org-netbeans-modules-javawebstart-ui-customizer-JWSCompositeCategoryProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
