@@ -141,12 +141,16 @@ public class MyProjectNode extends LeafNode {
                 lbl = new TreeLabel(project.getDisplayName());
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,16,0,3), 0,0) );
 
-                component.add( new TreeLabel("("), new GridBagConstraints(1,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-                int count = maccessor.getMessaging(project).getMessageCount();
+                MessagingHandle messaging = maccessor.getMessaging(project);
+                int count = messaging.getMessageCount();
 
-                btnMessages = new LinkButton(count + "", ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), maccessor.getOpenMessagesAction(project));
-                btnMessages.setHorizontalTextPosition(JLabel.LEFT);
-                component.add( btnMessages, new GridBagConstraints(2,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
+                if (messaging.getOnlineCount()>=0) {
+                    component.add(new TreeLabel("("), new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                    btnMessages = new LinkButton(count + "", ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), maccessor.getOpenMessagesAction(project));
+                    btnMessages.setHorizontalTextPosition(JLabel.LEFT);
+                    component.add(btnMessages, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                    component.add(new JLabel(")"), new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                }
 
                 
                 post(new Runnable() {
@@ -165,7 +169,6 @@ public class MyProjectNode extends LeafNode {
                     }
                 });
 
-                component.add( new JLabel(")"), new GridBagConstraints(4,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
 
                 component.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
                 btnBookmark = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true), accessor.getBookmarkAction(project)); //NOI18N
@@ -239,6 +242,11 @@ public class MyProjectNode extends LeafNode {
                 btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug));
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
                 component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,5,0,0), 0,0) );
+                if (btnMessages == null) {
+                    component.add(new TreeLabel("("), new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                    component.add(new JLabel(")"), new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                }
+
                 component.validate();
             }
         });
