@@ -211,7 +211,7 @@ public class CompositeComponentModel extends JsfPageModel {
                                 //found composite:attribute tag
                                 Map<String, String> attrs = new HashMap<String, String>();
                                 for (String attrKey : child.getAttributeKeys()) {
-                                    attrs.put(attrKey, child.getAttribute(attrKey).toString());
+                                    attrs.put(attrKey, child.getAttribute(attrKey).unquotedValue());
                                 }
                                 interfaceAttrs.add(attrs);
                             }
