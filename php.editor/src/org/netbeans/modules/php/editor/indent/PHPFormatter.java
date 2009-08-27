@@ -63,7 +63,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -95,7 +95,7 @@ public class PHPFormatter implements Formatter {
         // hotfix for for broken new line indentation after merging with dkonecny's changes
         String mimeType = getMimeTypeAtOffset(context.document(), context.startOffset());
 
-        if (!PHPLanguage.PHP_MIME_TYPE.equals(mimeType)){
+        if (!FileUtils.PHP_MIME_TYPE.equals(mimeType)){
             return;
         }
         // end of hotfix

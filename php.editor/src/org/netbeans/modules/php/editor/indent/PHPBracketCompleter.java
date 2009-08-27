@@ -62,7 +62,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
@@ -157,7 +157,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
         //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
         //return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(PHPLanguage.PHP_MIME_TYPE);
+        EditorOptions options = EditorOptions.get(FileUtils.PHP_MIME_TYPE);
         if (options != null) {
             return options.getMatchBrackets();
         }

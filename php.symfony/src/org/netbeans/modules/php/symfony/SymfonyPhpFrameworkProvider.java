@@ -44,11 +44,13 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
+import org.netbeans.modules.php.symfony.editor.SymfonyEditorExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -123,5 +125,10 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public SymfonyCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
         return new SymfonyCommandSupport(phpModule);
+    }
+
+    @Override
+    public EditorExtender getEditorExtender(PhpModule phpModule) {
+        return new SymfonyEditorExtender();
     }
 }

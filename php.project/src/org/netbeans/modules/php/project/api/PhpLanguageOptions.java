@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.api;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Helper class to get PHP language properties like ASP tags supported etc.
@@ -58,6 +59,31 @@ public final class PhpLanguageOptions {
      */
     public static final boolean ASP_TAGS_ENABLED = false;
 
+    /**
+     * PHP version used for hints.
+     * @since 2.16
+     */
+    public static enum PhpVersion {
+        PHP_5(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_5")),
+        PHP_53(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_53"));
+
+        private final String displayName;
+
+        PhpVersion(String displayName) {
+            assert displayName != null;
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+    };
+
     private PhpLanguageOptions() {
     }
 
@@ -68,19 +94,22 @@ public final class PhpLanguageOptions {
      * @return {@link Properties properties}.
      * @see #SHORT_TAGS_ENABLED
      * @see #ASP_TAGS_ENABLED
+     * @see PhpVersion
      */
     public static Properties getProperties(FileObject file) {
         boolean shortTagsEnabled = SHORT_TAGS_ENABLED;
         boolean aspTagsEnabled = ASP_TAGS_ENABLED;
+        PhpVersion phpVersion = PhpVersion.PHP_5;
 
         if (file != null) {
             PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(file);
             if (phpProject != null) {
                 shortTagsEnabled = ProjectPropertiesSupport.areShortTagsEnabled(phpProject);
                 aspTagsEnabled = ProjectPropertiesSupport.areAspTagsEnabled(phpProject);
+                phpVersion = ProjectPropertiesSupport.getPhpVersion(phpProject);
             }
         }
-        return new Properties(shortTagsEnabled, aspTagsEnabled);
+        return new Properties(shortTagsEnabled, aspTagsEnabled, phpVersion);
     }
 
     /**
@@ -89,10 +118,12 @@ public final class PhpLanguageOptions {
     public static final class Properties {
         private final boolean shortTagsEnabled;
         private final boolean aspTagsEnabled;
+        private final PhpVersion phpVersion;
 
-        Properties(boolean shorTagsEnabled, boolean aspTagsEnabled) {
+        Properties(boolean shorTagsEnabled, boolean aspTagsEnabled, PhpVersion phpVersion) {
             this.shortTagsEnabled = shorTagsEnabled;
             this.aspTagsEnabled = aspTagsEnabled;
+            this.phpVersion = phpVersion;
         }
 
         /**
@@ -115,6 +146,16 @@ public final class PhpLanguageOptions {
             return aspTagsEnabled;
         }
 
+        /**
+         * Get the {@link PhpVersion PHP version} of the project.
+         * If not specified, {@link PhpVersion#PHP_5 PHP version 5.1/5.2} is returned.
+         * @return the {@link PhpVersion PHP version} of the project
+         * @since 2.16
+         */
+        public PhpVersion getPhpVersion() {
+            return phpVersion;
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(100);
@@ -123,6 +164,8 @@ public final class PhpLanguageOptions {
             sb.append(shortTagsEnabled);
             sb.append(", aspTagsEnabled: ");
             sb.append(aspTagsEnabled);
+            sb.append(", PHP version: ");
+            sb.append(phpVersion);
             sb.append("]");
             return sb.toString();
         }
