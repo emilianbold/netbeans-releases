@@ -92,6 +92,7 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public final class JiraIssueProvider extends IssueProvider implements PropertyChangeListener {
 
+    private static JiraIssueProvider instance;
     private final Object LOCK = new Object();
     private boolean initialized;
     private HashMap<String, JiraLazyIssue> watchedIssues = new HashMap<String, JiraLazyIssue>(10);
@@ -105,9 +106,11 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
     public static final String PROPERTY_ISSUE_REMOVED = "issue-removed"; //NOI18N
 
-    public static JiraIssueProvider getInstance() {
-        JiraIssueProvider provider = Lookup.getDefault().lookup(JiraIssueProvider.class);
-        return provider;
+    public static synchronized JiraIssueProvider getInstance() {
+        if (instance == null) {
+            instance = Lookup.getDefault().lookup(JiraIssueProvider.class);
+        }
+        return instance;
     }
 
     public JiraIssueProvider () {
