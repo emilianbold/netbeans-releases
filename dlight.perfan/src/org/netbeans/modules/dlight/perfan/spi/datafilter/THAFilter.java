@@ -37,32 +37,35 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers;
+package org.netbeans.modules.dlight.perfan.spi.datafilter;
 
-import javax.swing.Icon;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 
 /**
  *
  * @author mt154047
  */
-final class IconedText {
-    private final String text;
-    private final Icon icon;
-
-    IconedText(String text, Icon icon){
-        this.text = text;
-        this.icon = icon;
-
-    }
-
-    public Icon getIcon() {
-        return icon;
-    }
-
-    public String getText() {
-        return text;
-    }
-
+public class THAFilter implements DataFilter {
+    private final CollectedDataType type;
     
+    public THAFilter(String spec) {
+        if (THAConfiguration.DEADLOCK_AND_RACES_FILTER_VALUE.equals(spec)){
+            type = CollectedDataType.DATARACES;
+        }else{
+            type = CollectedDataType.DEADLOCKS;
+        }
+    }
+
+    public CollectedDataType getType() {
+        return type;
+    }
+
+    public static enum CollectedDataType {
+        DATARACES,
+        DEADLOCKS
+    }
+
+
 
 }

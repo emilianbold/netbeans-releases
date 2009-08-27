@@ -36,63 +36,34 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.tha;
+package org.netbeans.modules.dlight.perfan.spi.datafilter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
-import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 
 /**
  *
  * @author mt154047
  */
-public final class THAConfigurationOptions implements DLightConfigurationOptions {
+public class THAStartupFilter implements DataFilter {
 
-    
+    private final StartMode startMode;
 
-    public void configure(THAConfiguration configuration){
-        //collector configurations should be sorted out here
-        
-        
-    }
-
-    public boolean profileOnRun() {
-        return false;
-    }
-
-    public void turnCollectorsState(boolean turnState) {
-    }
-
-    public boolean areCollectorsTurnedOn() {
-        return true;
-    }
-
-    public List<DataCollector<?>> getCollectors(DLightTool tool) {
-        return tool.getCollectors();
-    }
-
-    public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
-        return tool.getIndicatorDataProviders();
-    }
-
-    public boolean validateToolsRequiredUserInteraction() {
-        return false;
-    }
-
-    public Collection<String> getActiveToolNames() {
-        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("THA");//NOI18N
-        List<DLightTool> tools = configuration.getToolsSet();
-        Collection<String> result = new ArrayList<String>();
-        for (DLightTool tool : tools) {
-            result.add(tool.getName());
+    public THAStartupFilter(String spec) {
+        if (THAConfiguration.START_AT_STARTUP.equals(spec)){
+            startMode = StartMode.STARTUP;
+        }else{
+            startMode = StartMode.SUSPEND;
         }
-        return result;
+    }
+
+    public StartMode getStartMode(){
+        return startMode;
+    }
+
+    public static enum StartMode {
+
+        STARTUP,
+        SUSPEND,
     }
 }
