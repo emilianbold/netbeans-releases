@@ -255,6 +255,10 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void removeFileChangeListener(FileChangeListener listener, File path) {
+        removeFileChangeListenerImpl(listener, path);
+    }
+
+    private static FileChangeListener removeFileChangeListenerImpl(FileChangeListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
@@ -265,8 +269,57 @@ public final class FileUtil extends Object {
                 throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet()); // NOI18N
             }
             // remove Holder instance from map and call run to unregister its current listener
-            f2H.remove(path).run();
+            Holder h = f2H.remove(path);
+            h.run();
+            return h.get();
         }
+    }
+    /**
+     * Adds a listener to changes under given path. It permits you to listen to a file
+     * which does not yet exist, or continue listening to it after it is deleted and recreated, etc.
+     * <br/>
+     * When given path represents a file ({@code path.isDirectory() == false}), this
+     * code behaves exectly like {@link #addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)}.
+     * Usually the path shall represent a folder ({@code path.isDirectory() == true})
+     * <ul>
+     * <li>fileFolderCreated event is fired when the folder is created or a child folder created</li>
+     * <li>fileDataCreated event is fired when a child file is created</li>
+     * <li>fileDeleted event is fired when the folder is deleted or a child file/folder removed</li>
+     * <li>fileChanged event is fired when a child file is modified</li>
+     * <li>fileRenamed event is fired when the folder is renamed or a child file/folder is renamed</li>
+     * <li>fileAttributeChanged is fired when FileObject's attribute is changed</li>
+     *</ul>
+     * The above events are delivered for changes in all subdirectories (recursively).
+     * It is guaranteed that with each change at least one event is generated.
+     * For example adding a folder does not notify about content of the folder,
+     * hence one event is delivered.
+     *
+     * Can only add a given [listener, path] pair once. However a listener can
+     * listen to any number of paths. Note that listeners are always held weakly
+     * - if the listener is collected, it is quietly removed.
+     *
+     * @param listener FileChangeListener to listen to changes in path
+     * @param path File path to listen to (even not existing)
+     *
+     * @see FileObject#addRecursiveListener
+     * @since org.openide.filesystems 7.25
+     */
+    public static void addRecursiveListener(FileChangeListener listener, File path) {
+        addFileChangeListener(new DeepListener(listener, path), path);
+    }
+
+    /**
+     * Removes a listener to changes under given path.
+     * @param listener FileChangeListener to be removed
+     * @param path File path in which listener was listening
+     * @throws IllegalArgumentException if listener was not listening to given path
+     *
+     * @see FileObject#removeFileChangeListener
+     * @since org.openide.filesystems 7.25
+     */
+    public static void removeRecursiveListener(FileChangeListener listener, File path) {
+        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path), path);
+        dl.run();
     }
 
     /** Holds FileChangeListener and File pair and handle movement of auxiliary
