@@ -401,12 +401,11 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
             if (gst instanceof GlobalSimpleType) {
                 simpleTypeName = ((GlobalSimpleType) gst).getName();
             }
-            String namesapce = gst.getModel().getSchema().getTargetNamespace();
             SchemaModel primitiveTypesModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-            String primitiveTypeNamesapce = primitiveTypesModel.getSchema().getTargetNamespace();
-            if(namesapce != null 
-                    && namesapce.equals(primitiveTypeNamesapce)
-                    && simpleTypeName != null && simpleTypeName.equals("boolean")) {//NOI18N
+            //
+            if(gst.getModel() == primitiveTypesModel && 
+                    "boolean".equals(simpleTypeName)) {//NOI18N
+                //
                 attrValueProperty = 
                     new XSDBooleanAttributeProperty(propertyAdapter, String.class, "getValue", "setValue", isOptional);//NOI18N
                 
@@ -434,8 +433,8 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
         for (Attribute attr : attributes) {
             if(attr instanceof Nameable) {
                 Nameable namedAttr = (Nameable) attr;
-
-                QName attrQName = new QName(schemaElement.getModel().getSchema().getTargetNamespace(), namedAttr.getName());
+                String ns = Utility.getTargetNamespace(schemaElement.getModel());
+                QName attrQName = new QName(ns, namedAttr.getName());
                 if (!processAttributeQNames.contains(attrQName)) { 
                     boolean isOptional = isAttributeOptional(attr, namedAttr.getName());
                     Node.Property attrValueProperty = createDefaultNodeProperty(attr, exElement, attrQName, isOptional);
