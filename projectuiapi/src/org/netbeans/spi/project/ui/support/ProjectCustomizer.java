@@ -289,13 +289,14 @@ public final class ProjectCustomizer {
     /**
      * Interface for creation of Customizer categories and their respective UI panels.
      * Implementations are to be registered in System FileSystem via module layers. Used by the
-     * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer#createCustomizerDialog(String,Lookup,String,ActionListener,HelpCtx)}
+     * {@link ProjectCustomizer#createCustomizerDialog(String,Lookup,String,ActionListener,HelpCtx)}
      * The panel/category created by the provider can get notified that the customizer got
      * closed by setting an <code>ActionListener</code> to 
-     * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.Category#setOkButtonListener} .
+     * {@link ProjectCustomizer.Category#setOkButtonListener}.
      * UI Component can be defined for category folder that is represented as node with subnodes in the category
-     * tree of project customizer. Name of the file that defines the instance class in layer for such category 
-     * must be named "Self". Such CompositeCategory won't have the createCategory() method called, but will have the category created by
+     * tree of project customizer. The file that defines the instance class in layer for such category
+     * must be named {@code Self}. Such a provider will not have the {@link #createCategory} method called
+     * (display name will be taken from the folder), but will have the children created by
      * the infrastructure based on the folder content.
      * For details and usage see issue #91276.
      * @since org.netbeans.modules.projectuiapi/1 1.22
