@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.symfony.editor;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,7 @@ import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
@@ -80,6 +82,7 @@ public class SymfonyEditorExtender extends EditorExtender {
 
     // try to be as fast as possible...
     private boolean isView(FileObject fo) {
-        return TEMPLATES.equals(fo.getParent().getNameExt());
+        File file = FileUtil.toFile(fo);
+        return TEMPLATES.equals(file.getParentFile().getName());
     }
 }
