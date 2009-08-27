@@ -500,7 +500,7 @@
                 prefix="wsrp"/>
             
             <get
-                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb65/pp30/build.txt"
+                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb67/pp302/build.txt"
                 dest="${temp.file}"/>
             <loadfile property="portalpack.build.number"
           	    srcFile="${temp.file}">
