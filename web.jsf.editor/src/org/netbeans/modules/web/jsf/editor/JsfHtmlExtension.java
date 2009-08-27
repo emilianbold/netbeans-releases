@@ -83,7 +83,6 @@ import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
-import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -404,8 +403,8 @@ public class JsfHtmlExtension extends HtmlExtension {
                                                     if(node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
                                                         for(AstNode child : node.children()) {
                                                             if(child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
-                                                                String nameAttr = (String)child.getAttribute("name");
-                                                                if(nameAttr != null && nameAttr.equals(attributeName)) {
+                                                                String nameAttrvalue = child.getUnqotedAttributeValue("name");
+                                                                if(nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
                                                                     //we found it
                                                                     attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
                                                                     break;

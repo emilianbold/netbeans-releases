@@ -23,7 +23,7 @@
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
+ * "[Contributor] elects to include this software in this distributigon
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
  * your version of this file under either the CDDL, the GPL Version 2 or
@@ -71,7 +71,7 @@ public class AstNode {
     private int logicalEndOffset;
     private List<AstNode> children = null;
     private AstNode parent = null;
-    private Map<String, Object> attributes = null;
+    private Map<String, Attribute> attributes = null;
     private Content content = null;
     private ContentModel contentModel = null;
     private Element dtdElement = null;
@@ -104,7 +104,7 @@ public class AstNode {
     }
 
     public String getNamespace() {
-        return (String)getRootNode().getProperty(NAMESPACE_PROPERTY);
+        return (String) getRootNode().getProperty(NAMESPACE_PROPERTY);
     }
 
     public AstNode getMatchingTag() {
@@ -350,19 +350,28 @@ public class AstNode {
         child.setParent(this);
     }
 
-    void setAttribute(String key, Object value) {
+    void setAttribute(Attribute attr) {
         if (attributes == null) {
-            attributes = new HashMap<String, Object>();
+            attributes = new HashMap<String, Attribute>();
         }
-        attributes.put(key, value);
+        attributes.put(attr.name(), attr);
     }
 
     public Collection<String> getAttributeKeys() {
         return attributes == null ? Collections.EMPTY_LIST : attributes.keySet();
     }
 
-    public Object getAttribute(String key) {
-        return attributes == null ? null : attributes.get(key);
+    public Collection<Attribute> getAttributes() {
+        return attributes == null ? Collections.EMPTY_LIST : attributes.values();
+    }
+
+    public Attribute getAttribute(String attributeName) {
+        return attributes == null ? null : attributes.get(attributeName);
+    }
+
+    public String getUnqotedAttributeValue(String attributeName) {
+        Attribute a = getAttribute(attributeName);
+        return a == null ? null : a.unquotedValue();
     }
 
     @Override
@@ -543,6 +552,54 @@ public class AstNode {
             hash = 23 * hash + this.to;
             hash = 23 * hash + this.type;
             return hash;
+        }
+    }
+
+    public static class Attribute {
+
+        protected String name;
+        protected String value;
+        protected int nameOffset;
+        protected int valueOffset;
+
+        Attribute(String name, String value, int nameOffset, int valueOffset) {
+            this.name = name;
+            this.value = value;
+            this.nameOffset = nameOffset;
+            this.valueOffset = valueOffset;
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public int nameOffset() {
+            return nameOffset;
+        }
+
+        public int valueOffset() {
+            return valueOffset;
+        }
+
+        public int unqotedValueOffset() {
+            return isValueQuoted() ? valueOffset + 1 : valueOffset;
+        }
+
+        public String value() {
+            return value;
+        }
+
+        public String unquotedValue() {
+            return isValueQuoted() ? value.substring(1, value.length() - 1) : value;
+        }
+
+        public boolean isValueQuoted() {
+            if (value.length() < 2) {
+                return false;
+            } else {
+                return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
+                        (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
+            }
         }
     }
 
