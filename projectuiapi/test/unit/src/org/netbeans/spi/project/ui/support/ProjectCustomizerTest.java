@@ -49,12 +49,9 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CategoryComponentProvider;
 import org.openide.filesystems.FileObject;
@@ -74,87 +71,34 @@ public class ProjectCustomizerTest extends NbTestCase {
         super(testName);
     }
 
-    private Reference<?>[] runTestCategoriesAreReclaimable() throws Exception {
-        final Reference<?>[] result = new Reference<?>[4];
-              Category test1 = Category.create("test1", "test1", null);
-        final Category test2 = Category.create("test2", "test3", null, test1);
-        final Category test3 = Category.create("test3", "test3", null);
+    public void testCategoriesAreReclaimable() throws Exception {
+        final Reference<?>[] refs = new Reference<?>[4];
         
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                Dialog d = ProjectCustomizer.createCustomizerDialog(new Category[] {test2, test3}, new CategoryComponentProviderImpl(), null, new ActionListener() {
+                Category test1 = Category.create("test1", "test1", null);
+                Category test2 = Category.create("test2", "test3", null, test1);
+                Category test3 = Category.create("test3", "test3", null);
+                refs[1] = new WeakReference<Object>(test1);
+                refs[2] = new WeakReference<Object>(test2);
+                refs[3] = new WeakReference<Object>(test3);
+                Dialog d = ProjectCustomizer.createCustomizerDialog(new Category[] {test2, test3}, new CategoryComponentProvider() {
+                    public JComponent create(Category category) {
+                        return new JPanel();
+                    }
+                }, null, new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         //ignore
                     }
                 }, HelpCtx.DEFAULT_HELP);
-                
-                d.setVisible(true);
-                
-                try {
-                    Thread.currentThread().sleep(50);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                
-                d.setVisible(false);
                 d.dispose();
-                
-                result[0] = new WeakReference<Object>(d);
-                
-                d = null;
-                
+                refs[0] = new WeakReference<Object>(d);
             }
         });
         
-        //the dialog may be still strongly hold by the Swing/AWT, make it disappear:
-        Thread.sleep(1000);
-        
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                JFrame f = new JFrame("test");
-                
-                f.setVisible(true);
-                
-                JDialog d = new JDialog(f, false);
-                
-                d.setVisible(true);
-                
-                try {
-                    Thread.currentThread().sleep(50);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                
-                d.setVisible(false);
-                d.dispose();
-                
-                f.setVisible(false);
-                f.dispose();
-                
-                d = null;
-            }
-        });
-                
-        result[1] = new WeakReference<Object>(test1);
-        result[2] = new WeakReference<Object>(test2);
-        result[3] = new WeakReference<Object>(test3);
-        
-        return result;
-    }
-
-    @RandomlyFails // NB-Core-Build #2398
-    public void testCategoriesAreReclaimable() throws Exception {
-        for (Reference<?> ref : runTestCategoriesAreReclaimable()) {
+        for (Reference<?> ref : refs) {
             assertGC("Is reclaimable", ref);
         }
-    }
-    
-    private static final class CategoryComponentProviderImpl implements CategoryComponentProvider {
-        
-        public JComponent create(Category category) {
-            return new JPanel();
-        }
-        
     }
     
     public void testReadCategories() {
