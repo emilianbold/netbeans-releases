@@ -185,3 +185,9 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-kenai-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-kenai-ui"/>
 <link href="${javadoc.docs.org-netbeans-spi-editor-hints}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-spi-editor-hints"/>
 <link href="${javadoc.docs.org-netbeans-core-ide}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core-ide"/>
+<link href="${javadoc.docs.org-netbeans-modules-jellytools-cnd}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-cnd"/>
+<link href="${javadoc.docs.org-netbeans-modules-jellytools-enterprise}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-enterprise"/>
+<link href="${javadoc.docs.org-netbeans-modules-jellytools-ide}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-ide"/>
+<link href="${javadoc.docs.org-netbeans-modules-jellytools-java}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-java"/>
+<link href="${javadoc.docs.org-netbeans-modules-jellytools-platform}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-platform"/>
+<link href="${javadoc.docs.org-netbeans-modules-jellytools-ruby}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-ruby"/>

@@ -56,6 +56,8 @@
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.jellytools</package>
+                <package>org.netbeans.jellytools.actions</package>
+                <package>org.netbeans.jellytools.nodes</package>
             </public-packages>
         </data>
     </configuration>
