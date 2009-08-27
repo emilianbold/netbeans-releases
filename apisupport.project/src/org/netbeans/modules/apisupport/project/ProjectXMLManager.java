@@ -70,7 +70,6 @@ import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
-import org.openide.util.Mutex;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -122,7 +121,7 @@ public final class ProjectXMLManager {
     private String cnb;
     private SortedSet<ModuleDependency> directDeps;
     private ManifestManager.PackageExport[] publicPackages;
-    private String[] cpExtensions;
+    private Map<String, String> cpExtensions;
     private String[] friends;    // cached confData element for easy access with getConfData
     private Element confData;
 
@@ -412,9 +411,11 @@ public final class ProjectXMLManager {
         Element confData = getConfData();
         NodeList nl = confData.getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED,
                 ProjectXMLManager.CLASS_PATH_EXTENSION);
-        for (int i = 0; i < nl.getLength(); i++) {
-            confData.removeChild(nl.item(i));
+        int len = nl.getLength();
+        for (int i = 0; i < len; i++) {
+            confData.removeChild(nl.item(0));
         }
+        cpExtensions = Collections.emptyMap();
         project.putPrimaryConfigurationData(confData);
     }
 
@@ -621,7 +622,7 @@ public final class ProjectXMLManager {
      * Replace existing classpath extensions with new values.
      * @param newValues &lt;key=runtime-path(String), value=binary-path(String)&gt;
      */
-    public void replaceClassPathExtensions(final Map newValues) {
+    public void replaceClassPathExtensions(final Map<String, String> newValues) {
         removeClassPathExtensions();
         if (newValues != null && newValues.size() > 0) {
             Element confData = getConfData();
@@ -637,8 +638,8 @@ public final class ProjectXMLManager {
                 cpel.appendChild(runtime);
                 cpel.appendChild(binary);
                 confData.appendChild(cpel);
-
             }
+            cpExtensions = new HashMap<String, String>(newValues);
             project.putPrimaryConfigurationData(confData);
         }
     }
@@ -648,7 +649,7 @@ public final class ProjectXMLManager {
      * <code>newPackages</code>. Also removes friend packages if there are any
      * since those two mutually exclusive.
      */
-    public void replacePublicPackages(String[] newPackages) {
+    public void replacePublicPackages(Set<String> newPackages) {
         removePublicAndFriends();
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
@@ -656,9 +657,9 @@ public final class ProjectXMLManager {
 
         insertPublicOrFriend(publicPackagesEl);
 
-        for (int i = 0; i < newPackages.length; i++) {
+            for (String pkg : newPackages) {
             publicPackagesEl.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.PACKAGE, newPackages[i]));
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, pkg));
         }
         project.putPrimaryConfigurationData(confData);
         publicPackages = null; // XXX cleaner would be to listen on changes in helper
@@ -679,19 +680,20 @@ public final class ProjectXMLManager {
      * removes public packages if there are any since those two are mutually
      * exclusive.
      */
-    public void replaceFriends(String[] friends, String[] packagesToExpose) {
+    public void replaceFriends(Set<String> friends, Set<String> packagesToExpose) {
         removePublicAndFriends();
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element friendPackages = createModuleElement(doc, ProjectXMLManager.FRIEND_PACKAGES);
         insertPublicOrFriend(friendPackages);
-        for (int i = 0; i < friends.length; i++) {
+
+        for (String friend : friends) {
             friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.FRIEND, friends[i]));
+                    createModuleElement(doc, ProjectXMLManager.FRIEND, friend));
         }
-        for (int i = 0; i < packagesToExpose.length; i++) {
+        for (String pkg : packagesToExpose) {
             friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.PACKAGE, packagesToExpose[i]));
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, pkg));
         }
         project.putPrimaryConfigurationData(confData);
         publicPackages = null;
@@ -729,19 +731,30 @@ public final class ProjectXMLManager {
      * @return an array of strings (may be empty)
      */
     public String[] getBinaryOrigins() {
+        Map<String, String> cpe = getClassPathExtensions();
+        return cpe.values().toArray(new String[cpe.size()]);
+    }
+
+    /**
+     * Returns existing classpath extensions mapping.
+     * Returned map is unmodifiable.
+     * @return classpath extensions map &lt;key=runtime-path(String), value=binary-path(String)&gt;
+     */
+    public Map<String, String> getClassPathExtensions() {
         if (cpExtensions != null) {
-            return cpExtensions;
+            return Collections.unmodifiableMap(cpExtensions);
         }
-        Set<String> binaryOrigs = new TreeSet<String>();
+        Map<String, String> cps = new HashMap<String, String>();
         for (Element cpExtEl : Util.findSubElements(getConfData())) {
             if (CLASS_PATH_EXTENSION.equals(cpExtEl.getTagName())) {
                 Element binOrigEl = findElement(cpExtEl, BINARY_ORIGIN);
-                if (binOrigEl != null) {
-                    binaryOrigs.add(Util.findText(binOrigEl));
+                Element runtimePathEl = findElement(cpExtEl, CLASS_PATH_RUNTIME_PATH);
+                if (binOrigEl != null && runtimePathEl != null) {
+                    cps.put(Util.findText(runtimePathEl), Util.findText(binOrigEl));
                 }
             }
         }
-        return cpExtensions = binaryOrigs.toArray(new String[binaryOrigs.size()]);
+        return Collections.unmodifiableMap(cpExtensions = cps);
     }
 
     /** Returns code-name-base. */

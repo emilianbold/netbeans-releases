@@ -83,6 +83,16 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     public static final String FIELD_LINE_NUMBER = "lineNumber"; //NOI18N
 
     @Override
+    public boolean scanStarted(final Context context) {
+        try {
+            return IndexingSupport.getInstance(context).isValid();
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return false;
+        }
+    }
+
+    @Override
     public EmbeddingIndexer createIndexer (
         Indexable               indexable,
         Snapshot                snapshot

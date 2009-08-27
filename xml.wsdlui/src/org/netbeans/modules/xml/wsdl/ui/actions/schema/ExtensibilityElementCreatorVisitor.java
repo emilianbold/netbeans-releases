@@ -50,7 +50,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.actions.schema;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -100,7 +99,6 @@ import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfiguratorFactory;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -236,14 +234,14 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
         int minOccurs = le.getMinOccursEffective();
         //if this is top level object or min occur is > 0 then visit
         if(mStack.size() == 1 || minOccurs > 0) {
-            String namespace = le.getModel().getSchema().getTargetNamespace();
+            String namespace = Utility.getTargetNamespace(le.getModel());
             visit(le, le.getName(), namespace);
         }
     }
     
     @Override    
     public void visit(GlobalElement ge) {
-        String namespace = ge.getModel().getSchema().getTargetNamespace();
+        String namespace = Utility.getTargetNamespace(ge.getModel());
         visit(ge, ge.getName(), namespace);
     }
     
@@ -427,7 +425,8 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
         } else if(fixedValue != null) {
             attrVal = fixedValue;
         } else {
-            QName elementQName = new QName(attr.getModel().getSchema().getTargetNamespace(), exElement.getQName().getLocalPart());
+            String targetNs = Utility.getTargetNamespace(attr.getModel());
+            QName elementQName = new QName(targetNs, exElement.getQName().getLocalPart());
             ExtensibilityElementConfigurator configurator = 
                 ExtensibilityElementConfiguratorFactory.getDefault().getExtensibilityElementConfigurator(elementQName);
             if(simpleType != null) {
@@ -436,13 +435,12 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
                 if (simpleType instanceof GlobalSimpleType) {
                     simpleTypeName = ((GlobalSimpleType) simpleType).getName();
                 }
+                SchemaModel primitiveTypesModel =
+                        SchemaModelFactory.getDefault().getPrimitiveTypesModel();
                 
-                String namesapce = simpleType.getModel().getSchema().getTargetNamespace();
-                SchemaModel primitiveTypesModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-                String primitiveTypeNamesapce = primitiveTypesModel.getSchema().getTargetNamespace();
-                if(namesapce != null 
-                        && namesapce.equals(primitiveTypeNamesapce)
-                        && simpleTypeName != null && simpleTypeName.equals("boolean")) {//NOI18N
+                if (simpleType.getModel() == primitiveTypesModel &&
+                        "boolean".equals(simpleTypeName)) {//NOI18N
+                    //
                     if (configurator != null) {
                         attrVal = configurator.getDefaultValue(exElement, exElement.getQName(), attrName);
                     }

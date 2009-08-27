@@ -80,6 +80,7 @@ import java.util.List;
 import java.util.Set;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -198,6 +199,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private DeadlockDetector            deadlockDetector;
     private ThreadsCollectorImpl        threadsCollector;
     private final Object                threadsCollectorLock = new Object();
+    private final Map<Long, String>     markedObjects = new LinkedHashMap<Long, String>();
+    private final Map<String, ObjectVariable> markedObjectLabels = new LinkedHashMap<String, ObjectVariable>();
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -1791,6 +1794,44 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return getLocalsTreeModel ().getVariable (value);
     }
 
+    public void markObject(ObjectVariable var, String label) {
+        synchronized (markedObjects) {
+            long uid = var.getUniqueID();
+            String oldLabel = markedObjects.remove(uid);
+            if (oldLabel != null) {
+                markedObjectLabels.remove(oldLabel);
+            }
+            if (label != null) {
+                markedObjects.put(uid, label);
+                ObjectVariable markedVar = markedObjectLabels.get(label);
+                if (markedVar != null) {
+                    markedObjects.remove(markedVar.getUniqueID());
+                }
+                markedObjectLabels.put(label, var);
+            }
+        }
+    }
+
+    /*public Map<ObjectVariable, String> getMarkedObjects() {
+        Map<ObjectVariable, String> map;
+        synchronized (markedObjects) {
+            map = new LinkedHashMap<ObjectVariable, String>(markedObjects);
+        }
+        return map;
+    }*/
+
+    public String getLabel(ObjectVariable var) {
+        synchronized (markedObjects) {
+            return markedObjects.get(var.getUniqueID());
+        }
+    }
+
+    public ObjectVariable getLabeledVariable(String label) {
+        synchronized (markedObjects) {
+            return markedObjectLabels.get(label);
+        }
+    }
+
     public ExpressionPool getExpressionPool() {
         return expressionPool;
     }
@@ -2035,7 +2076,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     String sourceName = f.getSourceName(null);
                     int ext = sourceName.lastIndexOf('.');
                     if (ext > 0) {
-                        String extension = sourceName.substring(ext);
+                        String extension = sourceName.substring(++ext);
                         extension = extension.toUpperCase();
                         if (!"JAVA".equals(extension)) {    // NOI18N
                             l = Collections.singletonList(extension);

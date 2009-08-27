@@ -47,6 +47,7 @@ public class WagServiceParameter {
 
     private String name;
     private String type;
+    private boolean isRequired;
 
     public WagServiceParameter() {
 
@@ -68,6 +69,14 @@ public class WagServiceParameter {
         return type;
     }
 
+    public void setRequired(boolean flag) {
+        this.isRequired = flag;
+    }
+
+    public boolean isRequired() {
+        return isRequired;
+    }
+    
     public String toString() {
         return name + ":" + type;
     }

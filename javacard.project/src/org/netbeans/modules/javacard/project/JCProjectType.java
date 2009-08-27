@@ -55,8 +55,11 @@ public class JCProjectType {
     public static final String JC_PROJECT_TYPE = 
             "org.netbeans.modules.javacard.JCPROJECT"; //NOI18N
     public static final String PROJECT_CONFIGURATION_NAME = "data"; //NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = 
+
+    public static final String PROJECT_CONFIGURATION_NAMESPACE_OLD =
             "http://www.netbeans.org/ns/javacard-project/2"; //NOI18N
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = 
+            "http://www.netbeans.org/ns/javacard-project/3"; //NOI18N
     public static final String PRIVATE_CONFIGURATION_NAME = "data"; //NOI18N
     public static final String PRIVATE_CONFIGURATION_NAMESPACE = 
             "http://www.netbeans.org/ns/javacard-project-private/3"; //NOI18N

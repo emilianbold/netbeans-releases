@@ -48,6 +48,7 @@ import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
 import org.openide.util.Parameters;
 
 /**
@@ -125,6 +126,24 @@ public final class IndexingSupport {
         }
 
         return support;
+    }
+
+    /**
+     * Checks a validity of the index
+     * <p class="nonnormative">
+     * Implementations of the {@link SourceIndexerFactory} should check the validity of the
+     * index in the {@link SourceIndexerFactory#scanStarted(org.netbeans.modules.parsing.spi.indexing.Context)} method
+     * and force reindexing of the root for which the index is broken. In case of CSL based factories the check is done by the CSL itself.
+     * </p>
+     * @return false when the index exists but it's broken
+     * @since 1.21
+     */
+    public boolean isValid() {
+        try {
+            return spiIndex.isValid();
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /**

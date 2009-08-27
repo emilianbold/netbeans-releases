@@ -418,6 +418,7 @@ public class ELExpression {
                 else {
                     addPart(result, removeQuotes( expression.substring(i+1, index )));
                     expression = expression.substring( index +1);
+                    previousLeftBracket = false;
                     i=0;
                     continue;
                 }
@@ -576,14 +577,16 @@ public class ELExpression {
         /**
          * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
          */
-        protected String getExpressionSuffix(ExecutableElement method) {
+        protected String getExpressionSuffix(ExecutableElement method,
+                CompilationController controller) 
+        {
 
             if (method.getModifiers().contains(Modifier.PUBLIC) 
-                    && checkMethodParameters(method)) 
+                    && checkMethodParameters(method, controller )) 
             {
                 String methodName = method.getSimpleName().toString();
 
-                if (methodName.startsWith("get")) { //NOI18N
+                if (methodName.startsWith("get") && methodName.length() >3 ) { //NOI18N
                     return getPropertyName(methodName, 3);
                 }
 
@@ -594,7 +597,7 @@ public class ELExpression {
                 if (isDefferedExecution()) {
                     //  also return values for method expressions
 
-                    if (checkMethodReturnType(method)) { 
+                    if (checkMethod(method, controller )) { 
                         return methodName;
                     }
                 }
@@ -603,11 +606,15 @@ public class ELExpression {
             return null; // not a property accessor
         }
         
-        protected boolean checkMethodParameters( ExecutableElement method ){
+        protected boolean checkMethodParameters( ExecutableElement method , 
+                CompilationController controller )
+        {
             return method.getParameters().size() == 0;
         }
         
-        protected boolean checkMethodReturnType( ExecutableElement method ){
+        protected boolean checkMethod( ExecutableElement method , 
+                CompilationController controller)
+        {
             return String.class.getCanonicalName().equals( 
                     method.getReturnType().toString());
         }
@@ -640,7 +647,7 @@ public class ELExpression {
                 for (ExecutableElement method : ElementFilter.methodsIn(
                         bean.getEnclosedElements())) 
                 {
-                    String propertyName = getExpressionSuffix(method);
+                    String propertyName = getExpressionSuffix(method, controller );
 
                     if (propertyName != null && propertyName.equals(suffix)) {
                         success = UiUtils.open(controller.getClasspathInfo(), method);
@@ -693,7 +700,7 @@ public class ELExpression {
                 for (ExecutableElement method : ElementFilter.methodsIn(
                         controller.getElements().getAllMembers(bean))) 
                 {
-                    String propertyName = getExpressionSuffix(method);
+                    String propertyName = getExpressionSuffix(method, controller );
 
                     if (propertyName != null && propertyName.startsWith(prefix)) {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());

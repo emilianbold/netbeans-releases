@@ -120,7 +120,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     private String irb;
 
     private PropertyChangeSupport pcs;
-    
+
     /** 'rake' executable for this platform. */
     private String rake;
 
@@ -177,6 +177,13 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
+     * @return whether this platform represents Ruby 1.9 platform.
+     */
+    public boolean is19() {
+        return getVersion() != null && getVersion().startsWith("1.9");
+    }
+
+    /**
      * Checks whether the platform has a valid Rake installed.
      *
      * @param warn whether to show warning message to the user if ther is no
@@ -230,7 +237,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     private boolean isValidFile(String path) {
         return path != null && new File(path).exists();
     }
-    
+
     /**
      * Checks whether project has a valid platform and in turn whether the
      * platform has a valid Rake installed.
@@ -772,8 +779,18 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      */
     public String getFastDebuggerProblemsInHTML() {
         assert getGemManager() != null : "has gemManager when asking whether Fast Debugger is installed";
+        getGemManager().resetLocal();
         StringBuilder errors = new StringBuilder();
-        checkAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersionPattern(), errors);
+
+        // Special case for ruby-debug-ide19, likely temporary until
+        // ruby-debug-ide support both, 1.8 and 1.9.
+        // If ruby-debug-ide19 is available, use it.
+        if (is19() && RUBY_DEBUG_IDE_NAME.equals("ruby-debug-ide") && // NOI18N
+                checkGem(RUBY_DEBUG_IDE_NAME + "19", getRequiredRDebugIDEVersionPattern())) { // NOI18N
+            return null;
+        }
+
+        checkGemAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersionPattern(), errors);
         return errors.length() == 0 ? null : errors.toString();
     }
 
@@ -785,13 +802,17 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return Pattern.compile("0\\.4\\..*"); // NOI18N
     }
 
-    private void checkAndReport(final String gemName, final Pattern gemVersion, final StringBuilder errors) {
+    private boolean checkGem(final String gemName, final Pattern gemVersion) {
         VersionPredicate predicate = new VersionPredicate() {
             public boolean isRight(final String version) {
                 return gemVersion.matcher(version).matches();
             }
         };
-        if (!getGemManager().isGemInstalledForPlatform(gemName, predicate)) {
+        return getGemManager().isGemInstalledForPlatform(gemName, predicate);
+    }
+
+    private void checkGemAndReport(final String gemName, final Pattern gemVersion, final StringBuilder errors) {
+        if (!checkGem(gemName, gemVersion)) {
             errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion.toString()));
             errors.append("<br>"); // NOI18N
         }
@@ -805,7 +826,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     public boolean checkAndReportRubyGemsProblems() {
         return validator.checkAndReportRubyGemsProblems();
     }
-    
+
     /**
      * Return <tt>null</tt> if there are no problems running gem. Otherwise
      * return an error message which describes the problem.
@@ -824,7 +845,20 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      *         version is found
      */
     public String getLatestAvailableValidRDebugIDEVersions() {
-        List<GemInfo> versions = getGemManager().getVersions(RUBY_DEBUG_IDE_NAME);
+        // Special case for ruby-debug-ide19, likely temporary until
+        // ruby-debug-ide support both, 1.8 and 1.9.
+        // If ruby-debug-ide19 is available, use it.
+        if (is19() && RUBY_DEBUG_IDE_NAME.equals("ruby-debug-ide")) { // NOI18N
+            String version = getLatestAvailableValidRDebugIDEVersions(RUBY_DEBUG_IDE_NAME + "19"); // NOI18N
+            if (version != null) {
+                return version;
+            }
+        }
+        return getLatestAvailableValidRDebugIDEVersions(RUBY_DEBUG_IDE_NAME);
+    }
+
+    private String getLatestAvailableValidRDebugIDEVersions(final String gemName) {
+        List<GemInfo> versions = getGemManager().getVersions(gemName);
         for (GemInfo getInfo : versions) {
             String version = getInfo.getVersion();
             if (getRequiredRDebugIDEVersionPattern().matcher(version).matches()) {
@@ -846,7 +880,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.6");
+                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.7"); // NOI18N
             }
         };
         if (!EventQueue.isDispatchThread()) {
@@ -893,8 +927,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     /**
      * @return true if the given file represents the lib dir of a gem, e.g.
-     * <code>$GEM_HOME/mygem-0.1/lib</code>, false otherwise. This is useful 
-     * for {@link #getSystemRoot(libDirFO)} to be able to return an indexed root 
+     * <code>$GEM_HOME/mygem-0.1/lib</code>, false otherwise. This is useful
+     * for {@link #getSystemRoot(libDirFO)} to be able to return an indexed root
      * (the lib dirs of gems are indexed roots). See also IZ 167814.
      */
     private boolean isGemRoot(FileObject file) {

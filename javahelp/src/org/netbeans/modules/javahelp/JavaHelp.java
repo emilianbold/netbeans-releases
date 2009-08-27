@@ -937,8 +937,29 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
 
     private void adjust(JHelp jh) {
         JEditorPane contentViewer = (JEditorPane) getContentViewer(jh);
+        if(contentViewer == null) {
+            // Issue #168849
+            Installer.log.severe(
+               "Unable to find a JavaHelp Content Viewer component."); // NOI18N
+            Installer.log.severe("JavaHelp manifest: " +
+                                 getCodeLocation(jh.getClass()) +
+                                 "/META-INF/MANIFEST.MF"); // NOI18N
+            Installer.log.severe("Current thread: " +
+                                 Thread.currentThread().toString()); // NOI18N
+            return;
+        }
         adjustFontSize(contentViewer);
         HyperlinkEventProcessor.addTo(contentViewer); // Issue #57005
+    }
+
+    private static String getCodeLocation(Class c) {
+        String cl = "unknown code location"; // NOI18N
+        try {
+            cl = c.getProtectionDomain().getCodeSource().getLocation().toString();
+        } catch (Exception e) {
+            Installer.log.log(Level.SEVERE, "unknown code location", e); // NOI18N
+        }
+        return cl;
     }
 
     private void adjustFontSize(JEditorPane contentViewer) {

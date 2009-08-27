@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,7 +62,7 @@ import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.html.editor.NbReaderProvider;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;

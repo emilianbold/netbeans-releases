@@ -61,7 +61,7 @@ public class BugzillaConfig {
 
     private static BugzillaConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from";      // NOI18N // XXX
-    private static final String REPO_NAME           = "bugzilla.repository_";           // NOI18N
+    private static final String REPO_ID           = "bugzilla.repository_";           // NOI18N
     private static final String QUERY_NAME          = "bugzilla.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";   // NOI18N
@@ -120,12 +120,12 @@ public class BugzillaConfig {
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {
         getPreferences().put(
-                getQueryKey(repository.getDisplayName(), query.getDisplayName()),
+                getQueryKey(repository.getID(), query.getDisplayName()),
                 query.getUrlParameters() + DELIMITER + /* skip query.getLastRefresh() + */ DELIMITER + query.isUrlDefined());
     }
 
     public void removeQuery(BugzillaRepository repository, BugzillaQuery query) {
-        getPreferences().remove(getQueryKey(repository.getDisplayName(), query.getDisplayName()));
+        getPreferences().remove(getQueryKey(repository.getID(), query.getDisplayName()));
     }
 
     public BugzillaQuery getQuery(BugzillaRepository repository, String queryName) {
@@ -151,11 +151,13 @@ public class BugzillaConfig {
         return values[0];
     }
 
-    public String[] getQueries(String repoName) {        
-        return getKeysWithPrefix(QUERY_NAME + repoName + DELIMITER);
+    public String[] getQueries(String repoID) {
+        return getKeysWithPrefix(QUERY_NAME + repoID + DELIMITER);
     }
 
-    public void putRepository(String repoName, BugzillaRepository repository) {
+    public void putRepository(String repoID, BugzillaRepository repository) {
+        String repoName = repository.getDisplayName();
+
         String user = repository.getUsername();
         String password = BugtrackingUtil.scramble(repository.getPassword());
 
@@ -164,22 +166,23 @@ public class BugzillaConfig {
         String url = repository.getUrl();
         String shortNameEnabled = Boolean.toString(repository.isShortUsernamesEnabled());
         getPreferences().put(
-                REPO_NAME + repoName,
+                REPO_ID + repoID,
                 url + DELIMITER +
                 user + DELIMITER +
                 password + DELIMITER +
                 httpUser + DELIMITER +
                 httpPassword + DELIMITER +
-                shortNameEnabled);
+                shortNameEnabled + DELIMITER +
+                repoName);
     }
 
-    public BugzillaRepository getRepository(String repoName) {
-        String repoString = getPreferences().get(REPO_NAME + repoName, "");     // NOI18N
+    public BugzillaRepository getRepository(String repoID) {
+        String repoString = getPreferences().get(REPO_ID + repoID, "");     // NOI18N
         if(repoString.equals("")) {                                             // NOI18N
             return null;
         }
         String[] values = repoString.split(DELIMITER);
-        assert values.length == 3 || values.length == 5 || values.length == 6;
+        assert values.length == 3 || values.length == 6 || values.length == 7;
         String url = values[0];
         String user = values[1];
         String password = BugtrackingUtil.descramble(values[2]);
@@ -189,16 +192,21 @@ public class BugzillaConfig {
         if (values.length > 5) {
             shortNameEnabled = Boolean.parseBoolean(values[5]);
         }
-
-        return new BugzillaRepository(repoName, url, user, password, httpUser, httpPassword, shortNameEnabled);
+        String name;
+        if (values.length > 6) {
+            name = values[6];
+        } else {
+            name = repoID;
+        }
+        return new BugzillaRepository(repoID, name, url, user, password, httpUser, httpPassword, shortNameEnabled);
     }
 
     public String[] getRepositories() {
-        return getKeysWithPrefix(REPO_NAME);
+        return getKeysWithPrefix(REPO_ID);
     }
 
-    public void removeRepository(String name) {
-        getPreferences().remove(REPO_NAME + name);
+    public void removeRepository(String id) {
+        getPreferences().remove(REPO_ID + id);
     }
 
     private String[] getKeysWithPrefix(String prefix) {
@@ -220,12 +228,12 @@ public class BugzillaConfig {
         return ret.toArray(new String[ret.size()]);
     }
 
-    private String getQueryKey(String repositoryName, String queryName) {
-        return QUERY_NAME + repositoryName + DELIMITER + queryName;
+    private String getQueryKey(String repositoryID, String queryName) {
+        return QUERY_NAME + repositoryID + DELIMITER + queryName;
     }
 
     private String getStoredQuery(BugzillaRepository repository, String queryName) {
-        String value = getPreferences().get(getQueryKey(repository.getDisplayName(), queryName), null);
+        String value = getPreferences().get(getQueryKey(repository.getID(), queryName), null);
         return value;
     }
 

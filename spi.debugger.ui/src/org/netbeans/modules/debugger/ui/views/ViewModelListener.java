@@ -1444,6 +1444,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                             np.isLeaf = null;
                         }
                     }
+                } else { // Clear all nodes
+                    synchronized (this) {
+                        for (Object n : nodeProperties.keySet()) {
+                            clearNode(n, changeMask);
+                        }
+                    }
                 }
             }
 

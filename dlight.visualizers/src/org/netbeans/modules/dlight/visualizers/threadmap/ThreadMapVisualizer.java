@@ -39,23 +39,29 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.*;
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionListener;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 
@@ -70,6 +76,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
     private static final class QueryLock {
     }
+    private Future<Boolean> task;
     private final Object queryLock = new QueryLock();
     private final ThreadMapDataProvider provider;
     private final ThreadMapVisualizerConfiguration configuration;
@@ -100,7 +107,8 @@ public class ThreadMapVisualizer extends JPanel implements
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
             public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
-               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getThreadDump(query), startTime);
+               ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
+               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer( threadDump, startTime);
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();
@@ -120,12 +128,11 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsTimelinePanelContainer.setLayout(new BorderLayout());
         threadsTimelinePanelContainer.add(threadsPanel, BorderLayout.CENTER);
+        threadsTimelinePanelContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         threadsPanel.addThreadsMonitoringActionListener(this);
 
         setLayout(new BorderLayout());
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);
-        JPanel callStack = new JPanel();
-        add(callStack, BorderLayout.SOUTH);
     }
 
     public void init() {
@@ -169,25 +176,49 @@ public class ThreadMapVisualizer extends JPanel implements
         return ThreadMapTopComponent.findInstance();
     }
 
-    public void refresh() {
+    private void asyncFillModel(boolean cancelIfNotDone) {
         synchronized (queryLock) {
-            try {
-                final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(startTimeStamp, false));
-                final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
-                UIThread.invoke(new Runnable() {
-
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-                        updateList(mapData);
-                    }
-                });
-            } catch (Throwable t) {
-                t.printStackTrace();
+            if (task != null && !task.isDone()) {
+                if (cancelIfNotDone) {
+                    task.cancel(true);
+                } else {
+                    return;
+                }
             }
+
+            task = DLightExecutorService.submit(new Callable<Boolean>() {
+
+                public Boolean call() {
+                    syncFillModel();
+                    return Boolean.TRUE;
+                }
+            }, "ThreadMapVisualizer request for the ThreadMapData");//NOI18N
         }
+    }
+
+    private void syncFillModel() {
+        final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(startTimeStamp, false, false));
+        final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                setContent(isEmptyConent);
+                if (isEmptyConent) {
+                    return;
+                }
+                updateList(mapData);
+            }
+        });
+
+    }
+
+    public void refresh() {
+        if (EventQueue.isDispatchThread()){
+            asyncFillModel(false);
+        }else{
+            syncFillModel();
+        }
+        
     }
 
     private void setContent(boolean isEmpty) {

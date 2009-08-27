@@ -1946,7 +1946,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // [this should be either solved or filtered in LayoutDragger according to vertical resizability of the component]
             if (comp != null && (comp instanceof JScrollPane
                                  || comp.getClass().equals(JPanel.class)
-                                 || comp instanceof JTabbedPane)) {
+                                 || comp instanceof JTabbedPane
+                                 || (comp instanceof AbstractButton
+                                     && ((AbstractButton)comp).getVerticalTextPosition() != SwingConstants.CENTER)
+                                 || (comp instanceof JLabel
+                                     && ((JLabel)comp).getVerticalTextPosition() != SwingConstants.CENTER))) {
 //                    || comp instanceof JTextArea
 //                    || comp instanceof JTree || comp instanceof JTable || comp instanceof JList
                 baseLinePos = 0;

@@ -166,56 +166,24 @@ public class NbModuleProjectGenerator {
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
-                    
+
                     EditableProperties props = new EditableProperties(true);
                     props.put(SingleModuleProperties.IS_AUTOLOAD, "true"); // NOI18N
                     SortedSet<String> packageList = new TreeSet<String>();
-                    Map<String,String> classPathExtensions = new HashMap<String,String>();
-                    
-                    File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N
-                    if (!releaseDir.mkdirs()) {
-                        //TODO report error
-                        Util.err.log("cannot create release directory.");
-                    }
-                    FileObject relDirFo = FileUtil.toFileObject(releaseDir);
-                    for (int i = 0; i < jars.length; i++) {
-                        FileObject orig = FileUtil.toFileObject(FileUtil.normalizeFile(jars[i]));
-                        if (orig != null) {
-                            JarFile jf = null;
-                            try {
-                                FileUtil.copyFile(orig, relDirFo, orig.getName());
-                                jf = new JarFile(jars[i]);
-                                Enumeration en = jf.entries();
-                                while (en.hasMoreElements()) {
-                                    JarEntry entry = (JarEntry)en.nextElement();
-                                    if (!entry.isDirectory() && entry.getName().endsWith(".class")) { // NOI18N
-                                        String nm = entry.getName();
-                                        if (!Util.isValidJavaFQN(nm.substring(0, nm.length() - 6).replace('/', '.'))) {
-                                            continue; // #72669
-                                        }
-                                        int index = nm.lastIndexOf('/');
-                                        if (index > -1) {
-                                            String path = nm.substring(0, index);
-                                            packageList.add(path.replace('/', '.'));
-                                        }
-                                    }
-                                }
-                                classPathExtensions.put("ext/" + orig.getNameExt(), "release/modules/ext/" + orig.getNameExt()); // NOI18N
-                            } catch (IOException e) {
-                                //TODO report
-                                Util.err.notify(e);
-                            } finally {
-                                if (jf != null) {
-                                    try {
-                                        jf.close();
-                                    } catch (IOException e) {
-                                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                                    }
-                                }
+                    Map<String,String> classPathExtensions = new HashMap<String, String>();
+                    for (File jar : jars) {
+                        try {
+                            String[] entry = Util.copyClassPathExtensionJar(projectDir, jar);
+                            if (entry != null) {
+                                classPathExtensions.put(entry[0], entry[1]);
+                                Util.scanJarForPackageNames(packageList, jar);
                             }
+                        } catch (IOException e) {
+                            //TODO report
+                            Util.err.notify(e);
                         }
                     }
-                    
+
                     if (license != null && license.exists()) {
                         FileObject fo = FileUtil.toFileObject(license);
                         try {
@@ -479,7 +447,7 @@ public class NbModuleProjectGenerator {
     }
     
     private static void createInitialProperties(FileObject projectDir) throws IOException {
-        EditableProperties props = new EditableProperties();
+        EditableProperties props = new EditableProperties(false);
         props.put(SingleModuleProperties.JAVAC_SOURCE, "1.5"); // NOI18N
         props.put(SingleModuleProperties.JAVAC_COMPILERARGS, "-Xlint -Xlint:-serial"); // NOI18N
         FileObject f = createFileObject(projectDir, AntProjectHelper.PROJECT_PROPERTIES_PATH);

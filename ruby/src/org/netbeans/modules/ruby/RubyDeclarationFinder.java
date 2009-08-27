@@ -126,6 +126,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
 
+    private static final String[] RAILS_TARGETS = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
+                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
+                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
+                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
     /** Creates a new instance of RubyDeclarationFinder */
     public RubyDeclarationFinder() {
     }
@@ -443,6 +447,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 // Search for methods, fields, etc.
                 Arity arity = Arity.UNKNOWN;
                 DeclarationLocation location = findMethod(parserResult, root, name, arity);
+
+                // search for AR associations
+                if (location == DeclarationLocation.NONE) {
+                    location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
+                }
 
                 if (location == DeclarationLocation.NONE) {
                     location = findInstance(parserResult, root, name);
@@ -880,11 +889,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 if (!(s.indexOf(":partial") != -1 || s.indexOf(":controller") != -1 || s.indexOf(":action") != -1)) { // NOI18N
                     return null;
                 }
-                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
-                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
-                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
-                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
-                for (String target : targets) {
+                for (String target : RAILS_TARGETS) {
                     int index = s.indexOf(target);
                     if (index != -1) {
                         // Find string

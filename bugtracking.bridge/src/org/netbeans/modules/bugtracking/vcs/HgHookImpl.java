@@ -53,6 +53,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
@@ -253,7 +254,7 @@ public class HgHookImpl extends HgHook {
         panel.commitRadioButton.setSelected(commit);
         panel.pushRadioButton.setSelected(!commit);
         
-        RepositorySelector.setup(panel, referenceFile);
+        RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
         panel.changeFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onShowFormat();

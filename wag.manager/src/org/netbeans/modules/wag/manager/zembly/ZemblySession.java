@@ -43,14 +43,16 @@ import com.zembly.gateway.client.config.Configuration;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.oauth.api.Response;
 import com.zembly.oauth.core.UrlConnection;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -63,15 +65,20 @@ public class ZemblySession {
     private static final String USERNAME_ATTR = "username";     //NOI18N
     private static final String KEY_ATTR = "key";               //NOI18N
     private static final String SECRET_ATTR = "secret";         //NOI18N
-    
+    private static final String PROP_LOGIN = "login";           //NOI18N
+   
     private static ZemblySession instance;
     private Zembly zembly;
     private SearchEngine searchEngine;
     private DomainRetriever domainRetriever;
     private ContentRetriever contentRetriever;
     private UserServiceRetriever userServiceRetriever;
+    private RankingRetriever rankingRetriever;
+    private ItemInfoRetriever itemInfoRetriever;
+    private TestDriver testDriver;
     private ZemblyUserInfo userInfo;
 
+    protected PropertyChangeSupport pps;
     // For local testing
     /*
     static {
@@ -79,6 +86,11 @@ public class ZemblySession {
         SSLUtilities.trustAllHttpsCertificates();
     }
      */
+
+
+    private ZemblySession() {
+        pps = new PropertyChangeSupport(this);
+    }
 
     public synchronized static ZemblySession getInstance() {
         if (instance == null) {
@@ -88,25 +100,36 @@ public class ZemblySession {
         return instance;
     }
 
-    public void login() {
-        // TODO:
+    public void login(String username, char[] password) {
+          // TODO:
         // 1. Check login status
         // 2. Single sign on
         // 3. Log into zembly and retrieve OAuth tokens
         // 4. Prompt user is SSO credential is invalid
         if (userInfo == null) {
             // For local testing
-            //userInfo = zemblyLogin("root@webonweb.org", "rootroot");
-            //userInfo = zemblyLogin("peter.liu@sun.com", "foobar");
-            userInfo = new ZemblyUserInfo();
-            userInfo.setUserid("914986440");
-            userInfo.setUsername("spunky");
+            userInfo = zemblyLogin(username, new String(password));
+            //userInfo = new ZemblyUserInfo();
+            //userInfo.setUserid("914986440");
+            //userInfo.setUsername("spunky");
+            fireChange(false, true, PROP_LOGIN);
         }
     }
 
-    public void logout() {
+    public void login() {
+      
     }
 
+    public void logout() {
+        userInfo = null;
+
+        fireChange(true, false, PROP_LOGIN);
+    }
+
+    public boolean isLoggedIn() {
+        return userInfo != null;
+    }
+   
     public ZemblyUserInfo getUserInfo() {
         return userInfo;
     }
@@ -151,6 +174,36 @@ public class ZemblySession {
 
         return userServiceRetriever;
     }
+
+    public RankingRetriever getRankingRetriever() {
+        login();
+
+        if (rankingRetriever == null) {
+            rankingRetriever = new RankingRetriever(getZembly());
+        }
+
+        return rankingRetriever;
+    }
+
+    public ItemInfoRetriever getItemInfoRetriever() {
+        login();
+
+        if (itemInfoRetriever == null) {
+            itemInfoRetriever = new ItemInfoRetriever(getZembly());
+        }
+
+        return itemInfoRetriever;
+    }
+
+    public TestDriver getTestDriver() {
+        login();
+
+        if (testDriver == null) {
+            testDriver = new TestDriver(getZembly());
+        }
+
+        return testDriver;
+    }
     
     private ZemblyUserInfo zemblyLogin(String username, String password) {
         List<Parameter> params = new ArrayList<Parameter>();
@@ -166,8 +219,7 @@ public class ZemblySession {
 
             return parseUserInfo(result.getString());
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(ZemblySession.class.getName()).log(Level.SEVERE, null, ex);
+            Utilities.handleException(ex);
         }
 
         return null;
@@ -183,7 +235,7 @@ public class ZemblySession {
                 config.setConsumerKey(userInfo.getKey());
                 config.setConsumerSecret(userInfo.getSecret());
             } catch (Exception ex) {
-                // ignore
+                //ignore
             }
         }
 
@@ -210,9 +262,22 @@ public class ZemblySession {
             System.out.println("userInfo: " + userInfo);
             return userInfo;
         } catch (JSONException ex) {
-
+            Utilities.handleException(ex);
         }
 
         return null;
+    }
+
+      public void addPropertyChangeListener(PropertyChangeListener l) {
+        pps.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pps.removePropertyChangeListener(l);
+    }
+
+    protected void fireChange(Object old, Object neu, String propName) {
+        PropertyChangeEvent pce = new PropertyChangeEvent(this, propName, old, neu);
+        pps.firePropertyChange(pce);
     }
 }

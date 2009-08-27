@@ -79,6 +79,7 @@ public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_DIRECT_UNINSTALL = new ForDirectUninstall();
     private static final OperationSupportImpl FOR_CUSTOM_INSTALL = new ForCustomInstall ();
     private static final OperationSupportImpl FOR_CUSTOM_UNINSTALL = new ForCustomUninstall ();
+    private static final OperationSupportImpl FOR_INTERNAL_UPDATE = new ForInternalUpdate();
     
     private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationSupportImpl");
     
@@ -108,6 +109,9 @@ public abstract class OperationSupportImpl {
     }
     public static OperationSupportImpl forCustomUninstall () {
         return FOR_CUSTOM_UNINSTALL;
+    }
+    public static OperationSupportImpl forInternalUpdate () {
+        return FOR_INTERNAL_UPDATE;
     }
     
     public abstract Boolean doOperation(ProgressHandle progress/*or null*/, OperationContainer<?> container) throws OperationException;
@@ -550,6 +554,25 @@ public abstract class OperationSupportImpl {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
         
+    }
+
+    private static class ForInternalUpdate extends OperationSupportImpl {
+        public synchronized Boolean doOperation(ProgressHandle progress,
+                OperationContainer container) throws OperationException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
+        }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
     }
     
     private static class ForCustomInstall extends OperationSupportImpl {

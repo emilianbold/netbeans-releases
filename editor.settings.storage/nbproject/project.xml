@@ -133,6 +133,8 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.csl.api</friend>
+                <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.editor.codetemplates</friend>
                 <friend>org.netbeans.modules.editor.deprecated.pre61settings</friend>
                 <friend>org.netbeans.modules.editor.macros</friend>
@@ -140,7 +142,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.jvi</friend>
                 <friend>org.netbeans.modules.languages</friend>
                 <friend>org.netbeans.modules.options.editor</friend>
-                <friend>org.netbeans.modules.csl.api</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
                 <package>org.netbeans.modules.editor.settings.storage.api</package>
                 <package>org.netbeans.modules.editor.settings.storage.spi</package>
