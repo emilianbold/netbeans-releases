@@ -40,6 +40,8 @@ package org.netbeans.modules.dlight.annotationsupport;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 
@@ -54,6 +56,7 @@ public class LineAnnotationInfo {
     private long offset;
     private String annotation;
     private String columns[];
+    private Position position;
 
     public LineAnnotationInfo(FileAnnotationInfo fileAnnotationInfo) {
         this.fileAnnotationInfo = fileAnnotationInfo;
@@ -79,6 +82,18 @@ public class LineAnnotationInfo {
             sourceLine = -1;
         }
         setLine(sourceLine);
+    }
+
+    public Position getPosition() {
+        if (position == null) {
+            try {
+                position = fileAnnotationInfo.getEditorPane().getDocument().createPosition((int)getOffset());
+            }
+            catch (BadLocationException ble) {
+
+            }
+        }
+        return position;
     }
 
     /**
@@ -112,6 +127,10 @@ public class LineAnnotationInfo {
      * @return the offset
      */
     public long getOffset() {
+        if (offset < 0) {
+            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(line-1);
+            offset = el.getStartOffset();
+        }
         return offset;
     }
 
