@@ -737,7 +737,7 @@ public class PhpProject implements Project {
         }
 
         public void fileChanged(FileEvent fe) {
-            processFileChange();
+            // probably not interesting for us
         }
 
         public void fileDeleted(FileEvent fe) {
