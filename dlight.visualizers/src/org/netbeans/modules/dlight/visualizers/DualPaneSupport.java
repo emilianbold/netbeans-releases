@@ -70,7 +70,7 @@ public final class DualPaneSupport<T> extends JSplitPane {
         super(HORIZONTAL_SPLIT);
         this.detailsRenderer = detailsRenderer;
         this.detailsComponent = null;
-        setResizeWeight(0.5);
+        setResizeWeight(0.7);
         setContinuousLayout(true);
         setLeftComponent(masterComponent);
     }
@@ -78,11 +78,13 @@ public final class DualPaneSupport<T> extends JSplitPane {
     public void showDetailsFor(T item) {
         boolean keepDividerPos = (detailsComponent == null) == (item == null);
         detailsComponent = null;
-        if (item != null && detailsRenderer != null) {
+        if (item == null) {
+            detailsComponent = new JLabel(NbBundle.getMessage(DualPaneSupport.class, "DualPaneSupport.NoSelection"), JLabel.CENTER); // NOI18N
+        } else if (detailsRenderer != null) {
             detailsComponent = detailsRenderer.render(item);
         }
         if (detailsComponent == null) {
-            detailsComponent = new JLabel(NbBundle.getMessage(DualPaneSupport.class, "DualPaneSupport.DetailsEmpty"), JLabel.CENTER); // NOI18N
+            detailsComponent = new JLabel(NbBundle.getMessage(DualPaneSupport.class, "DualPaneSupport.NoDetails"), JLabel.CENTER); // NOI18N
         }
         int oldDividerPos = keepDividerPos? getDividerLocation() : 0;
         setRightComponent(detailsComponent);
@@ -113,6 +115,7 @@ public final class DualPaneSupport<T> extends JSplitPane {
                 }
             }
         });
+        dualPaneSupport.showDetailsFor(null);
         return dualPaneSupport;
     }
 }
