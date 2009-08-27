@@ -27,16 +27,16 @@
             <li>In the New File wizard, select Entity Classes from Database from the Persistence category.</li>
             <li>Select the source database that contains the tables that you want to use to generate the entity classes:
                 <ul>
-                    <li><b>Data Source.</b> Choose a data source from the drop-down menu.
+                    <li><b>Data Source.</b> Choose a data source from the dropdown list.
                     Alternately, you can choose Add Data Source to create a new data source. 
                     The database must be running to choose this option.
                     <ul class="note">
                         <li>When choosing a data source, the server must be running and the data source must be registered with the server.</li>
-                        <li>If your target server is not a Java EE 5 container, 
-                        the drop-down menu contains the database connections registered with the IDE.</li>
+                        <li>If your target server is not a Java EE container, 
+                        the dropdown list contains the database connections registered with the IDE.</li>
                     </ul>
                     </li>
-                    <li><b>Database Schema.</b> Choose a database schema from the drop-down menu.
+                    <li><b>Database Schema.</b> Choose a database schema from the dropdown list.
                     This option is available only if there is a database schema in your project's <tt>src/conf</tt> folder.</li>
                 </ul>
                 After you select the source database, the tables in that database are listed in the Available Tables pane.
@@ -55,6 +55,9 @@
             <li>Select an existing package from the Package drop-down menu or type the name of a new package.</li>
             <li>Confirm that you want the IDE to generate named query annotations in the entity classes.
             If you do not want the IDE to generate the annotations, deselect Generate Named Query Annotations for Persistent Fields.</li>
+
+            <li>Click Next.</li>
+            <li>(Optional) Specify any mapping options.</li>
             <li>Click Finish.</li>
         </ol>
         
@@ -67,12 +70,7 @@
             <li>When you select a data source or JDBC connection, the IDE also creates a database schema for the database and saves the schema in your <tt>src/conf </tt>folder.</li>
             <li>To persist entity classes, your project requires a <a href="persistence_unit.html">persistence unit.</a></li>
         </ul>
-          <!--  
-        <p>You can use Java annotations to specify how Java business objects are mapped to a relational database.</p> 
-        <p>You can use the Java Persistence API inside the EJB container or directly with Java SE.</p>
-        <p>For more on using Java Persistence in Java SE applications and for deploying application to non-EE 5 containers,
-        see <a href="persistence_support.html">Adding Support for Java Persistence</a>.</p>
-        -->
+          
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>

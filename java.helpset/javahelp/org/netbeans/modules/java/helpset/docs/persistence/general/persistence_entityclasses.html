@@ -15,7 +15,7 @@
         
         <h2>Creating an Entity Class</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>In Java EE 5 applications, you use entity classes to create persistent entity objects ("entities").
+        <p>In Java EE applications, you use entity classes to create persistent entity objects ("entities").
             Entity classes are "plain old Java objects" (POJOs).
             Entity classes import the Java persistence library <tt>javax.persistence.Entity</tt> and are 
         marked with the <tt>@Entity</tt> annotation in your source code.</p>
@@ -45,11 +45,10 @@
             <li>Persistent fields or properties correspond to columns in a table.</li> 
         </ul>
         
-        <p>In Java EE 5 applications, entities created using entity classes 
-        share many of the characteristics of <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_entity_beans.html">entity beans</a> in J2EE applications.
-        Unlike entity beans, entity classes are not restricted to EJB modules in enterprise applications.
-        Entity classes can be located in an EJB module or a web module. 
-        Entity classes can also be used in Java SE applications.</p>
+        <p>
+        Entity classes are not restricted to EJB modules in enterprise applications.
+        Entity classes can be located in an EJB module or a web module and can
+        be also used in Java SE applications.</p>
         
         <p>When coding entity classes, you use annotations to map entities and entity relationships to a database.
             You do not need to use external XML descriptor files to map persistent objects to a database.
