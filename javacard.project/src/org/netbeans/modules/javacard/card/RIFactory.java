@@ -207,14 +207,22 @@ public final class RIFactory implements CardInstanceFactory<ReferenceImplementat
                 noSuspend = Boolean.valueOf(prop);
             }
 
+            prop = properties.getProperty(JavacardDeviceKeyNames.DEVICE_IS_REMOTE);
+            boolean remote;
+            if (prop == null) {
+                remote = false;
+            } else {
+                remote = Boolean.valueOf(prop);
+            }
+
             File eeprom = Utils.eepromFileForDevice(platform, displayName, true);
             ReferenceImplementation result = new ReferenceImplementation(platform, id,
                     displayName, 
-                    username, password, ramSize, e2pprop, "" + corSize,
+                    username, password, ramSize, e2pprop, "" + corSize, //NOI18N
                     loggerLevel, "" + httpPort,
-                    "" + contactedport, contactedProtocol,
-                    contactlessPort + "", secureMode,
-                    proxy2cjcreport + "", proxy2ideport + "");
+                    "" + contactedport, contactedProtocol, //NOI18N
+                    contactlessPort + "", secureMode, //NOI18N
+                    proxy2cjcreport + "", proxy2ideport + "", remote); //NOI18N
             result.setEepromFile(eeprom);
             result.setNoSuspend(noSuspend);
             return result;
