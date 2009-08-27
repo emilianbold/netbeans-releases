@@ -188,18 +188,18 @@ public class SyntaxParserResult {
 
     @Deprecated
     public Map<String, URI> getGlobalNamespaces() {
-        Map<String, URI> namespaces = new HashMap<String, URI>();
+        Map<String, URI> _namespaces = new HashMap<String, URI>();
         AstNode root = getASTRoot();
         //scan all root children (real document root) for namespaces
         for (AstNode n : root.children()) {
             if (n.type() == AstNode.NodeType.OPEN_TAG) {
                 for (String attrName : n.getAttributeKeys()) {
-                    if (attrName.startsWith("xmlns")) {
-                        int colonIndex = attrName.indexOf(':');
-                        String nsPrefix = colonIndex == -1 ? "" : attrName.substring(colonIndex + 1);
-                        String value = n.getAttribute(attrName).toString();
+                    if (attrName.startsWith("xmlns")) { //NOI18N
+                        int colonIndex = attrName.indexOf(':');//NOI18N
+                        String nsPrefix = colonIndex == -1 ? "" : attrName.substring(colonIndex + 1);//NOI18N
+                        AstNode.Attribute attr = n.getAttribute(attrName);
                         try {
-                            namespaces.put(nsPrefix, new URI(value));
+                            _namespaces.put(nsPrefix, new URI(attr.unquotedValue()));
                         } catch (URISyntaxException ex) {
                             //TODO - report error in the editor
                         }
@@ -207,7 +207,7 @@ public class SyntaxParserResult {
                 }
             }
         }
-        return namespaces;
+        return _namespaces;
     }
 
     public DTD getDTD() {

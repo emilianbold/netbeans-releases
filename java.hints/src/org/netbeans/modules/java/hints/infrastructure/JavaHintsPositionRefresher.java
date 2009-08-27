@@ -124,7 +124,7 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
 
             Set<Tree> encounteredLeafs = new HashSet<Tree>();
             HintsTask task = new HintsTask();
-            for (int i = rowStart; i < rowEnd; i++) {
+            for (int i = rowStart; i <= rowEnd; i++) {
                 TreePath path = controller.getTreeUtilities().pathFor(i);
                 Tree leaf = path.getLeaf();
                 if (!encounteredLeafs.contains(leaf)) {

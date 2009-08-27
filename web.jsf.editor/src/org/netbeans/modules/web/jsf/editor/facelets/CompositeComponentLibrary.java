@@ -137,13 +137,13 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
             for (String cname : componentNames) {
                 CompositeComponentModel model = index().getCompositeComponentModel(getLibraryName(), cname);
-                Collection<Attribute> attrs = new ArrayList<Attribute>();
+                Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                 String msgNoTld = NbBundle.getBundle(JsfCompletionItem.class).getString("MSG_NO_TLD"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
                     boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
                     String description = getAttributesDescription(model);
-                    attrs.add(new Attribute(attrname, description, required));
+                    attrs.put(attrname, new Attribute(attrname, description, required));
                 }
 
                 StringBuffer sb = new StringBuffer();

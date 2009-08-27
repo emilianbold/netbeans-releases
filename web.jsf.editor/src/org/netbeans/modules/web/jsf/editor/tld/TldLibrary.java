@@ -177,14 +177,14 @@ public class TldLibrary {
                     String tagName = getTextContent(tag, "name"); //NOI18N
                     String tagDescription = getTextContent(tag, "description"); //NOI18N
 
-                    Collection<Attribute> attrs = new ArrayList<Attribute>();
+                    Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                     //find attributes
                     for(Node attrNode : getNodesByName(tag, "attribute")) { //NOI18N
                         String aName = getTextContent(attrNode, "name"); //NOI18N
                         String aDescription = getTextContent(attrNode, "description"); //NOI18N
                         boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
 
-                        attrs.add(new Attribute(aName, aDescription, aRequired));
+                        attrs.put(aName, new Attribute(aName, aDescription, aRequired));
                     }
 
                     tags.put(tagName, new Tag(tagName, tagDescription, attrs));
@@ -233,9 +233,9 @@ public class TldLibrary {
 
         private String name;
         private String description;
-        private Collection<Attribute> attrs;
+        private Map<String, Attribute> attrs;
 
-        public Tag(String name, String description, Collection<Attribute> attrs) {
+        public Tag(String name, String description, Map<String, Attribute> attrs) {
             this.name = name;
             this.description = description;
             this.attrs = attrs;
@@ -250,7 +250,11 @@ public class TldLibrary {
         }
 
         public Collection<Attribute> getAttributes() {
-            return attrs;
+            return attrs.values();
+        }
+
+        public Attribute getAttribute(String name) {
+            return attrs.get(name);
         }
 
         @Override

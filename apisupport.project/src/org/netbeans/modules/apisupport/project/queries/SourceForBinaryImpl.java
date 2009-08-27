@@ -66,7 +66,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private URL classesUrl;
     private final Map<String,URL> testClassesUrl = new HashMap<String,URL>();
     private Map<URL,SourceForBinaryQuery.Result> cache = new HashMap<URL,SourceForBinaryQuery.Result>();
-    
+
     public SourceForBinaryImpl(NbModuleProject project) {
         this.project = project;
     }
@@ -85,10 +85,32 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                     TestEntry entry = TestEntry.get(binaryJarF);
                     if (entry != null && project.getCodeNameBase().equals(entry.getCodeNameBase())) {
                         srcDir = project.getTestSourceDirectory(entry.getTestType());
+                    } else {
+                        // try classpath-extension
+                        // // convention-over-cfg per mkleint's suggestion: <jarname>-src(.zip) folder or ZIP first
+                        // TODO - cache all results?!? also for JFBQI
+                        String n = binaryJarF.getName();
+                        if (n.endsWith(".jar")) { // NOI18N
+                            File jFolder = new File(binaryJarF.getParentFile(),
+                                    n.substring(0, n.length() - ".jar".length()) + "-src");
+                            if (jFolder.isDirectory()) {
+                                res = new Result(FileUtil.toFileObject(jFolder));
+                                cache.put(binaryRoot,res);
+                                return res;
+                            } else {
+                                File jZip = new File(jFolder.getAbsolutePath() + ".zip");
+                                if (jZip.isFile()) {
+                                    res = new Result(FileUtil.getArchiveRoot(FileUtil.toFileObject(jZip)));
+                                    cache.put(binaryRoot,res);
+                                    return res;
+                                }
+                            }
+                        }
                     }
                 }
                 if (srcDir != null) {
                     res = new Result(srcDir);
+                    cache.put(binaryRoot,res);
                     return res;
                 }
             }
