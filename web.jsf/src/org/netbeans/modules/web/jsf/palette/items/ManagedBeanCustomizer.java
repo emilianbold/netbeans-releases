@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.web.jsf.palette.items;
 
+import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +54,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPopupMenu;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -71,16 +76,26 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class ManagedBeanCustomizer extends javax.swing.JPanel {
 
+    public static final String VIEW_TEMPLATE = "/Templates/JSF/JSF_From_Entity/view.ftl"; // NOI18N
+    public static final String EDIT_TEMPLATE = "/Templates/JSF/JSF_From_Entity/edit.ftl"; // NOI18N
+    public static final String TABLE_TEMPLATE = "/Templates/JSF/JSF_From_Entity/table.ftl"; // NOI18N
+    
     private Project project;
     private boolean collection;
     private boolean dummyBean = false;
+    private Dialog dialog;
+    private boolean cancelled = false;
 
     public ManagedBeanCustomizer(Project project, boolean collection, boolean enableReadOnly) {
         initComponents();
@@ -118,6 +133,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
         managedBeanLabel = new javax.swing.JLabel();
         managedBeanCombo = new javax.swing.JComboBox();
         readOnlyCheckBox = new javax.swing.JCheckBox();
+        customizeTemplatesLabel = new javax.swing.JLabel();
 
         entityBeanLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.entityBeanLabel.text")); // NOI18N
 
@@ -138,6 +154,13 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
 
         readOnlyCheckBox.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.readOnlyCheckBox.text")); // NOI18N
 
+        customizeTemplatesLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.customizeTemplatesLabel.text")); // NOI18N
+        customizeTemplatesLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                customizeTemplatesLabelMouseClicked(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -145,13 +168,16 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(entityBeanLabel)
-                    .add(managedBeanLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(readOnlyCheckBox)
-                    .add(entityBeanCombo, 0, 324, Short.MAX_VALUE)
-                    .add(managedBeanCombo, 0, 324, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(entityBeanLabel)
+                            .add(managedBeanLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(readOnlyCheckBox)
+                            .add(entityBeanCombo, 0, 324, Short.MAX_VALUE)
+                            .add(managedBeanCombo, 0, 324, Short.MAX_VALUE)))
+                    .add(customizeTemplatesLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -167,7 +193,9 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
                     .add(managedBeanCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(readOnlyCheckBox)
-                .addContainerGap(129, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 100, Short.MAX_VALUE)
+                .add(customizeTemplatesLabel)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -202,8 +230,59 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_managedBeanComboItemStateChanged
 
+    private void customizeTemplatesLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_customizeTemplatesLabelMouseClicked
+        if (collection) {
+            new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.tableTemplate"), TABLE_TEMPLATE).actionPerformed(null);
+        } else {
+            JPopupMenu menu = new JPopupMenu();
+            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.viewTemplate"), VIEW_TEMPLATE));
+            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.editTemplate"), EDIT_TEMPLATE));
+            menu.show(customizeTemplatesLabel, evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_customizeTemplatesLabelMouseClicked
+
+    void setDialog(Dialog dlg) {
+        this.dialog = dlg;
+    }
+
+    private void setCancelled() {
+        cancelled = true;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    private static class OpenTemplateAction extends AbstractAction {
+
+        private String templateFileName;
+        private ManagedBeanCustomizer panel;
+
+        public OpenTemplateAction(ManagedBeanCustomizer panel, String actionName, String templateFileName) {
+            this.templateFileName = templateFileName;
+            this.panel = panel;
+            this.putValue(Action.NAME, actionName);
+        }
+
+        public void actionPerformed(ActionEvent arg0) {
+            FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(templateFileName);
+            try {
+                final DataObject dob = DataObject.find(tableTemplate);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        dob.getLookup().lookup(EditCookie.class).edit();
+                    }
+                });
+                panel.setCancelled();
+                panel.dialog.setVisible(false);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel customizeTemplatesLabel;
     private javax.swing.JComboBox entityBeanCombo;
     private javax.swing.JLabel entityBeanLabel;
     private javax.swing.JComboBox managedBeanCombo;

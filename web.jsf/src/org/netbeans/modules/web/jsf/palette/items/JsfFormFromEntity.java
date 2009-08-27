@@ -70,9 +70,9 @@ public final class JsfFormFromEntity extends FromEntityBase implements ActiveEdi
     @Override
     protected String getTemplate() {
         if (isReadOnlyForm()) {
-            return "/Templates/JSF/JSF_From_Entity/view.ftl"; // NOI18N
+            return ManagedBeanCustomizer.VIEW_TEMPLATE;
         } else {
-            return "/Templates/JSF/JSF_From_Entity/edit.ftl"; // NOI18N
+            return ManagedBeanCustomizer.EDIT_TEMPLATE;
         }
     }
 

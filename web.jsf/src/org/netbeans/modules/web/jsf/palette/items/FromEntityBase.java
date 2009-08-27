@@ -105,13 +105,14 @@ public abstract class FromEntityBase {
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(dd);
+            mbc.setDialog(dlg);
             dlg.setVisible(true);
         } finally {
             if (dlg != null)
                 dlg.dispose();
         }
 
-        boolean accept = dd.getValue() == DialogDescriptor.OK_OPTION;
+        boolean accept = (dd.getValue() == DialogDescriptor.OK_OPTION && !mbc.isCancelled());
         readOnly = mbc.isReadOnly();
         if (accept) {
             try {

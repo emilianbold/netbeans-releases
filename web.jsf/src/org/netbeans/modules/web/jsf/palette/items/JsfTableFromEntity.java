@@ -69,7 +69,7 @@ public final class JsfTableFromEntity extends FromEntityBase implements ActiveEd
 
     @Override
     protected String getTemplate() {
-        return "/Templates/JSF/JSF_From_Entity/table.ftl"; // NOI18N
+        return ManagedBeanCustomizer.TABLE_TEMPLATE;
     }
 
 }
