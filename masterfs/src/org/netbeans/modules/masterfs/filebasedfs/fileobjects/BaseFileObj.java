@@ -203,6 +203,12 @@ public abstract class BaseFileObj extends FileObject {
     public final boolean isRoot() {
         return false;
     }
+
+    public final java.util.Date lastModified() {
+        final File f = getFileName().getFile();
+        final long lastModified = f.lastModified();
+        return new Date(lastModified);
+    }
      
     @Override
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
@@ -377,6 +383,16 @@ public abstract class BaseFileObj extends FileObject {
 
     public final void removeFileChangeListener(final org.openide.filesystems.FileChangeListener fcl) {
         getEventSupport().remove(FileChangeListener.class, fcl);
+    }
+
+    @Override
+    public void addRecursiveListener(FileChangeListener fcl) {
+        addFileChangeListener(fcl);
+    }
+    
+    @Override
+    public void removeRecursiveListener(FileChangeListener fcl) {
+        removeFileChangeListener(fcl);
     }
 
     private Enumeration getListeners() {

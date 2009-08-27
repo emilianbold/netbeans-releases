@@ -1611,6 +1611,109 @@ public class FileObjectTestHid extends TestBaseHid {
             assertNotNull(child);        
         }
     }
+
+    public void testRecursiveListener() throws IOException {
+        checkSetUp();
+
+        FileObject folder1 = getTestFolder1 (root);
+        /** delete first time*/
+        try {
+            FileObject obj = FileUtil.createData(folder1, "my/sub/children/children.java");
+            FileObject sub = obj.getParent().getParent();
+
+            class L implements FileChangeListener {
+                StringBuilder sb = new StringBuilder();
+
+                public void fileFolderCreated(FileEvent fe) {
+                    sb.append("FolderCreated");
+                }
+
+                public void fileDataCreated(FileEvent fe) {
+                    sb.append("DataCreated");
+                }
+
+                public void fileChanged(FileEvent fe) {
+                    sb.append("Changed");
+                }
+
+                public void fileDeleted(FileEvent fe) {
+                    sb.append("Deleted");
+                }
+
+                public void fileRenamed(FileRenameEvent fe) {
+                    sb.append("Renamed");
+                }
+
+                public void fileAttributeChanged(FileAttributeEvent fe) {
+                    sb.append("AttributeChanged");
+                }
+
+                public void assertMessages(String txt, String msg) {
+                    assertEquals(txt, msg, sb.toString());
+                    sb.setLength(0);
+                }
+            }
+            L recursive = new L();
+            L flat = new L();
+
+            sub.addFileChangeListener(flat);
+            sub.addRecursiveListener(recursive);
+
+            FileObject fo = obj.getParent().createData("sibling.java");
+
+            flat.assertMessages("No messages in flat mode", "");
+            recursive.assertMessages("Creation", "DataCreated");
+
+            fo.setAttribute("jarda", "hello");
+
+            flat.assertMessages("No messages in flat mode", "");
+            recursive.assertMessages("attr", "AttributeChanged");
+
+            final OutputStream os = fo.getOutputStream();
+            os.write(10);
+            os.close();
+
+            flat.assertMessages("No messages in flat mode", "");
+            recursive.assertMessages("written", "Changed");
+
+            fo.delete();
+
+            flat.assertMessages("No messages in flat mode", "");
+            recursive.assertMessages("gone", "Deleted");
+
+            FileObject subdir = sub.createFolder("testFolder");
+
+            flat.assertMessages("Direct Folder notified", "FolderCreated");
+            recursive.assertMessages("Direct Folder notified", "FolderCreated");
+
+            subdir.createData("subchild.txt");
+
+            recursive.assertMessages("SubFolder's change notified", "DataCreated");
+            flat.assertMessages("SubFolder's change not important", "");
+
+            sub.getParent().createData("unimportant.txt");
+
+            flat.assertMessages("No messages in flat mode", "");
+            recursive.assertMessages("No messages in recursive mode", "");
+
+            sub.removeRecursiveListener(recursive);
+
+            sub.createData("test.data");
+
+            flat.assertMessages("Direct file notified", "DataCreated");
+            recursive.assertMessages("No longer active", "");
+
+            WeakReference<L> ref = new WeakReference<L>(recursive);
+            recursive = null;
+            assertGC("Listener can be GCed", ref);
+
+        } catch (IOException iex) {
+            if (fs.isReadOnly() || root.isReadOnly()) return;
+            throw iex;
+        } finally {
+        }
+    }
+
     
     /** Test of delete method, of class org.openide.filesystems.FileObject. */    
     public void testCreateDeleteFolderCreate () throws IOException {

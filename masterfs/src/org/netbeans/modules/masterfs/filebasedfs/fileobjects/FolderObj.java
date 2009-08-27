@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -62,6 +63,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.FSCallable;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory.Caller;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
@@ -69,6 +71,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
@@ -82,7 +85,8 @@ public final class FolderObj extends BaseFileObj {
     private static final Mutex mutex = new Mutex(FolderObj.mp);
 
     private FolderChildrenCache folderChildren;
-    boolean valid = true;    
+    boolean valid = true;
+    private FileObjectKeeper keeper;
 
     /**
      * Creates a new instance of FolderImpl
@@ -333,6 +337,7 @@ public final class FolderObj extends BaseFileObj {
     public void refreshImpl(final boolean expected, boolean fire) {
         final ChildrenCache cache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
+        final long previous = keeper == null ? -1 : keeper.childrenLastModified();
 
         Set oldChildren = null;
         Map refreshResult = null;
@@ -412,6 +417,11 @@ public final class FolderObj extends BaseFileObj {
                 fireFileDeletedEvent(expected);
             }
         }
+
+        if (previous != -1) {
+            assert keeper != null;
+            keeper.init(previous, factory, expected);
+        }
     }
 
     @Override
@@ -487,10 +497,6 @@ public final class FolderObj extends BaseFileObj {
         throw new IOException(getPath());
     }
 
-    public final java.util.Date lastModified() {
-        final File f = getFileName().getFile();
-        return new Date(f.lastModified());
-    }
 
     public final FileLock lock() throws IOException {
         return new FileLock();
@@ -507,6 +513,25 @@ public final class FolderObj extends BaseFileObj {
         }
         return folderChildren;
     }
+
+    synchronized FileObjectKeeper getKeeper() {
+        if (keeper == null) {
+            keeper = new FileObjectKeeper(this);
+            keeper.init(-1, null, false);
+        }
+        return keeper;
+    }
+
+    @Override
+    public final void addRecursiveListener(FileChangeListener fcl) {
+        getKeeper().addRecursiveListener(fcl);
+    }
+
+    @Override
+    public final void removeRecursiveListener(FileChangeListener fcl) {
+        getKeeper().removeRecursiveListener(fcl);
+    }
+
 
     public final class FolderChildrenCache implements ChildrenCache {
         public final ChildrenSupport ch = new ChildrenSupport();

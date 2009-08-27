@@ -58,6 +58,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
@@ -412,6 +413,61 @@ public abstract class FileObject extends Object implements Serializable {
     * @param fcl the listener
     */
     public abstract void removeFileChangeListener(FileChangeListener fcl);
+
+
+    /** Adds a listener to this {@link FileObject} and all its children and
+     * children or its children.
+     * It is guaranteed that whenever a change
+     * is made via the FileSystem API itself under this {@link FileObject}
+     * that it is notified to the <code>fcl</code> listener. Whether external
+     * changes (if they make sense) are detected and
+     * notified depends on actual implementation. As some implementations may
+     * need to perform non-trivial amount of work during initialization of
+     * listeners, this methods can take long time. Usage of this method may
+     * consume a lot of system resources and as such it shall be used with care.
+     * Traditional {@link #addFileChangeListener(org.openide.filesystems.FileChangeListener)}
+     * is definitely preferred variant.
+     * <p class="nonnormative">
+     * If you are running with the MasterFS module enabled, it guarantees
+     * that for files backed with real {@link File}, the system initializes
+     * itself to detect external changes on the whole subtree.
+     * This requires non-trivial amount of work and especially on slow
+     * disks (aka networks ones) may take a long time to add the listener
+     * and also refresh the system when {@link FileObject#refresh()}
+     * and especially {@link FileUtil#refreshAll()} is requested.
+     * </p>
+     *
+     * @param fcl the listener to register
+     * @since 7.24
+     */
+    public void addRecursiveListener(FileChangeListener fcl) {
+        if (!isFolder()) {
+            addFileChangeListener(fcl);
+            return;
+        }
+        try {
+            getFileSystem().addFileChangeListener(new RecursiveListener(this, fcl));
+        } catch (FileStateInvalidException ex) {
+            ExternalUtil.LOG.log(Level.FINE, "Cannot remove listener from " + this, ex);
+        }
+    }
+
+    /** Removes listener previously added by {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener)}
+     *
+     * @param fcl the listener to remove
+     * @since 7.24
+     */
+    public void removeRecursiveListener(FileChangeListener fcl) {
+        if (!isFolder()) {
+            removeFileChangeListener(fcl);
+            return;
+        }
+        try {
+            getFileSystem().removeFileChangeListener(new RecursiveListener(this, fcl));
+        } catch (FileStateInvalidException ex) {
+            ExternalUtil.LOG.log(Level.FINE, "Cannot remove listener from " + this, ex);
+        }
+    }
 
     /** Fire data creation event.
     * @param en listeners that should receive the event

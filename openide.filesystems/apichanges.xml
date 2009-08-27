@@ -46,6 +46,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+          <change id="recursive-listener">
+             <api name="filesystems"/>
+             <summary>Support for recursive listeners</summary>
+             <version major="7" minor="25"/>
+             <date day="1" month="9" year="2009"/>
+             <author login="jtulach"/>
+             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+             <description>
+                 <p>
+                     One can register a recursive listener on a file object by
+                     calling
+                     <a href="@TOP@/org/openide/filesystems/FileObject.html#addRecursiveListener(org.openide.filesystems.FileChangeListener)">FileObject.addRecursiveListener(FileChangeListener)</a>.
+                 </p>
+             </description>
+             <class package="org.openide.filesystems" name="FileObject"/>
+             <issue number="170862"/>
+         </change>
          <change id="runWhenDeliveryOver">
             <api name="filesystems"/>
             <summary>Support for processing batch events</summary>
