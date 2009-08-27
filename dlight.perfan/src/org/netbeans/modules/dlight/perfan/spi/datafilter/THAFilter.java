@@ -36,19 +36,36 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.tha.api;
 
-public interface THAConfiguration {
-    String THA_DATA_FILTER_NAME = "sunstudio.datafilter.tha";//NOI18N
-    String DEADLOCK_ONLY_FILTER_VALUE = "Deadlocks";//NOI18N
-    String DEADLOCK_AND_RACES_FILTER_VALUE = "RacesAndDeadlocks";//NOI18N
-    String THA_STARTUP_FILTER_NAME = "sunstudio.tha.startup";//NOI18N
-    String START_AT_STARTUP = "StartAtStartup";//NOI18N
+package org.netbeans.modules.dlight.perfan.spi.datafilter;
+
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
+
+/**
+ *
+ * @author mt154047
+ */
+public class THAFilter implements DataFilter {
+    private final CollectedDataType type;
     
+    public THAFilter(String spec) {
+        if (THAConfiguration.DEADLOCK_AND_RACES_FILTER_VALUE.equals(spec)){
+            type = CollectedDataType.DATARACES;
+        }else{
+            type = CollectedDataType.DEADLOCKS;
+        }
+    }
 
-    boolean collectDataRaces();
+    public CollectedDataType getType() {
+        return type;
+    }
 
-    boolean collectDeadlocks();
+    public static enum CollectedDataType {
+        DATARACES,
+        DEADLOCKS
+    }
 
-    boolean collectFromBeginning();
+
+
 }
