@@ -79,6 +79,7 @@ public class WSDLWizardBindingConfigurationWrapperStep implements WizardDescript
     
     private String mErrorMessage;
     private String mWarningMessage;
+    private String mInfoMessage;
     private WizardDescriptor wiz;
     private PropertyChangeListener propertyChangeListener = new WizardPanelPropertyChangeListener();
     
@@ -91,6 +92,7 @@ public class WSDLWizardBindingConfigurationWrapperStep implements WizardDescript
         mWPanel = panel;
         mErrorMessage = null;
         mWarningMessage = null;
+        mInfoMessage = null;
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -167,15 +169,20 @@ public class WSDLWizardBindingConfigurationWrapperStep implements WizardDescript
                 String message = (String) evt.getNewValue();
                 if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_ERROR_EVT)) {
                     mErrorMessage = message;
-                    wiz.putProperty("WizardPanel_errorMessage", mErrorMessage); // NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, mErrorMessage); // NOI18N
                 } else if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_WARNING_EVT)) {
                     mWarningMessage = message;
-                    wiz.putProperty("WizardPanel_warningMessage", mWarningMessage); // NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, mWarningMessage); // NOI18N
+                } else if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_NORMAL_MESSAGE_EVT)) {
+                    mInfoMessage = message;
+                    wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, mInfoMessage); // NOI18N
                 } else if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_CLEAR_MESSAGES_EVT)) {
                     mErrorMessage = null;
                     mWarningMessage = null;
-                    wiz.putProperty("WizardPanel_errorMessage", message); // NOI18N
-                    wiz.putProperty("WizardPanel_warningMessage", message); // NOI18N
+                    mInfoMessage = null;
+                    wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, message); // NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, message); // NOI18N
                 }
                 mWPanel.fireChange();
             }

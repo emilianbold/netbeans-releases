@@ -46,9 +46,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -89,7 +92,11 @@ public abstract class HtmlExtension {
 
     public abstract List<CompletionItem> completeAttributeValue(CompletionContext context);
 
+    public abstract OffsetRange getReferenceSpan(Document doc, int caretOffset);
 
+    public abstract DeclarationLocation findDeclaration(ParserResult info, int caretOffset);
+
+    
     public static class CompletionContext {
 
         private HtmlParserResult result;

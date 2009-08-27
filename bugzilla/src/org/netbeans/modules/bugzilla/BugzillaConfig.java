@@ -182,7 +182,7 @@ public class BugzillaConfig {
             return null;
         }
         String[] values = repoString.split(DELIMITER);
-        assert values.length == 3 || values.length == 5 || values.length == 6;
+        assert values.length == 3 || values.length == 6 || values.length == 7;
         String url = values[0];
         String user = values[1];
         String password = BugtrackingUtil.descramble(values[2]);

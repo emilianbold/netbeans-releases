@@ -1937,7 +1937,7 @@ public abstract class TreeView extends JScrollPane {
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
 
-            int startIndex = origSelectionPaths != null ? getRowForPath(origSelectionPaths[0]) : 0;
+            int startIndex = origSelectionPaths != null ? Math.max(0, getRowForPath(origSelectionPaths[0])) : 0;
             int size = getRowCount();
 
             if (size == 0) {
@@ -1997,10 +1997,10 @@ public abstract class TreeView extends JScrollPane {
 
             int max = getRowCount();
             if (substring == null) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Substring is null");
             }
             if (startingRow < 0 || startingRow >= max) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("startingRow = " + startingRow + " rowCount = " + max);
             }
             substring = substring.toUpperCase();
 

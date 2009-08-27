@@ -58,6 +58,16 @@ public abstract class FaceletsLibrary {
         return namespace;
     }
 
+    //linear search, do we call this often?
+    public NamedComponent getComponent(String componentName) {
+        for(NamedComponent comp : getComponents()) {
+            if(comp.getName().equals(componentName)) {
+                return comp;
+            }
+        }
+        return null;
+    }
+
     public String getDefaultPrefix() {
         return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDefaultPrefix() : null;
     }

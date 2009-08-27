@@ -94,6 +94,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -473,6 +474,7 @@ public class OutlineView extends JScrollPane {
     @Override
     public void removeNotify () {
         super.removeNotify ();
+        outline.getSelectionModel().clearSelection();
         outline.getSelectionModel().removeListSelectionListener(managerListener);
         manager.removePropertyChangeListener (wlpc);
         manager.removeVetoableChangeListener (wlvc);
@@ -861,8 +863,6 @@ public class OutlineView extends JScrollPane {
                     throw new PropertyVetoException("selection mode " +  " broken by " + Arrays.asList(nodes), evt); // NOI18N
                 }
             }
-        }
-        public void run() {
         }
     }
 
