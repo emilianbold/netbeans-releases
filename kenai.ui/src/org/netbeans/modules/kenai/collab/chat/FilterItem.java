@@ -53,7 +53,7 @@ import org.openide.util.ImageUtilities;
 public class FilterItem {
 
     private String name;
-    private static ImageIcon GROUP = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/kenai-small.png"));
+    private static ImageIcon GROUP = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chatroom_online.png"));
 
     public FilterItem() {
     }
