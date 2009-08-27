@@ -849,14 +849,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	for (List < JCCatch > l = tree.catchers; l.nonEmpty(); l = l.tail)
 	    printStat(l.head);
 	if (tree.finalizer != null) {
-            if (cs.placeFinallyOnNewLine()) {
-                newline();
-                toLeftMargin();
-            } else if (cs.spaceBeforeFinally()) {
-                needSpace();
-            }
-	    print("finally");
-	    printBlock(tree.finalizer, cs.getOtherBracePlacement(), cs.spaceBeforeFinallyLeftBrace());
+	    printFinallyBlock(tree.finalizer);
 	}
     }
 
@@ -1528,6 +1521,17 @@ public final class VeryPretty extends JCTree.Visitor {
 
     public void printFlags(long flags) {
         printFlags(flags, true);
+    }
+
+    public void printFinallyBlock(JCBlock finalizer) {
+        if (cs.placeFinallyOnNewLine()) {
+            newline();
+            toLeftMargin();
+        } else if (cs.spaceBeforeFinally()) {
+            needSpace();
+        }
+        print("finally");
+        printBlock(finalizer, cs.getOtherBracePlacement(), cs.spaceBeforeFinallyLeftBrace());
     }
 
     public void printFlags(long flags, boolean addSpace) {

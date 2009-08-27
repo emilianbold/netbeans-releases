@@ -82,18 +82,13 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author tester
+ * @author Petr Dvorak (Petr.Dvorak@sun.com)
  */
 public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final String CHAT_BUTTON = "CHAT_BUTTON"; //NOI18N
 
-    /** Creates new form ForumsAndMailingListsPanel */
-    private ForumsAndMailingListsPanel() {
+    public ForumsAndMailingListsPanel() {
         initComponents();
-    }
-
-    ForumsAndMailingListsPanel(final KenaiProject instProj) {
-        this();
         commChannelsDisplayer.addHyperlinkListener(new HyperlinkListener() {
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -170,11 +165,12 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         return innerStr;
     }
 
-    public void loadActiveTopics(KenaiProject proj) throws DOMException {
+    public void loadActiveTopics(final KenaiProject proj) throws DOMException {
         
         try {
             DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            String urlStr = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://") + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
+            String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://");
+            String urlStr = base + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
             int entriesCount = 0;
             NodeList entries = null;
             try {
@@ -198,6 +194,9 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                             title = elem.getFirstChild().getNodeValue();
                         } else if (elem.getNodeName().equals("link")) { //NOI18N - found link of the topic, get href...
                             href = elem.getAttributes().getNamedItem("href").getNodeValue(); //NOI18N
+                            if (!href.startsWith(base)) {
+                                href = base + href;
+                            }
                         } else if (elem.getNodeName().equals("content")) { //NOI18N get title of the topic
                             content = elem.getFirstChild().getNodeValue();
                         }
@@ -317,7 +316,6 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
         commChannelsDisplayer = new javax.swing.JEditorPane();
 
         setBackground(new java.awt.Color(255, 255, 255));
@@ -325,15 +323,12 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
         commChannelsDisplayer.setContentType(org.openide.util.NbBundle.getMessage(ForumsAndMailingListsPanel.class, "ForumsAndMailingListsPanel.commChannelsDisplayer.contentType")); // NOI18N
         commChannelsDisplayer.setEditable(false);
-        jScrollPane1.setViewportView(commChannelsDisplayer);
-
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        add(commChannelsDisplayer, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane commChannelsDisplayer;
-    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
 }

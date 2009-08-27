@@ -70,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -103,10 +104,16 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl();
     private THAIndicatorsTopComponentActionsProvider actionsProvider = null;
     private final PopupAction popupAction = new PopupAction("popupTHAIndicatorTopComponentAction");//NOI18N
+    private THAConfiguration thaConfiguration = null;
 
 
     static {
         THAIndicatorTopComponentRegsitry.getRegistry();
+    }
+
+
+    private THAIndicatorsTopComponent() {
+        this(false);
     }
 
     private THAIndicatorsTopComponent(boolean dock) {
@@ -131,6 +138,10 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         installActions();
     }
 
+    void setTHAConfiguration(THAConfiguration thaConfiguration){
+        this.thaConfiguration = thaConfiguration;
+    }
+
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -144,9 +155,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         return null;
     }
 
-    private THAIndicatorsTopComponent() {
-        this(false);
-    }
 
     void initComponents() {
         cardsLayoutPanel = new JPanel(cardLayout);
@@ -182,7 +190,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
     void setProject(Project project){
         this.project = project;
-        controlPanel = THAControlPanel.create(project);
+        controlPanel = THAControlPanel.create(project, thaConfiguration);
         add(controlPanel, BorderLayout.NORTH);
         setSession(null);
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N

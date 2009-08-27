@@ -52,9 +52,9 @@ import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
 import org.openide.filesystems.FileObject;
@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class PhpCoverageProvider implements CoverageProvider {
     private static final Logger LOGGER = Logger.getLogger(PhpCoverageProvider.class.getName());
-    private static final Set<String> MIME_TYPES = Collections.singleton(PhpSourcePath.MIME_TYPE);
+    private static final Set<String> MIME_TYPES = Collections.singleton(FileUtils.PHP_MIME_TYPE);
 
     private final Object lock = new Object();
     private final PhpProject project;

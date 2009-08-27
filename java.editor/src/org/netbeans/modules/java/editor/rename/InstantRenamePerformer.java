@@ -94,6 +94,8 @@ import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.JavaKit.JavaDeleteCharAction;
+import org.netbeans.modules.editor.java.RunOffAWT;
+import org.netbeans.modules.editor.java.RunOffAWT.Worker;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -195,22 +197,21 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
             
             final boolean[] wasResolved = new boolean[1];
-            @SuppressWarnings("unchecked")
-            final Set<Token>[] changePoints = new Set[1];
-            
-            js.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController controller) throws Exception {
-                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
-                        return;
-                    
-                    changePoints[0] = computeChangePoints(controller, caret, wasResolved);
+            Set<Token> changePoints = RunOffAWT.computeOffAWT(new Worker<Set<Token>>() {
+                public Set<Token> process(CompilationInfo info) {
+                    try {
+                        return computeChangePoints(info, caret, wasResolved);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                        return null;
+                    }
                 }
-            }, true);
+            }, "Instant Rename", js, Phase.RESOLVED);
             
-            if (wasResolved[0]) {
-                if (changePoints[0] != null) {
-                    doInstantRename(changePoints[0], target, caret, ident);
+            if (changePoints != null && wasResolved[0]) {
+                if (changePoints != null) {
+                    doInstantRename(changePoints, target, caret, ident);
                 } else {
                     doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
                 }
@@ -219,8 +220,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         }
     }
     private static void doFullRename(EditorCookie ec, Node n) {

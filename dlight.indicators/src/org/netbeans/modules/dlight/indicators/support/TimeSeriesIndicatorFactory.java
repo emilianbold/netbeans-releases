@@ -50,11 +50,18 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
 public final class TimeSeriesIndicatorFactory implements IndicatorFactory<TimeSeriesIndicatorConfiguration> {
 
+    private TimeSeriesIndicatorManager manager;
+
     public String getID() {
         return IndicatorConfigurationIDs.TIMESERIES_ID;
     }
 
     public Indicator<TimeSeriesIndicatorConfiguration> create(TimeSeriesIndicatorConfiguration configuration) {
-        return new TimeSeriesIndicator(configuration);
+        if (manager == null) {
+            manager = new TimeSeriesIndicatorManager();
+        }
+        TimeSeriesIndicator indicator = new TimeSeriesIndicator(configuration, manager);
+        manager.addIndicator(indicator);
+        return indicator;
     }
 }

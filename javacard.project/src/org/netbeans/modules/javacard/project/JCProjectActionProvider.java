@@ -85,7 +85,6 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
     private static final String[] libSupportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
-        COMMAND_RUN,
         COMMAND_REBUILD,
         COMMAND_DELETE,
         COMMAND_COPY,

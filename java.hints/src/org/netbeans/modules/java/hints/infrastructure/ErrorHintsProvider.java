@@ -160,7 +160,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             }
             
             LazyFixList ehm;
-            
+
             if (rules != null) {
                 int pos = (int)getPrefferedPosition(info, d);
                 
@@ -274,7 +274,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     private static final Set<String> INVALID_METHOD_INVOCATION = new HashSet<String>(Arrays.asList(
         "compiler.err.prob.found.req",
         "compiler.err.cant.apply.symbol",
-        "compiler.err.cant.resolve.location",
+//        "compiler.err.cant.resolve.location",
         "compiler.err.cant.resolve.location.args"
     ));
     

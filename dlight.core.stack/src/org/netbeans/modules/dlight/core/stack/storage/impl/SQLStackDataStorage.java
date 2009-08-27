@@ -767,7 +767,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
         @Override
         public String getDisplayedName() {
-            return getFunction().getName() + (hasOffset() ? ("+0x" + getOffset()) : ""); //NOI18N
+            return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
         }
 
         @Override

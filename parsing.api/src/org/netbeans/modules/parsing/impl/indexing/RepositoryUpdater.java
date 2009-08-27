@@ -2062,6 +2062,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     findDependencies(url, depCtx, null, null);
                 }
 
+                Controller controller = (Controller)IndexingController.getDefault();
+                synchronized (controller) {
+                    controller.roots2Dependencies = Collections.unmodifiableMap(depCtx.newRoots2Deps);
+                }
+                
                 try {
                     depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
                 } catch (final TopologicalSortException tse) {
@@ -2342,8 +2347,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             assert ctx != null;
             long scannedRootsCnt = 0;
             long completeTime = 0;
-            int [] outOfDateFiles = new int [] { 0 };
-            int [] deletedFiles = new int [] { 0 };
+            int totalOutOfDateFiles = 0;
+            int totalDeletedFiles = 0;
             boolean finished = true;
 
             for (URL source : ctx.newRootsToScan) {
@@ -2353,6 +2358,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
 
                 final long tmStart = System.currentTimeMillis();
+                final int [] outOfDateFiles = new int [] { 0 };
+                final int [] deletedFiles = new int [] { 0 };
                 try {
                     updateProgress(source);
                     if (scanSource (source, outOfDateFiles, deletedFiles)) {
@@ -2367,18 +2374,21 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final long time = System.currentTimeMillis() - tmStart;
                     completeTime += time;
                     scannedRootsCnt++;
+                    totalOutOfDateFiles += outOfDateFiles[0];
+                    totalDeletedFiles += deletedFiles[0];
                     if (PERF_TEST) {
                         reportRootScan(source, time);
                     }
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Indexing of: %s took: %d ms", source.toExternalForm(), time)); //NOI18N
+                    if (LOGGER.isLoggable(Level.INFO)) {
+                        LOGGER.info(String.format("Indexing of: %s took: %d ms (New or modified files: %d, Deleted files: %d)", //NOI18N
+                                source.toExternalForm(), time, outOfDateFiles[0], deletedFiles[0]));
                     }
                 }
             }
 
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d)",
-                        scannedRootsCnt, completeTime, outOfDateFiles[0], deletedFiles[0])); //NOI18N
+                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d)", //NOI18N
+                        scannedRootsCnt, completeTime, totalOutOfDateFiles, totalDeletedFiles));
             }
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
 
@@ -2441,8 +2451,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         delete(deleted, root);
                         if (index(resources, allResources, root, sourceForBinaryRoot)) {
                             crawler.storeTimestamps();
-                            outOfDateFiles[0] += resources.size();
-                            deletedFiles[0] += deleted.size();
+                            outOfDateFiles[0] = resources.size();
+                            deletedFiles[0] = deleted.size();
                             return true;
                         }
                     }
@@ -2912,6 +2922,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private final class Controller extends IndexingController {
 
+        private Map<URL, List<URL>>roots2Dependencies = Collections.emptyMap();
+
         public Controller() {
             super();
             RepositoryUpdater.this.start(false);
@@ -2933,8 +2945,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         @Override
-        public Map<URL, List<URL>> getRootDependencies() {
-            return new HashMap<URL, List<URL>>(RepositoryUpdater.this.scannedRoots2Dependencies);
+        public synchronized Map<URL, List<URL>> getRootDependencies() {
+            return roots2Dependencies;
         }
 
         @Override

@@ -210,6 +210,10 @@ public class ErrorHintsProviderTest extends NbTestCase {
     public void testShortErrors9() throws Exception {
         performTest("TestShortErrors9", false);
     }
+
+    public void testShortErrors10() throws Exception {
+        performTest("TestShortErrors10", false);
+    }
     
     public void testTestShortErrorsMethodInvocation1() throws Exception {
         performTest("TestShortErrorsMethodInvocation1", true);

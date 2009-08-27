@@ -73,6 +73,7 @@ public class CachingArchive implements Archive {
     byte[] names;// = new byte[16384];
     private int nameOffset = 0;
     final static int[] EMPTY = new int[0];
+    //@GuardedBy("this")
     private Map<String, Folder> folders; // = new HashMap<String, Folder>();
 
         // Constructors ------------------------------------------------------------    
@@ -88,7 +89,7 @@ public class CachingArchive implements Archive {
     /** Gets all files in given folder
      */
     public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter ) throws IOException {
-        doInit();        
+        Map<String, Folder> folders = doInit();
         Folder files = folders.get( folderName );        
         if (files == null) {
             return Collections.<JavaFileObject>emptyList();
@@ -145,7 +146,7 @@ public class CachingArchive implements Archive {
                       
     // Private methods ---------------------------------------------------------
     
-    synchronized void doInit() {
+    synchronized Map<String, Folder> doInit() {
         if (folders == null) {
             try {
                 names = new byte[16384];
@@ -168,6 +169,8 @@ public class CachingArchive implements Archive {
                 }
             }
         }
+
+        return folders;
     }
 
     private void trunc() {
