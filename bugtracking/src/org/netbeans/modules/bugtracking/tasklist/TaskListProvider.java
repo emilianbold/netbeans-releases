@@ -357,7 +357,7 @@ public final class TaskListProvider extends PushTaskScanner {
                         }
                     } else {
                         for (LazyIssue issue : e.getValue()) {
-                            if (validatedIssues.contains(issue) && !issuesToValidate.containsKey(issue)) {
+                            if (validatedIssues.contains(issue)) {
                                 issuesToInclude.put(issue, e.getKey());
                             } else {
                                 issuesToValidate.put(issue, e.getKey());

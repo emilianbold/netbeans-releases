@@ -37,18 +37,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.issue;
+package org.netbeans.modules.bugzilla.issue;
 
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.jira.repository.*;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,22 +55,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
-import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.kenai.KenaiRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -87,16 +81,16 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
     @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.IssueProvider.class),
-    @ServiceProvider(service=JiraIssueProvider.class)
+    @ServiceProvider(service=BugzillaIssueProvider.class)
 })
-public final class JiraIssueProvider extends IssueProvider implements PropertyChangeListener {
+public final class BugzillaIssueProvider extends IssueProvider implements PropertyChangeListener {
 
     private final Object LOCK = new Object();
     private boolean initialized;
-    private HashMap<String, JiraLazyIssue> watchedIssues = new HashMap<String, JiraLazyIssue>(10);
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.tasklist"); //NOI18N
-    private static final Level LOG_LEVEL = JiraUtils.isAssertEnabled() ? Level.INFO : Level.FINE;
-    private final RequestProcessor rp = new RequestProcessor("JiraTaskListProvider", 1, false);
+    private HashMap<String, BugzillaLazyIssue> watchedIssues = new HashMap<String, BugzillaLazyIssue>(10);
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.Bugzilla.tasklist"); //NOI18N
+    private static final Level LOG_LEVEL = BugzillaUtil.isAssertEnabled() ? Level.INFO : Level.FINE;
+    private final RequestProcessor rp = new RequestProcessor("BugzillaTaskListProvider", 1, false);
     private static final String KENAI_REPOSITORY_IDENT_PREFIX = "K##";  //NOI18N
     private static final String STORAGE_KENAI_VERSION = "1";                  //NOI18N
     private static final String STORAGE_COMMON_VERSION = "1";                  //NOI18N
@@ -104,12 +98,12 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
     public static final String PROPERTY_ISSUE_REMOVED = "issue-removed"; //NOI18N
 
-    public static JiraIssueProvider getInstance() {
-        JiraIssueProvider provider = Lookup.getDefault().lookup(JiraIssueProvider.class);
+    public static BugzillaIssueProvider getInstance() {
+        BugzillaIssueProvider provider = Lookup.getDefault().lookup(BugzillaIssueProvider.class);
         return provider;
     }
 
-    public JiraIssueProvider () {
+    public BugzillaIssueProvider () {
         // initialization
         support = new PropertyChangeSupport(this);
         reloadAsync();
@@ -120,21 +114,21 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
      * @param issue issue to add to the tasklist
      * @param openTaskList if set to true, the tasklist will also be asked to open
      */
-    public void add (NbJiraIssue issue, boolean openTaskList) {
+    public void add (BugzillaIssue issue, boolean openTaskList) {
         URL url = getUrl(issue);
-        JiraLazyIssue lazyIssue;
+        BugzillaLazyIssue lazyIssue;
         // local store
         synchronized (LOCK) {
             if (isAdded(url)) return;
             try {
-                JiraRepository repository = issue.getRepository();
+                BugzillaRepository repository = issue.getBugzillaRepository();
                 repository.removePropertyChangeListener(this);
                 repository.addPropertyChangeListener(this);
                 // create a representation of the real issue for tasklist
                 watchedIssues.put(url.toString(), lazyIssue =
                         (repository instanceof KenaiRepository) ?
-                            new KenaiJiraLazyIssue(issue, this) :   // kenai lazy issue
-                            new JiraLazyIssue(issue, this));        // common jira lazy issue
+                            new KenaiBugzillaLazyIssue(issue, this) :   // kenai lazy issue
+                            new BugzillaLazyIssue(issue, this));        // common Bugzilla lazy issue
             } catch (MalformedURLException e) {
                 return;
             }
@@ -149,7 +143,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
      * Schedule given issue to be removed from the tasklist
      * @param issue
      */
-    public void remove (NbJiraIssue issue) {
+    public void remove (BugzillaIssue issue) {
         URL url = getUrl(issue);
         remove(url, true);
     }
@@ -159,14 +153,14 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
      * @param issue
      * @return true if the given issue is already added.
      */
-    public boolean isAdded(NbJiraIssue issue) {
+    public boolean isAdded(BugzillaIssue issue) {
         URL url = getUrl(issue);
         return isAdded(url);
     }
 
     @Override
     public void removed(LazyIssue lazyIssue) {
-        JiraLazyIssue removedIssue;
+        BugzillaLazyIssue removedIssue;
         synchronized (LOCK) {
             if (!isAdded(lazyIssue.getUrl())) return;
             removedIssue = watchedIssues.remove(lazyIssue.getUrl().toString());
@@ -178,7 +172,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     /**
      * These properties are fired:
      * <ul>
-     * <li>{@link #PROPERTY_ISSUE_REMOVED} when an issue is removed from the tasklist in other way that with {@link #remove(org.netbeans.modules.jira.issue.NbJiraIssue),
+     * <li>{@link #PROPERTY_ISSUE_REMOVED} when an issue is removed from the tasklist in other way that with {@link #remove(org.netbeans.modules.Bugzilla.issue.BugzillaIssue),
      * e.g. with a Remove action from a popup menu in the tasklist.</li>
      * </ul>
      * @param listener
@@ -194,17 +188,17 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     public void propertyChange(PropertyChangeEvent evt) {
         if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
-                Object oldValue = ((Map)evt.getOldValue()).get(JiraRepository.ATTRIBUTE_URL);
+                Object oldValue = ((Map)evt.getOldValue()).get(BugzillaRepository.ATTRIBUTE_URL);
                 if (oldValue != null && oldValue instanceof String) {
                     String oldRepoUrl = (String) oldValue;
-                    LinkedList<JiraLazyIssue> issuesToRefresh = new LinkedList<JiraLazyIssue>();
+                    LinkedList<BugzillaLazyIssue> issuesToRefresh = new LinkedList<BugzillaLazyIssue>();
                     synchronized (LOCK) {
                         // lookup all issues with the same repository url as the changed value
-                        for (Map.Entry<String, JiraLazyIssue> e : watchedIssues.entrySet()) {
-                            JiraLazyIssue issue = e.getValue();
+                        for (Map.Entry<String, BugzillaLazyIssue> e : watchedIssues.entrySet()) {
+                            BugzillaLazyIssue issue = e.getValue();
                             Object sourceRepository = evt.getSource();
-                            if (!(issue instanceof KenaiJiraLazyIssue) && sourceRepository != null && sourceRepository.equals(issue.getRepository())) {
-                                URL oldUrl = getUrl(oldRepoUrl, issue.issueKey);
+                            if (!(issue instanceof KenaiBugzillaLazyIssue) && sourceRepository != null && sourceRepository.equals(issue.getRepository())) {
+                                URL oldUrl = getUrl(oldRepoUrl, issue.issueId);
                                 if (issue.getUrl().toString().equals(oldUrl.toString()))  {
                                     LOG.log(Level.FINE, "propertyChange: Issue {0} with url {1} needs to be refreshed, repository's url {2} has changed", //NOI18N
                                             new String[] {issue.toString(), oldUrl.toString(), oldRepoUrl});
@@ -214,9 +208,9 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                         }
                     }
                     // refresh issues
-                    for (JiraLazyIssue issue : issuesToRefresh) {
+                    for (BugzillaLazyIssue issue : issuesToRefresh) {
                         remove(issue.getUrl(), false);
-                        add(issue.getName(), issue.issueKey, issue.getRepository());
+                        add(issue.getName(), issue.issueId, issue.getRepository());
                     }
                     // store new issues
                     if (!issuesToRefresh.isEmpty()) {
@@ -231,20 +225,20 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
      * Removes all issues from the tasklist which belong to the given repository
      * @param repository
      */
-    public void removeAllFor (JiraRepository repository) {
-        LinkedList<JiraLazyIssue> issuesToRemove = new LinkedList<JiraLazyIssue>();
+    public void removeAllFor (BugzillaRepository repository) {
+        LinkedList<BugzillaLazyIssue> issuesToRemove = new LinkedList<BugzillaLazyIssue>();
                  synchronized (LOCK) {
             // lookup all issues with the same repository url as the changed value
-            for (Map.Entry<String, JiraLazyIssue> e : watchedIssues.entrySet()) {
-                JiraLazyIssue issue = e.getValue();
-                if (!(issue instanceof KenaiJiraLazyIssue) && repository == issue.getRepository()) {
+            for (Map.Entry<String, BugzillaLazyIssue> e : watchedIssues.entrySet()) {
+                BugzillaLazyIssue issue = e.getValue();
+                if (!(issue instanceof KenaiBugzillaLazyIssue) && repository == issue.getRepository()) {
                     LOG.log(Level.FINE, "removeAllFor: issue {0} repository {1} has been removed", new String[]{issue.toString(), repository.toString()}); //NOI18N
                     issuesToRemove.add(issue);
                 }
             }
         }
         // remove issues
-        for (JiraLazyIssue issue : issuesToRemove) {
+        for (BugzillaLazyIssue issue : issuesToRemove) {
             remove(issue.getUrl(), false);
         }
         // store issues
@@ -257,9 +251,9 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
      * Call when an issue is loaded for the first time.
      * @param issue cannot be null
      */
-    public void notifyIssueCreated (NbJiraIssue issue) {
+    public void notifyIssueCreated (BugzillaIssue issue) {
         URL url = getUrl(issue);
-        JiraLazyIssue lazyIssue = null;
+        BugzillaLazyIssue lazyIssue = null;
         synchronized (LOCK) {
             lazyIssue = watchedIssues.get(url.toString());
         }
@@ -279,19 +273,19 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         }
     }
 
-    private static URL getUrl (NbJiraIssue issue) {
+    private static URL getUrl (BugzillaIssue issue) {
         return getUrl(issue.getRepository().getUrl(), issue.getID());
     }
 
-    private static URL getUrl(String repositoryUrl, String issueKey) {
-        String url = JiraRepositoryConnector.getTaskUrlFromKey(repositoryUrl, issueKey);
+    private static URL getUrl(String repositoryUrl, String issueId) {
+        String url = Bugzilla.getInstance().getRepositoryConnector().getTaskUrl(repositoryUrl, issueId);
         try {
             return new URL(url);
         } catch (MalformedURLException ex) {
             LOG.log(LOG_LEVEL, null, ex);
         }
         try {
-            return new URL(repositoryUrl + "#" + issueKey);             //NOI18N
+            return new URL(repositoryUrl + "#" + issueId);             //NOI18N
         } catch (MalformedURLException ex) {
             LOG.log(LOG_LEVEL, null, ex);
             return null;
@@ -307,28 +301,28 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     }
 
     private void saveIntern() {
-        JiraLazyIssue[] lazyIssues;
+        BugzillaLazyIssue[] lazyIssues;
         synchronized(LOCK) {
-            lazyIssues = watchedIssues.values().toArray(new JiraLazyIssue[watchedIssues.size()]);
+            lazyIssues = watchedIssues.values().toArray(new BugzillaLazyIssue[watchedIssues.size()]);
         }
-        final JiraLazyIssue[] lazyIssuesToSave = lazyIssues;
+        final BugzillaLazyIssue[] lazyIssuesToSave = lazyIssues;
         rp.post(new Runnable () {
             public void run() {
                 initializeIssues();
                 LOG.log(Level.FINE, "saveIntern: saving issues");       //NOI18N
                 HashMap<String, List<String>> issues = new HashMap<String, List<String>>();
-                for (JiraLazyIssue issue : lazyIssuesToSave) {
+                for (BugzillaLazyIssue issue : lazyIssuesToSave) {
                     String repositoryIdent = null;
                     boolean isKenai = false;
-                    if (issue instanceof KenaiJiraLazyIssue) {
-                        JiraRepository repo = issue.getRepository();
+                    if (issue instanceof KenaiBugzillaLazyIssue) {
+                        BugzillaRepository repo = issue.getRepository();
                         if (repo != null && !(repo instanceof KenaiRepository)) {
-                            LOG.warning("saveIntern: KenaiJiraIssue has no kenai repository: " + repo); //NOI18N
+                            LOG.warning("saveIntern: KenaiBugzillaIssue has no kenai repository: " + repo); //NOI18N
                         } else {
                             // kenai repository is identified by project's name, not by it's url
-                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + (repo == null
-                                    ? ((KenaiJiraLazyIssue)issue).projectName
-                                    : ((KenaiRepository) repo).getDisplayName());
+                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + (repo == null 
+                                    ? ((KenaiBugzillaLazyIssue)issue).projectName
+                                    : ((KenaiRepository) repo).getProductName());
                             isKenai = true;
                         }
                     } else {
@@ -340,8 +334,8 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                             issueAttributes = new LinkedList<String>();
                             issueAttributes.add(isKenai ? STORAGE_KENAI_VERSION : STORAGE_COMMON_VERSION);
                         }
-                        issueAttributes.add(issue.issueKey);            // key
-                        issueAttributes.add(issue.getName());           // description
+                        issueAttributes.add(issue.issueId);            // issue id
+                        issueAttributes.add(issue.getName());          // description
                         if (isKenai) {
                             issueAttributes.add(issue.getUrl().toString()); // url needed only for kenai repos
                         }
@@ -352,7 +346,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                     }
                 }
                 // save permanently
-                JiraStorageManager.getInstance().setTaskListIssues(issues);
+                BugzillaConfig.getInstance().setTaskListIssues(issues);
             }
         });
     }
@@ -365,7 +359,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             initialized = true;
             LOG.finer("initializeIssues: reloading saved issues");      //NOI18N
             // load from storage
-            Map<String, List<String>> repositoryIssues = JiraStorageManager.getInstance().getTaskListIssues();
+            Map<String, List<String>> repositoryIssues = BugzillaConfig.getInstance().getTaskListIssues();
             if (repositoryIssues.size() == 0) {
                 LOG.fine("initializeIssues: no saved issues");          //NOI18N
                 return;
@@ -384,30 +378,30 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        JiraRepository[] repositories = Jira.getInstance().getRepositories();
-            for (JiraRepository repository : repositories) {
-                // all issues for this repository
-                List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
-                if (issueAttributes != null && issueAttributes.size() > 1) {
-                    ListIterator<String> it = issueAttributes.listIterator();
-                    if (!STORAGE_COMMON_VERSION.equals(it.next())) {
-                        LOG.log(Level.WARNING, "Old unsupported storage version, expecting {0}", STORAGE_COMMON_VERSION); //NOI18N
+        BugzillaRepository[] repositories = Bugzilla.getInstance().getRepositories();
+        for (BugzillaRepository repository : repositories) {
+            // all issues for this repository
+            List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
+            if (issueAttributes != null && issueAttributes.size() > 1) {
+                ListIterator<String> it = issueAttributes.listIterator();
+                if (!STORAGE_COMMON_VERSION.equals(it.next())) {
+                    LOG.log(Level.WARNING, "Old unsupported storage version, expecting {0}", STORAGE_COMMON_VERSION); //NOI18N
+                    break;
+                }
+                for (; it.hasNext();) {
+                    String issueId = getNextAttribute(it);
+                    String issueName = getNextAttribute(it);
+                    if (issueId == null || issueName == null) {
+                        LOG.log(Level.WARNING, "Corrupted issue attributes: {0} {1}", new String[]{issueId, issueName}); //NOI18N
                         break;
                     }
-                    for (; it.hasNext(); ) {
-                        String issueKey = getNextAttribute(it);
-                        String issueName = getNextAttribute(it);
-                        if (issueKey == null || issueName == null) {
-                            LOG.log(Level.WARNING, "Corrupted issue attributes: {0} {1}", new String[]{issueKey, issueName}); //NOI18N
-                            break;
-                        }
-                        add(issueName, issueKey, repository);
-                    }
-                    repository.addPropertyChangeListener(this);
-                    // remove processed attributes
-                    repositoryIssues.remove(repository.getUrl());
+                    add(issueName, issueId, repository);
                 }
+                repository.addPropertyChangeListener(this);
+                // remove processed attributes
+                repositoryIssues.remove(repository.getUrl());
             }
+        }
     }
 
     private void addKenaiIssues (Map<String, List<String>> repositoryIssues) {
@@ -424,11 +418,11 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                         break;
                     }
                     for (; it.hasNext(); ) {
-                        String issueKey = getNextAttribute(it);
+                        String issueId = getNextAttribute(it);
                         String issueName = getNextAttribute(it);
                         String url = getNextAttribute(it);
-                        if (issueKey == null || issueName == null || url == null) {
-                            LOG.log(Level.WARNING, "Corrupted kenai issue attributes: {0} {1} {2}", new String[]{issueKey, issueName, url}); //NOI18N
+                        if (issueId == null || issueName == null || url == null) {
+                            LOG.log(Level.WARNING, "Corrupted kenai issue attributes: {0} {1} {2}", new String[]{issueId, issueName, url}); //NOI18N
                             break;
                         }
                         URL issueUrl;
@@ -438,7 +432,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                             LOG.log(Level.INFO, null, ex);
                             continue;
                         }
-                        add(issueName, issueUrl, issueKey, projectName);
+                        add(issueName, issueUrl, issueId, projectName);
                     }
                 }
             }
@@ -446,7 +440,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     }
 
     private void remove (URL url, boolean savePermanently) {
-        JiraLazyIssue lazyIssue;
+        BugzillaLazyIssue lazyIssue;
         synchronized (LOCK) {
             if (!isAdded(url)) return;
             lazyIssue = watchedIssues.remove(url.toString());
@@ -458,11 +452,11 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         super.remove(lazyIssue);
     }
 
-    private void add (String issueName, URL issueUrl, String issueKey, String projectName) {
-        KenaiJiraLazyIssue issue;
+    private void add (String issueName, URL issueUrl, String issueId, String projectName) {
+        KenaiBugzillaLazyIssue issue;
         synchronized (LOCK) {
             if (isAdded(issueUrl)) return;
-            watchedIssues.put(issueUrl.toString(), issue = new KenaiJiraLazyIssue(issueName, issueUrl, issueKey, projectName, this));
+            watchedIssues.put(issueUrl.toString(), issue = new KenaiBugzillaLazyIssue(issueName, issueUrl, issueId, projectName, this));
         }
         // notify tasklist
         super.add(issue);
@@ -471,12 +465,12 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         }
     }
 
-    private void add (String issueName, String issueKey, JiraRepository repository) {
-        URL issueUrl = getUrl(repository.getUrl(), issueKey);
-        JiraLazyIssue issue;
+    private void add (String issueName, String issueId, BugzillaRepository repository) {
+        URL issueUrl = getUrl(repository.getUrl(), issueId);
+        BugzillaLazyIssue issue;
         synchronized (LOCK) {
             if (issueUrl == null || isAdded(issueUrl)) return;
-            watchedIssues.put(issueUrl.toString(), issue = new JiraLazyIssue(issueName, issueUrl, issueKey, repository, this));
+            watchedIssues.put(issueUrl.toString(), issue = new BugzillaLazyIssue(issueName, issueUrl, issueId, repository, this));
         }
         // notify tasklist
         super.add(issue);
@@ -486,75 +480,75 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     }
 
     private static void runCancellableCommand(Runnable runnable, String progressMessage) {
-        RequestProcessor.Task task = Jira.getInstance().getRequestProcessor().post(runnable);
+        RequestProcessor.Task task = Bugzilla.getInstance().getRequestProcessor().post(runnable);
         ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage, task); //NOI18N
         handle.start();
         task.waitFinished();
         handle.finish();
     }
 
-    private NbJiraIssue getIssue(final JiraRepository repository, final String issueKey) {
+    private BugzillaIssue getIssue(final BugzillaRepository repository, final String issueId) {
         assert !EventQueue.isDispatchThread();
         // XXX is there a simpler way to obtain an issue?
-        int status = repository.getIssueCache().getStatus(issueKey);
-        final NbJiraIssue[] issue = new NbJiraIssue[1];
+        int status = repository.getIssueCache().getStatus(issueId);
+        final BugzillaIssue[] issue = new BugzillaIssue[1];
         if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
                 public void run() {
-                    LOG.log(Level.FINE, "getIssue: creating issue {0}", repository.getUrl() + "#" + issueKey); //NOI18N
-                    issue[0] = (NbJiraIssue) repository.getIssue(issueKey);
+                    LOG.log(Level.FINE, "getIssue: creating issue {0}", repository.getUrl() + "#" + issueId); //NOI18N
+                    issue[0] = (BugzillaIssue) repository.getIssue(issueId);
                 }
             };
-            runCancellableCommand(runnable, NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.loadingIssue"));
+            runCancellableCommand(runnable, NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.loadingIssue"));
         } else {
-            LOG.log(Level.FINER, "getIssue: getting issue {0} from the cache", repository.getUrl() + "#" + issueKey); //NOI18N
-            issue[0] = (NbJiraIssue) repository.getIssueCache().getIssue(issueKey);
+            LOG.log(Level.FINER, "getIssue: getting issue {0} from the cache", repository.getUrl() + "#" + issueId); //NOI18N
+            issue[0] = (BugzillaIssue) repository.getIssueCache().getIssue(issueId);
         }
         return issue[0];
     }
 
-    private void fireIssueRemoved(JiraLazyIssue lazyIssue) {
-        NbJiraIssue issue = lazyIssue.issueRef.get();
+    private void fireIssueRemoved(BugzillaLazyIssue lazyIssue) {
+        BugzillaIssue issue = lazyIssue.issueRef.get();
         if (issue != null) {
             support.firePropertyChange(PROPERTY_ISSUE_REMOVED, issue, null);
         }
     }
 
     /**
-     * Common Jira representation of LazyIssue
+     * Common Bugzilla representation of LazyIssue
      */
-    private static class JiraLazyIssue extends LazyIssue {
-        private final String issueKey;
+    private static class BugzillaLazyIssue extends LazyIssue {
+        private final String issueId;
         /**
          *  cached repository for the issue
          */
-        private WeakReference<JiraRepository> repositoryRef;
-        private final JiraIssueProvider provider;
-        private WeakReference<NbJiraIssue> issueRef;
+        private WeakReference<BugzillaRepository> repositoryRef;
+        private final BugzillaIssueProvider provider;
+        private WeakReference<BugzillaIssue> issueRef;
         private PropertyChangeListener issueListener;
 
-        public JiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
-            super(JiraIssueProvider.getUrl(issue), issue.getDisplayName());
-            this.issueKey = issue.getID();
+        public BugzillaLazyIssue (BugzillaIssue issue, BugzillaIssueProvider provider) throws MalformedURLException {
+            super(BugzillaIssueProvider.getUrl(issue), issue.getDisplayName());
+            this.issueId = issue.getID();
             this.provider = provider;
-            this.repositoryRef = new WeakReference<JiraRepository>(issue.getRepository());
-            this.issueRef = new WeakReference<NbJiraIssue>(issue);
+            this.repositoryRef = new WeakReference<BugzillaRepository>(issue.getBugzillaRepository());
+            this.issueRef = new WeakReference<BugzillaIssue>(issue);
             attachIssueListener(issue);
         }
 
-        public JiraLazyIssue (String name, URL url, String issueKey, JiraRepository repository, JiraIssueProvider provider) {
+        public BugzillaLazyIssue (String name, URL url, String issueId, BugzillaRepository repository, BugzillaIssueProvider provider) {
             super(url, name);
-            this.issueKey = issueKey;
-            this.repositoryRef = new WeakReference<JiraRepository>(repository);
+            this.issueId = issueId;
+            this.repositoryRef = new WeakReference<BugzillaRepository>(repository);
             this.provider = provider;
-            this.issueRef = new WeakReference<NbJiraIssue>(null);
+            this.issueRef = new WeakReference<BugzillaIssue>(null);
         }
 
         @Override
-        public NbJiraIssue getIssue() {
-            NbJiraIssue issue = issueRef.get();
+        public BugzillaIssue getIssue() {
+            BugzillaIssue issue = issueRef.get();
             if (issue == null) {
-                JiraRepository repository = getRepository();
+                BugzillaRepository repository = getRepository();
                 if (repository == null) {
                     LOG.log(Level.INFO, "Repository unavailable for {0}", getUrl().toString()); //NOI18N
                     if (canBeAutoRemoved()) {
@@ -562,15 +556,15 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                         provider.remove(getUrl(), true);
                     }
                 } else {
-                    issue = provider.getIssue(repository, issueKey);
+                    issue = provider.getIssue(repository, issueId);
                 }
                 setIssueReference(issue);
             }
             return issue;
         }
 
-        private JiraRepository getRepository() {
-            JiraRepository repository = repositoryRef.get();
+        private BugzillaRepository getRepository() {
+            BugzillaRepository repository = repositoryRef.get();
             return repository;
         }
 
@@ -578,19 +572,19 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
          * Sets the reference to the issue and attaches an issue listener
          * @param issue if null then this only clears the reference.
          */
-        private void setIssueReference (NbJiraIssue issue) {
-            issueRef = new WeakReference<NbJiraIssue>(issue);
+        private void setIssueReference (BugzillaIssue issue) {
+            issueRef = new WeakReference<BugzillaIssue>(issue);
             if (issue != null) {
                 applyChangesFor(issue);
                 attachIssueListener(issue);
             }
         }
 
-        private void attachIssueListener (NbJiraIssue issue) {
+        private void attachIssueListener (BugzillaIssue issue) {
             if (issueListener == null) {
                 issueListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        NbJiraIssue issue = issueRef.get();
+                        BugzillaIssue issue = issueRef.get();
                         if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
                             // issue has somehow changed, checks for its changes and apply them in the tasklist
                             applyChangesFor(issue);
@@ -602,7 +596,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             issue.addPropertyChangeListener(WeakListeners.propertyChange(issueListener, issue));
         }
 
-        private void applyChangesFor (NbJiraIssue issue) {
+        private void applyChangesFor (BugzillaIssue issue) {
             boolean requiresSave = false;
             if (!getName().equals(issue.getDisplayName())) {
                 setName(issue.getDisplayName());
@@ -616,7 +610,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         @Override
         public String getRepositoryUrl() {
             String repoUrl = null;
-            JiraRepository repository = repositoryRef.get();
+            BugzillaRepository repository = repositoryRef.get();
             if (repository != null) {
                 repoUrl = repository.getUrl();
             }
@@ -626,82 +620,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         @Override
         public List<? extends Action> getActions() {
             List<AbstractAction> actions = new LinkedList<AbstractAction>();
-            actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveAction")) { //NOI18N
-                public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            final NbJiraIssue issue = getIssue();
-                            if (issue == null) {
-                                LOG.fine("Resole action: null issue returned"); //NOI18N
-                            } else {
-                                if (!issue.isResolveAllowed()) {
-                                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveAction.notPermitted"),
-                                            NotifyDescriptor.INFORMATION_MESSAGE));
-                                    return;
-                                }
-                                ResolveIssuePanel panel = new ResolveIssuePanel(issue);
-                                String title = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveIssueButton.text"); //NOI18N
-                                if (BugtrackingUtil.show(panel, title, title)) {
-                                    LOG.finer("Resole action: resolving..."); //NOI18N
-                                    String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveIssueMessage"); //NOI18N
-                                    final Resolution resolution = panel.getSelectedResolution();
-                                    runCancellableCommand(new Runnable () {
-                                        public void run() {
-                                            issue.resolve(resolution, null);
-                                            if (issue.submitAndRefresh()) {
-                                                issue.open();
-                                            }
-                                        }
-                                    }, MessageFormat.format(pattern, issue.getID()));
-                                }
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public boolean isEnabled() {
-                    // try to disable the action for cached closed issues
-                    boolean allowed = true;
-                    NbJiraIssue issue = issueRef.get();
-                    if (issue != null) {
-                        allowed = issue.isResolveAllowed();
-                    }
-                    return allowed;
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneAction")) { //NOI18N
-                public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            final NbJiraIssue issue = getIssue();
-                            if (issue == null) {
-                                LOG.fine("Log Work done action: null issue returned"); //NOI18N
-                            } else {
-                                final WorkLogPanel panel = new WorkLogPanel(issue);
-                                if (panel.showDialog()) {
-                                    LOG.finer("Log Work done action: logging..."); //NOI18N
-                                    String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneMessage"); // NOI18N
-                                    String message = MessageFormat.format(pattern, issue.getID());
-                                    runCancellableCommand(new Runnable() {
-                                        public void run() {
-                                            issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
-                                            int remainingEstimate = panel.getRemainingEstimate();
-                                            if (remainingEstimate != -1) { // -1 means auto-adjust
-                                                issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, (remainingEstimate + panel.getTimeSpent()) + ""); // NOI18N
-                                            }
-                                            if (issue.submitAndRefresh()) {
-                                                issue.open();
-                                            }
-                                        }
-                                    }, message);
-                                }
-                            }
-                        }
-                    });
-                }
-            });
+            // XXX actions
             return actions;
         }
 
@@ -717,31 +636,31 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
          * Stores a reference to the repository for quick access
          * @param repository
          */
-        protected void setRepositoryReference(JiraRepository repository) {
+        protected void setRepositoryReference(BugzillaRepository repository) {
             if (repository != null) {
-                repositoryRef = new WeakReference<JiraRepository>(repository);
+                repositoryRef = new WeakReference<BugzillaRepository>(repository);
             }
         }
     }
 
     /**
-     * Specific kenai jira lazy issue.
+     * Specific kenai Bugzilla lazy issue.
      */
-    private static final class KenaiJiraLazyIssue extends JiraLazyIssue {
+    private static final class KenaiBugzillaLazyIssue extends BugzillaLazyIssue {
 
         private final String projectName;
 
-        public KenaiJiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
+        public KenaiBugzillaLazyIssue (BugzillaIssue issue, BugzillaIssueProvider provider) throws MalformedURLException {
             super(issue, provider);
             Repository repo = issue.getRepository();
             if (!(repo instanceof KenaiRepository)) {
                 throw new IllegalStateException("Cannot instantiate with a non kenai issue: " + issue); //NOI18N
             }
-            projectName = ((KenaiRepository) repo).getDisplayName();
+            projectName = ((KenaiRepository) repo).getProductName();
         }
 
-        public KenaiJiraLazyIssue (String name, URL url, String issueKey, String projectName, JiraIssueProvider provider) {
-            super(name, url, issueKey, null, provider);
+        public KenaiBugzillaLazyIssue (String name, URL url, String issueId, String projectName, BugzillaIssueProvider provider) {
+            super(name, url, issueId, null, provider);
             this.projectName = projectName;
         }
 
@@ -749,15 +668,15 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             KenaiRepository kenaiRepo = null;
             Repository repo = null;
             try {
-                LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
+                LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
                 repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
             } catch (KenaiException ex) {
-                LOG.log(Level.INFO, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+                LOG.log(Level.INFO, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
             }
             if (repo != null && repo instanceof KenaiRepository) {
                 kenaiRepo = (KenaiRepository) repo;
             } else {
-                LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: no repository for: " + projectName);
+                LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: no repository for: " + projectName);
             }
             return kenaiRepo;
         }
