@@ -263,6 +263,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         styleSheet.addRule("div.section {margin-bottom: 10px;}"); //NOI18N
         styleSheet.addRule("div.item {margin-bottom: 5px;}"); //NOI18N
         styleSheet.addRule("i {color: gray}"); //NOI18N
+        styleSheet.addRule("h2 {color: rgb(0,22,103)}"); //NOI18N
 
         String innerStr = "<html>"; //NOI18N
 
@@ -278,6 +279,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
             public void run() {
                 commChannelsDisplayer.setText(_istr);
+                commChannelsDisplayer.validate();
                 commChannelsDisplayer.setCaretPosition(0);
                 HTMLDocument htm = (HTMLDocument) commChannelsDisplayer.getDocument();
                 Element e = htm.getElement(CHAT_BUTTON);
@@ -330,5 +332,14 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane commChannelsDisplayer;
     // End of variables declaration//GEN-END:variables
+
+    public void clearContent() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                commChannelsDisplayer.setText("");
+            }
+        });
+    }
 
 }
