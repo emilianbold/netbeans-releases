@@ -67,6 +67,7 @@ import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -85,6 +86,7 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public final class BugzillaIssueProvider extends IssueProvider implements PropertyChangeListener {
 
+    private static BugzillaIssueProvider instance;
     private final Object LOCK = new Object();
     private boolean initialized;
     private HashMap<String, BugzillaLazyIssue> watchedIssues = new HashMap<String, BugzillaLazyIssue>(10);
@@ -98,9 +100,11 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
     public static final String PROPERTY_ISSUE_REMOVED = "issue-removed"; //NOI18N
 
-    public static BugzillaIssueProvider getInstance() {
-        BugzillaIssueProvider provider = Lookup.getDefault().lookup(BugzillaIssueProvider.class);
-        return provider;
+    public static synchronized BugzillaIssueProvider getInstance() {
+        if (instance == null) {
+            instance = Lookup.getDefault().lookup(BugzillaIssueProvider.class);
+        }
+        return instance;
     }
 
     public BugzillaIssueProvider () {
@@ -218,6 +222,15 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                     }
                 }
             }
+        } else if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+            // kenai issues need instantiated repository so they can be shown in tasklist
+            // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
+            // when user loggs in so the repository can be created.
+            rp.post(new Runnable() { // do not block here
+                public void run() {
+                    notifyKenaiLogin();
+                }
+            });
         }
     }
 
@@ -320,7 +333,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                             LOG.warning("saveIntern: KenaiBugzillaIssue has no kenai repository: " + repo); //NOI18N
                         } else {
                             // kenai repository is identified by project's name, not by it's url
-                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + (repo == null 
+                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + (repo == null
                                     ? ((KenaiBugzillaLazyIssue)issue).projectName
                                     : ((KenaiRepository) repo).getProductName());
                             isKenai = true;
@@ -406,6 +419,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
     private void addKenaiIssues (Map<String, List<String>> repositoryIssues) {
         // now what remains are kenai issues and non-existant repositories
+        boolean kenaiIssueAdded = false;
         for (Map.Entry<String, List<String>> e : repositoryIssues.entrySet()) {
             String projectName = e.getKey();
             if (projectName.startsWith(KENAI_REPOSITORY_IDENT_PREFIX)) { // is kenai
@@ -433,9 +447,14 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                             continue;
                         }
                         add(issueName, issueUrl, issueId, projectName);
+                        kenaiIssueAdded = true;
                     }
                 }
             }
+        }
+        if (kenaiIssueAdded) {
+            Kenai.getDefault().removePropertyChangeListener(this);
+            Kenai.getDefault().addPropertyChangeListener(this);
         }
     }
 
@@ -511,6 +530,20 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         BugzillaIssue issue = lazyIssue.issueRef.get();
         if (issue != null) {
             support.firePropertyChange(PROPERTY_ISSUE_REMOVED, issue, null);
+        }
+    }
+
+    /*
+     * Notifies all kenai issues that user has logged on. Private kenai projects cannot be instantiated without being logged in
+     * and issue tracking repository cannot be created.
+     */
+    private void notifyKenaiLogin () {
+        synchronized (LOCK) {
+            for (BugzillaLazyIssue issue : watchedIssues.values()) {
+                if (issue instanceof KenaiBugzillaLazyIssue) {
+                    ((KenaiBugzillaLazyIssue) issue).notifyKenaiLogin();
+                }
+            }
         }
     }
 
@@ -649,6 +682,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
     private static final class KenaiBugzillaLazyIssue extends BugzillaLazyIssue {
 
         private final String projectName;
+        private boolean loginStatusChanged = true;
 
         public KenaiBugzillaLazyIssue (BugzillaIssue issue, BugzillaIssueProvider provider) throws MalformedURLException {
             super(issue, provider);
@@ -667,11 +701,14 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
             Repository repo = null;
-            try {
-                LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
-                repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
-            } catch (KenaiException ex) {
-                LOG.log(Level.INFO, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+            if (loginStatusChanged) {
+                try {
+                    LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
+                    repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
+                } catch (KenaiException ex) {
+                    LOG.log(Level.INFO, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+                }
+                loginStatusChanged = false;
             }
             if (repo != null && repo instanceof KenaiRepository) {
                 kenaiRepo = (KenaiRepository) repo;
@@ -701,6 +738,11 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                 }
             }
             return repoUrl;
+        }
+
+        private void notifyKenaiLogin () {
+            loginStatusChanged = true;
+            setValid(false);
         }
     }
 }
