@@ -45,17 +45,23 @@ import java.lang.reflect.*;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,7 +107,7 @@ public final class MenuWarmUpTask implements Runnable {
         for (int i=0; i<items.length; i++) {
             if (! (items[i] instanceof JMenu)) continue;
             try {
-                Class cls = items[i].getClass();
+                Class<?> cls = items[i].getClass();
                 Method m = cls.getDeclaredMethod("doInitialize");
                 m.setAccessible(true);
                 m.invoke(items[i]);
@@ -115,8 +121,9 @@ public final class MenuWarmUpTask implements Runnable {
      * After activation of window is refreshed filesystem but only if switching
      * from an external application.
      */ 
-    private static class NbWindowsAdapter extends WindowAdapter implements Runnable{
-        private static final RequestProcessor rp = new RequestProcessor ("Refresh-After-WindowActivated");//NOI18N        
+    private static class NbWindowsAdapter extends WindowAdapter
+    implements Runnable {
+        private static final RequestProcessor rp = new RequestProcessor ("Refresh-After-WindowActivated", 1, true);//NOI18N
         private RequestProcessor.Task task = null;
         private static final Logger LOG = Logger.getLogger("org.netbeans.ui.focus"); // NOI18N
 
@@ -156,12 +163,56 @@ public final class MenuWarmUpTask implements Runnable {
             if (Boolean.getBoolean("netbeans.indexing.noFileRefresh") == true) { // NOI18N
                 return; // no file refresh
             }
+            final ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh"), task, null);
+            h.setInitialDelay(10000);
+            h.start();
+            Runnable run = null;
+            ActionEvent handleBridge = new ActionEvent(this, 0, "") {
+                private FileObject previous;
+
+                @Override
+                public void setSource(Object newSource) {
+                    if (newSource instanceof Object[]) {
+                        Object[] arr = (Object[])newSource;
+                        if (arr.length == 3 &&
+                            arr[0] instanceof Integer &&
+                            arr[1] instanceof Integer &&
+                            arr[2] instanceof FileObject
+                        ) {
+                            if (! (getSource() instanceof Object[])) {
+                                h.switchToDeterminate((Integer)arr[1]);
+                            }
+                            h.progress((Integer)arr[0]);
+                            FileObject fo = (FileObject)arr[2];
+                            if (previous != fo.getParent()) {
+                                previous = fo.getParent();
+                                if (previous != null) {
+                                    h.progress(previous.getPath());
+                                }
+                            }
+                            super.setSource(newSource);
+                        }
+                    }
+                }
+            };
+            try {
+                run = (Runnable)FileUtil.toFileObject(File.listRoots()[0]).getAttribute("refreshSlow"); // NOI18N
+            } catch (RuntimeException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             long now = System.currentTimeMillis();
-            FileUtil.refreshAll();
+            if (run == null) {
+                FileUtil.refreshAll();
+            } else {
+                // connect the bridge with the masterfs's RefreshSlow
+                run.equals(handleBridge);
+                run.run();
+            }
             synchronized (rp) {
                 task = null;
             }
             long took = System.currentTimeMillis() - now;
+            h.finish();
             LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
             r.setParameters(new Object[] { took });
             r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
@@ -169,7 +220,7 @@ public final class MenuWarmUpTask implements Runnable {
             r.setLoggerName(LOG.getName());
             LOG.log(r);
 
-        }        
+        }
     }
     
 }

@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 
 /**
  * @author Radek Matous
@@ -425,13 +426,13 @@ public final class FileObjectFactory {
         return null;
     }
 
-    public final void refreshAll(final boolean expected) {
+    public final void refreshAll(RefreshSlow slow, final boolean expected) {
         Set all2Refresh = collectForRefresh();
-        refresh(all2Refresh, expected);
+        refresh(all2Refresh, slow, expected);
     }
 
     private Set collectForRefresh() {
-        final Set all2Refresh = new HashSet();
+        final Set all2Refresh = new WeakSet();
         synchronized (allIBaseFileObjects) {
             final Iterator it = allIBaseFileObjects.values().iterator();
             while (it.hasNext()) {
@@ -456,23 +457,49 @@ public final class FileObjectFactory {
         return all2Refresh;
     }
 
-    private void refresh(final Set all2Refresh, File... files) {
+    private boolean refresh(final Set all2Refresh, RefreshSlow slow, File... files) {
+        final int size = all2Refresh.size();
+        int count = 0;
         for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
             final BaseFileObj fo = (BaseFileObj) iterator.next();
+            count++;
             for (File file : files) {
                 if (isParentOf(file, fo.getFileName().getFile())) {
+                    if (slow != null) {
+                        slow.before();
+                    }
                     fo.refresh(true);
+                    if (slow != null) {
+                        if (!slow.after()) {
+                            return false;
+                        }
+                        slow.progress(count, size, fo);
+                    }
                     break;
                 }                
             }
         }
+        return true;
     }    
     
-    private void refresh(final Set all2Refresh, final boolean expected) {
+    private boolean refresh(final Set all2Refresh, RefreshSlow slow, final boolean expected) {
+        final int size = all2Refresh.size();
+        int count = 0;
         for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
             final BaseFileObj fo = (BaseFileObj) iterator.next();
+            count++;
+            if (slow != null) {
+                slow.before();
+            }
             fo.refresh(expected);
+            if (slow != null) {
+                if (!slow.after()) {
+                    return false;
+                }
+                slow.progress(count, size, fo);
+            }
         }
+        return true;
     }
 
     public static boolean isParentOf(final File dir, final File file) {
@@ -633,11 +660,11 @@ public final class FileObjectFactory {
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 
-    public final void refresh(final boolean expected) {
+    public final void refresh(final RefreshSlow slow, final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
             public void run() {
-                refreshAll(expected);                
+                refreshAll(slow, expected);
             }            
         };        
         
@@ -667,12 +694,12 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FILE.reset();
     }
 
-    public final void refreshFor(final File... files) {
+    public final void refreshFor(final RefreshSlow slow, final File... files) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
             public void run() {
                 Set all2Refresh = collectForRefresh();
-                refresh(all2Refresh, files);
+                refresh(all2Refresh, slow, files);
             }            
         };        
         stopWatch.start();

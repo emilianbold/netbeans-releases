@@ -163,11 +163,11 @@ public final class FileBasedFileSystem extends FileSystem {
     public void refreshImpl(boolean expected) {                        
         FileObject fo = root.getRealRoot();
         if (fo instanceof BaseFileObj) {
-            ((BaseFileObj)fo).getFactory().refresh(expected);
+            ((BaseFileObj)fo).getFactory().refresh(null, expected);
         } else if (fo instanceof RootObjWindows) {
             Collection<? extends FileObjectFactory> fcs =  factories().values();
             for (FileObjectFactory fileObjectFactory : fcs) {
-                fileObjectFactory.refresh(expected);
+                fileObjectFactory.refresh(null, expected);
             }
         }
     }

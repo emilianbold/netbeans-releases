@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.*;
@@ -122,18 +124,21 @@ public final class RootObj<T extends FileObject> extends FileObject {
         if (attrName.equals("SupportsRefreshForNoPublicAPI")) {
             return true;
         }
+        if (attrName.equals("refreshSlow")) {
+            return new RefreshSlow();
+        }
         return getRealRoot().getAttribute(attrName);
     }
 
     public final void setAttribute(final String attrName, final Object value) throws IOException {
         if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File[])) {//NOI18N
-            invokeRefreshFor((File[])value);
+            invokeRefreshFor(null, (File[])value);
             return;
         }        
         getRealRoot().setAttribute(attrName, value);
     }
     
-    private void invokeRefreshFor(File[] files) {
+    static void invokeRefreshFor(RefreshSlow slow, File[] files) {
         //first normalize
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
@@ -175,15 +180,15 @@ public final class RootObj<T extends FileObject> extends FileObject {
             if (lf.size() == 1) {
                 for (File file : lf) {
                     if (file.getParentFile() == null) {
-                        factory.refresh(true);
+                        factory.refresh(slow, true);
                     } else {
-                        factory.refreshFor(file);
+                        factory.refreshFor(slow, file);
                     }
                 }
             } else if (lf.size() > 1) {
                 final File[] arr = lf.toArray(new File[lf.size()]);
                 Arrays.sort(arr);
-                factory.refreshFor(arr);
+                factory.refreshFor(slow, arr);
             }
         }
     }
