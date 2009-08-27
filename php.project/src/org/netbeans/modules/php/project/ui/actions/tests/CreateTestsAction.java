@@ -63,6 +63,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -166,7 +167,7 @@ public final class CreateTestsAction extends NodeAction {
 
             // only php files or folders allowed
             if (fileObj.isData()
-                    && !CommandUtils.isPhpFile(fileObj)) {
+                    && !FileUtils.isPhpFile(fileObj)) {
                 return false;
             }
 
@@ -259,7 +260,7 @@ public final class CreateTestsAction extends NodeAction {
     private void generateTest(PhpUnit phpUnit, PhpProject phpProject, FileObject sourceFo,
             Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
-                || !CommandUtils.isPhpFile(sourceFo)
+                || !FileUtils.isPhpFile(sourceFo)
                 || proceeded.contains(sourceFo)
                 || CommandUtils.isUnderTests(phpProject, sourceFo, false)
                 || CommandUtils.isUnderSelenium(phpProject, sourceFo, false)) {

@@ -45,6 +45,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
@@ -68,7 +69,7 @@ public class GoToTest implements TestLocator {
     }
 
     public boolean appliesTo(FileObject fo) {
-        return CommandUtils.isPhpFile(fo);
+        return FileUtils.isPhpFile(fo);
     }
 
     public boolean asynchronous() {
@@ -128,7 +129,7 @@ public class GoToTest implements TestLocator {
                 String srcClassName = clsName.substring(0, lastIndexOf);
                 Collection<FileObject> files = editorSupport.filesForClass(sources, new PhpClass(srcClassName, srcClassName, -1));
                 for (FileObject fileObject : files) {
-                    if (CommandUtils.isPhpFile(fileObject)
+                    if (FileUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(sources, fileObject)) {
                         return new LocationResult(fileObject, -1);
                     }
@@ -149,7 +150,7 @@ public class GoToTest implements TestLocator {
                 String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
                 Collection<FileObject> files = editorSupport.filesForClass(tests, new PhpClass(testClsName, testClsName, -1));
                 for (FileObject fileObject : files) {
-                    if (CommandUtils.isPhpFile(fileObject)
+                    if (FileUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(tests, fileObject)) {
                         return new LocationResult(fileObject, -1);
                     }
