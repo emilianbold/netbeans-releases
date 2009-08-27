@@ -1858,9 +1858,8 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"             version="${nb.full.version}"/>
             <component uid="nb-webcommon"          version="${nb.full.version}"/>
             <component uid="nb-javaee"             version="${nb.full.version}"/>
-            <component uid="nb-groovy"             version="${nb.full.version}"/>
-            <component uid="nb-soa"                version="${nb.full.version}"/>
-            <component uid="nb-portalpack"         version="3.0.0.0.${portalpack.build.number}"/>
+            <component uid="nb-groovy"             version="${nb.full.version}"/>            
+            <component uid="nb-portalpack"         version="3.0.2.0.${portalpack.build.number}"/>
             <component uid="sjsas"                 version="2.1.${sjsas.milestone.number}.${sjsas.build.number}"/>
             <component uid="openesb"               version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam"                 version="5.0.7.${sjsas.milestone.number}.${sjsam.build.number}"/>
