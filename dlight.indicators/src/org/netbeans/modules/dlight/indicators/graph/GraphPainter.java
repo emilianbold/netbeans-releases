@@ -49,6 +49,7 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -70,7 +71,7 @@ class GraphPainter {
     private final List<TimeSeriesDescriptor> descriptors;
     private final int seriesCount;
 
-    private CyclicArray<float[]> data;
+    private List<float[]> data;
     private final Object dataLock = new Object();
 
 //    private BufferedImage cachedImage;
@@ -78,7 +79,7 @@ class GraphPainter {
     public GraphPainter(List<TimeSeriesDescriptor> descriptors) {
         this.descriptors = descriptors;
         seriesCount = descriptors.size();
-        data = new CyclicArray<float[]>(1000);
+        data = new ArrayList<float[]>(1000);
 //        initCacheImage();
     }
 
