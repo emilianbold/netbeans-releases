@@ -102,11 +102,6 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
                     RUN,
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null);
-        } else if (APPLICATION.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    APPLICATION,
-                    bundle.getString( "LBL_Config_Application" ), // NOI18N,
-                    null);
         }
         assert toReturn != null : "No category for name:" + name;
         return toReturn;
