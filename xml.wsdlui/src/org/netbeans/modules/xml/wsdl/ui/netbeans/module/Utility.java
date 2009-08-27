@@ -94,6 +94,8 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.pastetype.WSDLImportPast
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.RelativePath;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -596,7 +598,7 @@ public class Utility {
             if (comp instanceof ReferenceableSchemaComponent) {
                 ReferenceableSchemaComponent rsc = (ReferenceableSchemaComponent) comp;
                 String localName = rsc.getName();
-                String namespace = rsc.getModel().getSchema().getTargetNamespace();
+                String namespace = Utility.getTargetNamespace(comp.getModel());
                 if (namespace != null) {
                     QName qname = new QName(namespace, localName);
                     if (rsc instanceof GlobalElement) {
@@ -671,7 +673,7 @@ public class Utility {
 
         if (impSchemaModel != null) {
 
-            String schemaTNS = impSchemaModel.getSchema().getTargetNamespace();
+            String schemaTNS = Utility.getTargetNamespace(impSchemaModel);
             if (schemaTNS != null &&
                     !schemaTNS.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
 
@@ -983,23 +985,15 @@ public class Utility {
         }
         return null;
     }
-    
-    /**
-     * Get all interesting source roots for purposes of the wsdl editing.
-     * @param project
-     * @return all source roots.
-     */
-    public static List<SourceGroup> getSourceRoots(Project project) {
-        List<SourceGroup> roots = new ArrayList<SourceGroup>();
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] javaRoots =
-                sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
-        roots.addAll(Arrays.asList(javaRoots));
-        if (roots.isEmpty()) {
-            SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            roots.addAll(Arrays.asList(sourceGroups));
+
+    public static String getTargetNamespace(SchemaModel sModel) {
+        if (sModel != null) {
+            Schema schema = sModel.getSchema();
+            if (schema != null) {
+                return schema.getTargetNamespace();
+            }
         }
-        return roots;
+        return null;
     }
-    
+
 }

@@ -36,48 +36,63 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.wag.manager.zembly;
 
-package org.netbeans.modules.wag.manager.model;
+import com.zembly.gateway.client.Zembly;
+import com.zembly.oauth.api.Parameter;
+import com.zembly.oauth.api.Response;
+import com.zembly.oauth.api.Response.MimeType;
+import java.util.Collection;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.wag.manager.model.WagService;
+import org.netbeans.modules.xml.text.api.XMLFormatUtil;
 
 /**
  *
  * @author peterliu
  */
-public class WagServiceParameter {
+public class TestDriver {
 
-    private String name;
-    private String type;
-    private boolean isRequired;
+    private Zembly zembly;
 
-    public WagServiceParameter() {
-
+    public TestDriver(Zembly zembly) {
+        this.zembly = zembly;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String test(WagService service, Collection<Parameter> params) {
+        try {
+            Response response = zembly.callService(Response.class, service.getCallableName(), params);
 
-    public String getName() {
-        return name;
-    }
+            MimeType mimeType = response.getContentType();
 
-    public void setType(String type) {
-        this.type = type;
-    }
+            switch (mimeType) {
+                case APPLICATION_JSON:
 
-    public String getType() {
-        return type;
-    }
+                    JSONTokener parser = new JSONTokener(response.getString());
+                    Object obj = parser.nextValue();
 
-    public void setRequired(boolean flag) {
-        this.isRequired = flag;
-    }
-
-    public boolean isRequired() {
-        return isRequired;
-    }
-    
-    public String toString() {
-        return name + ":" + type;
+                    if (obj instanceof JSONObject) {
+                        return ((JSONObject) obj).toString(4);
+                    } else if (obj instanceof JSONArray) {
+                        return ((JSONArray) obj).toString(4);
+                    } else {
+                        return obj.toString();
+                    }
+                case APPLICATION_XML:
+                case TEXT_XML:
+                    BaseDocument doc = new BaseDocument(true, "text/xml"); //NOI18N
+                    doc.insertString(0, response.getString(), null);
+                    XMLFormatUtil.reformat(doc, 0, doc.getLength());
+                    
+                    return doc.getText(0, doc.getLength());
+                default:
+                    return response.getString();
+            }
+        } catch (Exception ex) {
+            return ex.getMessage();
+        }
     }
 }
