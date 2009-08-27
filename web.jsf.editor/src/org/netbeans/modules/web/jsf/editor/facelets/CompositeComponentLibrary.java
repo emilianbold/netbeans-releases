@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
@@ -55,7 +56,6 @@ import org.openide.util.NbBundle;
  */
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
-    private final String COMPOSITE_LIBRARY_NS_PREFIX = "http://java.sun.com/jsf/composite/"; //NOI18N
     private String libraryName;
     private TldLibrary generatedDescribingLibrary;
 
@@ -71,7 +71,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     @Override
     public String getNamespace() {
-        return COMPOSITE_LIBRARY_NS_PREFIX + getLibraryName();
+        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + getLibraryName();
     }
 
     @Override
@@ -141,14 +141,17 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 String msgNoTld = NbBundle.getBundle(JsfCompletionItem.class).getString("MSG_NO_TLD"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
+                    boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
                     String description = getAttributesDescription(model);
-                    attrs.add(new Attribute(attrname, description, false));
+                    attrs.add(new Attribute(attrname, description, required));
                 }
 
                 StringBuffer sb = new StringBuffer();
-                sb.append("<div><b>Composite component source: </b>");
+                sb.append("<div><b>"); //NOI18N
+                sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SOURCE") );//NOI18N
+                sb.append("</b>");//NOI18N
                 sb.append(model.getRelativePath());
-                sb.append("</div>");
+                sb.append("</div>");//NOI18N
                 sb.append(getAttributesDescription(model));
                 sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
 
@@ -159,7 +162,9 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
         private String getAttributesDescription(CompositeComponentModel model) {
             StringBuffer sb = new StringBuffer();
-            sb.append("<p><b>Tag attributes:</b>");
+            sb.append("<p><b>");//NOI18N
+            sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_TAG_ATTRS"));//NOI18N
+            sb.append("</b>");//NOI18N
             sb.append("<table border=\"1\">"); //NOI18N
 
             for (Map<String, String> descr : model.getExistingInterfaceAttributes()) {
@@ -174,15 +179,15 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
                 sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
                 for (String key : descr.keySet()) {
-                    if (key.equals("name")) {
+                    if (key.equals("name")) {//NOI18N
                         continue; //skip name
                     }
                     String val = descr.get(key);
-                    sb.append("<tr><td><b>");
+                    sb.append("<tr><td><b>");//NOI18N
                     sb.append(key);
-                    sb.append("</b></td><td>");
+                    sb.append("</b></td><td>");//NOI18N
                     sb.append(val);
-                    sb.append("</td></tr>");
+                    sb.append("</td></tr>");//NOI18N
                 }
                 sb.append("</table>"); //NOI18N
 
