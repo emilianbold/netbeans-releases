@@ -36,60 +36,63 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.wag.manager.zembly;
 
-package org.netbeans.modules.ide.ergonomics;
-
-import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemandWizardIterator;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.WizardDescriptor.InstantiatingIterator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import com.zembly.gateway.client.Zembly;
+import com.zembly.oauth.api.Parameter;
+import com.zembly.oauth.api.Response;
+import com.zembly.oauth.api.Response.MimeType;
+import java.util.Collection;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.wag.manager.model.WagService;
+import org.netbeans.modules.xml.text.api.XMLFormatUtil;
 
 /**
  *
- * @author Pavel Flaska
+ * @author peterliu
  */
-public class ServerWizardProviderProxy implements ServerWizardProvider {
-    
-    private FileObject fob;
-    private String displayName;
+public class TestDriver {
 
-    public static ServerWizardProvider create(FileObject fob) {
-        return new ServerWizardProviderProxy(fob);
+    private Zembly zembly;
+
+    public TestDriver(Zembly zembly) {
+        this.zembly = zembly;
     }
 
-    private ServerWizardProviderProxy(FileObject fob) {
-        this.fob = fob;
-    }
-    
-    public String getDisplayName() {
-        if (originalActive()) {
-            return null;
-        }
-        if (displayName == null) {
-            displayName = (String) fob.getAttribute("displayName"); // NOI18N
-            if (displayName == null) { // attribute not available
-                displayName = fob.getName();
+    public String test(WagService service, Collection<Parameter> params) {
+        try {
+            Response response = zembly.callService(Response.class, service.getCallableName(), params);
+
+            MimeType mimeType = response.getContentType();
+
+            switch (mimeType) {
+                case APPLICATION_JSON:
+
+                    JSONTokener parser = new JSONTokener(response.getString());
+                    Object obj = parser.nextValue();
+
+                    if (obj instanceof JSONObject) {
+                        return ((JSONObject) obj).toString(4);
+                    } else if (obj instanceof JSONArray) {
+                        return ((JSONArray) obj).toString(4);
+                    } else {
+                        return obj.toString();
+                    }
+                case APPLICATION_XML:
+                case TEXT_XML:
+                    BaseDocument doc = new BaseDocument(true, "text/xml"); //NOI18N
+                    doc.insertString(0, response.getString(), null);
+                    XMLFormatUtil.reformat(doc, 0, doc.getLength());
+                    
+                    return doc.getText(0, doc.getLength());
+                default:
+                    return response.getString();
             }
+        } catch (Exception ex) {
+            return ex.getMessage();
         }
-        return displayName;
     }
-
-    public InstantiatingIterator getInstantiatingIterator() {
-        if (originalActive()) {
-            return null;
-        }
-        return new FeatureOnDemandWizardIterator(fob);
-    }
-
-    private boolean originalActive() {
-        Object orig = fob.getAttribute("originalDefinition"); // NOI18N
-        if (orig instanceof String) {
-            if (FileUtil.getConfigFile((String) orig) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 }

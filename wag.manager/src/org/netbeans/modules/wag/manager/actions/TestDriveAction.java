@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +37,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics;
+package org.netbeans.modules.wag.manager.actions;
 
-import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemandWizardIterator;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.WizardDescriptor.InstantiatingIterator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.wag.manager.model.WagService;
+import org.netbeans.modules.wag.manager.wizards.TestDriveDlg;
+import org.openide.nodes.Node;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.*;
 
 /**
- *
- * @author Pavel Flaska
+ * 
+ * @author  peterliu
  */
-public class ServerWizardProviderProxy implements ServerWizardProvider {
+public class TestDriveAction extends NodeAction {
     
-    private FileObject fob;
-    private String displayName;
-
-    public static ServerWizardProvider create(FileObject fob) {
-        return new ServerWizardProviderProxy(fob);
-    }
-
-    private ServerWizardProviderProxy(FileObject fob) {
-        this.fob = fob;
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        return true;
     }
     
-    public String getDisplayName() {
-        if (originalActive()) {
-            return null;
-        }
-        if (displayName == null) {
-            displayName = (String) fob.getAttribute("displayName"); // NOI18N
-            if (displayName == null) { // attribute not available
-                displayName = fob.getName();
-            }
-        }
-        return displayName;
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new HelpCtx(TestDriveAction.class);
     }
-
-    public InstantiatingIterator getInstantiatingIterator() {
-        if (originalActive()) {
-            return null;
-        }
-        return new FeatureOnDemandWizardIterator(fob);
+    
+    public String getName() {
+        return NbBundle.getMessage(TestDriveAction.class, "TestDriveAction");
     }
-
-    private boolean originalActive() {
-        Object orig = fob.getAttribute("originalDefinition"); // NOI18N
-        if (orig instanceof String) {
-            if (FileUtil.getConfigFile((String) orig) != null) {
-                return true;
-            }
+    
+    protected void performAction(Node[] nodes) {
+        if (nodes == null || nodes.length != 1) {
+            return;
         }
+
+        WagService service = nodes[0].getLookup().lookup(WagService.class);
+
+        if (service == null) {
+            throw new IllegalArgumentException("Node has no WagService");
+        }
+
+        new TestDriveDlg(service).displayDialog();
+    }
+    
+    protected boolean asynchronous() {
         return false;
     }
-
 }
