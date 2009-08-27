@@ -338,12 +338,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
-            if (offset == lineAnnotationInfo.getOffset()) {
-                g.setColor(foregroundColor());
-            }
-            else {
-                g.setColor(Color.LIGHT_GRAY);
-            }
+            g.setColor(foregroundColor());
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
         }
     }
