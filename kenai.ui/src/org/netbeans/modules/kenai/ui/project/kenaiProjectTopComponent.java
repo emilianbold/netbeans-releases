@@ -96,6 +96,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         instProj = proj;
         addSpecificContent();
         Kenai.getDefault().addPropertyChangeListener(this);
+        mainScrollPane.getVerticalScrollBar().setUnitIncrement(30);
+        mainScrollPane.getHorizontalScrollBar().setUnitIncrement(30);
     }
 
     public static synchronized kenaiProjectTopComponent getDefault() {
@@ -113,7 +115,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane2 = new javax.swing.JScrollPane();
+        mainScrollPane = new javax.swing.JScrollPane();
         containingPanel = new javax.swing.JPanel();
         generalDetailsPanel = new javax.swing.JPanel();
         projectDescription = new javax.swing.JPanel();
@@ -134,6 +136,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         dynamicContentPane = new javax.swing.JTabbedPane();
 
         setLayout(new java.awt.BorderLayout());
+
+        mainScrollPane.setAlignmentY(0.0F);
 
         containingPanel.setBackground(new java.awt.Color(255, 255, 255));
         containingPanel.setMinimumSize(new java.awt.Dimension(600, 405));
@@ -211,7 +215,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         jPanel1.setPreferredSize(new java.awt.Dimension(25, 126));
 
         projectsDetailsHeader.setBackground(java.awt.SystemColor.control);
-        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18));
+        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        projectsDetailsHeader.setForeground(new java.awt.Color(45, 72, 102));
         org.openide.awt.Mnemonics.setLocalizedText(projectsDetailsHeader, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsHeader.text")); // NOI18N
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -307,9 +312,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap())
         );
 
-        jScrollPane2.setViewportView(containingPanel);
+        mainScrollPane.setViewportView(containingPanel);
 
-        add(jScrollPane2, java.awt.BorderLayout.CENTER);
+        add(mainScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -324,7 +329,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane mainScrollPane;
     private javax.swing.JPanel projectDescription;
     private javax.swing.JLabel projectImage;
     private javax.swing.JLabel projectsDetailsHeader;
@@ -432,6 +437,11 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
                 public void run() {
                     int tabCount = dynamicContentPane.getTabCount();
+                    for (int i = 0; i < tabCount; i++) {
+                        if (dynamicContentPane.getComponentAt(i) instanceof RefreshableContentPanel) {
+                            ((RefreshableContentPanel) dynamicContentPane.getComponentAt(i)).clearContent();
+                        }
+                    }
                     for (int i = 0; i < tabCount; i++) {
                         if (dynamicContentPane.getComponentAt(i) instanceof RefreshableContentPanel) {
                             ((RefreshableContentPanel) dynamicContentPane.getComponentAt(i)).resetContent(instProj);
