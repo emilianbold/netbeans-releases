@@ -181,6 +181,14 @@ public class KenaiRepository extends BugzillaRepository {
         return true;
     }
 
+    /**
+     * Returns the name of the bz product - should be the same as the name of the kenai project that owns this repository
+     * @return
+     */
+    public String getProductName () {
+        return product;
+    }
+
     private static String getKenaiUser() {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
         if(pa != null) {
