@@ -329,47 +329,23 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (component == null) {
             return;
         }
-        BaseTextUI textUI = (BaseTextUI) component.getUI();
-
-        Element rootElem = textUI.getRootView(component).getElement();
-        int line = rootElem.getElementIndex(view.getStartOffset());
-//    g.setColor(Color.RED);
-//    for (int i = 0; i < 100; i++) {
-//      g.drawLine(0, i * 100, 100, (i + 1) * 100);
-//      g.drawLine(100, i * 100, 0, (i + 1) * 100);
-//    }
-
-        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfo(line + 1);
+//        BaseTextUI textUI = (BaseTextUI) component.getUI();
+//        Element rootElem = textUI.getRootView(component).getElement();
+        int offset = view.getStartOffset();
+//        int line = rootElem.getElementIndex(offset);
+//        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLine(line + 1);
+        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByOffset(offset);
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
-            g.setColor(foregroundColor());
+            if (offset == lineAnnotationInfo.getOffset()) {
+                g.setColor(foregroundColor());
+            }
+            else {
+                g.setColor(Color.LIGHT_GRAY);
+            }
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
         }
-//    String annotation = "CPU 23s/";  // NOI18N
-//        AnnotateLine al = null;
-//        if (elementAnnotations != null) {
-//            al = getAnnotateLine(line);
-//            if (al != null) {
-//                annotation = getDisplayName(al);  // NOI18N
-//            }
-//        } else {
-//            annotation = elementAnnotationsSubstitute;
-//        }
-//
-//        if (al != null && al.getRevision().equals(recentRevision)) {
-//            g.setColor(selectedColor());
-//        } else {
-//            g.setColor(foregroundColor());
-//        }
-//    if (line == 9 || line == 19 || line == 29 || line == 39 || line == 49 || line == 59 || line == 69) {
-//        g.setColor(Color.MAGENTA);
-//        g.drawString(annotation + (line+1) + "s", 2, yBase + editorUI.getLineAscent());
-//    }
-//    else {
-////        g.setColor(Color.lightGray);
-////        g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
-//    }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

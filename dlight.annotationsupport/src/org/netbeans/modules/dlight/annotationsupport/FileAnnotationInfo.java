@@ -82,10 +82,21 @@ public class FileAnnotationInfo {
         return lineAnnotationInfo;
     }
 
-    public LineAnnotationInfo getLineAnnotationInfo(int line) {
+    public LineAnnotationInfo getLineAnnotationInfoByLine(int line) {
         for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
             if (lineInfo.getLine() == line) {
                 return lineInfo;
+            }
+        }
+        return null;
+    }
+
+    public LineAnnotationInfo getLineAnnotationInfoByOffset(int offset) {
+        for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
+            if (lineInfo.getPosition() != null) {
+                if (lineInfo.getPosition().getOffset() == offset) {
+                    return lineInfo;
+                }
             }
         }
         return null;
