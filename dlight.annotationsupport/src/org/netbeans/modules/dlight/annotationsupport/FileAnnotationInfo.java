@@ -102,6 +102,17 @@ public class FileAnnotationInfo {
         return null;
     }
 
+    public LineAnnotationInfo getLineAnnotationInfoByYCoordinate(int y) {
+        for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
+            if (lineInfo.getPosition() != null) {
+                if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
+                    return lineInfo;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * @param lineAnnotationInfo the lineAnnotationInfo to set
      */

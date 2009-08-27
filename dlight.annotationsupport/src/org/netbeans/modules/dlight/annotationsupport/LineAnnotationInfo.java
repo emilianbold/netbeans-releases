@@ -55,8 +55,11 @@ public class LineAnnotationInfo {
     private int line;
     private long offset;
     private String annotation;
+    private String tooltip;
     private String columns[];
     private Position position;
+    private int y1;
+    private int y2;
 
     public LineAnnotationInfo(FileAnnotationInfo fileAnnotationInfo) {
         this.fileAnnotationInfo = fileAnnotationInfo;
@@ -168,4 +171,47 @@ public class LineAnnotationInfo {
     public void setColumns(String[] columns) {
         this.columns = columns;
     }
+
+    /**
+     * @return the tooltip
+     */
+    public String getTooltip() {
+        if (tooltip == null) {
+            String tt = "";
+            int i = 0;
+            for (String col : getFileAnnotationInfo().getColumnNames()) {
+                if (tt.length() > 0) {
+                    tt += " "; // NOI18N
+                }
+                tt += col + ':' + columns[i];
+                i++;
+            }
+            tooltip = tt;
+        }
+        return tooltip;
+    }
+
+    /**
+     * @return the y1
+     */
+    public int getY1() {
+        return y1;
+    }
+    
+    /**
+     * @return the y2
+     */
+    public int getY2() {
+        return y2;
+    }
+
+    /**
+     * @param y1 the y1 to set
+     */
+    public void setY(int y1, int y2) {
+        this.y1 = y1;
+        this.y2 = y2;
+    }
+
+
 }
