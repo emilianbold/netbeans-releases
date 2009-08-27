@@ -93,7 +93,6 @@ public class SlowRefreshTest extends NbTestCase {
         fileObject1 = null;
         assertGC("File Object can disappear", ref);
 
-        Thread.sleep(1000);
 
         class L extends FileChangeAdapter {
             int cnt;
@@ -108,6 +107,8 @@ public class SlowRefreshTest extends NbTestCase {
         }
         L listener = new L();
         testFolder.addRecursiveListener(listener);
+        
+        Thread.sleep(1000);
 
         FileOutputStream os = new FileOutputStream(file);
         os.write(10);

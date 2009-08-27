@@ -98,8 +98,7 @@ public class ExternalTouchTest extends NbTestCase {
         fileObject1 = null;
         assertGC("File Object can disappear", ref);
 
-        Thread.sleep(1000);
-        
+
         class L extends FileChangeAdapter {
             int cnt;
             FileEvent event;
@@ -113,6 +112,8 @@ public class ExternalTouchTest extends NbTestCase {
         }
         L listener = new L();
         testFolder.addRecursiveListener(listener);
+
+        Thread.sleep(1000);
 
         FileOutputStream os = new FileOutputStream(file);
         os.write(10);
@@ -275,9 +276,7 @@ public class ExternalTouchTest extends NbTestCase {
         FileUtil.refreshAll();
         LOG.info("sibling refresh finished");
 
-// Right now it is DataCreatedChanged
-//        recursive.assertMessages("Creation", "DataCreated");
-        recursive.assertMessages("Creation", "DataCreatedChanged");
+        recursive.assertMessages("Creation", "DataCreated");
         flat.assertMessages("No messages in flat mode", "");
 
         Thread.sleep(1000);
@@ -290,9 +289,7 @@ public class ExternalTouchTest extends NbTestCase {
         LOG.info("After refresh");
 
         flat.assertMessages("No messages in flat mode", "");
-// Two changes detected now:
-//        recursive.assertMessages("written", "Changed");
-        recursive.assertMessages("written", "ChangedChanged");
+        recursive.assertMessages("written", "Changed");
 
         fo.delete();
         FileUtil.refreshAll();
@@ -332,9 +329,7 @@ public class ExternalTouchTest extends NbTestCase {
         new File(fsub, "test.data").createNewFile();
         FileUtil.refreshAll();
 
-// Double notification right now:
-//        flat.assertMessages("Direct file notified", "DataCreated");
-        flat.assertMessages("Direct file notified", "DataCreatedChanged");
+        flat.assertMessages("Direct file notified", "DataCreated");
         recursive.assertMessages("No longer active", "");
 
         WeakReference<L> ref = new WeakReference<L>(recursive);

@@ -346,24 +346,23 @@ public class FileUtilTest extends NbTestCase {
         Thread.sleep(1000); // make sure timestamp changes
         new FileOutputStream(newfile).close();
         FileUtil.refreshAll();
-        assertEquals("Event not fired when file was modified.", 2, fcl.check(EventType.CHANGED));
-        assertEquals("Attribute change event not fired (see #129178).", 2, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
+        assertEquals("Attribute change event not fired (see #129178).", 3, fcl.check(EventType.ATTRIBUTE_CHANGED));
         newfile.delete();
         FileUtil.refreshAll();
         assertEquals("Event not fired when file deleted.", 1, fcl.check(EventType.DELETED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
         // disk changes #66444
-        File fileX = new File(fileF, "oscilating.file");
+        File fileX = new File(subdir, "oscilating.file");
         for (int cntr = 0; cntr < 50; cntr++) {
             fileX.getParentFile().mkdirs();
             new FileOutputStream(fileX).close();
             FileUtil.refreshAll();
-            assertEquals("Event not fired when file was created; count=" + cntr, 2, fcl.check(EventType.DATA_CREATED));
+            assertEquals("Event not fired when file was created; count=" + cntr, 1, fcl.check(EventType.DATA_CREATED));
             fileX.delete();
-            fileX.getParentFile().delete();
             FileUtil.refreshAll();
-            assertEquals("Event not fired when file deleted; count=" + cntr, 2, fcl.check(EventType.DELETED));
+            assertEquals("Event not fired when file deleted; count=" + cntr, 1, fcl.check(EventType.DELETED));
         }
 
         // removed listener
