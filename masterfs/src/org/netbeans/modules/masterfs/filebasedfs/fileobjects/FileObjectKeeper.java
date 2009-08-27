@@ -150,6 +150,13 @@ final class FileObjectKeeper implements FileChangeListener {
             synchronized (this) {
                 kept.add(f);
                 f.addFileChangeListener(this);
+                Enumeration<? extends FileObject> en = f.getChildren(true);
+                while (en.hasMoreElements()) {
+                    FileObject fo = en.nextElement();
+                    if (fo instanceof FolderObj) {
+                        fo.addFileChangeListener(this);
+                    }
+                }
             }
         }
         for (FileChangeListener l : arr) {

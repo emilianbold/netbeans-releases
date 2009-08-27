@@ -312,6 +312,21 @@ public class ExternalTouchTest extends NbTestCase {
         flat.assertMessages("No messages in flat mode", "");
         recursive.assertMessages("No messages in recursive mode", "");
 
+        File deepest = new File(new File(new File(fsub, "deep"), "deeper"), "deepest");
+        deepest.mkdirs();
+        FileUtil.refreshAll();
+
+        flat.assertMessages("Folder in flat mode", "FolderCreated");
+        recursive.assertMessages("Folder detected", "FolderCreated");
+
+        File hidden = new File(deepest, "hide.me");
+        hidden.createNewFile();
+        FileUtil.refreshAll();
+
+        flat.assertMessages("No messages in flat mode", "");
+        recursive.assertMessages("Folder detected", "DataCreated");
+
+
         sub.removeRecursiveListener(recursive);
 
         new File(fsub, "test.data").createNewFile();
