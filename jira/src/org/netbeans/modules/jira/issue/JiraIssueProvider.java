@@ -646,9 +646,10 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                                     LOG.finer("Resole action: resolving..."); //NOI18N
                                     String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveIssueMessage"); //NOI18N
                                     final Resolution resolution = panel.getSelectedResolution();
+                                    final String comment = panel.getComment();
                                     runCancellableCommand(new Runnable () {
                                         public void run() {
-                                            issue.resolve(resolution, null);
+                                            issue.resolve(resolution, comment);
                                             if (issue.submitAndRefresh()) {
                                                 issue.open();
                                             }
