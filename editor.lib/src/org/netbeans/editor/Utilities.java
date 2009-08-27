@@ -59,6 +59,7 @@ import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.Element;
 import javax.swing.text.View;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
@@ -1154,7 +1155,7 @@ public class Utilities {
     /** Returns last activated component. If the component was closed, 
      *  then previous component is returned */
     public static JTextComponent getLastActiveComponent() {
-        return Registry.getMostActiveComponent();
+        return EditorRegistry.lastFocusedComponent();
     }
     
     /**
