@@ -85,6 +85,7 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public final class BugzillaIssueProvider extends IssueProvider implements PropertyChangeListener {
 
+    private static BugzillaIssueProvider instance;
     private final Object LOCK = new Object();
     private boolean initialized;
     private HashMap<String, BugzillaLazyIssue> watchedIssues = new HashMap<String, BugzillaLazyIssue>(10);
@@ -98,9 +99,11 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
     public static final String PROPERTY_ISSUE_REMOVED = "issue-removed"; //NOI18N
 
-    public static BugzillaIssueProvider getInstance() {
-        BugzillaIssueProvider provider = Lookup.getDefault().lookup(BugzillaIssueProvider.class);
-        return provider;
+    public static synchronized BugzillaIssueProvider getInstance() {
+        if (instance == null) {
+            instance = Lookup.getDefault().lookup(BugzillaIssueProvider.class);
+        }
+        return instance;
     }
 
     public BugzillaIssueProvider () {
