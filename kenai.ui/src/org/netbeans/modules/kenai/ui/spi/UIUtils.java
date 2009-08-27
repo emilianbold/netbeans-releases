@@ -52,6 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.JTextPane;
@@ -212,9 +213,10 @@ public final class UIUtils {
                                         public void run() {
                                             JRootPane rootPane = loginPanel.getRootPane();
                                             if (rootPane != null) {
-                                                Container parent = rootPane.getParent();
+                                                JDialog parent = (JDialog) rootPane.getParent();
                                                 if (parent != null) {
                                                     parent.setVisible(false);
+                                                    parent.dispose();
                                                 }
                                             }
                                         }
@@ -238,7 +240,9 @@ public final class UIUtils {
                         }
                     } else {
                         loginPanel.putClientProperty("cancel", "true"); // NOI18N
-                        loginPanel.getRootPane().getParent().setVisible(false);
+                        JDialog parent = (JDialog) loginPanel.getRootPane().getParent();
+                        parent.setVisible(false);
+                        parent.dispose();
                     }
                 }
         });

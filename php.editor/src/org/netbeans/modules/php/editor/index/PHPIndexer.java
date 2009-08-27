@@ -59,7 +59,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -342,7 +342,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 return true;
             }
 
-            return isPhpFile(fileObject);
+            return FileUtils.isPhpFile(fileObject);
         }
 
         @Override
@@ -372,10 +372,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
             }
-        }
-        
-        private boolean isPhpFile(FileObject file) {
-            return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(file, PHPLanguage.PHP_MIME_TYPE));
         }
     } // End of Factory class
 }

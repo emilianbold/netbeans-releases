@@ -539,7 +539,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (preferences.getBoolean("show_evaluator_result", false)) {
+                if (preferences.getBoolean("show_evaluator_result", true)) {
                     TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
                     view.open();
                     view.requestActive();
