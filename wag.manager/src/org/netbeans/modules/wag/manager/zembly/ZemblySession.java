@@ -43,6 +43,9 @@ import com.zembly.gateway.client.config.Configuration;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.oauth.api.Response;
 import com.zembly.oauth.core.UrlConnection;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +65,8 @@ public class ZemblySession {
     private static final String USERNAME_ATTR = "username";     //NOI18N
     private static final String KEY_ATTR = "key";               //NOI18N
     private static final String SECRET_ATTR = "secret";         //NOI18N
-    
+    private static final String PROP_LOGIN = "login";           //NOI18N
+   
     private static ZemblySession instance;
     private Zembly zembly;
     private SearchEngine searchEngine;
@@ -71,8 +75,10 @@ public class ZemblySession {
     private UserServiceRetriever userServiceRetriever;
     private RankingRetriever rankingRetriever;
     private ItemInfoRetriever itemInfoRetriever;
+    private TestDriver testDriver;
     private ZemblyUserInfo userInfo;
 
+    protected PropertyChangeSupport pps;
     // For local testing
     /*
     static {
@@ -80,6 +86,11 @@ public class ZemblySession {
         SSLUtilities.trustAllHttpsCertificates();
     }
      */
+
+
+    private ZemblySession() {
+        pps = new PropertyChangeSupport(this);
+    }
 
     public synchronized static ZemblySession getInstance() {
         if (instance == null) {
@@ -101,6 +112,7 @@ public class ZemblySession {
             //userInfo = new ZemblyUserInfo();
             //userInfo.setUserid("914986440");
             //userInfo.setUsername("spunky");
+            fireChange(false, true, PROP_LOGIN);
         }
     }
 
@@ -109,6 +121,9 @@ public class ZemblySession {
     }
 
     public void logout() {
+        userInfo = null;
+
+        fireChange(true, false, PROP_LOGIN);
     }
 
     public boolean isLoggedIn() {
@@ -180,6 +195,16 @@ public class ZemblySession {
         return itemInfoRetriever;
     }
 
+    public TestDriver getTestDriver() {
+        login();
+
+        if (testDriver == null) {
+            testDriver = new TestDriver(getZembly());
+        }
+
+        return testDriver;
+    }
+    
     private ZemblyUserInfo zemblyLogin(String username, String password) {
         List<Parameter> params = new ArrayList<Parameter>();
         params.add(new Parameter("email", username));
@@ -241,5 +266,18 @@ public class ZemblySession {
         }
 
         return null;
+    }
+
+      public void addPropertyChangeListener(PropertyChangeListener l) {
+        pps.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pps.removePropertyChangeListener(l);
+    }
+
+    protected void fireChange(Object old, Object neu, String propName) {
+        PropertyChangeEvent pce = new PropertyChangeEvent(this, propName, old, neu);
+        pps.firePropertyChange(pce);
     }
 }
