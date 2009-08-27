@@ -39,11 +39,18 @@
 
 package org.netbeans.modules.cnd.tha.ui;
 
-import javax.swing.JSeparator;
-import javax.swing.JToggleButton;
+import java.awt.Color;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
+import org.openide.util.ImageUtilities;
 
 /**
  * 
@@ -51,39 +58,44 @@ import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
  */
 final class THAControlPanel extends JToolBar{
     private final Project project;
+    private final THAConfiguration thaConfiguration;
 
-    static synchronized final THAControlPanel create(Project project){
-        return new THAControlPanel(project);
+    static synchronized final THAControlPanel create(Project project, THAConfiguration thaConfiguration){
+        return new THAControlPanel(project, thaConfiguration);
     }
 
-    public THAControlPanel(Project project) {
+    public THAControlPanel(Project project, final THAConfiguration thaConfiguration) {
         this.project = project;
-        add(THAActionsProvider.getSupportFor(project).getStartThreadAnalysisAction());
-        addSeparator();
-        add(THAActionsProvider.getSupportFor(project).getStartAction());
-        addSeparator();
-        JToggleButton toggleButton = new javax.swing.JToggleButton();
-        toggleButton.setAction(THAActionsProvider.getSupportFor(project).getEnableCollectAction());
-        toggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/start24.png"))); // NOI18N
-        toggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/pause24.png"))); // NOI18N
-        add(toggleButton);
-        addSeparator();
-        add(THAActionsProvider.getSupportFor(project).getStopAction());
-        add(new JSeparator());
-        toggleButton = new javax.swing.JToggleButton();
-        toggleButton.setAction(THAActionsProvider.getSupportFor(project).getEnableDeadlockAction());
-        toggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/deadlock_active24.png"))); // NOI18N
-        toggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/deadlock_active24.png"))); // NOI18N
-        toggleButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/deadlock_inactive24.png"))); // NOI18N
-        add(toggleButton);
-        addSeparator();
-        toggleButton = new javax.swing.JToggleButton();
-        toggleButton.setAction(THAActionsProvider.getSupportFor(project).getEnableDataraceAction());
-        toggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/races_active24.png"))); // NOI18N
-        toggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/races_active24.png"))); // NOI18N
-        toggleButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/tha/resources/races_inactive24.png"))); // NOI18N
-        add(toggleButton);
+        this.thaConfiguration = thaConfiguration;
+        final THAActionsProvider actionsSupport = THAActionsProvider.getSupportFor(project, thaConfiguration);
+        final JLabel statusLabel = new JLabel();
+        actionsSupport.addActionListener(new ActionListener() {
 
+            public void actionPerformed(ActionEvent e) {
+                if (THAActionsProvider.SUSPEND_COMMAND.equals(e.getActionCommand())){
+                    statusLabel.setText( "Paused " + (thaConfiguration.collectDataRaces() ? "Races and Deadlocks" : "Deadlocks"));
+                    statusLabel.setForeground(Color.RED);
+                }else if (THAActionsProvider.RESUME_COMMAND.equals(e.getActionCommand())){
+                    statusLabel.setText( "Recording " + (thaConfiguration.collectDataRaces() ? "Races and Deadlocks" : "Deadlocks"));
+                    statusLabel.setForeground(Color.GREEN);
+                }
+            }
+        });
+        Action suspendAction = actionsSupport.getSuspendCollectionAction();
+        Action resumeAction = actionsSupport.getResumeCollectionAction();
+
+        statusLabel.setText((thaConfiguration.collectFromBeginning() ? "Recording " :  "Paused ") + (thaConfiguration.collectDataRaces() ? "Races and Deadlocks" : "Deadlocks"));
+        statusLabel.setForeground(thaConfiguration.collectFromBeginning()  ? Color.GREEN : Color.RED);
+        JButton suspendButton = new JButton(suspendAction);
+        suspendButton.setDisabledIcon(ImageUtilities.image2Icon((Image)suspendAction.getValue("disabledIcon")));//NOI18N
+        add(suspendButton);
+        addSeparator();
+        JButton resumeButton = new JButton(resumeAction);
+        resumeButton.setDisabledIcon(ImageUtilities.image2Icon((Image)resumeAction.getValue("disabledIcon")));//NOI18N
+        add(resumeButton);
+        addSeparator();
+        add(actionsSupport.getStopAction());
+        add(statusLabel);
     }
     
 

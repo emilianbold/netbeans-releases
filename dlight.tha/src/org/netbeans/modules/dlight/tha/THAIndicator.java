@@ -42,17 +42,14 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
 public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
 
-    private final THAControlPanel controlPanel;
+    private final THAIndicatorPanel controlPanel;
     private final String dataracesColumnName;
     private final String deadlocksColumnName;
     private int dataraces;
@@ -60,7 +57,7 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
 
     public THAIndicator(final THAIndicatorConfiguration configuration) {
         super(configuration);
-        controlPanel = new THAControlPanel(false, new ToggleCollectorAction(), new AbstractAction("deadlocks") {//NOI18N
+        controlPanel = new THAIndicatorPanel(new AbstractAction("deadlocks") {//NOI18N
 
             public void actionPerformed(ActionEvent e) {
                 notifyListeners(DeadlockVisualizerConfiguration.ID);
@@ -109,16 +106,5 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     public JComponent getComponent() {
         return controlPanel;
     }
-
-    private class ToggleCollectorAction extends AbstractAction {
-        public void actionPerformed(ActionEvent e) {
-            DLightTarget target = getTarget();
-            if (target instanceof NativeExecutableTarget) {
-                int pid = ((NativeExecutableTarget)target).getPID();
-                if (0 < pid) {
-                    CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
-                }
-            }
-        }
-    }
+   
 }
