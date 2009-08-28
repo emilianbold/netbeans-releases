@@ -196,10 +196,15 @@ final class FileObjectKeeper implements FileChangeListener {
         if (arr == null) {
             return;
         }
+        final FileObject f = fe.getFile();
+        if (f.isFolder() && fe.getSource() == f && f != root) {
+            // there will be another event for parent folder
+            return;
+        }
+
         for (FileChangeListener l : arr) {
             l.fileDeleted(fe);
         }
-        final FileObject f = fe.getFile();
         if (f instanceof FolderObj) {
             synchronized (this) {
                 if (kept != null) {
@@ -213,6 +218,11 @@ final class FileObjectKeeper implements FileChangeListener {
     public void fileRenamed(FileRenameEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {
+            return;
+        }
+        final FileObject f = fe.getFile();
+        if (f.isFolder() && fe.getSource() == f && f != root) {
+            // there will be another event for parent folder
             return;
         }
         for (FileChangeListener l : arr) {

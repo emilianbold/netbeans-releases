@@ -517,8 +517,8 @@ public class FileUtilTest extends NbTestCase {
 
             }
         });
-        assertEquals("Wrong number of events fired when file was created in atomic action.", 3, fcl.check(EventType.DATA_CREATED));
-        assertEquals("Wrong number of events fired when file was created in atomic action.", 2, fcl.check(EventType.FOLDER_CREATED));
+        assertEquals("Wrong number of events fired when file was created in atomic action.", 1, fcl.check(EventType.DATA_CREATED));
+        assertEquals("Wrong number of events fired when file was created in atomic action.", 1, fcl.check(EventType.FOLDER_CREATED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
         // rename
@@ -552,6 +552,10 @@ public class FileUtilTest extends NbTestCase {
         dirFO.rename(lock, "dirRenamed", null);
         lock.releaseLock();
         assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        lock = dirFO.lock();
+        dirFO.rename(lock, "dir", null);
+        lock.releaseLock();
+        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
         fcl.printAll();
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
@@ -561,17 +565,18 @@ public class FileUtilTest extends NbTestCase {
         assertTrue(subfileF.createNewFile());
         assertTrue(subsubfileF.createNewFile());
         FileUtil.refreshAll();
-        assertEquals("Wrong number of events when file was created.", 3, fcl.check(EventType.DATA_CREATED));
-        assertEquals("Wrong number of events when folder created.", 2, fcl.check(EventType.FOLDER_CREATED));
+        assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
+        assertEquals("Wrong number of events when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
+        assertEquals("Wrong number of Attribute change events (see #129178).", 8, fcl.check(EventType.ATTRIBUTE_CHANGED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
+        Thread.sleep(1000); // make sure timestamp changes
         new FileOutputStream(subsubfileF).close();
         new FileOutputStream(subfileF).close();
         new FileOutputStream(fileF).close();
-        Thread.sleep(1000); // make sure timestamp changes
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
-        assertEquals("Wrong number of Attribute change events (see #129178).", 6, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        assertEquals("Wrong number of Attribute change events (see #129178).", 13, fcl.check(EventType.ATTRIBUTE_CHANGED));
 
         assertTrue(subsubfileF.delete());
         assertTrue(subsubdirF.delete());
@@ -583,7 +588,7 @@ public class FileUtilTest extends NbTestCase {
 
         // delete folder itself
         dirFO.delete();
-        assertEquals("Wrong number of events when folder deleted.", 1, fcl.check(EventType.DELETED));
+        assertEquals("Wrong number of events when folder deleted.", 3, fcl.check(EventType.DELETED));
     }
 
     private static enum EventType {
