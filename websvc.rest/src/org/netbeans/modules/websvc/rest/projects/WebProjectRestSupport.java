@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -68,7 +67,6 @@ import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -231,29 +229,11 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
-    static String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
+    private String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
         return "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
     }
 
-    static void setServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
-        Preferences prefs = NbPreferences.forModule(WebProjectRestSupport.class);
-        if (prefs != null) {
-            prefs.put("restlib_"+ j2eeModuleProvider.getServerID(), j2eeModuleProvider.getServerInstanceID());
-        }
-    }
-
-    static boolean isServerLibrary(String libraryName, J2eeModuleProvider j2eeModuleProvider) {
-        Preferences prefs = NbPreferences.forModule(WebProjectRestSupport.class);
-        if (prefs != null) {
-            String oldServerInstanceId = prefs.get(libraryName , null);
-            if (oldServerInstanceId != null && oldServerInstanceId.equals(j2eeModuleProvider.getServerInstanceID())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    static J2eePlatform getJ2eePlatform(J2eeModuleProvider j2eeModuleProvider){
+    private J2eePlatform getJ2eePlatform(J2eeModuleProvider j2eeModuleProvider){
         String serverInstanceID = j2eeModuleProvider.getServerInstanceID();
         if(serverInstanceID != null && serverInstanceID.length() > 0) {
             try {
