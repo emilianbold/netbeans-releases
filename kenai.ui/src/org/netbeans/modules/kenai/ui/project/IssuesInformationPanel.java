@@ -129,7 +129,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
             _appStr += String.format("<table><tr><td width=\"50\"><img src=\"%s\"></td><td><h3>%s</h3></td></tr></table><br>", //NOI18N
                     IssuesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/" + type), //NOI18N
                     itrac.getDisplayName());
-            _appStr += String.format("%s: %s<a href=\"%s\">%s</a>", //NOI18N
+            _appStr += String.format("%s:<br><p>&nbsp;&nbsp;&nbsp;&nbsp;%s<a href=\"%s\">%s</a></p>", //NOI18N
                     NbBundle.getMessage(IssuesInformationPanel.class, "MSG_ISSUE_TRACKER_ONLINE"), //NOI18N
                     kenaiProjectTopComponent.linkImageHTML,
                     itrac.getWebLocation(),
