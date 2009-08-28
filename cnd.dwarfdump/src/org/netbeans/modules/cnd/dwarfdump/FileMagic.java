@@ -56,7 +56,12 @@ public class FileMagic {
     
     public FileMagic(String objFileName) throws FileNotFoundException, WrongFileFormatException {
         reader = new RandomAccessFile(objFileName, "r"); // NOI18N
-        readMagic();
+        try {
+            readMagic();
+        } catch (WrongFileFormatException ex){
+            throw new WrongFileFormatException(ex.getMessage()+":"+objFileName);
+
+        }
     }
 
     public RandomAccessFile getReader() {

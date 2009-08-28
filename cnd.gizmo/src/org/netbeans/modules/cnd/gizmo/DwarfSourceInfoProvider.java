@@ -119,7 +119,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                         if (entry.getKind()== TAG.DW_TAG_subprogram){
                             String name = entry.getName();
                             if (name.equals(function) || entry.getQualifiedName().equals(function)) {
-                                LineNumber number = unit.getLineInfoSection().getLineNumber(entry.getLowAddress() + shift);
+                                LineNumber number = unit.getLineNumber(entry.getLowAddress() + shift);
                                 if (number != null) {
                                     return new SourceFileInfo(toAbsolutePath(serviceInfo, number.file), number.line, 0);
                                 }

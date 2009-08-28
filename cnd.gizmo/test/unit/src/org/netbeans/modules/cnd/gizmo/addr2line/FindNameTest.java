@@ -43,10 +43,13 @@ import org.netbeans.modules.cnd.gizmo.addr2line.dwarf2line.Dwarf2NameFinder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
 import org.openide.util.Exceptions;
@@ -61,62 +64,87 @@ public class FindNameTest extends NbTestCase {
         super("FindNameTest");
     }
 
-    public void testFractalGNU0() {
-        baseTest(0x10f, "main");
+    public void testFractalFractal0() {
+        baseTest(0x10f, "main", "fractal");
     }
 
-    public void testFractalGNU1() {
-        baseTest(0x602, "Mandelbrot");
+    public void testFractalFractal1() {
+        baseTest(0x602, "Mandelbrot", "fractal");
     }
 
-    public void testFractalGNU2() {
-        baseTest(0x463, "Mandelbrot");
+    public void testFractalFractal2() {
+        baseTest(0x463, "Mandelbrot", "fractal");
     }
 
-    public void testFractalGNU3() {
-        baseTest(0x2b9, "Mandelbrot");
+    public void testFractalFractal3() {
+        baseTest(0x2b9, "Mandelbrot", "fractal");
     }
 
-    public void testFractalGNU4() {
-        baseTest(0x16, "complex::operator+");
+    public void testFractalFractal4() {
+        baseTest(0x16, "complex::operator+", "fractal");
     }
 
-    public void testFractalGNU5() {
-        baseTest(0xd, "complex::operator+");
+    public void testFractalFractal5() {
+        baseTest(0xd, "complex::operator+", "fractal");
     }
 
-    private void baseTest(long shift, String function) {
-        String executable = getResource("/org/netbeans/modules/cnd/gizmo/addr2line/fractal");
+    public void testProfilingdemo0() {
+        baseTest(0x100, "main", "profilingdemo");
+    }
+
+    public void testProfilingdemo1() {
+        baseTest(0x93, "work_run_getmem", "profilingdemo");
+    }
+
+    public void testProfilingdemo2() {
+        baseTest(0x36, "threadfunc", "profilingdemo");
+    }
+
+    private void baseTest(long shift, String function, String executable) {
+        System.err.println("\nSearch for "+function+"0x"+Long.toHexString(shift)+" in "+executable);
+        executable = getResource("/org/netbeans/modules/cnd/gizmo/addr2line/"+executable);
         String script = getResource("/org/netbeans/modules/cnd/gizmo/addr2line/lineinfo.bash");
         EtalonLineNumber etalon = getEtalonLineNumber(script);
         String line = etalon.lineNumber(executable, function+"+0x"+Long.toHexString(shift));
-        System.err.println("\nGdb result:\t"+line);
+        System.err.println("Gdb result:\t"+line);
         long base = 0;
         LineNumber number = null;
         try {
             Dwarf dwarf = new Dwarf(executable);
-            for (CompilationUnit unit : dwarf.getCompilationUnits()){
-                for (DwarfEntry entry : unit.getDeclarations()){
-                    switch (entry.getKind()){
-                        case DW_TAG_subprogram:
+            try {
+                loop:for (CompilationUnit unit : dwarf.getCompilationUnits()){
+                    for (DwarfEntry entry : unit.getDeclarations()){
+                        if (entry.getKind() == TAG.DW_TAG_subprogram){
                             String name = entry.getName();
-                            //if (name.indexOf("operator")>= 0) {
-                            //    System.err.println(""+entry);
-                            //}
                             if (name.equals(function) || entry.getQualifiedName().equals(function)) {
                                 //System.err.println(""+entry);
+                                Set<LineNumber> numbers = unit.getLineNumbers();
+                                TreeSet<LineNumber> sorted = new TreeSet<LineNumber>(numbers);
+                                //for(LineNumber l : sorted) {
+                                //    System.err.println(""+l);
+                                //}
                                 base = entry.getLowAddress();
-                                //System.err.println("base address:"+Long.toHexString(base));
-                                //System.err.println("target address:"+Long.toHexString(base + shift));
-                                number = unit.getLineInfoSection().getLineNumber(base + shift);
+                                long target = base + shift;
+                                //System.err.println("base   address: 0x"+Long.toHexString(base));
+                                //System.err.println("target address: 0x"+Long.toHexString(target));
+                                LineNumber candidate = null;
+                                for (LineNumber n : sorted) {
+                                    if (n.startOffset < target && target <= n.endOffset) {
+                                        candidate = n;
+                                        break;
+                                    }
+                                }
+                                System.err.println("Dwarf Map:\t" + candidate);
+                                number = unit.getLineNumber(base + shift);
                                 //unit.getSourceFileFullName();
                                 System.err.println("Dwarf Proces:\t" + number);
+                                break loop;
                             }
-                            break;
-                        default:
-                            break;
+                        }
                     }
                 }
+            } finally {
+                dwarf.dispose();
             }
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
