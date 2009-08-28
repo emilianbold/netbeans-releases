@@ -346,7 +346,9 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                commChannelsDisplayer.setText("");
+                commChannelsDisplayer.setText(String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>",
+                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"),
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT")));
             }
         });
     }
