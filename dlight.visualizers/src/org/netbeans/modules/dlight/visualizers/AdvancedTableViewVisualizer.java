@@ -151,6 +151,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         }
         outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
         outlineView.setProperties(result.toArray(new Property[0]));
+        outlineView.setPopupAllowed(false);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         this.dualPaneMode = accessor.isDualPaneMode(configuration);

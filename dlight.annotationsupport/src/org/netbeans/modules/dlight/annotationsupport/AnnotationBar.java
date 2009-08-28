@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -28,7 +30,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Style;
@@ -47,7 +48,7 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
  *
  * @author ak119685
  */
-public class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, ComponentListener {
+public class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, ComponentListener, MouseMotionListener {
 
     //TestAnnotationsPanel mainPanel = new TestAnnotationsPanel();
     /**
@@ -200,12 +201,13 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         textComponent.addComponentListener(this);
         editorUI.addPropertyChangeListener(this);
         EditorSettings.getDefault().addPropertyChangeListener(this);
+        addMouseMotionListener(this);
 
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
         int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
             setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), getTextHighlightBGColor(), getTextHighlightFGColor());
-            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip(), foregroundColor()));
+            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), foregroundColor()));
         }
 
         AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
@@ -232,6 +234,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         textComponent.removeComponentListener(this);
         editorUI.removePropertyChangeListener(this);
         EditorSettings.getDefault().removePropertyChangeListener(this);
+        removeMouseMotionListener(this);
 
         revalidate();  // resize the component
 
@@ -329,47 +332,19 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (component == null) {
             return;
         }
-        BaseTextUI textUI = (BaseTextUI) component.getUI();
-
-        Element rootElem = textUI.getRootView(component).getElement();
-        int line = rootElem.getElementIndex(view.getStartOffset());
-//    g.setColor(Color.RED);
-//    for (int i = 0; i < 100; i++) {
-//      g.drawLine(0, i * 100, 100, (i + 1) * 100);
-//      g.drawLine(100, i * 100, 0, (i + 1) * 100);
-//    }
-
-        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfo(line + 1);
+//        BaseTextUI textUI = (BaseTextUI) component.getUI();
+//        Element rootElem = textUI.getRootView(component).getElement();
+        int offset = view.getStartOffset();
+//        int line = rootElem.getElementIndex(offset);
+//        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLine(line + 1);
+        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByOffset(offset);
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
             g.setColor(foregroundColor());
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
+            lineAnnotationInfo.setY(yBase, yBase+editorUI.getLineAscent());
         }
-//    String annotation = "CPU 23s/";  // NOI18N
-//        AnnotateLine al = null;
-//        if (elementAnnotations != null) {
-//            al = getAnnotateLine(line);
-//            if (al != null) {
-//                annotation = getDisplayName(al);  // NOI18N
-//            }
-//        } else {
-//            annotation = elementAnnotationsSubstitute;
-//        }
-//
-//        if (al != null && al.getRevision().equals(recentRevision)) {
-//            g.setColor(selectedColor());
-//        } else {
-//            g.setColor(foregroundColor());
-//        }
-//    if (line == 9 || line == 19 || line == 29 || line == 39 || line == 49 || line == 59 || line == 69) {
-//        g.setColor(Color.MAGENTA);
-//        g.drawString(annotation + (line+1) + "s", 2, yBase + editorUI.getLineAscent());
-//    }
-//    else {
-////        g.setColor(Color.lightGray);
-////        g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
-//    }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -463,4 +438,18 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 
     public void componentHidden(ComponentEvent e) {
     }
+
+    public void mouseMoved(MouseEvent e) {
+        String tooltip = fileAnnotationInfo.getTooltip();
+        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByYCoordinate(e.getY());
+        if (lineAnnotationInfo != null) {
+            tooltip = lineAnnotationInfo.getTooltip();
+        }
+        setToolTipText(tooltip);
+    }
+
+    public void mouseDragged(MouseEvent e) {
+    }
+
+
 }
