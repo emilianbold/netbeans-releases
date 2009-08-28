@@ -136,6 +136,35 @@ public class AstNodeUtilsTest extends TestBase {
         assertEquals("td", node.name());
     }
 
+     public void testNodeVisitors() throws Exception {
+        String code = "<html><body><table><tr></tr><tr><td></tr></body></html>";
+        //             0123456789012345678
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+
+        final int nodes[] = new int[1];
+        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            public void visit(AstNode node) {
+                nodes[0]++;
+            }
+        });
+
+        assertEquals(10, nodes[0]);
+
+        nodes[0] = 0;
+        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            public void visit(AstNode node) {
+                nodes[0]++;
+            }
+        }, AstNode.NodeType.OPEN_TAG);
+
+        assertEquals(6, nodes[0]);
+
+    }
+
     public void testGetPossibleOpenTagElements() throws BadLocationException {
         String code = "<html><head><title></title></head><body>...<p>...</body></html>";
         //             0123456789012345678901234567890123456789012345678901234
@@ -144,7 +173,7 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         //root node allows all dtd elements
         assertPossibleElements(root, 0, arr("a", "abbr", "html"), Match.CONTAINS);
