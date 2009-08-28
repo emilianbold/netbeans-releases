@@ -88,6 +88,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
+import org.netbeans.modules.kenai.ui.spi.KenaiUser;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -368,6 +369,15 @@ public class ChatPanel extends javax.swing.JPanel {
     
     private void init() {
         initComponents();
+        online.setHorizontalTextPosition(JLabel.LEFT);
+        if (isPrivate()) {
+            topPanel.remove(online);
+            online = KenaiUser.forName(getPrivateName()).createUserWidget();
+            online.setText(null);
+            online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
+            topPanel.add(online, java.awt.BorderLayout.EAST);
+            topPanel.validate();
+        }
         editorKit= (HTMLEditorKit) inbox.getEditorKit();
 
         Font font = UIManager.getFont("Label.font"); // NOI18N
@@ -558,7 +568,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void refreshOnlineStatus() throws MissingResourceException {
         if (muc!=null) {
-        online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));  //NOI18N
+        online.setText(muc.getOccupantsCount()+"");  //NOI18N
         Iterator<String> string = muc.getOccupants();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<html><body>"); // NOI18N
@@ -650,7 +660,7 @@ public class ChatPanel extends javax.swing.JPanel {
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
                 .add(toolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 183, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 195, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
@@ -704,7 +714,7 @@ public class ChatPanel extends javax.swing.JPanel {
         online.setBackground(java.awt.Color.white);
         online.setForeground(java.awt.Color.blue);
         online.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        online.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.online.text", new Object[] {})); // NOI18N
+        online.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/collab/resources/user_online.png"))); // NOI18N
         online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
         topPanel.add(online, java.awt.BorderLayout.EAST);
         topPanel.add(statusLine, java.awt.BorderLayout.CENTER);
