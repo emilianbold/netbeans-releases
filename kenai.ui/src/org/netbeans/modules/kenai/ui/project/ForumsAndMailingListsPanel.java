@@ -109,7 +109,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
     }
 
     public String getChatRoomHTML(final KenaiProject instProj) {
-        String innerStr = "";
+        String innerStr = ""; //NOI18N
         try {
             if (Kenai.getDefault().getPasswordAuthentication() != null && Kenai.getDefault().getMyProjects().contains(instProj)) {
                 KenaiFeature[] chats = instProj.getFeatures(Type.CHAT);
@@ -117,7 +117,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                 if (chats.length > 0) {
                     innerStr += String.format("<input type=\"reset\" id=\"" + CHAT_BUTTON + "\" value=\"%s\"><br>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_ENTER_CHATROOM")); //NOI18N
                 } else {
-                    innerStr += String.format("<i>%s</i><br>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_NO_CHAT"));
+                    innerStr += String.format("<i>%s</i><br>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_NO_CHAT")); //NOI18N
                 }
             }
         } catch (KenaiException ex) {
@@ -129,7 +129,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
     public String getForumsHTML(final KenaiProject instProj) {
         KenaiFeature[] forums = null;
-        String innerStr = "";
+        String innerStr = ""; //NOI18N
         try {
             forums = instProj.getFeatures(Type.FORUM);
         } catch (KenaiException ex) {
@@ -139,7 +139,11 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr = String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_FORUMS")); //NOI18N
             for (int i = 0; i < forums.length; i++) {
                 KenaiFeature forum = forums[i];
-                innerStr += String.format("<div class=\"item\"><a href=\"%s\">%s</a> - <i>%s</i></div>", forum.getWebLocation(), forum.getDisplayName(), forum.getWebLocation()); //NOI18N
+                innerStr += String.format("<div class=\"item\">%s<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                        kenaiProjectTopComponent.linkImageHTML,
+                        forum.getWebLocation(),
+                        forum.getDisplayName(),
+                        forum.getWebLocation()); //NOI18N
             }
             innerStr += "</div>"; //NOI18N
         }
@@ -148,7 +152,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
     public String getMailingListsHTML(final KenaiProject instProj) {
         KenaiFeature[] mails = null;
-        String innerStr = "";
+        String innerStr = ""; //NOI18N
         try {
             mails = instProj.getFeatures(Type.LISTS);
         } catch (KenaiException ex) {
@@ -158,7 +162,11 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_MAILING_LISTS")); //NOI18N
             for (int i = 0; i < mails.length; i++) {
                 KenaiFeature mail = mails[i];
-                innerStr += String.format("<div class=\"item\"><a href=\"%s\">%s</a> - <i>%s</i></div>", mail.getWebLocation(), mail.getDisplayName(), mail.getWebLocation()); //NOI18N
+                innerStr += String.format("<div class=\"item\">%s<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                        kenaiProjectTopComponent.linkImageHTML,
+                        mail.getWebLocation(),
+                        mail.getDisplayName(),
+                        mail.getWebLocation()); //NOI18N
             }
             innerStr += "</div>"; //NOI18N
         }
@@ -169,7 +177,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         
         try {
             DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://");
+            String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://"); //NOI18N
             String urlStr = base + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
             int entriesCount = 0;
             NodeList entries = null;
@@ -204,7 +212,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                         }
                     }
                     if (title != null && href != null) {
-                        _appString += String.format("<a href=\"%s\">%s</a><br>", href, title); //NOI18N
+                        _appString += String.format("%s<a href=\"%s\">%s</a><br>", kenaiProjectTopComponent.linkImageHTML, href, title); //NOI18N
                     }
                     if (content != null) {
                         _appString += String.format("<i>%s</i><br><br>", content); //NOI18N
@@ -346,9 +354,9 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                commChannelsDisplayer.setText(String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>",
-                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"),
-                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT")));
+                commChannelsDisplayer.setText(String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"))); //NOI18N
             }
         });
     }
