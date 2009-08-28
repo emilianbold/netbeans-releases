@@ -48,5 +48,6 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 interface RefreshableContentPanel {
 
     public void resetContent(final KenaiProject instProj);
+    public void clearContent();
 
 }

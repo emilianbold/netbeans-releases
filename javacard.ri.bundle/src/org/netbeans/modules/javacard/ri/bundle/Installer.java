@@ -106,6 +106,7 @@ public class Installer extends ModuleInstall {
                 }
                 final EditableProperties xlated = translatePaths(runtime, props);
                 String runtimeName = NbBundle.getMessage(Installer.class, "BUNDLED_RUNTIME_NAME"); //NOI18N
+                xlated.setProperty("javacard.instance.id", "javacard_default"); //NOI18N
                 xlated.setProperty(JavacardPlatformKeyNames.PLATFORM_DISPLAYNAME,
                         runtimeName);
                 xlated.setProperty(JavacardPlatformKeyNames.PLATFORM_HOME, runtime.getAbsolutePath());

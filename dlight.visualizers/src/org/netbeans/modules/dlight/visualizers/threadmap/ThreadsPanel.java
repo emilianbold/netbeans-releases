@@ -645,7 +645,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             }
         });
         close.setToolTipText(CLOSE_LEGEND_TOOLTIP);
-        close.setContentAreaFilled(false);
         legendPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints;
         constraints = new GridBagConstraints(1, 0, //int gridx, int gridy,
