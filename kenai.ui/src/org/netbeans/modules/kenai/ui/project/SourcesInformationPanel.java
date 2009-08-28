@@ -204,11 +204,13 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     _appString += addRepoHeaderWithButton(repo, htmlID);
                     _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_REPO_NOT_ON_KENAI")); //NOI18N
                     _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
+                    _appString += "<br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
                     continue;
                 } catch (IOException e) {
                     _appString += addRepoHeaderWithButton(repo, htmlID);
                     _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_CANNOT_OPEN_FEED")); //NOI18N
-                    _appString += String.format("%s<a href=\"%s\">%s</a>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
+                    _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
+                    _appString += "<br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
                     continue;
                 }
                 _appString += addRepoHeaderWithButton(repo, htmlID);
