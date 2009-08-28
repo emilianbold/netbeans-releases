@@ -211,6 +211,12 @@ public final class DtraceDataCollector
         if (!multiScriptMode) {
             throw new IllegalStateException("addSlaveConfiguration called in single-script mode"); // NOI18N
         }
+        for (DtraceDataCollector dc : slaveCollectors.values()) {
+            if (dc.configuration == configuration) {
+                // do not add duplicate configurations
+                return;
+            }
+        }
         DTDCConfigurationAccessor accessor = DTDCConfigurationAccessor.getDefault();
         DtraceDataCollector slaveCollector = new DtraceDataCollector(false, configuration);
         slaveCollector.setSlave(true);
