@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.jrubyparser.ast.ArrayNode;
 import org.jrubyparser.ast.HashNode;
@@ -135,11 +136,8 @@ final class ActiveRecordAssociationFinder {
             className = Character.toUpperCase(className.charAt(0)) + className.substring(1);
         }
         String associationName = AstUtilities.getName(associationNode);
-        //XXX: need to singularize here for real
-        if ((HAS_MANY.equals(associationName) || HAS_AND_BELONGS_TO_MANY.equals(associationName))
-                && className.length() > 1
-                && className.endsWith("s")) { //NOI18N
-            return className.substring(0, className.length() -1);
+        if ((HAS_MANY.equals(associationName) || HAS_AND_BELONGS_TO_MANY.equals(associationName))) { //NOI18N
+            return Inflector.getDefault().singularize(className);
         }
         return className;
     }
@@ -158,7 +156,13 @@ final class ActiveRecordAssociationFinder {
         if (modelClasses.isEmpty()) {
             return DeclarationLocation.NONE;
         }
+        Set<IndexedClass> result = new HashSet<IndexedClass>();
+        for (IndexedClass model : modelClasses) {
+            if (model.getName().equals(className)) {
+                result.add(model);
+            }
+        }
 
-        return RubyDeclarationFinder.getLocation(modelClasses);
+        return RubyDeclarationFinder.getLocation(result);
     }
 }
