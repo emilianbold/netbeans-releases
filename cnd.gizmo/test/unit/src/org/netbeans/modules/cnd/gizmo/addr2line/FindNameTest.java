@@ -64,6 +64,10 @@ public class FindNameTest extends NbTestCase {
         super("FindNameTest");
     }
 
+    public void testFractalBuddhabrot() {
+        baseTest(0xef, "main", "buddhabrot");
+    }
+
     public void testFractalFractal0() {
         baseTest(0x10f, "main", "fractal");
     }

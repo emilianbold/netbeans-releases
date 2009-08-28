@@ -174,6 +174,7 @@ public class DwarfLineInfoSection extends ElfSection {
     private Set<LineNumber> interpret(DwarfStatementList section, long shift) throws IOException {
         long address = 0;
         long base_address = 0;
+        long prev_base_address = 0;
         String define_file = null;
         int fileno = 0;
         int lineno = 1;
@@ -199,18 +200,22 @@ public class DwarfLineInfoSection extends ElfSection {
                             case DW_LNE_end_sequence:
                                 lineNumber = prev_lineno;
                                 sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                                result.add(new LineNumber(sourceFile, lineNumber, base_address, address));
+                                result.add(new LineNumber(sourceFile, lineNumber, prev_base_address, address));
                                 prev_lineno = lineno = 1;
                                 prev_fileno = fileno = 0;
                                 base_address = address = 0;
                                 break;
 
                             case DW_LNE_set_address:
+                                prev_base_address = base_address;
                                 base_address = reader.readByte() & 0xFF;
                                 base_address |= (reader.readByte() & 0xFFL) << 8;
                                 base_address |= (reader.readByte() & 0xFFL) << 16;
                                 base_address |= (reader.readByte() & 0xFFL) << 24;
                                 address = base_address;
+                                if (prev_base_address == 0) {
+                                    prev_base_address = base_address;
+                                }
                                 break;
 
                             case DW_LNE_define_file:
@@ -229,7 +234,7 @@ public class DwarfLineInfoSection extends ElfSection {
                     case DW_LNS_copy:
                         lineNumber = prev_lineno;
                         sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                        result.add(new LineNumber(sourceFile, lineNumber, base_address, address));
+                        result.add(new LineNumber(sourceFile, lineNumber, prev_base_address, address));
                         prev_lineno = lineno;
                         prev_fileno = fileno;
                         break;
@@ -282,7 +287,7 @@ public class DwarfLineInfoSection extends ElfSection {
                 long new_addr = address + addr_adv;
                 int new_line = lineno + line_adv;
                 sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                result.add(new LineNumber(sourceFile, lineno, base_address, new_addr));
+                result.add(new LineNumber(sourceFile, lineno, prev_base_address, new_addr));
 
                 prev_lineno = lineno;
                 prev_fileno = fileno;
@@ -297,6 +302,7 @@ public class DwarfLineInfoSection extends ElfSection {
     private LineNumber interpret(long target, DwarfStatementList section, long shift) throws IOException {
         long address = 0;
         long base_address = 0;
+        long prev_base_address = 0;
         String define_file = null;
         int fileno = 0;
         int lineno = 1;
@@ -318,10 +324,10 @@ public class DwarfLineInfoSection extends ElfSection {
 
                         switch (LNE.get(opcode)) {
                             case DW_LNE_end_sequence:
-                                if (base_address <= target && address > target) {
+                                if (prev_base_address <= target && address > target) {
                                     lineNumber = prev_lineno;
                                     sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                                    return new LineNumber(sourceFile, lineNumber, base_address, address);
+                                    return new LineNumber(sourceFile, lineNumber, prev_base_address, address);
                                 }
                                 prev_lineno = lineno = 1;
                                 prev_fileno = fileno = 0;
@@ -329,11 +335,15 @@ public class DwarfLineInfoSection extends ElfSection {
                                 break;
 
                             case DW_LNE_set_address:
+                                prev_base_address = base_address;
                                 base_address = reader.readByte() & 0xFF;
                                 base_address |= (reader.readByte() & 0xFFL) << 8;
                                 base_address |= (reader.readByte() & 0xFFL) << 16;
                                 base_address |= (reader.readByte() & 0xFFL) << 24;
                                 address = base_address;
+                                if (prev_base_address == 0) {
+                                    prev_base_address = base_address;
+                                }
                                 break;
 
                             case DW_LNE_define_file:
@@ -350,10 +360,10 @@ public class DwarfLineInfoSection extends ElfSection {
                         // fallthrough is legitimate (program author said)
                     }
                     case DW_LNS_copy:
-                        if (base_address <= target && address > target) {
+                        if (prev_base_address <= target && address > target) {
                             lineNumber = prev_lineno;
                             sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                            return new LineNumber(sourceFile, lineNumber, base_address, address);
+                            return new LineNumber(sourceFile, lineNumber, prev_base_address, address);
                         }
                         prev_lineno = lineno;
                         prev_fileno = fileno;
@@ -406,10 +416,10 @@ public class DwarfLineInfoSection extends ElfSection {
                 int line_adv = section.line_base + (adj % section.line_range);
                 long new_addr = address + addr_adv;
                 int new_line = lineno + line_adv;
-                if (base_address <= target && new_addr >= target) {
+                if (prev_base_address <= target && new_addr >= target) {
                     lineNumber = new_addr == target ? new_line : lineno;
                     sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                    return new LineNumber(sourceFile, lineNumber, base_address, new_addr);
+                    return new LineNumber(sourceFile, lineNumber, prev_base_address, new_addr);
                 }
 
                 prev_lineno = lineno;
