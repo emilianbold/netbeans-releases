@@ -41,11 +41,13 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.beans.PropertyChangeEvent;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +63,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -69,6 +72,8 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -653,7 +658,55 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         @Override
         public List<? extends Action> getActions() {
             List<AbstractAction> actions = new LinkedList<AbstractAction>();
-            // XXX actions
+            actions.add(new AbstractAction(NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveAction")) { //NOI18N
+                public void actionPerformed(ActionEvent e) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            final BugzillaIssue issue = getIssue();
+                            if (issue == null) {
+                                LOG.fine("Resole action: null issue returned"); //NOI18N
+                            } else {
+                                if (!issue.isResolveAvailable()) {
+                                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                            NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveAction.notPermitted"),
+                                            NotifyDescriptor.INFORMATION_MESSAGE));
+                                    return;
+                                }
+                                ResolveIssuePanel panel = new ResolveIssuePanel(issue);
+                                String title = NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveIssueButton.text"); //NOI18N
+                                if (BugtrackingUtil.show(panel, title, title)) {
+                                    LOG.finer("Resolve action: resolving..."); //NOI18N
+                                    String pattern = NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveIssueMessage"); //NOI18N
+                                    final String resolution = panel.getSelectedResolution();
+                                    final String comment = panel.getComment();
+                                    runCancellableCommand(new Runnable () {
+                                        public void run() {
+                                            issue.resolve(resolution);
+                                            if (comment.length() > 0) {
+                                                issue.addComment(comment);
+                                            }
+                                            if (issue.submitAndRefresh()) {
+                                                issue.open();
+                                            }
+                                        }
+                                    }, MessageFormat.format(pattern, issue.getID()));
+                                }
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    // try to disable the action for cached closed issues
+                    boolean allowed = true;
+                    BugzillaIssue issue = issueRef.get();
+                    if (issue != null) {
+                        allowed = issue.isResolveAvailable();
+                    }
+                    return allowed;
+                }
+            });
             return actions;
         }
 

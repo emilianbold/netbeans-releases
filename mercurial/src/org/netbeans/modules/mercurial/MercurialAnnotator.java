@@ -341,7 +341,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             return null;
         }
         int mostImportantCounter = -1;
-        if ("true".equals(System.getProperty("mercurial.newGenerationCache", "false"))) { //NOI18N
+        if (!"false".equals(System.getProperty("mercurial.newGenerationCache", "true"))) { //NOI18N
             HgModuleConfig config = HgModuleConfig.getDefault();
             for (File file : context.getRootFiles()) {
                 if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
