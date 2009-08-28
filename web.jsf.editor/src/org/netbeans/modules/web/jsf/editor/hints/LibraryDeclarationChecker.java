@@ -156,7 +156,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 //unused declaration
                 Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
                 if (declAttr != null) {
-                    Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                    Hint hint = new Hint(DEFAULT_WARNING_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
                             new OffsetRange(declAttr.nameOffset(), declAttr.valueOffset() + declAttr.value().length()),
