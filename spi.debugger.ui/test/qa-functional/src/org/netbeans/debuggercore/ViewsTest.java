@@ -51,6 +51,7 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -123,9 +124,8 @@ public class ViewsTest extends DebuggerTestCase {
             new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
-            assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
-            assertNotNull("Breakpoints view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.breakpointsViewTitle, 0));
-            assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
+            assertNotNull("Variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.variablesViewTitle, 0));
+            assertNotNull("Breakpoints view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.breakpointsViewTitle, 0));            
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -164,12 +164,11 @@ public class ViewsTest extends DebuggerTestCase {
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.classesViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.classesViewTitle));
-            TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-            new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader|examples.advanced|MemoryView|1").expand();
+            OutlineOperator outlineOperator = new OutlineOperator(new TopComponentOperator(Utilities.classesViewTitle));
+            new OutlineNode(outlineOperator, "Application Class Loader|examples.advanced|MemoryView|1").expand();
             String[] entries = {"System Class Loader", "Application Class Loader", "examples.advanced", "Helper", "MemoryView", "1"};
             for (int i = 0; i < entries.length; i++) {
-                assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(treeTableOperator.getValueAt(i, 0).toString())));
+                assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(outlineOperator.getValueAt(i, 0).toString())));
             }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -321,8 +320,8 @@ try {
             Utilities.toggleBreakpoint(eo, 92);
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
-            new TopComponentOperator(Utilities.localVarsViewTitle).close();
-            new TopComponentOperator(Utilities.watchesViewTitle).close();
+            new TopComponentOperator(Utilities.variablesViewTitle).close();
+            //new TopComponentOperator(Utilities.watchesViewTitle).close();
             new TopComponentOperator(Utilities.callStackViewTitle).close();
             new TopComponentOperator(Utilities.classesViewTitle).close();
             new TopComponentOperator(Utilities.sessionsViewTitle).close();
