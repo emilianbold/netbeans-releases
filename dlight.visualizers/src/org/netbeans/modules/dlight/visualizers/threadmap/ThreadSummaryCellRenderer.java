@@ -150,11 +150,13 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         }
         int count = countSum(map);
         threadTime = count;
+        if (count > 0) {
+            ThreadStateColumnImpl.normilizeMap(map, count, 1);
+            ThreadStateColumnImpl.roundMap(map);
+        }
         threadRunningTime = sumStates(MSAState.Running, MSAState.RunningUser, MSAState.RunningSystemCall, MSAState.RunningOther);
         int height = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
         if (count > 0) {
-            ThreadStateColumnImpl.normilizeMap(map, count);
-            ThreadStateColumnImpl.roundMap(map);
             int rest = ThreadState.POINTS/2;
             int oldRest = 0;
             oldRest = 0;
@@ -195,7 +197,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
         int count = countSum(aMap);
         if (count > 0) {
-            ThreadStateColumnImpl.normilizeMap(aMap, count);
+            ThreadStateColumnImpl.normilizeMap(aMap, count, 1);
             ThreadStateColumnImpl.roundMap(aMap);
             StringBuilder buf = new StringBuilder();
             buf.append("<html>");// NOI18N
@@ -261,8 +263,9 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 }
             }
         }
-        ThreadStateColumnImpl.normilizeMap(aMap, 100);
-        return (count+50)/100; // in seconds
+        count = (count+50)/100; // in seconds
+        ThreadStateColumnImpl.normilizeMap(aMap, 100, count);
+        return count;
     }
 
     private static String colorToHexString(Color c) {
