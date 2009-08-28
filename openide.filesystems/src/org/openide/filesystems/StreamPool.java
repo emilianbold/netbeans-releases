@@ -45,6 +45,8 @@ import org.openide.util.*;
 import java.io.*;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -59,6 +61,7 @@ final class StreamPool extends Object {
     private static final boolean ANNOTATE_UNCLOSED_STREAMS = Boolean.getBoolean(
             "org.openide.filesystems.annotateUnclosedStreams"
         ); // NOI18N
+    static final Logger LOG = Logger.getLogger(StreamPool.class.getName());
     private static Map<FileObject, StreamPool> fo2StreamPool = new WeakHashMap<FileObject, StreamPool>();
     private static Map<FileSystem, StreamPool> fs2StreamPool = new WeakHashMap<FileSystem, StreamPool>();
     private Set<InputStream> iStreams;
@@ -90,7 +93,7 @@ final class StreamPool extends Object {
                 get(fo).iStream().add(retVal);
                 get(fo.getFileSystem()).iStream().add(retVal);
             } catch (InterruptedException e) {
-                ExternalUtil.exception(e);
+                LOG.log(Level.INFO, null, e);
             }
         }
 
@@ -135,7 +138,7 @@ final class StreamPool extends Object {
                 get(fo).oStream().add(retVal);
                 get(fo.getFileSystem()).oStream().add(retVal);
             } catch (InterruptedException e) {
-                ExternalUtil.exception(e);
+                LOG.log(Level.INFO, null, e);
             }
         }
 
