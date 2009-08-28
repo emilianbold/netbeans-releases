@@ -36,33 +36,42 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.dlight.visualizers;
-
-import javax.swing.Icon;
+package org.netbeans.modules.dlight.indicators.graph;
 
 /**
- *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-final class IconedText {
+public final class AxisMark {
+
+    private final int pos;
     private final String text;
-    private final Icon icon;
+    private final int opacity;
 
-    IconedText(String text, Icon icon){
-        this.text = text;
-        this.icon = icon;
-
+    public AxisMark(int pos, String text) {
+        this(pos, text, 255);
     }
 
-    public Icon getIcon() {
-        return icon;
+    public AxisMark(int pos, String text, int opacity) {
+        if (pos < 0) {
+            throw new IllegalArgumentException("Constraint (0 <= pos) violated"); // NOI18N
+        }
+        if (opacity < 0 || 256 <= opacity) {
+            throw new IllegalArgumentException("Constraint (0 <= opacity < 256) violated"); // NOI18N
+        }
+        this.pos = pos;
+        this.text = text;
+        this.opacity = opacity;
+    }
+
+    public int getPosition() {
+        return pos;
     }
 
     public String getText() {
         return text;
     }
 
-    
-
+    public int getOpacity() {
+        return opacity;
+    }
 }

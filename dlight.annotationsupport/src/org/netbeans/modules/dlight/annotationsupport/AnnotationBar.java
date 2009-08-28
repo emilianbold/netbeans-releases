@@ -137,6 +137,26 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         return textHighlightBG;
     }
 
+    private Color backgroundColor() {
+        if (getMetricsBGColor() != null) {
+            return getMetricsBGColor();
+        }
+        if (textComponent != null) {
+            return textComponent.getBackground();
+        }
+        return backgroundColor;
+    }
+
+    private Color foregroundColor() {
+        if (getMetricsFGColor() != null) {
+            return getMetricsFGColor();
+        }
+        if (textComponent != null) {
+            return textComponent.getForeground();
+        }
+        return foregroundColor;
+    }
+
     /**
      * Components created by SibeBarFactory are positioned
      * using a Layout manager that determines componnet size
@@ -184,8 +204,8 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
         int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
-            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), getTextHighlightBGColor()); // thp: controls color of text hightligting block and lines
-            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip(), getMetricsFGColor()));
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), getTextHighlightBGColor(), getTextHighlightFGColor());
+            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip(), foregroundColor()));
         }
 
         AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
@@ -199,7 +219,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         annotated = false;
 
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
-            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255));
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255), null);
         }
 
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
@@ -217,7 +237,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 
     }
 
-    private void setHighlight(StyledDocument doc, int line1, int line2, java.awt.Color color) {
+    private void setHighlight(StyledDocument doc, int line1, int line2, Color bgColor, Color fgColor) {
         for (int line = line1 - 1; line < line2; line++) {
             if (line < 0) {
                 continue;
@@ -226,9 +246,14 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
             if (offset >= 0) {
                 Style s = doc.getLogicalStyle(offset);
                 if (s == null) {
-                    s = doc.addStyle("gizmo-style(" + color + "):1000", null); // NOI18N
+                    s = doc.addStyle("gizmo-style(" + bgColor + "):1000", null); // NOI18N
                 }
-                s.addAttribute(StyleConstants.ColorConstants.Background, color);
+                if (bgColor != null) {
+                    s.addAttribute(StyleConstants.ColorConstants.Background, bgColor);
+                }
+                if (fgColor != null) {
+                    s.addAttribute(StyleConstants.ColorConstants.Foreground, fgColor);
+                }
                 doc.setLogicalStyle(offset, s);
             }
         }
@@ -295,20 +320,6 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         }
     }
 
-    private Color backgroundColor() {
-        if (textComponent != null) {
-            return textComponent.getBackground();
-        }
-        return backgroundColor;
-    }
-
-    private Color foregroundColor() {
-        if (textComponent != null) {
-            return textComponent.getForeground();
-        }
-        return foregroundColor;
-    }
-
     /**
      * Paints one view that corresponds to a line (or
      * multiple lines if folding takes effect).
@@ -332,9 +343,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
-            if (getMetricsFGColor() != null) {
-                g.setColor(getMetricsFGColor());
-            }
+            g.setColor(foregroundColor());
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
         }
 //    String annotation = "CPU 23s/";  // NOI18N
@@ -375,7 +384,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
             }
         }
         if ("editorFontColors".equals(id)) {  // NOI18N
-            if (evt.getNewValue() != null && ((String)evt.getNewValue()).equals("NetBeans")) { // NOI18N
+            if (evt.getNewValue() != null && ((String) evt.getNewValue()).equals("NetBeans")) { // NOI18N
                 metricsFG = null;
                 metricsBG = null;
                 textHighlightFG = null;

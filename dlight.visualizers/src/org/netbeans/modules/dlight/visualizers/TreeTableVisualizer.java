@@ -112,7 +112,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     private OnTimerRefreshVisualizerHandler timerHandler;
     protected boolean isEmptyContent;
     protected boolean isLoadingContent;
-    private Future task;
+    private Future<Boolean> task;
     private Future<List<T>> syncFillDataTask;
     private final Object syncFillInLock = new Object();
     private final ColumnsUIMapping columnsUIMapping;

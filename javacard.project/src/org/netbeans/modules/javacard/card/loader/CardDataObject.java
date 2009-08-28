@@ -76,6 +76,8 @@ import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import org.netbeans.api.validation.adapters.DialogBuilder;
@@ -148,10 +150,18 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
     @Override
     protected Card createFrom(ObservableProperties properties) {
         Card result = null;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "CardDataObject.createFrom() " + //NOI18N
+                    getPrimaryFile().getPath());
+        }
         synchronized (cardLock) {
             if (cardRef != null) {
                 result = cardRef.get();
                 if (result != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "CardDataObject.createFrom() " + //NOI18N
+                                "returning cached instance"); //NOI18N
+                    }
                     return result;
                 }
             }
@@ -159,8 +169,17 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         if (result == null) {
             JavacardPlatform platform = findPlatform();
             if (properties.isEmpty() || platform == null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Empty properties - " + //NOI18N
+                                "returning broken card instance"); //NOI18N
+                    }
                 result = new BrokenCard(getName());
             } else {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "No cached instance - invoking " + //NOI18N
+                            "Card.create() for " + platform.getDisplayName() + //NOI18N
+                            " with " + properties); //NOI18N
+                }
                 result = Card.create(platform, properties);
             }
         }
@@ -186,15 +205,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
     private DataObject findPlatformDataObject() {
         FileObject fo = getPrimaryFile().getParent();
         String lookFor = fo.getName();
-        //XXX don't iterate, just look for the right name - need to
-        //convert in the case of javacard_default
-        return Utils.findPlatformDataObjectNamed(fo.getName());
-//        for (DataObject ob : Utils.findAllRegisteredJavacardPlatformDataObjects()) {
-//            if (lookFor.equals(ob.getName())) {
-//                return ob;
-//            }
-//        }
-//        return null;
+        return Utils.findPlatformDataObjectNamed(lookFor);
     }
 
     public void onStateChange(Card card, CardState old, CardState nue) {
@@ -221,7 +232,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         private final DevicePropertiesPanel pnl;
 
         CardCustomizerImpl() {
-            assert EventQueue.isDispatchThread() : "Not on event thread";
+            assert EventQueue.isDispatchThread() : "Not on event thread"; //NOI18N
             PropertiesAdapter adap = getLookup().lookup(PropertiesAdapter.class);
             pnl = new DevicePropertiesPanel(adap.asProperties());
             pnl.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 12));
@@ -290,7 +301,8 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             PropertiesBasedDataObject<?> ob = getLookup().lookup(PropertiesBasedDataObject.class);
             sheet.put(ob.getPropertiesAsPropertySet());
             Sheet.Set set = new Sheet.Set();
-            set.setDisplayName(NbBundle.getMessage(ServerDataNode.class, "PROP_SET_OTHER"));
+            set.setDisplayName(NbBundle.getMessage(ServerDataNode.class, 
+                    "PROP_SET_OTHER")); //NOI18N
             set.setName(set.getDisplayName());
             set.put(new StateProp());
             sheet.put(set);
@@ -414,7 +426,19 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                     setValidationGroup(inner.getValidationGroup());
 
             if (builder.showDialog(DialogDescriptor.OK_OPTION)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Customize Action closed with OK_OPTION " + //NOI18N
+                            getPrimaryFile().getPath() + " - saving customized " + //NOI18N
+                            "card"); //NOI18N
+                }
                 inner.write(new KeysAndValues.PropertiesAdapter(adap.asProperties()));
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Write of " + //NOI18N
+                            getPrimaryFile().getPath() + " completed."); //NOI18N
+                }
+            } else {
+                    LOGGER.log(Level.FINE, "Customize Action closed with Cancel on " + //NOI18N
+                            getPrimaryFile().getPath() + " - discarding changes"); //NOI18N
             }
         }
     }

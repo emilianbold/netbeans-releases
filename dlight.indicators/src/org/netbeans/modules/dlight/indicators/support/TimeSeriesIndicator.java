@@ -53,12 +53,13 @@ import javax.swing.JEditorPane;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.Graph;
 import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
+import org.netbeans.modules.dlight.indicators.graph.Range;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
+import org.netbeans.modules.dlight.indicators.graph.TimeSeriesPlot;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
@@ -71,36 +72,58 @@ import org.netbeans.modules.dlight.util.UIUtilities;
  */
 public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConfiguration> {
 
+    private final TimeSeriesIndicatorManager manager;
     private final DataRowToTimeSeries dataRowHandler;
-    private final GraphPanel<Graph, Legend> panel;
-    private final Graph graph;
+    private final GraphPanel<TimeSeriesPlot, Legend> panel;
+    private final TimeSeriesPlot graph;
     private final Legend legend;
     private final JButton button;
     private final int graphCount;
+    private int time;
 
-    public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
+    public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration, TimeSeriesIndicatorManager manager) {
         super(configuration);
+        this.manager = manager;
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.dataRowHandler = accessor.getDataRowHandler(configuration);
         this.graph = createGraph(configuration);
         this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
         this.button = new JButton(getDefaultAction());
         button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
-        this.panel = new GraphPanel<Graph, Legend>(accessor.getTitle(configuration), graph, legend, null, graph.getVerticalAxis(), button);
+        this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph, legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
         this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
     }
 
-    private static Graph createGraph(TimeSeriesIndicatorConfiguration configuration) {
+    private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration) {
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-        Graph graph = new Graph(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration));
+        TimeSeriesPlot graph = new TimeSeriesPlot(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration));
         graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
         graph.setMinimumSize(graphSize);
         graph.setPreferredSize(graphSize);
-        Dimension axisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.VERTICAL_AXIS_HEIGHT);
-        graph.getVerticalAxis().setMinimumSize(axisSize);
-        graph.getVerticalAxis().setPreferredSize(axisSize);
+        Dimension valueAxisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.getVerticalAxis().setMinimumSize(valueAxisSize);
+        graph.getVerticalAxis().setPreferredSize(valueAxisSize);
+        Dimension timeAxisSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.HORIZONTAL_AXIS_HEIGHT);
+        graph.getHorizontalAxis().setMinimumSize(timeAxisSize);
+        graph.getHorizontalAxis().setPreferredSize(timeAxisSize);
         return graph;
+    }
+
+    public Range<Integer> getSelection() {
+        return graph.getSelection();
+    }
+
+    public void setSelection(Range<Integer> selection) {
+        graph.setSelection(selection);
+    }
+
+    public Range<Integer> getViewport() {
+        return graph.getViewport();
+    }
+
+    public void setViewport(Range<Integer> viewport) {
+        graph.setViewport(viewport);
     }
 
     @Override
@@ -163,6 +186,7 @@ public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConf
         for (Map.Entry<String, String> entry : details.entrySet()) {
             legend.updateDetail(entry.getKey(), entry.getValue());
         }
+        manager.tick(this, ++time);
     }
 
     @Override
@@ -179,5 +203,10 @@ public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConf
     @Override
     public JComponent getComponent() {
         return panel;
+    }
+
+    @Override
+    public JComponent getAuxComponent() {
+        return manager.getComponent();
     }
 }

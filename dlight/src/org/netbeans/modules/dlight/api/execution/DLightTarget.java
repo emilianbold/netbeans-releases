@@ -217,7 +217,7 @@ public abstract class DLightTarget {
 
         /**
          * Start target
-         * @param target targe to start
+         * @param target target to start
          * @param executionEnvProvider  execution enviroment provider
          */
         public void start(T target, ExecutionEnvVariablesProvider executionEnvProvider);

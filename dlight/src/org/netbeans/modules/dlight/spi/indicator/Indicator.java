@@ -349,6 +349,12 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
      */
     public abstract JComponent getComponent();
 
+    // Dirty hack for TimeSeriesIndicatorManager
+    // TODO: remove it
+    public JComponent getAuxComponent() {
+        return null;
+    }
+
 //  public final Indicator create(IndicatorConfiguration configuration);
 //    return new
 //  }
