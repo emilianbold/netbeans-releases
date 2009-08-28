@@ -57,23 +57,19 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultButtonModel;
-import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
@@ -82,7 +78,7 @@ import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiAction;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -140,11 +136,11 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
     private String addRepoHeaderWithButton(final KenaiFeature repo, String htmlID) {
         String _appString = "";
         if (repo.getService().equals(KenaiService.Names.SUBVERSION) || repo.getService().equals(KenaiService.Names.MERCURIAL)) {
-            _appString += String.format("<table><tr><td><h3>%s (%s)</h3></td><td width=\"200\" align=\"right\"><input type=\"reset\" id=\"%s\" value=\"%s\"></td></tr></table>", //NOI18N"
+            _appString += String.format("<table><tr><td><h3>%s (%s)</h3></td><td width=\"200\" align=\"right\"><input type=\"reset\" id=\"%s\" value=\"%s\"></td></tr></table>", //NOI18N
                     repo.getDisplayName(),
                     repo.getService(),
                     htmlID,
-                    "Get this repository");
+                    NbBundle.getMessage(SourcesInformationPanel.class, "MSG_GET_THIS_REPO")); //NOI18N
         } else {
             _appString += String.format("<h3>%s (%s)</h3>", repo.getDisplayName(), repo.getService()); //NOI18N
         }
@@ -166,8 +162,17 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
 
         srcFeedPane.setContentType(org.openide.util.NbBundle.getMessage(SourcesInformationPanel.class, "SourcesInformationPanel.srcFeedPane.contentType")); // NOI18N
         srcFeedPane.setEditable(false);
+        srcFeedPane.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                srcFeedPaneFocusGained(evt);
+            }
+        });
         add(srcFeedPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void srcFeedPaneFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_srcFeedPaneFocusGained
+        srcFeedPane.getCaret().setVisible(false); //MacOSX hack
+    }//GEN-LAST:event_srcFeedPaneFocusGained
 
     private List<String> registeredButtonID = new LinkedList<String>();
     private HashMap<String, KenaiFeature> repoMap = new HashMap<String, KenaiFeature>();
@@ -177,17 +182,17 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         try {
             KenaiFeature[] repos = proj.getFeatures(Type.SOURCE);
             if (repos.length == 0) {
-                return String.format("<div class=\"section\"><i>%s</i></div>", "No repositories for this project...");
+                return String.format("<div class=\"section\"><i>%s</i></div>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_REPOS")); //NOI18N
             }
             for (int k = 0; k < repos.length; k++) {
                 final KenaiFeature repo = repos[k];
 
                 DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://");
+                String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://"); //NOI18N
                 String urlStr = base + repo.getWebLocation().getPath().replaceAll("/show$", "/history.atom"); //NOI18N
                 int entriesCount = 0;
                 NodeList entries = null;
-                String htmlID = repo.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_" + k + "__" + proj.getName().replace('-', '_');
+                String htmlID = repo.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_" + k + "__" + proj.getName().replace('-', '_'); //NOI18N
                 repoMap.put(htmlID, repo);
                 registeredButtonID.add(htmlID);
                 try {
@@ -197,21 +202,26 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     entriesCount = entries.getLength();
                 } catch (FileNotFoundException e) {
                     _appString += addRepoHeaderWithButton(repo, htmlID);
-                    _appString += String.format("<i>%s</i><br>", "This repository is not hosted on Kenai or it is private.");
-                    _appString += String.format("<a href=\"%s\">%s</a>", repo.getWebLocation(), repo.getWebLocation());
+                    _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_REPO_NOT_ON_KENAI")); //NOI18N
+                    _appString += String.format("<a href=\"%s\">%s</a>", repo.getWebLocation(), repo.getWebLocation()); //NOI18N
+                    break;
+                } catch (IOException e) {
+                    _appString += addRepoHeaderWithButton(repo, htmlID);
+                    _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_CANNOT_OPEN_FEED")); //NOI18N
+                    _appString += String.format("<a href=\"%s\">%s</a>", repo.getWebLocation(), repo.getWebLocation()); //NOI18N
                     break;
                 }
                 _appString += addRepoHeaderWithButton(repo, htmlID);
-                _appString += "<table>"; // start table for each repository
-                _appString += "<tr><td colspan=\"2\"><h4>Recent changes</h4></td></tr>";
+                _appString += "<table>"; //NOI18N start table for each repository
+                _appString += String.format("<tr><td colspan=\"2\"><h4>%s</h4></td></tr>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_RECENT_CHANGES")); //NOI18N
                 if (entriesCount > 0 && entries != null) {
-                    _appString += "<tr>";
+                    _appString += "<tr>"; //NOI18N
                     for (int i = 0; i < entriesCount && i < MAX_ENTRIES; i++) {
                         Node entry = entries.item(i);
                         NodeList entryProps = entry.getChildNodes();
                         String title = null;
-                        String updated = "";
-                        String content = String.format("<i>%s</i>", "no commit message...");
+                        String updated = ""; //NOI18N
+                        String content = String.format("<i>%s</i>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_COMMIT_MSG"));
                         String href = null;
                         for (int j = 0; j < entryProps.getLength(); j++) {
                             Node elem = entryProps.item(j);
@@ -229,21 +239,23 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                             }
                         }
                         if (title != null && href != null) {
-                            // Not correct - the Atom feed contains a timestamp (RFC 3339) with T/Z characters, i.e., that should be interpretted better than by replacing...
-                            _appString += String.format("<td class=\"monospaced\"><a href=\"%s\">%s</a></td><td> %s - <i>%s</i></td></tr>", href, title, content, updated.replaceAll("[a-zA-Z]", " ")); //NOI18N
+                            // Not correct - the Atom feed contains a timestamp (RFC 3339) with T/Z characters,
+                            // i.e., that should be interpretted better than by replacing...
+                            _appString += String.format("<td class=\"monospaced\"><a href=\"%s\">%s</a></td><td> %s - <i>%s</i></td></tr>", //NOI18N
+                                    href, title, content, updated.replaceAll("[a-zA-Z]", " ")); //NOI18N
                         }
                     }
                 } else {
-                    _appString += String.format("<tr><td colspan=\"2\"><i>%s</i></td></tr>", "No public changes in this repository yet...");
+                    _appString += String.format("<tr><td colspan=\"2\"><i>%s</i></td></tr>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_CHANGES")); //NOI18N
                 }
-                _appString += "</table><br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>";
+                _appString += "</table><br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
             }
             _appString += "</div>"; //NOI18N
             return _appString;
-        } catch (SAXException ex) {
+        } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
             return null;
-        } catch (IOException ex) {
+        } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
             return null;
         } catch (ParserConfigurationException ex) {
@@ -257,7 +269,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
     private javax.swing.JTextPane srcFeedPane;
     // End of variables declaration//GEN-END:variables
 
-    public synchronized void resetContent(final KenaiProject instProj) {
+    public void resetContent(final KenaiProject instProj) {
         // Style the document in order to look nice
         Font font = UIManager.getFont("Label.font"); // NOI18N
         String bodyRule = "body { background-color: white; font-family: " + font.getFamily() + "; " + // NOI18N
@@ -280,7 +292,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
 
             public void run() {
                 if (str != null) {
-                    srcFeedPane.setText(String.format("<html><h2>%s</h2>%s</html>", "Project sources", str));
+                    srcFeedPane.setText(String.format("<html><h2>%s</h2>%s</html>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_PROJECT_SOURCES"), str)); //NOI18N
                     srcFeedPane.validate();
                     srcFeedPane.setCaretPosition(0);
                     for (final String id : registeredButtonID) {
@@ -301,9 +313,9 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                srcFeedPane.setText(String.format("<html><table><tr><td><img src=\"%s\"></td><td>%s</td></tr></table></html>",
+                srcFeedPane.setText(String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>",
                         SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"),
-                        "Please wait..."));
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT")));
             }
         });
     }
