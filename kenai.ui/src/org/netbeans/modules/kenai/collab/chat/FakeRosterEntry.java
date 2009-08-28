@@ -79,6 +79,13 @@ public class FakeRosterEntry implements Comparable {
     }
 
     public int compareTo(Object o) {
-        return getUser().compareTo(((FakeRosterEntry)o).getUser());
+        return getUser().compareToIgnoreCase(((FakeRosterEntry)o).getUser());
     }
+
+    @Override
+    public String toString() {
+        return getUser();
+    }
+
+
 }
