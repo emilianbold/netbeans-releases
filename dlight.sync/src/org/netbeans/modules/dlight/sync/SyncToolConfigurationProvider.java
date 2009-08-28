@@ -285,8 +285,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
         DataTableMetadata viewTableMetadata = null;
-        Column syncTimeColumn = new Column("time", Long.class, "Time, ms", null);//NOI18N
-        Column syncCountColumn = new Column("count", Long.class, "Count", null);//NOI18N
+        Column syncTimeColumn = new Column("time", Long.class, loc("SyncTool.ColumnName.e_sync"), null);//NOI18N
+        Column syncCountColumn = new Column("count", Long.class, loc("SyncTool.ColumnName.syncn"), null);//NOI18N
         List<Column> viewColumns = Arrays.asList(
             new Column("id", Integer.class, "id", null),// NOI18N
             new Column("func_name", FunctionName.class, "Function", null),// NOI18N
