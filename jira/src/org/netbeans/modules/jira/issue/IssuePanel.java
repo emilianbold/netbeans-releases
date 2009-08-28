@@ -614,6 +614,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     subTaskTable = new JTable();
                     subTaskTable.setDefaultRenderer(JiraStatus.class, new StatusRenderer());
                     subTaskTable.setDefaultRenderer(Priority.class, new PriorityRenderer());
+                    subTaskTable.setDefaultRenderer(IssueType.class, new TypeRenderer());
                     subTaskTable.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {

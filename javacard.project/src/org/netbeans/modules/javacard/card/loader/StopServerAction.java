@@ -65,7 +65,7 @@ public final class StopServerAction extends Single <Card> {
 
     @Override
     protected boolean isEnabled(Card target) {
-        return target.isRunning();
+        return target.isRunning() && !target.isRemote();
     }
 
 }
