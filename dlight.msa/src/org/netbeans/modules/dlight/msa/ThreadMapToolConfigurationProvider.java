@@ -107,6 +107,9 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         toolConfiguration.addIndicatorDataProviderConfiguration(dtraceDataCollectorConfiguration);
         toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration);
 
+        // Enable call stacks without dependency on CPU tool.
+        toolConfiguration.addDataCollectorConfiguration(DTDCConfiguration.createCpuSamplingConfiguration());
+
         return toolConfiguration;
     }
 

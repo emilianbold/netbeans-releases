@@ -102,7 +102,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         final Column kindColumn = new Column("kind", Integer.class, loc("MemoryTool.ColumnName.kind"), null); // NOI18N
         final Column sizeColumn = new Column("size", Integer.class, loc("MemoryTool.ColumnName.size"), null); // NOI18N
         final Column addressColumn = new Column("address", Long.class, loc("MemoryTool.ColumnName.address"), null); // NOI18N
-        final Column stackColumn = new Column("stackid", Integer.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
+        final Column stackColumn = new Column("stackid", Long.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
 
         totalColumn = new Column("total", Integer.class, loc("MemoryTool.ColumnName.total"), null); // NOI18N
 
