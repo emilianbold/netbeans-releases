@@ -261,8 +261,9 @@ public abstract class OperationWizardModel {
 
 
     public Set<UpdateElement> getAllVisibleUpdateElements () {
-        Set <UpdateElement> all = getAllUpdateElements();
-        Set <UpdateElement> visible = getVisibleUpdateElements(all, false, getOperation(), true);
+        Set <UpdateElement> visible = new HashSet <UpdateElement> ();
+        visible.addAll(getPrimaryVisibleUpdateElements());
+        visible.addAll(getRequiredVisibleUpdateElements());
         return visible;
     }
     public Set<UpdateElement> getPrimaryVisibleUpdateElements () {
