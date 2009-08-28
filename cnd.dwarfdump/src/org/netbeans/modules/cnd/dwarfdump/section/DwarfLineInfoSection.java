@@ -462,7 +462,7 @@ public class DwarfLineInfoSection extends ElfSection {
 
         @Override
         public String toString() {
-            return file+":"+line+"\t(0x"+Long.toHexString(startOffset)+"-0x"+Long.toHexString(endOffset)+")";
+            return file+":"+line+"\t(0x"+Long.toHexString(startOffset)+"-0x"+Long.toHexString(endOffset)+")"; // NOI18N
         }
 
         public int compareTo(LineNumber o) {
