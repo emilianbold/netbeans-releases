@@ -75,6 +75,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private RequestProcessor.Task loadingImageTask = null;
     private RequestProcessor.Task loadingDynamicContentTask = null;
 
+    public static final String linkImageHTML = String.format("<img src=\"%s\">&nbsp;", kenaiProjectTopComponent.class.getResource("/org/netbeans/modules/kenai/ui/resources/insertlink-bottom.png"));
+
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
 
@@ -98,6 +100,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         Kenai.getDefault().addPropertyChangeListener(this);
         mainScrollPane.getVerticalScrollBar().setUnitIncrement(30);
         mainScrollPane.getHorizontalScrollBar().setUnitIncrement(30);
+        backToTopLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     public static synchronized kenaiProjectTopComponent getDefault() {
@@ -134,6 +137,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         projectImage = new javax.swing.JLabel();
         dynamicContentsPanel = new javax.swing.JPanel();
         dynamicContentPane = new javax.swing.JTabbedPane();
+        bottomLinkPanel = new javax.swing.JPanel();
+        backToTopLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -173,7 +178,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         webLinksLayout.setHorizontalGroup(
             webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(webLinksLayout.createSequentialGroup()
-                .addContainerGap()
                 .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2)
@@ -183,7 +187,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     .add(wwwLabel)
                     .add(wikiLabel)
                     .add(downloadsLabel))
-                .addContainerGap(282, Short.MAX_VALUE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -204,7 +208,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel3)))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {downloadsLabel, jLabel1, jLabel2, jLabel3, wikiLabel, wwwLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -215,7 +219,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         jPanel1.setPreferredSize(new java.awt.Dimension(25, 126));
 
         projectsDetailsHeader.setBackground(java.awt.SystemColor.control);
-        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18));
         projectsDetailsHeader.setForeground(new java.awt.Color(45, 72, 102));
         org.openide.awt.Mnemonics.setLocalizedText(projectsDetailsHeader, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsHeader.text")); // NOI18N
 
@@ -232,6 +236,11 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         projectsDetailsText.setWrapStyleWord(true);
         projectsDetailsText.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         projectsDetailsText.setMargin(new java.awt.Insets(0, 0, 0, 10));
+        projectsDetailsText.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                projectsDetailsTextFocusGained(evt);
+            }
+        });
         jScrollPane1.setViewportView(projectsDetailsText);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -240,8 +249,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(projectsDetailsHeader)
-                .addContainerGap(453, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
+                .addContainerGap(495, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -249,7 +258,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(projectsDetailsHeader)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE))
         );
 
         projectDescription.add(jPanel1, java.awt.BorderLayout.CENTER);
@@ -274,14 +283,14 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             imagePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(imagePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
                 .addContainerGap())
         );
         imagePanelLayout.setVerticalGroup(
             imagePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(imagePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -291,15 +300,29 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         dynamicContentsPanel.setLayout(new java.awt.BorderLayout());
         dynamicContentsPanel.add(dynamicContentPane, java.awt.BorderLayout.CENTER);
 
+        bottomLinkPanel.setOpaque(false);
+        bottomLinkPanel.setLayout(new java.awt.BorderLayout());
+
+        backToTopLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        org.openide.awt.Mnemonics.setLocalizedText(backToTopLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.backToTopLabel.text_1")); // NOI18N
+        backToTopLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        backToTopLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                backToTopLabelMouseClicked(evt);
+            }
+        });
+        bottomLinkPanel.add(backToTopLabel, java.awt.BorderLayout.EAST);
+
         org.jdesktop.layout.GroupLayout containingPanelLayout = new org.jdesktop.layout.GroupLayout(containingPanel);
         containingPanel.setLayout(containingPanelLayout);
         containingPanelLayout.setHorizontalGroup(
             containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, containingPanelLayout.createSequentialGroup()
+            .add(containingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE))
+                .add(containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, bottomLinkPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
+                    .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
+                    .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE))
                 .addContainerGap())
         );
         containingPanelLayout.setVerticalGroup(
@@ -308,8 +331,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(bottomLinkPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         mainScrollPane.setViewportView(containingPanel);
@@ -317,7 +341,17 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         add(mainScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void backToTopLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_backToTopLabelMouseClicked
+        mainScrollPane.getVerticalScrollBar().setValue(0);
+    }//GEN-LAST:event_backToTopLabelMouseClicked
+
+    private void projectsDetailsTextFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectsDetailsTextFocusGained
+        projectsDetailsText.getCaret().setVisible(false);
+    }//GEN-LAST:event_projectsDetailsTextFocusGained
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel backToTopLabel;
+    private javax.swing.JPanel bottomLinkPanel;
     private javax.swing.JPanel containingPanel;
     private javax.swing.JLabel downloadsLabel;
     private javax.swing.JTabbedPane dynamicContentPane;
@@ -451,13 +485,16 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             });
         }
 
-        // Set default text for labels with www, wiki and downloads
+        // Set default text and icon for labels with www, wiki and downloads
         wwwLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wwwLabel.text")); //NOI18N
         wikiLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wikiLabel.text")); //NOI18N
+        wikiLabel.setIcon(null);
         downloadsLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.downloadsLabel.text")); //NOI18N
+        downloadsLabel.setIcon(null);
 
         // Set label for www - make it link
         wwwLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + proj.getWebLocation().getPath())); //NOI18N
+        wwwLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
         wwwLabel.setToolTipText(KENAI_URL + proj.getWebLocation().getPath());
         wwwLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         URLClickListener.selfRegister(wwwLabel, proj.getWebLocation());
@@ -475,12 +512,14 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             if (kenaiFeature.getType().equals(KenaiService.Type.DOWNLOADS)) {
                 // Set label for downloads - make it link
                 downloadsLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + kenaiFeature.getWebLocation().getPath())); //NOI18N
+                downloadsLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                 downloadsLabel.setToolTipText(KENAI_URL + kenaiFeature.getWebLocation().getPath());
                 downloadsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 URLClickListener.selfRegister(downloadsLabel, kenaiFeature.getWebLocation());
             } else if (kenaiFeature.getType().equals(KenaiService.Type.WIKI)) {
                 // Set label for wiki - make it link
                 wikiLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + kenaiFeature.getWebLocation().getPath())); //NOI18N
+                wikiLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                 wikiLabel.setToolTipText(KENAI_URL + kenaiFeature.getWebLocation().getPath());
                 wikiLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 URLClickListener.selfRegister(wikiLabel, kenaiFeature.getWebLocation());
@@ -490,7 +529,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
     private void addSpecificContent() {
         dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_COMMUNICATE"), new ForumsAndMailingListsPanel()); //NOI18N
-        dynamicContentPane.add("Develop", new SourcesInformationPanel()); //NOI18N
+        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_TEST"), new IssuesInformationPanel()); //NOI18N
+        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_DEVELOP"), new SourcesInformationPanel()); //NOI18N
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
