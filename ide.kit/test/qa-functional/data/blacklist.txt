@@ -457,3 +457,5 @@ javax.xml.transform.stream.StreamResult
 javax.xml.xpath.XPath
 javax.xml.xpath.XPathExpression
 javax.xml.xpath.XPathFactory
+
+org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction

@@ -61,8 +61,18 @@ made subject to such option by the copyright holder.
 
   <folder name="Actions">
     <folder name="System">
-      <file name="org-netbeans-modules-autoupdate-ui-actions-CheckForUpdatesAction.instance"/>
-      <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"/>
+      <file name="org-netbeans-modules-autoupdate-ui-actions-CheckForUpdatesAction.instance">
+        <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+        <attr name="delegate" newvalue="org.netbeans.modules.autoupdate.ui.actions.CheckForUpdatesAction"/>
+        <attr name="noIconInMenu" boolvalue="true"/>
+        <attr name="displayName" bundlevalue="org.netbeans.modules.autoupdate.ui.actions.Bundle#CTL_CheckForUpdatesAction"/>
+      </file>
+      <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance">
+        <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+        <attr name="delegate" newvalue="org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction"/>
+        <attr name="noIconInMenu" boolvalue="true"/>
+        <attr name="displayName" bundlevalue="org.netbeans.modules.autoupdate.ui.actions.Bundle#PluginManagerAction_Name"/>
+      </file>
     </folder>    
   </folder>
   
