@@ -74,6 +74,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
@@ -166,8 +167,17 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
 
         srcFeedPane.setContentType(org.openide.util.NbBundle.getMessage(SourcesInformationPanel.class, "SourcesInformationPanel.srcFeedPane.contentType")); // NOI18N
         srcFeedPane.setEditable(false);
+        srcFeedPane.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                srcFeedPaneFocusGained(evt);
+            }
+        });
         add(srcFeedPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void srcFeedPaneFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_srcFeedPaneFocusGained
+        srcFeedPane.getCaret().setVisible(false); //MacOSX hack
+    }//GEN-LAST:event_srcFeedPaneFocusGained
 
     private List<String> registeredButtonID = new LinkedList<String>();
     private HashMap<String, KenaiFeature> repoMap = new HashMap<String, KenaiFeature>();
@@ -198,6 +208,11 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 } catch (FileNotFoundException e) {
                     _appString += addRepoHeaderWithButton(repo, htmlID);
                     _appString += String.format("<i>%s</i><br>", "This repository is not hosted on Kenai or it is private.");
+                    _appString += String.format("<a href=\"%s\">%s</a>", repo.getWebLocation(), repo.getWebLocation());
+                    break;
+                } catch (IOException e) {
+                    _appString += addRepoHeaderWithButton(repo, htmlID);
+                    _appString += String.format("<i>%s</i><br>", "The feed for this repository cannot be opened.");
                     _appString += String.format("<a href=\"%s\">%s</a>", repo.getWebLocation(), repo.getWebLocation());
                     break;
                 }
@@ -240,10 +255,10 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
             }
             _appString += "</div>"; //NOI18N
             return _appString;
-        } catch (SAXException ex) {
+        } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
             return null;
-        } catch (IOException ex) {
+        } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
             return null;
         } catch (ParserConfigurationException ex) {
@@ -257,7 +272,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
     private javax.swing.JTextPane srcFeedPane;
     // End of variables declaration//GEN-END:variables
 
-    public synchronized void resetContent(final KenaiProject instProj) {
+    public void resetContent(final KenaiProject instProj) {
         // Style the document in order to look nice
         Font font = UIManager.getFont("Label.font"); // NOI18N
         String bodyRule = "body { background-color: white; font-family: " + font.getFamily() + "; " + // NOI18N

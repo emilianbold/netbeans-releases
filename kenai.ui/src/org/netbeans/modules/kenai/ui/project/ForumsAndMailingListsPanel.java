@@ -179,6 +179,8 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                 entriesCount = entries.getLength();
             } catch (FileNotFoundException e) {
                 // url does not exist?
+            } catch (IOException e) {
+                // url does not exist?
             }
             String _appString = "<div class=\"section\">"; //NOI18N
             if (entriesCount > 0 && entries != null) {
@@ -245,15 +247,13 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             }
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
 
     }
 
-    public synchronized void resetContent(final KenaiProject instProj) {
+    public void resetContent(final KenaiProject instProj) {
         // Style the document in order to look nice
         Font font = UIManager.getFont("Label.font"); // NOI18N
         String bodyRule = "body { background-color: white; font-family: " + font.getFamily() + "; " + // NOI18N
@@ -325,8 +325,17 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
         commChannelsDisplayer.setContentType(org.openide.util.NbBundle.getMessage(ForumsAndMailingListsPanel.class, "ForumsAndMailingListsPanel.commChannelsDisplayer.contentType")); // NOI18N
         commChannelsDisplayer.setEditable(false);
+        commChannelsDisplayer.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                commChannelsDisplayerFocusGained(evt);
+            }
+        });
         add(commChannelsDisplayer, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void commChannelsDisplayerFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commChannelsDisplayerFocusGained
+        commChannelsDisplayer.getCaret().setVisible(false); //MacOSX hack
+    }//GEN-LAST:event_commChannelsDisplayerFocusGained
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
