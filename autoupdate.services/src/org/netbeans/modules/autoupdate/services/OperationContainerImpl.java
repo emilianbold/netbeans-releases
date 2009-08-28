@@ -200,9 +200,18 @@ public final class OperationContainerImpl<Support> {
         }
             
         clearCache ();
+
+        //if operations contains only first class modules - don`t search for eagers.
+        boolean checkEagers = false;
+        for (OperationInfo<?> i : operations) {
+            if(!Utilities.isFirstClassModule(i.getUpdateUnit())) {
+               checkEagers = true;
+               break;
+            }
+        }
         // handle eager modules
 
-        if (type == OperationType.INSTALL || type == OperationType.UPDATE || type==OperationType.INTERNAL_UPDATE) {
+        if ((type == OperationType.INSTALL || type == OperationType.UPDATE || type==OperationType.INTERNAL_UPDATE) && checkEagers) {
             Collection<UpdateElement> all = new HashSet<UpdateElement> (operations.size ());
             Collection<ModuleInfo> allModuleInfos = new HashSet<ModuleInfo> (operations.size ());
             for (OperationInfo<?> i : operations) {
