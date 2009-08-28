@@ -65,7 +65,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
@@ -108,8 +107,11 @@ public class WebProjectRestSupport extends WebRestSupport {
 //            addSwdpLibrary();
 
             FileObject ddFO = getDeploymentDescriptor();
-            WebApp webApp = getWebApp();
+            if (ddFO == null) {
+                return;
+            }
 
+            WebApp webApp = findWebApp();
             if (webApp == null) {
                 return;
             }
@@ -304,15 +306,6 @@ public class WebProjectRestSupport extends WebRestSupport {
         Library lib = LibraryManager.getDefault().createLibrary("j2se", libraryName, content); //NOI18N
         return lib;
     }
-
-    private FileObject getDeploymentDescriptor() {
-        WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
-        if (wmp != null) {
-            return wmp.findWebModule(project.getProjectDirectory()).getDeploymentDescriptor();
-        }
-        return null;
-    }
-
 
     @Override
     public FileObject getPersistenceXml() {
