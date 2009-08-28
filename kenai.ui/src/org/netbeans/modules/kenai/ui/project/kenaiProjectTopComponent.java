@@ -178,7 +178,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         webLinksLayout.setHorizontalGroup(
             webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(webLinksLayout.createSequentialGroup()
-                .addContainerGap()
                 .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2)
@@ -188,7 +187,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     .add(wwwLabel)
                     .add(wikiLabel)
                     .add(downloadsLabel))
-                .addContainerGap(308, Short.MAX_VALUE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -250,8 +249,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(projectsDetailsHeader)
-                .addContainerGap(489, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                .addContainerGap(495, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -321,9 +320,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             .add(containingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, bottomLinkPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
-                    .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
-                    .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, bottomLinkPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
+                    .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
+                    .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE))
                 .addContainerGap())
         );
         containingPanelLayout.setVerticalGroup(
@@ -332,7 +331,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(bottomLinkPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
