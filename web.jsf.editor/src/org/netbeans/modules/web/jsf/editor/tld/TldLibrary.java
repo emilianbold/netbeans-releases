@@ -231,6 +231,8 @@ public class TldLibrary {
 
     public class Tag {
 
+        private static final String ID_ATTR_NAME = "id"; //NOI18N
+
         private String name;
         private String description;
         private Map<String, Attribute> attrs;
@@ -239,6 +241,11 @@ public class TldLibrary {
             this.name = name;
             this.description = description;
             this.attrs = attrs;
+
+            //add the default ID attribute
+            if(getAttribute(ID_ATTR_NAME) == null) {
+                attrs.put(ID_ATTR_NAME, new Attribute(ID_ATTR_NAME, "", false));
+            }
         }
 
         public String getName() {
