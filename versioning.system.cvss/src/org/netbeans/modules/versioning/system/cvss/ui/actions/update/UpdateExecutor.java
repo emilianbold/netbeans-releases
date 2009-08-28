@@ -257,8 +257,10 @@ public class UpdateExecutor extends ExecutorSupport {
             if (file.isDirectory()) {
                 if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return;
                 File [] files = file.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    refreshRecursively(files[i]);
+                if (files != null) {
+                    for (int i = 0; i < files.length; i++) {
+                        refreshRecursively(files[i]);
+                    }
                 }
                 if (!refreshedFiles.contains(file)) cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } else {
@@ -276,11 +278,13 @@ public class UpdateExecutor extends ExecutorSupport {
         if (refreshedFiles.contains(file)) return;
         if (file.isDirectory()) {
             File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (cvs.isIgnoredFilename(files[i])) return;
-                if (refreshedFiles.contains(files[i])) return;
-                if (files[i].isDirectory()) continue;
-                refreshFile(files[i]);
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (cvs.isIgnoredFilename(files[i])) return;
+                    if (refreshedFiles.contains(files[i])) return;
+                    if (files[i].isDirectory()) continue;
+                    refreshFile(files[i]);
+                }
             }
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         } else {

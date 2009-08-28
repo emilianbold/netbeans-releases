@@ -48,6 +48,10 @@ made subject to such option by the copyright holder.
       <local-wsdl-file>localhost_8080/StockQuoteService/StockService.wsdl</local-wsdl-file>
       <package-name forceReplace="true">org.netbeans.identity.samples</package-name>
       <catalog-file>catalog.xml</catalog-file>
+      <binding>
+        <file-name>StockService_handler.xml</file-name>
+      </binding>
+      <handler-binding-file>StockService_handler.xml</handler-binding-file>
       <wsimport-options>
         <wsimport-option>
           <wsimport-option-name>extension</wsimport-option-name>

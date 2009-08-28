@@ -68,9 +68,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.DefaultSimilarity;
-import org.apache.lucene.search.Hits;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Searcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
@@ -260,7 +257,10 @@ public class LuceneIndex implements IndexImpl {
                             res = IndexReader.indexExists(directory);
                         } catch (IOException e) {
                             //Directory does not exist, no need to call clear
-                            //pass res == false
+                            res = false;
+                        } catch (RuntimeException e) {
+                            LOGGER.log(Level.INFO, "Broken index: " + indexFolder.getAbsolutePath(), e);
+                            res = false;
                         }
                         if (res) {
                             try {

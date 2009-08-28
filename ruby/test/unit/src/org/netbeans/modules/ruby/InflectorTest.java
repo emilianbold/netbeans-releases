@@ -37,41 +37,58 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.util;
+package org.netbeans.modules.ruby;
 
-import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import junit.framework.TestCase;
 
 /**
  *
- * @author Tomas Stupka
- * @author Jan Stola
+ * @author Erno Mononen
  */
-public class TypeRenderer extends DefaultListCellRenderer implements TableCellRenderer {
+public class InflectorTest extends TestCase {
 
-    private Object valueToRender(Object value) {
-        if(value instanceof IssueType) {
-            return ((IssueType)value).getName();
-        }
-        return value;
+    public void testPluralizeAndSingularize() {
+        assertBoth("posts", "post");
+        assertBoth("axes", "axis");
+        assertBoth("buffaloes", "buffalo");
+        assertBoth("sheep", "sheep");
+        assertBoth("words", "word");
+        assertBoth("people", "person");
+        assertBoth("MailPeople", "MailPerson");
+        assertBoth("MailMen", "MailMan");
+        assertBoth("the blue mailmen", "the blue mailman");
+        assertBoth("CamelOctopi", "CamelOctopus");
+        assertBoth("people", "person");
+        assertBoth("boxes", "box");
+        assertBoth("quizzes", "quiz");
+        assertBoth("mathquizzes", "mathquiz");
+        assertBoth("Hashes", "Hash");
+        assertBoth("SimpleMatrices", "SimpleMatrix");
+        assertBoth("fastmice", "fastmouse");
+        assertBoth("tedia", "tedium");
+        assertBoth("fusses", "fuss");
+        assertBoth("Aliases", "Alias");
+        assertBoth("CurrentStatuses", "CurrentStatus");
+        assertBoth("unknowns", "unknown");
+        assertBoth("money", "money");
+        assertBoth("Rice", "Rice");
+        assertBoth("Information", "Information");
+        assertBoth("criteria", "criterion");
     }
 
-    @Override
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        return super.getListCellRendererComponent(list, valueToRender(value), index, isSelected, cellHasFocus);
-    }
+    public void testAlrearyConverted() {
+        Inflector inflector = Inflector.getDefault();
+        assertEquals("words", inflector.pluralize("words"));
+        assertEquals("buses", inflector.pluralize("buses"));
 
-    private DefaultTableCellRenderer tableCellRenderer;
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (tableCellRenderer == null) {
-            tableCellRenderer = new DefaultTableCellRenderer();
-        }
-        return tableCellRenderer.getTableCellRendererComponent(table, valueToRender(value), isSelected, hasFocus, row, column);
+        assertEquals("word", inflector.singularize("word"));
+        assertEquals("house", inflector.singularize("house"));
+    }
+    
+    private void assertBoth(String plural, String singular) {
+        Inflector inflector = Inflector.getDefault();
+        assertEquals(plural, inflector.pluralize(singular));
+        assertEquals(singular, inflector.singularize(plural));
     }
 
 }

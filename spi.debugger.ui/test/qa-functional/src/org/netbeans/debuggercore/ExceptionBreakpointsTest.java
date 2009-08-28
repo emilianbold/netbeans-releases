@@ -202,7 +202,9 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
             } catch (Throwable e) {
                 if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
                     System.err.println(e.getMessage());
-                    throw e;
+                    System.out.println("Problem: console last line - " + Utilities.getConsoleLastLineText());
+                    if (!Utilities.checkConsoleForText("Thread main stopped at ClassLoader.java", 3))
+                        throw e;
                 }
             }
             new ContinueAction().perform();
