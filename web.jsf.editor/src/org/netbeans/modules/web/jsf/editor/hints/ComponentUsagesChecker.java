@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.web.jsf.editor.hints;
 
-import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,8 +51,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.util.NbBundle;
@@ -87,7 +84,7 @@ public class ComponentUsagesChecker extends HintsProvider {
 
         for (String namespace : declaredNamespaces) {
             FaceletsLibrary lib = libs.get(namespace);
-            if(lib != null) {
+            if (lib != null) {
 //            if(JsfUtils.isCompositeComponentLibrary(lib)) {
                 declaredLibraries.add(lib);
 //            }
@@ -117,9 +114,9 @@ public class ComponentUsagesChecker extends HintsProvider {
                             //check the component attributes
                             TldLibrary.Tag tag = component.getTag();
                             if (tag != null) {
+                                //1. check required attributes
                                 Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
                                 for (TldLibrary.Attribute attr : attrs) {
-                                    //1. check required attributes
                                     if (attr.isRequired()) {
                                         if (node.getAttribute(attr.getName()) == null) {
                                             //missing required attribute
@@ -131,9 +128,19 @@ public class ComponentUsagesChecker extends HintsProvider {
                                             hints.add(hint);
                                         }
                                     }
+                                }
 
-                                    //2. check for unknown attributes ... we need to fix AstNode
-                                    //so we can get offsets of the attributes!!!!!
+                                //2. check for unknown attributes
+                                for (AstNode.Attribute nodeAttr : node.getAttributes()) {
+                                    if (tag.getAttribute(nodeAttr.name()) == null) {
+                                        //unknown attribute
+                                        Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                                                    NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
+                                                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                                                    new OffsetRange(nodeAttr.nameOffset(), nodeAttr.valueOffset() + nodeAttr.value().length()),
+                                                    Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
+                                            hints.add(hint);
+                                    }
                                 }
 
                             } else {

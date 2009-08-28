@@ -171,6 +171,8 @@
                 <package>org.netbeans.jellytools.nodes</package>
                 <package>org.netbeans.jellytools.properties</package>
                 <package>org.netbeans.jellytools.properties.editors</package>
+                <package>org.netbeans.jellytools.util</package>
+                <package>org.netbeans.jellytools.widgets</package>
             </public-packages>
         </data>
     </configuration>

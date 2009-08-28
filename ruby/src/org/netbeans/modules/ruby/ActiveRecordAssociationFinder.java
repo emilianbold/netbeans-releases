@@ -159,19 +159,6 @@ final class ActiveRecordAssociationFinder {
             return DeclarationLocation.NONE;
         }
 
-        DeclarationLocation result = DeclarationLocation.NONE;
-        for (IndexedClass clazz : modelClasses) {
-            if (!clazz.getName().equals(className)) {
-                continue;
-            }
-            Node foreign = AstUtilities.getForeignNode(clazz);
-            if (result == DeclarationLocation.NONE) {
-                result = new DeclarationLocation(clazz.getFileObject(), AstUtilities.getRange(foreign).getStart(), clazz);
-                result.addAlternative(new RubyAltLocation(clazz, clazz.getName().equalsIgnoreCase(clazz.getFileObject().getName())));
-            } else {
-                result.addAlternative(new RubyAltLocation(clazz, clazz.getName().equalsIgnoreCase(clazz.getFileObject().getName())));
-            }
-        }
-        return result;
+        return RubyDeclarationFinder.getLocation(modelClasses);
     }
 }

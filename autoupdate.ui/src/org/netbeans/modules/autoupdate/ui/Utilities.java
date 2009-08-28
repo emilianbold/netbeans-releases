@@ -197,7 +197,9 @@ public class Utilities {
             if(!coveredByVisible.contains(u) && 
                     u.getAvailableUpdates().size() > 0 &&
                     u.getInstalled()!=null &&
-                    !u.isPending()) {
+                    !u.isPending() &&
+                    (u.getInstalled().isEnabled() ||
+                        OperationContainer.createForEnable().canBeAdded(u, u.getInstalled()))) { // just disabled, but can be enabled: i.e. not eager/autoload
                 otherUnits.add(u);
             }
         }

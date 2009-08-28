@@ -42,6 +42,7 @@
 
 package org.netbeans.identity.samples;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -69,10 +70,14 @@ public class LogHandler implements SOAPHandler<SOAPMessageContext> {
         if (!outboundProperty.booleanValue()) {
             String fileName = System.getProperty("user.home") +
                 "/AccessManager/request";
-            SOAPMessage msg = smc.getMessage();
             SOAPMessage message = smc.getMessage();
             try {
-                out = new PrintStream(new FileOutputStream(fileName, false));
+                File logFile = new File(fileName);
+                if (logFile != null && logFile.exists()) {
+                    out = new PrintStream(new FileOutputStream(logFile), false);
+                } else {
+                    out = System.out;
+                }
                 message.writeTo(out);
                 out.close();
             } catch (SOAPException ex) {

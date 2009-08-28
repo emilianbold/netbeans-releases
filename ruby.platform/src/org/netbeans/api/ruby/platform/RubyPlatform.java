@@ -1184,6 +1184,10 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             return gemVersion;
         }
 
+        public void setGemVersion(String gemVersion) {
+            this.gemVersion = gemVersion;
+        }
+
         public String getKind() {
             return kind;
         }

@@ -183,3 +183,9 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-kenai-ui@" value="${javadoc.docs.org-netbeans-modules-kenai-ui}"/>
 <replacefilter token="@org-netbeans-spi-editor-hints@" value="${javadoc.docs.org-netbeans-spi-editor-hints}"/>
 <replacefilter token="@org-netbeans-core-ide@" value="${javadoc.docs.org-netbeans-core-ide}"/>
+<replacefilter token="@org-netbeans-modules-jellytools-cnd@" value="${javadoc.docs.org-netbeans-modules-jellytools-cnd}"/>
+<replacefilter token="@org-netbeans-modules-jellytools-enterprise@" value="${javadoc.docs.org-netbeans-modules-jellytools-enterprise}"/>
+<replacefilter token="@org-netbeans-modules-jellytools-ide@" value="${javadoc.docs.org-netbeans-modules-jellytools-ide}"/>
+<replacefilter token="@org-netbeans-modules-jellytools-java@" value="${javadoc.docs.org-netbeans-modules-jellytools-java}"/>
+<replacefilter token="@org-netbeans-modules-jellytools-platform@" value="${javadoc.docs.org-netbeans-modules-jellytools-platform}"/>
+<replacefilter token="@org-netbeans-modules-jellytools-ruby@" value="${javadoc.docs.org-netbeans-modules-jellytools-ruby}"/>

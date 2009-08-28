@@ -227,6 +227,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     return new OffsetRange(requireStart, requireStart + require.length());
                 }
             }
+            
+            int classNameStart = LexUtilities.getClassNameStringOffset(lexOffset, th);
+            if (classNameStart != -1) {
+                String className = LexUtilities.getStringAt(lexOffset, th);
+                if (className != null) {
+                    return new OffsetRange(classNameStart, classNameStart + className.length());
+                }
+            }
         }
 
         return OffsetRange.NONE;
@@ -576,7 +584,16 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                         return fix(findLocal(parserResult, method, name), parserResult);
                     }
-                }
+                } 
+            } else if (closest instanceof StrNode) {
+                    // See if the hyperlink is for the string that is the value for :class_name =>
+                    int classNameStart = LexUtilities.getClassNameStringOffset(astOffset, th);
+                    if (classNameStart != -1) {
+                        String className = LexUtilities.getStringAt(tokenOffset, th);
+                        if (className != null) {
+                            return getLocation(index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false));
+                        }
+                    }
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
@@ -645,7 +662,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return classDeclarationLocation;
     }
 
-    private static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
+    static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
         DeclarationLocation loc = DeclarationLocation.NONE;
         for (IndexedElement element : elements) {
             FileObject fo = element.getFileObject();
@@ -659,6 +676,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     offset = AstUtilities.getRange(node).getStart();
                 }
                 loc = new DeclarationLocation(fo, offset, element);
+                loc.addAlternative(new RubyAltLocation(element, false));
             } else {
                 AlternativeLocation alternate = new RubyAltLocation(element, false);
                 loc.addAlternative(alternate);

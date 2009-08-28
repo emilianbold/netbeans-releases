@@ -101,13 +101,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private final String nodeColumnName;
     private final String nodeRowColumnID;
     private final ExplorerManager explorerManager;
-    private Future task;
+    private Future<Boolean> task;
     private final Object queryLock = new Object();
     private final Object uiLock = new Object();
     private final String iconColumnID;
     private String resourceID;
     private final boolean dualPaneMode;
-    private final DualPaneSupport dualPaneSupport;
+    private final DualPaneSupport<DataRow> dualPaneSupport;
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);

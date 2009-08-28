@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
@@ -46,20 +45,19 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 
-
 /**
  *
  * @author mt154047
  */
-final class FunctionCallNode extends AbstractNode {
+final class FunctionCallNode extends AbstractNode implements GoToSourceAction.GoToSourceActionReadnessListener {
+
     private final FunctionCall functionCall;
     private GoToSourceAction action;
-  
 
-     FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
-         super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCaller(functionCall)));
-         this.functionCall = functionCall;
-         action = new GoToSourceAction(stackModel.getSourceFileInfoProvider(), functionCall);
+    FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
+        super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCaller(functionCall)));
+        this.functionCall = functionCall;
+        action = new GoToSourceAction(stackModel.getSourceFileInfoProvider(), functionCall, this);
     }
 
     @Override
@@ -82,13 +80,17 @@ final class FunctionCallNode extends AbstractNode {
         return action;
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        if (!action.isEnabled()) {
+            String baseName = super.getHtmlDisplayName();
+            baseName = baseName != null ? baseName : getDisplayName();
+            return "<font color='!controlShadow'>" + baseName; // NOI18N
+            }
+        return super.getHtmlDisplayName();
+    }
 
-
-
-   
-
-
-
-
-
+    public void ready() {
+        fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
+    }
 }

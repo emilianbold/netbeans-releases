@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators.graph;
 
+import java.awt.FontMetrics;
 import org.netbeans.modules.dlight.indicators.ValueFormatter;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.Graphics;
@@ -50,16 +50,22 @@ import javax.swing.JComponent;
  * @author Vladimir Kvashin
  * @author Alexey Vladykin
  */
-public class Graph extends JComponent {
+public class TimeSeriesPlot extends JComponent {
 
     private final GraphPainter graph;
     private int upperLimit;
     private Axis hAxis;
     private Axis vAxis;
+    private int viewportStart;
+    private int viewportEnd;
+    private AxisMarksProvider timeMarksProvider;
+    private AxisMarksProvider valueMarksProvider;
 
-    public Graph(int scale, ValueFormatter renderer, List<TimeSeriesDescriptor> descriptors) {
+    public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series) {
         upperLimit = scale;
-        graph = new GraphPainter(renderer, descriptors);
+        graph = new GraphPainter(series);
+        timeMarksProvider = AxisMarksProviderFactory.newTimeMarksProvider();
+        valueMarksProvider = AxisMarksProviderFactory.newValueMarksProvider(formatter);
         setOpaque(true);
 //        ToolTipManager.sharedInstance().registerComponent(this);
 //        addAncestorListener(new AncestorListener() {
@@ -71,14 +77,21 @@ public class Graph extends JComponent {
 //        });
     }
 
-    public synchronized JComponent getVerticalAxis() {
+    public JComponent getVerticalAxis() {
         if (vAxis == null) {
             vAxis = new Axis(AxisOrientation.VERTICAL);
         }
         return vAxis;
     }
 
-    public synchronized void setUpperLimit(int newScale) {
+    public JComponent getHorizontalAxis() {
+        if (hAxis == null) {
+            hAxis = new Axis(AxisOrientation.HORIZONTAL);
+        }
+        return hAxis;
+    }
+
+    public void setUpperLimit(int newScale) {
         if (newScale != upperLimit) {
             upperLimit = newScale;
             repaint();
@@ -98,36 +111,58 @@ public class Graph extends JComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
-        graph.paint(g, upperLimit, 0, 0, getWidth(), getHeight(), isEnabled());
+        FontMetrics fm = g.getFontMetrics();
+        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), fm);
+        List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - fm.getAscent() / 2, fm);
+        graph.paint(g, upperLimit, valueMarks, viewportStart, viewportEnd, timeMarks, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
     public void addData(float... newData) {
         graph.addData(newData);
-        if (isShowing()) {
-            repaint();
+        repaintAll();
+    }
+
+    public Range<Integer> getViewport() {
+        return new Range<Integer>(viewportStart, viewportEnd);
+    }
+
+    public void setViewport(Range<Integer> viewport) {
+        boolean changed = false;
+        if (viewport.getStart() != null) {
+            int newViewportStart = viewport.getStart();
+            if (viewportStart != newViewportStart) {
+                viewportStart = newViewportStart;
+                changed = true;
+            }
         }
-     }
+        if (viewport.getEnd() != null) {
+            int newViewportEnd = viewport.getEnd();
+            if (viewportEnd != newViewportEnd) {
+                viewportEnd = newViewportEnd;
+                changed = true;
+            }
+        }
+        if (changed) {
+            repaintAll();
+        }
+    }
 
-//    @Override
-//    public String getToolTipText() {
-//        int[] last = graph.getLastData();
-//        GraphDescriptor[] descriptors = graph.getDescriptors();
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("<html>");
-//        for (int i = 0; i < descriptors.length; i++) {
-//            Color color = descriptors[i].color;
-//            String strColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
-//            String font = String.format("<font color=\"%s\"/>", strColor);
-//            String strValue = formatValue(last[i]);
-//            sb.append(String.format("<tr><td>%s%s</td><td>%s %s</td></tr>\n", font, descriptors[i].description, font, strValue));
-//        }
-//        sb.append("</html>");
-//        System.err.printf("TOOLTIP:\n%s\n", sb.toString());
-//        return sb.toString();
-//    }
+    public Range<Integer> getSelection() {
+        return null;
+    }
 
-    protected String formatValue(int value) {
-        return String.format("%d", value); // NOI18N
+    public void setSelection(Range<Integer> selection) {
+        repaintAll();
+    }
+
+    private void repaintAll() {
+        repaint();
+        if (hAxis != null) {
+            hAxis.repaint();
+        }
+        if (vAxis != null) {
+            vAxis.repaint();
+        }
     }
 
     private static enum AxisOrientation {
@@ -148,10 +183,18 @@ public class Graph extends JComponent {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (isEnabled()) {
-                graph.paintVerticalAxis(g, 0, 0, getWidth(), getHeight(), upperLimit, getBackground());
+                FontMetrics fm = g.getFontMetrics();
+                switch (orientation) {
+                    case VERTICAL:
+                        List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - fm.getAscent() / 2, fm);
+                        graph.paintVerticalAxis(g, 0, 0, getWidth(), getHeight(), valueMarks, getBackground());
+                        break;
+                    case HORIZONTAL:
+                        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), fm);
+                        graph.paintHorizontalAxis(g, 0, 0, getWidth(), getHeight(), timeMarks, getBackground());
+                        break;
+                }
             }
         }
-
     }
-
 }
