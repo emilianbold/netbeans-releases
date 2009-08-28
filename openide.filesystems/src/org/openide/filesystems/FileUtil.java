@@ -314,7 +314,7 @@ public final class FileUtil extends Object {
      * @param path File path in which listener was listening
      * @throws IllegalArgumentException if listener was not listening to given path
      *
-     * @see FileObject#removeFileChangeListener
+     * @see FileObject#removeRecursiveListener
      * @since org.openide.filesystems 7.25
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
