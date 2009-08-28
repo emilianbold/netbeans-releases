@@ -121,7 +121,8 @@ public class NbProjectHandleImpl extends NbProjectHandle{
                 return null;
             }
             Project project = ProjectManager.getDefault().findProject(fo);
-            Logger.getLogger(NbProjectHandleImpl.class.getName()).severe("Cannot find project for " + fo.getPath()); // NOI18N
+            if (project==null)
+                Logger.getLogger(NbProjectHandleImpl.class.getName()).severe("Cannot find project for " + fo.getPath()); // NOI18N
             return project;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
