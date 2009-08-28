@@ -169,6 +169,7 @@ public final class MenuWarmUpTask implements Runnable {
             Runnable run = null;
             ActionEvent handleBridge = new ActionEvent(this, 0, "") {
                 private FileObject previous;
+                private long next;
 
                 @Override
                 public void setSource(Object newSource) {
@@ -184,11 +185,13 @@ public final class MenuWarmUpTask implements Runnable {
                             }
                             h.progress((Integer)arr[0]);
                             FileObject fo = (FileObject)arr[2];
-                            if (previous != fo.getParent()) {
+                            long now = System.currentTimeMillis();
+                            if (previous != fo.getParent() && now > next) {
                                 previous = fo.getParent();
                                 if (previous != null) {
                                     h.progress(previous.getPath());
                                 }
+                                next = now + 500;
                             }
                             super.setSource(newSource);
                         }
