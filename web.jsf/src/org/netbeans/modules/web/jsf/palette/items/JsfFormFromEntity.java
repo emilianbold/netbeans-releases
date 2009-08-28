@@ -37,41 +37,43 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.util;
+package org.netbeans.modules.web.jsf.palette.items;
 
-import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
+import org.openide.text.ActiveEditorDrop;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Tomas Stupka
- * @author Jan Stola
- */
-public class TypeRenderer extends DefaultListCellRenderer implements TableCellRenderer {
+public final class JsfFormFromEntity extends FromEntityBase implements ActiveEditorDrop, PaletteItem {
 
-    private Object valueToRender(Object value) {
-        if(value instanceof IssueType) {
-            return ((IssueType)value).getName();
-        }
-        return value;
+    public JsfFormFromEntity() {
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(JsfForm.class, "NAME_jsp-JsfFormFromEntity"); // NOI18N
     }
 
     @Override
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        return super.getListCellRendererComponent(list, valueToRender(value), index, isSelected, cellHasFocus);
+    protected boolean isCollectionComponent() {
+        return false;
     }
 
-    private DefaultTableCellRenderer tableCellRenderer;
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (tableCellRenderer == null) {
-            tableCellRenderer = new DefaultTableCellRenderer();
+    @Override
+    protected boolean showReadOnlyFormFlag() {
+        return true;
+    }
+
+    @Override
+    protected String getDialogTitle() {
+        return NbBundle.getMessage(JsfFormFromEntity.class, "JFFE_DialogTitle"); // NOI18N
+    }
+
+    @Override
+    protected String getTemplate() {
+        if (isReadOnlyForm()) {
+            return ManagedBeanCustomizer.VIEW_TEMPLATE;
+        } else {
+            return ManagedBeanCustomizer.EDIT_TEMPLATE;
         }
-        return tableCellRenderer.getTableCellRendererComponent(table, valueToRender(value), isSelected, hasFocus, row, column);
     }
 
 }

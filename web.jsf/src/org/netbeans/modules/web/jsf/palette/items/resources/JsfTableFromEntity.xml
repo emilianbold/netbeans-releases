@@ -25,9 +25,9 @@ your own identifying information:
 
 Contributor(s):
 
-  The Original Software is NetBeans. The Initial Developer of the Original
-  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
-  Microsystems, Inc. All Rights Reserved.
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -40,40 +40,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
-  <services/>
-  <clients>
-    <client name="StockService">
-      <wsdl-url>http://localhost:8080/StockQuoteService/StockService?wsdl</wsdl-url>
-      <local-wsdl-file>localhost_8080/StockQuoteService/StockService.wsdl</local-wsdl-file>
-      <package-name forceReplace="true">org.netbeans.identity.samples</package-name>
-      <catalog-file>catalog.xml</catalog-file>
-      <binding>
-        <file-name>StockService_handler.xml</file-name>
-      </binding>
-      <handler-binding-file>StockService_handler.xml</handler-binding-file>
-      <wsimport-options>
-        <wsimport-option>
-          <wsimport-option-name>extension</wsimport-option-name>
-          <wsimport-option-value>true</wsimport-option-value>
-        </wsimport-option>
-        <wsimport-option>
-          <wsimport-option-name>verbose</wsimport-option-name>
-          <wsimport-option-value>true</wsimport-option-value>
-        </wsimport-option>
-        <wsimport-option>
-          <wsimport-option-name>wsdlLocation</wsimport-option-name>
-          <wsimport-option-value>http://localhost:8080/StockQuoteService/StockService?wsdl</wsimport-option-value>
-        </wsimport-option>
-        <wsimport-option>
-          <wsimport-option-name>xendorsed</wsimport-option-name>
-          <wsimport-option-value>true</wsimport-option-value>
-        </wsimport-option>
-        <wsimport-option>
-          <wsimport-option-name>package</wsimport-option-name>
-          <wsimport-option-value>org.netbeans.identity.samples</wsimport-option-value>
-        </wsimport-option>
-      </wsimport-options>
-    </client>
-  </clients>
-</jax-ws>
+<!DOCTYPE editor_palette_item PUBLIC "-//NetBeans//Editor Palette Item 1.0//EN" "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
+
+<editor_palette_item version="1.0">
+    <class name="org.netbeans.modules.web.jsf.palette.items.JsfTableFromEntity" />
+
+    <icon16 urlvalue="org/netbeans/modules/web/jsf/palette/items/resources/JsfTable16.png" />
+    <icon32 urlvalue="org/netbeans/modules/web/jsf/palette/items/resources/JsfTable32.png" />
+    <description localizing-bundle="org.netbeans.modules.web.jsf.palette.items.resources.Bundle"
+               display-name-key="NAME_jsp-JsfTableFromEntity"
+               tooltip-key="HINT_jsp-JsfTableFromEntity" />
+</editor_palette_item>

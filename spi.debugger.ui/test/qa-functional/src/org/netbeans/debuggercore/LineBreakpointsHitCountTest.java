@@ -150,8 +150,8 @@ public class LineBreakpointsHitCountTest extends DebuggerTestCase{
                 }
             };
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
-            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            Utilities.showDebuggerView(Utilities.variablesViewTitle);
+            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
             final int row = treeTableOperator.findCellRow("i", comp);
 

@@ -63,8 +63,7 @@ public class LogHandler implements SOAPHandler<SOAPMessageContext> {
     
     PrintStream out;
     
-    public boolean handleMessage(SOAPMessageContext smc) {       
-        System.out.println("handleMessage for request called");
+    public boolean handleMessage(SOAPMessageContext smc) {
         Boolean outboundProperty = (Boolean)
             smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
         if (!outboundProperty.booleanValue()) {
@@ -78,6 +77,7 @@ public class LogHandler implements SOAPHandler<SOAPMessageContext> {
                 } else {
                     out = System.out;
                 }
+                out.println("HandleMessage for request called:");
                 message.writeTo(out);
                 out.close();
             } catch (SOAPException ex) {
