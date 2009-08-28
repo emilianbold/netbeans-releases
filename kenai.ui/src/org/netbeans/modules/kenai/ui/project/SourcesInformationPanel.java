@@ -203,7 +203,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 } catch (FileNotFoundException e) {
                     _appString += addRepoHeaderWithButton(repo, htmlID);
                     _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_REPO_NOT_ON_KENAI")); //NOI18N
-                    _appString += String.format("%s<a href=\"%s\">%s</a>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
+                    _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
                     break;
                 } catch (IOException e) {
                     _appString += addRepoHeaderWithButton(repo, htmlID);
