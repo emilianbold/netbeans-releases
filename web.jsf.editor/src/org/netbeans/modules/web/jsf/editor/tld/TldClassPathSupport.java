@@ -83,7 +83,7 @@ public class TldClassPathSupport implements PropertyChangeListener {
             }
 
             cache_valid = true;
-            dumpLibs();
+//            dumpLibs();
         }
         return LIBRARIES;
     }
