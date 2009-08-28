@@ -136,13 +136,15 @@ final class FileObjectKeeper implements FileChangeListener {
 
     private final void listenNoMore() {
         assert Thread.holdsLock(this);
-        assert kept != null;
 
         root.removeFileChangeListener(this);
-        for (FileObject fo : kept) {
-            fo.removeFileChangeListener(this);
+        Set<FileObject> k = kept;
+        if (k != null) {
+            for (FileObject fo : k) {
+                fo.removeFileChangeListener(this);
+            }
+            kept = null;
         }
-        kept = null;
     }
 
     public void fileFolderCreated(FileEvent fe) {
