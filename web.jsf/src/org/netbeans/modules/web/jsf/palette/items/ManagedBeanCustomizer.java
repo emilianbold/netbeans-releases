@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.jsf.palette.items;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -58,6 +59,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -76,6 +80,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.DialogDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,6 +100,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
     private boolean collection;
     private boolean dummyBean = false;
     private Dialog dialog;
+    private DialogDescriptor dialogDescriptor;
     private boolean cancelled = false;
 
     public ManagedBeanCustomizer(Project project, boolean collection, boolean enableReadOnly) {
@@ -105,6 +111,28 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
         this.project = project;
         this.collection = collection;
         readOnlyCheckBox.setVisible(enableReadOnly);
+        Component comp = this.managedBeanCombo.getEditor().getEditorComponent();
+        if (comp instanceof JTextField) {
+            final JTextField field = (JTextField)comp;
+            field.getDocument().addDocumentListener(new DocumentListener() {
+
+                public void insertUpdate(DocumentEvent arg0) {
+                    updateValidity(field.getText());
+                }
+
+                public void removeUpdate(DocumentEvent arg0) {
+                    updateValidity(field.getText());
+                }
+
+                public void changedUpdate(DocumentEvent arg0) {
+                    updateValidity(field.getText());
+                }
+            });
+        }
+    }
+
+    private void updateValidity(String text) {
+        dialogDescriptor.setValid(text.length() > 0 && entityBeanCombo.getSelectedItem() != null);
     }
 
     public String getBeanClass() {
@@ -241,8 +269,10 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_customizeTemplatesLabelMouseClicked
 
-    void setDialog(Dialog dlg) {
+    void setDialog(Dialog dlg, DialogDescriptor dd) {
         this.dialog = dlg;
+        this.dialogDescriptor = dd;
+        updateValidity("");
     }
 
     private void setCancelled() {

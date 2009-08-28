@@ -105,7 +105,7 @@ public abstract class FromEntityBase {
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(dd);
-            mbc.setDialog(dlg);
+            mbc.setDialog(dlg, dd);
             dlg.setVisible(true);
         } finally {
             if (dlg != null)
