@@ -568,6 +568,10 @@ public class AstNode {
         }
     }
 
+    public static interface NodeFilter {
+        public boolean accepts(AstNode node);
+    }
+
     /** Attributes acceptor, allows to query node attributes.*/
     public static interface AttributeFilter {
         public boolean accepts(Attribute attribute);

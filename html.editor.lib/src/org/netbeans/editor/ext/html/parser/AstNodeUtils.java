@@ -38,9 +38,11 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.editor.ext.html.dtd.DTD;
 
@@ -79,6 +81,23 @@ public class AstNodeUtils {
                 node = node.parent();
             }
         }
+    }
+
+    /** Returns a list of all ancestors of the given node matching the filter.
+     * Closest ancestors are at the beginning of the list.
+     */
+    public static List<AstNode> getAncestors(AstNode node, AstNode.NodeFilter filter) {
+        List<AstNode> matching = new ArrayList<AstNode>();
+        AstNode n = node;
+        do {
+            if(filter.accepts(n)) {
+                matching.add(n);
+            }
+
+            n = n.parent();
+        } while (n != null);
+        
+        return matching;
     }
 
     public static AstNode findDescendant(AstNode node, int astOffset) {
