@@ -44,6 +44,7 @@ package org.netbeans.core.ui.warmup;
 import java.lang.reflect.*;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
@@ -52,15 +53,22 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -122,7 +130,7 @@ public final class MenuWarmUpTask implements Runnable {
      * from an external application.
      */ 
     private static class NbWindowsAdapter extends WindowAdapter
-    implements Runnable {
+    implements Runnable, Cancellable {
         private static final RequestProcessor rp = new RequestProcessor ("Refresh-After-WindowActivated", 1, true);//NOI18N
         private RequestProcessor.Task task = null;
         private static final Logger LOG = Logger.getLogger("org.netbeans.ui.focus"); // NOI18N
@@ -163,7 +171,7 @@ public final class MenuWarmUpTask implements Runnable {
             if (Boolean.getBoolean("netbeans.indexing.noFileRefresh") == true) { // NOI18N
                 return; // no file refresh
             }
-            final ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh"), task, null);
+            final ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh"), this, null);
             h.setInitialDelay(10000);
             h.start();
             Runnable run = null;
@@ -224,6 +232,33 @@ public final class MenuWarmUpTask implements Runnable {
             LOG.log(r);
 
         }
-    }
-    
+        private int counter;
+        public boolean cancel() {
+            synchronized(rp) {
+                if (task != null) {
+                    task.cancel();
+                }
+            }
+
+            if (++counter >= 3) {
+                FileObject action = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
+                Object obj = action == null ? null : action.getAttribute("instanceCreate"); // NOI18N
+                if (obj instanceof Action) {
+                    JEditorPane browser = new JEditorPane();
+                    browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
+                    browser.setPreferredSize(new Dimension(300, 150));
+                    browser.setEditable(false);
+                    browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5
+                    browser.setBackground(new JLabel().getBackground());
+                    browser.setText(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_SoDInfo"));
+                    Message nd = new Message(browser);
+                    nd.setOptions(new Object[] { Message.YES_OPTION, Message.NO_OPTION });
+                    if (DialogDisplayer.getDefault().notify(nd) == Message.YES_OPTION) {
+                        ((Action)obj).actionPerformed(new ActionEvent(this, 0, ""));
+                    }
+                }
+            }
+            return true;
+        }
+    } // end of NbWindowsAdapter
 }
