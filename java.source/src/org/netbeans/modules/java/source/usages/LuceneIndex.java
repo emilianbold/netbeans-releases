@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -865,6 +866,9 @@ class LuceneIndex extends Index {
         try {
             res = IndexReader.indexExists(this.directory);
         } catch (IOException e) {
+            return res;
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.INFO, "Broken index: " + refCacheRoot.getAbsolutePath(), e);
             return res;
         }
         if (res && tryOpen) {

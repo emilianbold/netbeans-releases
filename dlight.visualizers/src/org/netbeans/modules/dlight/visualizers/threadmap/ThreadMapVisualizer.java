@@ -53,8 +53,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -108,7 +112,9 @@ public class ThreadMapVisualizer extends JPanel implements
 
             public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
                ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
-               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer( threadDump, startTime);
+               DataProvider d  = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE);
+               StackDataProvider stackDataProvider = d == null || !(d instanceof StackDataProvider) ?  null  : (StackDataProvider)d;
+               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(stackDataProvider,  threadDump, startTime);//NOI18N
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();

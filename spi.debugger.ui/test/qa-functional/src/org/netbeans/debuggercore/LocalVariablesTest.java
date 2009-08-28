@@ -129,9 +129,9 @@ public class LocalVariablesTest extends DebuggerTestCase {
      *
      */
     protected void expandNodes() {
-        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
+        Utilities.showDebuggerView(Utilities.variablesViewTitle);
         
-        OutlineOperator lrOutlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        OutlineOperator lrOutlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         
         OutlineNode lrThisNode = lrOutlineOp.getRootNode("this");
         lrThisNode.expand();
@@ -173,7 +173,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
                 }
             }
             expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             checkOutlineTableLine(outlineOp, 3, "Vpublic", "String", "\"Public Variable\"");
             checkOutlineTableLine(outlineOp, 4, "Vprotected", "String", "\"Protected Variable\"");
             checkOutlineTableLine(outlineOp, 5, "Vprivate", "String", "\"Private Variable\"");
@@ -205,7 +205,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
                 }
             }
             expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             checkOutlineTableLine(outlineOp, 11, "Spublic", "String", "\"Public Variable\"");
             checkOutlineTableLine(outlineOp, 12, "Sprotected", "String", "\"Protected Variable\"");
             checkOutlineTableLine(outlineOp, 13, "Sprivate", "String", "\"Private Variable\"");
@@ -237,7 +237,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
                 }
             }
             expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             checkOutlineTableLine(outlineOp, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
             checkOutlineTableLine(outlineOp, 16, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
             checkOutlineTableLine(outlineOp, 17, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
@@ -268,7 +268,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
                 }
             }
             expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             checkOutlineTableLine(outlineOp, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
             checkOutlineTableLine(outlineOp, 21, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
             checkOutlineTableLine(outlineOp, 22, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
@@ -300,8 +300,8 @@ public class LocalVariablesTest extends DebuggerTestCase {
                 }
             }
             expandNodes();
-            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            Utilities.showDebuggerView(Utilities.variablesViewTitle);
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             
             int count = 1;
             checkOutlineTableLine(outlineOp, count++, "this", "MemoryView", null);
@@ -384,8 +384,8 @@ public class LocalVariablesTest extends DebuggerTestCase {
                 }
             }
             expandNodes();
-            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            Utilities.showDebuggerView(Utilities.variablesViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             try {
                 org.openide.nodes.Node.Property property;
                 property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(25, 2);
@@ -428,23 +428,23 @@ public class LocalVariablesTest extends DebuggerTestCase {
                 }
             }
             expandNodes();
-            new EventTool().waitNoEvent(500);
-            Utilities.getStepOverExpressionAction().performShortcut();
-            new EventTool().waitNoEvent(500);
-            Utilities.getStepOverExpressionAction().performShortcut();
-            new EventTool().waitNoEvent(500);
-            Utilities.getStepOverExpressionAction().performShortcut();
-            new EventTool().waitNoEvent(500);
-            Utilities.getStepOverExpressionAction().performShortcut();
-            new EventTool().waitNoEvent(500);
-            Utilities.getStepOverExpressionAction().performShortcut();
-            new EventTool().waitNoEvent(500);
+            new EventTool().waitNoEvent(700);
+            Utilities.getStepOverExpressionAction().perform();
+            new EventTool().waitNoEvent(700);
+            Utilities.getStepOverExpressionAction().perform();
+            new EventTool().waitNoEvent(700);
+            Utilities.getStepOverExpressionAction().perform();
+            new EventTool().waitNoEvent(700);
+            Utilities.getStepOverExpressionAction().perform();
+            new EventTool().waitNoEvent(700);
+            Utilities.getStepOverExpressionAction().perform();
+            new EventTool().waitNoEvent(700);
             
             // TODO: Enable after fix of issue 132886 
             //new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
             
-            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            Utilities.showDebuggerView(Utilities.variablesViewTitle);
+            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             int count = 1; //line 0 is the New Watch Expression line by default
             checkOutlineTableLine(outlineOp, count++, "Before call to 'println()'", null, null);
             checkOutlineTableLine(outlineOp, count++, "Arguments", null, null);
