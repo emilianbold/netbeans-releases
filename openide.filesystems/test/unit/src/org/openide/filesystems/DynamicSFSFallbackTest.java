@@ -47,14 +47,12 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.lookup.InstanceContent;
 
 /** Test layering of filesystems installed via lookup.
  *
  * @author Jaroslav Tulach
  */
-public class DynamicSFSFallbackTest extends NbTestCase
-implements InstanceContent.Convertor<FileSystem,FileSystem> {
+public class DynamicSFSFallbackTest extends NbTestCase {
     public DynamicSFSFallbackTest(String testName) {
         super(testName);
     }
@@ -114,19 +112,4 @@ implements InstanceContent.Convertor<FileSystem,FileSystem> {
         os.close();
     }
     
-    public FileSystem convert(FileSystem obj) {
-        return obj;
-    }
-
-    public Class<? extends FileSystem> type(FileSystem obj) {
-        return obj.getClass();
-    }
-
-    public String id(FileSystem obj) {
-        return obj.getDisplayName();
-    }
-
-    public String displayName(FileSystem obj) {
-        return obj.getDisplayName();
-    }
 }
