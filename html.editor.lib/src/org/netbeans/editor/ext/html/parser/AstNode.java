@@ -365,6 +365,19 @@ public class AstNode {
         return attributes == null ? Collections.EMPTY_LIST : attributes.values();
     }
 
+    public Collection<Attribute> getAttributes(AttributeFilter filter) {
+        if(attributes == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Collection<Attribute> filtered = new ArrayList<Attribute>(getAttributes().size() / 2);
+        for(Attribute attr : getAttributes()) {
+            if(filter.accepts(attr)) {
+                filtered.add(attr);
+            }
+        }
+        return filtered;
+    }
+
     public Attribute getAttribute(String attributeName) {
         return attributes == null ? null : attributes.get(attributeName);
     }
@@ -555,7 +568,14 @@ public class AstNode {
         }
     }
 
+    /** Attributes acceptor, allows to query node attributes.*/
+    public static interface AttributeFilter {
+        public boolean accepts(Attribute attribute);
+    }
+
     public static class Attribute {
+
+        private static final char NS_PREFIX_DELIMITER = ':';
 
         protected String name;
         protected String value;
@@ -571,6 +591,16 @@ public class AstNode {
 
         public String name() {
             return name;
+        }
+
+        public String namespacePrefix() {
+            int delimIndex = name().indexOf(NS_PREFIX_DELIMITER);
+            return delimIndex == -1 ? null : name().substring(0, delimIndex);
+        }
+
+        public String nameWithoutNamespacePrefix() {
+            int delimIndex = name().indexOf(NS_PREFIX_DELIMITER);
+            return delimIndex == -1 ? name() : name().substring(delimIndex + 1);
         }
 
         public int nameOffset() {
