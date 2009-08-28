@@ -41,11 +41,16 @@
 
 package org.openide.filesystems;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
+import org.openide.util.test.MockLookup;
 
 public class ExternalUtilTest extends NbTestCase {
 
@@ -58,50 +63,73 @@ public class ExternalUtilTest extends NbTestCase {
         return Level.FINEST;
     }
 
+    protected @Override void setUp() throws Exception {
+        ExternalUtil.repository = null;
+        MockLookup.setInstances();
+    }
+
     public void testInitializationFromTwoThreads() throws Exception {
-        MockServices.setServices(MyRepo.class);
-
-        Repository r = ExternalUtil.getRepository();
-
-        assertNotNull("Repo created", r);
-        assertEquals("It is our class", MyRepo.class, r.getClass());
-        MyRepo.task.waitFinished();
-        assertEquals("Both repositories are same", r, MyRepo.fromRunnable);
-        assertEquals("One add", 1, MyFs.addCnt);
-        assertEquals("No remove", 0, MyFs.removeCnt);
+        final AtomicInteger addCnt = new AtomicInteger();
+        final AtomicInteger removeCnt = new AtomicInteger();
+        Repository r = new Repository(new MultiFileSystem() {
+            public @Override void addNotify() {
+                addCnt.incrementAndGet();
+                super.addNotify();
+            }
+            public @Override void removeNotify() {
+                removeCnt.incrementAndGet();
+                super.removeNotify();
+            }
+        });
+        MockLookup.setInstances(r);
+        assertSame("Repo created and it is ours", r, ExternalUtil.getRepository());
+        final AtomicReference<Repository> fromRunnable = new AtomicReference<Repository>();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                fromRunnable.set(ExternalUtil.getRepository());
+            }
+        }).waitFinished();
+        assertSame("Both repositories are same", r, fromRunnable.get());
+        assertEquals("One add", 1, addCnt.get());
+        assertEquals("No remove", 0, removeCnt.get());
     }
 
-    public static final class MyRepo extends Repository implements Runnable {
-        static Repository fromRunnable;
-        static Task task;
-
-        public MyRepo() throws InterruptedException {
-            super(new MyFs());
-
-            task = RequestProcessor.getDefault().post(this);
-            task.waitFinished(500);
+    public void testDynamicSystemsCanAlsoBeBehindLayers() throws Exception {
+        final File dir1 = new File(getWorkDir(), "dir1");
+        final File dir2 = new File(getWorkDir(), "dir2");
+        class MyFS1 extends LocalFileSystem {
+            public MyFS1() throws Exception {
+                dir1.mkdirs();
+                setRootDirectory(dir1);
+                getRoot().setAttribute("fallback", true);
+                FileObject fo1 = FileUtil.createData(getRoot(), "test/data.txt");
+                fo1.setAttribute("one", 1);
+                write(fo1, "fileone");
+                FileObject fo11 = FileUtil.createData(getRoot(), "test-fs-is-there.txt");
+                write(fo11, "hereIam");
+            }
         }
-
-        public void run() {
-            fromRunnable = ExternalUtil.getRepository();
+        class MyFS2 extends LocalFileSystem {
+            public MyFS2() throws Exception {
+                dir2.mkdirs();
+                setRootDirectory(dir2);
+                FileObject fo1 = FileUtil.createData(getRoot(), "test/data.txt");
+                fo1.setAttribute("two", 1);
+                write(fo1, "two");
+            }
         }
+        MockLookup.setInstances(new MyFS1(), new MyFS2());
+        FileObject global = FileUtil.getConfigFile("test/data.txt");
+        assertEquals("Second file system takes preceedence", "two", global.asText());
+        assertTrue("Still valid", global.isValid());
+        FileObject fo = FileUtil.getConfigFile("test-fs-is-there.txt");
+        assertNotNull("File found: " + Arrays.toString(FileUtil.getConfigRoot().getChildren()), fo);
+        assertEquals("Text is correct", "hereIam", fo.asText());
+    }
+    private static void write(FileObject fo, String txt) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        os.write(txt.getBytes());
+        os.close();
     }
 
-    private static final class MyFs extends MultiFileSystem {
-        static int addCnt;
-        static int removeCnt;
-
-        @Override
-        public void addNotify() {
-            addCnt++;
-            super.addNotify();
-        }
-
-        @Override
-        public void removeNotify() {
-            removeCnt++;
-            super.removeNotify();
-        }
-
-    }
 }
