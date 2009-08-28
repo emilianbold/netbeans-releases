@@ -57,7 +57,10 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
     /** Creates new form THAConfigurationPanel */
     THAConfigurationPanel() {
         initComponents();
+        // combo box contents set here to allow NOI18N
+        startCollectingComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "At the startup", "Manually" })); // NOI18N
         startCollectingComboBox.setSelectedIndex(0);
+        collectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Deadlocks", "Dataraces and Deadlocks" })); // NOI18N
         collectComboBox.setSelectedIndex(0);
     }
 
@@ -70,7 +73,6 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jComboBox1 = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         collectComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
@@ -78,15 +80,9 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         jLabel1.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel1.text")); // NOI18N
 
-        collectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Deadlocks", "Dataraces and Deadlocks" }));
-
         jLabel2.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel2.text")); // NOI18N
-
-        startCollectingComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "At the startup", "Manually" }));
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel3.text")); // NOI18N
 
@@ -131,7 +127,6 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox collectComboBox;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
