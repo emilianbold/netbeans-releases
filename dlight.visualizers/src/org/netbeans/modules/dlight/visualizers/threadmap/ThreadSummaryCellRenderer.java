@@ -235,16 +235,24 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         int count = 0;
         for (int i = 0; i < threadData.size(); i++) {
             if (threadData.isAlive(i)) {
-                count++;
                 ThreadState state = threadData.getThreadStateAt(i);
+                int delta = 0; // interval in 10 ms
+                if (i + 1 < threadData.size()) {
+                    ThreadState next = threadData.getThreadStateAt(i+1);
+                    delta = (int) ((next.getTimeStamp() - state.getTimeStamp())/(1000*1000*10));
+                } else {
+                    delta = (int) (viewManager.getInterval()/(1000*1000*10));
+                }
+                count += delta;
                 for (int j = 0; j < state.size(); j++) {
                     MSAState msa = state.getMSAState(j, viewManager.isFullMode());
                     if (msa != null) {
+                        int value = state.getState(j) * delta;
                         AtomicInteger v = aMap.get(msa);
                         if (v != null) {
-                            v.addAndGet(state.getState(j));
+                            v.addAndGet(value);
                         } else {
-                            v = new AtomicInteger(state.getState(j));
+                            v = new AtomicInteger(value);
                             aMap.put(msa, v);
                         }
                     } else {
@@ -253,7 +261,8 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 }
             }
         }
-        return count;
+        ThreadStateColumnImpl.normilizeMap(aMap, 100);
+        return (count+50)/100; // in seconds
     }
 
     private static String colorToHexString(Color c) {
