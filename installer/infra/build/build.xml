@@ -1903,10 +1903,10 @@ jarsigner.storepass=${jarsigner.storepass}
                <param name="bundle.platform"  value="macosx-x86"/>
                <param name="bundle.extension" value="zip"/>
         </antcall>
-	<antcall target="generate-javatoolsbundle-bundle">
+	<!--antcall target="generate-javatoolsbundle-bundle">
                <param name="bundle.platform"  value="macosx-ppc"/>
                <param name="bundle.extension" value="zip"/>
-        </antcall>
+        </antcall-->
     </target>
 
     <target name="init-mysql-bundles" if="do.build.mysql">
