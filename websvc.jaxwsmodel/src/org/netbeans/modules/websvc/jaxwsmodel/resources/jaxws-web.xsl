@@ -156,6 +156,13 @@ made subject to such option by the copyright holder.
                             <include name="**/*.java"/>
                         </fileset>
                     </copy>
+                    <xsl:if test="jaxws:binding">
+                        <copy todir="${{build.classes.dir}}">
+                            <fileset dir="${{build.generated.dir}}/jax-wsCache/{$wsname}">
+                                <include name="**/*.xml"/>
+                            </fileset>
+                        </copy>
+                    </xsl:if>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
                     <delete dir="${{build.generated.sources.dir}}/jax-ws/{$package_path}"/>
