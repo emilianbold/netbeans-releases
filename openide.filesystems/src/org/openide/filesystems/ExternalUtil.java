@@ -172,10 +172,6 @@ final class ExternalUtil extends Object {
         r.addFileSystem(fs);
     }
 
-    private static synchronized boolean isInitialized() {
-        return repository != null;
-    }
-
     /**
      * @param rep may be null
      */
