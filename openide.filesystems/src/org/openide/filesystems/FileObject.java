@@ -446,7 +446,8 @@ public abstract class FileObject extends Object implements Serializable {
             return;
         }
         try {
-            getFileSystem().addFileChangeListener(new RecursiveListener(this, fcl));
+            boolean allowsExternalChanges = getFileSystem() instanceof LocalFileSystem;
+            getFileSystem().addFileChangeListener(new RecursiveListener(this, fcl, allowsExternalChanges));
         } catch (FileStateInvalidException ex) {
             ExternalUtil.LOG.log(Level.FINE, "Cannot remove listener from " + this, ex);
         }
@@ -463,7 +464,7 @@ public abstract class FileObject extends Object implements Serializable {
             return;
         }
         try {
-            getFileSystem().removeFileChangeListener(new RecursiveListener(this, fcl));
+            getFileSystem().removeFileChangeListener(new RecursiveListener(this, fcl, false));
         } catch (FileStateInvalidException ex) {
             ExternalUtil.LOG.log(Level.FINE, "Cannot remove listener from " + this, ex);
         }
