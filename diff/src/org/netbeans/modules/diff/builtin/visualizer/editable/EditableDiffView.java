@@ -263,7 +263,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         
         jSplitPane1.addAncestorListener(this);
         
-        refreshDiffTask.run();
+        refreshDiff(0);
         
         manager = new DiffViewManager(this);
         manager.init();
@@ -645,7 +645,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void showCurrentDifference() {
-        Difference diff = diffs[getDifferenceIndex()];
+        int index = getDifferenceIndex();
+        if (index < 0 || index >= diffs.length) {
+            return;
+        }
+        Difference diff = diffs[index];
         
         int off1, off2;
         initGlobalSizes(); // The window might be resized in the mean time.
@@ -995,10 +999,14 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     public class RefreshDiffTask implements Runnable {
 
         public void run() {
-            synchronized(EditableDiffView.this) {
-                computeDiff();
+            synchronized (RefreshDiffTask.this) {
+                final Difference[] differences = computeDiff();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        diffs = differences;
+                        if (diffs != NO_DIFFERENCES) {
+                            diffChanged();
+                        }
                         if (getDifferenceIndex() >= diffs.length) updateCurrentDifference();
                         support.firePropertyChange(DiffController.PROP_DIFFERENCES, null, null);
                         jEditorPane1.setCurrentDiff(diffs);
@@ -1011,10 +1019,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         }
 
-        private void computeDiff() {
+        private Difference[] computeDiff() {
             if (!secondSourceAvailable || !firstSourceAvailable) {
-                diffs = NO_DIFFERENCES;
-                return;
+                return NO_DIFFERENCES;
             }
 
             Reader first = null;
@@ -1027,12 +1034,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
 
             DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
+            Difference[] diffs;
             try {
                 diffs = diff.computeDiff(first, second);
-                diffChanged();
             } catch (IOException e) {
                 diffs = NO_DIFFERENCES;
             }
+            return diffs;
         }
     }
     
