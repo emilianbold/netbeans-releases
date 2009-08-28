@@ -52,7 +52,7 @@ import org.netbeans.modules.autoupdate.ui.Containers;
 public class UninstallUnitWizardModel extends OperationWizardModel {
     private OperationType operationType;
     private OperationContainer container;
-    private OperationContainer customContainer;
+    private OperationContainer<OperationSupport> customContainer;
     
     /** 
      @param doAction if is null it means doUninstall, false means doDisable, true means doEnable
