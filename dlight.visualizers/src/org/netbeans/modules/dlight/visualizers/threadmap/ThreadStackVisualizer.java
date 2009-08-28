@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
@@ -76,10 +77,10 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private JPanel emptyPanel;
     private final CardLayout cardLayout = new CardLayout();
 
-    ThreadStackVisualizer(ThreadDump descriptor, long startTime) {
+    ThreadStackVisualizer(StackDataProvider sourceFileInfo, ThreadDump descriptor, long startTime) {
         this.descriptor = descriptor;
         this.startTime = startTime;
-        stackPanel = MultipleCallStackPanel.createInstance();
+        stackPanel = MultipleCallStackPanel.createInstance(sourceFileInfo);
         setLayout(cardLayout);
         emptyPanel = new JPanel();
         add(emptyPanel, "empty");//NOI18N
