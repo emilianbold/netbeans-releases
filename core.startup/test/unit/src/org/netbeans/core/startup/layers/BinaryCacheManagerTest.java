@@ -57,6 +57,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -142,8 +143,8 @@ implements CacheManagerTestBaseHid.ManagerFactory {
             BinaryCacheManagerTest.class.getResource("data/layer1.xml")));
         
         FileSystem f = store(m, urls);
-        FixedFileSystem base = new FixedFileSystem("ffs", "FFS");
-        base.add("baz/thongy", new FixedFileSystem.Instance(false, null, null, null, (URL)null));
+        FileSystem base = FileUtil.createMemoryFileSystem();
+        FileUtil.createData(base.getRoot(), "baz/thongy");
         final MFS mfs = new MFS(new FileSystem[] {base, f});
         FileObject baz = mfs.findResource("baz");
         assertNotNull(baz);
