@@ -114,6 +114,8 @@ public abstract class ClassIndexImpl {
     public abstract void setDirty (URL url);
 
     public abstract boolean isSource ();
+
+    public abstract boolean isEmpty ();
     
     protected abstract void close () throws IOException;
     
