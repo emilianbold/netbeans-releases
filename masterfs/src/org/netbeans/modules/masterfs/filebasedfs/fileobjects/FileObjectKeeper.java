@@ -136,13 +136,15 @@ final class FileObjectKeeper implements FileChangeListener {
 
     private final void listenNoMore() {
         assert Thread.holdsLock(this);
-        assert kept != null;
 
         root.removeFileChangeListener(this);
-        for (FileObject fo : kept) {
-            fo.removeFileChangeListener(this);
+        Set<FileObject> k = kept;
+        if (k != null) {
+            for (FileObject fo : k) {
+                fo.removeFileChangeListener(this);
+            }
+            kept = null;
         }
-        kept = null;
     }
 
     public void fileFolderCreated(FileEvent fe) {
@@ -194,10 +196,15 @@ final class FileObjectKeeper implements FileChangeListener {
         if (arr == null) {
             return;
         }
+        final FileObject f = fe.getFile();
+        if (f.isFolder() && fe.getSource() == f && f != root) {
+            // there will be another event for parent folder
+            return;
+        }
+
         for (FileChangeListener l : arr) {
             l.fileDeleted(fe);
         }
-        final FileObject f = fe.getFile();
         if (f instanceof FolderObj) {
             synchronized (this) {
                 if (kept != null) {
@@ -211,6 +218,11 @@ final class FileObjectKeeper implements FileChangeListener {
     public void fileRenamed(FileRenameEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {
+            return;
+        }
+        final FileObject f = fe.getFile();
+        if (f.isFolder() && fe.getSource() == f && f != root) {
+            // there will be another event for parent folder
             return;
         }
         for (FileChangeListener l : arr) {
