@@ -1447,7 +1447,7 @@ public final class ParseProjectXml extends Task {
                 // Need to include transitive deps of j2seproject in CP:
                 testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, true, false, false, testDeps));
                 // Common GUI testing tools:
-                for (String library : new String[]{"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
+                for (String library : new String[]{"org.netbeans.modules.jemmy"/* XXX now split up anyway: "org.netbeans.modules.jellytools"*/}) {
                     testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
                 }
                 // For NbModuleSuite, which needs to find the platform:
