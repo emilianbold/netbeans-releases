@@ -181,6 +181,8 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
     private HashMap<String, KenaiFeature> repoMap = new HashMap<String, KenaiFeature>();
 
     public String loadRepoFeeds(final KenaiProject proj) throws DOMException {
+        registeredButtonID.clear();
+        repoMap.clear();
         String _appString = "<div class=\"section\">"; //NOI18N
         try {
             KenaiFeature[] repos = proj.getFeatures(Type.SOURCE);
