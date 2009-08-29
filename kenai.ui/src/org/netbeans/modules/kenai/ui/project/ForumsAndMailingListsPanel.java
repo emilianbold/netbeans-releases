@@ -87,6 +87,10 @@ import org.xml.sax.SAXException;
 public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final String CHAT_BUTTON = "CHAT_BUTTON"; //NOI18N
 
+    private final String WAIT_STRING = String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
+
     public ForumsAndMailingListsPanel() {
         initComponents();
         commChannelsDisplayer.addHyperlinkListener(new HyperlinkListener() {
@@ -181,8 +185,16 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             String urlStr = base + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
             int entriesCount = 0;
             NodeList entries = null;
+            if (Thread.interrupted()) {
+                clearContent();
+                return;
+            }
             try {
                 Document doc = dbf.parse(urlStr);
+                if (Thread.interrupted()) {
+                    clearContent();
+                    return;
+                }
                 entries = doc.getElementsByTagName("entry"); //NOI18N
                 entriesCount = entries.getLength();
             } catch (FileNotFoundException e) {
@@ -193,12 +205,20 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             String _appString = "<div class=\"section\">"; //NOI18N
             if (entriesCount > 0 && entries != null) {
                 for (int i = 0; i < entriesCount; i++) {
+                    if (Thread.interrupted()) {
+                        clearContent();
+                        return;
+                    }
                     Node entry = entries.item(i);
                     NodeList entryProps = entry.getChildNodes();
                     String title = null;
                     String content = null;
                     String href = null;
                     for (int j = 0; j < entryProps.getLength(); j++) {
+                        if (Thread.interrupted()) {
+                            clearContent();
+                            return;
+                        }
                         Node elem = entryProps.item(j);
                         if (elem.getNodeName().equals("title")) { //NOI18N - get title of the topic
                             title = elem.getFirstChild().getNodeValue();
@@ -219,6 +239,10 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                     }
                 }
                 _appString += "</div>"; //NOI18N
+                if (Thread.interrupted()) {
+                    clearContent();
+                    return;
+                }
                 final String appString = _appString;
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -276,10 +300,30 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         String innerStr = "<html>"; //NOI18N
 
         innerStr += getMailingListsHTML(instProj);
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += getChatRoomHTML(instProj);
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += getForumsHTML(instProj);
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += String.format("<h2>%s</h2><div id=\"DYN_CONTENT\"></div>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_ACTIVE_FORUMS")); //NOI18N
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += "</html>"; //NOI18N
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         final String _istr = innerStr;
 
         // Render the content and register an action to a HTML button in JEditorPane
@@ -354,9 +398,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                commChannelsDisplayer.setText(String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
-                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
-                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"))); //NOI18N
+                commChannelsDisplayer.setText(WAIT_STRING); //NOI18N
             }
         });
     }

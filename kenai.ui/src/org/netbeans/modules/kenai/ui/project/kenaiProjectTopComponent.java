@@ -69,8 +69,8 @@ import org.openide.util.RequestProcessor;
 )
 public final class kenaiProjectTopComponent extends TopComponent implements PropertyChangeListener {
 
-    RequestProcessor SingleDataRequestProcessor = new RequestProcessor("KENAI_SINGLE_IMG_REQUEST_PROCESSOR", 1, true); //NOI18N
-    RequestProcessor SingleImageRequestProcessor = new RequestProcessor("KENAI_SINGLE_DATA_REQUEST_PROCESSOR", 1, true); //NOI18N
+    RequestProcessor SingleDataRequestProcessor = new RequestProcessor("KENAI_SINGLE_DATA_REQUEST_PROCESSOR", 1, true); //NOI18N
+    RequestProcessor SingleImageRequestProcessor = new RequestProcessor("KENAI_SINGLE_IMG_REQUEST_PROCESSOR", 1, true); //NOI18N
 
     private RequestProcessor.Task loadingImageTask = null;
     private RequestProcessor.Task loadingDynamicContentTask = null;
@@ -187,7 +187,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     .add(wwwLabel)
                     .add(wikiLabel)
                     .add(downloadsLabel))
-                .addContainerGap(334, Short.MAX_VALUE))
+                .addContainerGap(340, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -249,8 +249,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(projectsDetailsHeader)
-                .addContainerGap(495, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+                .addContainerGap(501, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -300,19 +300,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         dynamicContentsPanel.setLayout(new java.awt.BorderLayout());
         dynamicContentsPanel.add(dynamicContentPane, java.awt.BorderLayout.CENTER);
 
-        bottomLinkPanel.setOpaque(false);
-        bottomLinkPanel.setLayout(new java.awt.BorderLayout());
-
-        backToTopLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        org.openide.awt.Mnemonics.setLocalizedText(backToTopLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.backToTopLabel.text_1")); // NOI18N
-        backToTopLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        backToTopLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                backToTopLabelMouseClicked(evt);
-            }
-        });
-        bottomLinkPanel.add(backToTopLabel, java.awt.BorderLayout.EAST);
-
         org.jdesktop.layout.GroupLayout containingPanelLayout = new org.jdesktop.layout.GroupLayout(containingPanel);
         containingPanel.setLayout(containingPanelLayout);
         containingPanelLayout.setHorizontalGroup(
@@ -320,9 +307,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             .add(containingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, bottomLinkPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
-                    .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
-                    .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE))
+                    .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE)
+                    .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE))
                 .addContainerGap())
         );
         containingPanelLayout.setVerticalGroup(
@@ -332,13 +318,44 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(bottomLinkPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(39, 39, 39))
         );
 
         mainScrollPane.setViewportView(containingPanel);
 
         add(mainScrollPane, java.awt.BorderLayout.CENTER);
+
+        bottomLinkPanel.setBackground(java.awt.SystemColor.control);
+        bottomLinkPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        bottomLinkPanel.setPreferredSize(new java.awt.Dimension(81, 22));
+
+        backToTopLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        org.openide.awt.Mnemonics.setLocalizedText(backToTopLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.backToTopLabel.text_1")); // NOI18N
+        backToTopLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        backToTopLabel.setPreferredSize(new java.awt.Dimension(101, 16));
+        backToTopLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                backToTopLabelMouseClicked(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout bottomLinkPanelLayout = new org.jdesktop.layout.GroupLayout(bottomLinkPanel);
+        bottomLinkPanel.setLayout(bottomLinkPanelLayout);
+        bottomLinkPanelLayout.setHorizontalGroup(
+            bottomLinkPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(bottomLinkPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(backToTopLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        bottomLinkPanelLayout.setVerticalGroup(
+            bottomLinkPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(bottomLinkPanelLayout.createSequentialGroup()
+                .add(backToTopLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        add(bottomLinkPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
     private void backToTopLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_backToTopLabelMouseClicked
@@ -424,7 +441,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
             public void run() {
                 // reset header and description text
-                projectImage.setIcon(null);
+                projectImage.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/wait.gif", true));
                 projectsDetailsHeader.setText(proj.getDisplayName());
                 try {
                     projectsDetailsText.setText(proj.getDescription().replaceAll("\r?\n", " ").replaceAll("\r", " ")); //NOI18N
@@ -440,10 +457,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             loadingImageTask.cancel();
         }
         loadingImageTask = SingleImageRequestProcessor.post(new Runnable() {
-            
+
             public void run() {
                 try {
                     URL imgUrl = new URL(proj.getImageUrl());
+                    if (Thread.interrupted()) {
+                        return;
+                    }
                     final Icon ico = ImageUtilities.image2Icon(ImageIO.read(imgUrl));
                     SwingUtilities.invokeLater(new Runnable() {
 
@@ -462,10 +482,17 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             }
         });
 
+    
         // Refresh the dynamic content
         if (hardReinit) {
             if (loadingDynamicContentTask != null && !loadingDynamicContentTask.isFinished()) {
                 loadingDynamicContentTask.cancel();
+                int tabCount = dynamicContentPane.getTabCount();
+                for (int i = 0; i < tabCount; i++) {
+                    if (dynamicContentPane.getComponentAt(i) instanceof RefreshableContentPanel) {
+                        ((RefreshableContentPanel) dynamicContentPane.getComponentAt(i)).clearContent();
+                    }
+                }
             }
             loadingDynamicContentTask = SingleDataRequestProcessor.post(new Runnable() {
 
@@ -478,6 +505,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     }
                     for (int i = 0; i < tabCount; i++) {
                         if (dynamicContentPane.getComponentAt(i) instanceof RefreshableContentPanel) {
+                            if (Thread.interrupted()) {
+                                break;
+                            }
                             ((RefreshableContentPanel) dynamicContentPane.getComponentAt(i)).resetContent(instProj);
                         }
                     }
