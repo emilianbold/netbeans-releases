@@ -1,4 +1,0 @@
-#!/bin/sh
-ant build || exit
-ant -Dtest.fail.on.error=false build-test-dist
-test -z "`hg st | tee /dev/stderr`" || exit

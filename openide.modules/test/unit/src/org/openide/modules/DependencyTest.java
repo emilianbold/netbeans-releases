@@ -43,10 +43,7 @@ package org.openide.modules;
 
 import java.util.Iterator;
 import java.util.Set;
-import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.openide.modules.Dependency;
 
 /** Test parsing of dependency information and loading of static version information.
  * Ensures that malformed manifests are rejected correctly.
@@ -128,10 +125,8 @@ public class DependencyTest extends NbTestCase {
     }
     
     public void testParseRangedRelVers() throws Exception {
-        Dependency d1 = (Dependency)Dependency.create(Dependency.TYPE_MODULE,
-            "org.foo/1-2 > 1.1").iterator().next();
-        Dependency d2 = (Dependency)Dependency.create(Dependency.TYPE_MODULE,
-            "org.foo/2-4").iterator().next();
+        Dependency d1 = Dependency.create(Dependency.TYPE_MODULE, "org.foo/1-2 > 1.1").iterator().next();
+        Dependency d2 = Dependency.create(Dependency.TYPE_MODULE, "org.foo/2-4").iterator().next();
         assertEquals("org.foo/1-2", d1.getName());
         assertEquals(Dependency.COMPARE_SPEC, d1.getComparison());
         assertEquals("1.1", d1.getVersion());
