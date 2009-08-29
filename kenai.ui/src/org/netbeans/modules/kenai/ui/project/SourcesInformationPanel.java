@@ -91,6 +91,9 @@ import org.xml.sax.SAXException;
  */
 public class SourcesInformationPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final int MAX_ENTRIES = 10;
+    private final String WAIT_STRING = String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
 
     /** Creates new form SourcesInformationPanel */
     public SourcesInformationPanel() {
@@ -185,6 +188,9 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 return String.format("<div class=\"section\"><i>%s</i></div>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_REPOS")); //NOI18N
             }
             for (int k = 0; k < repos.length; k++) {
+                if (Thread.interrupted()) {
+                    return WAIT_STRING;
+                }
                 final KenaiFeature repo = repos[k];
 
                 DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -197,6 +203,9 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 registeredButtonID.add(htmlID);
                 try {
                     new URL(urlStr).openStream(); // just to fail quickly if URL is invalid...
+                    if (Thread.interrupted()) {
+                        return WAIT_STRING;
+                    }
                     Document doc = dbf.parse(urlStr);
                     entries = doc.getElementsByTagName("entry"); //NOI18N
                     entriesCount = entries.getLength();
@@ -213,12 +222,21 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     _appString += "<br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
                     continue;
                 }
+                if (Thread.interrupted()) {
+                    return WAIT_STRING;
+                }
                 _appString += addRepoHeaderWithButton(repo, htmlID);
+                if (Thread.interrupted()) {
+                    return WAIT_STRING;
+                }
                 _appString += "<table>"; //NOI18N start table for each repository
                 _appString += String.format("<tr><td colspan=\"2\"><h4>%s</h4></td></tr>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_RECENT_CHANGES")); //NOI18N
                 if (entriesCount > 0 && entries != null) {
                     _appString += "<tr>"; //NOI18N
                     for (int i = 0; i < entriesCount && i < MAX_ENTRIES; i++) {
+                        if (Thread.interrupted()) {
+                            return WAIT_STRING;
+                        }
                         Node entry = entries.item(i);
                         NodeList entryProps = entry.getChildNodes();
                         String title = null;
@@ -226,6 +244,9 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                         String content = String.format("<i>%s</i>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_COMMIT_MSG")); //NOI18N
                         String href = null;
                         for (int j = 0; j < entryProps.getLength(); j++) {
+                            if (Thread.interrupted()) {
+                                return WAIT_STRING;
+                            }
                             Node elem = entryProps.item(j);
                             if (elem.getNodeName().equals("title")) { //NOI18N - get title of the topic
                                 title = elem.getFirstChild().getNodeValue();
@@ -314,9 +335,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                srcFeedPane.setText(String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
-                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
-                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"))); //NOI18N
+                srcFeedPane.setText(WAIT_STRING); //NOI18N
             }
         });
     }

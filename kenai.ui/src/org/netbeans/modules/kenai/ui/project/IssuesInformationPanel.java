@@ -76,6 +76,10 @@ import org.openide.util.NbBundle;
  */
 public class IssuesInformationPanel extends javax.swing.JPanel implements RefreshableContentPanel {
 
+    private final String WAIT_STRING = String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
+
     /** Creates new form IssuesInformationPanel */
     public IssuesInformationPanel() {
         initComponents();
@@ -119,12 +123,18 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
         String _appStr = String.format("<html><div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_PROJECT_ISSUES")); //NOI18N
         KenaiFeature[] issueTrackers = instProj.getFeatures(Type.ISSUES);
         if (issueTrackers.length > 0) {
+            if (Thread.interrupted()) {
+                return WAIT_STRING;
+            }
             KenaiFeature itrac = issueTrackers[0];
             String type = "kenai-small.png"; //NOI18N
             if (itrac.getService().equals(KenaiService.Names.BUGZILLA)) {
                 type = "bugzilla-logo.png"; //NOI18N
             } else if (itrac.getService().equals(KenaiService.Names.JIRA)) {
                 type = "jira-logo.png"; //NOI18N
+            }
+            if (Thread.interrupted()) {
+                return WAIT_STRING;
             }
             _appStr += String.format("<table><tr><td width=\"50\"><img src=\"%s\"></td><td><h3>%s</h3></td></tr></table><br>", //NOI18N
                     IssuesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/" + type), //NOI18N
@@ -134,6 +144,9 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                     kenaiProjectTopComponent.linkImageHTML,
                     itrac.getWebLocation(),
                     itrac.getWebLocation());
+            if (Thread.interrupted()) {
+                return WAIT_STRING;
+            }
             _appStr += String.format("<br><br><h4>%s</h4>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_DID_YOU_FIND_ISSUE")); //NOI18N
             _appStr += "<table cellpadding=\"0\" cellspacing=\"0\"><tr><td>"; //NOI18N
             _appStr += String.format("<input id=\"find\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_FIND_ISSUE")); // NOI18N
@@ -220,9 +233,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                issuesInfoPane.setText(String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
-                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
-                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"))); //NOI18N
+                issuesInfoPane.setText(WAIT_STRING); //NOI18N
             }
         });
     }
