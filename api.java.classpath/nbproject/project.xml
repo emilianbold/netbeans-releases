@@ -57,9 +57,6 @@
                         <code-name-base>org.openide.util</code-name-base>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.java.classpath</package>

@@ -1409,6 +1409,18 @@ public final class ParseProjectXml extends Task {
                 }
             }
         }
+        for (TestDeps testDeps : testDepsList) {
+            File testSrcDir = new File(moduleProject, "test/" + testDeps.testtype + "/src");
+            if (!testSrcDir.isDirectory()) {
+                String error = "No such dir " + testSrcDir + "; should not define test deps";
+                if (getModuleType(pDoc) == TYPE_NB_ORG) {
+                    throw new BuildException(error, getLocation());
+                } else {
+                    // For compatibility reasons probably cannot make this fatal.
+                    log(error, Project.MSG_WARN);
+                }
+            }
+        }
         // #82204 intialize default testtypes when are not  in project.xml
         if (!existsUnitTests) {
             log("Default TestDeps for unit", Project.MSG_VERBOSE);

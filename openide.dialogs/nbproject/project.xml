@@ -93,9 +93,6 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.openide</package>
