@@ -1017,7 +1017,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      */
     @Override
     protected boolean createTestActionCalled(FileObject[] selectedFiles) {
-        assert EventQueue.isDispatchThread();
+        // assert EventQueue.isDispatchThread(); #170707
 
         LOG_JUNIT_VER.finer("createTestActionCalled(...)");             //NOI18N
 
@@ -1142,7 +1142,7 @@ public final class DefaultPlugin extends JUnitPlugin {
     /**
      */
     private boolean askUserLastWasJUnit4NowSource14(String sourceLevel) {
-        assert EventQueue.isDispatchThread();
+        // assert EventQueue.isDispatchThread(); #170707
 
         JComponent msg
                = createMessageComponent("MSG_last_was_junit4_what_now", //NOI18N
@@ -1169,7 +1169,7 @@ public final class DefaultPlugin extends JUnitPlugin {
     /**
      */
     private boolean informUserOnlyJUnit3Applicable(String sourceLevel) {
-        assert EventQueue.isDispatchThread();
+        // assert EventQueue.isDispatchThread(); #170707
 
         JComponent msg
               = createMessageComponent("MSG_cannot_use_default_junit4", //NOI18N
@@ -1207,7 +1207,7 @@ public final class DefaultPlugin extends JUnitPlugin {
     private JUnitVersion askUserWhichJUnitToUse(String msgKey,
                                                 boolean offerJUnit4,
                                                 boolean showSourceLevelCondition) {
-        assert EventQueue.isDispatchThread();
+        // assert EventQueue.isDispatchThread(); #170707
 
         JRadioButton rbtnJUnit3 = new JRadioButton();
         Mnemonics.setLocalizedText(rbtnJUnit3, bundle.getString("LBL_JUnit3_generator"));
