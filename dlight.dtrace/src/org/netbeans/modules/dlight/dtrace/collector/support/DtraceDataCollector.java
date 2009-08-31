@@ -486,7 +486,7 @@ public final class DtraceDataCollector
         return validate(target, this, true);
     }
 
-    ValidationStatus validate(final DLightTarget target, Validateable validatebleSource, boolean notify) {
+    ValidationStatus validate(final DLightTarget target, Validateable<DLightTarget> validatebleSource, boolean notify) {
         if (validationStatus.isValid()) {
             return validationStatus;
         }
@@ -552,7 +552,7 @@ public final class DtraceDataCollector
         validationListeners.remove(listener);
     }
 
-    void notifyStatusChanged(Validateable validatable,
+    void notifyStatusChanged(Validateable<DLightTarget> validatable,
             ValidationStatus oldStatus, ValidationStatus newStatus) {
         if (oldStatus.equals(newStatus)) {
             return;
@@ -606,10 +606,13 @@ public final class DtraceDataCollector
 
         public void processLine(String line) {
             DataRow dataRow = parser.process(line);
+            addDataRow(dataRow);
+        }
+
+        private void addDataRow(DataRow dataRow) {
             if (dataRow != null) {
                 if (storage != null && tableMetaData != null) {
-                    storage.addData(
-                            tableMetaData.getName(), Arrays.asList(dataRow));
+                    storage.addData(tableMetaData.getName(), Arrays.asList(dataRow));
                 }
                 long curTimestamp = getTimestamp(dataRow);
                 if (curTimestamp == -1 || maxTimestamp < curTimestamp) {
@@ -645,6 +648,11 @@ public final class DtraceDataCollector
             }
             return -1;
         }
+
+        public void processClose() {
+            DataRow dataRow = parser.processClose();
+            addDataRow(dataRow);
+        }
     }
 
     private class MergedProcessLineCallbackImpl implements ProcessLineCallback {
@@ -664,6 +672,12 @@ public final class DtraceDataCollector
             }
             lastSlaveCollector = target;
         }
+
+        public void processClose() {
+            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
+                entry.getValue().getProcessLineCallback().processClose();
+            }
+        }
     }
 
     private class DtraceInputProcessorFactory implements InputProcessorFactory {
@@ -680,6 +694,7 @@ public final class DtraceDataCollector
                 }
 
                 public void close() {
+                    callback.processClose();
                 }
             });
         }
@@ -689,7 +704,12 @@ public final class DtraceDataCollector
             implements InputProcessorFactory {
 
         public InputProcessor newInputProcessor(InputProcessor p) {
-            return InputProcessors.copying(new OutputStreamWriter(System.err));
+            return InputProcessors.copying(new OutputStreamWriter(System.err) {
+                @Override
+                public void close() throws IOException {
+                    //Do not close System.err
+                }
+            });
         }
     }
 
