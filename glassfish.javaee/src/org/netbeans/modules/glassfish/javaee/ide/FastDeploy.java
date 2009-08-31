@@ -101,10 +101,10 @@ public class FastDeploy extends IncrementalDeployment {
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
-        final MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
-        final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
-        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
-        MonitorProgressObject restartObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        final MonitorProgressObject deployProgress = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        final MonitorProgressObject updateCRProgress = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
+        MonitorProgressObject restartProgress = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
 
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
@@ -119,20 +119,20 @@ public class FastDeploy extends IncrementalDeployment {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
         if (restart) {
-            restartObject.addProgressListener(new ProgressListener() {
+            restartProgress.addProgressListener(new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
-                        commonSupport.deploy(progressObject, dir, moduleName);
+                        commonSupport.deploy(deployProgress, dir, moduleName);
                     } else {
-                        progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
+                        deployProgress.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
                 }
             });
-            commonSupport.restartServer(restartObject);
-            return updateCRObject;
+            commonSupport.restartServer(restartProgress);
+            return updateCRProgress;
         } else {
-            commonSupport.deploy(progressObject, dir, moduleName);
-            return updateCRObject;
+            commonSupport.deploy(deployProgress, dir, moduleName);
+            return updateCRProgress;
         }
     }
     
