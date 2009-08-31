@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -64,7 +64,6 @@ import org.openide.util.RequestProcessor;
 public class FileStatusCacheNewGeneration extends FileStatusCache {
     
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, false);
-    private static final FileInformation FILE_INFORMATION_EXCLUDED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
     private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
@@ -83,7 +82,6 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     /**
      * Copy of cachedFiles. Available for time-consuming read operations, so these operations don't block a fast synchronized access to cachedFiles
      */
-    private Map<File, FileInformation> modifiedFiles = null;
     
     FileStatusCacheNewGeneration() {
         this.hg = Mercurial.getInstance();
@@ -101,7 +99,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                 for (File f : files) {
                     if (HgUtils.isIgnored(f, true)) {
                         // refresh status for this file
-                        refreshFileStatus(f, f.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED, Collections.EMPTY_MAP, true);
+                        refreshFileStatus(f, f.isDirectory() ? new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true) : FILE_INFORMATION_EXCLUDED, Collections.EMPTY_MAP, true);
                     }
                 }
             }
@@ -150,7 +148,6 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     private void setInfo (File file, FileInformation info) {
         synchronized (cachedFiles) {
             cachedFiles.put(file, info);
-            modifiedFiles = null;
         }
     }
 
@@ -162,7 +159,6 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     private void removeInfo (File file) {
         synchronized (cachedFiles) {
             cachedFiles.remove(file);
-            modifiedFiles = null;
         }
     }
 
@@ -176,7 +172,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     public FileInformation getStatus(File file) {
         boolean isDirectory = file.isDirectory();
         if (isDirectory && (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)))
-            return FILE_INFORMATION_EXCLUDED_DIRECTORY;
+            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
         FileInformation fi = getInfo(file);
         if (fi == null) {
             if (!exists(file)) {
@@ -208,7 +204,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                 // fast ignore-test
                 info = checkForIgnoredFile(file);
                 if (file.isDirectory()) {
-                    info = createFolderFileInformation(file, info == null ? null : FILE_INFORMATION_EXCLUDED_DIRECTORY);
+                    info = createFolderFileInformation(file, info == null ? null : new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true));
                 } else {
                     if (info == null) {
                         info = FILE_INFORMATION_UPTODATE;
@@ -253,25 +249,24 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
 
     /**
      * Returns a copy of the cache. This copy can be accessed outside of a synchronized block.
-     * XXX eventually can be turned to private
+     * XXX eventually delete
      * @return
      */
     @Override
     Map<File, FileInformation>  getAllModifiedFiles() {
-        synchronized (cachedFiles) {
-            Map<File, FileInformation> allModifiedFiles = modifiedFiles;
-            if (allModifiedFiles == null) {
-                // any changes have been made to the original
-                allModifiedFiles = new HashMap<File, FileInformation>(cachedFiles.size());
-                for (Map.Entry<File, FileInformation> e : cachedFiles.entrySet()) {
-                    if ((e.getValue().getStatus() & FileInformation.STATUS_VERSIONED_UPTODATE) == 0) {
-                        allModifiedFiles.put(e.getKey(), e.getValue());
-                    }
-                }
-            }
-            modifiedFiles = Collections.unmodifiableMap(allModifiedFiles);
-            return modifiedFiles;
+        return Collections.emptyMap();
+    }
+
+    private Map<File, FileInformation> getModifiedFiles (File root, int includeStatus) {
+        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
+        FileInformation info = getCachedStatus(root);
+        if ((info.getStatus() & includeStatus) != 0) {
+            modifiedFiles.put(root, info);
         }
+        for (File child : info.getModifiedChildren(false)) {
+            modifiedFiles.putAll(getModifiedFiles(child, includeStatus));
+        }
+        return modifiedFiles;
     }
 
     /**
@@ -298,12 +293,11 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                     refreshFileStatus(file, fi, interestingFiles);
                 }
                 // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
-                for (Map.Entry<File, FileInformation> entry : getAllModifiedFiles().entrySet()) {
+                for (Map.Entry<File, FileInformation> entry : getModifiedFiles(root, ~FileInformation.STATUS_VERSIONED_UPTODATE).entrySet()) {
                     File file = entry.getKey();
                     FileInformation fi = entry.getValue();
                     boolean exists = file.exists();
                     if (!interestingFiles.containsKey(file) // file no longer has an interesting status
-                            && Utils.isAncestorOrEqual(root, file) // file is under the examined root
                             && ((fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0 && !exists || // file was ignored and is now deleted
                             (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0 && (!exists || file.isFile()))) { // file is now up-to-date or also ignored by .hgignore
                         LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
@@ -366,7 +360,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
             if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && HgUtils.isIgnored(file)) {
                 // Sharebility query recognized this file as ignored
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
-                fi = file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
+                fi = file.isDirectory() ? new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true) : FILE_INFORMATION_EXCLUDED;
             }
             file = FileUtil.normalizeFile(file);
             current = getInfo(file);
@@ -405,55 +399,23 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     private void updateParentInformation (File file, FileInformation oldInfo, FileInformation newInfo) {
         File parent = file;
         FileInformation info;
-        int counterUp = -1, counterDown = -1;
-        // XXX refactor
-        if (newInfo != null) {
-            if ((newInfo.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
-                counterUp = FileInformation.COUNTER_CONFLICTED_FILES;
-            } else if ((newInfo.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
-                counterUp = FileInformation.COUNTER_DELETED_FILES;
-            } else if ((newInfo.getStatus() & (FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) != 0) {
-                counterUp = FileInformation.COUNTER_NEW_FILES;
-            } else if ((newInfo.getStatus() & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY) != 0) {
-                counterUp = FileInformation.COUNTER_MODIFIED_FILES;
-            }
-        }
-        if (oldInfo != null) {
-            if ((oldInfo.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
-                counterDown = FileInformation.COUNTER_CONFLICTED_FILES;
-            } else if ((oldInfo.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
-                counterDown = FileInformation.COUNTER_DELETED_FILES;
-            } else if ((oldInfo.getStatus() & (FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) != 0) {
-                counterDown = FileInformation.COUNTER_NEW_FILES;
-            } else if ((oldInfo.getStatus() & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY) != 0) {
-                counterDown = FileInformation.COUNTER_MODIFIED_FILES;
-            }
-        }
-        boolean direct = true;
-        // any change?
-        if (counterUp != -1 || counterDown != -1) {
-            // update all managed parents
-            while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+        // update all managed parents
+        File child = file;
+        while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            boolean exists = parent.exists();
+            if (exists) {
                 if (!info.isDirectory()) {
-                    // folder is probably deleted, but getCachedStatus recognized it as an Up-To-Date file
-                    // this may happen: after restart, ide scans dirs, finds a deleted file which triggers this method
-                    // if it's parent is deleted, too, getCachedStatus returns an Up-To-Date file
                     info = createFolderFileInformation(parent, null);
                 }
-                if (counterUp != -1) {
-                    info.addToCounter(counterUp, 1, direct);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "updateParentInformation: updating {0} with {1} triggered by {2}", new Object[] {parent, newInfo, file});
                 }
-                if (counterDown != -1) {
-                    try {
-                        info.addToCounter(counterDown, -1, direct);
-                    } catch (IllegalArgumentException ex) {
-                        LOG.log(Level.WARNING, "Decreasing value for counter {0}, for directory {1}. Triggered by {2} which turned to {3}", //NOI18N
-                                new Object[] {counterDown, parent.getAbsolutePath(), file.getAbsolutePath(), counterUp});
-                        LOG.log(Level.WARNING, null, ex);
-                    }
+                if (!info.setModifiedChild(child, newInfo)) {
+                    // do not notify parent
+                    break;
                 }
-                direct = false;
             }
+            child = parent;
         }
     }
 
@@ -500,58 +462,63 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     }
 
     /**
-     * Lists <b>modified files</b> and all folders that are known to be inside
+     * Lists <b>modified files</b> that are known to be inside
      * this folder. There are locally modified files present
      * plus any files that exist in the folder in the remote repository.
+     * Not recursive.
      *
      * @param dir folder to list
      * @return
      */
     @Override
-    public File [] listFiles(File dir) {
-        Set<File> set = new HashSet<File>();
-        Map<File, FileInformation> allFiles = getAllModifiedFiles();
-        for (Map.Entry<File, FileInformation> entry : allFiles.entrySet()) {
-            File file = entry.getKey();
-            FileInformation info = entry.getValue();
-            if (!info.isDirectory() && dir.equals(file.getParentFile())) {
-                set.add(file);
-            }
-        }
+    public File [] listFiles (File dir) {
+        Set<File> set = getStatus(dir).getModifiedChildren(false);
         return set.toArray(new File[set.size()]);
     }
 
 
     /**
      * Check if this context has at least one file with the passed in status
-     * XXX called only from ResolveConflictsAction so i guess no exclusion test is needed (as is in FileStatusCache
      * XXX cached argument not needed
      * @param context context to examine
      * @param includeStatus file status to check for
+     * @param checkCommitExclusions if set to true then files excluded from commit will not be tested
      * @param cached if set to <code>true</code>, only cached values will be checked otherwise it may call I/O operations
      * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
      */
     @Override
-    public boolean containsFileOfStatus(VCSContext context, int includeStatus, boolean cached){
-        assert (includeStatus & FileInformation.STATUS_VERSIONED_CONFLICT) != 0;
+    public boolean containsFileOfStatus(VCSContext context, int includeStatus, boolean checkCommitExclusions, boolean cached){
         Set<File> roots = context.getRootFiles();
-
         for (File root : roots) {
-            FileInformation info = getCachedStatus(root);
-            if (info.getCounter(FileInformation.COUNTER_CONFLICTED_FILES, VersioningSupport.isFlat(root)) > 0) {
+            if (hasStatus(root, includeStatus, checkCommitExclusions)
+                    || containsFileOfStatus(root, includeStatus, checkCommitExclusions, !VersioningSupport.isFlat(root))) {
                 return true;
             }
         }
         return false;
     }
 
+    private boolean containsFileOfStatus (File root, int includeStatus, boolean checkExclusions, boolean recursive) {
+        FileInformation info = getCachedStatus(root);
+        for (File child : info.getModifiedChildren(includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            if (hasStatus(child, includeStatus, checkExclusions)) {
+                return true;
+            } else if (recursive && containsFileOfStatus(child, includeStatus, checkExclusions, recursive)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    private boolean hasStatus (File file, int includeStatus, boolean checkExclusions) {
+        FileInformation info = getCachedStatus(file);
+        return (info.getStatus() & includeStatus) != 0
+                && (!checkExclusions || !HgModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath()));
+    }
 
     /**
      * Lists <b>interesting files</b> that are known to be inside given folders.
      * These are locally and remotely modified and ignored files.
-     *
-     * <p>This method returns both folders and files.
      *
      * @param context context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
@@ -561,13 +528,11 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     public File [] listFiles(VCSContext context, int includeStatus) {
         Set<File> roots = context.getRootFiles();
         Set<File> set = listFilesIntern(roots.toArray(new File[roots.size()]), includeStatus);
-        if (context.getExclusions().size() > 0) {
-            for (File excluded : context.getExclusions()) {
-                for (Iterator j = set.iterator(); j.hasNext();) {
-                    File file = (File) j.next();
-                    if (Utils.isAncestorOrEqual(excluded, file)) {
-                        j.remove();
-                    }
+        for (File excluded : context.getExclusions()) {
+            for (Iterator j = set.iterator(); j.hasNext();) {
+                File file = (File) j.next();
+                if (Utils.isAncestorOrEqual(excluded, file)) {
+                    j.remove();
                 }
             }
         }
@@ -576,9 +541,9 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
 
     /**
      * Lists <b>interesting files</b> that are known to be inside given folders.
-     * These are locally and remotely modified and ignored files.
+     * These are locally modified and ignored files.
      *
-     * <p>Comapring to CVS this method returns both folders and files.
+     * Is not recursive for flat roots
      *
      * @param roots context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
@@ -591,34 +556,22 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     }
 
     private Set<File> listFilesIntern(File[] roots, int includeStatus) {
-        Set<File> set = new HashSet<File>();
-        Map<File, FileInformation> allFiles = getAllModifiedFiles();
-        for (Map.Entry<File, FileInformation> entry : allFiles.entrySet()) {
-            File file = entry.getKey();
-            FileInformation info = entry.getValue();
-            if ((info.getStatus() & includeStatus) == 0) continue;
-            for (int j = 0; j < roots.length; j++) {
-                File root = roots[j];
-                if (VersioningSupport.isFlat(root)) {
-                    if (file.getParentFile().equals(root)) {
-                        set.add(file);
-                        break;
+        Set<File> listedFiles = new HashSet<File>();
+        for (File root : roots) {
+            if (VersioningSupport.isFlat(root)) {
+                for (File listed : listFiles(root)) {
+                    if ((getCachedStatus(listed).getStatus() & includeStatus) != 0) {
+                        listedFiles.add(listed);
                     }
-                } else {
-                    if (Utils.isAncestorOrEqual(root, file)) {
-                        File fileRoot = hg.getRepositoryRoot(file);
-                        File rootRoot = hg.getRepositoryRoot(root);
-                        // Make sure that file is in same repository as root
-                        if (rootRoot != null && rootRoot.equals(fileRoot)) {
-                            set.add(file);
-                            break;
-                        }
-                        break;
-                    }
+                }
+            } else {
+                Map<File, FileInformation> modified = getModifiedFiles(root, includeStatus);
+                for (File listed : modified.keySet()) {
+                    listedFiles.add(listed);
                 }
             }
         }
-        return set;
+        return listedFiles;
     }
 
     @Override
@@ -660,13 +613,6 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         if (files.size() > 0) {
             hg.getMercurialInterceptor().pingRepositoryRootFor(files.iterator().next());
         }
-    }
-
-    // XXX eventually delete
-    @Override
-    Map<File, FileInformation> getAllModifiedFilesCached (final boolean changed[]) {
-        changed[0] = false;
-        return getAllModifiedFiles();
     }
 
     // XXX should be here
