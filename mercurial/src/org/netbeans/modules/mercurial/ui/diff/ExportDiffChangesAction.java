@@ -44,7 +44,6 @@ package org.netbeans.modules.mercurial.ui.diff;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -117,7 +116,8 @@ public class ExportDiffChangesAction extends ContextAction {
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            // XXX containsFileOfStatus would be better (do not test exclusions from commit)
+            File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
             noop = files.length == 0;
         }
         if (noop) {
@@ -171,7 +171,8 @@ public class ExportDiffChangesAction extends ContextAction {
                 }
                 root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
             } else {
-                File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                // XXX containsFileOfStatus would be better (do not test exclusions from commit)
+                File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
                 root = getCommonParent(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
                 setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
@@ -330,34 +331,6 @@ public class ExportDiffChangesAction extends ContextAction {
         }
     }
 
-    /**
-     * Utility method that returns all non-excluded modified files that are
-     * under given roots (folders) and have one of specified statuses.
-     *
-     * @param context context to search
-     * @param includeStatus bit mask of file statuses to include in result
-     * @return File [] array of Files having specified status
-     */
-    public static File [] getModifiedFiles(VCSContext context, int includeStatus) {
-        File[] all = Mercurial.getInstance().getFileStatusCache().listFiles(context, includeStatus);
-        List<File> files = new ArrayList<File>();
-        for (int i = 0; i < all.length; i++) {
-            File file = all[i];            
-            files.add(file);            
-        }
-        
-        // ensure that command roots (files that were explicitly selected by user) are included in Diff
-        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        File[] rootFiles = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        for (int i = 0; i < rootFiles.length; i++) {
-            File file = rootFiles[i];
-            if (file.isFile() && (cache.getStatus(file).getStatus() & includeStatus) != 0 && !files.contains(file)) {
-                files.add(file);
-            }
-        }
-        return files.toArray(new File[files.size()]);
-    }
-        
     private String exportBinaryFile(File file) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder sb = new StringBuilder((int) file.length());
