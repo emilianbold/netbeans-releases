@@ -109,7 +109,7 @@ implements FileSystem.Status, FileChangeListener {
     private SystemFileSystem (FileSystem[] fss) throws PropertyVetoException {
         super (fss);
         user = (ModuleLayeredFileSystem) fss[0];
-        home = fss.length > 2 ? (ModuleLayeredFileSystem) fss[1] : null;
+        home = fss.length > 1 ? (ModuleLayeredFileSystem) fss[1] : null;
         
         setSystemName(SYSTEM_NAME);
         setHidden(true);
@@ -233,8 +233,6 @@ implements FileSystem.Status, FileChangeListener {
             if (displayName != null) {
                 return displayName;
             }
-            String fixedName = FixedFileSystem.deflt.annotateName(fo.getPath());
-            if (fixedName != null) return fixedName;
         }
 
         return s;
@@ -273,7 +271,7 @@ implements FileSystem.Status, FileChangeListener {
         return null;
     }
 
-    static String insertBeforeSuffix(String path, String toInsert) {
+    private static String insertBeforeSuffix(String path, String toInsert) {
         String withoutSuffix = path;
         String suffix = ""; // NOI18N
 
@@ -292,10 +290,6 @@ implements FileSystem.Status, FileChangeListener {
             Image img = annotateIcon(fo, type);
             if (img != null) {
                 return img;
-            }
-            Image anntIm = FixedFileSystem.deflt.annotateIcon(fo.getPath());
-            if (anntIm != null) {
-                return anntIm;
             }
         }
         return im;
@@ -356,15 +350,11 @@ implements FileSystem.Status, FileChangeListener {
             extras[i].setReadOnly(true);
         }
 
-        FileSystem[] arr = new FileSystem[home == null ? 2 : 3];
+        FileSystem[] arr = new FileSystem[home == null ? 1 : 2];
         arr[0] = new ModuleLayeredFileSystem(user, true, new FileSystem[0], false);
         if (home != null) {
             arr[1] = new ModuleLayeredFileSystem(home, false, extras, true);
         }
-        FixedFileSystem.deflt = new FixedFileSystem
-            ("org.netbeans.core.projects.FixedFileSystem", "Automatic Manifest Installation"); // NOI18N
-        arr[home == null ? 1 : 2] = FixedFileSystem.deflt;
-
         return new SystemFileSystem (arr);
     }
 

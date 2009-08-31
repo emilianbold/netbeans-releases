@@ -415,7 +415,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             if (visibleDiffernce < view.getDifferenceCount() - 1) {
                 currentDifferenceIndex = Math.max(currentDifferenceIndex, visibleDiffernce);
             }
-            if (++currentDifferenceIndex >= view.getDifferenceCount()) {
+            if (++currentDifferenceIndex >= view.getDifferenceCount()) { // also passes for view.getDifferenceCount() == 0
                 if (++currentIndex >= setups.length) {
                     currentIndex--;
                 } else {
@@ -441,7 +441,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 } else {
                     setDiffIndex(currentIndex, -1);
                 }
-            } else {
+            } else if (currentDifferenceIndex < view.getDifferenceCount()) {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {

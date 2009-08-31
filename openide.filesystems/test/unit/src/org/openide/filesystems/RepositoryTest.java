@@ -42,22 +42,24 @@
 package org.openide.filesystems;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.Arrays;
 import java.util.Enumeration;
-import junit.framework.TestCase;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Enumerations;
+import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
-/**
- *
- * @author Jaroslav Tulach
- */
-public class RepositoryTest extends TestCase {
+public class RepositoryTest extends NbTestCase {
     
     public RepositoryTest(String testName) {
         super(testName);
@@ -65,7 +67,7 @@ public class RepositoryTest extends TestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
-        ExternalUtil.repository = null;
+        Repository.reset();
         MockLookup.setInstances();
     }
 
@@ -125,6 +127,70 @@ public class RepositoryTest extends TestCase {
         } catch (MalformedURLException x) {
             throw new AssertionError(x);
         }
+    }
+
+    public void testInitializationFromTwoThreads() throws Exception {
+        final AtomicInteger addCnt = new AtomicInteger();
+        final AtomicInteger removeCnt = new AtomicInteger();
+        Repository r = new Repository(new MultiFileSystem() {
+            public @Override void addNotify() {
+                addCnt.incrementAndGet();
+                super.addNotify();
+            }
+            public @Override void removeNotify() {
+                removeCnt.incrementAndGet();
+                super.removeNotify();
+            }
+        });
+        MockLookup.setInstances(r);
+        assertSame("Repo created and it is ours", r, Repository.getDefault());
+        final AtomicReference<Repository> fromRunnable = new AtomicReference<Repository>();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                fromRunnable.set(Repository.getDefault());
+            }
+        }).waitFinished();
+        assertSame("Both repositories are same", r, fromRunnable.get());
+        assertEquals("One add", 1, addCnt.get());
+        assertEquals("No remove", 0, removeCnt.get());
+    }
+
+    public void testDynamicSystemsCanAlsoBeBehindLayers() throws Exception {
+        final File dir1 = new File(getWorkDir(), "dir1");
+        final File dir2 = new File(getWorkDir(), "dir2");
+        class MyFS1 extends LocalFileSystem {
+            public MyFS1() throws Exception {
+                dir1.mkdirs();
+                setRootDirectory(dir1);
+                getRoot().setAttribute("fallback", true);
+                FileObject fo1 = FileUtil.createData(getRoot(), "test/data.txt");
+                fo1.setAttribute("one", 1);
+                write(fo1, "fileone");
+                FileObject fo11 = FileUtil.createData(getRoot(), "test-fs-is-there.txt");
+                write(fo11, "hereIam");
+            }
+        }
+        class MyFS2 extends LocalFileSystem {
+            public MyFS2() throws Exception {
+                dir2.mkdirs();
+                setRootDirectory(dir2);
+                FileObject fo1 = FileUtil.createData(getRoot(), "test/data.txt");
+                fo1.setAttribute("two", 1);
+                write(fo1, "two");
+            }
+        }
+        MockLookup.setInstances(new MyFS1(), new MyFS2());
+        FileObject global = FileUtil.getConfigFile("test/data.txt");
+        assertEquals("Second file system takes preceedence", "two", global.asText());
+        assertTrue("Still valid", global.isValid());
+        FileObject fo = FileUtil.getConfigFile("test-fs-is-there.txt");
+        assertNotNull("File found: " + Arrays.toString(FileUtil.getConfigRoot().getChildren()), fo);
+        assertEquals("Text is correct", "hereIam", fo.asText());
+    }
+    private static void write(FileObject fo, String txt) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        os.write(txt.getBytes());
+        os.close();
     }
 
 }

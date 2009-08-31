@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.kenai.collab.chat;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.TreeSet;
 import org.jivesoftware.smack.XMPPConnection;
@@ -55,7 +54,7 @@ public class FakeRoster {
     }
 
     public Collection<FakeRosterGroup> getGroups() {
-        ArrayList<FakeRosterGroup> l = new ArrayList();
+        TreeSet<FakeRosterGroup> l = new TreeSet();
         for (MultiUserChat muc:KenaiConnection.getDefault().getChats()) {
             l.add(new FakeRosterGroup(muc));
         }

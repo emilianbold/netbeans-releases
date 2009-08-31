@@ -69,7 +69,9 @@ class URLClickListener implements MouseListener {
     }
 
     public void mouseClicked(MouseEvent e) {
-        URLDisplayer.getDefault().showURL(url);
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            URLDisplayer.getDefault().showURL(url);
+        }
     }
 
     public void mousePressed(MouseEvent e) {

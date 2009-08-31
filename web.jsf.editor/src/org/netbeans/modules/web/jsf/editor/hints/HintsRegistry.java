@@ -67,6 +67,7 @@ public class HintsRegistry {
         PROVIDERS = new ArrayList<HintsProvider>();
         //init providers
         PROVIDERS.add(new ComponentUsagesChecker());
+        PROVIDERS.add(new LibraryDeclarationChecker());
     }
 
     public List<Hint> gatherHints(RuleContext context) {
