@@ -91,10 +91,10 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
         static {
             Performer _performer = null;
             try {
-                Class desktop = Class.forName("java.awt.Desktop");
+                Class<?> desktop = Class.forName("java.awt.Desktop");
                 if ((Boolean) desktop.getMethod("isDesktopSupported").invoke(null)) {
                     final Object desktopInstance = desktop.getMethod("getDesktop").invoke(null);
-                    Class action = Class.forName("java.awt.Desktop$Action");
+                    Class<?> action = Class.forName("java.awt.Desktop$Action");
                     if ((Boolean) desktop.getMethod("isSupported", action).
                             invoke(desktopInstance, action.getField("OPEN").get(null))) {
                         final Method open = desktop.getMethod("open", File.class);
