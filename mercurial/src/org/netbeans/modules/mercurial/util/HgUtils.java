@@ -1032,6 +1032,7 @@ itor tabs #66700).
      * Normalize flat files, Mercurial treats folder as normal file
      * so it's necessary explicitly list direct descendants to
      * get classical flat behaviour.
+     * <strong>Does not return up-to-date files</strong>
      *
      * <p> E.g. revert on package node means:
      * <ul>
@@ -1071,15 +1072,15 @@ itor tabs #66700).
      *
      * @param context context to search
      * @param includeStatus bit mask of file statuses to include in result
+     * @param testCommitExclusions if set to true then returned files will not contain those excluded from commit
      * @return File [] array of Files having specified status
      */
-    public static File [] getModifiedFiles(VCSContext context, int includeStatus) {
+    public static File [] getModifiedFiles(VCSContext context, int includeStatus, boolean testCommitExclusions) {
         File[] all = Mercurial.getInstance().getFileStatusCache().listFiles(context, includeStatus);
         List<File> files = new ArrayList<File>();
         for (int i = 0; i < all.length; i++) {
             File file = all[i];
-            String path = file.getAbsolutePath();
-            if (HgModuleConfig.getDefault().isExcludedFromCommit(path) == false) {
+            if (!testCommitExclusions || !HgModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
                 files.add(file);
             }
         }

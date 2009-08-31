@@ -93,9 +93,10 @@ import org.xml.sax.SAXException;
  */
 public class SourcesInformationPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final int MAX_ENTRIES = 20;
-    private final String WAIT_STRING = String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+    private final String WAIT_STRING = String.format("<html><table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr>" + //NOI18N
+            "<td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
                         SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
-                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT")); //NOI18N
 
     /** Creates new form SourcesInformationPanel */
     public SourcesInformationPanel(final JScrollBar vbar) {
@@ -105,10 +106,16 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
             public void hyperlinkUpdate(final HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
                     srcFeedPane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    if (e.getDescription().startsWith("http://") || e.getDescription().startsWith("https://")) { //NOI18N
+                        srcFeedPane.setToolTipText(e.getDescription());
+                    } else if (e.getDescription().startsWith("#")) { //NOI18N
+                        srcFeedPane.setToolTipText("Scroll down to this repository...");
+                    }
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
                     srcFeedPane.setCursor(Cursor.getDefaultCursor());
+                    srcFeedPane.setToolTipText(""); //NOI18N
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -154,14 +161,14 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
     private String addRepoHeaderWithButton(final KenaiFeature repo, String htmlID, int order) {
         String _appString = ""; //NOI18N
         if (repo.getService().equals(KenaiService.Names.SUBVERSION) || repo.getService().equals(KenaiService.Names.MERCURIAL)) {
-            _appString += String.format("<a name=\"repo%d\"></a><table><tr><td><h3>%s (%s)</h3></td><td width=\"200\" align=\"right\"><input type=\"reset\" id=\"%s\" value=\"%s\"></td></tr></table>", //NOI18N
+            _appString += String.format("<a name=\"repo%d\"></a><table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td><h3>%s (%s)</h3></td><td width=\"200\" align=\"right\"><input type=\"reset\" id=\"%s\" value=\"%s\"></td></tr></table>", //NOI18N
                     order,
                     repo.getDisplayName(),
                     repo.getService(),
                     htmlID,
                     NbBundle.getMessage(SourcesInformationPanel.class, "MSG_GET_THIS_REPO")); //NOI18N
         } else {
-            _appString += String.format("<h3>%s (%s)</h3>", repo.getDisplayName(), repo.getService()); //NOI18N
+            _appString += String.format("<a name=\"repo%d\"></a><h3>%s (%s)</h3>", order, repo.getDisplayName(), repo.getService()); //NOI18N
         }
         return _appString;
     }
@@ -239,13 +246,13 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 } catch (FileNotFoundException e) {
                     _appString += "<br>" + addRepoHeaderWithButton(repo, htmlID, k); //NOI18N
                     _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_REPO_NOT_ON_KENAI")); //NOI18N
-                    _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
+                    _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
                     _appString += "<br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
                     continue;
                 } catch (IOException e) {
                     _appString += "<br>" + addRepoHeaderWithButton(repo, htmlID, k); //NOI18N
                     _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_CANNOT_OPEN_FEED")); //NOI18N
-                    _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
+                    _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
                     _appString += "<br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
                     continue;
                 }
@@ -256,8 +263,8 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 if (Thread.interrupted()) {
                     return WAIT_STRING;
                 }
-                _appString += "<table>"; //NOI18N start table for each repository
-                _appString += String.format("<tr><td colspan=\"2\"><h4>%s</h4></td></tr>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_RECENT_CHANGES")); //NOI18N
+                _appString += "<table cellspacing=\"0\" border=\"0\" cellpadding=\"0\">"; //NOI18N start table for each repository
+                _appString += String.format("<tr><td colspan=\"4\"><h4>%s</h4></td></tr>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_RECENT_CHANGES")); //NOI18N
                 if (entriesCount > 0 && entries != null) {
                     _appString += "<tr>"; //NOI18N
                     for (int i = 0; i < entriesCount && i < MAX_ENTRIES; i++) {
@@ -276,7 +283,10 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                             }
                             Node elem = entryProps.item(j);
                             if (elem.getNodeName().equals("title")) { //NOI18N - get title of the topic
-                                title = elem.getFirstChild().getNodeValue();
+                                Node firstChild = elem.getFirstChild();
+                                if (firstChild != null) {
+                                    title = firstChild.getNodeValue();
+                                }
                             } else if (elem.getNodeName().equals("updated")) { //NOI18N - get update date of the topic
                                 updated = elem.getFirstChild().getNodeValue();
                             } else if (elem.getNodeName().equals("link")) { //NOI18N - found link of the topic, get href...
@@ -285,18 +295,25 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                                     href = base + href;
                                 }
                             } else if (elem.getNodeName().equals("content")) { //NOI18N get title of the topic
-                                content = elem.getFirstChild().getNodeValue();
+                                //NOI18N get title of the topic
+                                Node firstChild = elem.getFirstChild();
+                                if (firstChild != null) {
+                                    content = firstChild.getNodeValue();
+                                }
                             }
                         }
                         if (title != null && href != null) {
                             // Not correct - the Atom feed contains a timestamp (RFC 3339) with T/Z characters,
                             // i.e., that should be interpretted better than by replacing...
-                            _appString += String.format("<td class=\"monospaced\">%s<a href=\"%s\">%s</a></td><td> %s - <i>%s</i></td></tr>", //NOI18N
-                                    kenaiProjectTopComponent.linkImageHTML, href, title, content, updated.replaceAll("[a-zA-Z]", " ")); //NOI18N
+                            _appString += String.format("<td style=\"padding-top: 4px;\" valign=\"top\">%s</td>" + //NOI18N
+                                    "<td valign=\"top\" style=\"padding-left: 3px;\"><a title=\"test\" href=\"%s\">%s</a></td>" + //NOI18N
+                                    "<td style=\"padding-left: 4px\" valign=\"top\"><i>%s:</i></td>" + //NOI18N
+                                    "<td style=\"padding-left: 4px\" valign=\"top\">%s</td></tr>", //NOI18N
+                                    kenaiProjectTopComponent.linkImageHTML, href, title, updated.replaceAll("[a-zA-Z]", "&nbsp;"), content); //NOI18N
                         }
                     }
                 } else {
-                    _appString += String.format("<tr><td colspan=\"2\"><i>%s</i></td></tr>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_CHANGES")); //NOI18N
+                    _appString += String.format("<tr><td colspan=\"4\"><i>%s</i></td></tr>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_CHANGES")); //NOI18N
                 }
                 _appString += "</table><br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
             }
@@ -329,7 +346,6 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         styleSheet.addRule("div.section {margin-bottom: 10px;}"); //NOI18N
         styleSheet.addRule("div.item {margin-bottom: 5px;}"); //NOI18N
         styleSheet.addRule("i {color: gray}"); //NOI18N
-        styleSheet.addRule(".monospaced {font-family: monospace}"); //NOI18N
         styleSheet.addRule("h2 {color: rgb(0,22,103)}; font-size: 18pt"); //NOI18N
         styleSheet.addRule("h3 {font-size: 15pt"); //NOI18N
         styleSheet.addRule("h4 {font-size: 12pt"); //NOI18N
