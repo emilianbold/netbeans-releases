@@ -482,7 +482,7 @@ public abstract class FileSystem implements Serializable {
      * @return the status object for this filesystem
      */
     public Status getStatus() {
-        return isDefault() ? new SFSStatus() : STATUS_NONE;
+        return isDefault() ? SFS_STATUS : STATUS_NONE;
     }
 
     /** The object describing capabilities of this filesystem.
@@ -945,7 +945,7 @@ public abstract class FileSystem implements Serializable {
         }
     }
 
-    private static final class SFSStatus implements FileSystem.Status {
+    private static final Status SFS_STATUS = new Status() {
 
         public String annotateName(String s, Set<? extends FileObject> files) {
             // Look for a localized file name.
@@ -961,7 +961,7 @@ public abstract class FileSystem implements Serializable {
             return s;
         }
 
-        private static final String annotateName(FileObject fo) {
+        private final String annotateName(FileObject fo) {
             String bundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
             if (bundleName != null) {
                 try {
@@ -981,7 +981,7 @@ public abstract class FileSystem implements Serializable {
             return (String) fo.getAttribute("displayName"); // NOI18N
         }
 
-        private static String warningMessage(String name, FileObject fo) {
+        private String warningMessage(String name, FileObject fo) {
             Object by = fo.getAttribute("layers"); // NOI18N
             if (by instanceof Object[]) {
                 by = Arrays.toString((Object[]) by);
@@ -999,7 +999,7 @@ public abstract class FileSystem implements Serializable {
             return im;
         }
 
-        private static Image annotateIcon(FileObject fo, int type) {
+        private Image annotateIcon(FileObject fo, int type) {
             String attr = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
                 attr = "SystemFileSystem.icon"; // NOI18N
@@ -1030,7 +1030,7 @@ public abstract class FileSystem implements Serializable {
             return null;
         }
 
-        private static String insertBeforeSuffix(String path, String toInsert) {
+        private String insertBeforeSuffix(String path, String toInsert) {
             String withoutSuffix = path;
             String suffix = ""; // NOI18N
             if (path.lastIndexOf('.') >= 0) {
@@ -1040,6 +1040,6 @@ public abstract class FileSystem implements Serializable {
             return withoutSuffix + toInsert + suffix;
         }
 
-    }
+    };
 
 }
