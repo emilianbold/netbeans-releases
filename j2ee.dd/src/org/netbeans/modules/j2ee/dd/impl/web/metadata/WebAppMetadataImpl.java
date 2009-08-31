@@ -41,11 +41,21 @@
 
 package org.netbeans.modules.j2ee.dd.impl.web.metadata;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
@@ -66,6 +76,7 @@ import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 
@@ -84,12 +95,15 @@ public class WebAppMetadataImpl implements WebAppMetadata {
     private MetadataUnit metadataUnit;
     private WebApp webXml;
     private long webXmlLastModification = -1L;
-    private List<FragmentRec> fragmentRecs = new ArrayList<FragmentRec>();
+    private Map<FileObject, FragmentRec> myRootToFragment = new HashMap<FileObject, 
+        FragmentRec>();
 
     public WebAppMetadataImpl(MetadataUnit metadataUnit, WebAppMetadataModelImpl modelImpl) {
         this.metadataUnit = metadataUnit;
         this.modelImpl = modelImpl;
         refreshWebXml();
+        collectFragments();
+        registerListener();
     }
 
     // -------------------------------------------------------------------------
@@ -101,18 +115,16 @@ public class WebAppMetadataImpl implements WebAppMetadata {
     }
 
     public List<WebFragment> getFragments() {
-        refreshFragments();
         List<WebFragment> res = new ArrayList<WebFragment>();
-        for (FragmentRec fr : fragmentRecs) {
+        for (FragmentRec fr : myRootToFragment.values()) {
             res.add(fr.fragment);
         }
         return sortFragments(webXml, res);
     }
 
     public List<FileObject> getFragmentFiles() {
-        refreshFragments();
         List<FileObject> res = new ArrayList<FileObject>();
-        for (FragmentRec fr : fragmentRecs) {
+        for (FragmentRec fr : myRootToFragment.values()) {
             res.add(fr.source);
         }
         return res;
@@ -213,34 +225,84 @@ public class WebAppMetadataImpl implements WebAppMetadata {
     }
 
     // -------------------------------------------------------------------------
-    private void refreshFragments() {
-        List<FragmentRec> res = new ArrayList<FragmentRec>();
-        List<FileObject> frgs = metadataUnit.getCompilePath().findAllResources("META-INF/web-fragment.xml");
-        for (FileObject fo : frgs) {
-            FragmentRec oldRec = findFragmentRec(fo);
-            fo.refresh();
-            long lastModif = fo.lastModified().getTime();
-            if (oldRec == null || lastModif > oldRec.lastModification) {
-                try {
-                    FragmentRec newRec = new FragmentRec();
-                    newRec.source = fo;
-                    newRec.lastModification = lastModif;
-                    newRec.fragment = WebFragmentProvider.getDefault().getWebFragmentRoot(fo);
-                    res.add(newRec);
-                }
-                catch (Exception ex) {
-                    LOG.log(Level.SEVERE, "Error during web-fragment.xml parsing! File: "+fo, ex);
-                }
-            }
-            else {
-                res.add(oldRec);
-            }
+    private void registerListener() {
+        metadataUnit.getCompilePath().addPropertyChangeListener(
+                new PropertyChangeListener() {
+
+                    public void propertyChange( PropertyChangeEvent event ) {
+                        if (!event.getPropertyName().equals(
+                                ClassPath.PROP_ENTRIES))
+                        {
+                            return;
+                        }
+			try {
+                        modelImpl
+                                .runReadAction(new MetadataModelAction<WebAppMetadata, Void>()
+                                {
+
+                                    public Void run( WebAppMetadata data ) {
+
+                                        FileObject[] roots = metadataUnit
+                                                .getCompilePath().getRoots();
+                                        Set<FileObject> rootsSet = new HashSet<FileObject>(
+                                                Arrays.asList(roots));
+                                        Set<FileObject> oldRoots = new HashSet<FileObject>(
+                                                myRootToFragment.keySet());
+                                        Set<FileObject> intersection = new HashSet<FileObject>(
+                                                rootsSet);
+                                        intersection.retainAll(oldRoots);
+                                        oldRoots.removeAll(rootsSet);
+                                        for (FileObject fileObject : oldRoots) {
+                                            myRootToFragment.remove( fileObject );
+                                        }
+                                        rootsSet.remove(intersection);
+                                        for (FileObject fileObject : rootsSet)
+                                        {
+                                            addFragmentRec(fileObject);
+                                        }
+                                        return null;
+                                    }
+                                });
+			}
+			catch(Exception e){
+				LOG.log(Level.SEVERE,
+        				"Error during access to compile path",
+        			e);			
+			}
+                    }
+                });
+    }
+    
+    private void collectFragments() {
+        FileObject[] roots = metadataUnit.getCompilePath().getRoots();
+
+        for (FileObject root : roots) {
+            addFragmentRec(root);
         }
-        fragmentRecs = res;
+    }
+
+    private void addFragmentRec( FileObject root) {
+        FileObject fo = root.getFileObject("META-INF/web-fragment.xml");    // NOI18N
+        if (fo == null) {
+            return;
+        }
+        fo.refresh();
+        try {
+            FragmentRec rec = new FragmentRec();
+            rec.source = fo;
+            rec.fragment = WebFragmentProvider.getDefault()
+                    .getWebFragmentRoot(fo);
+            myRootToFragment.put( root, rec );
+        }
+        catch (Exception ex) {
+            LOG.log(Level.SEVERE,
+                    "Error during web-fragment.xml parsing! File: " + fo,
+                    ex);
+        }
     }
 
     private FragmentRec findFragmentRec(FileObject fo) {
-        for (FragmentRec fr : fragmentRecs) {
+        for (FragmentRec fr : myRootToFragment.values()) {
             try {
                 if (fr.source.getURL().equals(fo.getURL()))
                     return fr;
@@ -481,7 +543,6 @@ public class WebAppMetadataImpl implements WebAppMetadata {
     // -------------------------------------------------------------------------
     private static class FragmentRec {
         WebFragment fragment;
-        long lastModification;
         FileObject source;
     }
 
