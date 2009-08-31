@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
  */
 public class IssuesInformationPanel extends javax.swing.JPanel implements RefreshableContentPanel {
 
-    private final String WAIT_STRING = String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+    private final String WAIT_STRING = String.format("<html><table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
                         SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
                         NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
 
@@ -136,10 +136,10 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
             if (Thread.interrupted()) {
                 return WAIT_STRING;
             }
-            _appStr += String.format("<table><tr><td><img src=\"%s\"></td><td width=\"10px\"></td><td><h3>%s</h3></td></tr></table><br>", //NOI18N
+            _appStr += String.format("<table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td><img src=\"%s\"></td><td width=\"10px\"></td><td><h3>%s</h3></td></tr></table><br>", //NOI18N
                     IssuesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/" + type), //NOI18N
                     itrac.getDisplayName());
-            _appStr += String.format("%s:<br><p>&nbsp;&nbsp;&nbsp;&nbsp;%s<a href=\"%s\">%s</a></p>", //NOI18N
+            _appStr += String.format("%s:<br><p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", //NOI18N
                     NbBundle.getMessage(IssuesInformationPanel.class, "MSG_ISSUE_TRACKER_ONLINE"), //NOI18N
                     kenaiProjectTopComponent.linkImageHTML,
                     itrac.getWebLocation(),
@@ -148,7 +148,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                 return WAIT_STRING;
             }
             _appStr += String.format("<br><br><h4>%s</h4>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_DID_YOU_FIND_ISSUE")); //NOI18N
-            _appStr += "<table cellpadding=\"0\" cellspacing=\"0\"><tr><td>"; //NOI18N
+            _appStr += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td>"; //NOI18N
             _appStr += String.format("<input id=\"find\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_FIND_ISSUE")); // NOI18N
             _appStr += "</td></tr><tr><td>"; //NOI18N
             _appStr += String.format("<input id=\"enter\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_NEW_REPORT")); //NOI18N

@@ -87,7 +87,7 @@ import org.xml.sax.SAXException;
 public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final String CHAT_BUTTON = "CHAT_BUTTON"; //NOI18N
 
-    private final String WAIT_STRING = String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+    private final String WAIT_STRING = String.format("<html><table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
                         SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
                         NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
 
@@ -143,7 +143,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr = String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_FORUMS")); //NOI18N
             for (int i = 0; i < forums.length; i++) {
                 KenaiFeature forum = forums[i];
-                innerStr += String.format("<div class=\"item\">%s<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                innerStr += String.format("<div class=\"item\">%s&nbsp;<a href=\"%s\">%s</a> - <i>%s</i></div>",
                         kenaiProjectTopComponent.linkImageHTML,
                         forum.getWebLocation(),
                         forum.getDisplayName(),
@@ -166,7 +166,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_MAILING_LISTS")); //NOI18N
             for (int i = 0; i < mails.length; i++) {
                 KenaiFeature mail = mails[i];
-                innerStr += String.format("<div class=\"item\">%s<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                innerStr += String.format("<div class=\"item\">%s&nbsp;<a href=\"%s\">%s</a> - <i>%s</i></div>",
                         kenaiProjectTopComponent.linkImageHTML,
                         mail.getWebLocation(),
                         mail.getDisplayName(),
@@ -232,7 +232,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                         }
                     }
                     if (title != null && href != null) {
-                        _appString += String.format("%s<a href=\"%s\">%s</a><br>", kenaiProjectTopComponent.linkImageHTML, href, title); //NOI18N
+                        _appString += String.format("%s&nbsp;<a href=\"%s\">%s</a><br>", kenaiProjectTopComponent.linkImageHTML, href, title); //NOI18N
                     }
                     if (content != null) {
                         _appString += String.format("<i>%s</i><br><br>", content); //NOI18N
