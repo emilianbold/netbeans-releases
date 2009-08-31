@@ -36,47 +36,62 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.support;
+package org.netbeans.modules.dlight.spi.indicator;
 
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.dlight.util.Range;
 
 /**
+ * Model for components that have viewport or are otherwise
+ * involved in viewport management.
  *
- * @author Maria Tishkova
+ * @author Alexey Vladykin
  */
-public final class DefaultIndicatorComponentEmptyContentProvider {
+public interface ViewportModel {
 
-    private static final DefaultIndicatorComponentEmptyContentProvider instance = new DefaultIndicatorComponentEmptyContentProvider();
+    /**
+     * Returns limits. Limits is the available data range,
+     * which can be viewed through this viewport.
+     *
+     * @return current limits
+     */
+    Range<Long> getLimits();
 
-    private DefaultIndicatorComponentEmptyContentProvider() {
-    }
+    /**
+     * Sets limits.
+     *
+     * @param limits  new limits
+     */
+    void setLimits(Range<Long> limits);
 
-    public static final DefaultIndicatorComponentEmptyContentProvider getInstance() {
-        return instance;
-    }
+    /**
+     * Returns viewport. Viewport's start and
+     * end are in milliseconds since session start.
+     *
+     * @return current viewport
+     */
+    Range<Long> getViewport();
 
-    public List<Indicator<?>> getEmptyContent(String configurationName) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
+    /**
+     * Sets viewport. Start and/or end can be <code>null</code>
+     * to keep current values.
+     *
+     * @param viewport  new viewport
+     */
+    void setViewport(Range<Long> viewport);
 
-        if (gizmoConfiguration == null) {
-            return null;
-        }
+    /**
+     * Adds change listener. <code>ChangeEvent</code>s are sent
+     * when limits or viewport are modified.
+     *
+     * @param listener  listener to add
+     */
+    void addChangeListener(ChangeListener listener);
 
-        List<Indicator<?>> indicators = gizmoConfiguration.getIndicators();
-
-        Iterator<Indicator<?>> it = indicators.iterator();
-
-        while (it.hasNext()) {
-            Indicator<?> ind = it.next();
-            if (!ind.isVisible()) {
-                it.remove();
-            }
-        }
-
-        return indicators;
-    }
+    /**
+     * Removes change listener.
+     *
+     * @param listener  listener to remove
+     */
+    void removeChangeListener(ChangeListener listener);
 }
