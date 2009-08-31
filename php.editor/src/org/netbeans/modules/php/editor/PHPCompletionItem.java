@@ -564,12 +564,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         protected String getTypeName() {
             final ElementHandle elem = getElement();
             String typeName = null;
+            IndexedConstant indexedConstant = null;
             if (elem instanceof IndexedConstant) {
-                typeName = ((IndexedConstant)elem).getTypeName();
+                indexedConstant = ((IndexedConstant) elem);
             } else if (elem instanceof IndexedClassMember) {
-                typeName = ((IndexedClassMember<IndexedConstant>)elem).getMember().getTypeName();
+                indexedConstant = ((IndexedClassMember<IndexedConstant>) elem).getMember();
             }
-
+            if (CodeUtils.isVariableTypeResolved(indexedConstant)) {
+                typeName = indexedConstant.getTypeName();
+            }
             if (typeName == null) {
                 typeName = "?"; //NOI18N
             }
