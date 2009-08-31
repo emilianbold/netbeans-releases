@@ -1032,6 +1032,7 @@ itor tabs #66700).
      * Normalize flat files, Mercurial treats folder as normal file
      * so it's necessary explicitly list direct descendants to
      * get classical flat behaviour.
+     * <strong>Does not return up-to-date files</strong>
      *
      * <p> E.g. revert on package node means:
      * <ul>
