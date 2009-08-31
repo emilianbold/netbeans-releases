@@ -106,8 +106,9 @@ public class SyntaxParserResult {
                 if(e.type() == SyntaxElement.TYPE_TAG || e.type() == SyntaxElement.TYPE_ENDTAG) {
                     SyntaxElement.Tag tag = (SyntaxElement.Tag)e;
                     String tagNamePrefix = getTagNamePrefix(tag);
-                    if(tagNamePrefix == null && prefix == null ||
-                            tagNamePrefix != null && prefix != null && tagNamePrefix.equals(prefix)) {
+                    if((tagNamePrefix == null && prefix == null) ||
+                            (tagNamePrefix != null && prefix == null && !getDeclaredNamespaces().containsValue(tagNamePrefix)) || //unknown prefixed tags falls to the default html content
+                            (tagNamePrefix != null && prefix != null && tagNamePrefix.equals(prefix))) {
                         //either the tag has no prefix and the prefix is null
                         //or the prefix matches
                         filtered.add(e);
