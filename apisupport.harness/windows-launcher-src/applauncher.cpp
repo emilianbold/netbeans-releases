@@ -101,7 +101,6 @@ bool AppLauncher::findUserDir(const char *str) {
             if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_APPDATA_NAME, userHome)) {
                 return false;
             }
-            userHome.erase(userHome.rfind('\\'));
             logMsg("User home: %s", userHome.c_str());
         }
         str += strlen(HOME_TOKEN);
