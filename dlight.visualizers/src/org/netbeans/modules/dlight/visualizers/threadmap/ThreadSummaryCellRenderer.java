@@ -218,7 +218,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                     buf.append(res.name);
                     buf.append("</td>");// NOI18N
                     buf.append("<td>");// NOI18N
-                    buf.append(TimeLineUtils.getSecondsValue(value*count*10));
+                    buf.append(TimeLineUtils.getMillisValue(value*count*10));
                     buf.append("</td>");// NOI18N
                     buf.append("<td>");// NOI18N
                     buf.append(""+value+"%");// NOI18N

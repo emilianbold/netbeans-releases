@@ -40,16 +40,12 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
-import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.module.dlight.threads.api.OpenInEditor;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -98,7 +94,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
         long time = 0;
         if (descriptor != null){
-            time = descriptor.getTimestamp();
+            time =  ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - startTime;
         }
         String timeString = TimeLineUtils.getMillisValue(time);
         String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerNoStackAt", timeString); //NOI18N
@@ -170,19 +166,5 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     public void refresh() {
-    }
-
-    private static final class OpenAction extends AbstractAction {
-
-        private final FunctionCall call;
-
-        private OpenAction(FunctionCall call) {
-            super(call.getDisplayedName());
-            this.call = call;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            OpenInEditor.open(call);
-        }
     }
 }

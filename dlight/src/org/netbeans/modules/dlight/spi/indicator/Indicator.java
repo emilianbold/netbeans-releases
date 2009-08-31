@@ -255,7 +255,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             @Override
             public void mouseClicked(MouseEvent e) {
                 component.requestFocus();
-                notifyListeners();
+                //do not notify anyone - click is not default action anymore
+                //notifyListeners();
             }
         });
         final Color c = component.getBackground();
