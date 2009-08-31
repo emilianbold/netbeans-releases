@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
+import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesTestNode;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
@@ -184,7 +185,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     },
                     null,
                     cs,
-                    null
+                    new ExtraLibrariesTestNode(project, evaluator, EjbJarProjectProperties.J2EE_SERVER_INSTANCE, cs)
                     );
             }
             assert false: "No node for key: " + key; // NOI18N
