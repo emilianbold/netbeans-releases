@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -134,6 +135,10 @@ public final class RunFileActionProvider implements ActionProvider {
             doRun(file, existing, debug);
             return;
         }
+        if (existing == null) {
+            // init work dir
+            existing = new RunFileArgs(null, null, null, null, file.getParent(), true);
+        }
 
         RunFileArgs runFileArgs = showDialog(existing, file, debug, true);
 
@@ -144,11 +149,13 @@ public final class RunFileActionProvider implements ActionProvider {
     }
 
     private void doRun(File file, RunFileArgs runFileArgs, boolean debug) {
-        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(runFileArgs.getPlatform(), file.getName(), file.getParentFile());
+        File workDir = new File(runFileArgs.getWorkDir());
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(runFileArgs.getPlatform(), file.getName(), workDir);
         if (runFileArgs.getRunArgs() != null) {
             desc.additionalArgs(Utilities.parseParameters(runFileArgs.getRunArgs()));
         }
         desc.jvmArguments(runFileArgs.getJvmArgs());
+        desc.initialArgs(runFileArgs.getRubyOpts());
         desc.debug(debug);
         desc.script(file.getAbsolutePath());
         RubyProcessCreator rpc = new RubyProcessCreator(desc);
@@ -182,12 +189,16 @@ public final class RunFileActionProvider implements ActionProvider {
         private final RubyPlatform platform;
         private final String runArgs;
         private final String jvmArgs;
+        private final String rubyOpts;
+        private final String workDir;
         private final boolean displayDialog;
 
-        public RunFileArgs(RubyPlatform platform, String runArgs, String jvmArgs, boolean displayDialog) {
+        public RunFileArgs(RubyPlatform platform, String runArgs, String jvmArgs, String rubyOpts, String workDir, boolean displayDialog) {
             this.platform = platform;
             this.runArgs = runArgs;
             this.jvmArgs = jvmArgs;
+            this.rubyOpts = rubyOpts;
+            this.workDir = workDir;
             this.displayDialog = displayDialog;
         }
 
@@ -206,5 +217,14 @@ public final class RunFileActionProvider implements ActionProvider {
         public boolean displayDialog() {
             return displayDialog;
         }
+
+        public String getRubyOpts() {
+            return rubyOpts;
+        }
+
+        public String getWorkDir() {
+            return workDir;
+        }
+
     }
 }
