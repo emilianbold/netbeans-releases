@@ -209,6 +209,13 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -216,7 +223,9 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
@@ -231,10 +240,6 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

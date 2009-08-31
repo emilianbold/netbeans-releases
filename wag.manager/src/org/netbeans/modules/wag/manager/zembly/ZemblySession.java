@@ -43,26 +43,33 @@ import com.zembly.gateway.client.config.Configuration;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.oauth.api.Response;
 import com.zembly.oauth.core.UrlConnection;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.wag.manager.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author peterliu
  */
-public class ZemblySession {
+public class ZemblySession implements PropertyChangeListener {
+
     private static final String LOGIN_URL = "https://zembly.com/ui/loginProcess";   //NOI18N
     private static final String TEST_LOGIN_URL = "https://spunky.com:8181/ui/loginProcess";   //NOI18N
     private static final String USERID_ATTR = "userid";         //NOI18N
     private static final String USERNAME_ATTR = "username";     //NOI18N
     private static final String KEY_ATTR = "key";               //NOI18N
     private static final String SECRET_ATTR = "secret";         //NOI18N
-    
+    private static final String PROP_LOGIN = "login";           //NOI18N
     private static ZemblySession instance;
     private Zembly zembly;
     private SearchEngine searchEngine;
@@ -71,15 +78,28 @@ public class ZemblySession {
     private UserServiceRetriever userServiceRetriever;
     private RankingRetriever rankingRetriever;
     private ItemInfoRetriever itemInfoRetriever;
+    private TestDriver testDriver;
     private ZemblyUserInfo userInfo;
-
+    protected PropertyChangeSupport pps;
     // For local testing
     /*
     static {
-        SSLUtilities.trustAllHostnames();
-        SSLUtilities.trustAllHttpsCertificates();
+    SSLUtilities.trustAllHostnames();
+    SSLUtilities.trustAllHttpsCertificates();
     }
      */
+
+
+    static {
+        ZemblySession session = ZemblySession.getInstance();
+        Kenai kenai = Kenai.getDefault();
+
+        //kenai.addPropertyChangeListener(WeakListeners.propertyChange(session, kenai));
+    }
+
+    private ZemblySession() {
+        pps = new PropertyChangeSupport(this);
+    }
 
     public synchronized static ZemblySession getInstance() {
         if (instance == null) {
@@ -90,7 +110,7 @@ public class ZemblySession {
     }
 
     public void login(String username, char[] password) {
-          // TODO:
+        // TODO:
         // 1. Check login status
         // 2. Single sign on
         // 3. Log into zembly and retrieve OAuth tokens
@@ -101,26 +121,26 @@ public class ZemblySession {
             //userInfo = new ZemblyUserInfo();
             //userInfo.setUserid("914986440");
             //userInfo.setUsername("spunky");
+            fireChange(false, true, PROP_LOGIN);
         }
     }
 
-    public void login() {
-      
-    }
-
     public void logout() {
+        userInfo = null;
+
+        fireChange(true, false, PROP_LOGIN);
     }
 
     public boolean isLoggedIn() {
         return userInfo != null;
     }
-   
+
     public ZemblyUserInfo getUserInfo() {
         return userInfo;
     }
 
     public DomainRetriever getDomainRetriever() {
-        login();
+        assert !isLoggedIn();
 
         if (domainRetriever == null) {
             domainRetriever = new DomainRetriever(getZembly());
@@ -129,9 +149,8 @@ public class ZemblySession {
         return domainRetriever;
     }
 
-    
     public SearchEngine getSearchEngine() {
-        login();
+        assert !isLoggedIn();
 
         if (searchEngine == null) {
             searchEngine = new SearchEngine(getZembly());
@@ -141,7 +160,7 @@ public class ZemblySession {
     }
 
     public ContentRetriever getContentRetriever() {
-        login();
+        assert !isLoggedIn();
 
         if (contentRetriever == null) {
             contentRetriever = new ContentRetriever(getZembly());
@@ -151,7 +170,7 @@ public class ZemblySession {
     }
 
     public UserServiceRetriever getUserServiceRetriever() {
-        login();
+        assert isLoggedIn();
 
         if (userServiceRetriever == null) {
             userServiceRetriever = new UserServiceRetriever(getZembly());
@@ -161,7 +180,7 @@ public class ZemblySession {
     }
 
     public RankingRetriever getRankingRetriever() {
-        login();
+        assert !isLoggedIn();
 
         if (rankingRetriever == null) {
             rankingRetriever = new RankingRetriever(getZembly());
@@ -171,13 +190,23 @@ public class ZemblySession {
     }
 
     public ItemInfoRetriever getItemInfoRetriever() {
-        login();
+        assert !isLoggedIn();
 
         if (itemInfoRetriever == null) {
             itemInfoRetriever = new ItemInfoRetriever(getZembly());
         }
 
         return itemInfoRetriever;
+    }
+
+    public TestDriver getTestDriver() {
+        assert !isLoggedIn();
+
+        if (testDriver == null) {
+            testDriver = new TestDriver(getZembly());
+        }
+
+        return testDriver;
     }
 
     private ZemblyUserInfo zemblyLogin(String username, String password) {
@@ -187,7 +216,7 @@ public class ZemblySession {
         params.add(new Parameter("useCWP", "true"));
 
         //UrlConnection conn = new UrlConnection(TEST_LOGIN_URL, params);
-        UrlConnection conn = new UrlConnection(LOGIN_URL ,params);
+        UrlConnection conn = new UrlConnection(LOGIN_URL, params);
         try {
             Response result = conn.post(null);
             System.out.println("result = " + result.getString());
@@ -225,7 +254,7 @@ public class ZemblySession {
 
             userInfo.setUserid(obj.getString(USERID_ATTR));
             userInfo.setUsername(obj.getString(USERNAME_ATTR));
-            
+
             // The OAuth keys are not yet available from zembly.
             try {
                 userInfo.setKey(obj.getString(KEY_ATTR));
@@ -241,5 +270,32 @@ public class ZemblySession {
         }
 
         return null;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pps.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pps.removePropertyChangeListener(l);
+    }
+
+    protected void fireChange(Object old, Object neu, String propName) {
+        PropertyChangeEvent pce = new PropertyChangeEvent(this, propName, old, neu);
+        pps.firePropertyChange(pce);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            PasswordAuthentication newValue = (PasswordAuthentication) evt.getNewValue();
+
+            // If new value is not null, that means login, otherwise, logout
+            if (newValue != null) {
+                login(newValue.getUserName(), newValue.getPassword());
+            } else {
+                logout();
+            }
+
+        }
     }
 }

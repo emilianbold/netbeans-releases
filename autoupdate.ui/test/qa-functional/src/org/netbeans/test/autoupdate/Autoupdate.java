@@ -42,53 +42,24 @@
 package org.netbeans.test.autoupdate;
 
 import org.netbeans.jellytools.JellyTestCase;
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.JemmyException;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.jemmy.operators.JListOperator;
 import junit.framework.Test;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import java.util.List;
-import org.netbeans.jemmy.util.Dumper;
-import java.io.*;
-import java.net.*;
-import java.util.Enumeration;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
-
-/*
-
-  Commit validation test for PHP.
-  Some code just copied from other tests to avoid any affects from
-  current changes in working test set.
-
-*/
 
 public class Autoupdate extends JellyTestCase
 {

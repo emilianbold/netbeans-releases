@@ -51,25 +51,30 @@ import org.netbeans.modules.autoupdate.ui.Containers;
  */
 public class UninstallUnitWizardModel extends OperationWizardModel {
     private OperationType operationType;
+    private OperationContainer container;
+    private OperationContainer<OperationSupport> customContainer;
     
     /** 
      @param doAction if is null it means doUninstall, false means doDisable, true means doEnable
      */
     public UninstallUnitWizardModel (OperationType doOperation) {
         this.operationType = doOperation;
+        this.customContainer = Containers.forCustomUninstall ();
         switch (operationType) {
             case UNINSTALL :
-                assert Containers.forUninstall () != null;
+                this.container = Containers.forUninstall ();
                 break;
             case ENABLE :
-                assert Containers.forEnable () != null;
+                this.container = Containers.forEnable ();
                 break;
             case DISABLE :
-                assert Containers.forDisable () != null;
+                this.container = Containers.forDisable ();
                 break;
             default:
                 assert false;
         }
+
+        assert container!=null ;
     }
     
     public OperationType getOperation () {
@@ -77,25 +82,11 @@ public class UninstallUnitWizardModel extends OperationWizardModel {
     }
     
     public OperationContainer getBaseContainer () {
-        OperationContainer c = null;
-        switch (operationType) {
-            case UNINSTALL :
-                c = Containers.forUninstall ();
-                break;
-            case ENABLE :
-                c = Containers.forEnable ();
-                break;
-            case DISABLE :
-                c = Containers.forDisable ();
-                break;
-            default:
-                assert false;
-        }
-        return c;
+        return container;
     }
     
     public OperationContainer<OperationSupport> getCustomHandledContainer () {
-        return Containers.forCustomUninstall ();
+        return customContainer;
     }
     
 }

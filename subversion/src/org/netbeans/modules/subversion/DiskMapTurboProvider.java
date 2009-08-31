@@ -67,11 +67,15 @@ class DiskMapTurboProvider implements TurboProvider {
     private int                             cachedStoreSerial = -1;
     private Map<File, FileInformation>      cachedValues;
 
+    public class Entry extends HashMap<String, List<Entry>> { }
+
+    public Entry index = new Entry();
+
     DiskMapTurboProvider() {
         initCacheStore();
     }
 
-    synchronized Map<File, FileInformation>  getAllModifiedValues() {
+    public synchronized Map<File, FileInformation>  getAllModifiedValues() {
         if (modifiedFilesChanged() || cachedValues == null) {
             HashMap<File, FileInformation> modifiedValues = new HashMap<File, FileInformation>();
             if (!cacheStore.isDirectory()) {
@@ -124,6 +128,7 @@ class DiskMapTurboProvider implements TurboProvider {
                             FileInformation info = (FileInformation) value.get(f);
                             if ((info.getStatus() & STATUS_VALUABLE) != 0) {
                                 modifiedValues.put(f, info);
+                                addToIndex(f, info);
                             }
                         }
                     }
@@ -143,7 +148,12 @@ class DiskMapTurboProvider implements TurboProvider {
         return cachedValues;
     }
 
-    Map<File, FileInformation> getCachedValues() {
+
+    private void addToIndex(File f, FileInformation info) {
+
+    }
+
+    public Map<File, FileInformation> getCachedValues() {
         if (cachedValues != null) {
             return cachedValues;
         }
@@ -438,4 +448,5 @@ class DiskMapTurboProvider implements TurboProvider {
         }
         out.flush();
     }
+
 }

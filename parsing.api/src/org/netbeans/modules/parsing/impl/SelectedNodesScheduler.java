@@ -68,9 +68,13 @@ public class SelectedNodesScheduler extends Scheduler {
     public SelectedNodesScheduler () {
         TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
     }
-    
+
+    private RequestProcessor requestProcessor;
+
     private void refresh () {
-        RequestProcessor.getDefault ().post (new Runnable () {
+        if (requestProcessor == null)
+            requestProcessor = new RequestProcessor ("SelectedNodesScheduler");
+        requestProcessor.post (new Runnable () {
             public void run () {
                 final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
                 if (nodes.length == 1) {

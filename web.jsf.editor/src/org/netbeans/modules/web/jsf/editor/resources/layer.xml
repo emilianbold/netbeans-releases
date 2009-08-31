@@ -7,6 +7,9 @@
                 <file name="org-netbeans-modules-web-jsf-editor-HtmlSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
+                <file name="org-netbeans-modules-web-jsf-editor-index-JsfIndexer$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
+                </file>
             </folder>
             <folder name="xhtml">
                 <folder name="text">
@@ -64,6 +67,8 @@
             <attr name="position" intvalue="400"/>
             <file name="JsfForm.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfForm.xml"/>
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
+            <file name="JsfFormFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfFormFromEntity.xml"/>
+            <file name="JsfTableFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTableFromEntity.xml"/>
         </folder>
     </folder>
 

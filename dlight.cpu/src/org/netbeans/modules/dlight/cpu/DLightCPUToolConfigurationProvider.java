@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.cpu;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,11 +57,10 @@ import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -153,18 +153,20 @@ public final class DLightCPUToolConfigurationProvider
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
         resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
-        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION,
-                loc("indicator.title"), 100, // NOI18N
-                Arrays.<GraphDescriptor>asList(
-                new GraphDescriptor(GraphConfig.COLOR_3, loc("graph.description.system"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                new GraphDescriptor(GraphConfig.COLOR_1, loc("graph.description.user"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
-                new DataRowToCpuPlot(
+        TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
+        indicatorConfiguration.setGraphScale(100);
+        indicatorConfiguration.addTimeSeriesDescriptors(
+                new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), loc("graph.description.system"), TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), loc("graph.description.user"), TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
+        indicatorConfiguration.setDataRowHandler(
+                new DataRowToCpu(
                 Arrays.asList(ProcDataProviderConfiguration.USR_TIME),
                 Arrays.asList(ProcDataProviderConfiguration.SYS_TIME)));
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
-        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
-                new DetailDescriptor(TIME_DETAIL_ID, loc("detail.time"), formatTime(0)))); // NOI18N
+        indicatorConfiguration.addDetailDescriptors(
+                new DetailDescriptor(TIME_DETAIL_ID, loc("detail.time"), formatTime(0))); // NOI18N
 
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
@@ -245,7 +247,7 @@ public final class DLightCPUToolConfigurationProvider
                 DLightCPUToolConfigurationProvider.class, key, params);
     }
 
-    private static class DataRowToCpuPlot implements DataRowToPlot {
+    private static class DataRowToCpu implements DataRowToTimeSeries {
 
         private final List<Column> usrColumns;
         private final List<Column> sysColumns;
@@ -253,7 +255,7 @@ public final class DLightCPUToolConfigurationProvider
         private int usr;
         private int sys;
 
-        public DataRowToCpuPlot(List<Column> usrColumns, List<Column> sysColumns) {
+        public DataRowToCpu(List<Column> usrColumns, List<Column> sysColumns) {
             this.usrColumns = new ArrayList<Column>(usrColumns);
             this.sysColumns = new ArrayList<Column>(sysColumns);
         }

@@ -238,9 +238,6 @@ class J2SEActionProvider implements ActionProvider {
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
-            COMMAND_DEBUG,            //debuger blocks during backgroun scan, todo fix debuger
-            COMMAND_DEBUG_SINGLE,     //debuger blocks during backgroun scan, todo fix debuger
-            COMMAND_DEBUG_STEP_INTO,  //debuger blocks during backgroun scan, todo fix debuger
             JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
 

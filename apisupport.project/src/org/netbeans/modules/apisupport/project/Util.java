@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -790,13 +791,25 @@ public final class Util {
     }
     
     /**
-     * Finds all available packages in a given project directory. Found entries
-     * are in the form of a regular java package (x.y.z).
+     * Finds all available packages in a given project directory, including <tt>%lt;class-path-extension&gt;</tt>-s.
+     * See {@link #scanJarForPackageNames(java.util.Set, java.io.File)} for details.
      * 
      * @param prjDir directory containing project to be scanned
      * @return a set of found packages
      */
     public static SortedSet<String> scanProjectForPackageNames(final File prjDir) {
+        return scanProjectForPackageNames(prjDir, true);
+    }
+
+    /**
+     * Finds all available packages in a given project directory. Found entries
+     * are in the form of a regular java package (x.y.z).
+     *
+     * @param prjDir directory containing project to be scanned
+     * @param withCPExt When <tt>false</tt> only source roots are scanned, otherwise scans <tt>%lt;class-path-extension&gt;</tt>-s as well.
+     * @return a set of found packages
+     */
+    public static SortedSet<String> scanProjectForPackageNames(final File prjDir, boolean withCPExt) {
         NbModuleProject project = null;
         // find all available public packages in classpath extensions
         FileObject source = FileUtil.toFileObject(prjDir);
@@ -825,9 +838,11 @@ public final class Util {
             availablePublicPackages.add(pkgS.replace('/', '.'));
         }
         
-        String[] libsPaths = new ProjectXMLManager(project).getBinaryOrigins();
-        for (int i = 0; i < libsPaths.length; i++) {
-            scanJarForPackageNames(availablePublicPackages, project.getHelper().resolveFile(libsPaths[i]));
+        if (withCPExt) {
+            String[] libsPaths = new ProjectXMLManager(project).getBinaryOrigins();
+            for (int i = 0; i < libsPaths.length; i++) {
+                scanJarForPackageNames(availablePublicPackages, project.getHelper().resolveFile(libsPaths[i]));
+            }
         }
         
         // #72669: remove invalid packages.
@@ -866,8 +881,9 @@ public final class Util {
             if (root.equals(pkg)) { // default package #71532
                 continue;
             }
-            String pkgS = pkg.getPath();
-            packages.add(pkgS.replace('/', '.'));
+            String pkgS = pkg.getPath().replace('/', '.');
+            if (Util.isValidJavaFQN(pkgS))
+                packages.add(pkgS);
         }
     }
     
@@ -931,4 +947,40 @@ public final class Util {
         }
         return urls;
     }
+
+    public static final String CPEXT_BINARY_PATH = "release/modules/ext/";
+    public static final String CPEXT_RUNTIME_RELATIVE_PATH = "ext/";
+
+    /**
+     * Copies given JAR file into <tt>release/modules/ext</tt> folder under <tt>projectDir</tt>.
+     * <tt>release/modules/ext</tt> will be created if necessary.
+     *
+     * @param projectDir Project folder
+     * @param jar JAR file to be copied
+     * @return If JAR copied successfully, returns string array <tt>{&lt;runtime-relative path&gt, &lt;binary origin path&gt;}</tt>,
+     * otherwise <tt>null</tt>.
+     * @throws IOException When <tt>release/modules/ext</tt> folder cannot be created.
+     */
+    public static String[] copyClassPathExtensionJar(File projectDir, File jar) throws IOException {
+        String[] ret = null;
+
+        File releaseDir = new File(projectDir, CPEXT_BINARY_PATH); //NOI18N
+        if (! releaseDir.isDirectory() && !releaseDir.mkdirs()) {
+            throw new IOException("cannot create release directory '" + releaseDir + "'.");    // NOI18N
+        }
+        
+        FileObject relDirFo = FileUtil.toFileObject(releaseDir);
+        FileObject orig = FileUtil.toFileObject(FileUtil.normalizeFile(jar));
+        if (orig != null) {
+            FileObject existing = relDirFo.getFileObject(orig.getName(), orig.getExt());
+            if (existing != null)
+                existing.delete();
+            FileUtil.copyFile(orig, relDirFo, orig.getName());
+            ret = new String[2];
+            ret[0] = CPEXT_RUNTIME_RELATIVE_PATH + orig.getNameExt();    // NOI18N
+            ret[1] = CPEXT_BINARY_PATH + orig.getNameExt(); // NOI18N
+        }
+        return ret;
+    }
+
 }

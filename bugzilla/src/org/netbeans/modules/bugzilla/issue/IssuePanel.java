@@ -86,6 +86,8 @@ import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -117,6 +119,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private boolean reloading;
     private boolean skipReload;
     private boolean usingTargetMilestones;
+    private PropertyChangeListener tasklistListener;
 
     public IssuePanel() {
         initComponents();
@@ -166,17 +169,30 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getSource() != IssuePanel.this.issue) {
+                return;
+            }
+            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                updateFieldStatuses();
+            }
+        }
+    };
+
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
             issue.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                         reloadFormInAWT(false);
-                    } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
-                        updateFieldStatuses();
                     }
                 }
             });
+
+            IssueCacheUtils.removeCacheListener(issue, cacheListener);
+            IssueCacheUtils.addCacheListener(issue, cacheListener);
+
             summaryField.getDocument().addDocumentListener(new DocumentListener() {
                 public void insertUpdate(DocumentEvent e) {
                     changedUpdate(e);
@@ -216,6 +232,7 @@ public class IssuePanel extends javax.swing.JPanel {
             qaContactLabel.setVisible(showQAContact);
             qaContactField.setVisible(showQAContact);
         }
+        tasklistButton.setEnabled(false);
         reloadForm(true);
     }
 
@@ -379,6 +396,7 @@ public class IssuePanel extends javax.swing.JPanel {
         if (force) {
             addCommentArea.setText(""); // NOI18N
         }
+        updateTasklistButton();
         updateFieldStatuses();
         updateNoSummary();
         if ((fieldWarnings.size() != noWarnings) || (fieldErrors.size() != noErrors)) {
@@ -795,6 +813,54 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private void attachTasklistListener (BugzillaIssueProvider provider) {
+        if (tasklistListener == null) { // is not attached yet
+            // listens on events comming from the tasklist, like when an issue is removed, etc.
+            // needed to correctly update tasklistButton label and status
+            tasklistListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (BugzillaIssueProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
+                        Runnable inAWT = new Runnable() {
+                            public void run() {
+                                updateTasklistButton();
+                            }
+                        };
+                        if (EventQueue.isDispatchThread()) {
+                            inAWT.run();
+                        } else {
+                            EventQueue.invokeLater(inAWT);
+                        }
+                    }
+                }
+            };
+            provider.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(tasklistListener, provider));
+        }
+    }
+
+    private void updateTasklistButton() {
+        tasklistButton.setEnabled(false);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
+                if (provider == null || issue.isNew()) { // do not enable button for new issues
+                    return;
+                }
+                final boolean isInTasklist = provider.isAdded(issue);
+                if (isInTasklist) {
+                    attachTasklistListener(provider);
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
+                                isInTasklist ? "IssuePanel.tasklistButton.remove" : "IssuePanel.tasklistButton.add"); // NOI18N
+                        tasklistButton.setText(tasklistMessage);
+                        tasklistButton.setEnabled(true);
+                    }
+                });
+            }
+        });
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -901,6 +967,8 @@ public class IssuePanel extends javax.swing.JPanel {
         separatorLabel = new javax.swing.JLabel();
         reportedStatusLabel = new javax.swing.JLabel();
         assignedToStatusLabel = new javax.swing.JLabel();
+        tasklistButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        separatorLabel2 = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -1028,7 +1096,7 @@ public class IssuePanel extends javax.swing.JPanel {
         dummyAttachmentsPanel.setLayout(dummyAttachmentsPanelLayout);
         dummyAttachmentsPanelLayout.setHorizontalGroup(
             dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 409, Short.MAX_VALUE)
+            .add(0, 738, Short.MAX_VALUE)
         );
         dummyAttachmentsPanelLayout.setVerticalGroup(
             dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1075,6 +1143,11 @@ public class IssuePanel extends javax.swing.JPanel {
 
         separatorLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
+        org.openide.awt.Mnemonics.setLocalizedText(tasklistButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
+        tasklistButton.addActionListener(formListener);
+
+        separatorLabel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -1084,6 +1157,10 @@ public class IssuePanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(separatorLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1264,6 +1341,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(versionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(separatorLabel2)
                         .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(separatorLabel)))
@@ -1373,7 +1452,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, severityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        layout.linkSize(new java.awt.Component[] {reloadButton, separatorLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         layout.linkSize(new java.awt.Component[] {assignedLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
@@ -1465,6 +1544,9 @@ public class IssuePanel extends javax.swing.JPanel {
             }
             else if (evt.getSource() == reloadButton) {
                 IssuePanel.this.reloadButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == tasklistButton) {
+                IssuePanel.this.tasklistButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -1816,6 +1898,18 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
+    private void tasklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tasklistButtonActionPerformed
+        tasklistButton.setEnabled(false);
+        BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
+        if (provider.isAdded(issue)) {
+            provider.remove(issue);
+        } else {
+            attachTasklistListener(provider);
+            provider.add(issue, true);
+        }
+        updateTasklistButton();
+    }//GEN-LAST:event_tasklistButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -1884,6 +1978,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JSeparator separator;
     private javax.swing.JLabel separatorLabel;
+    private javax.swing.JLabel separatorLabel2;
     private javax.swing.JComboBox severityCombo;
     private javax.swing.JLabel severityLabel;
     private javax.swing.JLabel severityWarning;
@@ -1896,6 +1991,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel summaryWarning;
     private javax.swing.JComboBox targetMilestoneCombo;
     private javax.swing.JLabel targetMilestoneLabel;
+    private org.netbeans.modules.bugtracking.util.LinkButton tasklistButton;
     private javax.swing.JTextField urlField;
     private javax.swing.JLabel urlLabel;
     private javax.swing.JLabel urlWarning;

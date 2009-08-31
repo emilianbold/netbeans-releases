@@ -12,6 +12,7 @@ METHOD     test(int_cmd, file1, file2)                Kernel
 METHOD     throw(symbol, obj)                         Kernel
 METHOD     to_a                                       Object
 METHOD     to_enum(method, *args)                     Object
+METHOD     to_s                                       Object
 METHOD     trace_var(symbol)                          Kernel
 METHOD     trace_var(symbol, cmd)                     Kernel
 METHOD     trap(signal)                               Kernel

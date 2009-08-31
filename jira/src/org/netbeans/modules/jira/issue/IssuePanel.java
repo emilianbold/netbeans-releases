@@ -45,8 +45,11 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -79,6 +82,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -100,7 +104,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
@@ -361,7 +366,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reloading = true;
 
         boolean isNew = issue.getTaskData().isNew();
-        headerLabel.setVisible(!isNew);
+        headerLabel.setVisible(!isNew || issue.isSubtask());
         createdLabel.setVisible(!isNew);
         createdField.setVisible(!isNew);
         updatedLabel.setVisible(!isNew);
@@ -504,6 +509,9 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
             statusField.setText(STATUS_OPEN);
             fixPrefSize(statusField);
+            if (issue.isSubtask()) {
+                headerLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.newSubtask")); // NOI18N
+            }
         } else {
             ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
             // Header label
@@ -606,6 +614,23 @@ public class IssuePanel extends javax.swing.JPanel {
                     subTaskTable = new JTable();
                     subTaskTable.setDefaultRenderer(JiraStatus.class, new StatusRenderer());
                     subTaskTable.setDefaultRenderer(Priority.class, new PriorityRenderer());
+                    subTaskTable.setDefaultRenderer(IssueType.class, new TypeRenderer());
+                    subTaskTable.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (e.getClickCount() == 2) {
+                                Point p = e.getPoint();
+                                int row = subTaskTable.rowAtPoint(p);
+                                TableModel model = subTaskTable.getModel();
+                                final String issueKey = (String)model.getValueAt(row,0);
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                   public void run() {
+                                       issue.getRepository().getIssue(issueKey).open();
+                                   }
+                                });
+                            }
+                        }
+                    });
                     subTaskScrollPane = new JScrollPane(subTaskTable);
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -877,6 +902,17 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() != issue) {
+                return;
+            }
+            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                updateFieldStatuses();
+            }
+        }
+    };
+
     private void attachIssueListener(final NbJiraIssue issue) {
         issue.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -885,11 +921,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                     reloadFormInAWT(false);
-                } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
-                    updateFieldStatuses();
-                }
+                } 
             }
         });
+        IssueCacheUtils.removeCacheListener(issue, cacheListener);
+        IssueCacheUtils.addCacheListener(issue, cacheListener);
     }
 
     private static void fixPrefSize(JTextField textField) {
@@ -932,30 +968,52 @@ public class IssuePanel extends javax.swing.JPanel {
         label.repaint();
     }
 
-    // This is ugly, but I don't see a better way if we want to have a status combo
     private static final String STATUS_OPEN = "Open"; // NOI18N
     private static final String STATUS_IN_PROGRESS = "In Progress"; // NOI18N
     private static final String STATUS_REOPENED = "Reopened"; // NOI18N
     private static final String STATUS_RESOLVED = "Resolved"; // NOI18N
     private static final String STATUS_CLOSED = "Closed"; // NOI18N
     private List<JiraStatus> allowedStatusTransitions(JiraStatus status) {
+        // Available operations
+        boolean startProgressAvailable = false;
+        boolean stopProgressAvailable = false;
+        boolean resolveIssueAvailable = false;
+        boolean closeIssueAvailable = false;
+        boolean reopenIssueAvailable = false;
+        for (TaskOperation operation : issue.getAvailableOperations().values()) {
+            String label = operation.getLabel();
+            if (JiraUtils.isStartProgressOperation(label)) {
+                startProgressAvailable = true;
+            } else if (JiraUtils.isStopProgressOperation(label)) {
+                stopProgressAvailable = true;
+            } else if (JiraUtils.isResolveOperation(label)) {
+                resolveIssueAvailable = true;
+            } else if (JiraUtils.isCloseOperation(label)) {
+                closeIssueAvailable = true;
+            } else if (JiraUtils.isReopenOperation(label)) {
+                reopenIssueAvailable = true;
+            }
+        }
+
         String statusName = status.getName();
         List<String> allowedNames = new ArrayList<String>(3);
         allowedNames.add(statusName);
-        if (STATUS_OPEN.equals(statusName) || STATUS_REOPENED.equals(statusName)) {
-            allowedNames.add(STATUS_IN_PROGRESS);
-            allowedNames.add(STATUS_RESOLVED);
-            allowedNames.add(STATUS_CLOSED);
-        } else if (STATUS_IN_PROGRESS.equals(statusName)) {
+        if (stopProgressAvailable) {
             allowedNames.add(STATUS_OPEN);
-            allowedNames.add(STATUS_RESOLVED);
-            allowedNames.add(STATUS_CLOSED);
-        } else if (STATUS_RESOLVED.equals(statusName)) {
-            allowedNames.add(STATUS_REOPENED);
-            allowedNames.add(STATUS_CLOSED);
-        } else if (STATUS_CLOSED.equals(statusName)) {
+        }
+        if (startProgressAvailable) {
+            allowedNames.add(STATUS_IN_PROGRESS);
+        }
+        if (reopenIssueAvailable) {
             allowedNames.add(STATUS_REOPENED);
         }
+        if (resolveIssueAvailable) {
+            allowedNames.add(STATUS_RESOLVED);
+        }
+        if (closeIssueAvailable) {
+            allowedNames.add(STATUS_CLOSED);
+        }
+
         List<JiraStatus> allowedStatuses = new ArrayList<JiraStatus>(allowedNames.size());
         for (JiraStatus s : issue.getRepository().getConfiguration().getStatuses()) {
             if (allowedNames.contains(s.getName())) {
@@ -1801,6 +1859,7 @@ public class IssuePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 boolean ret = false;
+                boolean wasNew = issue.isNew();
                 try {
                     ret = issue.submitAndRefresh();
                     for (File attachment : attachmentsPanel.getNewAttachments()) {
@@ -1819,6 +1878,10 @@ public class IssuePanel extends javax.swing.JPanel {
                     handle.finish();
                     if(ret) {
                         reloadFormInAWT(true);
+                        if (wasNew && (issue.getParentKey() != null) && (issue.getParentKey().trim().length() > 0)) {
+                            Issue parent = issue.getRepository().getIssue(issue.getParentKey());
+                            parent.refresh();
+                        }
                     }
                 }
             }
@@ -1876,9 +1939,10 @@ public class IssuePanel extends javax.swing.JPanel {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
             final Resolution resolution = panel.getSelectedResolution();
+            final String comment = panel.getComment();
             submitChange(new Runnable() {
                 public void run() {
-                    issue.resolve(resolution, null);
+                    issue.resolve(resolution, comment);
                     issue.submitAndRefresh();
                 }
             }, message);
@@ -1902,9 +1966,10 @@ public class IssuePanel extends javax.swing.JPanel {
         if (newResolution != null) {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
+            final String comment = panel.getComment();
             submitChange(new Runnable() {
                 public void run() {
-                    issue.close(newResolution, null);
+                    issue.close(newResolution, comment);
                     issue.submitAndRefresh();
                 }
             }, message);

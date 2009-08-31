@@ -292,7 +292,9 @@ public class GoToSupport {
         assert finder != null;
 
         OffsetRange range = finder.getReferenceSpan(doc, offset);
-        if (range != OffsetRange.NONE) {
+        if (range == null) {
+            throw new NullPointerException(finder + " violates its contract; should not return null from getReferenceSpan."); //NOI18N
+        } else if (range != OffsetRange.NONE) {
             return new int[] { range.getStart(), range.getEnd() };
         }
         

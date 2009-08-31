@@ -661,13 +661,15 @@ public abstract class AbstractVariable implements LocalVariable {
         return anon_count;
     }
 
-    private static void parseCharArray(AbstractVariable var, String basename, String type, int size, String value) {
+    private void parseCharArray(String type, int size, String value) {
         String frag;
         int idx = 0;
         int pos;
         boolean truncated = false;
 
         int maxIndexLog = GeneralUtils.log10(size-1);
+
+        String bareType = type.substring(0, type.indexOf('[')).trim();
 
         while (idx < value.length()) {
             if (value.substring(idx).startsWith("\\\"")) { // NOI18N
@@ -685,10 +687,10 @@ public abstract class AbstractVariable implements LocalVariable {
                     }
                     idx = value.length(); // stop iterating...
                 }
-                parseCharArrayFragment(var, basename, type, maxIndexLog, frag);
-                if (var.fields.size() < size && idx >= value.length()) {
-                    var.fields.add(new AbstractField(var, basename + getIndexStr(maxIndexLog, size-1),
-                            type.substring(0, type.indexOf('[')).trim(), "\'\\000\'")); // NOI18N
+                parseCharArrayFragment(this, getName(), bareType, maxIndexLog, frag);
+                if (fields.size() < size && idx >= value.length()) {
+                    fields.add(new AbstractField(this, getName() + getIndexStr(maxIndexLog, size-1),
+                            bareType, "\'\\000\'")); // NOI18N
                 }
                 if (truncated) {
                     String high;
@@ -699,7 +701,7 @@ public abstract class AbstractVariable implements LocalVariable {
                         high = "..."; // NOI18N
                     }
 
-                    var.fields.add(new AbstractField(var, basename + getIndexStr(maxIndexLog, var.fields.size(), "-" + high), // NOI18N
+                    fields.add(new AbstractField(this, getName() + getIndexStr(maxIndexLog, fields.size(), "-" + high), // NOI18N
                             "", "...")); // NOI18N
                 }
             } else if (value.charAt(idx) == ' ' || value.charAt(idx) == ',') {
@@ -711,7 +713,7 @@ public abstract class AbstractVariable implements LocalVariable {
                 } else {
                     frag = value.substring(idx);
                 }
-                parseRepeatArrayFragment(var, basename, type, maxIndexLog, frag);
+                addArrayElement(bareType, maxIndexLog, frag);
                 idx += frag.length();
             }
         }
@@ -738,7 +740,6 @@ public abstract class AbstractVariable implements LocalVariable {
     }
 
     private static void parseCharArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
-        String t = type.substring(0, type.indexOf('[')).trim();
         int idx = 0;
         value = value.replace("\\\\", "\\"); // NOI18N - gdb doubles all backslashes...
         int count = value.length();
@@ -791,7 +792,7 @@ public abstract class AbstractVariable implements LocalVariable {
                 val = value.substring(vstart, idx);
             }
             var.fields.add(new AbstractField(var, basename + getIndexStr(maxIndexLog, fcount++),
-                t, '\'' + val + '\''));
+                type, '\'' + val + '\''));
         }
     }
 
@@ -831,7 +832,7 @@ public abstract class AbstractVariable implements LocalVariable {
             size = 0;
         }
         if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
-            parseCharArray(this, getName(), type, size, value);
+            parseCharArray(type, size, value);
         } else {
             value = value.substring(1, value.length() - 1);
             int maxIndexLog = GeneralUtils.log10(size-1);
@@ -842,11 +843,41 @@ public abstract class AbstractVariable implements LocalVariable {
                 } else {
                     vend = GdbUtils.findNextComma(value, vstart);
                 }
-                fields.add(new AbstractField(this, getName() + getIndexStr(maxIndexLog, i), t,
-                        vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
-                vstart = GdbUtils.firstNonWhite(value, vend + 1);
+
+                addArrayElement(type, maxIndexLog, vend == -1 ? value.substring(vstart) : value.substring(vstart, vend));
+                
+                // finish on the last element
+                if (vend == -1) {
+                    vstart = -1;
+                } else {
+                    vstart = GdbUtils.firstNonWhite(value, vend + 1);
+                }
             }
         }
+    }
+
+    private int addArrayElement(String type, int maxIndexLog, String value) {
+        int pos1 = value.indexOf("<repeats "); // NOI18N
+        int pos2 = value.indexOf(" times>"); // NOI18N
+
+        int count = 1;
+        String bareValue = value;
+
+        if (pos1 != -1 && pos2 != -1) {
+            try {
+                count = Integer.parseInt(value.substring(pos1 + 9, pos2));
+                bareValue = value.substring(0, pos1-1).replace("\\\\", "\\"); // NOI18N - gdb doubles all backslashes...;
+            } catch (Exception ex) {
+            }
+        }
+        
+        while(--count >= 0) {
+            fields.add(new AbstractField(this, 
+                    getName() + getIndexStr(maxIndexLog, fields.size()),
+                    type,
+                    bareValue));
+        }
+        return count;
     }
 
     private static String getIndexStr(int maxIndexLog, int index) {

@@ -64,16 +64,24 @@ import org.openide.util.NbBundle;
  */
 public class CssHelpResolver {
 
-    private static CssHelpResolver instance;
+    private static CssHelpResolver INSTANCE = new CssHelpResolver(
+            "org/netbeans/modules/css/resources/css_property_help"); //NOI18N
+    
+    private static Pattern NAV_BAR = Pattern.compile("<div\\s+class\\s*=\\s*\"navbar\"", 
+            Pattern.MULTILINE);
+    
+    private Pattern END_SEARCH = Pattern.compile("<[hH][1-5]>|<a\\s+name=\"propdef-", 
+            Pattern.MULTILINE);  //NOI18N
+    
+    private Pattern PROP_DEF_PATTERN = Pattern.compile( 
+            "<div\\s+class\\s*=\\s*\"propdef\"" );              // NOI18N
+    
     private static final String HELP_LOCATION = "docs/css21-spec.zip"; //NOTICES
     private static String HELP_ZIP_URL;
     private WeakHashMap<String, String> pages_cache = new WeakHashMap<String, String>();
 
-    public static synchronized CssHelpResolver instance() {
-        if (instance == null) {
-            instance = new CssHelpResolver("org/netbeans/modules/css/resources/css_property_help"); //NOI18N
-        }
-        return instance;
+    public static CssHelpResolver instance() {
+        return INSTANCE;
     }
 
     private CssHelpResolver(String sourcePath) {
@@ -90,7 +98,7 @@ public class CssHelpResolver {
         }
     }
 
-    private String getHelpText(URL url) {
+    public String getHelpText(URL url) {
         if (url == null) {
             return null;
         }
@@ -126,7 +134,8 @@ public class CssHelpResolver {
         //strip off the "anchor part"
         String anchor = url.getRef();
 
-        Pattern start_search = Pattern.compile("^.*<a name=\"" + anchor + "\".*$", Pattern.MULTILINE); //NOI18N
+        Pattern start_search = Pattern.compile("^.*<a\\s+name=\"" + anchor + "\".*$", 
+                Pattern.MULTILINE); //NOI18N
         Matcher matcher = start_search.matcher(file_content);
 //        int anchor_index = file_content.indexOf("<a name=\"" + anchor + "\"");
         //find line beginning
@@ -137,6 +146,7 @@ public class CssHelpResolver {
             begin_end_search_from = matcher.end();
         }
 
+        start_index = findSectionStart( start_index, file_content );
 
 //        for (start_index = anchor_index; start_index > 0; start_index--) {
 //            char ch = file_content.charAt(start_index);
@@ -148,13 +158,18 @@ public class CssHelpResolver {
         //find end of the "anchor part"
         int end_index = file_content.length();
 
-        Pattern end_search = Pattern.compile("^.*<[hH][1-5]>|<a name=\"propdef-", Pattern.MULTILINE);  //NOI18N
-        matcher = end_search.matcher(file_content.subSequence(begin_end_search_from, file_content.length()));
+        matcher = END_SEARCH.matcher(file_content.subSequence(begin_end_search_from,
+                file_content.length()));
         if (matcher.find()) {
-            end_index = matcher.start() + begin_end_search_from + 1;
+            end_index = matcher.start() + begin_end_search_from ;
         }
 
         String anchor_part = file_content.substring(start_index, end_index);
+        
+        matcher = NAV_BAR.matcher( anchor_part );
+        if( matcher.find()){
+            anchor_part = anchor_part.substring( 0 , matcher.start() );
+        }
 
         int firstLineEnd = anchor_part.indexOf("\n");  //NOI18N
         if (firstLineEnd > 0) {
@@ -163,7 +178,6 @@ public class CssHelpResolver {
             firstLine = firstLine.replaceAll("'</strong>", "</strong>"); //NOI18N
             anchor_part = firstLine + anchor_part.substring(firstLineEnd + 1);
         }
-
         return anchor_part;
 
     }
@@ -209,6 +223,44 @@ public class CssHelpResolver {
             return null;
         } else {
             return pd;
+        }
+    }
+    
+    private int findSectionStart( int startIndex, String fileContent ) {
+        int index = startIndex;
+        for( ; index>=0 ; index--){
+            char ch = fileContent.charAt(index);
+            if ( ch == '<'){
+                char next = fileContent.charAt( index +1 );
+                if ( (next == 'h' || next=='H' ) && Character.isDigit( 
+                        fileContent.charAt(index+2)))
+                {
+                    // header tag ?
+                    StringBuilder builder = new StringBuilder();
+                    builder.append( ch );
+                    builder.append( next );
+                    builder.append("\\d");      // NOI18N
+                    builder.append('>');
+                    
+                    Pattern pattern = Pattern.compile(builder.toString());
+                    Matcher matcher = pattern.matcher( fileContent );
+                    if ( matcher.find( index )){
+                        break;
+                    }
+                }
+            }
+        }
+        if ( index >0 ){
+            String beggining = fileContent.substring( index , startIndex );
+            Matcher matcher = PROP_DEF_PATTERN.matcher( beggining);
+            int matchIndex = 0;
+            while ( matcher.find()){
+                matchIndex = matcher.start();
+            }
+            return index+matchIndex;
+        }
+        else {
+            return startIndex;
         }
     }
 

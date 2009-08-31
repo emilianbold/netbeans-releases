@@ -137,11 +137,11 @@ public class ElementOrTypeOrMessagePart {
         String namespace = null;
         String localPart = "";
         if (mElement != null) {
-            namespace = mElement.getModel().getSchema().getTargetNamespace();
+            namespace = Utility.getTargetNamespace(mElement.getModel());
             localPart = mElement.getName();
         }
         if (mType != null) {
-            namespace = mType.getModel().getSchema().getTargetNamespace();
+            namespace = Utility.getTargetNamespace(mType.getModel());
             localPart = mType.getName();
         }
         

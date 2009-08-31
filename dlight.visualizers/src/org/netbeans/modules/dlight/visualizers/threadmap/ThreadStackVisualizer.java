@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
@@ -54,10 +55,10 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -76,10 +77,10 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private JPanel emptyPanel;
     private final CardLayout cardLayout = new CardLayout();
 
-    ThreadStackVisualizer(ThreadDump descriptor, long startTime) {
+    ThreadStackVisualizer(StackDataProvider sourceFileInfo, ThreadDump descriptor, long startTime) {
         this.descriptor = descriptor;
         this.startTime = startTime;
-        stackPanel = MultipleCallStackPanel.createInstance();
+        stackPanel = MultipleCallStackPanel.createInstance(sourceFileInfo);
         setLayout(cardLayout);
         emptyPanel = new JPanel();
         add(emptyPanel, "empty");//NOI18N
@@ -137,7 +138,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     public String getDisplayName() {
-        if (!descriptor.getThreadStates().isEmpty()) {
+        if (descriptor != null && !descriptor.getThreadStates().isEmpty()) {
             return descriptor.getThreadStates().get(0).getThreadInfo().getThreadName();
         }
         return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N

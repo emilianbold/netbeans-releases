@@ -117,9 +117,13 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
         }
 
-        String cmd = "exec " + info.getCommandLineForShell() + "\n"; // NOI18N
+        if (info.getInitialSuspend()) {
+            processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
+            processInput.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
+            processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
+        }
 
-        processInput.write(cmd.getBytes());
+        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
         processInput.flush();
 
         readPID(processOutput);
@@ -129,6 +133,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         // Don't use shell wrapping on Windows...
         // Mostly this is because exec works not as expected and we cannot
         // control processes started with exec method....
+
+        // Suspend is not supported on Windows.
 
         final MacroMap env = info.getEnvVariables();
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N

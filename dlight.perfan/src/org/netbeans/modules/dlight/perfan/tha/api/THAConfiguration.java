@@ -39,6 +39,12 @@
 package org.netbeans.modules.dlight.perfan.tha.api;
 
 public interface THAConfiguration {
+    String THA_DATA_FILTER_NAME = "sunstudio.datafilter.tha";//NOI18N
+    String DEADLOCK_ONLY_FILTER_VALUE = "Deadlocks";//NOI18N
+    String DEADLOCK_AND_RACES_FILTER_VALUE = "RacesAndDeadlocks";//NOI18N
+    String THA_STARTUP_FILTER_NAME = "sunstudio.tha.startup";//NOI18N
+    String START_AT_STARTUP = "StartAtStartup";//NOI18N
+    
 
     boolean collectDataRaces();
 

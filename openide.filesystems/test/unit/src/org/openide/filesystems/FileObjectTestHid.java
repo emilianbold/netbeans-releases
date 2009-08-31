@@ -50,6 +50,7 @@ import java.lang.ref.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.RandomlyFails;
 
@@ -92,6 +93,8 @@ public class FileObjectTestHid extends TestBaseHid {
         /**Should be deleted and testedFS renamed to fs*/
         fs = this.testedFS;
         root = fs.findResource(getResourcePrefix());
+
+        StreamPool.LOG.setLevel(Level.WARNING); // do not print InterruptedException's at INFO
     }
 
     @Override

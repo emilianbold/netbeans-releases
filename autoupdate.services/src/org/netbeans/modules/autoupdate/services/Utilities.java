@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -79,9 +80,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -128,7 +126,10 @@ public class Utilities {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
-    
+
+    private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
+    private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
+
     private static final String USER_KS_KEY = "userKS";
     private static final String USER_KS_FILE_NAME = "user.ks";
     private static final String KS_USER_PASSWORD = "open4user";
@@ -668,6 +669,9 @@ public class Utilities {
                             !el.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
                         //requested = null;
                     }
+                    if(isFirstClassModule(el.getUpdateUnit())) {
+                        requested = null;
+                    }
                 }
                 
                 if (!installMatched && !availableMatched && !updateMatched) {
@@ -982,6 +986,21 @@ public class Utilities {
     public static boolean isEssentialModule (ModuleInfo mi) {
         Object o = mi.getAttribute (ATTR_ESSENTIAL);
         return isFixed (mi) || (o != null && Boolean.parseBoolean (o.toString ()));
+    }
+
+    public static boolean isFirstClassModule (UpdateUnit u) {
+        String names = System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
+        if (names == null || names.length () == 0) {
+            names = FIRST_CLASS_MODULES;
+        }
+
+        StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
+        while (en.hasMoreTokens ()) {
+            if(en.nextToken ().trim().equals(u.getCodeName())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static Logger getLogger () {

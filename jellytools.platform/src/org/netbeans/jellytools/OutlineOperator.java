@@ -46,13 +46,11 @@ import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.Log;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
 
@@ -61,7 +59,8 @@ import org.netbeans.swing.outline.OutlineModel;
  * e.g. in debugger views.
  *
  *
- * Warning: Do not use yet!! Incomplete, under development and most probably still buggy!
+ * Warning: Do not use yet unless really neccessary!! Incomplete,
+ * under development and most probably still buggy!
  *
  * @author Vojtech.Sigler@sun.com
  */
@@ -88,7 +87,7 @@ public class OutlineOperator extends JTableOperator {
      *
      * @return Outline component
      */
-    protected Outline getOutline()
+    public Outline getOutline()
     {
         return (Outline)getSource();
     }
@@ -179,7 +178,7 @@ public class OutlineOperator extends JTableOperator {
      * @param inIndex
      * @return
      */
-    public OutlineNode getRootNode(final String isName, final int inIndex)
+    public OutlineNode getRootNode(String isName, int inIndex)
     {
         TreePath lrParentPath = new TreePath(getOutline().getOutlineModel().getRoot());
 
@@ -205,6 +204,19 @@ public class OutlineOperator extends JTableOperator {
         }
 
         return findNextPathElement(irParentPath, isPath);
+    }
+
+    /**
+     *
+     * Tries to find a the defined path beginning from the root node.
+     *
+     * @param isPath node name or a list of nodes separated by "|"
+     * @return found path
+     */
+    public TreePath findPath(String isPath)
+    {
+        TreePath lrParentPath = new TreePath(getOutline().getOutlineModel().getRoot());
+        return findPath(lrParentPath, isPath);
     }
 
     /**
@@ -336,6 +348,22 @@ public class OutlineOperator extends JTableOperator {
         }
 
         return lnRowspan;
+    }
+
+    public void selectPath(TreePath irPath)
+    {
+        Point lrLocation = getLocationForPath(irPath);
+
+        if (!lrLocation.equals(new Point(-1, -1)))
+            this.selectCell(lrLocation.y, lrLocation.x);
+    }
+
+    public void scrollToPath(TreePath irPath)
+    {
+        Point lrLocation = getLocationForPath(irPath);
+
+        if (!lrLocation.equals(new Point(-1, -1)))
+            this.scrollToCell(lrLocation.y, lrLocation.x);
     }
 
     //Mappings

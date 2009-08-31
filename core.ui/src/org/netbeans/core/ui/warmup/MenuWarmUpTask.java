@@ -65,6 +65,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
@@ -223,6 +224,11 @@ public final class MenuWarmUpTask implements Runnable {
                 task = null;
             }
             long took = System.currentTimeMillis() - now;
+            try {
+                FileUtil.getConfigRoot().getFileSystem().refresh(true);
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             h.finish();
             LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
             r.setParameters(new Object[] { took });
@@ -230,7 +236,6 @@ public final class MenuWarmUpTask implements Runnable {
             r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
             r.setLoggerName(LOG.getName());
             LOG.log(r);
-
         }
         private int counter;
         public boolean cancel() {

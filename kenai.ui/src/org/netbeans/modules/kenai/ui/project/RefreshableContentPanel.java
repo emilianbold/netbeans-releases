@@ -43,10 +43,11 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
- * @author tester
+ * @author Petr Dvorak (Petr.Dvorak@sun.com)
  */
 interface RefreshableContentPanel {
 
     public void resetContent(final KenaiProject instProj);
+    public void clearContent();
 
 }

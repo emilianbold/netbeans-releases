@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.jira.issue;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.jira.repository.*;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -64,17 +65,20 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -86,8 +90,9 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.IssueProvider.class),
     @ServiceProvider(service=JiraIssueProvider.class)
 })
-public final class JiraIssueProvider extends IssueProvider {
+public final class JiraIssueProvider extends IssueProvider implements PropertyChangeListener {
 
+    private static JiraIssueProvider instance;
     private final Object LOCK = new Object();
     private boolean initialized;
     private HashMap<String, JiraLazyIssue> watchedIssues = new HashMap<String, JiraLazyIssue>(10);
@@ -101,9 +106,11 @@ public final class JiraIssueProvider extends IssueProvider {
 
     public static final String PROPERTY_ISSUE_REMOVED = "issue-removed"; //NOI18N
 
-    public static JiraIssueProvider getInstance() {
-        JiraIssueProvider provider = Lookup.getDefault().lookup(JiraIssueProvider.class);
-        return provider;
+    public static synchronized JiraIssueProvider getInstance() {
+        if (instance == null) {
+            instance = Lookup.getDefault().lookup(JiraIssueProvider.class);
+        }
+        return instance;
     }
 
     public JiraIssueProvider () {
@@ -124,9 +131,12 @@ public final class JiraIssueProvider extends IssueProvider {
         synchronized (LOCK) {
             if (isAdded(url)) return;
             try {
+                JiraRepository repository = issue.getRepository();
+                repository.removePropertyChangeListener(this);
+                repository.addPropertyChangeListener(this);
                 // create a representation of the real issue for tasklist
                 watchedIssues.put(url.toString(), lazyIssue =
-                        (issue.getRepository() instanceof KenaiRepository) ?
+                        (repository instanceof KenaiRepository) ?
                             new KenaiJiraLazyIssue(issue, this) :   // kenai lazy issue
                             new JiraLazyIssue(issue, this));        // common jira lazy issue
             } catch (MalformedURLException e) {
@@ -145,7 +155,7 @@ public final class JiraIssueProvider extends IssueProvider {
      */
     public void remove (NbJiraIssue issue) {
         URL url = getUrl(issue);
-        remove(url);
+        remove(url, true);
     }
 
     /**
@@ -184,7 +194,93 @@ public final class JiraIssueProvider extends IssueProvider {
     public void removePropertyChangeListener (PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
-    
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
+            if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
+                Object oldValue = ((Map)evt.getOldValue()).get(JiraRepository.ATTRIBUTE_URL);
+                if (oldValue != null && oldValue instanceof String) {
+                    String oldRepoUrl = (String) oldValue;
+                    LinkedList<JiraLazyIssue> issuesToRefresh = new LinkedList<JiraLazyIssue>();
+                    synchronized (LOCK) {
+                        // lookup all issues with the same repository url as the changed value
+                        for (Map.Entry<String, JiraLazyIssue> e : watchedIssues.entrySet()) {
+                            JiraLazyIssue issue = e.getValue();
+                            Object sourceRepository = evt.getSource();
+                            if (!(issue instanceof KenaiJiraLazyIssue) && sourceRepository != null && sourceRepository.equals(issue.getRepository())) {
+                                URL oldUrl = getUrl(oldRepoUrl, issue.issueKey);
+                                if (issue.getUrl().toString().equals(oldUrl.toString()))  {
+                                    LOG.log(Level.FINE, "propertyChange: Issue {0} with url {1} needs to be refreshed, repository's url {2} has changed", //NOI18N
+                                            new String[] {issue.toString(), oldUrl.toString(), oldRepoUrl});
+                                    issuesToRefresh.add(issue);
+                                }
+                            }
+                        }
+                    }
+                    // refresh issues
+                    for (JiraLazyIssue issue : issuesToRefresh) {
+                        remove(issue.getUrl(), false);
+                        add(issue.getName(), issue.issueKey, issue.getRepository());
+                    }
+                    // store new issues
+                    if (!issuesToRefresh.isEmpty()) {
+                        saveIntern();
+                    }
+                }
+            }
+        } else if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+            // kenai issues need instantiated repository so they can be shown in tasklist
+            // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
+            // when user loggs in so the repository can be created.
+            rp.post(new Runnable() { // do not block here
+                public void run() {
+                    notifyKenaiLogin();
+                }
+            });
+        }
+    }
+
+    /**
+     * Removes all issues from the tasklist which belong to the given repository
+     * @param repository
+     */
+    public void removeAllFor (JiraRepository repository) {
+        LinkedList<JiraLazyIssue> issuesToRemove = new LinkedList<JiraLazyIssue>();
+                 synchronized (LOCK) {
+            // lookup all issues with the same repository url as the changed value
+            for (Map.Entry<String, JiraLazyIssue> e : watchedIssues.entrySet()) {
+                JiraLazyIssue issue = e.getValue();
+                if (!(issue instanceof KenaiJiraLazyIssue) && repository == issue.getRepository()) {
+                    LOG.log(Level.FINE, "removeAllFor: issue {0} repository {1} has been removed", new String[]{issue.toString(), repository.toString()}); //NOI18N
+                    issuesToRemove.add(issue);
+                }
+            }
+        }
+        // remove issues
+        for (JiraLazyIssue issue : issuesToRemove) {
+            remove(issue.getUrl(), false);
+        }
+        // store issues
+        if (!issuesToRemove.isEmpty()) {
+            saveIntern();
+        }
+    }
+
+    /**
+     * Call when an issue is loaded for the first time.
+     * @param issue cannot be null
+     */
+    public void notifyIssueCreated (NbJiraIssue issue) {
+        URL url = getUrl(issue);
+        JiraLazyIssue lazyIssue = null;
+        synchronized (LOCK) {
+            lazyIssue = watchedIssues.get(url.toString());
+        }
+        if (lazyIssue != null) {
+            lazyIssue.setIssueReference(issue);
+        }
+    }
+
     // **** private methods ***** //
     private boolean isAdded(URL url) {
         initializeIssues();
@@ -239,11 +335,13 @@ public final class JiraIssueProvider extends IssueProvider {
                     boolean isKenai = false;
                     if (issue instanceof KenaiJiraLazyIssue) {
                         JiraRepository repo = issue.getRepository();
-                        if (repo == null || !(repo instanceof KenaiRepository)) {
+                        if (repo != null && !(repo instanceof KenaiRepository)) {
                             LOG.warning("saveIntern: KenaiJiraIssue has no kenai repository: " + repo); //NOI18N
                         } else {
                             // kenai repository is identified by project's name, not by it's url
-                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + ((KenaiRepository) repo).getDisplayName();
+                            repositoryIdent = KENAI_REPOSITORY_IDENT_PREFIX + (repo == null
+                                    ? ((KenaiJiraLazyIssue)issue).projectName
+                                    : ((KenaiRepository) repo).getDisplayName());
                             isKenai = true;
                         }
                     } else {
@@ -318,6 +416,7 @@ public final class JiraIssueProvider extends IssueProvider {
                         }
                         add(issueName, issueKey, repository);
                     }
+                    repository.addPropertyChangeListener(this);
                     // remove processed attributes
                     repositoryIssues.remove(repository.getUrl());
                 }
@@ -326,6 +425,7 @@ public final class JiraIssueProvider extends IssueProvider {
 
     private void addKenaiIssues (Map<String, List<String>> repositoryIssues) {
         // now what remains are kenai issues and non-existant repositories
+        boolean kenaiIssueAdded = false;
         for (Map.Entry<String, List<String>> e : repositoryIssues.entrySet()) {
             String projectName = e.getKey();
             if (projectName.startsWith(KENAI_REPOSITORY_IDENT_PREFIX)) { // is kenai
@@ -353,19 +453,26 @@ public final class JiraIssueProvider extends IssueProvider {
                             continue;
                         }
                         add(issueName, issueUrl, issueKey, projectName);
+                        kenaiIssueAdded = true;
                     }
                 }
             }
         }
+        if (kenaiIssueAdded) {
+            Kenai.getDefault().removePropertyChangeListener(this);
+            Kenai.getDefault().addPropertyChangeListener(this);
+        }
     }
 
-    private void remove (URL url) {
+    private void remove (URL url, boolean savePermanently) {
         JiraLazyIssue lazyIssue;
         synchronized (LOCK) {
             if (!isAdded(url)) return;
             lazyIssue = watchedIssues.remove(url.toString());
         }
-        saveIntern();
+        if (savePermanently) {
+            saveIntern();
+        }
         // notify tasklist
         super.remove(lazyIssue);
     }
@@ -410,7 +517,7 @@ public final class JiraIssueProvider extends IssueProvider {
         // XXX is there a simpler way to obtain an issue?
         int status = repository.getIssueCache().getStatus(issueKey);
         final NbJiraIssue[] issue = new NbJiraIssue[1];
-        if (status == Issue.ISSUE_STATUS_UNKNOWN) { // not yet cached
+        if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
                 public void run() {
                     LOG.log(Level.FINE, "getIssue: creating issue {0}", repository.getUrl() + "#" + issueKey); //NOI18N
@@ -432,6 +539,20 @@ public final class JiraIssueProvider extends IssueProvider {
         }
     }
 
+    /*
+     * Notifies all kenai issues that user has logged on. Private kenai projects cannot be instantiated without being logged in
+     * and issue tracking repository cannot be created.
+     */
+    private void notifyKenaiLogin () {
+        synchronized (LOCK) {
+            for (JiraLazyIssue issue : watchedIssues.values()) {
+                if (issue instanceof KenaiJiraLazyIssue) {
+                    ((KenaiJiraLazyIssue) issue).notifyKenaiLogin();
+                }
+            }
+        }
+    }
+
     /**
      * Common Jira representation of LazyIssue
      */
@@ -443,6 +564,7 @@ public final class JiraIssueProvider extends IssueProvider {
         private WeakReference<JiraRepository> repositoryRef;
         private final JiraIssueProvider provider;
         private WeakReference<NbJiraIssue> issueRef;
+        private PropertyChangeListener issueListener;
 
         public JiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
             super(JiraIssueProvider.getUrl(issue), issue.getDisplayName());
@@ -450,6 +572,7 @@ public final class JiraIssueProvider extends IssueProvider {
             this.provider = provider;
             this.repositoryRef = new WeakReference<JiraRepository>(issue.getRepository());
             this.issueRef = new WeakReference<NbJiraIssue>(issue);
+            attachIssueListener(issue);
         }
 
         public JiraLazyIssue (String name, URL url, String issueKey, JiraRepository repository, JiraIssueProvider provider) {
@@ -469,12 +592,12 @@ public final class JiraIssueProvider extends IssueProvider {
                     LOG.log(Level.INFO, "Repository unavailable for {0}", getUrl().toString()); //NOI18N
                     if (canBeAutoRemoved()) {
                         // no repository found for this issue and the issue can be removed automaticaly
-                        provider.remove(getUrl());
+                        provider.remove(getUrl(), true);
                     }
                 } else {
                     issue = provider.getIssue(repository, issueKey);
                 }
-                issueRef = new WeakReference<NbJiraIssue>(issue);
+                setIssueReference(issue);
             }
             return issue;
         }
@@ -482,6 +605,45 @@ public final class JiraIssueProvider extends IssueProvider {
         private JiraRepository getRepository() {
             JiraRepository repository = repositoryRef.get();
             return repository;
+        }
+
+        /**
+         * Sets the reference to the issue and attaches an issue listener
+         * @param issue if null then this only clears the reference.
+         */
+        private void setIssueReference (NbJiraIssue issue) {
+            issueRef = new WeakReference<NbJiraIssue>(issue);
+            if (issue != null) {
+                applyChangesFor(issue);
+                attachIssueListener(issue);
+            }
+        }
+
+        private void attachIssueListener (NbJiraIssue issue) {
+            if (issueListener == null) {
+                issueListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        NbJiraIssue issue = issueRef.get();
+                        if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
+                            // issue has somehow changed, checks for its changes and apply them in the tasklist
+                            applyChangesFor(issue);
+                        }
+                    }
+                };
+            }
+            LOG.log(Level.FINE, "attachIssueListener: on issue {0}", issue.toString());
+            issue.addPropertyChangeListener(WeakListeners.propertyChange(issueListener, issue));
+        }
+
+        private void applyChangesFor (NbJiraIssue issue) {
+            boolean requiresSave = false;
+            if (!getName().equals(issue.getDisplayName())) {
+                setName(issue.getDisplayName());
+                requiresSave = true;
+            }
+            if (requiresSave) {
+                provider.saveIntern();
+            }
         }
 
         @Override
@@ -517,9 +679,10 @@ public final class JiraIssueProvider extends IssueProvider {
                                     LOG.finer("Resole action: resolving..."); //NOI18N
                                     String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveIssueMessage"); //NOI18N
                                     final Resolution resolution = panel.getSelectedResolution();
+                                    final String comment = panel.getComment();
                                     runCancellableCommand(new Runnable () {
                                         public void run() {
-                                            issue.resolve(resolution, null);
+                                            issue.resolve(resolution, comment);
                                             if (issue.submitAndRefresh()) {
                                                 issue.open();
                                             }
@@ -601,6 +764,7 @@ public final class JiraIssueProvider extends IssueProvider {
     private static final class KenaiJiraLazyIssue extends JiraLazyIssue {
 
         private final String projectName;
+        private boolean loginStatusChanged = true;
 
         public KenaiJiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
             super(issue, provider);
@@ -619,11 +783,14 @@ public final class JiraIssueProvider extends IssueProvider {
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
             Repository repo = null;
-            try {
-                LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
-                repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
-            } catch (KenaiException ex) {
-                LOG.log(Level.INFO, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+            if (loginStatusChanged) {
+                try {
+                    LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
+                    repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
+                } catch (KenaiException ex) {
+                    LOG.log(Level.INFO, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+                }
+                loginStatusChanged = false;
             }
             if (repo != null && repo instanceof KenaiRepository) {
                 kenaiRepo = (KenaiRepository) repo;
@@ -653,6 +820,11 @@ public final class JiraIssueProvider extends IssueProvider {
                 }
             }
             return repoUrl;
+        }
+
+        private void notifyKenaiLogin () {
+            loginStatusChanged = true;
+            setValid(false);
         }
     }
 }

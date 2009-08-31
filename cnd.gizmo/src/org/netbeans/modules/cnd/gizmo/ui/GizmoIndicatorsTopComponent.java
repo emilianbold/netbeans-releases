@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -216,7 +217,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
     }
 
     private void setContent(List<Indicator> indicators) {
-        JComponent componentToAdd;
+        List<JComponent> componentsToAdd = new ArrayList<JComponent>();
         if (indicators != null) {
             JScrollPane scrollPane = new JScrollPane();
             scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -233,6 +234,11 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
                 }
             }
             for (int i = 0; i < indicators.size(); ++i) {
+                JComponent auxComponent = indicators.get(i).getAuxComponent();
+                if (auxComponent != null && !componentsToAdd.contains(auxComponent)) {
+                    componentsToAdd.add(auxComponent);
+                }
+
                 JComponent component = indicators.get(i).getComponent();
                 indicatorPanels.set(i, component);
                 if (i + 1 < indicators.size()) {
@@ -256,18 +262,20 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
                 }
             }
 //            add(scrollPane);
-            componentToAdd = scrollPane;
+            componentsToAdd.add(scrollPane);
         } else {
             indicatorPanels = null;
             JLabel emptyLabel = new JLabel(NbBundle.getMessage(GizmoIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
             emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-            componentToAdd = emptyLabel;
+            componentsToAdd.add(emptyLabel);
 //            add(emptyLabel);
         }
         JPanel panel = getNextPanel();
         panel.removeAll();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(componentToAdd);
+        for (JComponent component : componentsToAdd) {
+            panel.add(component);
+        }
         setActive();
         repaint();
     }

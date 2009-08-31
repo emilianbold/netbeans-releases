@@ -82,18 +82,17 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author tester
+ * @author Petr Dvorak (Petr.Dvorak@sun.com)
  */
 public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final String CHAT_BUTTON = "CHAT_BUTTON"; //NOI18N
 
-    /** Creates new form ForumsAndMailingListsPanel */
-    private ForumsAndMailingListsPanel() {
-        initComponents();
-    }
+    private final String WAIT_STRING = String.format("<html><table><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
+                        SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
 
-    ForumsAndMailingListsPanel(final KenaiProject instProj) {
-        this();
+    public ForumsAndMailingListsPanel() {
+        initComponents();
         commChannelsDisplayer.addHyperlinkListener(new HyperlinkListener() {
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -114,13 +113,15 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
     }
 
     public String getChatRoomHTML(final KenaiProject instProj) {
-        String innerStr = "";
+        String innerStr = ""; //NOI18N
         try {
             if (Kenai.getDefault().getPasswordAuthentication() != null && Kenai.getDefault().getMyProjects().contains(instProj)) {
                 KenaiFeature[] chats = instProj.getFeatures(Type.CHAT);
                 innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_CHATROOM")); //NOI18N
                 if (chats.length > 0) {
                     innerStr += String.format("<input type=\"reset\" id=\"" + CHAT_BUTTON + "\" value=\"%s\"><br>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_ENTER_CHATROOM")); //NOI18N
+                } else {
+                    innerStr += String.format("<i>%s</i><br>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_NO_CHAT")); //NOI18N
                 }
             }
         } catch (KenaiException ex) {
@@ -132,7 +133,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
     public String getForumsHTML(final KenaiProject instProj) {
         KenaiFeature[] forums = null;
-        String innerStr = "";
+        String innerStr = ""; //NOI18N
         try {
             forums = instProj.getFeatures(Type.FORUM);
         } catch (KenaiException ex) {
@@ -142,7 +143,11 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr = String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_FORUMS")); //NOI18N
             for (int i = 0; i < forums.length; i++) {
                 KenaiFeature forum = forums[i];
-                innerStr += String.format("<div class=\"item\"><a href=\"%s\">%s</a> - <i>%s</i></div>", forum.getWebLocation(), forum.getDisplayName(), forum.getWebLocation()); //NOI18N
+                innerStr += String.format("<div class=\"item\">%s<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                        kenaiProjectTopComponent.linkImageHTML,
+                        forum.getWebLocation(),
+                        forum.getDisplayName(),
+                        forum.getWebLocation()); //NOI18N
             }
             innerStr += "</div>"; //NOI18N
         }
@@ -151,7 +156,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
     public String getMailingListsHTML(final KenaiProject instProj) {
         KenaiFeature[] mails = null;
-        String innerStr = "";
+        String innerStr = ""; //NOI18N
         try {
             mails = instProj.getFeatures(Type.LISTS);
         } catch (KenaiException ex) {
@@ -161,53 +166,83 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_MAILING_LISTS")); //NOI18N
             for (int i = 0; i < mails.length; i++) {
                 KenaiFeature mail = mails[i];
-                innerStr += String.format("<div class=\"item\"><a href=\"%s\">%s</a> - <i>%s</i></div>", mail.getWebLocation(), mail.getDisplayName(), mail.getWebLocation()); //NOI18N
+                innerStr += String.format("<div class=\"item\">%s<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                        kenaiProjectTopComponent.linkImageHTML,
+                        mail.getWebLocation(),
+                        mail.getDisplayName(),
+                        mail.getWebLocation()); //NOI18N
             }
             innerStr += "</div>"; //NOI18N
         }
         return innerStr;
     }
 
-    public void loadActiveTopics(KenaiProject proj) throws DOMException {
+    public void loadActiveTopics(final KenaiProject proj) throws DOMException {
         
         try {
             DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            String urlStr = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://") + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
+            String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://"); //NOI18N
+            String urlStr = base + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
             int entriesCount = 0;
             NodeList entries = null;
+            if (Thread.interrupted()) {
+                clearContent();
+                return;
+            }
             try {
                 Document doc = dbf.parse(urlStr);
+                if (Thread.interrupted()) {
+                    clearContent();
+                    return;
+                }
                 entries = doc.getElementsByTagName("entry"); //NOI18N
                 entriesCount = entries.getLength();
             } catch (FileNotFoundException e) {
+                // url does not exist?
+            } catch (IOException e) {
                 // url does not exist?
             }
             String _appString = "<div class=\"section\">"; //NOI18N
             if (entriesCount > 0 && entries != null) {
                 for (int i = 0; i < entriesCount; i++) {
+                    if (Thread.interrupted()) {
+                        clearContent();
+                        return;
+                    }
                     Node entry = entries.item(i);
                     NodeList entryProps = entry.getChildNodes();
                     String title = null;
                     String content = null;
                     String href = null;
                     for (int j = 0; j < entryProps.getLength(); j++) {
+                        if (Thread.interrupted()) {
+                            clearContent();
+                            return;
+                        }
                         Node elem = entryProps.item(j);
                         if (elem.getNodeName().equals("title")) { //NOI18N - get title of the topic
                             title = elem.getFirstChild().getNodeValue();
                         } else if (elem.getNodeName().equals("link")) { //NOI18N - found link of the topic, get href...
                             href = elem.getAttributes().getNamedItem("href").getNodeValue(); //NOI18N
+                            if (!href.startsWith(base)) {
+                                href = base + href;
+                            }
                         } else if (elem.getNodeName().equals("content")) { //NOI18N get title of the topic
                             content = elem.getFirstChild().getNodeValue();
                         }
                     }
                     if (title != null && href != null) {
-                        _appString += String.format("<a href=\"%s\">%s</a><br>", href, title); //NOI18N
+                        _appString += String.format("%s<a href=\"%s\">%s</a><br>", kenaiProjectTopComponent.linkImageHTML, href, title); //NOI18N
                     }
                     if (content != null) {
                         _appString += String.format("<i>%s</i><br><br>", content); //NOI18N
                     }
                 }
                 _appString += "</div>"; //NOI18N
+                if (Thread.interrupted()) {
+                    clearContent();
+                    return;
+                }
                 final String appString = _appString;
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -244,15 +279,13 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             }
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
 
     }
 
-    public synchronized void resetContent(final KenaiProject instProj) {
+    public void resetContent(final KenaiProject instProj) {
         // Style the document in order to look nice
         Font font = UIManager.getFont("Label.font"); // NOI18N
         String bodyRule = "body { background-color: white; font-family: " + font.getFamily() + "; " + // NOI18N
@@ -262,14 +295,35 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         styleSheet.addRule("div.section {margin-bottom: 10px;}"); //NOI18N
         styleSheet.addRule("div.item {margin-bottom: 5px;}"); //NOI18N
         styleSheet.addRule("i {color: gray}"); //NOI18N
+        styleSheet.addRule("h2 {color: rgb(0,22,103)}"); //NOI18N
 
         String innerStr = "<html>"; //NOI18N
 
         innerStr += getMailingListsHTML(instProj);
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += getChatRoomHTML(instProj);
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += getForumsHTML(instProj);
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += String.format("<h2>%s</h2><div id=\"DYN_CONTENT\"></div>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_ACTIVE_FORUMS")); //NOI18N
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         innerStr += "</html>"; //NOI18N
+        if (Thread.interrupted()) {
+            clearContent();
+            return;
+        }
         final String _istr = innerStr;
 
         // Render the content and register an action to a HTML button in JEditorPane
@@ -277,6 +331,8 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
             public void run() {
                 commChannelsDisplayer.setText(_istr);
+                commChannelsDisplayer.validate();
+                commChannelsDisplayer.setCaretPosition(0);
                 HTMLDocument htm = (HTMLDocument) commChannelsDisplayer.getDocument();
                 Element e = htm.getElement(CHAT_BUTTON);
                 if (e != null) {
@@ -314,7 +370,6 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
         commChannelsDisplayer = new javax.swing.JEditorPane();
 
         setBackground(new java.awt.Color(255, 255, 255));
@@ -322,15 +377,30 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
         commChannelsDisplayer.setContentType(org.openide.util.NbBundle.getMessage(ForumsAndMailingListsPanel.class, "ForumsAndMailingListsPanel.commChannelsDisplayer.contentType")); // NOI18N
         commChannelsDisplayer.setEditable(false);
-        jScrollPane1.setViewportView(commChannelsDisplayer);
-
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        commChannelsDisplayer.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                commChannelsDisplayerFocusGained(evt);
+            }
+        });
+        add(commChannelsDisplayer, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void commChannelsDisplayerFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commChannelsDisplayerFocusGained
+        commChannelsDisplayer.getCaret().setVisible(false); //MacOSX hack
+    }//GEN-LAST:event_commChannelsDisplayerFocusGained
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane commChannelsDisplayer;
-    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
+    public void clearContent() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                commChannelsDisplayer.setText(WAIT_STRING); //NOI18N
+            }
+        });
+    }
 
 }

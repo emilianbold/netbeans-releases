@@ -82,11 +82,23 @@ public class JPDABreakpointCustomizer extends JPanel implements Customizer, Cont
     }
 
     public boolean ok() {
-        return ((Controller) c).ok();
+        Controller cc;
+        if (c instanceof ControllerProvider) {
+            cc = ((ControllerProvider) c).getController();
+        } else {
+            cc = (Controller) c;
+        }
+        return cc.ok();
     }
 
     public boolean cancel() {
-        return ((Controller) c).cancel();
+        Controller cc;
+        if (c instanceof ControllerProvider) {
+            cc = ((ControllerProvider) c).getController();
+        } else {
+            cc = (Controller) c;
+        }
+        return cc.cancel();
     }
 
 }

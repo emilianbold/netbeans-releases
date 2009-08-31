@@ -104,6 +104,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String DEBUG_PROXY_PORT = "debug.proxy.port"; // NOI18N
     public static final String SHORT_TAGS = "tags.short"; // NOI18N
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
+    public static final String PHP_VERSION = "php.version"; // NOI18N
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
     public static final String PHP_UNIT_BOOTSTRAP = "phpunit.bootstrap"; // NOI18N
     public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
@@ -180,6 +181,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private String encoding;
     private String shortTags;
     private String aspTags;
+    private String phpVersion;
     private String phpUnitBootstrap;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
@@ -247,26 +249,16 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.copySrcTarget = copySrcTarget;
     }
 
-    public String getShortTags() {
-        if (shortTags == null) {
-            shortTags = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SHORT_TAGS);
-        }
-        return shortTags;
-    }
-
     public void setShortTags(String shortTags) {
         this.shortTags = shortTags;
     }
 
-    public String getAspTags() {
-        if (aspTags == null) {
-            aspTags = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(ASP_TAGS);
-        }
-        return aspTags;
-    }
-
     public void setAspTags(String aspTags) {
         this.aspTags = aspTags;
+    }
+
+    public void setPhpVersion(String phpVersion) {
+        this.phpVersion = phpVersion;
     }
 
     /**
@@ -450,6 +442,10 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
         if (webRoot != null) {
             projectProperties.setProperty(WEB_ROOT, webRoot);
+        }
+        if (phpVersion != null) {
+            // disabled for now
+            //projectProperties.setProperty(PHP_VERSION, phpVersion);
         }
         if (shortTags != null) {
             projectProperties.setProperty(SHORT_TAGS, shortTags);

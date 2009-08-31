@@ -3,6 +3,7 @@ __FILE__.cho|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     chomp!(separator)                          String
 METHOD     chomp(separator)                           String
+METHOD     chop                                       String
 METHOD     chop!                                      String
 ------------------------------------
 METHOD     chomp!(string)                             Kernel

@@ -201,9 +201,6 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.j2ee.dd.api.application</package>

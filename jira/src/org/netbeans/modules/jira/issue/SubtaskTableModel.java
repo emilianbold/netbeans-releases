@@ -42,9 +42,10 @@ package org.netbeans.modules.jira.issue;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.table.DefaultTableModel;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.NbBundle;
 
@@ -62,17 +63,19 @@ public class SubtaskTableModel extends DefaultTableModel {
         ResourceBundle bundle = NbBundle.getBundle(SubtaskTableModel.class);
         String subTask = bundle.getString("SubtaskTableModel.subTask"); // NOI18N
         String summary = bundle.getString("SubtaskTableModel.summary"); // NOI18N
+        String issueType = bundle.getString("SubtaskTableModel.issueType"); // NOI18N
         String status = bundle.getString("SubtaskTableModel.status"); // NOI18N
         String priority = bundle.getString("SubtaskTableModel.priority"); // NOI18N
-        return new String[] {subTask, summary, status, priority};
+        return new String[] {subTask, summary, issueType, status, priority};
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         Class clazz = String.class;
         switch (columnIndex) {
-            case 2: clazz = JiraStatus.class; break;
-            case 3: clazz = Priority.class; break;
+            case 2: clazz = IssueType.class; break;
+            case 3: clazz = JiraStatus.class; break;
+            case 4: clazz = Priority.class; break;
         }
         return clazz;
     }
@@ -88,7 +91,13 @@ public class SubtaskTableModel extends DefaultTableModel {
             if (subTask == null) {
                 subTask = (NbJiraIssue)repository.getIssue(key);
             }
-            data[count] = new Object[] {key, subTask.getSummary(), subTask.getStatus(), subTask.getPriority()};
+            data[count] = new Object[] {
+                key,
+                subTask.getSummary(),
+                subTask.getType(),
+                subTask.getStatus(),
+                subTask.getPriority()
+            };
             count++;
         }
         return data;

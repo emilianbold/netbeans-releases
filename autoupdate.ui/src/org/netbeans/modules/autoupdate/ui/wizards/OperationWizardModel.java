@@ -261,8 +261,9 @@ public abstract class OperationWizardModel {
 
 
     public Set<UpdateElement> getAllVisibleUpdateElements () {
-        Set <UpdateElement> all = getAllUpdateElements();
-        Set <UpdateElement> visible = getVisibleUpdateElements(all, false, getOperation(), true);
+        Set <UpdateElement> visible = new HashSet <UpdateElement> ();
+        visible.addAll(getPrimaryVisibleUpdateElements());
+        visible.addAll(getRequiredVisibleUpdateElements());
         return visible;
     }
     public Set<UpdateElement> getPrimaryVisibleUpdateElements () {
@@ -315,10 +316,12 @@ public abstract class OperationWizardModel {
                 //filter out eager invisible modules, which are covered by other invisible
                 for (UpdateElement v : invisible) {
                     OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                    container.add(v);
-                    for (OperationInfo<InstallSupport> info : container.listAll()) {
-                        if (info.getUpdateElement() != v) {
-                            realInvisible.remove(info.getUpdateElement());
+                    if (v.getUpdateUnit().getInstalled() != null) {
+                        container.add(v);
+                        for (OperationInfo<InstallSupport> info : container.listAll()) {
+                            if (info.getUpdateElement() != v) {
+                                realInvisible.remove(info.getUpdateElement());
+                            }
                         }
                     }
                 }

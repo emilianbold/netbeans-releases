@@ -33,6 +33,7 @@ package enterprise.web_jpa_war.servlet;
 import enterprise.web_jpa_war.entity.Person;
 import java.io.*;
 import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import javax.persistence.PersistenceUnit;
@@ -45,6 +46,7 @@ import javax.transaction.UserTransaction;
 /**
  * The sevelet class to insert Person into database
  */
+@WebServlet(name="CreatePersonServlet", urlPatterns={"/CreatePerson"})
 public class CreatePersonServlet extends HttpServlet {
     
     @PersistenceUnit

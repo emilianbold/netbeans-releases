@@ -52,13 +52,14 @@ import org.openide.util.NbBundle;
 public class StartServerAction extends Single<Card> {
     private final ServerDataNode nd;
     StartServerAction(ServerDataNode nd) {
-        super (Card.class, NbBundle.getMessage(StartServerAction.class, "ACTION_START_SERVER"), null);
+        super (Card.class, NbBundle.getMessage(StartServerAction.class, 
+                "ACTION_START_SERVER"), null); //NOI18N
         this.nd = nd;
     }
 
     @Override
     protected boolean isEnabled(Card target) {
-        return !target.isRunning();
+        return !target.isRunning() && !target.isRemote();
     }
 
     @Override

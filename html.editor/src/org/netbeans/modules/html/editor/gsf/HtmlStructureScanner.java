@@ -210,11 +210,20 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         private String getAttributeValue(AstNode node, String key) {
-            String value = (String)node.getAttribute(key.toLowerCase(Locale.ENGLISH)); //try lowercase
+            String value = _getAttributeValue(node, key.toUpperCase(Locale.ENGLISH));
             if(value == null) {
-                value = (String)node.getAttribute(key.toUpperCase(Locale.ENGLISH)); //try uppercase
+                return _getAttributeValue(node, key.toLowerCase(Locale.ENGLISH));
+            } else {
+                return value;
             }
-            return value;
+        }
+
+        private String _getAttributeValue(AstNode node, String key) {
+            AstNode.Attribute attr = node.getAttribute(key); //try lowercase
+            if(attr == null) {
+                return null;
+            }
+            return attr.unquotedValue(); //try lowercase
         }
 
         @Override
