@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -171,7 +172,7 @@ public abstract class TestBase extends CslTestBase {
 
     @Override
     protected String getPreferredMimeType() {
-        return PHPLanguage.PHP_MIME_TYPE;
+        return FileUtils.PHP_MIME_TYPE;
     }
 
     @Override

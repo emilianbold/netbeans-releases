@@ -44,6 +44,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -56,11 +57,19 @@ import org.openide.util.ImageUtilities;
 final class MultipleCallStackRootNode extends AbstractNode{
     private final List<StackRootNode> children = new ArrayList<StackRootNode>();
     private final Image  icon = ImageUtilities.icon2Image(new MyIcon());
+    private final Action prefferedAction;
 
-    MultipleCallStackRootNode() {
+    MultipleCallStackRootNode(Action action) {
         super(Children.LEAF);
         setDisplayName("Root");//NOI18N
+        this.prefferedAction = action;
     }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{prefferedAction};
+    }
+
 
 
 
@@ -91,6 +100,8 @@ final class MultipleCallStackRootNode extends AbstractNode{
 //    public String getHtmlDisplayName() {
 //        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
 //    }
+
+
 
     
 

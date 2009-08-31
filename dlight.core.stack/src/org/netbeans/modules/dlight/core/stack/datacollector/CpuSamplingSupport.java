@@ -64,8 +64,11 @@ public final class CpuSamplingSupport {
     public static final Column THREAD_COLUMN =
             new Column("thread_id", Integer.class, getMessage("CpuSampling.Column.thread_id"), null); // NOI18N
 
+    public static final Column STATE_COLUMN =
+            new Column("state", Byte.class, getMessage("CpuSampling.Column.state"), null); // NOI18N
+
     public static final Column MICROSTATE_COLUMN =
-            new Column("mstate", Integer.class, getMessage("CpuSampling.Column.mstate"), null); // NOI18N
+            new Column("mstate", Byte.class, getMessage("CpuSampling.Column.mstate"), null); // NOI18N
 
     public static final Column DURATION_COLUMN =
             new Column("duration", Integer.class, getMessage("CpuSampling.Column.duration"), null); // NOI18N
@@ -75,7 +78,8 @@ public final class CpuSamplingSupport {
 
     public static final DataTableMetadata CPU_SAMPLE_TABLE =
             new DataTableMetadata("CallStack", // NOI18N
-            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN), null);
+            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, STATE_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN),
+            Arrays.asList(TIMESTAMP_COLUMN));
 
     private static String getMessage(String key) {
         return NbBundle.getMessage(CpuSamplingSupport.class, key);

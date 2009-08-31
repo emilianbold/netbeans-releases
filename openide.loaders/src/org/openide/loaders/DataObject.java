@@ -278,7 +278,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             }
 
             Exception e = new IllegalStateException("The data object " + getPrimaryFile() + " is invalid; you may not call getNodeDelegate on it any more; see #17020 and please fix your code.\n" + debugMessage); // NOI18N
-            Logger.getLogger(DataObject.class.getName()).log(Level.WARNING, null, e);
+            Logger.getLogger(DataObject.class.getName()).log(Level.INFO, null, e);
         }
         return getNodeDelegateImpl();
     }

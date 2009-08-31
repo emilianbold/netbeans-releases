@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -80,6 +81,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
@@ -124,7 +126,10 @@ public class Utilities {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
-    
+
+    private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
+    private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
+
     private static final String USER_KS_KEY = "userKS";
     private static final String USER_KS_FILE_NAME = "user.ks";
     private static final String KS_USER_PASSWORD = "open4user";
@@ -474,7 +479,7 @@ public class Utilities {
             Set<Dependency> deps = new HashSet<Dependency> (((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ());
             Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (infos);
             Set<Dependency> newones;
-            while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies)).isEmpty ()) {
+            while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies, element)).isEmpty ()) {
                 deps = newones;
             }
             
@@ -570,7 +575,7 @@ public class Utilities {
                                     Set<Dependency> deps = new HashSet<Dependency> (tryUpdated.getDependencies ());
                                     Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (forInstall);
                                     Set<Dependency> newones;
-                                    while (! (newones = processDependencies (deps, moreRequested, availableInfos, brokenDependencies)).isEmpty ()) {
+                                    while (! (newones = processDependencies (deps, moreRequested, availableInfos, brokenDependencies, tryUE)).isEmpty ()) {
                                         deps = newones;
                                     }
                                     moreRequested.add (tryUE);
@@ -587,10 +592,11 @@ public class Utilities {
     private static Set<Dependency> processDependencies (final Set<Dependency> original,
             Set<UpdateElement> retval,
             Set<ModuleInfo> availableInfos,
-            Set<Dependency> brokenDependencies) {
+            Set<Dependency> brokenDependencies,
+            UpdateElement el) {
         Set<Dependency> res = new HashSet<Dependency> ();
         for (Dependency dep : original) {
-            UpdateElement req = handleDependency (dep, availableInfos, brokenDependencies, true);
+            UpdateElement req = handleDependency (el, dep, availableInfos, brokenDependencies, true);
             if (req != null) {
                 ModuleUpdateElementImpl reqM = (ModuleUpdateElementImpl) Trampoline.API.impl (req);
                 availableInfos.add (reqM.getModuleInfo ());
@@ -602,7 +608,8 @@ public class Utilities {
         return res;
     }
     
-    public static UpdateElement handleDependency (Dependency dep,
+    public static UpdateElement handleDependency (UpdateElement el,
+            Dependency dep,
             Collection<ModuleInfo> availableInfos,
             Set<Dependency> brokenDependencies,
             boolean aggressive) {
@@ -621,65 +628,6 @@ public class Utilities {
                 break;
             case Dependency.TYPE_MODULE :
                 UpdateUnit u = DependencyAggregator.getRequested (dep);
-                
-
-                //////////////////////////////////
-                /*
-                boolean matched = false;
-                if (u == null) {
-                    // last chance
-                    for (ModuleInfo m : availableInfos) {
-                        if (DependencyChecker.checkDependencyModule (dep, m)) {
-                            matched = true;
-                            break;
-                        }
-                    }
-                    if (! matched) {
-                        brokenDependencies.add (dep);
-                    }
-                } else {
-                    if (u.getInstalled () != null) {
-                        UpdateElementImpl reqElImpl = Trampoline.API.impl (u.getInstalled ());
-                        matched = DependencyChecker.checkDependencyModule (dep, ((ModuleUpdateElementImpl) reqElImpl).getModuleInfo ());
-                    }
-                    if (! matched) {
-                        // first chance
-                        for (ModuleInfo m : availableInfos) {
-                            if (DependencyChecker.checkDependencyModule (dep, m)) {
-                                matched = true;
-                                break;
-                            }
-                        }
-                        if (! matched) {
-                            UpdateElement reqEl = u.getAvailableUpdates ().isEmpty () ? null : u.getAvailableUpdates ().get (0);
-                            if (reqEl == null) {
-                                for (ModuleInfo m : availableInfos) {
-                                    if (DependencyChecker.checkDependencyModule (dep, m)) {
-                                        matched = true;
-                                        break;
-                                    }
-                                }
-                                if (! matched) {
-                                    brokenDependencies.add (dep);
-                                }
-                            } else {
-                                UpdateElementImpl reqElImpl = Trampoline.API.impl (reqEl);
-                                ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
-                                ModuleInfo info = reqModuleImpl.getModuleInfo ();
-                                if (DependencyChecker.checkDependencyModule (dep, info)) {
-                                    if (! availableInfos.contains (info)) {
-                                        requested = reqEl;
-                                    }
-                                } else {
-                                    brokenDependencies.add (dep);
-                                }
-                            }
-                        }
-                    }
-                }
-                */
-                //////////////////////////////////
-                
                 boolean updateMatched = false;
                 boolean installMatched = false;
                 boolean availableMatched = false;
@@ -714,13 +662,22 @@ public class Utilities {
                 if(updateMatched && installMatched && !aggressive) {
                     requested = null;
                 }
+                if (updateMatched && installMatched && aggressive) {
+                    if (requested.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
+                        //requested = null;
+                    } else if (/*Trampoline.API.impl(el).isEager() &&*/
+                            !el.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
+                        //requested = null;
+                    }
+                    if(isFirstClassModule(el.getUpdateUnit())) {
+                        requested = null;
+                    }
+                }
                 
                 if (!installMatched && !availableMatched && !updateMatched) {
                     brokenDependencies.add(dep);
                 }
-                
 
-                //////////////////////////////////
                 break;
             case Dependency.TYPE_REQUIRES :
             case Dependency.TYPE_NEEDS :
@@ -1029,6 +986,21 @@ public class Utilities {
     public static boolean isEssentialModule (ModuleInfo mi) {
         Object o = mi.getAttribute (ATTR_ESSENTIAL);
         return isFixed (mi) || (o != null && Boolean.parseBoolean (o.toString ()));
+    }
+
+    public static boolean isFirstClassModule (UpdateUnit u) {
+        String names = System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
+        if (names == null || names.length () == 0) {
+            names = FIRST_CLASS_MODULES;
+        }
+
+        StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
+        while (en.hasMoreTokens ()) {
+            if(en.nextToken ().trim().equals(u.getCodeName())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static Logger getLogger () {

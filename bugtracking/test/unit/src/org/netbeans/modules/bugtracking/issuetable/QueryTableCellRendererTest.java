@@ -2,6 +2,7 @@
 package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
@@ -17,12 +18,14 @@ import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
-import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.nodes.Node.Property;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -57,7 +60,7 @@ public class QueryTableCellRendererTest {
         JTable table = new JTable();
         RendererQuery query = new RendererQuery();
         String propertyValue = "some value";
-        RendererIssue issue = new RendererIssue(null);
+        RendererIssue issue = new RendererIssue();
         IssueProperty property = new RendererNode( issue, propertyValue).createProperty();
 
         MessageFormat issueNewFormat       = getFormat("issueNewFormat");      // NOI18N
@@ -116,7 +119,7 @@ public class QueryTableCellRendererTest {
         query.containsIssue = true;
         selected = false;
         issue.wasSeen = false;
-        query.status = Issue.ISSUE_STATUS_MODIFIED;
+        query.status = IssueCache.ISSUE_STATUS_MODIFIED;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -129,7 +132,7 @@ public class QueryTableCellRendererTest {
         query.containsIssue = true;
         selected = true;
         issue.wasSeen = false;
-        query.status = Issue.ISSUE_STATUS_MODIFIED;
+        query.status = IssueCache.ISSUE_STATUS_MODIFIED;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(modifiedHighlightColor, result.getBackground());
@@ -141,7 +144,7 @@ public class QueryTableCellRendererTest {
         query.containsIssue = true;
         selected = false;
         issue.wasSeen = false;
-        query.status = Issue.ISSUE_STATUS_NEW;
+        query.status = IssueCache.ISSUE_STATUS_NEW;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -154,7 +157,7 @@ public class QueryTableCellRendererTest {
         query.containsIssue = true;
         selected = true;
         issue.wasSeen = false;
-        query.status = Issue.ISSUE_STATUS_NEW;
+        query.status = IssueCache.ISSUE_STATUS_NEW;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(newHighlightColor, result.getBackground());
@@ -285,13 +288,9 @@ public class QueryTableCellRendererTest {
 
     private class RendererIssue extends Issue {
         boolean wasSeen = false;
-        public RendererIssue(Repository repository) {
-            super(repository);
-        }
-
-        @Override
-        public boolean wasSeen() {
-            return wasSeen;
+        public RendererIssue() {
+            super(new RendererRepository());
+            ((RendererRepository)getRepository()).setIssue(this);
         }
 
         @Override
@@ -340,8 +339,7 @@ public class QueryTableCellRendererTest {
 
         @Override
         public String getID() {
-            fail("implement me!!!");
-            return null;
+            return "id";
         }
 
         @Override
@@ -350,7 +348,6 @@ public class QueryTableCellRendererTest {
             return null;
         }
 
-        @Override
         public String getRecentChanges() {
             fail("implement me!!!");
             return null;
@@ -361,6 +358,83 @@ public class QueryTableCellRendererTest {
             fail("implement me!!!");
             return null;
         }
-
     }
+
+    private class RendererRepository extends Repository {
+        private RendererIssue issue;
+        public RendererRepository() {
+        }
+        public void setIssue(RendererIssue issue) {
+            this.issue = issue;
+        }
+        @Override
+        public Image getIcon() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public String getTooltip() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public String getUrl() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Issue getIssue(String id) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public BugtrackingController getController() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Query createQuery() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Issue createIssue() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Query[] getQueries() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Issue[] simpleSearch(String criteria) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        public Lookup getLookup() {
+            return Lookups.singleton(new IssueCache("renderer") {
+                @Override
+                protected Issue createIssue(Object issueData) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                @Override
+                protected void setTaskData(Issue issue, Object issueData) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                @Override
+                public boolean wasSeen(String id) {
+                    return issue.wasSeen;
+                }
+
+                @Override
+                protected String getRecentChanges(Issue issue) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            });
+        }
+    };
 }

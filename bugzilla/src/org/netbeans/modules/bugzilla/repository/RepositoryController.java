@@ -215,9 +215,6 @@ public class RepositoryController extends BugtrackingController implements Docum
     @Override
     public void applyChanges() {
         String newName = panel.nameField.getText().trim();
-        if(!newName.equals(repository.getDisplayName())) {
-            BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
-        }
         repository.setName(newName);
         repository.setTaskRepository(
             getName(),

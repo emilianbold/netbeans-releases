@@ -644,7 +644,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                                                 ev.getPropertyName()))
                 {   // set of opened TopComponents has changed - hasn't some
                     // of our views been closed?
-                    CloneableTopComponent closedTC = null;
                     Set oldSet = (Set) ev.getOldValue();
                     Set newSet = (Set) ev.getNewValue();
                     if (newSet.size() < oldSet.size()) {
@@ -652,16 +651,17 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                         while (it.hasNext()) {
                             Object o = it.next();
                             if (!newSet.contains(o)) {
-                                if (o instanceof CloneableTopComponent)
-                                    closedTC = (CloneableTopComponent) o;
-                                break;
+                                if (o instanceof CloneableTopComponent) {
+                                    CloneableTopComponent closedTC = (CloneableTopComponent) o;
+                                    if (getSelectedElementType(closedTC) != -1) { // it is our multiview
+                                        FormEditorSupport fes = getFormEditor(closedTC);
+                                        if (fes != null) {
+                                            fes.multiViewClosed(closedTC);
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
-                    if (getSelectedElementType(closedTC) != -1) { // it is our multiview
-                        FormEditorSupport fes = getFormEditor(closedTC);
-                        if (fes != null)
-                            fes.multiViewClosed(closedTC);
                     }
                     TopComponent active = TopComponent.getRegistry().getActivated();
                     if (active!=null && getSelectedElementType(active) != -1) { // it is our multiview

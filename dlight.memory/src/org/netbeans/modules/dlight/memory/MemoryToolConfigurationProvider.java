@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.awt.Color;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -57,17 +58,15 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
-import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.ValueFormatter;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionName;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
@@ -197,17 +196,18 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         indicatorColumns.addAll(Arrays.asList(totalColumn));
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
-        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION,
-                loc("indicator.title"), BINARY_ORDER, // NOI18N
-                Arrays.asList(
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("graph.description"), GraphDescriptor.Kind.LINE)), // NOI18N
-                new DataRowToMemoryPlot(indicatorColumns));
-        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
-                new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatValue(0)))); // NOI18N
+        TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
+        indicatorConfiguration.setGraphScale(BINARY_ORDER);
+        indicatorConfiguration.addTimeSeriesDescriptors(
+                new TimeSeriesDescriptor(new Color(0x53, 0x82, 0xA1), loc("graph.description"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
+        indicatorConfiguration.setDataRowHandler(new DataRowToMemory(indicatorColumns));
+        indicatorConfiguration.addDetailDescriptors(
+                new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatValue(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
-        indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
-            public String render(int value) {
+        indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
+            public String format(int value) {
                 return formatValue(value);
             }
         });
@@ -270,13 +270,13 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 MemoryToolConfigurationProvider.class, key, params);
     }
 
-    private static final class DataRowToMemoryPlot implements DataRowToPlot {
+    private static final class DataRowToMemory implements DataRowToTimeSeries {
 
         private final List<Column> columns;
         private int mem;
         private int max;
 
-        public DataRowToMemoryPlot(List<Column> columns) {
+        public DataRowToMemory(List<Column> columns) {
             this.columns = new ArrayList<Column>(columns);
         }
 

@@ -202,13 +202,15 @@ class JCLogicalViewProvider implements LogicalViewProvider {
                     ActionNames.COMMAND_JC_UNLOAD,
                     bundle.getString("LBL_JCUnload_Action_Name"), null)); //NOI18N
             actions.add(null);
-            actions.add(ProjectSensitiveActions.projectCommandAction(
-                    ActionProvider.COMMAND_RUN,
-                    bundle.getString("LBL_RunAction_Name"), null)); //NOI18N
+            if (!project.kind().isLibrary()) {
+                actions.add(ProjectSensitiveActions.projectCommandAction(
+                        ActionProvider.COMMAND_RUN,
+                        bundle.getString("LBL_RunAction_Name"), null)); //NOI18N
 //            actions.add(ProjectSensitiveActions.projectCommandAction(
 //                    ActionProvider.COMMAND_DEBUG,
 //                    bundle.getString("LBL_DebugAction_Name"), null)); //NOI18N
-            actions.add(CommonProjectActions.setProjectConfigurationAction());
+            }
+//            actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());

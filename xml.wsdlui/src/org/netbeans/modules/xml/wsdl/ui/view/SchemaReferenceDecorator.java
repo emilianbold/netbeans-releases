@@ -43,10 +43,12 @@ package org.netbeans.modules.xml.wsdl.ui.view;
 
 import java.util.Collection;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.ui.customizer.AbstractReferenceDecorator;
@@ -91,7 +93,7 @@ public class SchemaReferenceDecorator extends AbstractReferenceDecorator {
             
             //For wsdl, imported schema's should have a namespace.
             if (model instanceof SchemaModel) {
-                String tns = ((SchemaModel) model).getSchema().getTargetNamespace();
+                String tns = Utility.getTargetNamespace((SchemaModel) model);
                 if (tns == null) {
                     return NbBundle.getMessage(SchemaReferenceDecorator.class,
                     "LBL_ReferenceDecorator_NoNamespace");
@@ -107,19 +109,22 @@ public class SchemaReferenceDecorator extends AbstractReferenceDecorator {
             // It had better be a schema model, but check anyway.
             if (componentModel instanceof SchemaModel) {
                 SchemaModel sm = (SchemaModel) componentModel;
-                Collection<SchemaModelReference> references =
-                        sm.getSchema().getSchemaReferences();
-                // Ensure the selected document is not already among the
-                // set that have been included.
-                for (SchemaModelReference ref : references) {
-                    try {
-                        SchemaModel otherModel = ref.resolveReferencedModel();
-                        if (model.equals(otherModel)) {
-                            return NbBundle.getMessage(SchemaReferenceDecorator.class,
-                                    "LBL_ReferenceDecorator_AlreadyRefd");
+                Schema schema = sm.getSchema();
+                if (schema != null) {
+                    Collection<SchemaModelReference> references =
+                            schema.getSchemaReferences();
+                    // Ensure the selected document is not already among the
+                    // set that have been included.
+                    for (SchemaModelReference ref : references) {
+                        try {
+                            SchemaModel otherModel = ref.resolveReferencedModel();
+                            if (model.equals(otherModel)) {
+                                return NbBundle.getMessage(SchemaReferenceDecorator.class,
+                                        "LBL_ReferenceDecorator_AlreadyRefd");
+                            }
+                        } catch (CatalogModelException cme) {
+                            // Ignore that one as it does not matter.
                         }
-                    } catch (CatalogModelException cme) {
-                        // Ignore that one as it does not matter.
                     }
                 }
             }
@@ -173,7 +178,7 @@ public class SchemaReferenceDecorator extends AbstractReferenceDecorator {
     public String getNamespace(Model model) {
         if (model instanceof SchemaModel) {
             SchemaModel sm = (SchemaModel) model;
-            return sm.getSchema().getTargetNamespace();
+            return Utility.getTargetNamespace(sm);
         }
         return null;
     }

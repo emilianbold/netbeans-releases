@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -163,7 +165,14 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
         processIncludes();
 
-        TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
+        TokenHierarchy tokenHierarchy = null;
+
+        if (doc != null){
+            tokenHierarchy = TokenHierarchy.get(doc);
+        } else {
+            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
+        }
+
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
         if (!tokenSequence.moveNext()) {
             return; //no tokens in token sequence
@@ -223,7 +232,14 @@ public class SimplifiedJspServlet extends JSPProcessor {
      * additionaly it returns a list of imports found
      */
     private void processImportsAndBeanDeclarations() {
-        TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
+        TokenHierarchy tokenHierarchy = null;
+
+        if (doc != null){
+            tokenHierarchy = TokenHierarchy.get(doc);
+        } else {
+            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
+        }
+        
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         tokenSequence.moveStart();
 
@@ -321,6 +337,10 @@ public class SimplifiedJspServlet extends JSPProcessor {
                                     && (val.charAt(0) == '"' || val.charAt(0) == '\'')
                                     && val.charAt(val.length() - 1) == val.charAt(0)) {
 
+                                // a hack for compatibility with
+                                // org.netbeans.modules.editor.java.Utilities.isJavaContext()
+                                tokenSequence.createEmbedding(JavaTokenId.language(), 1, 1);
+
                                 int startOffset = tokenSequence.offset() + 1;
                                 int len = val.length() - 1;
                                 String imprt = val.substring(1, len);
@@ -402,7 +422,10 @@ public class SimplifiedJspServlet extends JSPProcessor {
         return String.format(CLASS_HEADER, extendsClass);
     }
 
-    
+    @Override
+    protected Collection<String> processedIncludes() {
+        return Collections.emptyList();
+    }
 
     public Embedding getSimplifiedServlet() {
         assureProcessCalled();
@@ -443,6 +466,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
         return embedding;
     }
 
+    @Deprecated
     public static abstract class VirtualJavaClass {
 
         public final void create(Document doc, String virtualClassBody) {

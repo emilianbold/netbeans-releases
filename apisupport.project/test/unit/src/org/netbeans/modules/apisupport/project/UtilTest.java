@@ -49,10 +49,13 @@ import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
@@ -178,7 +181,7 @@ public class UtilTest extends TestBase {
             Locale.setDefault(orig);
         }
     }
-    
+
     public void testLoadProperties() throws Exception {
         File props = file(getWorkDir(), "testing.properties");
         OutputStream propsOS = new FileOutputStream(props);
@@ -304,6 +307,8 @@ public class UtilTest extends TestBase {
         Map<String,String> contents = new HashMap<String,String>();
         contents.put("a/b/A12.class", "");
         contents.put("a/b/c/B123.class", "");
+        contents.put("pack/age/noclass/Bundle.properties", "");
+        contents.put("1.0/invalid/package/name/A.class", "");
         File jar = new File(getWorkDir(), "some.jar");
         createJar(jar, contents, new Manifest());
         SortedSet<String> packages = new TreeSet<String>();

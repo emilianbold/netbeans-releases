@@ -103,12 +103,9 @@ public class SwitcherTable extends JTable {
      * computed according to given y coordinate. Height will be used during the
      * number of row computing.
      */
-    public SwitcherTable(SwitcherTableItem[] items, int y) {
+    public SwitcherTable(SwitcherTableItem[] items, int height) {
         super();
         init();
-        // get rid of the effect when popup seems to be higher that screen height
-        int gap = (y == 0 ? 10 : 5);
-        int height = Utilities.getUsableScreenBounds().height - y - gap;
         setModel(new SwitcherTableModel(items, getRowHeight(), height));
         getSelectionModel().clearSelection();
         getSelectionModel().setAnchorSelectionIndex(-1);

@@ -52,7 +52,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;

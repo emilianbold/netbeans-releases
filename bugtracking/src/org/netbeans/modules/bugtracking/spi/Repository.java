@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * 
@@ -51,7 +52,7 @@ import org.openide.nodes.Node;
  * 
  * @author Tomas Stupka
  */
-public abstract class Repository {
+public abstract class Repository implements Lookup.Provider {
 
     private RepositoryNode node;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -60,6 +61,13 @@ public abstract class Repository {
      * a query from this repository was saved or removed
      */
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
+
+    /**
+     * Repository's attributes have changed, e.g. name, url, etc.
+     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
+     * Old value can be null in case the repository is created.
+     */
+    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
 
     /**
      * Returns the icon for this repository
@@ -78,6 +86,13 @@ public abstract class Repository {
      * @return
      */
     public abstract String getTooltip();
+
+    /**
+     * Returns a unique ID for this repository
+     * 
+     * @return
+     */
+    public abstract String getID();
 
     /**
      * Returns a Node representing this repository
@@ -148,13 +163,6 @@ public abstract class Repository {
      */
     public abstract Issue[] simpleSearch(String criteria);
 
-    /**
-     * Returns the {@link IssueCache} for the repository
-     * @return
-     */
-    protected abstract IssueCache getIssueCache();
-
-
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -171,8 +179,13 @@ public abstract class Repository {
         support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
     }
 
-    IssueCache getCache() {
-        return getIssueCache();
+    /**
+     * Notify listeners on this repository that some of repository's attributes have changed.
+     * @param oldValue map of old attributes
+     * @param newValue map of new attributes
+     */
+    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
+        support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
     }
 
 }

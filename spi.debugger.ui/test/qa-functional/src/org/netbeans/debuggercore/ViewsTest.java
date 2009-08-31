@@ -51,6 +51,7 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -60,8 +61,28 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 
-public class ViewsTest extends JellyTestCase {
-    
+public class ViewsTest extends DebuggerTestCase {
+
+    private static String[] tests16 = new String[]{
+        "testViewsDefaultOpen",
+        "testViewsCallStack",
+        "testViewsHeapWalker1",
+        "testViewsThreads",
+        "testViewsSessions",
+        "testViewsSources",
+        "testViewsClose"
+    };
+
+    private static String[] tests15 = new String[]{
+        "testViewsDefaultOpen",
+        "testViewsCallStack",
+        "testViewsClasses",
+        "testViewsThreads",
+        "testViewsSessions",
+        "testViewsSources",
+        "testViewsClose"
+    };
+
     public ViewsTest(String name) {
         super(name);
     }
@@ -72,50 +93,21 @@ public class ViewsTest extends JellyTestCase {
     
     public static Test suite() {
         String vers = System.getProperty("java.version");
-        if (vers.startsWith("1.6")) {
-            return NbModuleSuite.create(
-               NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
-                    "testViewsDefaultOpen",
-                    "testViewsCallStack",
-                    "testViewsHeapWalker1",
-                    "testViewsThreads",
-                    "testViewsSessions",
-                    "testViewsSources",
-                    "testViewsClose")
-                .enableModules(".*")
-                .clusters(".*")
-            
-            );
-        } else {
-            return NbModuleSuite.create(
-               NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
-                    "testViewsDefaultOpen",
-                    "testViewsCallStack",
-                    "testViewsClasses",
-                    "testViewsThreads",
-                    "testViewsSessions",
-                    "testViewsSources",
-                    "testViewsClose")
-                .enableModules(".*")
-                .clusters(".*")
-            
-            );
-        }
+        String[] tests;
+        if (vers.startsWith("1.6")) 
+            tests = tests16;
+        else
+            tests = tests15;
+
+        return createModuleTest(ViewsTest.class, tests);
                 
     }     
     
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
-        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");        
     }
-    
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
-    }
-    
+        
     public void testViewsDefaultOpen() throws Throwable {
         try {
             //open source
@@ -132,9 +124,8 @@ public class ViewsTest extends JellyTestCase {
             new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
-            assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
-            assertNotNull("Breakpoints view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.breakpointsViewTitle, 0));
-            assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
+            assertNotNull("Variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.variablesViewTitle, 0));
+            assertNotNull("Breakpoints view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.breakpointsViewTitle, 0));            
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -173,12 +164,11 @@ public class ViewsTest extends JellyTestCase {
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.classesViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.classesViewTitle));
-            TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-            new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader|examples.advanced|MemoryView|1").expand();
+            OutlineOperator outlineOperator = new OutlineOperator(new TopComponentOperator(Utilities.classesViewTitle));
+            new OutlineNode(outlineOperator, "Application Class Loader|examples.advanced|MemoryView|1").expand();
             String[] entries = {"System Class Loader", "Application Class Loader", "examples.advanced", "Helper", "MemoryView", "1"};
             for (int i = 0; i < entries.length; i++) {
-                assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(treeTableOperator.getValueAt(i, 0).toString())));
+                assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(outlineOperator.getValueAt(i, 0).toString())));
             }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -330,8 +320,8 @@ try {
             Utilities.toggleBreakpoint(eo, 92);
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
-            new TopComponentOperator(Utilities.localVarsViewTitle).close();
-            new TopComponentOperator(Utilities.watchesViewTitle).close();
+            new TopComponentOperator(Utilities.variablesViewTitle).close();
+            //new TopComponentOperator(Utilities.watchesViewTitle).close();
             new TopComponentOperator(Utilities.callStackViewTitle).close();
             new TopComponentOperator(Utilities.classesViewTitle).close();
             new TopComponentOperator(Utilities.sessionsViewTitle).close();

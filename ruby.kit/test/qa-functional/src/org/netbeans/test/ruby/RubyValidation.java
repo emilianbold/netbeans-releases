@@ -186,7 +186,12 @@ public class RubyValidation extends JellyTestCase {
                 "LBL_RunSingleAction_Name",
                 new Object[]{1, "main.rb"});
         // call "Run "main.rb"" in editor
-        new Action(null, runFileItem).perform(editor);
+        new ActionNoBlock(null, runFileItem).performPopup(editor);
+        
+        String dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", 
+                "RunFile");
+        new NbDialogOperator(dialogTitle).ok();
+
         // check message in output tab
         new OutputTabOperator("main.rb").waitText("Hello World"); // NOI18N
     }

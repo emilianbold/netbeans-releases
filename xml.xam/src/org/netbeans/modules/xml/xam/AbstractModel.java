@@ -391,7 +391,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         }
     }
 
-    // vlv # 121042
+    // # 121042
     protected synchronized void finishTransaction() {
         if (transaction == null) return;  // just no-op when not in transaction
         validateWrite(); // ensures that the releasing thread really owns trnx

@@ -48,7 +48,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
@@ -61,6 +60,7 @@ import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
@@ -334,7 +334,7 @@ public class AddUseImportRule extends AbstractRule {
     private boolean isClassName(ASTNode parentNode) {
         return parentNode instanceof ClassName || parentNode instanceof FormalParameter ||
                 parentNode instanceof StaticConstantAccess || parentNode instanceof StaticMethodInvocation ||
-                parentNode instanceof StaticFieldAccess;
+                parentNode instanceof StaticFieldAccess || parentNode instanceof ClassDeclaration;
     }
 
     private boolean isFunctionName(ASTNode parentNode) {

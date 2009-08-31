@@ -67,7 +67,7 @@ import org.netbeans.modules.csl.core.SelectCodeElementAction;
 import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
-import org.netbeans.modules.html.editor.HtmlKit;
+import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.util.Exceptions;

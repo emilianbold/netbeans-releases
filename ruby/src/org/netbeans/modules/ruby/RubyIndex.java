@@ -1055,6 +1055,10 @@ public final class RubyIndex {
             }
             
             String[] signatures = map.getValues(FIELD_METHOD_NAME);
+            String className = map.getValue(FIELD_CLASS_NAME);
+            if (className == null) {
+                className = "";
+            }
 
             if (signatures != null) {
                 for (String signature : signatures) {
@@ -1063,8 +1067,9 @@ public final class RubyIndex {
                         continue;
                     }
 
+                    String seenSignature = signature + ";" + className;
                     // Prevent duplicates when method is redefined
-                    if (!seenSignatures.contains(signature)) {
+                    if (!seenSignatures.contains(seenSignature)) {
                         if (signature.startsWith(prefix)) {
                             if (kind == QuerySupport.Kind.EXACT) {
                                 // Ensure that the method is not longer than the prefix
@@ -1079,7 +1084,7 @@ public final class RubyIndex {
                                 (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
                             }
 
-                            seenSignatures.add(signature);
+                            seenSignatures.add(seenSignature);
 
                             IndexedMethod method = createMethod(signature, map, inheriting);
                             method.setSmart(!haveRedirected);

@@ -55,6 +55,7 @@ import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
@@ -94,7 +95,13 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     repositories.add(repo);
                 }
 
-                repo.getConfiguration(); // force repo configuration init before controler populate
+                KenaiConfiguration kc = (KenaiConfiguration) repo.getConfiguration(); // force repo configuration init before controler populate
+                if(kc.getRepositoryConfiguration(repo, false) == null) {
+                    // something went wrong, can't use the repo anyway => return null
+                    Bugzilla.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
+                            + project.getDisplayName() + "," + project.getName() + "]");                                // NOI18N
+                    return null;
+                }
                 return repo;
             }
         } catch (KenaiException kenaiException) {

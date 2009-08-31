@@ -43,24 +43,25 @@ import org.openide.util.NbBundle;
 
 public class THAConfigurationImpl implements THAConfiguration {
 
-    private static final THAConfigurationImpl instance = new THAConfigurationImpl(true);
+   
     private boolean raceDetectionSwitch;
     private boolean onStartDetectionSwitch;
 
-    private THAConfigurationImpl(boolean onStartDetectionSwitch) {
-       raceDetectionSwitch = true;
+    private THAConfigurationImpl(boolean onStartDetectionSwitch, boolean collectDataRaces) {
+       raceDetectionSwitch = collectDataRaces;
        this.onStartDetectionSwitch = onStartDetectionSwitch;
     }
 
-    public static THAConfigurationImpl getDefault() {
-        return instance;
-    }
 
     public static  synchronized  THAConfigurationImpl create(boolean collectFromBegining){
-        THAConfigurationImpl conf = new THAConfigurationImpl(collectFromBegining);
+        THAConfigurationImpl conf = new THAConfigurationImpl(collectFromBegining, true);
         return conf;
     }
 
+    public static  synchronized  THAConfigurationImpl create(boolean collectFromBegining, boolean collectDataRaces){
+        THAConfigurationImpl conf = new THAConfigurationImpl(collectFromBegining, collectDataRaces);
+        return conf;
+    }
    
 
     public boolean collectDataRaces() {

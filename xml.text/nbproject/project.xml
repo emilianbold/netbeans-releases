@@ -325,6 +325,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.hibernate</friend>
                 <friend>org.netbeans.modules.spring.beans</friend>
+                <friend>org.netbeans.modules.wag.manager</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.frameworks.struts2</friend>
                 <friend>org.netbeans.modules.xml</friend>

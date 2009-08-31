@@ -38,21 +38,28 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 
 /**
  * @author Radek Matous
  */
 class FieldAssignmentImpl extends AssignmentImpl<FieldElementImpl> {
-    FieldAssignmentImpl(FieldElementImpl field, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
-            Map<String, AssignmentImpl> allAssignments) {
-        super(field, scope, scopeRange, nameRange, assignment, allAssignments);
+    private VariableNameImpl variableNameImpl;
+    FieldAssignmentImpl(VariableNameImpl variableNameImpl, FieldElementImpl field, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
+        super(field, scope, scopeRange, nameRange, typeName);
+        this.variableNameImpl = variableNameImpl;
     }
 
-    FieldAssignmentImpl(FieldElementImpl field, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(field, scope, scopeRange, nameRange, typeName);
+    @Override
+    boolean canBeProcessed(String tName) {
+        final String name = getName();
+        if (!canBeProcessed(tName, VariousUtils.FIELD_TYPE_PREFIX + name) ||
+                !canBeProcessed(tName, VariousUtils.FIELD_TYPE_PREFIX + name.substring(1))) {
+            return canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + variableNameImpl.getName()) &&
+                canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + variableNameImpl.getName().substring(1));
+
+        }
+        return true;
     }
 }

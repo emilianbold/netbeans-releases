@@ -88,9 +88,6 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/attr_declaration.rb", "c.t^hud", "attr_declaration.rb", 114);
     }
 
-    public void testSymbolToLocalMethod() throws Exception {
-        checkDeclaration("testfiles/symbol_to_method.rb", ":foo_^bar", "symbol_to_method.rb", 59);
-    }
 
     public void testSymbolToInheritedMethod() throws Exception {
         checkDeclaration("testfiles/symbol_to_method.rb", ":foo_bar_b^ax", "symbol_to_method_base.rb", 12);

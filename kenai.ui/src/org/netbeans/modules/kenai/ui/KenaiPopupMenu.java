@@ -88,11 +88,7 @@ import org.openide.util.actions.SystemAction;
 public class KenaiPopupMenu extends CookieAction {
 
     //XXX this has to be done better for other domains than (test)kenai
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-    }
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)"); //NOI18N
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -115,7 +111,7 @@ public class KenaiPopupMenu extends CookieAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP");
+        return NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP"); //NOI18N
     }
 
     @Override

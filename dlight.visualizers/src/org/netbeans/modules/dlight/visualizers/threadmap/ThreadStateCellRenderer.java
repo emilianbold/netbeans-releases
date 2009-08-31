@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -50,10 +51,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 
 /**
  * @author Jiri Sedlacek
@@ -71,6 +72,8 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     private long viewStart;
     private TimeLine timeLine;
     private EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+    private JTable table;
+    private boolean isShiftCounted;
 
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadStateCellRenderer(ThreadsPanel viewManager) {
@@ -142,6 +145,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         dataStart = viewManager.getDataStart();
         dataEnd = viewManager.getDataEnd();
         timeLine = viewManager.getTimeLine();
+        this.table = table;
 
         return this;
     }
@@ -244,9 +248,22 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
     }
 
+    private void calculateShift(){
+        if (!isShiftCounted) {
+            Point header = table.getTableHeader().getLocationOnScreen();
+            Point stateRow = new Point(0,0);
+            SwingUtilities.convertPointToScreen(stateRow, this);
+            int nameWidth = table.getTableHeader().getColumnModel().getColumn(0).getWidth();
+            int shift = stateRow.x - header.x - nameWidth;
+            isShiftCounted = true;
+            ThreadStateHeaderRenderer.shift = shift;
+        }
+    }
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        calculateShift();
         paintTimeMarks(g);
 
         if (threadData != null) {
