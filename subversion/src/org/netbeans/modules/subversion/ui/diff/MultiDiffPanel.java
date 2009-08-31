@@ -500,7 +500,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 } else {
                     setDiffIndex(currentIndex, -1);
                 }
-            } else {
+            } else if (currentDifferenceIndex < view.getDifferenceCount()) {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {

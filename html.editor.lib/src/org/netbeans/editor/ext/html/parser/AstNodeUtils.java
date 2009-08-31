@@ -38,9 +38,11 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.editor.ext.html.dtd.DTD;
 
@@ -79,6 +81,23 @@ public class AstNodeUtils {
                 node = node.parent();
             }
         }
+    }
+
+    /** Returns a list of all ancestors of the given node matching the filter.
+     * Closest ancestors are at the beginning of the list.
+     */
+    public static List<AstNode> getAncestors(AstNode node, AstNode.NodeFilter filter) {
+        List<AstNode> matching = new ArrayList<AstNode>();
+        AstNode n = node;
+        do {
+            if(filter.accepts(n)) {
+                matching.add(n);
+            }
+
+            n = n.parent();
+        } while (n != null);
+        
+        return matching;
     }
 
     public static AstNode findDescendant(AstNode node, int astOffset) {
@@ -198,7 +217,7 @@ public class AstNodeUtils {
         AstNode leafNodeForPosition = AstNodeUtils.findDescendant(root, astPosition, true);
 
         //search first dtd element node in the tree path
-        while(leafNodeForPosition.getDTDElement() == null &&
+        while (leafNodeForPosition.getDTDElement() == null &&
                 leafNodeForPosition.type() != AstNode.NodeType.ROOT) {
             leafNodeForPosition = leafNodeForPosition.parent();
         }
@@ -228,7 +247,7 @@ public class AstNodeUtils {
             }
             if (sibling.type() == AstNode.NodeType.OPEN_TAG) {
                 DTD.Content subcontent = content.reduce(sibling.getDTDElement().getName());
-                if(subcontent != null) {
+                if (subcontent != null) {
                     //sibling reduced - update the content to the resolved one
                     content = subcontent;
                 } else {
@@ -242,7 +261,7 @@ public class AstNodeUtils {
             //the node is automatically closed - which is before the node start
 
             //but do not do that on the root level
-            if(leafNodeForPosition.parent().type() != AstNode.NodeType.ROOT) {
+            if (leafNodeForPosition.parent().type() != AstNode.NodeType.ROOT) {
                 elements.addAll(getPossibleOpenTagElements(root, leafNodeForPosition.startOffset()));
             }
         }
@@ -257,12 +276,18 @@ public class AstNodeUtils {
     public static boolean hasForbiddenEndTag(AstNode node) {
         return node.getDTDElement() != null ? node.getDTDElement().isEmpty() : false;
     }
-   
-    public static void visitChildren(AstNode node, AstNodeVisitor visitor) {
+
+    public static void visitChildren(AstNode node, AstNodeVisitor visitor, AstNode.NodeType nodeType) {
         for (AstNode n : node.children()) {
-            visitor.visit(n);
-            visitChildren(n, visitor);
+            if (nodeType == null || n.type() == nodeType) {
+                visitor.visit(n);
+            }
+            visitChildren(n, visitor, nodeType);
         }
+    }
+
+    public static void visitChildren(AstNode node, AstNodeVisitor visitor) {
+        visitChildren(node, visitor, null);
     }
 
     public static void visitAncestors(AstNode node, AstNodeVisitor visitor) {

@@ -96,7 +96,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     public synchronized Map<String, FaceletsLibrary> getLibraries() {
         if (faceletsLibraries == null) {
             faceletsLibraries = findLibraries();
-            debugLibraries();
+//            debugLibraries();
         }
         
         updateUndeclaredCompositeLibraries(faceletsLibraries);

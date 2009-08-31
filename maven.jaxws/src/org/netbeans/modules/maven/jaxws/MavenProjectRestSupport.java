@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.math.BigInteger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -110,9 +109,12 @@ public class MavenProjectRestSupport extends WebRestSupport {
             //Fix issue#141595, 154378
 //            addSwdpLibrary();
 
-            FileObject ddFO = getWebXml();
-            WebApp webApp = getWebApp();
+            FileObject ddFO = getDeploymentDescriptor();
+            if (ddFO == null) {
+                return;
+            }
 
+            WebApp webApp = findWebApp();
             if (webApp == null) {
                 return;
             }

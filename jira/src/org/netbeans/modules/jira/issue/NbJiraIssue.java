@@ -383,6 +383,22 @@ public class NbJiraIssue extends Issue {
         }
     }
 
+    LinkedIssue[] getLinkedIssues() {
+        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        if (attrs == null) {
+            return new LinkedIssue[0];
+        }
+        List<LinkedIssue> linkedIssues = new ArrayList<LinkedIssue>();
+
+        for (TaskAttribute attribute : attrs.values()) {
+            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_LINK_PREFIX)) {
+                LinkedIssue linkedIssue = new LinkedIssue(attribute);
+                linkedIssues.add(linkedIssue);
+            }
+        }
+        return linkedIssues.toArray(new LinkedIssue[linkedIssues.size()]);
+    }
+
     /**
      * Returns an array of worklogs under the issue.
      * @return
@@ -1480,6 +1496,38 @@ public class NbJiraIssue extends Issue {
         public void setValues (List<String> values) {
             this.values = values;
         }
+    }
+
+    public static final class LinkedIssue {
+        private final String linkId;
+        private final String label;
+        private final String issueKey;
+        private final boolean inward;
+
+        private LinkedIssue(TaskAttribute attribute) {
+            String suffix = attribute.getId().substring(IJiraConstants.ATTRIBUTE_LINK_PREFIX.length());
+            inward = suffix.endsWith("inward"); // NOI18N
+            linkId = suffix.substring(0, suffix.length()-(inward?6:7));
+            label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
+            issueKey = attribute.getValue();
+        }
+
+        public String getLinkId() {
+            return linkId;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getIssueKey() {
+            return issueKey;
+        }
+
+        public boolean isInward() {
+            return inward;
+        }
+
     }
 
     public static final class WorkLog {

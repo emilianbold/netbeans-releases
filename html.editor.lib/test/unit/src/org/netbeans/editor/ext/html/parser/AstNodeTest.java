@@ -73,4 +73,18 @@ public class AstNodeTest extends TestBase {
 
     }
 
+    public void testAttribute() {
+        AstNode.Attribute attr = new AstNode.Attribute("name", "value", 0, 6);
+        assertEquals("name", attr.name());
+        assertEquals("name", attr.nameWithoutNamespacePrefix());
+        assertNull(attr.namespacePrefix());
+
+        attr = new AstNode.Attribute("xmlns:h", "value", 0, 6);
+        assertEquals("xmlns:h", attr.name());
+        assertEquals("h", attr.nameWithoutNamespacePrefix());
+        assertEquals("xmlns", attr.namespacePrefix());
+
+
+    }
+
 }
