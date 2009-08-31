@@ -104,8 +104,7 @@ public class CommitAction extends ContextAction {
         }
         // XXX could be a performace issue, maybe a msg box in commit would be enough
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File[] files = cache.listFiles(getCachedContext(nodes), FileInformation.STATUS_LOCAL_CHANGE);
-        return files.length > 0;
+        return cache.containsFiles(getCachedContext(nodes), FileInformation.STATUS_LOCAL_CHANGE);
     }
 
     /** Run commit action. Shows UI */

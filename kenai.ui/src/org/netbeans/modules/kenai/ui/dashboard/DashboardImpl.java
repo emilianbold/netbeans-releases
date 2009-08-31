@@ -413,11 +413,13 @@ public final class DashboardImpl extends Dashboard {
             if( !model.getRootNodes().contains(userNode) ) {
                 model.addRoot(0, userNode);
                 model.addRoot(1, openProjectsNode);
-                //model.addRoot(-1, myProjectsNode);
+                if (login!=null&& !model.getRootNodes().contains(myProjectsNode))
+                    model.addRoot(-1, myProjectsNode);
             }
-            if( model.getSize() > 2 )
+            if(login!=null?model.getSize() > 3:model.getSize()>2 )
                 return;
             addProjectsToModel(-1, openProjects);
+            addMemberProjectsToModel(-1, memberProjects);
         }
     }
 
