@@ -141,36 +141,29 @@ public abstract class CacheIndex {
         if(LOG.isLoggable(Level.FINER)) {
             LOG.finer("   " + files);
         }
+        if(files == null) {
+            files = new HashSet<File>(0);
+        }
+        Set<File> newSet = new HashSet<File>(files.size());
 
-        if(files == null || files.size() == 0) {
-            LOG.log(Level.FINE, "  add({0}, Set<File>) - remove entries", new Object[]{file});
-            removeEntries(file);
-        } else {
-            Set<File> toBeRemoved = new HashSet<File>();
-            Set<File> oldSet = index.get(file);
-            if(oldSet != null) {
-                for (File f : oldSet) {
-                    if(!files.contains(f)) {
-                        toBeRemoved.add(f);
-                    }
+        Set<File> oldSet = index.get(file);
+        if(oldSet != null) {
+            for (File f : oldSet) {
+                if(!files.contains(f) && // removed from the set but
+                   index.get(f) != null) // remove only if there are no files underneath
+                {
+                    newSet.add(f);
                 }
             }
-            Set<File> newSet = new HashSet<File>(files.size());
-            newSet.addAll(files);
+        }
+        newSet.addAll(files);
 
-            LOG.log(Level.FINE, "  add({0}, Set<File>) - add entries", new Object[]{file});
-            index.put(file, Collections.synchronizedSet(newSet));
-
+        LOG.log(Level.FINE, "  add({0}, Set<File>) - add entries", new Object[]{file});
+        index.put(file, Collections.synchronizedSet(newSet));
+        if(newSet.size() > 0) {
             ensureParents(file);
-
-            LOG.log(Level.FINE, "  add({0}, Set<File>) - {1} files removed", new Object[]{file, toBeRemoved.size()});
-            if(LOG.isLoggable(Level.FINER)) {
-                LOG.finer("   " + toBeRemoved);
-            }
-
-            for (File f : toBeRemoved) {
-                removeEntries(f);
-            }
+        } else {
+            cleanUpParents(file);
         }
     }
     
@@ -205,26 +198,11 @@ public abstract class CacheIndex {
         }
     }
 
-    private void removeEntries(File file) {
+    private void cleanUpParents(File file) {
         File pFile = file;
         LOG.log(Level.FINE, "  removeEntries({0})", new Object[]{pFile});
 
         Set<File> set = index.get(file);
-        if(set != null) {
-            synchronized(set) {
-                // there might be something underneath
-                Iterator<File> it = set.iterator();
-                while(it.hasNext()) {
-                    File f = it.next();
-                    if(index.get(f) == null) {
-                        LOG.log(Level.FINE, "  removeEntries({0}) - child {1} empty - remove", new Object[]{pFile});            
-                        it.remove();
-                    } else {
-                        LOG.log(Level.FINE, "  removeEntries({0}) - child {1} still has some entries", new Object[]{pFile});                                    
-                    }
-                }
-            }
-        }
         if(set != null && set.size() > 0) {
             LOG.log(Level.FINE, "  removeEntries({0}) - children underneath. stop.", new Object[]{pFile});
             return;
@@ -247,6 +225,7 @@ public abstract class CacheIndex {
                 LOG.log(Level.FINE, "  removeEntries({0}) - parent {1} empty - stop", new Object[]{pFile, parent});
                 break;
             }
+
             synchronized(set) {
                 if(set.size() == 1) {
                     LOG.log(Level.FINE, "  removeEntries({0}) - parent {1} size 1 - remove", new Object[]{pFile, parent});
