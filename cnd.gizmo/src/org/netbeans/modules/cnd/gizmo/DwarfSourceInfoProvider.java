@@ -130,12 +130,8 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             } finally {
                 dwarf.dispose();
             }
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (WrongFileFormatException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            DLightLogger.instance.log(Level.INFO, ex.getMessage());
         }
         return null;
     }
@@ -161,7 +157,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                     dwarf.dispose();
                 }
             } catch (IOException ex) {
-                DLightLogger.instance.log(Level.INFO, null, ex);
+                DLightLogger.instance.log(Level.INFO, ex.getMessage());
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, SourceFileInfo>emptyMap() : sourceInfoMap);
