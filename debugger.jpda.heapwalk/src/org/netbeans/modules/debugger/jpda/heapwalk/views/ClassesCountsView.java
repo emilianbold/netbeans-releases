@@ -171,6 +171,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         if (debugger != null && debugger.canGetInstanceInfo()) {
             final JPDADebugger fDebugger = debugger;
             RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
+            if (rp == null) rp = RequestProcessor.getDefault();
             rp.post(new Runnable() {
                 public void run() {
                     Heap heap = new HeapImpl(fDebugger);

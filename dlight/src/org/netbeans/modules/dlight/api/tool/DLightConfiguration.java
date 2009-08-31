@@ -118,8 +118,8 @@ public final class DLightConfiguration {
         }
     }
 
-    public List<Indicator> getIndicators() {
-        List<Indicator> result = new ArrayList<Indicator>();
+    public List<Indicator<?>> getIndicators() {
+        List<Indicator<?>> result = new ArrayList<Indicator<?>>();
         List<DLightTool> tools = getToolsSet();
         for (DLightTool tool : tools) {
             result.addAll(tool.getIndicators());
