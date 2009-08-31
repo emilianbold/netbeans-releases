@@ -66,7 +66,6 @@ import java.util.List;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
 /**
@@ -296,13 +295,8 @@ public class ExportDiffChangesAction extends ContextAction {
             if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
 
-        File file = setup.getBaseFile();
         try {
             InputStream is;
-            //if (!HgUtils.getMimeType(file).startsWith("text/") && differences.length == 0) {
-             //   // assume the file is binary 
-             //   is = new ByteArrayInputStream(exportBinaryFile(file).getBytes("utf8"));  // NOI18N
-            //} else {
                 r1 = setup.getFirstSource().createReader();
                 if (r1 == null) r1 = new StringReader(""); // NOI18N
                 r2 = setup.getSecondSource().createReader();
@@ -329,18 +323,5 @@ public class ExportDiffChangesAction extends ContextAction {
             if (r1 != null) try { r1.close(); } catch (Exception e) {}
             if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
-    }
-
-    private String exportBinaryFile(File file) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StringBuilder sb = new StringBuilder((int) file.length());
-        if (file.canRead()) {
-            Utils.copyStreamsCloseAll(baos, new FileInputStream(file));
-        }
-        sb.append("MIME: application/octet-stream; encoding: Base64; length: " + (file.canRead() ? file.length() : -1)); // NOI18N
-        sb.append(System.getProperty("line.separator")); // NOI18N
-        sb.append(Base64Encoder.encode(baos.toByteArray(), true));
-        sb.append(System.getProperty("line.separator")); // NOI18N
-        return sb.toString();
     }
 }
