@@ -132,8 +132,50 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         });
         return new ArrayList<FieldAssignmentImpl>(values);
     }
+    AssignmentImpl findVarAssignment(int offset) {
+        return findAssignment(offset, true, null);
+    }
+    AssignmentImpl findFieldAssignment(int offset, FieldElement expectedField) {
+        return findAssignment(offset, false, expectedField);
+    }
 
-    private AssignmentImpl findAssignment(int offset, boolean varAssignment,FieldElement expectedField) {
+    String findFieldType(int offset, String fldName) {
+        String retval = null;
+        int retvalOffset = -1;
+        if (assignmentDatas.isEmpty() && (isGloballyVisible() || representsThis())) {
+            Scope inScope = getInScope();
+            if (inScope != null) {
+                inScope = inScope.getInScope();
+            }
+            if (inScope instanceof VariableScope) {
+                VariableScope varScope = (VariableScope) inScope;
+                List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), getName());
+                if (!variables.isEmpty()) {
+                    VariableName varName = ModelUtils.getFirst(variables);
+                    if (varName instanceof VariableNameImpl) {
+                        return ((VariableNameImpl) varName).findFieldType(offset, fldName);
+                    }
+                }
+            }
+        }
+        for (LazyFieldAssignment assign : assignmentDatas) {
+            if (assign.scope.getBlockRange().containsInclusive(offset)) {
+                if (retval == null || retvalOffset <= assign.startOffset) {
+                    if (assign.startOffset < offset) {
+                        if (fldName.equals(assign.fldName)) {
+                            retval = assign.typeName;
+                        } else if (assign.fldName.length() > 0 && fldName.equals(assign.fldName.substring(1))) {
+                            retval = assign.typeName;
+                        }
+                    }
+                }
+            }
+        }
+
+        return retval;
+    }
+
+    AssignmentImpl findAssignment(int offset, boolean varAssignment,FieldElement expectedField) {
         AssignmentImpl retval = null;
         Collection<? extends AssignmentImpl> assignments = varAssignment ? 
             getVarAssignments() : getFieldAssignments();
@@ -193,7 +235,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope);
         }
-        AssignmentImpl assignment = findAssignment(offset, true, null);
+        AssignmentImpl assignment = findVarAssignment(offset);
         return (assignment != null) ? assignment.getTypes() : empty;
     }
 
@@ -250,14 +292,18 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     public Collection<? extends TypeScope> getFieldTypes(FieldElement element, int offset) {
+        processFieldAssignments();
+        AssignmentImpl assignment = findFieldAssignment(offset, element);
+        return (assignment != null) ? assignment.getTypes() : element.getTypes(offset);
+    }
+
+    void processFieldAssignments() {
         if (!assignmentDatas.isEmpty()) {
             for (LazyFieldAssignment fieldAssignmentData : assignmentDatas) {
                 fieldAssignmentData.process();
             }
             assignmentDatas = Collections.emptyList();
         }
-        AssignmentImpl assignment = findAssignment(offset, false,element);
-        return (assignment != null) ? assignment.getTypes() : element.getTypes(offset);
     }
 
     private class LazyFieldAssignment {

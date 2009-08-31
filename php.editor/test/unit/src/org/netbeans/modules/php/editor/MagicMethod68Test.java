@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,23 +37,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.php.editor.model;
-
-import java.util.Collection;
-import java.util.List;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Radek Matous
+ *
+ * @author tomslot
  */
-public interface FunctionScope extends Scope, VariableScope {
-    List<? extends String> getParameterNames();
-    List<? extends Parameter> getParameters();
-    Collection<? extends TypeScope> getReturnTypes();
-    Collection<? extends TypeScope> getReturnTypes(boolean resolve);
+public class MagicMethod68Test extends PHPTestBase {
+
+    public MagicMethod68Test(String testName) {
+        super(testName);
+    }
+
+    public void testParamDeclTypes() throws Exception {
+        checkCompletion("testfiles/completion/lib/netbeans68version/magicmethods/magicmethods.php", "$clsB->method1()->method2()->^", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+                PhpSourcePath.SOURCE_CP,
+                ClassPathSupport.createClassPath(new FileObject[]{
+                    FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/netbeans68version/magicmethods"))
+                }));
+    }
 }
