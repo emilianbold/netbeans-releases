@@ -115,6 +115,12 @@ public class FileStatusCache {
 
     private final Turbo     turbo;
     
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.FileStatusCache"); //NOI18N
+    /**
+     * Indicates if the cache index is ready 
+     */
+    private boolean ready = false;
+
     /**
      * Identifies attribute that holds information about all non STATUS_VERSIONED_UPTODATE files.
      *
@@ -160,6 +166,79 @@ public class FileStatusCache {
     // --- Public interface -------------------------------------------------
 
     /**
+     * Evaluates if there are any files with the given status under the given roots
+     *
+     * @param context context to examine
+     * @param includeStatus limit returned files to those having one of supplied statuses
+     * @return true if there are any files with the given status otherwise false
+     */
+    public boolean containsFiles(Context context, int includeStatus) {
+        long ts = System.currentTimeMillis();
+        try {
+            File[] roots = context.getRootFiles();
+
+            // check to roots if they already apply to the given status
+            if(containsFilesIntern(roots, includeStatus, false)) {
+                return true;
+            }
+            // check all files underneath the roots
+            return containsFiles(roots, includeStatus);
+        } finally {
+            if(LOG.isLoggable(Level.FINE)) {
+                LOG.fine(" containsFiles(Context, int) took " + (System.currentTimeMillis() - ts));
+            }
+        }
+    }
+
+    /**
+     * Evaluates if there are any files with the given status under the given roots
+     *
+     * @param rootFiles context to examine
+     * @param includeStatus limit returned files to those having one of supplied statuses
+     * @return true if there are any files with the given status otherwise false
+     */
+    public boolean containsFiles(Set<File> rootFiles, int includeStatus) {
+        long ts = System.currentTimeMillis();
+        try {
+            return containsFiles(rootFiles.toArray(new File[rootFiles.size()]), includeStatus);
+        } finally {
+            if(LOG.isLoggable(Level.FINE)) {
+                LOG.fine(" containsFiles(Set<File>, int) took " + (System.currentTimeMillis() - ts));
+            }
+        }
+    }
+
+    private boolean containsFiles(File[] roots, int includeStatus) {
+        for (File root : roots) {
+            if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsFilesIntern(File[] indexRoots, int includeStatus, boolean recursively) {
+        if(indexRoots == null || indexRoots.length == 0) {
+            return false;
+        }
+        for (File root : indexRoots) {
+
+            FileInformation fi = getCachedStatus(root);
+
+            if((fi != null && (fi.getStatus() & includeStatus) != 0) &&
+                !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath()))
+            {
+                return true;
+            }
+            File[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
+            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Lists <b>modified files</b> and all folders that are known to be inside
      * this folder. There are locally modified files present
      * plus any files that exist in the folder in the remote repository. It
@@ -179,45 +258,30 @@ public class FileStatusCache {
      *
      * <p>Comapring to CVS this method returns both folders and files.
      *
-     * @param context context to examine
+     * @param roots context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
-    public File [] listFiles(Context context, int includeStatus) {
-        Set<File> set = new HashSet<File>();
-        Map allFiles = cacheProvider.getAllModifiedValues();
-        for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();                                   
-            FileInformation info = (FileInformation) allFiles.get(file);
-            if ((info != null && (info.getStatus() & includeStatus) == 0)) continue;
-            File [] roots = context.getRootFiles();
-            for (int j = 0; j < roots.length; j++) {
-                File root = roots[j];
-                if (VersioningSupport.isFlat(root)) {
-                    if (file.equals(root) || root.equals(file.getParentFile())) {
-                        set.add(file);
-                        break;
-                    }
-                } else {
-                    if (SvnUtils.isParentOrEqual(root, file)) {
-                        set.add(file);
-                        break;
-                    }   
-                }
+    public File [] listFiles(File[] roots, int includeStatus) { 
+        long ts = System.currentTimeMillis();
+        try {
+            Set<File> set = new HashSet<File>();
+
+            // get all files with given status underneath the roots files;
+            // do it recusively if root isn't a flat folder
+            for (File root : roots) {
+                set.addAll(listFiles(root, includeStatus, !VersioningSupport.isFlat(root)));
+            }
+
+            // check also the root files for status and add them eventualy
+            set.addAll(listFilesIntern(roots, includeStatus, false));
+
+            return set.toArray(new File[set.size()]);
+        } finally {
+            if(LOG.isLoggable(Level.FINE)) {
+                LOG.fine(" listFiles(File[], int, boolean) took " + (System.currentTimeMillis() - ts));
             }
         }
-        if (context.getExclusions().size() > 0) {
-            for (Iterator i = context.getExclusions().iterator(); i.hasNext();) {
-                File excluded = (File) i.next();
-                for (Iterator j = set.iterator(); j.hasNext();) {
-                    File file = (File) j.next();
-                    if (SvnUtils.isParentOrEqual(excluded, file)) {
-                        j.remove();
-                    }
-                }
-            }
-        }
-        return set.toArray(new File[set.size()]);
     }
 
     /**
@@ -226,33 +290,59 @@ public class FileStatusCache {
      *
      * <p>Comapring to CVS this method returns both folders and files.
      *
-     * @param roots context to examine
+     * @param context context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
-    public File [] listFiles(File[] roots, int includeStatus) {
-        Set<File> set = new HashSet<File>();
-        Map allFiles = cacheProvider.getAllModifiedValues();
-        for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) allFiles.get(file);
-            if ((info.getStatus() & includeStatus) == 0) continue;
-            for (int j = 0; j < roots.length; j++) {
-                File root = roots[j];
-                if (VersioningSupport.isFlat(root)) {
-                    if (file.getParentFile().equals(root)) {
-                        set.add(file);
-                        break;
-                    }
-                } else {
-                    if (SvnUtils.isParentOrEqual(root, file)) {
-                        set.add(file);
-                        break;
+    public File [] listFiles(Context context, int includeStatus) {
+        long ts = System.currentTimeMillis();
+        try {
+            Set<File> set = new HashSet<File>();
+            File [] roots = context.getRootFiles();
+
+            // list all files applying to the status with
+            // root being their ancestor or equal
+            set.addAll(Arrays.asList(listFiles(roots, includeStatus)));
+
+            // filter exclusions
+            if (context.getExclusions().size() > 0) {
+                for (File excluded : context.getExclusions()) {
+                    for (Iterator i = set.iterator(); i.hasNext();) {
+                        File file = (File) i.next();
+                        if (SvnUtils.isParentOrEqual(excluded, file)) {
+                            i.remove();
+                        }
                     }
                 }
             }
+            return set.toArray(new File[set.size()]);
+        } finally {
+            if(LOG.isLoggable(Level.FINE)) {
+                LOG.fine(" listFiles(Context, int) took " + (System.currentTimeMillis() - ts));
+            }
         }
-        return set.toArray(new File[set.size()]);
+    }
+
+    private Set<File> listFiles(File root, int includeStatus, boolean recursively) {
+        return listFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, recursively);
+    }
+
+    private Set<File> listFilesIntern(File[] roots, int includeStatus, boolean recursively) {
+        if(roots == null || roots.length == 0) {
+            return Collections.EMPTY_SET;
+        }
+        Set<File> ret = new HashSet<File>();
+        for (File root : roots) {
+            if(recursively) {
+                ret.addAll(listFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, recursively));
+            }
+            FileInformation fi = getCachedStatus(root);
+            if(fi == null || (fi.getStatus() & includeStatus) == 0) {
+                continue;
+            }
+            ret.add(root);
+        }
+        return ret;
     }
 
     /**
@@ -544,20 +634,41 @@ public class FileStatusCache {
     
     // --- Package private contract ------------------------------------------
     
-    Map<File, FileInformation>  getAllModifiedFiles() {
-        return cacheProvider.getAllModifiedValues();
+    boolean ready() {
+        return ready;
     }
 
     /**
-     * Returns only a cached map of modified files, will not access I/O.
-     * @param changed out parameter. If the cached map is not up-of-date, changed[0] will be set to true, otherwise false
-     * @return
+     * compute the cache index
      */
-    Map<File, FileInformation> getAllModifiedFilesCached(final boolean changed[]) {
-        changed[0] = cacheProvider.modifiedFilesChanged();
-        return cacheProvider.getCachedValues();
+    void computeIndex() {
+        try {
+            cacheProvider.computeIndex();
+            Subversion.getInstance().refreshAllAnnotations();
+        } finally {
+            ready = true;
+    }
     }
 
+    /**
+     * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
+     * WARNING: index has to be computed first
+     */
+    void cleanUp() {
+        File[] modifiedFiles = cacheProvider.getAllIndexValues();
+        for (File file : modifiedFiles) {
+            FileInformation info = getCachedStatus(file);
+            if (info != null && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                refresh(file, REPOSITORY_STATUS_UNKNOWN);
+            } else if (info == null ||info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                // remove entries that were excluded but no longer exist
+                // cannot simply call refresh on excluded files because of 'excluded on server' status
+                if (!exists(file)) {
+                    refresh(file, REPOSITORY_STATUS_UNKNOWN);
+                }
+            }
+        }
+    }
 
     /**
      * Refreshes given directory and all subdirectories.
@@ -574,26 +685,6 @@ public class FileStatusCache {
         }
     }
     
-    /**
-     * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
-     */
-    void cleanUp() {
-        Map files = cacheProvider.getAllModifiedValues();
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) files.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                // remove entries that were excluded but no longer exist
-                // cannot simply call refresh on excluded files because of 'excluded on server' status
-                if (!exists(file)) {
-                    refresh(file, REPOSITORY_STATUS_UNKNOWN);
-                }
-            }
-        }
-    }
-        
     // --- Private methods ---------------------------------------------------
     private final Set<File> plannedForRecursiveScan = new WeakSet(50);
     private Map<File, FileInformation> getScannedFiles(File dir) {
