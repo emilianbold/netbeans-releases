@@ -727,8 +727,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return null;
     }
 
-    public List<Indicator> getIndicators() {
-        List<Indicator> result = new ArrayList<Indicator>();
+    public List<Indicator<?>> getIndicators() {
+        List<Indicator<?>> result = new ArrayList<Indicator<?>>();
 
         for (ExecutionContext c : contexts) {
             result.addAll(c.getIndicators());

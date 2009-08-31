@@ -36,10 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.util;
 
 /**
  * Range of numeric values.
+ *
+ * @param <T> number class
  *
  * @author Alexey Vladykin
  */

@@ -160,8 +160,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 }
             }
         }
-        List<Indicator> indicators = session.getIndicators();
-        for (Indicator ind : indicators) {
+        List<Indicator<?>> indicators = session.getIndicators();
+        for (Indicator<?> ind : indicators) {
             IndicatorAccessor.getDefault().removeIndicatorActionListener(ind, this);
         }
 
@@ -260,15 +260,15 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DLightSession session = new DLightSession(sessionName);
         session.setExecutionContext(new ExecutionContext(target, configuration));
         sessions.add(session);
-        List<Indicator> indicators = session.getIndicators();
-        for (Indicator ind : indicators) {
+        List<Indicator<?>> indicators = session.getIndicators();
+        for (Indicator<?> ind : indicators) {
             IndicatorAccessor.getDefault().addIndicatorActionListener(ind, this);
         }
         notifySessionAdded(session);
         return session;
     }
 
-    private DLightSession findIndicatorOwner(Indicator ind) {
+    private DLightSession findIndicatorOwner(Indicator<?> ind) {
         for (DLightSession session : sessions) {
             if (session.containsIndicator(ind)) {
                 return session;
