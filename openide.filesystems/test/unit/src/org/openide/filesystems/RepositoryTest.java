@@ -51,6 +51,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -191,6 +192,16 @@ public class RepositoryTest extends NbTestCase {
         OutputStream os = fo.getOutputStream();
         os.write(txt.getBytes());
         os.close();
+    }
+
+    public void testStatus() throws Exception {
+        FileObject r = FileUtil.getConfigRoot();
+        FileSystem.Status s = r.getFileSystem().getStatus();
+        FileObject f = r.createData("f");
+        f.setAttribute("displayName", "F!");
+        assertEquals("F!", s.annotateName("f", Collections.singleton(f)));
+        // XXX test SystemFileSystem.localizingBundle, iconBase, SystemFileSystem.icon
+        // (move tests from org.netbeans.core.projects.SystemFileSystemTest)
     }
 
 }

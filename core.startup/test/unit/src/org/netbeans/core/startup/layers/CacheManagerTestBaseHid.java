@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -153,15 +154,16 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         assertEquals("val/map2", attr(mfs, "foo/29356", "map2"));
         assertEquals("Ahoj", attr(mfs, "foo/29356", "mapDisplayName"));
 
+        FileSystem.Status s = FileUtil.getConfigRoot().getFileSystem().getStatus();
         FileObject annot = f.findResource("foo/29356");
-        String annotName = SystemFileSystem.annotateName(annot);
+        String annotName = s.annotateName(null, Collections.singleton(annot));
         assertEquals("Ahoj", annotName);
 
-        Image img = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_16x16);
+        Image img = s.annotateIcon(null, BeanInfo.ICON_COLOR_16x16, Collections.singleton(annot));
         assertNotNull("Icon provided", img);
         assertEquals("height", 16, img.getHeight(this));
         assertEquals("width", 16, img.getHeight(this));
-        Image img32 = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_32x32);
+        Image img32 = s.annotateIcon(null, BeanInfo.ICON_COLOR_32x32, Collections.singleton(annot));
         assertNotNull("Icon 32 provided", img32);
         assertEquals("height", 32, img32.getHeight(this));
         assertEquals("width", 32, img32.getHeight(this));
