@@ -447,6 +447,15 @@ final class Central implements ControllerHandler {
 
             } else if( newMaximizedMode.getKind() == Constants.MODE_KIND_VIEW ) {
                 //the new maximized mode is non-editor TopComponent
+
+                //get the TopComponent that will be maximized
+                TopComponent tcToMaximize = newMaximizedMode.getSelectedTopComponent();
+                if( null == tcToMaximize ) {
+                    if( newMaximizedMode.getOpenedTopComponents().isEmpty() ) {
+                        return;
+                    }
+                    tcToMaximize = newMaximizedMode.getOpenedTopComponents().get(0);
+                }
                 
                 //remember the docking status of opened components
                 if( isEditorMaximized() ) {
@@ -457,8 +466,6 @@ final class Central implements ControllerHandler {
                 
                 modeBeingMaximized = newMaximizedMode;
 
-                //get the TopComponent that will be maximized
-                TopComponent tcToMaximize = newMaximizedMode.getSelectedTopComponent();
                 String tcID = wm.findTopComponentID( tcToMaximize );
                 int prevIndex = newMaximizedMode.getOpenedTopComponents().indexOf( tcToMaximize );
 
