@@ -137,8 +137,8 @@ public abstract class FileSystem implements Serializable {
     /** Describes capabilities of the filesystem.
     */
     @Deprecated // have to store it for compat
-    // XXX JDK #6460147: javac still reports it even though @Deprecated, and @SuppressWarnings("deprecation") does not help either
-    private FileSystemCapability capability;
+    private /* XXX JDK #6460147: javac still reports it even though @Deprecated,
+               and @SuppressWarnings("deprecation") does not help either: FileSystemCapability*/Object capability;
 
     /** property listener on FileSystemCapability. */
     private transient PropertyChangeListener capabilityListener;
@@ -410,12 +410,13 @@ public abstract class FileSystem implements Serializable {
     * @exception IOException error during read
     * @exception ClassNotFoundException when class not found
     */
+    @SuppressWarnings("deprecation")
     private void readObject(java.io.ObjectInputStream in)
     throws java.io.IOException, java.lang.ClassNotFoundException {
         in.defaultReadObject();
 
         if (capability != null) {
-            capability.addPropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
         }
     }
 
@@ -463,10 +464,10 @@ public abstract class FileSystem implements Serializable {
     public final FileSystemCapability getCapability() {
         if (capability == null) {
             capability = new FileSystemCapability.Bean();
-            capability.addPropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
         }
 
-        return capability;
+        return (FileSystemCapability) capability;
     }
 
     /** Allows subclasses to change a set of capabilities of the
@@ -477,13 +478,13 @@ public abstract class FileSystem implements Serializable {
     @Deprecated
     protected final void setCapability(FileSystemCapability capability) {
         if (this.capability != null) {
-            this.capability.removePropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) this.capability).removePropertyChangeListener(getCapabilityChangeListener());
         }
 
         this.capability = capability;
 
         if (this.capability != null) {
-            this.capability.addPropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) this.capability).addPropertyChangeListener(getCapabilityChangeListener());
         }
     }
 
