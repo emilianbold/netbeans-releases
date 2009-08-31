@@ -105,7 +105,16 @@ public class JspFoldManager implements FoldManager {
             timerTask.cancel();
         }
         timerTask = createTimerTask();
-        timer.schedule(timerTask, foldsUpdateInterval);
+
+        try {
+            timer.schedule(timerTask, foldsUpdateInterval);
+        }catch(IllegalStateException ise) {
+            //If the timer thread has already been stopped, which may cause
+            //during the ide shutdown and this thread still runs, it may happen
+            //that the timer.schedule() call
+            //throws java.lang.IllegalStateException: Timer already cancelled.
+            //In such case, do nothing
+        }
     }
 
     private TimerTask createTimerTask() {
