@@ -115,7 +115,7 @@ made subject to such option by the copyright holder.
             <!-- JSF From Entity Templates -->
             <folder name="JSF_From_Entity">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="90"/>
                 <file name="table.ftl" url="../palette/items/resources/table.ftl">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                     <attr name="template" boolvalue="true"/>

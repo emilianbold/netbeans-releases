@@ -60,11 +60,7 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
-            
             <public-packages>
                 <package>org.netbeans.modules.schema2beans</package>
             </public-packages>

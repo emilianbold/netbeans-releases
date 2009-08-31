@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -850,7 +851,7 @@ class LuceneIndex extends Index {
         }
     }
 
-    public boolean isValid (boolean tryOpen) throws IOException {  
+    public boolean isValid (boolean force) throws IOException {
         checkPreconditions();
         boolean res = false;
         final Collection<? extends String> locks = getOrphanLock();
@@ -859,15 +860,20 @@ class LuceneIndex extends Index {
             for (String lockName : locks) {
                 directory.deleteFile(lockName);
             }
-            clear();
+            if (force) {
+                clear();
+            }
             return res;
         }
         try {
             res = IndexReader.indexExists(this.directory);
         } catch (IOException e) {
             return res;
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.INFO, "Broken index: " + refCacheRoot.getAbsolutePath(), e);
+            return res;
         }
-        if (res && tryOpen) {
+        if (res && force) {
             try {
                 getReader();
             } catch (java.io.IOException e) {
@@ -881,8 +887,25 @@ class LuceneIndex extends Index {
         return res;
     }    
     
-    public synchronized void clear () throws IOException {
-        checkPreconditions();
+    public void clear () throws IOException {
+        try {
+            checkPreconditions();
+            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+
+                public Void run() throws IOException, InterruptedException {
+                    _clear();
+                    return null;
+                }
+            });
+        } catch (InterruptedException ex) {
+            //Never happens
+            IOException newException = new IOException();
+            newException.initCause(ex);
+            throw newException;
+        }
+    }
+
+    private synchronized void _clear() throws IOException {
         this.rootPkgCache = null;
         this.close (false);
         try {
@@ -910,9 +933,9 @@ class LuceneIndex extends Index {
                             final Class c = this.directory.getClass();
                             int refCount = -1;
                             try {
-                                final Field field = c.getDeclaredField("refCount"); 
+                                final Field field = c.getDeclaredField("refCount");
                                 field.setAccessible(true);
-                                refCount = field.getInt(this.directory);                            
+                                refCount = field.getInt(this.directory);
                             } catch (NoSuchFieldException e) {/*Not important*/}
                               catch (IllegalAccessException e) {/*Not important*/}
 
