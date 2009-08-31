@@ -448,7 +448,22 @@ public class FileUtilTest extends NbTestCase {
      * {@link FileObject#addRecursiveListener(org.openide.filesystems.FileChangeListener) }.
      * It is expected that all events from sub folders are delivered just once.
      */
-    public void testAddRecursiveListenerFireOnce() throws Exception {
+    public void testAddRecursiveListenerToFileObjectFolder() throws Exception {
+        checkFolderRecursiveListener(false);
+    }
+
+    /** Tests FileUtil.addRecursiveListener on folder as declared in
+     * {@link FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File) }.
+     * It is expected that all events from sub folders are delivered just once.
+     */
+    public void testAddRecursiveListenerToFileFolder() throws Exception {
+        checkFolderRecursiveListener(true);
+    }
+
+    /** Tests addRecursiveListener on folder either added to FileObject or File.
+     * @param isOnFile true to add listener to java.io.File, false to FileObject
+     */
+    private void checkFolderRecursiveListener(boolean isOnFile) throws Exception {
         clearWorkDir();
         // test files: dir/file1, dir/subdir/subfile, dir/subdir/subsubdir/subsubfile
         final File rootF = getWorkDir();
@@ -459,9 +474,16 @@ public class FileUtilTest extends NbTestCase {
         File subsubdirF = new File(subdirF, "subsubdir");
         File subsubfileF = new File(subsubdirF, "subsubfile");
 
-        final FileObject dirFO = FileUtil.createFolder(dirF);
         TestFileChangeListener fcl = new TestFileChangeListener();
-        dirFO.addRecursiveListener(fcl);
+        FileObject dirFO;
+        if (isOnFile) {
+            FileUtil.addRecursiveListener(fcl, dirF);
+            dirFO = FileUtil.createFolder(dirF);
+            assertEquals("Wrong number of events fired when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
+        } else {
+            dirFO = FileUtil.createFolder(dirF);
+            dirFO.addRecursiveListener(fcl);
+        }
 
         // create dir
         FileObject subdirFO = dirFO.createFolder("subdir");
@@ -506,6 +528,7 @@ public class FileUtilTest extends NbTestCase {
                     rootFO.createFolder("fakedir");  // no events
                     rootFO.setAttribute("fake", "fake");  // no events
                     rootFO.createData("fakefile");  // no events
+                    FileObject dirFO = FileUtil.toFileObject(dirF);
                     dirFO.createData("file1");
                     FileObject subdirFO = dirFO.createFolder("subdir");
                     subdirFO.createData("subfile");
@@ -604,7 +627,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests recursive FileChangeListener on File.
      * @see FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
-    public void testAddRecursiveListenerOnFile() throws IOException, InterruptedException {
+    public void testAddRecursiveListenerToFile() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
         File dirF = new File(rootF, "dir");
