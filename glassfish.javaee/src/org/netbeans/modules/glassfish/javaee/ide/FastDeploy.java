@@ -101,10 +101,10 @@ public class FastDeploy extends IncrementalDeployment {
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
-        final MonitorProgressObject deployProgress = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
-        final MonitorProgressObject updateCRProgress = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        final MonitorProgressObject deployProgress = new MonitorProgressObject(dm, moduleId);
+        final MonitorProgressObject updateCRProgress = new MonitorProgressObject(dm, moduleId);
         deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
-        MonitorProgressObject restartProgress = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        MonitorProgressObject restartProgress = new MonitorProgressObject(dm, moduleId);
 
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
@@ -144,11 +144,11 @@ public class FastDeploy extends IncrementalDeployment {
      */
     public ProgressObject incrementalDeploy(final TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
         final MonitorProgressObject progressObject = new MonitorProgressObject(dm,
-                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY, targetModuleID.getChildTargetModuleID().length > 0);
+                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY);
         MonitorProgressObject restartObject = new MonitorProgressObject(dm, (Hk2TargetModuleID) targetModuleID,
-                CommandType.REDEPLOY, false);
+                CommandType.REDEPLOY);
         final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm,
-                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY, targetModuleID.getChildTargetModuleID().length > 0);
+                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY);
         progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,(Hk2TargetModuleID) targetModuleID, dm.getServerInstance(), ! (null == targetModuleID.getWebURL())));
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
