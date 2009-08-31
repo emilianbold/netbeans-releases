@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
             <compatibility modification="yes">
                 <p>
                     An application or unit test installing a custom system filesystem
-                    and <em>not</em> overriding <code>getStatus</code> but <code>expecting</code>
+                    and <em>not</em> overriding <code>getStatus</code> but <em>expecting</em>
                     the default implementation to do nothing could be broken.
                 </p>
             </compatibility>
