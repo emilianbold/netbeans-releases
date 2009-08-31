@@ -125,8 +125,8 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
 
     void refreshIfNeeded() {
         if(needsRefresh) {
-            query.refresh();
             needsRefresh = false;
+            query.refresh();
         }
     }
 

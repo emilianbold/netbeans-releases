@@ -96,7 +96,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final Column timeColumn =
         new Column("time", Long.class, loc("SyncTool.ColumnName.time"), null); // NOI18N
     private static final Column stackColumn =
-        new Column("stackid", Integer.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
+        new Column("stackid", Long.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
     private static final Column locksColumn =
         new Column("locks", Float.class, loc("SyncTool.ColumnName.locks"), null); // NOI18N
     private static final Column threadsColumn =

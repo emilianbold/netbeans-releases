@@ -131,24 +131,25 @@ public class Subversion {
         fileStatusProvider = new FileStatusProvider();
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
-        cleanup();
+        prepareCache();
         // this should be registered in SubversionVCS but we needed to reduce number of classes loaded
         SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
     }
 
-    private void cleanup() {
+    private void prepareCache() {
         getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
+                    fileStatusCache.computeIndex();
                     LOG.fine("Cleaning up cache"); // NOI18N
-                    fileStatusCache.cleanUp();
+                    fileStatusCache.cleanUp(); // do not call before computeIndex()
                 } finally {
                     Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
                 }
             }
-        }, 3000);
+        }, 500);
     }
 
     public void shutdown() {

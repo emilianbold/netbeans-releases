@@ -335,8 +335,8 @@ import org.openide.util.NbBundle;
             Column cpuId = new Column("cpu_id", Integer.class); // NOI18N
             Column threadId = new Column("thread_id", Integer.class); // NOI18N
             Column mstate = new Column("mstate", Integer.class); // NOI18N
-            Column duration = new Column("duration", Integer.class); // NOI18N
-            Column stackId = new Column("leaf_id", Integer.class); // NOI18N
+            Column duration = new Column("duration", Long.class); // NOI18N
+            Column stackId = new Column("leaf_id", Long.class); // NOI18N
             metadata = new DataTableMetadata("CallStack", // NOI18N
                     Arrays.asList(timestamp, cpuId, threadId, mstate, duration, stackId), null);
 
