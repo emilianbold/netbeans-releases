@@ -125,9 +125,7 @@ public class ProjectCustomizerTest extends NbTestCase {
         assertEquals("One", categories[0].getDisplayName());
         assertEquals("one", dcp.create(categories[0]).getName());
         assertEquals("Category1", categories[1].getName());
-        /* XXX does not work yet because ExternalUtil.MainFS does not provide a FS.Status:
         assertEquals("Category #1", categories[1].getDisplayName());
-         */
         assertEquals("two", dcp.create(categories[1]).getName());
         Category[] subcategories = categories[1].getSubcategories();
         assertEquals(1, subcategories.length);
@@ -135,9 +133,7 @@ public class ProjectCustomizerTest extends NbTestCase {
         assertEquals("Three", subcategories[0].getDisplayName());
         assertEquals("three", dcp.create(subcategories[0]).getName());
         assertEquals("Category2", categories[2].getName());
-        /*
         assertEquals("Category #2", categories[2].getDisplayName());
-         */
         assertEquals(null, dcp.create(categories[2]).getName());
         subcategories = categories[2].getSubcategories();
         assertEquals(1, subcategories.length);
