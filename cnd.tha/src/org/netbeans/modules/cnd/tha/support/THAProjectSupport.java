@@ -166,9 +166,12 @@ public final class THAProjectSupport implements PropertyChangeListener {
             return false;
         }
 
+        //if it is sparc it means we do not need option
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         MakeConfiguration mc = mcd.getActiveConfiguration();
-
+        if (!instrSupport.isInstrumentationNeeded(mc.getDevelopmentHost().getExecutionEnvironment())){
+            return true;
+        }
         if (mc.getLinkerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getLinkerOptions())) {
             return true;
         }
@@ -183,7 +186,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         // First - check for required options.
 
-        if (!activeCompierIsSunStudio()) {
+        if (!activeCompilerIsSunStudio()) {
             return false;
         }
 
@@ -217,7 +220,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         String projectName = nativeProject.getProjectDisplayName();
 
-        if (!activeCompierIsSunStudio()) {
+        if (!activeCompilerIsSunStudio()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     loc("THA_ReconfigureProjectWithSunStudio", projectName), NotifyDescriptor.INFORMATION_MESSAGE)); // NOI18N
             return false;
@@ -314,7 +317,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
         return NbBundle.getMessage(THAProjectSupport.class, key, params);
     }
 
-    private boolean activeCompierIsSunStudio() {
+    private boolean activeCompilerIsSunStudio() {
         boolean result = false;
         try {
             MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
@@ -349,7 +352,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
     }
 
     private THAInstrumentationSupport getInstrumentationSupport() {
-        if (!activeCompierIsSunStudio()) {
+        if (!activeCompilerIsSunStudio()) {
             return null;
         }
 
