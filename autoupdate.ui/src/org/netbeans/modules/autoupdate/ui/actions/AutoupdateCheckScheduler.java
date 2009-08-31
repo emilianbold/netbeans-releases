@@ -148,6 +148,7 @@ public class AutoupdateCheckScheduler {
                             pluginManagerUI.updateUnitsChanged();
                         }
                     }
+                    Utilities.showProviderNotification(p);
                 } catch (IOException ioe) {
                     err.log (Level.INFO, ioe.getMessage (), ioe);
                     if (problems != null) {
@@ -442,6 +443,9 @@ public class AutoupdateCheckScheduler {
             if (! hasUpdates) {
                 Collection<LazyUnit> newUnits = LazyUnit.loadLazyUnits (OperationType.INSTALL);
                 notifyAvailable (newUnits, OperationType.INSTALL);
+            }
+            for(UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(true)) {
+                Utilities.showProviderNotification(p);
             }
         }
     };
