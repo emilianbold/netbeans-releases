@@ -42,9 +42,8 @@ package org.netbeans.modules.wag.manager.nodes;
 import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.wag.manager.actions.AddSearchAction;
+import org.netbeans.modules.wag.manager.actions.LoginAction;
 import org.netbeans.modules.wag.manager.actions.ViewZemblyApiBrowserAction;
-import org.netbeans.modules.wag.manager.model.WagSearchResults;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -91,8 +90,8 @@ public class WagRootNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
+            SystemAction.get(LoginAction.class),
             SystemAction.get(ViewZemblyApiBrowserAction.class)
-
         };
     }
     

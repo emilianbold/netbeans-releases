@@ -75,8 +75,6 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
  */
 public class PHPLanguage extends DefaultLanguageConfig {
 
-    public static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
-    
     @Override
     public String getLineCommentPrefix() {
         return "//";    //NOI18N

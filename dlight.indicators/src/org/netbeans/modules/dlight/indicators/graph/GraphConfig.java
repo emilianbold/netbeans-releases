@@ -54,18 +54,18 @@ public final class GraphConfig {
     public static final int STEP_SIZE = 5;
 
     public static final int GRAPH_WIDTH = 80;
-    public static final int GRAPH_HEIGHT = 60;
+    public static final int GRAPH_HEIGHT = 80;
 
     public static final int LEGEND_WIDTH = 80;
-    public static final int LEGEND_HEIGHT = 60;
+    public static final int LEGEND_HEIGHT = 80;
 
     public static final int VERTICAL_AXIS_WIDTH = 30;
-    public static final int VERTICAL_AXIS_HEIGHT = 80;
+    public static final int HORIZONTAL_AXIS_HEIGHT = 30;
 
-    public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
-    public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
-    public static final Color COLOR_3 = new Color(0xFF, 0xC7, 0x26);
-    public static final Color COLOR_4 = new Color(0xB2, 0xBC, 0x00);
+//    public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
+//    public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
+//    public static final Color COLOR_3 = new Color(0xFF, 0xC7, 0x26);
+//    public static final Color COLOR_4 = new Color(0xB2, 0xBC, 0x00);
 
     public static final Color BORDER_COLOR = new Color(0x72, 0x8A, 0x84);
     public static final Color GRADIENT_BOTTOM_COLOR = new Color(0xD6, 0xE3, 0xF3);

@@ -6,12 +6,20 @@
             <code-name-base>org.netbeans.modules.jellytools.ruby</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>2.1</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>3.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -19,8 +27,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>2.1</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>3.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -47,8 +55,8 @@
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.netbeans.jellytools.modules.ruby</package>
-                <package>org.netbeans.jellytools.modules.ruby.actions</package>
+                <package>org.netbeans.jellytools</package>
+                <package>org.netbeans.jellytools.actions</package>
             </public-packages>
         </data>
     </configuration>

@@ -42,7 +42,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateMapper;
+import org.netbeans.modules.dlight.core.stack.api.support.ThreadStateMapper;
+
 
 public final class ThreadStateImpl implements ThreadState {
 

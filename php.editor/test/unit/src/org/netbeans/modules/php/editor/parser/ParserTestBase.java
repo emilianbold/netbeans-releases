@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.parser;
 import java.io.File;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -102,7 +103,7 @@ public abstract class ParserTestBase extends CslTestBase {
 
     @Override
     protected String getPreferredMimeType() {
-        return PHPLanguage.PHP_MIME_TYPE;
+        return FileUtils.PHP_MIME_TYPE;
     }
 
     @Override

@@ -48,14 +48,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.CndModule;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -187,7 +185,8 @@ public class ExternalTerminal implements PropertyChangeListener {
             fw.close();
         } catch (IOException ioe) {
         }
-        CndModule.chmod755(Collections.singletonList(gdbHelperScript.getAbsolutePath()), log);
+        CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
+                    gdbHelperScript.getAbsolutePath(), 0755, null);
     }
     
     /**

@@ -6,3 +6,4 @@ METHOD     to_s                                       TrueClass
 ------------------------------------
 METHOD     to_a                                       Object
 METHOD     to_enum(method, *args)                     Object
+METHOD     to_s                                       Object

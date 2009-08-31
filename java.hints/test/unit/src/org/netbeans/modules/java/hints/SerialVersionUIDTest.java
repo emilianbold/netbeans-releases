@@ -119,6 +119,12 @@ public class SerialVersionUIDTest extends TreeRuleTestBase {
         performFixTest(test, golden, HINT_DEFAULT);
     }
 
+    public void testAnonymous() throws Exception {
+        String test = "package test; public class Test {private Serializable ser = new Serializable() {|public String toString() {return \"Hello from serializable\";}};}";
+        String golden = "package test; public class Test {private Serializable ser = new Serializable() {private static final long serialVersionUID = 1L; public String toString() {return \"Hello from serializable\";}};}";
+        performFixTest("test/Test.java", test, "0:64-0:76:verifier:serialVersionUID not defined", HINT_DEFAULT, golden);
+    }
+
     // test is single line source code for test.Test, | in the CLASS, space before, space after
     // golden is the output to test against
     private void performFixTest(String test, String golden, String hint) throws Exception {
@@ -154,19 +160,19 @@ public class SerialVersionUIDTest extends TreeRuleTestBase {
         return f.getText();
     }
 //    // uncomment to speed up development cycle
-//    @Override
-//    public void testIssue105979() throws Exception {
-//    }
-//
-//    @Override
-//    public void testIssue108246() throws Exception {
-//    }
-//
-//    @Override
-//    public void testIssue113933() throws Exception {
-//    }
-//
-//    @Override
-//    public void testNoHintsForSimpleInitialize() throws Exception {
-//    }
+    @Override
+    public void testIssue105979() throws Exception {
+    }
+
+    @Override
+    public void testIssue108246() throws Exception {
+    }
+
+    @Override
+    public void testIssue113933() throws Exception {
+    }
+
+    @Override
+    public void testNoHintsForSimpleInitialize() throws Exception {
+    }
 }

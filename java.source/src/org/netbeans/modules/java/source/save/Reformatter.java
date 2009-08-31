@@ -514,7 +514,7 @@ public class Reformatter implements ReformatTask {
                 if (accept(SEMICOLON) == SEMICOLON) {
                     semiRead = true;
                 } else {
-                    rollback(index, col, d);
+                    rollback(index, c, d);
                     semiRead = false;
                 }
                 blankLines(cs.getBlankLinesAfterClass());
@@ -689,7 +689,7 @@ public class Reformatter implements ReformatTask {
                                 if (accept(SEMICOLON) == SEMICOLON) {
                                     continue;
                                 } else {
-                                    rollback(index, col, d);
+                                    rollback(index, c, d);
                                 }
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterMethods());
@@ -704,7 +704,7 @@ public class Reformatter implements ReformatTask {
                                 if (accept(SEMICOLON) == SEMICOLON) {
                                     semiRead = true;
                                 } else {
-                                    rollback(index, col, d);
+                                    rollback(index, c, d);
                                     semiRead = false;
                                 }
                                 blankLines(cs.getBlankLinesAfterClass());
@@ -2001,7 +2001,7 @@ public class Reformatter implements ReformatTask {
                 Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                 spaces(cs.spaceAroundUnaryOps() ? 1 : 0);
                 if (tokens.token().id() == id) {
-                    rollback(index, col, d);
+                    rollback(index, c, d);
                     space();
                 }
                 scan(node.getExpression(), p);

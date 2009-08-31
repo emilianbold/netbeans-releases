@@ -1005,6 +1005,9 @@ AtomicLockListener, FoldHierarchyListener {
     public void setDot(int offset, Rectangle scrollRect, int scrollPolicy, boolean expandFold) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("setDot: offset=" + offset); //NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.INFO, "setDot call stack", new Exception());
+            }
         }
         
         JTextComponent c = component;

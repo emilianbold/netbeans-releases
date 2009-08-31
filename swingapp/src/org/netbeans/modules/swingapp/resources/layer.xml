@@ -95,7 +95,6 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
                 <folder name="Application">
-                    <attr name="position" intvalue="500"/>
                     <file name="AppFramework.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.swingapp.ProjectCustomizerProvider.create"/>
                         <attr name="position" intvalue="100"/>

@@ -776,7 +776,7 @@ public final class ClassPath {
                     //#130998:IllegalArgumentException when switching tabs
                     return false;
                 }
-                throw new IllegalArgumentException(file + " not in " + r + " (valid: "+r.isValid()+")");
+                throw new IllegalArgumentException(file + " (valid: " + file.isValid() + ") not in " + r + " (valid: " + r.isValid() + ")"); //NOI18N
             }
             if (file.isFolder()) {
                 path += "/"; // NOI18N

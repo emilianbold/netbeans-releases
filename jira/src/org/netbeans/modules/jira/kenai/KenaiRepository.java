@@ -72,7 +72,8 @@ public class KenaiRepository extends JiraRepository {
     private String host;
 
     public KenaiRepository(String repoName, String url, String host, String project) {
-        super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
+        // use name for id, can't be changed anyway
+        super(repoName, repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;

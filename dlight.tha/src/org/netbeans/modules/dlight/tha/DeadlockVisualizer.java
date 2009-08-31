@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.tha;
 import java.awt.Component;
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Deadlock;
@@ -59,7 +60,8 @@ import org.openide.util.RequestProcessor.Task;
  * @author Alexey Vladykin
  */
 public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerConfiguration> {
-
+    public final static Image deadlockImage = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
+    public final static Icon deadlockIcon  = ImageUtilities.image2Icon(deadlockImage);
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
     private MasterSlaveView<Deadlock, DeadlockTHANodeFactory> msview;
@@ -127,8 +129,8 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         public Component getComponent() {
             MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
             for (DeadlockThreadSnapshot dts : snapshots) {
-                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), true, dts.getHeldLockCallStack());//NOI18N
-                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), true, dts.getRequestedLockCallStack());//NOI18N
+                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), deadlockIcon , dts.getHeldLockCallStack());//NOI18N
+                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), deadlockIcon, dts.getRequestedLockCallStack());//NOI18N
             }
             stackPanel.expandAll();
             return stackPanel;
@@ -139,7 +141,6 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     private final class DeadlockNode extends THANode<Deadlock> {
 
         private final Deadlock deadlock;
-        public final Image icon = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
 
         DeadlockNode(Deadlock deadlock) {
             super(deadlock);
@@ -153,7 +154,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
         @Override
         public Image getIcon(int type) {
-            return icon;
+            return deadlockImage;
         }
 
         @Override

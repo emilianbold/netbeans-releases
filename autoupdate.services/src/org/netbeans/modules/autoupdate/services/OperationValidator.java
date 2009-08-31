@@ -66,6 +66,7 @@ import org.openide.modules.ModuleInfo;
  */
 abstract class OperationValidator {
     private final static OperationValidator FOR_INSTALL = new InstallValidator();
+    private final static OperationValidator FOR_INTERNAL_UPDATE = new InternalUpdateValidator();
     private final static OperationValidator FOR_UNINSTALL = new UninstallValidator();
     private final static OperationValidator FOR_UPDATE = new UpdateValidator();
     private final static OperationValidator FOR_ENABLE = new EnableValidator();
@@ -85,6 +86,9 @@ abstract class OperationValidator {
         switch(type){
         case INSTALL:
             isValid = FOR_INSTALL.isValidOperationImpl(updateUnit, updateElement);
+            break;
+        case INTERNAL_UPDATE:
+            isValid = FOR_INTERNAL_UPDATE.isValidOperationImpl(updateUnit, updateElement);
             break;
         case DIRECT_UNINSTALL:
         case UNINSTALL:
@@ -141,6 +145,9 @@ abstract class OperationValidator {
         case CUSTOM_UNINSTALL:
             retval = FOR_CUSTOM_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
+        case INTERNAL_UPDATE:
+            retval = FOR_INTERNAL_UPDATE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            break;
         default:
             assert false;
         }
@@ -164,6 +171,7 @@ abstract class OperationValidator {
                 break;
             case INSTALL :
             case UPDATE :
+            case INTERNAL_UPDATE:
                 getRequiredElements (type, updateElement, moduleInfos, broken);
                 break;
             case UNINSTALL :
@@ -185,6 +193,12 @@ abstract class OperationValidator {
             List<ModuleInfo> moduleInfos,
             Collection<String> brokenDependencies);
     
+    private static class InternalUpdateValidator extends InstallValidator {
+        @Override
+        boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
+            return uElement.equals(unit.getInstalled()) || containsElement (uElement, unit);
+        }
+    }
     private static class InstallValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() == null && containsElement (uElement, unit);

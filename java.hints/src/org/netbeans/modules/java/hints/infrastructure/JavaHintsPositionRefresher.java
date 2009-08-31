@@ -43,11 +43,13 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -66,6 +68,7 @@ import org.openide.util.Exceptions;
  */
 public class JavaHintsPositionRefresher implements PositionRefresher {
 
+    @Override
     public Map<String, List<ErrorDescription>> getErrorDescriptionsAt(Context context, Document doc) {
         JavaSource js = JavaSource.forDocument(doc);
         final Map<String, List<ErrorDescription>> eds = new HashMap<String, List<ErrorDescription>>();
@@ -113,10 +116,15 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             //HintsTask
             int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
             int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
-            Set<ErrorDescription> errs = new HashSet<ErrorDescription>();
+            Set<ErrorDescription> errs = new TreeSet<ErrorDescription>(new Comparator<ErrorDescription>() {
+                public int compare(ErrorDescription arg0, ErrorDescription arg1) {
+                    return arg0.toString().equals(arg1.toString()) ? 0 : 1;
+                }
+            });
+
             Set<Tree> encounteredLeafs = new HashSet<Tree>();
             HintsTask task = new HintsTask();
-            for (int i = rowStart; i < rowEnd; i++) {
+            for (int i = rowStart; i <= rowEnd; i++) {
                 TreePath path = controller.getTreeUtilities().pathFor(i);
                 Tree leaf = path.getLeaf();
                 if (!encounteredLeafs.contains(leaf)) {

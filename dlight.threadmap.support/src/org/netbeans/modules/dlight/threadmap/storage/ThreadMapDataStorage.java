@@ -45,10 +45,11 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.core.stack.api.ThreadData;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadData;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -82,7 +83,7 @@ public class ThreadMapDataStorage implements ProxyDataStorage {
         data.add(new ThreadDataImpl(threadInfo));
     }
 
-    public void addThreadState(ThreadInfoImpl threadInfo, ThreadStateImpl state) {
+    public void addThreadState(ThreadInfoImpl threadInfo, ThreadState state) {
         for (ThreadDataImpl td : data) {
             if (td.getThreadInfo() == threadInfo) {
                 td.addState(state);

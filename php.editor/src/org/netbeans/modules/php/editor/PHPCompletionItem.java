@@ -198,18 +198,20 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
-                    Model model = ModelFactory.getModel(request.result);
-                    NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
-                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
+                    if (!(elem instanceof IndexedNamespace)) {
+                        Model model = ModelFactory.getModel(request.result);
+                        NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
+                        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
 
-                    if (namespaceScope != null) {
-                        LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
-                        QualifiedName fqna = QualifiedName.create(false, segments);
-                        if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
-                            QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
-                            if (suffix != null) {
-                                template.append(suffix.toString());
-                                break;
+                        if (namespaceScope != null) {
+                            LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                            QualifiedName fqna = QualifiedName.create(false, segments);
+                            if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
+                                QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                                if (suffix != null) {
+                                    template.append(suffix.toString());
+                                    break;
+                                }
                             }
                         }
                     }
@@ -548,6 +550,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.type(true);
+            formatter.appendText(getTypeName());
+            formatter.type(false);
+            formatter.appendText(" "); //NOI18N
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+
+            return formatter.getText();
+        }
+
+        protected String getTypeName() {
             final ElementHandle elem = getElement();
             String typeName = null;
             if (elem instanceof IndexedConstant) {
@@ -559,16 +573,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (typeName == null) {
                 typeName = "?"; //NOI18N
             }
-
-            formatter.type(true);
-            formatter.appendText(typeName);
-            formatter.type(false);
-            formatter.appendText(" "); //NOI18N
-            formatter.name(getKind(), true);
-            formatter.appendText(getName());
-            formatter.name(getKind(), false);
-
-            return formatter.getText();
+            return typeName;
         }
 
         public ElementKind getKind() {

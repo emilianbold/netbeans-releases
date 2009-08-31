@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.threadmap.support.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;

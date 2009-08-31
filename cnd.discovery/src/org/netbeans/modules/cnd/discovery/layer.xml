@@ -51,6 +51,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
+            <file name="ReconfigureProjectAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureAction.getReconfigureAction"/>
+                <attr name="position" intvalue="250"/>
+            </file>
         </folder>
     </folder>
 

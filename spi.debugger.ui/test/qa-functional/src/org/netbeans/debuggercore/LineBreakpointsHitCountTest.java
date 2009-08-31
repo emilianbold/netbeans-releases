@@ -46,20 +46,16 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -70,7 +66,7 @@ import org.openide.nodes.Node.Property;
  *
  * @author felipee
  */
-public class LineBreakpointsHitCountTest extends JellyTestCase{
+public class LineBreakpointsHitCountTest extends DebuggerTestCase{
 
        //MainWindowOperator.StatusTextTracer stt = null;
     /**
@@ -106,18 +102,8 @@ public class LineBreakpointsHitCountTest extends JellyTestCase{
      */
     @Override
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  ####### ");
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
     }
 
      public void testLineBreakpointsHitCount() throws Throwable {
@@ -164,8 +150,8 @@ public class LineBreakpointsHitCountTest extends JellyTestCase{
                 }
             };
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
-            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+            Utilities.showDebuggerView(Utilities.variablesViewTitle);
+            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
             TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
             final int row = treeTableOperator.findCellRow("i", comp);
 
@@ -195,7 +181,7 @@ public class LineBreakpointsHitCountTest extends JellyTestCase{
             org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
             assertEquals("44", property.getValue());
 /* THIS PART IS ABOUT TO BE REVIEWED */
-
+//TODO: Review this
             /*
             new ContinueAction().perform();
 

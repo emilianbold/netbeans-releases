@@ -224,7 +224,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 synchronized (cache) {
                     cp = cache.get(ClassPathCache.SOURCE);
                     if (cp == null) {
-                        cp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, sources));
+                        cp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, sources, tests, selenium));
                         cache.put(ClassPathCache.SOURCE, cp);
                     }
                 }
@@ -236,7 +236,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                         // return both because people expect such behaviour (in CC e.g.)
                         ClassPath testsCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, tests));
                         ClassPath seleniumCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, selenium));
-                        ClassPath sourcesCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, sources));
+                        ClassPath sourcesCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, sources, tests, selenium));
                         cp = ClassPathSupport.createProxyClassPath(testsCp, seleniumCp, sourcesCp);
                         cache.put(ClassPathCache.TEST, cp);
                     }
