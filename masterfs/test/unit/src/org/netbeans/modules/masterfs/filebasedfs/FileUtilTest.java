@@ -558,16 +558,21 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
         fcl.printAll();
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
+        // cleanup after rename
+        dirFO.getFileObject("file1Renamed").delete();
+        dirFO.getFileObject("subdirRenamed").delete();
+        fcl.clearAll();
 
         // disk changes
         assertTrue(subsubdirF.mkdirs());
         assertTrue(fileF.createNewFile());
         assertTrue(subfileF.createNewFile());
         assertTrue(subsubfileF.createNewFile());
+        Thread.sleep(3000); // wait for OS
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
         assertEquals("Wrong number of events when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
-        assertEquals("Wrong number of Attribute change events (see #129178).", 8, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        assertEquals("Wrong number of Attribute change events (see #129178).", 1, fcl.check(EventType.ATTRIBUTE_CHANGED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
         Thread.sleep(1000); // make sure timestamp changes
@@ -576,7 +581,7 @@ public class FileUtilTest extends NbTestCase {
         new FileOutputStream(fileF).close();
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
-        assertEquals("Wrong number of Attribute change events (see #129178).", 13, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        assertEquals("Wrong number of Attribute change events (see #129178).", 7, fcl.check(EventType.ATTRIBUTE_CHANGED));
 
         assertTrue(subsubfileF.delete());
         assertTrue(subsubdirF.delete());
@@ -588,7 +593,7 @@ public class FileUtilTest extends NbTestCase {
 
         // delete folder itself
         dirFO.delete();
-        assertEquals("Wrong number of events when folder deleted.", 3, fcl.check(EventType.DELETED));
+        assertEquals("Wrong number of events when folder deleted.", 1, fcl.check(EventType.DELETED));
     }
 
     private static enum EventType {
