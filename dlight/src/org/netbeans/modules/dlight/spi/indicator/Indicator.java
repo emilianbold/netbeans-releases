@@ -68,7 +68,6 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
-import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
@@ -348,12 +347,6 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
      * @return component this indicator will paint own data at
      */
     public abstract JComponent getComponent();
-
-    // Dirty hack for TimeSeriesIndicatorManager
-    // TODO: remove it
-    public JComponent getAuxComponent() {
-        return null;
-    }
 
 //  public final Indicator create(IndicatorConfiguration configuration);
 //    return new
