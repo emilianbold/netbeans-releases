@@ -28,6 +28,7 @@
 package org.netbeans.modules.refactoring.ruby;
 
 import java.util.Iterator;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.jrubyparser.ast.ArgumentNode;
 import org.jrubyparser.ast.ClassNode;
@@ -425,7 +426,7 @@ public class RubyElementCtx {
 
                 if (defClass == null) {
                     // Just an inherited method call?
-                    if ((types.isKnown()) && (lhs == null)) {
+                    if (!types.isKnown() && lhs == null) {
                         defClass = AstUtilities.getFqnName(getPath());
                     } else if (types.isKnown()) {
                         // TODO handle all types - types.getRealTypes();
