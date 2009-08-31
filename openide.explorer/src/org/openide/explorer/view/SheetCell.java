@@ -671,10 +671,18 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                 }
                 //Lighten it a bit because disabled text will use controlShadow/
                 //gray
-                noFocusSelectionBackground = noFocusSelectionBackground.brighter();
+                noFocusSelectionBackground = betterBrighter(noFocusSelectionBackground);
             }
         }
         return noFocusSelectionBackground;
+    }
+
+    private static Color betterBrighter(Color c) {
+        Color bb = c.brighter();
+        if (Color.WHITE.equals(bb)) {
+            bb = new Color((255 + c.getRed())/2, (255 + c.getGreen())/2, (255 + c.getBlue())/2);
+        }
+        return bb;
     }
     
     private static Color noFocusSelectionForeground=null;
