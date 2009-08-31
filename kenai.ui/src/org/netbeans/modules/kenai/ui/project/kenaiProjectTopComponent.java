@@ -75,7 +75,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private RequestProcessor.Task loadingImageTask = null;
     private RequestProcessor.Task loadingDynamicContentTask = null;
 
-    public static final String linkImageHTML = String.format("<img src=\"%s\">&nbsp;", kenaiProjectTopComponent.class.getResource("/org/netbeans/modules/kenai/ui/resources/insertlink-bottom.png"));
+    public static final String linkImageHTML = String.format("<img src=\"%s\" style=\"padding-right: 3px;\">", kenaiProjectTopComponent.class.getResource("/org/netbeans/modules/kenai/ui/resources/insertlink-bottom.png"));
 
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
