@@ -30,6 +30,7 @@
                 <friend>org.netbeans.modules.javafx.source</friend>
                 <friend>org.netbeans.modules.mobility.project</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>
+                <friend>org.netbeans.modules.scala.editor</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.debugger.jpda.projects</friend>
                 <package>org.netbeans.modules.java.preprocessorbridge.api</package>
