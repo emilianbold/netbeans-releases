@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -69,14 +70,16 @@ final class THAControlPanel extends JToolBar{
         this.thaConfiguration = thaConfiguration;
         final THAActionsProvider actionsSupport = THAActionsProvider.getSupportFor(project, thaConfiguration);
         final JLabel statusLabel = new JLabel();
+        final String collectionKind = getMessage(thaConfiguration.collectDataRaces() ?
+            "THAControlPanel.DeadlocksAndRaces" : "THAControlPanel.Deadlocks"); // NOI18N
         actionsSupport.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 if (THAActionsProvider.SUSPEND_COMMAND.equals(e.getActionCommand())){
-                    statusLabel.setText( "Paused " + (thaConfiguration.collectDataRaces() ? "Races and Deadlocks" : "Deadlocks"));
+                    statusLabel.setText(getMessage("THAControlPanel.Paused", collectionKind)); // NOI18N
                     statusLabel.setForeground(Color.RED);
-                }else if (THAActionsProvider.RESUME_COMMAND.equals(e.getActionCommand())){
-                    statusLabel.setText( "Recording " + (thaConfiguration.collectDataRaces() ? "Races and Deadlocks" : "Deadlocks"));
+                } else if (THAActionsProvider.RESUME_COMMAND.equals(e.getActionCommand())){
+                    statusLabel.setText(getMessage("THAControlPanel.Recording", collectionKind)); // NOI18N
                     statusLabel.setForeground(Color.GREEN);
                 }
             }
@@ -84,7 +87,7 @@ final class THAControlPanel extends JToolBar{
         Action suspendAction = actionsSupport.getSuspendCollectionAction();
         Action resumeAction = actionsSupport.getResumeCollectionAction();
 
-        statusLabel.setText((thaConfiguration.collectFromBeginning() ? "Recording " :  "Paused ") + (thaConfiguration.collectDataRaces() ? "Races and Deadlocks" : "Deadlocks"));
+        statusLabel.setText(getMessage(thaConfiguration.collectFromBeginning() ? "THAControlPanel.Recording" :  "THAControlPanel.Paused", collectionKind)); // NOI18N
         statusLabel.setForeground(thaConfiguration.collectFromBeginning()  ? Color.GREEN : Color.RED);
         JButton suspendButton = new JButton(suspendAction);
         suspendButton.setDisabledIcon(ImageUtilities.image2Icon((Image)suspendAction.getValue("disabledIcon")));//NOI18N
@@ -97,6 +100,8 @@ final class THAControlPanel extends JToolBar{
         add(actionsSupport.getStopAction());
         add(statusLabel);
     }
-    
 
+    private static String getMessage(String key, Object... params) {
+        return NbBundle.getMessage(THAControlPanel.class, key, params);
+    }
 }

@@ -71,10 +71,10 @@ public final class CpuSamplingSupport {
             new Column("mstate", Byte.class, getMessage("CpuSampling.Column.mstate"), null); // NOI18N
 
     public static final Column DURATION_COLUMN =
-            new Column("duration", Integer.class, getMessage("CpuSampling.Column.duration"), null); // NOI18N
+            new Column("duration", Long.class, getMessage("CpuSampling.Column.duration"), null); // NOI18N
 
     public static final Column STACK_COLUMN =
-            new Column("leaf_id", Integer.class, getMessage("CpuSampling.Column.leaf_id"), null); // NOI18N
+            new Column("leaf_id", Long.class, getMessage("CpuSampling.Column.leaf_id"), null); // NOI18N
 
     public static final DataTableMetadata CPU_SAMPLE_TABLE =
             new DataTableMetadata("CallStack", // NOI18N
