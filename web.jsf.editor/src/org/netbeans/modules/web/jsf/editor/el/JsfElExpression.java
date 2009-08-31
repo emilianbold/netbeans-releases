@@ -43,9 +43,15 @@ package org.netbeans.modules.web.jsf.editor.el;
 
 import javax.swing.text.Document;
 
+import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
@@ -53,6 +59,7 @@ import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -75,6 +82,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
@@ -88,6 +98,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -185,18 +196,62 @@ public class JsfElExpression extends ELExpression {
             }
             //This part look for variables defined in JSP/JSF code
             if (!beans.isEmpty() && value == EL_UNKNOWN) {
+                //marek: this is hacky solution, both the original JSP and xhtml as well
+                //the proper way to fix should be to introduce a ContextAwareObject/Factory
+                //which providers are in mime lookup and the generic impl. use
+                //them to get similar way how the ImplicitObjects
                 FileObject fileObject = getFileObject();
-                JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
-                if (contextInfo !=null) {
-                    JspParserAPI.ParseResult result = contextInfo.
-                        getCachedParseResult(fileObject, false, true);
-                    if (result !=null) {
-                        Node.Nodes nodes = result.getNodes();
-                        Node node = findValue(nodes, first);
-                        if (node != null) {
-                            String ref_val = node.getAttributeValue(VALUE_NAME);
-                            bundleName = ref_val;
-                            value = EL_JSF_BEAN_REFERENCE;
+                if (fileObject.getMIMEType().equals("text/xhtml")) { //NOI18N
+                    //we are in an xhtml file
+                    Source source = Source.create(getDocument());
+                    final int offset = getContextOffset();
+                    final int[] _value = new int[1];
+                    final String searchedVarAttributeValue = first;
+                    try {
+                        ParserManager.parse(Collections.singleton(source), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                Result _result = resultIterator.getParserResult(offset);
+                                if(_result instanceof HtmlParserResult) {
+                                    HtmlParserResult result = (HtmlParserResult)_result;
+                                    int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
+                                    AstNode leaf = result.findLeaf(astOffset);
+
+                                    List<AstNode> match = AstNodeUtils.getAncestors(leaf, new AstNode.NodeFilter() {
+                                        public boolean accepts(AstNode node) {
+                                            return node.getAttribute(VALUE_NAME) != null &&
+                                                    node.getAttribute(VARIABLE_NAME) != null &&
+                                                    node.getAttribute(VARIABLE_NAME).unquotedValue().equals(searchedVarAttributeValue);
+                                        }
+                                    });
+
+                                    if(!match.isEmpty()) {
+                                        AstNode closestMatch = match.get(0);
+                                        bundleName = closestMatch.getAttribute(VALUE_NAME).unquotedValue();
+                                        _value[0] = EL_JSF_BEAN_REFERENCE;
+                                    }
+                                }
+                            }
+                        });
+                    } catch (ParseException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+
+                    value = _value[0];
+
+                } else {
+                    //try if in a JSP...
+                    JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
+                    if (contextInfo != null) {
+                        JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
+                        if (result != null) {
+                            Node.Nodes nodes = result.getNodes();
+                            Node node = findValue(nodes, first);
+                            if (node != null) {
+                                String ref_val = node.getAttributeValue(VALUE_NAME);
+                                bundleName = ref_val;
+                                value = EL_JSF_BEAN_REFERENCE;
+                            }
                         }
                     }
                 }
@@ -207,7 +262,7 @@ public class JsfElExpression extends ELExpression {
         }
         return value;
     }
-    
+
     /**
      * Recursively search for given variable name
      * @param nodes result of the parsing of the Jsp page

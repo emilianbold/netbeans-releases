@@ -42,19 +42,18 @@
 package org.netbeans.core.startup.layers;
 
 import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 /** Test layer cache managers generally.
  * @author Jesse Glick
@@ -144,10 +143,8 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         assertEquals("one too", attr(f, "foo/test3", "y"));
         assertEquals("", slurp(f, "foo/test4"));
         // #29356: methodvalue should pass in MultiFileObject, not the original FileObject:
-        FixedFileSystem ffs = new FixedFileSystem("ffs", "FFS");
-        FixedFileSystem.Instance i = new FixedFileSystem.Instance(false, null, null, null, (URL)null);
-        i.writeAttribute("x", "val");
-        ffs.add("foo/29356", i);
+        FileSystem ffs = FileUtil.createMemoryFileSystem();
+        FileUtil.createData(ffs.getRoot(), "foo/29356").setAttribute("x", "val");
         MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {f, ffs});
         assertEquals("val", attr(ffs, "foo/29356", "x"));
         assertEquals("val", attr(mfs, "foo/29356", "x"));

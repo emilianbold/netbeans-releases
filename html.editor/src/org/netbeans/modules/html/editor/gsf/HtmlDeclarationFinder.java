@@ -71,7 +71,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 return loc;
             }
         }
-        return null;
+        return DeclarationLocation.NONE;
     }
 
     /**
@@ -96,7 +96,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 return range;
             }
         }
-        return null;
+        return OffsetRange.NONE;
     }
 
 }

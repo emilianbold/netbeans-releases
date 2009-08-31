@@ -117,9 +117,23 @@ public class ELExpression {
      */
     private String myAttributeValue;
 
+    private int contextOffset = -1;
+
     public ELExpression(Document doc) {
         this.doc = doc;
         this.replace = "";
+    }
+
+    private void setContextOffset(int offset) {
+        this.contextOffset = offset;
+    }
+
+    protected int getContextOffset() {
+        return contextOffset;
+    }
+
+    public Document getDocument() {
+        return doc;
     }
 
     /** Parses text before offset in the document. Doesn't parse after offset.
@@ -127,7 +141,9 @@ public class ELExpression {
      *  For example ${ 2 < bean.start }. If the offset is after bean.start, then only bean.start
      *  is parsed.
      */
-    public int parse(int offset) {
+    public final int parse(int offset) {
+        setContextOffset(offset);
+
         BaseDocument document = (BaseDocument) doc;
         String value = null;
         document.readLock();
@@ -770,6 +786,8 @@ public class ELExpression {
 
     /** Return context, whether the expression is about a bean, implicit object or
      *  function.
+     *
+     *  Implementation may use getContextOffset() method if context sensitive
      */
     protected int findContext(String expr) {
         int dotIndex = expr.indexOf('.');

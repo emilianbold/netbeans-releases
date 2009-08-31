@@ -210,21 +210,6 @@ made subject to such option by the copyright holder.
                         <recursive/>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.sourceui</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.xml.schema.completion.spi</package>

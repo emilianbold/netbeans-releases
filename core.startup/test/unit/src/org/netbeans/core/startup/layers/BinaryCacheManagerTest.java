@@ -49,14 +49,14 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestSuite;
+import java.util.logging.Level;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -71,22 +71,15 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         super(name);
     }
     
-    public static void main(String[] args) {
-        if (System.getProperty("nbjunit.workdir") == null) {
-            // Hope java.io.tmpdir is set...
-            System.setProperty("nbjunit.workdir", System.getProperty("java.io.tmpdir"));
-        }
-        System.setProperty("org.openide.util.Lookup", "-");
-        System.setProperty("org.netbeans.core.projects.cache", "0");
-        TestRunner.run(new NbTestSuite(BinaryCacheManagerTest.class));
-    }
-
     protected @Override void setUp() throws Exception {
         super.setUp();
         
         clearWorkDir();
         
         System.setProperty("netbeans.user", getWorkDirPath());
+        
+        // Suppress "Inefficient to include an empty layer" and "use of inline CDATA text contents" warnings:
+        LayerCacheManager.err.setLevel(Level.SEVERE);
     }
 
     //
@@ -142,8 +135,8 @@ implements CacheManagerTestBaseHid.ManagerFactory {
             BinaryCacheManagerTest.class.getResource("data/layer1.xml")));
         
         FileSystem f = store(m, urls);
-        FixedFileSystem base = new FixedFileSystem("ffs", "FFS");
-        base.add("baz/thongy", new FixedFileSystem.Instance(false, null, null, null, (URL)null));
+        FileSystem base = FileUtil.createMemoryFileSystem();
+        FileUtil.createData(base.getRoot(), "baz/thongy");
         final MFS mfs = new MFS(new FileSystem[] {base, f});
         FileObject baz = mfs.findResource("baz");
         assertNotNull(baz);
@@ -200,27 +193,27 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     private static final class L implements FileChangeListener {
         public int ac = 0, c = 0, dc = 0, d = 0, fc = 0, r = 0;
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            System.err.println("ac: " + fe.getFile().getPath());
+//            System.err.println("ac: " + fe.getFile().getPath());
             ac++;
         }
         public void fileChanged(FileEvent fe) {
-            System.err.println("c: " + fe.getFile().getPath());
+//            System.err.println("c: " + fe.getFile().getPath());
             c++;
         }
         public void fileDataCreated(FileEvent fe) {
-            System.err.println("dc: " + fe.getFile().getPath());
+//            System.err.println("dc: " + fe.getFile().getPath());
             dc++;
         }
         public void fileDeleted(FileEvent fe) {
-            System.err.println("d: " + fe.getFile().getPath());
+//            System.err.println("d: " + fe.getFile().getPath());
             d++;
         }
         public void fileFolderCreated(FileEvent fe) {
-            System.err.println("fc: " + fe.getFile().getPath());
+//            System.err.println("fc: " + fe.getFile().getPath());
             fc++;
         }
         public void fileRenamed(FileRenameEvent fe) {
-            System.err.println("r: " + fe.getFile().getPath());
+//            System.err.println("r: " + fe.getFile().getPath());
             r++;
         }
     }

@@ -134,7 +134,7 @@ final class NbfsUtil {
         String fsName = decodeFsPart(urlParts[0]);
         String foName = decodeFoPart(urlParts[1]);
 
-        FileSystem fsys = ExternalUtil.getRepository().findFileSystem(fsName);
+        FileSystem fsys = Repository.getDefault().findFileSystem(fsName);
 
         return (fsys == null) ? null : fsys.findResource(foName);
     }
@@ -225,7 +225,7 @@ final class NbfsUtil {
         String fileSystemName = oldDecodeFSName(resourceName.substring(0, first));
         resourceName = resourceName.substring(first);
 
-        FileSystem fsys = ExternalUtil.getRepository().findFileSystem(fileSystemName);
+        FileSystem fsys = Repository.getDefault().findFileSystem(fileSystemName);
 
         return (fsys == null) ? null : fsys.findResource(resourceName);
     }
