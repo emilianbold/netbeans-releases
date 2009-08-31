@@ -221,9 +221,6 @@ public class SourceAnalyser {
     }
     
     public void delete (final Pair<String,String>name) throws IOException {
-        if (!this.index.isValid(false)) {
-            return;
-        }
         this.toDelete.add(name);
     }        
     
