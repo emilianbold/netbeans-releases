@@ -66,6 +66,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -192,6 +193,7 @@ public class BugzillaIssue extends Issue {
     }
 
     private Map<String, String> attributes;
+    private Map<String, TaskOperation> availableOperations;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
@@ -491,6 +493,7 @@ public class BugzillaIssue extends Issue {
         assert !taskData.isPartial();
         data = taskData;
         attributes = null; // reset
+        availableOperations = null;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
@@ -847,6 +850,31 @@ public class BugzillaIssue extends Issue {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    /**
+     * Returns available operations for this issue
+     * @return
+     */
+    Map<String, TaskOperation> getAvailableOperations () {
+        if (availableOperations == null) {
+            HashMap<String, TaskOperation> operations = new HashMap<String, TaskOperation>(5);
+            List<TaskAttribute> allOperations = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_OPERATION);
+            for (TaskAttribute operation : allOperations) {
+                // the test must be here, 'operation' (applying writable action) is also among allOperations
+                if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
+                    operations.put(operation.getId().substring(TaskAttribute.PREFIX_OPERATION.length()), TaskOperation.createFrom(operation));
+                }
+            }
+            availableOperations = operations;
+        }
+
+        return availableOperations;
+    }
+
+    boolean isResolveAvailable () {
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        return operations.containsKey(BugzillaOperation.resolve.name());
     }
 
     private Map<String, String> getSeenAttributes() {
