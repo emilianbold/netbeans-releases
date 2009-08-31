@@ -36,47 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.support;
 
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+package org.netbeans.modules.dlight.spi.indicator;
 
 /**
+ * Entity that deals with viewport.
  *
- * @author Maria Tishkova
+ * @author Alexey Vladykin
  */
-public final class DefaultIndicatorComponentEmptyContentProvider {
+public interface ViewportAware {
 
-    private static final DefaultIndicatorComponentEmptyContentProvider instance = new DefaultIndicatorComponentEmptyContentProvider();
+    ViewportModel getViewportModel();
 
-    private DefaultIndicatorComponentEmptyContentProvider() {
-    }
-
-    public static final DefaultIndicatorComponentEmptyContentProvider getInstance() {
-        return instance;
-    }
-
-    public List<Indicator<?>> getEmptyContent(String configurationName) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
-
-        if (gizmoConfiguration == null) {
-            return null;
-        }
-
-        List<Indicator<?>> indicators = gizmoConfiguration.getIndicators();
-
-        Iterator<Indicator<?>> it = indicators.iterator();
-
-        while (it.hasNext()) {
-            Indicator<?> ind = it.next();
-            if (!ind.isVisible()) {
-                it.remove();
-            }
-        }
-
-        return indicators;
-    }
+    void setViewportModel(ViewportModel viewportModel);
 }

@@ -169,7 +169,18 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         }
     }
 
-    static void normilizeMap(EnumMap<MSAState, AtomicInteger> aMap, int count) {
+    static void normilizeMap(EnumMap<MSAState, AtomicInteger> aMap, int count, int unit) {
+        long sum = 0;
+        for (Map.Entry<MSAState, AtomicInteger> entry : aMap.entrySet()) {
+            sum += entry.getValue().get();
+        }
+        if (sum > 0 && sum != (long)count * unit * ThreadState.POINTS) {
+            for (Map.Entry<MSAState, AtomicInteger> entry : aMap.entrySet()) {
+                long v = entry.getValue().get();
+                v = (int) ((v * count * unit * ThreadState.POINTS) / sum );
+                entry.getValue().getAndSet((int)v);
+            }
+        }
         if (count > 1) {
             int rest = count/2;
             int oldRest = 0;
@@ -181,7 +192,6 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
             }
         }
     }
-
 
     static int point2index(ThreadsDataManager manager, ThreadsPanel panel, ThreadStateColumnImpl threadData, Point point, int width){
         long dataEnd = manager.getEndTime();

@@ -190,16 +190,6 @@ public class FileInformation implements Serializable {
             FileInformation.STATUS_VERSIONED_NEWINREPOSITORY |
             FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY;
     
-    public static final int COUNTER_NEW_FILES = 0;
-    public static final int COUNTER_DELETED_FILES = 1;
-    public static final int COUNTER_MODIFIED_FILES = 2;
-    public static final int COUNTER_CONFLICTED_FILES = 3;
-    private static final int COUNTER_FLAT_NEW_FILES = 4;
-    private static final int COUNTER_FLAT_DELETED_FILES = 5;
-    private static final int COUNTER_FLAT_MODIFIED_FILES = 6;
-    private static final int COUNTER_FLAT_CONFLICTED_FILES = 7;
-    private static final int COUNTER_MAX_INDEX = COUNTER_CONFLICTED_FILES;
-    
     /**
      * Status constant.
      */ 
@@ -214,8 +204,9 @@ public class FileInformation implements Serializable {
      * Directory indicator, mainly because of files that may have been deleted so file.isDirectory() won't work.
      */ 
     private final boolean   isDirectory;
-    
-    private final int[] counters = new int[(COUNTER_MAX_INDEX + 1) * 2];
+
+    private final HashSet<File> modifiedChildren = new HashSet<File>();
+    private final HashSet<File> conflictedChildren = new HashSet<File>();
 
     /**
      * For deserialization purposes only.
@@ -229,7 +220,6 @@ public class FileInformation implements Serializable {
         this.status = status;
         this.entry = entry;
         this.isDirectory = isDirectory;
-        initializeCounters();
     }
 
     FileInformation(int status, boolean isDirectory) {
@@ -353,117 +343,44 @@ public class FileInformation implements Serializable {
         return "Text: " + status + " " + getStatusText(status); // NOI18N
     }
 
-    /**
-     * Modifies counter's current value.
-     * @param counterType type of counter (modified, new, deleted, ...)
-     * @param value difference to be added
-     * @param directChild if set to true then also direct counter will be modified. This type of counter is used for flat folders (e.g. packages),
-     * when we don't want to annotate them if changes are made deep in their file tree.
-     * @return true if the most importatnt counter has changed (this signals an event should be fired for this file)
-     */
-    boolean addToCounter (int counterType, int value, boolean directChild) {
-        assert counterType >=0 && counterType <= COUNTER_MAX_INDEX;
-        boolean importantCounterChanged = false;
-        if (counterType >=0 && counterType <= COUNTER_MAX_INDEX) { // counter type OK
-            synchronized (counters) {
-                int mostImportantCounter = getMostImportantCounter(false, Collections.EMPTY_SET);
-                counters[counterType] += value;
-                if (directChild) {
-                    counters[counterType + 1 + COUNTER_MAX_INDEX] += value;
-                }
-                if (counters[counterType] < 0) {
-                    Mercurial.LOG.warning("addToCounter: negative counter value: " + counterType + "=" + counters[counterType]); //NOI18N
-                }
-                boolean assertEnabled = false;
-                assert assertEnabled = true;
-                if (assertEnabled && counters[counterType] < 0) {
-                    throw new IllegalArgumentException("Negative counter value"); //NOI18N
-                }
-                importantCounterChanged = mostImportantCounter != getMostImportantCounter(false, Collections.EMPTY_SET);
+    HashSet<File> getModifiedChildren (boolean onlyConflicted) {
+        HashSet<File> children;
+        synchronized (modifiedChildren) {
+            if (onlyConflicted) {
+                children = new HashSet<File>(conflictedChildren);
+            } else {
+                children = new HashSet<File>(modifiedChildren);
             }
         }
-        return importantCounterChanged;
+        return children;
     }
 
-    /**
-     * Returns counter's current value
-     * XXX rename to getCounterValue
-     * @param counterType
-     * @param onlyDirectChildren if set to true, only counter for direct children will be returned
-     * @return
-     */
-    int getCounter (int counterType, boolean onlyDirectChildren) {
-        assert counterType >=0 && counterType <= COUNTER_MAX_INDEX;
-        int counterValue = -1;
-        if (counterType >=0 && counterType <= COUNTER_MAX_INDEX) {
-            synchronized (counters) {
-                counterValue = counters[onlyDirectChildren ? COUNTER_MAX_INDEX + 1 + counterType : counterType];
-            }
+    boolean setModifiedChild (File child, FileInformation newInfo) {
+        if ((status & STATUS_NOTVERSIONED_NOTMANAGED) != 0) {
+            return false;
         }
-        return counterValue;
-    }
-
-    /**
-     * Compares the given counter and the most important counter for this instance and returns the more important of them.
-     * @param counter
-     * @param onlyDirectChildren
-     * @param exclusions excluded files which will be subtracted from the most important counter of this instance
-     * (remember exclusions from commit?)
-     * @return
-     */
-    int getMoreImportantCounter (int counter, boolean onlyDirectChildren, Set<FileInformation> exclusions) {
-        int mostImportantCounter;
-        synchronized (counters) {
-            mostImportantCounter = getMostImportantCounter(onlyDirectChildren, exclusions);
-        }
-        if (counter >= 0 && counter <= COUNTER_MAX_INDEX && counter > mostImportantCounter) {
-            mostImportantCounter = counter;
-        }
-        return mostImportantCounter;
-    }
-
-    private void initializeCounters () {
-        if (!isDirectory) {
-            synchronized (counters) {
-                if ((status & STATUS_VERSIONED_CONFLICT) != 0) {
-                    counters[COUNTER_CONFLICTED_FILES] = counters[COUNTER_FLAT_CONFLICTED_FILES] = 1;
-                } else if ((status & (STATUS_VERSIONED_REMOVEDLOCALLY | STATUS_VERSIONED_DELETEDLOCALLY)) != 0) {
-                    counters[COUNTER_DELETED_FILES] = counters[COUNTER_FLAT_DELETED_FILES] = 1;
-                } else if ((status & (STATUS_VERSIONED_ADDEDLOCALLY | STATUS_NOTVERSIONED_NEWLOCALLY)) != 0) {
-                    counters[COUNTER_NEW_FILES] = counters[COUNTER_FLAT_NEW_FILES] = 1;
-                } else if ((status & STATUS_VERSIONED_MODIFIEDLOCALLY) != 0) {
-                    counters[COUNTER_MODIFIED_FILES] = counters[COUNTER_FLAT_MODIFIED_FILES] = 1;
+        synchronized (modifiedChildren) {
+            modifiedChildren.remove(child);
+            conflictedChildren.remove(child);
+            boolean followOnParent = modifiedChildren.isEmpty(); // information may be only removed, notify parent if this folder has no modified children
+            if (newInfo.getStatus() != STATUS_UNKNOWN && (newInfo.getStatus() & STATUS_VERSIONED_UPTODATE) == 0) {
+                boolean testBeforeAdd = false;
+                assert testBeforeAdd = true;
+                if (testBeforeAdd && modifiedChildren.size() > 0) {
+                    File alreadyAdded = modifiedChildren.iterator().next();
+                    if (!child.getParentFile().equals(alreadyAdded.getParentFile())) {
+                        throw new IllegalStateException("Adding " + child.getAbsolutePath() + ", already added " //NOI18N
+                                + alreadyAdded.getAbsolutePath() + " under " //NOI18N
+                                + alreadyAdded.getParentFile().getAbsolutePath());
+                    }
                 }
+                modifiedChildren.add(child);
+                if ((newInfo.getStatus() & STATUS_VERSIONED_CONFLICT) != 0) {
+                    conflictedChildren.add(child);
+                }
+                followOnParent = true; // information was added, notify the parent
             }
+            return followOnParent;
         }
-    }
-
-    private int getMostImportantCounter(boolean onlyDirectChildren, Set<FileInformation> exclusions) {
-        int mostImportantCounter = -1;
-        int counterBase = onlyDirectChildren ? COUNTER_MAX_INDEX + 1 : 0;
-        int exclusionsConflicted = 0;
-        int exclusionsModified = 0;
-        // count all exclusions
-        for (FileInformation info : exclusions) {
-            if ((info.getStatus() & STATUS_VERSIONED_CONFLICT) != 0) {
-                ++exclusionsConflicted;
-            }
-            if ((info.getStatus() & (STATUS_VERSIONED_REMOVEDLOCALLY
-                    | STATUS_VERSIONED_DELETEDLOCALLY
-                    | STATUS_VERSIONED_ADDEDLOCALLY
-                    | STATUS_NOTVERSIONED_NEWLOCALLY
-                    | STATUS_VERSIONED_MODIFIEDLOCALLY)) != 0) {
-                ++exclusionsModified;
-            }
-        }
-        // select the most important counter (with exclusions subtracted)
-        if (counters[counterBase + COUNTER_CONFLICTED_FILES] - exclusionsConflicted > 0) {
-            mostImportantCounter = COUNTER_CONFLICTED_FILES;
-        } else if (counters[counterBase + COUNTER_DELETED_FILES]
-                + counters[counterBase + COUNTER_NEW_FILES]
-                + counters[counterBase + COUNTER_MODIFIED_FILES] - exclusionsModified > 0) {
-            mostImportantCounter = COUNTER_MODIFIED_FILES;
-        }
-        return mostImportantCounter;
     }
 }

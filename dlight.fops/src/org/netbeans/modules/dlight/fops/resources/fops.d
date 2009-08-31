@@ -42,6 +42,14 @@ syscall::creat*:return
     self->pathaddr = 0;
 }
 
+syscall::*read*:entry,
+syscall::*write*:entry,
+syscall::close*:entry
+/pid == $1 && fd2path[arg0] == ""/
+{
+    fd2path[arg0] = fds[arg0].fi_pathname;
+}
+
 syscall::*read*:entry
 /pid == $1/
 {

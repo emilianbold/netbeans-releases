@@ -104,6 +104,10 @@ class GraphPainter {
         }
      }
 
+    public int getDataSize() {
+        return data.size();
+    }
+
     public int calculateUpperLimit(float... data) {
         float absLimit = 0;
         float relLimit = 0;

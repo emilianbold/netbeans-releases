@@ -64,8 +64,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Set;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 
@@ -384,11 +386,23 @@ public class CompilationUnit {
         return statement_list;
     }
     
-    public DwarfLineInfoSection getLineInfoSection() throws IOException{
+    public  Set<LineNumber> getLineNumbers() throws IOException{
         if (statement_list == null) {
             initStatementList();
         }
-        return lineInfoSection;
+        Number statementListOffset = (Number)root.getAttributeValue(ATTR.DW_AT_stmt_list);
+        if (statementListOffset != null) {
+            return lineInfoSection.getLineNumbers(statementListOffset.longValue());
+        }
+        return null;
+    }
+
+    public LineNumber getLineNumber(long target) throws IOException{
+        Number statementListOffset = (Number)root.getAttributeValue(ATTR.DW_AT_stmt_list);
+        if (statementListOffset != null) {
+            return lineInfoSection.getLineNumber(statementListOffset.longValue(), target);
+        }
+        return null;
     }
 
     public DwarfMacinfoTable getMacrosTable() throws IOException {
@@ -480,7 +494,7 @@ public class CompilationUnit {
     
     private void initStatementList() throws IOException {
         lineInfoSection = (DwarfLineInfoSection)reader.getSection(SECTIONS.DEBUG_LINE);
-        
+
         if (root == null) {
             return;
         }

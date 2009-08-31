@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LNE;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LNS;
 
@@ -146,22 +148,33 @@ public class DwarfLineInfoSection extends ElfSection {
         return st.toString();
     }
 
-    public LineNumber getLineNumber(long target) throws IOException{
+    public LineNumber getLineNumber(long shift, long target) throws IOException{
         long currPos = reader.getFilePointer();
         try {
-            DwarfStatementList statementList = getStatementList(0);
-            reader.seek(header.getSectionOffset() + statementList.prologue_length + 10);
-            return interpret(target,statementList);
+            DwarfStatementList statementList = getStatementList(shift);
+            reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + 10);
+            return interpret(target, statementList, shift);
         } finally {
             reader.seek(currPos);
         }
     }
 
+    public Set<LineNumber> getLineNumbers(long shift) throws IOException{
+        long currPos = reader.getFilePointer();
+        try {
+            DwarfStatementList statementList = getStatementList(shift);
+            reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + 10);
+            return interpret(statementList, shift);
+        } finally {
+            reader.seek(currPos);
+        }
+    }
 
     @SuppressWarnings("fallthrough")
-    private LineNumber interpret(long target, DwarfStatementList section) throws IOException {
+    private Set<LineNumber> interpret(DwarfStatementList section, long shift) throws IOException {
         long address = 0;
         long base_address = 0;
+        long prev_base_address = 0;
         String define_file = null;
         int fileno = 0;
         int lineno = 1;
@@ -170,9 +183,10 @@ public class DwarfLineInfoSection extends ElfSection {
         final int const_pc_add = 245 / section.line_range;
         int lineNumber = -1;
         String sourceFile = null;
+        Set<LineNumber> result = new HashSet<LineNumber>();
 
         interpret:
-        while (reader.getFilePointer() < header.getSectionOffset() + section.total_length) {
+        while (reader.getFilePointer() < header.getSectionOffset() + shift + section.total_length) {
 
             int opcode = reader.readByte() & 0xFF;
 
@@ -184,22 +198,24 @@ public class DwarfLineInfoSection extends ElfSection {
 
                         switch (LNE.get(opcode)) {
                             case DW_LNE_end_sequence:
-                                if (base_address <= target && address > target) {
-                                    lineNumber = prev_lineno;
-                                    sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                                    return new LineNumber(sourceFile, lineNumber);
-                                }
+                                lineNumber = prev_lineno;
+                                sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                                result.add(new LineNumber(sourceFile, lineNumber, prev_base_address, address));
                                 prev_lineno = lineno = 1;
                                 prev_fileno = fileno = 0;
                                 base_address = address = 0;
                                 break;
 
                             case DW_LNE_set_address:
+                                prev_base_address = base_address;
                                 base_address = reader.readByte() & 0xFF;
                                 base_address |= (reader.readByte() & 0xFFL) << 8;
                                 base_address |= (reader.readByte() & 0xFFL) << 16;
                                 base_address |= (reader.readByte() & 0xFFL) << 24;
                                 address = base_address;
+                                if (prev_base_address == 0) {
+                                    prev_base_address = base_address;
+                                }
                                 break;
 
                             case DW_LNE_define_file:
@@ -216,11 +232,9 @@ public class DwarfLineInfoSection extends ElfSection {
                         // fallthrough is legitimate (program author said)
                     }
                     case DW_LNS_copy:
-                        if (base_address <= target && address > target) {
-                            lineNumber = prev_lineno;
-                            sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                            return new LineNumber(sourceFile, lineNumber);
-                        }
+                        lineNumber = prev_lineno;
+                        sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                        result.add(new LineNumber(sourceFile, lineNumber, prev_base_address, address));
                         prev_lineno = lineno;
                         prev_fileno = fileno;
                         break;
@@ -234,7 +248,7 @@ public class DwarfLineInfoSection extends ElfSection {
 
                     case DW_LNS_advance_line:
                         {
-                            long amt = reader.readUnsignedLEB128();
+                            long amt = reader.readSignedLEB128();
                             prev_lineno = lineno;
                             lineno += (int) amt;
                         }
@@ -272,10 +286,140 @@ public class DwarfLineInfoSection extends ElfSection {
                 int line_adv = section.line_base + (adj % section.line_range);
                 long new_addr = address + addr_adv;
                 int new_line = lineno + line_adv;
-                if (base_address <= target && new_addr >= target) {
+                sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                result.add(new LineNumber(sourceFile, lineno, prev_base_address, new_addr));
+
+                prev_lineno = lineno;
+                prev_fileno = fileno;
+                lineno = new_line;
+                address = new_addr;
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("fallthrough")
+    private LineNumber interpret(long target, DwarfStatementList section, long shift) throws IOException {
+        long address = 0;
+        long base_address = 0;
+        long prev_base_address = 0;
+        String define_file = null;
+        int fileno = 0;
+        int lineno = 1;
+        int prev_fileno = 0;
+        int prev_lineno = 1;
+        final int const_pc_add = 245 / section.line_range;
+        int lineNumber = -1;
+        String sourceFile = null;
+
+        interpret:
+        while (reader.getFilePointer() < header.getSectionOffset() + shift + section.total_length) {
+
+            int opcode = reader.readByte() & 0xFF;
+            if (opcode < section.opcode_base) {
+                switch (LNS.get(opcode)) {
+                    case DW_LNS_extended_op: {
+                        long insn_len = reader.readSignedLEB128();
+                        opcode = reader.readByte();
+
+                        switch (LNE.get(opcode)) {
+                            case DW_LNE_end_sequence:
+                                if (prev_base_address <= target && address > target) {
+                                    lineNumber = prev_lineno;
+                                    sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                                    return new LineNumber(sourceFile, lineNumber, prev_base_address, address);
+                                }
+                                prev_lineno = lineno = 1;
+                                prev_fileno = fileno = 0;
+                                base_address = address = 0;
+                                break;
+
+                            case DW_LNE_set_address:
+                                prev_base_address = base_address;
+                                base_address = reader.readByte() & 0xFF;
+                                base_address |= (reader.readByte() & 0xFFL) << 8;
+                                base_address |= (reader.readByte() & 0xFFL) << 16;
+                                base_address |= (reader.readByte() & 0xFFL) << 24;
+                                address = base_address;
+                                if (prev_base_address == 0) {
+                                    prev_base_address = base_address;
+                                }
+                                break;
+
+                            case DW_LNE_define_file:
+                                define_file = reader.readString();
+                                reader.readUnsignedLEB128();
+                                reader.readUnsignedLEB128();
+                                reader.readUnsignedLEB128();
+                                break;
+
+                            default:
+                                reader.seek(reader.getFilePointer() + insn_len);
+                                break;
+                        }
+                        // fallthrough is legitimate (program author said)
+                    }
+                    case DW_LNS_copy:
+                        if (prev_base_address <= target && address > target) {
+                            lineNumber = prev_lineno;
+                            sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                            return new LineNumber(sourceFile, lineNumber, prev_base_address, address);
+                        }
+                        prev_lineno = lineno;
+                        prev_fileno = fileno;
+                        break;
+
+                    case DW_LNS_advance_pc:
+                        {
+                            long amt = reader.readUnsignedLEB128();
+                            address += amt * section.minimum_instruction_length;
+                        }
+                        break;
+
+                    case DW_LNS_advance_line:
+                        {
+                            long amt = reader.readSignedLEB128();
+                            prev_lineno = lineno;
+                            lineno += (int) amt;
+                        }
+                        break;
+
+                    case DW_LNS_set_file:
+                        prev_fileno = fileno;
+                        fileno = (reader.readUnsignedLEB128() - 1);
+                        break;
+
+                    case DW_LNS_set_column:
+                        reader.readUnsignedLEB128();
+                        break;
+
+                    case DW_LNS_negate_stmt:
+                        break;
+
+                    case DW_LNS_set_basic_block:
+                        break;
+
+                    case DW_LNS_const_add_pc:
+                        address += const_pc_add;
+                        break;
+
+                    case DW_LNS_fixed_advance_pc:
+                        {
+                            int amt = reader.readShort() & 0xFFFF;
+                            address += amt;
+                        }
+                        break;
+                }
+            } else {
+                int adj = (opcode & 0xFF) - section.opcode_base;
+                int addr_adv = adj / section.line_range;
+                int line_adv = section.line_base + (adj % section.line_range);
+                long new_addr = address + addr_adv;
+                int new_line = lineno + line_adv;
+                if (prev_base_address <= target && new_addr >= target) {
                     lineNumber = new_addr == target ? new_line : lineno;
                     sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                    return new LineNumber(sourceFile, lineNumber);
+                    return new LineNumber(sourceFile, lineNumber, prev_base_address, new_addr);
                 }
 
                 prev_lineno = lineno;
@@ -287,17 +431,46 @@ public class DwarfLineInfoSection extends ElfSection {
         return null;
     }
 
-    public static final class LineNumber {
+    public static final class LineNumber implements Comparable<LineNumber> {
         public String file;
         public int line;
-        private LineNumber(String file, int line){
+        public long startOffset;
+        public long endOffset;
+        private LineNumber(String file, int line, long startOffset, long endOffset){
             this.file = file;
             this.line = line;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof LineNumber) {
+                LineNumber other = (LineNumber) obj;
+                return file.equals(other.file) && line == other.line;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + (this.file != null ? this.file.hashCode() : 0);
+            hash = 67 * hash + this.line;
+            return hash;
         }
 
         @Override
         public String toString() {
-            return file+":"+line;
+            return file+":"+line+"\t(0x"+Long.toHexString(startOffset)+"-0x"+Long.toHexString(endOffset)+")"; // NOI18N
+        }
+
+        public int compareTo(LineNumber o) {
+            int res = file.compareTo(o.file);
+            if (res == 0) {
+                res = line - o.line;
+            }
+            return res;
         }
     }
 }

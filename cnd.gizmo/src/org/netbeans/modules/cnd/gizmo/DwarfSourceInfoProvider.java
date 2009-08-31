@@ -119,7 +119,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                         if (entry.getKind()== TAG.DW_TAG_subprogram){
                             String name = entry.getName();
                             if (name.equals(function) || entry.getQualifiedName().equals(function)) {
-                                LineNumber number = unit.getLineInfoSection().getLineNumber(entry.getLowAddress() + shift);
+                                LineNumber number = unit.getLineNumber(entry.getLowAddress() + shift);
                                 if (number != null) {
                                     return new SourceFileInfo(toAbsolutePath(serviceInfo, number.file), number.line, 0);
                                 }
@@ -130,12 +130,8 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             } finally {
                 dwarf.dispose();
             }
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (WrongFileFormatException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            DLightLogger.instance.log(Level.INFO, ex.getMessage());
         }
         return null;
     }
@@ -161,7 +157,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                     dwarf.dispose();
                 }
             } catch (IOException ex) {
-                DLightLogger.instance.log(Level.INFO, null, ex);
+                DLightLogger.instance.log(Level.INFO, ex.getMessage());
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, SourceFileInfo>emptyMap() : sourceInfoMap);

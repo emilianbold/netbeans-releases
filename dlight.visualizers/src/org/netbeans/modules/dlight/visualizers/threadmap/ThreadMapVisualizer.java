@@ -112,9 +112,9 @@ public class ThreadMapVisualizer extends JPanel implements
 
             public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
                ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
-               DataProvider d  = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE);
+               DataProvider d  = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE); //NOI18N
                StackDataProvider stackDataProvider = d == null || !(d instanceof StackDataProvider) ?  null  : (StackDataProvider)d;
-               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(stackDataProvider,  threadDump, startTime);//NOI18N
+               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(stackDataProvider,  threadDump, query.getStartTime());
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();
@@ -265,7 +265,7 @@ public class ThreadMapVisualizer extends JPanel implements
     protected void updateList(ThreadMapData mapData) {
         synchronized (uiLock) {
             threadsPanel.threadsMonitoringEnabled();
-            dataManager.processData(MonitoredData.getMonitoredData(mapData));
+            dataManager.processData(MonitoredData.getMonitoredData(mapData), session);
             startTimeStamp = dataManager.getEndTimeStump();
             setNonEmptyContent();
         }
@@ -278,7 +278,9 @@ public class ThreadMapVisualizer extends JPanel implements
             case CLOSED:
             case PAUSED:
             case ANALYZE:
+                startTimeStamp = 0;
                 timerSupport.stop();
+                syncFillModel();
                 break;
             case RUNNING:
             case STARTING:

@@ -141,4 +141,8 @@ public class DtraceParser {
             return new DataRow(colnames, data);
         }
     }
+
+    public DataRow processClose(){
+        return null;
+    }
 }

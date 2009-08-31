@@ -86,7 +86,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  * 
  */
 public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference {
-
+    private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
@@ -115,9 +115,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         CLOSED
     }
 
+    public final long getStartTime(){
+        return startTimestamp;
+    }
+
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
+                startTimestamp = System.nanoTime();
                 targetStarted(event.target);
                 break;
             case FAILED:
@@ -722,8 +727,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return null;
     }
 
-    public List<Indicator> getIndicators() {
-        List<Indicator> result = new ArrayList<Indicator>();
+    public List<Indicator<?>> getIndicators() {
+        List<Indicator<?>> result = new ArrayList<Indicator<?>>();
 
         for (ExecutionContext c : contexts) {
             result.addAll(c.getIndicators());

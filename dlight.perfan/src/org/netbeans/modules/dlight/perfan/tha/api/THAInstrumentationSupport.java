@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.dlight.perfan.tha.api;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -47,9 +49,12 @@ import java.util.concurrent.FutureTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public final class THAInstrumentationSupport {
@@ -96,6 +101,18 @@ public final class THAInstrumentationSupport {
         }
 
         return result;
+    }
+
+    public boolean isInstrumentationNeeded(ExecutionEnvironment env){
+        try {
+            if (HostInfoUtils.getHostInfo(env).getCpuFamily().equals(CpuFamily.SPARC)) {
+                return false;
+            }
+            return true;
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+        return true;
     }
 
     public Future<Boolean> isInstrumented(final String executable) {
@@ -169,11 +186,18 @@ public final class THAInstrumentationSupport {
                 return new CollectVersion(Integer.parseInt(m.group(1)),
                         Integer.parseInt(m.group(2)));
             } else {
-                versionPattern = Pattern.compile("([1-9]+)\\.([1-9]+).*"); // NOI18N
+                versionPattern = Pattern.compile("version [^:]+: Sun .*Analyzer ([1-9]+)\\.([1-9]+).*"); // NOI18N
                 m = versionPattern.matcher(versionString);
                 if (m.matches()) {
                     return new CollectVersion(Integer.parseInt(m.group(1)),
                             Integer.parseInt(m.group(2)));
+                } else {
+                    versionPattern = Pattern.compile("([1-9]+)\\.([1-9]+).*"); // NOI18N
+                    m = versionPattern.matcher(versionString);
+                    if (m.matches()) {
+                        return new CollectVersion(Integer.parseInt(m.group(1)),
+                                Integer.parseInt(m.group(2)));
+                    }
                 }
             }
 

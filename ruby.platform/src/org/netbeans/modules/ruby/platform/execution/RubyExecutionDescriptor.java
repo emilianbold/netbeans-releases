@@ -379,6 +379,14 @@ public class RubyExecutionDescriptor {
         return pwd;
     }
 
+    /**
+     * Sets the working directory.
+     * @param pwd the working directory to set.
+     */
+    public void setPwd(File pwd) {
+        this.pwd = pwd;
+    }
+
     public boolean isFastDebugRequired() {
         return fastDebugRequired;
     }

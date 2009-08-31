@@ -164,59 +164,73 @@ public final class MSAParser extends DtraceParser {
 
         if ((timestamp - lastTimestamp) > deltaTime) {
             lastTimestamp = timestamp;
-
-//            System.out.println("Adding info about " + accumulatedData.size() + " threads");
-
-            int aggregatedStates[] = new int[10];
-            for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
-                int[] states = entry.getValue();
-                ThreadStateImpl state = new ThreadStateImpl(periodFirstTimestamp, states);
-                //System.err.println(state);
-                storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);
-                for (int i = 3; i < 13; ++i) {
-                    aggregatedStates[i - 3] += states[i];
-                }
-            }
-            if (finished.size()>0) {
-                lastReportedFinished.clear();
-                for(Map.Entry<Integer,Long> entry : finished.entrySet()){
-                    if(!accumulatedData.containsKey(entry.getKey())){
-                        // report finished process
-                        lastReportedFinished.put(entry.getKey(), entry.getValue());
-                    }
-                }
-                for (Map.Entry<Integer,Long> entry : lastReportedFinished.entrySet()){
-                    finished.remove(entry.getKey());
-                    ThreadInfoImpl info = storage.getThreadInfo(entry.getKey());
-                    if (info != null) {
-                        storage.addThreadState(info, new FinishedState(periodFirstTimestamp));
-                        info.setFinishTime(entry.getValue());
-                    }
-                }
-            }
-
-            lastReportedThreadIDs.removeAll(accumulatedData.keySet());
-
-            //for (Integer notReportedThreadID : lastReportedThreadIDs) {
-            //    storage.getThreadInfo(notReportedThreadID.intValue()).setFinishTime(timestamp);
-            //}
-
-            lastReportedThreadIDs.clear();
-            lastReportedThreadIDs.addAll(accumulatedData.keySet());
-
-            accumulatedData.clear();
-
-            List<Object> values = new ArrayList<Object>();
-            values.add(lastReportedThreadIDs.size());
-            for (int i = 0; i < aggregatedStates.length; ++i) {
-                values.add(aggregatedStates[i]);
-            }
-            //System.err.println(values);
-            periodFirstTimestamp = Long.MAX_VALUE;
-            return new DataRow(COLUMN_NAMES, values);
+            return createDataRow();
         } else {
             return null;
         }
+    }
+
+    private DataRow createDataRow() {
+//            System.out.println("Adding info about " + accumulatedData.size() + " threads");
+        int[] aggregatedStates = new int[10];
+        for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
+            int[] states = entry.getValue();
+            ThreadStateImpl state = new ThreadStateImpl(periodFirstTimestamp, states);
+            //System.err.println(state);
+            storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);
+            for (int i = 3; i < 13; ++i) {
+                aggregatedStates[i - 3] += states[i];
+            }
+        }
+        if (finished.size() > 0) {
+            lastReportedFinished.clear();
+            for (Map.Entry<Integer, Long> entry : finished.entrySet()) {
+                if (!accumulatedData.containsKey(entry.getKey())) {
+                    // report finished process
+                    lastReportedFinished.put(entry.getKey(), entry.getValue());
+                }
+            }
+            for (Map.Entry<Integer, Long> entry : lastReportedFinished.entrySet()) {
+                finished.remove(entry.getKey());
+                ThreadInfoImpl info = storage.getThreadInfo(entry.getKey());
+                if (info != null) {
+                    storage.addThreadState(info, new FinishedState(periodFirstTimestamp));
+                    info.setFinishTime(entry.getValue());
+                }
+            }
+        }
+        lastReportedThreadIDs.removeAll(accumulatedData.keySet());
+        //for (Integer notReportedThreadID : lastReportedThreadIDs) {
+        //    storage.getThreadInfo(notReportedThreadID.intValue()).setFinishTime(timestamp);
+        //}
+        lastReportedThreadIDs.clear();
+        lastReportedThreadIDs.addAll(accumulatedData.keySet());
+        accumulatedData.clear();
+        List<Object> values = new ArrayList<Object>();
+        values.add(lastReportedThreadIDs.size());
+        for (int i = 0; i < aggregatedStates.length; ++i) {
+            values.add(aggregatedStates[i]);
+        }
+        //System.err.println(values);
+        periodFirstTimestamp = Long.MAX_VALUE;
+        return new DataRow(COLUMN_NAMES, values);
+    }
+
+    @Override
+    public DataRow processClose() {
+        if (!accumulatedData.isEmpty()) {
+            return createDataRow();
+        } else if (!finished.isEmpty()) {
+            for (Map.Entry<Integer, Long> entry : finished.entrySet()) {
+                ThreadInfoImpl info = storage.getThreadInfo(entry.getKey());
+                if (info != null) {
+                    storage.addThreadState(info, new FinishedState(entry.getValue()));
+                    info.setFinishTime(entry.getValue());
+                }
+            }
+            finished.clear();
+        }
+        return null;
     }
 
     private static final class FinishedState implements ThreadState {
@@ -254,5 +268,6 @@ public final class MSAParser extends DtraceParser {
             return 0;
         }
     }
+
 }
 
