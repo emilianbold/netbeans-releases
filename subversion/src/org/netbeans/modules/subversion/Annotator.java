@@ -680,9 +680,9 @@ public class Annotator {
         }
         
         if(cache.ready()) {
-            if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_VERSIONED_CONFLICT, false)) {
                 return getBadge(badgeConflicts, icon, toolTipConflict);
-            } else if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_LOCAL_CHANGE)) {
+            } else if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_LOCAL_CHANGE, false)) {
                 return getBadge(badgeModified, icon, toolTipModified);
             }
         }
