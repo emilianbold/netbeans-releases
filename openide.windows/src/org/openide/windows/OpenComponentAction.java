@@ -67,7 +67,9 @@ final class OpenComponentAction implements ActionListener {
         if (component != null) {
             return component;
         }
-        return component = (TopComponent)map.get("component"); // NOI18N
+        component = (TopComponent)map.get("component"); // NOI18N
+        assert component != null : "Component cannot be created for " + map;
+        return component;
     }
 
     public void actionPerformed(ActionEvent e) {

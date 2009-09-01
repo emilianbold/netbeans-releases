@@ -144,8 +144,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
         
 	for (Token h : highlights) {
-	    Position start = NbDocument.createPosition(doc, h.offset(null), Bias.Backward);
-	    Position end = NbDocument.createPosition(doc, h.offset(null) + h.length(), Bias.Forward);
+            // type parameter name is represented as html tag -> ignore surrounding <> in rename
+            int delta = h.id() == JavadocTokenId.HTML_TAG ? 1 : 0;
+	    Position start = NbDocument.createPosition(doc, h.offset(null) + delta, Bias.Backward);
+	    Position end = NbDocument.createPosition(doc, h.offset(null) + h.length() - delta, Bias.Forward);
 	    MutablePositionRegion current = new MutablePositionRegion(start, end);
 	    
 	    if (isIn(current, caretOffset)) {
@@ -260,6 +262,12 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                         if (jdts != null && JavadocImports.isInsideReference(jdts, caret)) {
                             jdts.move(caret);
                             if (jdts.moveNext() && jdts.token().id() == JavadocTokenId.IDENT) {
+                                adjustedCaret[0] = jdts.offset();
+                                insideJavadoc[0] = true;
+                            }
+                        } else if (jdts != null && JavadocImports.isInsideParamName(jdts, caret)) {
+                            jdts.move(caret);
+                            if (jdts.moveNext()) {
                                 adjustedCaret[0] = jdts.offset();
                                 insideJavadoc[0] = true;
                             }

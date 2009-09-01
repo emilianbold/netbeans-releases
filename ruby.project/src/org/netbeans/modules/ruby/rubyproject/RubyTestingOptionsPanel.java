@@ -123,6 +123,11 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(autospec))
         );
+
+        testUnit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_TestUnit")); // NOI18N
+        rspec.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_RSpec")); // NOI18N
+        autotest.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_AutoTest")); // NOI18N
+        autospec.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_AutoSpec")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void testUnitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testUnitActionPerformed
