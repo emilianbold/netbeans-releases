@@ -54,6 +54,7 @@ public class LineAnnotationInfo {
     private FileAnnotationInfo fileAnnotationInfo;
     private int line;
     private long offset;
+    private long lineOffset = -1;
     private String annotation;
     private String tooltip;
     private String columns[];
@@ -71,26 +72,39 @@ public class LineAnnotationInfo {
      */
     public int getLine() {
         if (line < 0) {
-            setLine(getFileAnnotationInfo().getEditorPane());
+            try {
+                line = Utilities.getLineOffset((BaseDocument) getFileAnnotationInfo().getEditorPane().getDocument(), (int) offset);
+                line++;
+            } catch (BadLocationException ble) {
+            }
         }
         return line;
     }
-
-    private void setLine(JEditorPane editorPane) {
-        int sourceLine = -1;
-        try {
-            sourceLine = Utilities.getLineOffset((BaseDocument) editorPane.getDocument(), (int) offset);
-            sourceLine++;
-        } catch (BadLocationException ble) {
-            sourceLine = -1;
+    
+    /**
+     * @return the offset
+     */
+    public long getOffset() {
+        if (offset < 0) {
+            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(line-1);
+            offset = el.getStartOffset();
         }
-        setLine(sourceLine);
+        return offset;
+    }
+
+    public long getLineOffset() {
+        if (lineOffset <= 0) {
+            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(getLine()-1);
+            lineOffset = el.getStartOffset();
+
+        }
+        return lineOffset;
     }
 
     public Position getPosition() {
         if (position == null) {
             try {
-                position = fileAnnotationInfo.getEditorPane().getDocument().createPosition((int)getOffset());
+                position = fileAnnotationInfo.getEditorPane().getDocument().createPosition((int)getLineOffset());
             }
             catch (BadLocationException ble) {
 
@@ -124,17 +138,6 @@ public class LineAnnotationInfo {
             }
         }
         return annotation;
-    }
-
-    /**
-     * @return the offset
-     */
-    public long getOffset() {
-        if (offset < 0) {
-            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(line-1);
-            offset = el.getStartOffset();
-        }
-        return offset;
     }
 
     /**
