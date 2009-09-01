@@ -139,7 +139,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
                 clusters("(?!ergonomics).*").enableClasspathModules(false).enableModules(".*").gui(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
-                clusters("(platform|harness|ide|websvccommon|gsf|java|profiler|nb)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
+                clusters("(platform|harness|ide|websvccommon|java|profiler|nb)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
                 clusters("(platform|ide)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
         return suite;
@@ -914,4 +914,40 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         return false;
     }
+
+    public void testKeymapOverrides() throws Exception { // #170677
+        List<String> warnings = new ArrayList<String>();
+        FileObject[] keymaps = FileUtil.getConfigFile("Keymaps").getChildren();
+        Map<String,Integer> definitionCountById = new HashMap<String,Integer>();
+        for (FileObject keymap : keymaps) {
+            for (FileObject shortcut : keymap.getChildren()) {
+                DataObject d = DataObject.find(shortcut);
+                if (d instanceof DataShadow) {
+                    String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
+                    Integer prior = definitionCountById.get(id);
+                    definitionCountById.put(id, prior == null ? 1 : prior + 1);
+                } else {
+                    warnings.add("Anomalous file " + d);
+                }
+            }
+        }
+        for (FileObject shortcut : FileUtil.getConfigFile("Shortcuts").getChildren()) {
+            DataObject d = DataObject.find(shortcut);
+            if (d instanceof DataShadow) {
+                String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
+                if (Integer.valueOf(keymaps.length).equals(definitionCountById.get(id))) {
+                    String layers = Arrays.toString((URL[]) d.getPrimaryFile().getAttribute("layers"));
+                    warnings.add(d.getPrimaryFile().getPath() + " " + layers + " useless since " + id + " is bound (somehow) in all keymaps");
+                }
+            } else {
+                warnings.add("Anomalous file " + d);
+            }
+        }
+        // XXX consider also checking for bindings in Shortcuts/ which are overridden in all keymaps or at least NetBeans
+        // taking into consideration O- and D- virtual modifiers
+        // (this is likely to be more common, e.g. mysterious Shortcuts/D-A.shadow in uml.drawingarea)
+        // XXX check for shortcut conflict between Shortcuts and each keymap, e.g. Ctrl-R in Eclipse keymap
+        assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
+    }
+
 }
