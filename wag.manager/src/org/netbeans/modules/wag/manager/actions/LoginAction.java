@@ -44,9 +44,9 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.wag.manager.util.WagPreferences;
 import org.netbeans.modules.wag.manager.wizards.LoginPanel;
 import org.netbeans.modules.wag.manager.zembly.ZemblySession;
 import org.openide.DialogDescriptor;
@@ -84,6 +84,9 @@ public class LoginAction extends NodeAction {
 
         if (!ZemblySession.getInstance().isLoggedIn()) {
             showLogin();
+        } else {
+            ZemblySession.getInstance().logout();
+            WagPreferences.getInstance().setOnlineStatus(false);
         }
     }
 
@@ -97,7 +100,16 @@ public class LoginAction extends NodeAction {
 
     private void showLogin() {
         final LoginPanel loginPanel = new LoginPanel();
-        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+        final WagPreferences preferences = WagPreferences.getInstance();
+
+        String username = preferences.getUsername();
+        char[] password = preferences.getPassword();
+
+        if (username != null && password != null) {
+            loginPanel.setUsername(username);
+            loginPanel.setPassword(password);
+        }
+
         final String ctlLogin = NbBundle.getMessage(LoginAction.class, "CTL_Login");
         final String ctlCancel = NbBundle.getMessage(LoginAction.class, "CTL_Cancel");
         DialogDescriptor login = new DialogDescriptor(
@@ -115,9 +127,8 @@ public class LoginAction extends NodeAction {
 
                         public void run() {
                             try {
-                                //KenaiConnection.getDefault();
-                                //Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
                                 ZemblySession.getInstance().login(loginPanel.getUsername(), loginPanel.getPassword());
+                                preferences.setOnlineStatus(true);
                                 SwingUtilities.invokeLater(new Runnable() {
 
                                     public void run() {
@@ -131,8 +142,8 @@ public class LoginAction extends NodeAction {
                                     }
                                 });
                             } catch (final Exception ex) {
+                                preferences.setOnlineStatus(false);
                                 SwingUtilities.invokeLater(new Runnable() {
-
                                     public void run() {
                                         loginPanel.showError(ex);
                                     }
@@ -140,16 +151,16 @@ public class LoginAction extends NodeAction {
                             }
                         }
                     });
-                /*
-                if (loginPanel.isStorePassword()) {
-                preferences.put(KENAI_USERNAME_PREF, loginPanel.getUsername()); // NOI18N
-                preferences.put(KENAI_PASSWORD_PREF, Scrambler.getInstance().scramble(new String(loginPanel.getPassword()))); // NOI18N
-                } else {
-                preferences.remove(KENAI_USERNAME_PREF); // NOI18N
-                preferences.remove(KENAI_PASSWORD_PREF); // NOI18N
-                }
-                 */
-                } else {
+
+                    if (loginPanel.isStorePassword()) {
+                        preferences.setUsername(loginPanel.getUsername());
+                        preferences.setPassword(loginPanel.getPassword());
+                    } else {
+                        preferences.setUsername(null);
+                        preferences.setPassword(null);
+                    }
+
+                }  else {
                     loginPanel.putClientProperty("cancel", "true"); // NOI18N
                     loginPanel.getRootPane().getParent().setVisible(false);
                 }
@@ -158,19 +169,9 @@ public class LoginAction extends NodeAction {
         login.setClosingOptions(new Object[]{ctlCancel});
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
-        /*
-        String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
-        String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
-        if (uname!=null && password!=null) {
-        loginPanel.setUsername(uname);
-        loginPanel.setPassword(Scrambler.getInstance().descramble(password).toCharArray());
-        }
-         */
         d.pack();
         d.setResizable(false);
         loginPanel.clearStatus();
         d.setVisible(true);
-
-    //return loginPanel.getClientProperty("cancel")==null; // NOI18N
     }
 }
