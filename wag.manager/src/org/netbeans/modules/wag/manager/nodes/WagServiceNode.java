@@ -87,7 +87,7 @@ public class WagServiceNode extends AbstractNode {
 
     @Override
     public String getShortDescription() {
-        return service.getDescription();
+        return service.toString();
     }
 
     @Override
