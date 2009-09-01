@@ -137,6 +137,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                         
         public void addChangeListener (ChangeListener l) {
             assert l != null : "Listener can not be null";  //NOI18N
+            cs.removeChangeListener(l);
             cs.addChangeListener(l);
         }
                         
