@@ -98,7 +98,6 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
     public boolean isHyperlinkPoint(Document doc, int offset) {
         if (!(doc instanceof BaseDocument))
             return false;
-        
         BaseDocument bdoc = (BaseDocument) doc;
         bdoc.readLock();
         try {
@@ -119,7 +118,6 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             //Token<?> token = tokenSequence.token();
             TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
                     ELTokenId.language());
-            
             if (elTokenSequence != null) {
                 FileObject fObject = NbEditorUtilities.getFileObject(doc);
                 if (fObject == null) {
@@ -145,7 +143,6 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                     if (res == JsfElExpression.EL_START) {
                         res = exp.parse(endOfEL + 1);
                     }
-                    
                     return (res == JsfElExpression.EL_JSF_BEAN) ||
                         (res == JsfElExpression.EL_JSF_BEAN_REFERENCE);
                 }

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.FileNotFoundException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
 import java.util.Collections;
@@ -50,8 +51,11 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
+import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -66,34 +70,68 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         cache = new WeakHashMap<String, Map<String, SourceFileInfo>>();
     }
 
-    public SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    public SourceFileInfo fileName(String functionSignature, int lineNumber, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
             return null;
         }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
+            SourceFileInfo sourceInfo;
+            String functionName = functionSignature;
+            int parenIdx = functionSignature.indexOf('(');
+            if (0 <= parenIdx) {
+                functionName = functionSignature.substring(0, parenIdx);
+            }
+            sourceInfo = findDwarf2Line(executable, functionName, offset, serviceInfo);
+            if (sourceInfo != null) {
+                return sourceInfo;
+            }
             Map<String, SourceFileInfo> sourceInfoMap = getSourceInfo(executable, lineNumber, serviceInfo);
-            SourceFileInfo sourceInfo = sourceInfoMap.get(functionName);
+            sourceInfo = sourceInfoMap.get(functionSignature);
             if (sourceInfo != null) {
                 return sourceInfo;
             }
 
             // try without parameters
-            int parenIdx = functionName.indexOf('(');
             if (0 <= parenIdx) {
-                sourceInfo = sourceInfoMap.get(functionName.substring(0, parenIdx));
+                sourceInfo = sourceInfoMap.get(functionName);
                 if (sourceInfo != null) {
                     return sourceInfo;
                 }
             }
+        }
+        return null;
+    }
 
-//            Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
-//            finder.lookup(offset);
-//            String sourceFile = finder.getSourceFile();
-//            int lineNumber = finder.getLineNumber();
-//            if (sourceFile != null && 0 <= lineNumber) {
-//                return new SourceFileInfo(sourceFile, lineNumber, 0);
-//            }
+    private SourceFileInfo findDwarf2Line(String executable, String function, long shift, Map<String, String> serviceInfo){
+        //Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
+        //finder.lookup(offset);
+        //String sourceFile = finder.getSourceFile();
+        //int lineNumber = finder.getLineNumber();
+        //if (sourceFile != null && 0 <= lineNumber) {
+        //    return new SourceFileInfo(sourceFile, lineNumber, 0);
+        //}
+        try {
+            Dwarf dwarf = new Dwarf(executable);
+            try {
+                for (CompilationUnit unit : dwarf.getCompilationUnits()){
+                    for (DwarfEntry entry : unit.getDeclarations()){
+                        if (entry.getKind()== TAG.DW_TAG_subprogram){
+                            String name = entry.getName();
+                            if (name.equals(function) || entry.getQualifiedName().equals(function)) {
+                                LineNumber number = unit.getLineNumber(entry.getLowAddress() + shift);
+                                if (number != null) {
+                                    return new SourceFileInfo(toAbsolutePath(serviceInfo, number.file), number.line, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            } finally {
+                dwarf.dispose();
+            }
+        } catch (IOException ex) {
+            DLightLogger.instance.log(Level.INFO, ex.getMessage());
         }
         return null;
     }
@@ -119,7 +157,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                     dwarf.dispose();
                 }
             } catch (IOException ex) {
-                DLightLogger.instance.log(Level.INFO, null, ex);
+                DLightLogger.instance.log(Level.INFO, ex.getMessage());
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, SourceFileInfo>emptyMap() : sourceInfoMap);

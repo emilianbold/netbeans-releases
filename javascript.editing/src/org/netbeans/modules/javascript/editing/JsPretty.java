@@ -242,8 +242,14 @@ public class JsPretty {
                         positionedTs.movePrevious();
                         org.netbeans.api.lexer.Token<? extends JsTokenId> previous = LexUtilities.findPrevious(positionedTs, 
                                 Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
-                        if (previous.id() != JsTokenId.EOL) {
-                            addDiff(child.getSourceStart(), child.getSourceStart(), "\n" + getIndent(), "visitObjectLit");
+                        int start = child.getSourceStart();
+                        if (previous.id() == JsTokenId.STRING_BEGIN && start > 0) {
+                            start --;
+                            previous = LexUtilities.findPrevious(positionedTs,
+                                Arrays.asList(JsTokenId.STRING_BEGIN, JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                        }
+                        if (previous != null && previous.id() != JsTokenId.EOL) {
+                            addDiff(start, start, "\n" + getIndent(), "visitObjectLit");
                         }
                     }
                 }

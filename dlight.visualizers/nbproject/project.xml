@@ -47,6 +47,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.threadmap.support</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.threads</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -157,6 +165,7 @@
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
+                <friend>org.netbeans.modules.dlight.msa</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>

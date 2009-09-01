@@ -69,7 +69,7 @@ public class KenaiRepository extends BugzillaRepository {
     private String host;
 
     KenaiRepository(String repoName, String url, String host, String userName, String password, String urlParam, String product) {
-        super(repoName, url, userName, password, null, null);
+        super(repoName, repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
@@ -179,6 +179,14 @@ public class KenaiRepository extends BugzillaRepository {
         setCredentials(user, new String(password));
 
         return true;
+    }
+
+    /**
+     * Returns the name of the bz product - should be the same as the name of the kenai project that owns this repository
+     * @return
+     */
+    public String getProductName () {
+        return product;
     }
 
     private static String getKenaiUser() {

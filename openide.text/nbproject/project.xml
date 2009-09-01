@@ -100,6 +100,15 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.dialogs</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -114,9 +123,6 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
-                </test-type>
-                <test-type>
-                    <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
             <public-packages>

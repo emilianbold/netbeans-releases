@@ -178,7 +178,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             public void actionPerformed(ActionEvent e) {
                 if ("pressed".equals(e.getActionCommand())) {
                     JComponent jc = (JComponent) e.getSource();
-                    Point p = new Point(jc.getWidth(), jc.getHeight());
+                    Point p = new Point(0, 0);
                     SwingUtilities.convertPointToScreen(p, jc);
                     if (!ButtonPopupSwitcher.isShown()) {
                         SwitcherTableItem[] items = createSwitcherItems();
@@ -539,7 +539,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (preferences.getBoolean("show_evaluator_result", false)) {
+                if (preferences.getBoolean("show_evaluator_result", true)) {
                     TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
                     view.open();
                     view.requestActive();

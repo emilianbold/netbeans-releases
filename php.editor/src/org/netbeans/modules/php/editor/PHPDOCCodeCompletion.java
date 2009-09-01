@@ -87,6 +87,7 @@ public class PHPDOCCodeCompletion {
             PHPDocCommentTokenId.PHPDOC_RETURN,
             PHPDocCommentTokenId.PHPDOC_VAR,
             PHPDocCommentTokenId.PHPDOC_PARAM,
+            PHPDocCommentTokenId.PHPDOC_METHOD,
             PHPDocCommentTokenId.PHPDOC_PROPERTY,
             PHPDocCommentTokenId.PHPDOC_PROPERTY_READ,
             PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE);

@@ -71,7 +71,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  *
  * @author ehucka, Revision Petr Cyhelsky
  */
-public class ExceptionBreakpointsTest extends JellyTestCase {
+public class ExceptionBreakpointsTest extends DebuggerTestCase {
 
     private static String[] tests = new String[] {
         "testExceptionBreakpointCreation",
@@ -79,10 +79,8 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
         "testExceptionBreakpointMatchClasses",
         "testExceptionBreakpointExcludeClasses",
         "testExceptionBreakpointHitCount",
-        "testConditionalExceptionBreakpoint" 
+        "testConditionalExceptionBreakpoint"
     };
-
-    private static boolean initialized = false;
 
     /**
      *
@@ -112,26 +110,12 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
      *
      */
     @Override
-    public void setUp() throws IOException {        
+    public void setUp() throws IOException {
+        super.setUp();
         System.out.println("########  " + getName() + "  ####### ");
-        if (!initialized)
-        {
-            openDataProjects(Utilities.testProjectName);
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            Utilities.cleanBuildTestProject();
-            initialized = true;
-        }
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
+        
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode);
     }
 
     /**
@@ -211,13 +195,16 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
             new JTextFieldOperator(dialog, 1).setText("java.lang.ClassLoader");
             dialog.ok();
+            new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             try {
                 Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
             } catch (Throwable e) {
                 if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
                     System.err.println(e.getMessage());
-                    throw e;
+                    System.out.println("Problem: console last line - " + Utilities.getConsoleLastLineText());
+                    if (!Utilities.checkConsoleForText("Thread main stopped at ClassLoader.java", 3))
+                        throw e;
                 }
             }
             new ContinueAction().perform();

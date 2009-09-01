@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -47,6 +48,8 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 
 /**
@@ -67,9 +70,9 @@ public interface StackDataStorage {//extends StackSupport {
      * @param sampleDuration  number of nanoseconds the program spent in this stack
      * @return
      */
-    int putStack(List<CharSequence> stack, long sampleDuration);
+    long putStack(List<CharSequence> stack, long sampleDuration);
 
-    List<FunctionCall> getCallStack(int stackId);
+    List<FunctionCall> getCallStack(long stackId);
 
     List<FunctionMetric> getMetricsList();
 
@@ -80,6 +83,8 @@ public interface StackDataStorage {//extends StackSupport {
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
+
+    Collection<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query);
 
     /**
      * Returns stack trace on the base of the query

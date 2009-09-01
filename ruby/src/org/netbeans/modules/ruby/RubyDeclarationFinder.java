@@ -126,6 +126,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
 
+    private static final String[] RAILS_TARGETS = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
+                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
+                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
+                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
     /** Creates a new instance of RubyDeclarationFinder */
     public RubyDeclarationFinder() {
     }
@@ -221,6 +225,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                 if (require != null) {
                     return new OffsetRange(requireStart, requireStart + require.length());
+                }
+            }
+            
+            int classNameStart = LexUtilities.getClassNameStringOffset(lexOffset, th);
+            if (classNameStart != -1) {
+                String className = LexUtilities.getStringAt(lexOffset, th);
+                if (className != null) {
+                    return new OffsetRange(classNameStart, classNameStart + className.length());
                 }
             }
         }
@@ -444,6 +456,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 Arity arity = Arity.UNKNOWN;
                 DeclarationLocation location = findMethod(parserResult, root, name, arity);
 
+                // search for AR associations
+                if (location == DeclarationLocation.NONE) {
+                    location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
+                }
+
                 if (location == DeclarationLocation.NONE) {
                     location = findInstance(parserResult, root, name);
                 }
@@ -567,7 +584,16 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                         return fix(findLocal(parserResult, method, name), parserResult);
                     }
-                }
+                } 
+            } else if (closest instanceof StrNode) {
+                    // See if the hyperlink is for the string that is the value for :class_name =>
+                    int classNameStart = LexUtilities.getClassNameStringOffset(astOffset, th);
+                    if (classNameStart != -1) {
+                        String className = LexUtilities.getStringAt(tokenOffset, th);
+                        if (className != null) {
+                            return getLocation(index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false));
+                        }
+                    }
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
@@ -636,7 +662,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return classDeclarationLocation;
     }
 
-    private static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
+    static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
         DeclarationLocation loc = DeclarationLocation.NONE;
         for (IndexedElement element : elements) {
             FileObject fo = element.getFileObject();
@@ -650,6 +676,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     offset = AstUtilities.getRange(node).getStart();
                 }
                 loc = new DeclarationLocation(fo, offset, element);
+                loc.addAlternative(new RubyAltLocation(element, false));
             } else {
                 AlternativeLocation alternate = new RubyAltLocation(element, false);
                 loc.addAlternative(alternate);
@@ -880,11 +907,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 if (!(s.indexOf(":partial") != -1 || s.indexOf(":controller") != -1 || s.indexOf(":action") != -1)) { // NOI18N
                     return null;
                 }
-                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
-                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
-                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
-                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
-                for (String target : targets) {
+                for (String target : RAILS_TARGETS) {
                     int index = s.indexOf(target);
                     if (index != -1) {
                         // Find string

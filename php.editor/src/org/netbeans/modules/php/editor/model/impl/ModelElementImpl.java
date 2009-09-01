@@ -102,15 +102,8 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this.kind = kind;
         this.file = file;
         this.modifiers = modifiers;
-        if (inScope instanceof ScopeImpl) {
-            //TODO: not nice
-            if (this instanceof AssignmentImpl) {
-                if (inScope instanceof  VariableName) {
-                    ((ScopeImpl)inScope).addElement(this);
-                }
-            } else {
-                ((ScopeImpl)inScope).addElement(this);
-            }            
+        if (inScope instanceof ScopeImpl && !(this instanceof AssignmentImpl)) {
+            ((ScopeImpl)inScope).addElement(this);
         }
     }
 

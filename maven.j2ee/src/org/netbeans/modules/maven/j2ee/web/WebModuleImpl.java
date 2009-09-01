@@ -116,9 +116,17 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
 
     public Profile getJ2eeProfile() {
         //try to apply the hint if it exists.
-        String version = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_J2EE_VERSION, true);
-        if (version != null) {
-            return Profile.fromPropertiesString(version);
+        AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
+        if (prop != null) {
+            // you may wonder how this can be null.. the story goes like this:
+            // if called from the J2eeLookupProvider constructor, thus from
+            // project lookup construction loop, the reentrant call to the lookup
+            // doesn't include the AuxProperties instances yet..
+            // too bad.. Not sure how may people use this feature/workaround anyway..
+            String version = prop.get(Constants.HINT_J2EE_VERSION, true);
+            if (version != null) {
+                return Profile.fromPropertiesString(version);
+            }
         }
         DDProvider prov = DDProvider.getDefault();
         FileObject dd = getDeploymentDescriptor();

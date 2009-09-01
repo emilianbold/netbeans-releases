@@ -47,6 +47,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * An implementation of the Storage interface over a memory mapped file.
@@ -237,23 +238,28 @@ class FileMapStorage implements Storage {
             Controller.log ("Disposing file map storage");
             Controller.logStack();
         }
-        if (fileChannel != null && fileChannel.isOpen()) {
-            try {
-                fileChannel.close();
-                fileChannel = null;
-                closed = true;
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
+        final FileChannel oldChannel = fileChannel;
+        final File oldFile = outfile;
+        if (oldChannel != null || oldFile != null) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    try {
+                        if (oldChannel != null && oldChannel.isOpen()) {
+                            oldChannel.close();
+                        }
+                        if (oldFile != null && oldFile.exists()) {
+                            oldFile.delete();
+                        }
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            });
         }
-        if (outfile != null && outfile.exists()) {
-            try {
-                outfile.delete();
-                outfile = null;
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
+        fileChannel = null;
+        closed = true;
+        outfile = null;
         buffer = null;
         contents = null;
     }

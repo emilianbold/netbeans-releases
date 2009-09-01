@@ -84,6 +84,7 @@ import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.modules.java.source.usages.SourceAnalyser;
 import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
@@ -118,7 +119,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
-        JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files); //NOI18N
+        JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", context.isAllFilesIndexing() ? context.getRootURI() : files); //NOI18N
         try {
             final FileObject root = context.getRoot();
             if (root == null) {
@@ -131,7 +132,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
             }
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
+            if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null) && !context.isAllFilesIndexing()) {
                 JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
@@ -159,7 +160,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                             final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                             if (javaContext.uq == null)
                                 return null; //IDE is exiting, indeces are already closed.                            
-                            final List<URL> errUrls = context.isSupplementaryFilesIndexing() ? null : TaskCache.getDefault().getAllFilesInError(context.getRootURI());
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
                             final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
@@ -186,31 +186,23 @@ public class JavaCustomIndexer extends CustomIndexer {
 
                             Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
                             Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
-                            Set<File> _af = new HashSet<File> (compileResult.createdFiles); //Added files
                             _at.removeAll(removedTypes);
                             _rt.removeAll(compileResult.addedTypes);
-                            _af.removeAll(removedFiles);
                             compileResult.addedTypes.retainAll(removedTypes); //Changed types
 
-                            TasklistSettings.DependencyTracking dt;
-                            if (!context.isSupplementaryFilesIndexing() && !context.isAllFilesIndexing() && (dt = TasklistSettings.getDependencyTracking()) != TasklistSettings.DependencyTracking.DISABLED) {
+                            if (!context.isSupplementaryFilesIndexing()) {
                                 compileResult.modifiedTypes.addAll(_rt);
-                                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, dt);
+                                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
                                 Set<URL> urls = root2Rebuild.get(context.getRootURI());
-                                if (!errUrls.isEmpty() && !_af.isEmpty()) {
-                                    //new type creation may cause/fix some errors
-                                    //not 100% correct (consider eg. a file that has two .* imports
-                                    //new file creation may cause new error in this case
-                                    if (urls == null) {
-                                        root2Rebuild.put(context.getRootURI(), urls = new HashSet<URL>());
-                                    }
-                                    urls.addAll(errUrls);
-                                }
                                 if (urls != null) {
-                                    for (CompileTuple ct : toCompile)
-                                        urls.remove(ct.indexable.getURL());
-                                    if (urls.isEmpty())
+                                    if (context.isAllFilesIndexing()) {
                                         root2Rebuild.remove(context.getRootURI());
+                                    } else {
+                                        for (CompileTuple ct : toCompile)
+                                            urls.remove(ct.indexable.getURL());
+                                        if (urls.isEmpty())
+                                            root2Rebuild.remove(context.getRootURI());
+                                    }
                                 }
                                 for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
                                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
@@ -297,12 +289,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
                                 javaContext.checkSums.remove(i.getURL());
                             }
-
-                            TasklistSettings.DependencyTracking dt = TasklistSettings.getDependencyTracking();
-                            if (dt != TasklistSettings.DependencyTracking.DISABLED) {
-                                for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, dt).entrySet()) {
-                                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                                }
+                            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
+                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                             }
                             javaContext.checkSums.store();
                             javaContext.sa.store();
@@ -468,12 +456,31 @@ public class JavaCustomIndexer extends CustomIndexer {
         return binaryNames;
     }
 
-    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, TasklistSettings.DependencyTracking dt) throws IOException {
+    private static boolean checkDeps(final Context context) {
+        if (context.isSupplementaryFilesIndexing())
+            return false;
+        switch(TasklistSettings.getDependencyTracking()) {
+            case DISABLED:
+                return false;
+            case ENABLED_WITHIN_ROOT:
+                if (context.isAllFilesIndexing())
+                    return false;
+        }
+        return true;
+    }
+
+    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {
+        final Map<URL, Set<URL>> ret = new LinkedHashMap<URL, Set<URL>>();
+
         //performance: filter out anonymous innerclasses:
         for (Iterator<ElementHandle<TypeElement>> i = classes.iterator(); i.hasNext(); ) {
             if (ANONYMOUS.matcher(i.next().getBinaryName()).find()) {
                 i.remove();
             }
+        }
+
+        if (classes.isEmpty() && !includeFilesInError) {
+            return ret;
         }
 
         //get dependencies
@@ -496,80 +503,115 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         //get sorted list of depenedent roots
         List<URL> depRoots = inverseDeps.get(root);
-        if (depRoots != null) {
-            if (dt == TasklistSettings.DependencyTracking.ENABLED_WITHIN_ROOT) {
-                for (URL url : depRoots) {
-                    JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
-                }
-                depRoots = null;
-            } else {
-                depRoots = new ArrayList<URL>(depRoots);
-                try {
-                    if (dt == TasklistSettings.DependencyTracking.ENABLED_WITHIN_PROJECT) {
+        try {
+            switch (TasklistSettings.getDependencyTracking()) {
+                case DISABLED:
+                    if (depRoots == null) {
+                        JavaIndex.setAttribute(root, DIRTY_ROOT, Boolean.TRUE.toString());
+                    } else {
+                        for (URL url : depRoots) {
+                            JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                        }
+                    }
+                    return ret;
+                case ENABLED_WITHIN_ROOT:
+                    if (depRoots == null) {
+                        depRoots = Collections.singletonList(root);
+                    } else {
+                        for (URL url : depRoots) {
+                            JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                        }
+                    }
+                    break;
+                case ENABLED_WITHIN_PROJECT:
+                    if (depRoots == null) {
+                        depRoots = Collections.singletonList(root);
+                    } else {
                         Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
                         if (rootPrj == null) {
                             for (URL url : depRoots) {
                                 JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
                             }
-                            depRoots.clear();
-                        }
-                        for (Iterator<URL> it = depRoots.iterator(); it.hasNext();) {
-                            URL url = it.next();
-                            if (FileOwnerQuery.getOwner(url.toURI()) != rootPrj) {
-                                JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
-                                it.remove();
+                            depRoots = Collections.singletonList(root);
+                        } else {
+                            List<URL> l = new ArrayList<URL>(depRoots.size());
+                            for (URL url : depRoots) {
+                                if (FileOwnerQuery.getOwner(url.toURI()) == rootPrj) {
+                                    l.add(url);
+                                } else {
+                                    JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                                }
                             }
+                            l.add(root);
+                            depRoots = Utilities.topologicalSort(l, inverseDeps);
                         }
                     }
-                    depRoots.add(root);
-                    depRoots = Utilities.topologicalSort(depRoots, inverseDeps);
-                } catch (TopologicalSortException ex) {
-                    JavaIndex.LOG.warning("Cycle in the source root dependencies detected: " + ex.unsortableSets()); //NOI18N
-                    List part = ex.partialSort();
-                    part.retainAll(depRoots);
-                    depRoots = part;
-                } catch (URISyntaxException urise) {
-                    depRoots = null;
-                }
+                    break;
+                case ENABLED:
+                    if (depRoots == null) {
+                        depRoots = Collections.singletonList(root);
+                    } else {
+                        List<URL> l = new ArrayList<URL>(depRoots);
+                        l.add(root);
+                        depRoots = Utilities.topologicalSort(l, inverseDeps);
+                    }
+                    break;
             }
-        }
-
-        if (depRoots == null) {
+        } catch (TopologicalSortException ex) {
+            JavaIndex.LOG.warning("Cycle in the source root dependencies detected: " + ex.unsortableSets()); //NOI18N
+            List part = ex.partialSort();
+            part.retainAll(depRoots);
+            depRoots = part;
+        } catch (URISyntaxException urise) {
             depRoots = Collections.singletonList(root);
         }
 
-        final Map<URL, Set<URL>> ret = new LinkedHashMap<URL, Set<URL>>();
+
         final Queue<ElementHandle<TypeElement>> queue = new LinkedList<ElementHandle<TypeElement>>(classes);
         final Map<URL, Set<ElementHandle<TypeElement>>> bases = new HashMap<URL, Set<ElementHandle<TypeElement>>>();
         for (URL depRoot : depRoots) {
-            final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
+            SourceAnalyser sa = ClassIndexManager.getDefault().createUsagesQuery(depRoot, true).getSourceAnalyser();
+            if (!sa.isEmpty()) {
+                final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
 
-            final List<URL> dep = deps != null ? deps.get(depRoot) : null;
-            if (dep != null) {
-                for (URL url : dep) {
-                    final Set<ElementHandle<TypeElement>> b = bases.get(url);
-                    if (b != null)
-                        queue.addAll(b);
+                final List<URL> dep = deps != null ? deps.get(depRoot) : null;
+                if (dep != null) {
+                    for (URL url : dep) {
+                        final Set<ElementHandle<TypeElement>> b = bases.get(url);
+                        if (b != null)
+                            queue.addAll(b);
+                    }
                 }
-            }
 
-            final Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
-            while (!queue.isEmpty()) {
-                final ElementHandle<TypeElement> e = queue.poll();
-                if (toHandle.add(e))
-                    queue.addAll(index.getElements(e, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-            }
-            bases.put(depRoot, toHandle);
+                final Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
+                while (!queue.isEmpty()) {
+                    final ElementHandle<TypeElement> e = queue.poll();
+                    if (toHandle.add(e))
+                        queue.addAll(index.getElements(e, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                }
+                bases.put(depRoot, toHandle);
 
-            final Set<FileObject> files = new HashSet<FileObject>();
-            for (ElementHandle<TypeElement> e : toHandle)
-                files.addAll(index.getResources(e, EnumSet.complementOf(EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS)), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-            
-            final Set<URL> urls = new HashSet<URL>();
-            for (FileObject file : files)
-                urls.add(file.getURL());
-            if (!urls.isEmpty())
-                ret.put(depRoot, urls);
+                final Set<FileObject> files = new HashSet<FileObject>();
+                for (ElementHandle<TypeElement> e : toHandle)
+                    files.addAll(index.getResources(e, EnumSet.complementOf(EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS)), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+
+                final Set<URL> urls = new HashSet<URL>();
+                for (FileObject file : files)
+                    urls.add(file.getURL());
+
+                if (includeFilesInError) {
+                    final List<URL> errUrls = TaskCache.getDefault().getAllFilesInError(depRoot);
+                    if (!errUrls.isEmpty()) {
+                        //new type creation may cause/fix some errors
+                        //not 100% correct (consider eg. a file that has two .* imports
+                        //new file creation may cause new error in this case
+                        urls.addAll(errUrls);
+                    }
+                }
+
+                if (!urls.isEmpty())
+                    ret.put(depRoot, urls);
+            }
         }
         return ret;
     }
@@ -579,13 +621,36 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
-//            try {
-//                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-//                return uq == null ? true : uq.getSourceAnalyser().isValid();
-//            } catch (IOException ioe) {
-//                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
-                return super.scanStarted(context);
-//            }
+            try {
+                return ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                    public Boolean run() throws IOException, InterruptedException {
+                        return ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                            public Boolean run() throws IOException, InterruptedException {
+                                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+                                if (uq == null) {
+                                    //Closing...
+                                    return true;
+                                }
+                                if (uq.getState() != ClassIndexImpl.State.NEW) {
+                                    //Already checked
+                                    return true;
+                                }
+                                try {
+                                    return uq.getSourceAnalyser().isValid();
+                                } finally {
+                                    uq.setState(ClassIndexImpl.State.INITIALIZED);
+                                }
+                            }
+                        });
+                    }
+                });                
+            } catch (IOException ioe) {
+                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
+                return false;
+            } catch (InterruptedException ie) {
+                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ie); //NOI18N
+                return false;
+            }
 
         }
 

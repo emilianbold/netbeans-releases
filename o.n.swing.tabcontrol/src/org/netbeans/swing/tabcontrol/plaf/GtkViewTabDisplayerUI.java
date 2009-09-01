@@ -56,6 +56,8 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
 import javax.swing.plaf.ComponentUI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
@@ -91,6 +93,9 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     private static Map<Integer, String[]> buttonIconPaths;
 
     private static JTabbedPane dummyTab;
+
+    private static final Logger LOG =
+        Logger.getLogger("org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI"); // NOI18N
     
     /**
      * ******** instance fields ********
@@ -208,6 +213,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         SynthStyle style = sf.getStyle(dummyTab, region);
         SynthContext context = new SynthContext(dummyTab, region, style, state);
         SynthPainter painter = style.getPainter(context);
+        long t1, t2;
         if (state == SynthConstants.SELECTED) {
             // differentiate active and selected tabs, active tab made brighter,
             // selected tab darker and lower
@@ -224,12 +230,26 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             Graphics2D g2d = bufIm.createGraphics();
             g2d.setBackground(UIManager.getColor("Panel.background"));
             g2d.clearRect(0, 0, width, height);
+            t1 = System.currentTimeMillis();
             painter.paintTabbedPaneTabBackground(context, g2d, 0, 0, width, height, index);
+            t2 = System.currentTimeMillis();
+            if ((t2 - t1) > 200) {
+                LOG.log(Level.WARNING, "painter.paintTabbedPaneTabBackground1 takes too long"
+                + " x=0" + " y=0" + " w=" + width + " h=" + height + " index:" + index
+                + " Time=" + (t2 - t1));
+            }
             BufferedImage img = op.filter(bufIm, null);
             g.drawImage(img, x, y, null);
         } else {
             // non selected are lowered by 2 pixels
+            t1 = System.currentTimeMillis();
             painter.paintTabbedPaneTabBackground(context, g, x, y + 2, width, height - 2, index);
+            t2 = System.currentTimeMillis();
+            if ((t2 - t1) > 200) {
+                LOG.log(Level.WARNING, "painter.paintTabbedPaneTabBackground2 takes too long"
+                + " x=" + x + " y=" + (y + 2) + " w=" + width + " h=" + (height - 2) + " index:" + index
+                + " Time=" + (t2 - t1));
+            }
         }
     }
 

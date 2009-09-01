@@ -15,24 +15,24 @@
         
         <h2>Adding Support for Java Persistence</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>Support for Java Persistence is available to Java EE 5 and Java SE applications running on the Java EE 5 platform.
-            If you have a J2EE 1.4 application it is possible to use Java Persistence if the target container is running on the Java EE 5 platform. 
+        <p>Support for Java Persistence is available to Java EE and Java SE applications running on the Java EE 5 and Java EE 6 platforms.
+            If you have a J2EE 1.4 application it is possible to use Java Persistence if the target container is running on the Java EE 5 or Java EE 6 platform.
         The container does not need to be a Java EE 5 container.</p>
         <ul class="note">
             <li>You cannot use a container-managed entity manager in a J2EE 1.4 application.</li>
         </ul>
         <p>
             If your target server is not a Java EE 5 container, you can add support for Java Persistence functionality 
-            by adding the TopLink Essentials library to the project or the classpath of the container.
-        The TopLink Essentials library contains the necessary libraries to support Java Persistence.
-        The TopLink Essentials library is bundled with the IDE.</p>
+            by adding the EclipseLink library to the project or the classpath of the container.
+        The EclipseLink library contains the necessary libraries to support Java Persistence.
+        The EclipseLink library is bundled with the IDE.</p>
         
         <p><b>To add Java Persistence support to the project:</b></p>
         <ol>
             <li>In the Projects window, expand your project node, right-click the Libraries node and choose Add Library.</li>
-            <li>In the Add Library dialog box, select TopLink Essentials and click Add Library.</li>
+            <li>In the Add Library dialog box, select EclipseLink and click Add Library.</li>
         </ol>
-        <p>When you add the TopLink Essentials library to your project, the TopLink Essentials library will be packaged with the EAR or WAR file
+        <p>When you add the EclipseLink library to your project, the EclipseLink library will be packaged with the EAR or WAR file
         when you build the project.</p>
         <dl>
             <dt><a name="seealso">See Also</a></dt>

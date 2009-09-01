@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -67,11 +68,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -113,8 +116,12 @@ import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
+import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.modules.SpecificationVersion;
@@ -243,6 +250,8 @@ public final class NbModuleProject implements Project {
                 getLookup().lookup(ModuleActions.class).refresh();
             }
         });
+        ExtraSJQEvaluator eJSQEval = new ExtraSJQEvaluator();
+
         ic.add(this);
         ic.add(info);
         ic.add(aux);
@@ -253,7 +262,11 @@ public final class NbModuleProject implements Project {
         ic.add(new ModuleActions(this));
         ic.add(new ClassPathProviderImpl(this));
         ic.add(new SourceForBinaryImpl(this));
+        ic.add(LookupMergerSupport.createSFBLookupMerger());
+        ic.add(createESQI(eJSQEval));
         ic.add(new JavadocForBinaryImpl(this));
+        ic.add(LookupMergerSupport.createJFBLookupMerger());
+        ic.add(createEJQI(eJSQEval));
         ic.add(new UnitTestForSourceQueryImpl(this));
         ic.add(new ModuleLogicalView(this));
         ic.add(new SubprojectProviderImpl(this));
@@ -963,6 +976,7 @@ public final class NbModuleProject implements Project {
     private final class LocalizedBundleInfoProvider implements LocalizedBundleInfo.Provider {
 
         private LocalizedBundleInfo bundleInfo;
+        private FileObject manifestFO;
 
         public LocalizedBundleInfo getLocalizedBundleInfo() {
             if (bundleInfo == null) {
@@ -975,16 +989,126 @@ public final class NbModuleProject implements Project {
                     bundleInfo.addPropertyChangeListener(getLookup().lookup(Info.class));
                 }
                 if (mf != null) {
-                    getManifestFile().addFileChangeListener(new FileChangeAdapter() {
+                    manifestFO = getManifestFile();
+                    manifestFO.addFileChangeListener(new FileChangeAdapter() {
                         public @Override void fileChanged(FileEvent fe) {
                             // cannot reload manifest-dependent things immediately (see 67961 for more details)
                             bundleInfo = null;
                         }
+
+                        @Override
+                        public void fileDeleted(FileEvent fe) {
+                            manifestFO = null;
+                        }
+
                     });
                 }
             }
             return bundleInfo;
         }
+    }
+
+    private SourceForBinaryQueryImplementation createESQI(ExtraSJQEvaluator eJSQEval) {
+        SourceForBinaryQueryImplementation sfbqi = ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, getHelper(), eJSQEval);
+        registerListener(sfbqi, eJSQEval);
+        return sfbqi;
+    }
+
+    private JavadocForBinaryQueryImplementation createEJQI(ExtraSJQEvaluator eJSQEval) {
+        JavadocForBinaryQueryImplementation jfbqi = ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, getHelper(), eJSQEval);
+        registerListener(jfbqi, eJSQEval);
+        return jfbqi;
+    }
+
+    private void registerListener(Object qimpl, ExtraSJQEvaluator eJSQEval) {
+        try {
+            // XXX #66275: ugly hack until proper API change;
+            // we need ESJQI to work when project is loaded - not opened - to resolve deps on lib wrapper modules correctly
+            Field listenerF = qimpl.getClass().getDeclaredField("listener"); // NOI18N
+            listenerF.setAccessible(true);
+            eJSQEval.addPropertyChangeListener((PropertyChangeListener) listenerF.get(qimpl));
+        } catch (Exception ex) {
+            Logger.getLogger(NbModuleProject.class.getName()).log(Level.FINE, "Turning off source query support for loaded project '" + ProjectUtils.getInformation(this).getDisplayName() + "'", ex);
+        }
+    }
+
+    /**
+     * <tt>&lt;class-path-extension&gt;</tt> to <tt>file/source/javadoc.reference....</tt> properties adapter
+     * for {@link ExtraSourceJavadocSupport} query implementations.
+     */
+    private final class ExtraSJQEvaluator implements PropertyEvaluator {
+
+        private static final String REF_START = "file.reference."; //NOI18N
+        private static final String SOURCE_START = "source.reference."; //NOI18N
+        private static final String JAVADOC_START = "javadoc.reference."; //NOI18N
+
+        public ExtraSJQEvaluator() {
+            evaluator().addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    final String prop = evt.getPropertyName();
+                    if (prop == null || prop.startsWith(SOURCE_START) || prop.startsWith(JAVADOC_START)) {
+                        cache = null;
+                        pcs.firePropertyChange(evt);
+                    }
+                }
+            });
+        }
+
+        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private HashMap<String, String> cache;
+
+        public String getProperty(String prop) {
+            return getProperties().get(prop);
+        }
+
+        public String evaluate(String text) {
+            throw new UnsupportedOperationException();  // currently not needed
+        }
+
+        public Map<String, String> getProperties() {
+            if (cache == null) {
+                cache = new HashMap<String, String>();
+                ProjectXMLManager pxm = new ProjectXMLManager(NbModuleProject.this);
+                String[] cpExts = pxm.getBinaryOrigins();
+                for (String cpe : cpExts) {
+                    addFileRef(cache, cpe);
+                }
+                Map<String, String> prjProps = evaluator().getProperties();
+                for (Map.Entry<String, String> entry : prjProps.entrySet()) {
+                    if (entry.getKey().startsWith(SOURCE_START) || entry.getKey().startsWith(JAVADOC_START)) {
+                        cache.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+            return cache;
+        }
+
+        private void addFileRef(Map<String, String> props, String path) {
+            // #66275:
+            // XXX parts of code copied from o.n.spi.project.ant.ReferenceHelper;
+            // will do proper API change later with issue #70894, will also simplify impl of isssue #66188
+            final File normalizedFile = FileUtil.normalizeFile(PropertyUtils.resolveFile(getProjectDirectoryFile(), path));
+            String fileID = normalizedFile.getName();
+            // if the file is folder then add to ID string also parent folder name,
+            // i.e. if external source folder name is "src" the ID will
+            // be a bit more selfdescribing, e.g. project-src in case
+            // of ID for ant/project/src directory.
+            if (normalizedFile.isDirectory() && normalizedFile.getParentFile() != null) {
+                fileID = normalizedFile.getParentFile().getName()+"-"+normalizedFile.getName();
+            }
+            fileID = PropertyUtils.getUsablePropertyName(fileID);
+            // we don't need to resolve duplicate file names here, all <c-p-e>-s reside in release/modules/ext
+            props.put(REF_START + fileID, path);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
     }
 
 }

@@ -58,7 +58,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.openide.filesystems.FileAlreadyLockedException;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Properties object what has the ability to auto-save on a time delay after
@@ -93,9 +95,16 @@ abstract class SelfSavingProperties extends ObservableProperties {
         if (!equals(value, result)) {
             if (!loading) {
                 task.schedule(500);
-                pendingEvents.add(
+                CoalescablePropertyChangeEvent evt =
                     new CoalescablePropertyChangeEvent(
-                    this, key.toString(), result, value));
+                    this, key.toString(), result, value);
+                pendingEvents.add(evt);
+                if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
+                    PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
+                            "Scheduling write of " + dob.getPrimaryFile().getPath() + //NOI18N
+                            " in 500ms due to write of property " + key + " to " + //NOI18N
+                            value, new Exception());
+                }
             }
         }
         return result;
@@ -140,7 +149,20 @@ abstract class SelfSavingProperties extends ObservableProperties {
         public void run() {
             if (!EventQueue.isDispatchThread()) {
                 try {
+                    if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
+                        PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
+                                "Begin write of " + //NOI18N
+                                SelfSavingProperties.this.dob.getPrimaryFile().getPath(),
+                                new Exception());
+                    }
                     write();
+                    if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
+                        PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
+                                "Successful write of " + //NOI18N
+                                SelfSavingProperties.this.dob.getPrimaryFile().getPath() +
+                                " invoking onWriteCompleted() in " +
+                                getClass().getName()); //NOI18N
+                    }
                     onWriteCompleted();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -193,23 +215,28 @@ abstract class SelfSavingProperties extends ObservableProperties {
     volatile boolean writing;
     private void write() throws IOException {
         //Method may be reentered while another thread is still writing
-        if (writing || dob.isValid()) return;
-        writing = true;
-        try {
-            FileObject fo = dob.getPrimaryFile();
-            FileLock lock = fo.lock();
-            OutputStream out = fo.getOutputStream(lock);
-            try {
-                this.store(out, "");
-            } catch (FileAlreadyLockedException locked) {
-                //do nothing, we're already saving
-            } finally {
-                out.close();
-                lock.releaseLock();
+        if (writing || !dob.isValid()) return;
+        final FileObject fo = dob.getPrimaryFile();
+        fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                writing = true;
+                FileLock lock = fo.lock();
+                OutputStream out = fo.getOutputStream(lock);
+                try {
+                    SelfSavingProperties.this.store(out, ""); //NOI18N
+                } catch (FileAlreadyLockedException locked) {
+                    if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.WARNING)) {
+                        PropertiesBasedDataObject.LOGGER.log(Level.WARNING,
+                                "Could not write " + dob.getPrimaryFile().getPath() + //NOI18N
+                                " - already locked", locked); //NOI18N
+                    }
+                } finally {
+                    writing = false;
+                    out.close();
+                    lock.releaseLock();
+                }
             }
-        } finally {
-            writing = false;
-        }
+        });
     }
 
     private static final class CoalescablePropertyChangeEvent extends PropertyChangeEvent {

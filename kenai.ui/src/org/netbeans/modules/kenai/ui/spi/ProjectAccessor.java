@@ -70,4 +70,6 @@ public abstract class ProjectAccessor {
     public abstract Action getOpenWikiAction( ProjectHandle project );
 
     public abstract Action getOpenDownloadsAction( ProjectHandle project );
+
+    public abstract Action getBookmarkAction(ProjectHandle project);
 }

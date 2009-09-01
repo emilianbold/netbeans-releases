@@ -60,6 +60,10 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
         return (Resolution)resolutionCombo.getSelectedItem();
     }
 
+    public String getComment() {
+        return textArea.getText();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -71,8 +75,17 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
 
         resolutionLabel = new javax.swing.JLabel();
         resolutionCombo = new javax.swing.JComboBox();
+        commentLabel = new javax.swing.JLabel();
+        scrollPane = new javax.swing.JScrollPane();
+        textArea = new javax.swing.JTextArea();
 
         resolutionLabel.setText(org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.resolutionLabel.text")); // NOI18N
+
+        commentLabel.setText(org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.commentLabel.text")); // NOI18N
+
+        textArea.setColumns(40);
+        textArea.setRows(5);
+        scrollPane.setViewportView(textArea);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -80,25 +93,40 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(resolutionLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(resolutionLabel)
+                    .add(commentLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(resolutionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(305, 305, 305))
+                    .add(layout.createSequentialGroup()
+                        .add(scrollPane)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(resolutionLabel)
-                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(commentLabel)
+                    .add(scrollPane))
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel commentLabel;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JLabel resolutionLabel;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JTextArea textArea;
     // End of variables declaration//GEN-END:variables
 
 }

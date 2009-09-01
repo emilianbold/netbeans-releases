@@ -996,7 +996,7 @@ public abstract class FileObject extends Object implements Serializable {
         /** @param onlyPriority if true then invokes only priority listeners
          *  else all listeners are invoked.
          */
-        protected void dispatch(boolean onlyPriority) {
+        protected void dispatch(boolean onlyPriority, Collection<Runnable> postNotify) {
             if (this.op == null) {
                 this.op = fe.getFile().isFolder() ? FCLSupport.Op.FOLDER_CREATED : FCLSupport.Op.DATA_CREATED;
             }
@@ -1011,7 +1011,7 @@ public abstract class FileObject extends Object implements Serializable {
 
                     continue;
                 }
-                FCLSupport.dispatchEvent(fcl, fe, op);
+                FCLSupport.dispatchEvent(fcl, fe, op, postNotify);
             }
 
             if (onlyPriority) {
@@ -1049,14 +1049,14 @@ public abstract class FileObject extends Object implements Serializable {
                 }
                 if (fs != null && fsList != null) {
                     for (FileChangeListener fcl : fsList) {
-                        FCLSupport.dispatchEvent(fcl, fe, op);
+                        FCLSupport.dispatchEvent(fcl, fe, op, postNotify);
                     }  
                 }
 
 
                 if (rep != null && repList != null) {
                     for (FileChangeListener fcl : repList) {
-                        FCLSupport.dispatchEvent(fcl, fe, op);
+                        FCLSupport.dispatchEvent(fcl, fe, op, postNotify);
                     }                      
                 }
             }

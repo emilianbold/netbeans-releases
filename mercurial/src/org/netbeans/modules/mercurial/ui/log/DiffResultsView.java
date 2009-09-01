@@ -306,7 +306,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             if (--currentDifferenceIndex < 0) {
                 if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
                 setDiffIndex(currentIndex, true);
-            } else {
+            } else if (currentDifferenceIndex < currentDiff.getDifferenceCount()) {
                 currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {

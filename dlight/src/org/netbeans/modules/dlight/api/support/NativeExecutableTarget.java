@@ -63,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.openide.windows.InputOutput;
 
@@ -165,6 +166,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
         State newState = null;
         boolean doNotify = true;
+        boolean doResume = false;
 
         synchronized (stateLock) {
             switch (event.state) {
@@ -177,6 +179,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 case RUNNING:
                     state = State.RUNNING;
                     pid = event.pid;
+                    //doResume = true;
                     break;
                 case CANCELLED:
                     doNotify = false;
@@ -213,6 +216,10 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         if (doNotify) {
             Integer notificationValue = (newState == DLightTarget.State.RUNNING) ? Integer.valueOf(pid) : status;
             notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, notificationValue));
+        }
+
+        if (doResume) {
+            resume();
         }
     }
 
@@ -266,6 +273,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb.setWorkingDirectory(workingDirectory);
             pb.addEnvironmentVariables(envs);
             pb.setX11Forwarding(x11forwarding);
+            //pb.setInitialSuspend(true);
 
             // Setup external terminal ...
             if (execEnv.isLocal() && externalTerminal != null) {
@@ -323,6 +331,10 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         }
     }
 
+    private void resume() {
+        CommonTasksSupport.sendSignal(execEnv, pid, "CONT", null); // NOI18N
+    }
+
     private void terminate() {
         synchronized (this) {
             if (targetFutureResult != null) {
@@ -334,7 +346,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private static final class NativeExecutableTargetExecutionService
             implements DLightTargetExecutionService<NativeExecutableTarget> {
 
-        public synchronized void start(
+        public void start(
                 final NativeExecutableTarget target,
                 final ExecutionEnvVariablesProvider executionEnvProvider) {
             Runnable r = new Runnable() {

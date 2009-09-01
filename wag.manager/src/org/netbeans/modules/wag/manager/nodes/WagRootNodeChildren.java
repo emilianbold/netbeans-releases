@@ -51,17 +51,25 @@ import org.netbeans.modules.wag.manager.model.WagRankedServices;
 import org.netbeans.modules.wag.manager.model.WagRankedServices.RankingType;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
 import org.netbeans.modules.wag.manager.model.WagUserServices;
+import org.netbeans.modules.wag.manager.zembly.ZemblySession;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 public class WagRootNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
 
     private enum Keys {
-        ALL_DOMAINS, YOUR_DOMAINS, YOUR_SERVICES, MOST_USED_SERVICES,
+
+        NOT_LOGGED_IN, ALL_DOMAINS, YOUR_DOMAINS, YOUR_SERVICES, MOST_USED_SERVICES,
         HIGHEST_RATED_SERVICES, NEWEST_APIS, SEARCH
     };
+    private ZemblySession session;
 
     public WagRootNodeChildren() {
+        session = ZemblySession.getInstance();
+        session.addPropertyChangeListener(WeakListeners.propertyChange(this, session));
     }
 
     @Override
@@ -76,13 +84,18 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
 
     protected void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        keys.add(Keys.ALL_DOMAINS);
-        keys.add(Keys.YOUR_DOMAINS);
-        keys.add(Keys.MOST_USED_SERVICES);
-        keys.add(Keys.HIGHEST_RATED_SERVICES);
-        keys.add(Keys.NEWEST_APIS);
-        keys.add(Keys.YOUR_SERVICES);
-        keys.add(Keys.SEARCH);
+
+        if (session.isLoggedIn()) {
+            keys.add(Keys.ALL_DOMAINS);
+            keys.add(Keys.YOUR_DOMAINS);
+            keys.add(Keys.MOST_USED_SERVICES);
+            keys.add(Keys.HIGHEST_RATED_SERVICES);
+            keys.add(Keys.NEWEST_APIS);
+            keys.add(Keys.YOUR_SERVICES);
+            keys.add(Keys.SEARCH);
+        } else {
+            keys.add(Keys.NOT_LOGGED_IN);
+        }
         setKeys(keys);
     }
 
@@ -96,22 +109,31 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
     protected Node[] createNodes(Object key) {
         if (key instanceof Keys) {
             switch ((Keys) key) {
+                case NOT_LOGGED_IN:
+                    return getNotLoggedInNode();
                 case ALL_DOMAINS:
-                    return new Node[] {new WagItemsNode(new WagDomains(DomainType.ALL_DOMAINS))};
+                    return new Node[]{new WagItemsNode(new WagDomains(DomainType.ALL_DOMAINS))};
                 case YOUR_DOMAINS:
-                    return new Node[] {new WagItemsNode(new WagDomains(DomainType.YOUR_DOMAINS))};
+                    return new Node[]{new WagItemsNode(new WagDomains(DomainType.YOUR_DOMAINS))};
                 case YOUR_SERVICES:
-                    return new Node[] {new WagItemsNode(new WagUserServices())};
+                    return new Node[]{new WagItemsNode(new WagUserServices())};
                 case MOST_USED_SERVICES:
-                    return new Node[] {new WagItemsNode(new WagRankedServices(RankingType.MOST_USED))};
+                    return new Node[]{new WagItemsNode(new WagRankedServices(RankingType.MOST_USED))};
                 case HIGHEST_RATED_SERVICES:
-                    return new Node[] {new WagItemsNode(new WagRankedServices(RankingType.HIGHEST_RATED))};
+                    return new Node[]{new WagItemsNode(new WagRankedServices(RankingType.HIGHEST_RATED))};
                 case NEWEST_APIS:
-                    return new Node[] {new WagItemsNode(new WagNewestApis())};
+                    return new Node[]{new WagItemsNode(new WagNewestApis())};
                 case SEARCH:
-                    return new Node[] {new WagItemsNode(new WagSearchResults())};
-             }
+                    return new Node[]{new WagItemsNode(new WagSearchResults())};
+            }
         }
         return new Node[0];
+    }
+
+    private Node[] getNotLoggedInNode() {
+        AbstractNode node = new AbstractNode(Children.LEAF);
+        node.setName(NbBundle.getMessage(WagRootNodeChildren.class, "PleaseLogin")); //NOI18N
+        node.setIconBaseWithExtension("org/netbeans/modules/wag/manager/resources/wait.gif"); // NOI18N
+        return new Node[]{node};
     }
 }

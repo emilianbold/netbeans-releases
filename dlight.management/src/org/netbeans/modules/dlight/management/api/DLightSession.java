@@ -86,7 +86,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  * 
  */
 public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference {
-
+    private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
@@ -115,9 +115,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         CLOSED
     }
 
+    public final long getStartTime(){
+        return startTimestamp;
+    }
+
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
+                startTimestamp = System.nanoTime();
                 targetStarted(event.target);
                 break;
             case FAILED:
@@ -532,13 +537,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             addDataFilterListener(idp);
         }
 
-        //and now if we have collectors which cannot be attached let's substitute target
-        //the question is is it possible in case target is the whole system: WebTierTarget
-        //or SystemTarget
-        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
-            ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
-        }
-
         // at the end, initialize data filters (_temporarily_ here, as info
         // about filters is stored in target's info...
 
@@ -550,7 +548,13 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 dataFiltersSupport.addFilter(filter);
             }
         }
-
+        //Do it at the very end to apply filters
+        //and now if we have collectors which cannot be attached let's substitute target
+        //the question is is it possible in case target is the whole system: WebTierTarget
+        //or SystemTarget
+        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
+            ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
+        }
         return true;
 
 //    activeTasks = new ArrayList<DLightExecutorTask>();
@@ -723,8 +727,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return null;
     }
 
-    public List<Indicator> getIndicators() {
-        List<Indicator> result = new ArrayList<Indicator>();
+    public List<Indicator<?>> getIndicators() {
+        List<Indicator<?>> result = new ArrayList<Indicator<?>>();
 
         for (ExecutionContext c : contexts) {
             result.addAll(c.getIndicators());

@@ -63,10 +63,17 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
     private long viewEnd;
     private long viewStart;
     private TimeLine timeLine;
+    static int shift = 0;
 
     /** Creates a new instance of ThreadStateHeaderRenderer */
     public ThreadStateHeaderRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
+        //System.err.println("L&F="+UIManager.getLookAndFeel().getID());
+        //if (UIUtils.isGTKLookAndFeel()) {
+        //    shift = 2;
+        //} else if (UIUtils.isMotifLookAndFeel()){
+        //    shift = 1;
+        //}
     }
 
     @Override
@@ -102,7 +109,7 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
         viewEnd = viewManager.getViewEnd();
         dataStart = viewManager.getDataStart();
         timeLine = viewManager.getTimeLine();
-        
+
         return this;
     }
 
@@ -202,6 +209,7 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
                 if (currentMark >= 0) {
                     float currentMarkRel = currentMark - firstValue;
                     int markPosition = (int) (currentMarkRel * factor);
+                    markPosition += shift;
                     paintTimeTicks(g, (int) (currentMarkRel * factor), (int) ((currentMarkRel + optimalUnits) * factor),
                                    TimeLineUtils.getTicksCount(optimalUnits));
                     g.setColor(TimeLineUtils.BASE_TIMELINE_COLOR);
@@ -231,6 +239,7 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
                 long time = timeLine.getTimeStamp() + timeLine.getInterval() / 2;
                 if (viewStart < time && time < viewEnd) {
                     int x = (int) ((getWidth() * (time - viewStart)) / (viewEnd - viewStart));
+                    x += shift;
                     g.setColor(TimeLineUtils.TIMELINE_CURSOR_COLOR);
                     g.drawLine(x-3, 0, x-3, 2);
                     g.drawLine(x-3, 2, x,   5);
@@ -247,6 +256,7 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
 
         for (int i = 1; i < count; i++) {
             int x = startPos + (int) (i * factor);
+            x += shift;
             g.setColor(TimeLineUtils.BASE_TIMELINE_COLOR);
             g.drawLine(x, 0, x, 2);
             g.setColor(TimeLineUtils.TICK_TIMELINE_COLOR);
@@ -256,6 +266,7 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
             long time = timeLine.getTimeStamp() + timeLine.getInterval() / 2;
             if (viewStart < time && time < viewEnd) {
                 int x = (int) ((getWidth() * (time - viewStart)) / (viewEnd - viewStart));
+                x += shift;
                 g.setColor(TimeLineUtils.TIMELINE_CURSOR_COLOR);
                 g.drawLine(x, 6, x, getHeight() - 1);
             }

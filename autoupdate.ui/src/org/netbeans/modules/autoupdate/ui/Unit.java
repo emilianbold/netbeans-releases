@@ -44,8 +44,10 @@ package org.netbeans.modules.autoupdate.ui;
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
@@ -59,6 +61,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.UnitCategoryTableModel.Type;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -395,12 +398,88 @@ public abstract class Unit {
         }
         
     }
+
+    public static class InternalUpdate extends Unit.Update  {
+        
+        private List <UpdateUnit> internalUpdates;        
+
+        public InternalUpdate(UpdateUnit updateUnit, String categoryName, boolean isNbms) {
+            super(updateUnit, false, categoryName);
+        }
+
+        public List <UpdateUnit> getUpdateUnits() {
+            if(internalUpdates == null) {
+                internalUpdates = new ArrayList <UpdateUnit>();
+            }
+            return internalUpdates;
+        }
+        public UpdateUnit getVisibleUnit() {
+            return updateUnit;
+        }
+        
+        @Override
+        public UpdateElement getRelevantElement() {
+            return updateUnit.getInstalled();
+        }
+
+        @Override
+        public boolean isMarked() {
+            OperationContainer container = Containers.forUpdate ();
+            for(UpdateUnit invisible : getUpdateUnits()) {
+                if(!container.contains(invisible.getAvailableUpdates().get(0))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public String getAvailableVersion () {
+            return getInstalledVersion() + " " + getBundle("Unit_InternalUpdates_Version");
+        }
+        @Override
+        public void setMarked(boolean marked) {
+            assert marked != isMarked();
+            OperationContainer container = Containers.forUpdate();
+            for (UpdateUnit invisible : getUpdateUnits()) {
+                if (marked) {
+                    if (container.canBeAdded(invisible, invisible.getAvailableUpdates().get(0))) {
+                        container.add(invisible, invisible.getAvailableUpdates().get(0));
+                    }
+                } else {
+                    container.remove(invisible.getAvailableUpdates().get(0));
+                }
+            }
+        }
+
+        @Override
+        public int getCompleteSize() {
+            if (size == -1) {
+                size = 0;
+                for (UpdateUnit u : getUpdateUnits()) {
+                    size += u.getAvailableUpdates().get(0).getDownloadSize();
+                }
+
+            }
+            return size;
+        }
+
+        public String getSize () {
+            return Utilities.getDownloadSizeAsString (getCompleteSize());
+        }
+
+        @Override
+        public Type getModelType() {
+            return Type.UPDATE;
+        }
+        
+    }
     
     public static class Update extends Unit {
         private UpdateElement installEl = null;
         private UpdateElement updateEl = null;
         private boolean isNbms;
-        private int size = -1;
+        protected int size = -1;
         
         public Update (UpdateUnit unit, boolean isNbms,String categoryName) {
             super (categoryName);
@@ -408,8 +487,10 @@ public abstract class Unit {
             this.updateUnit = unit;
             this.installEl = unit.getInstalled ();
             assert installEl != null : "Updateable UpdateUnit " + unit + " has Installed UpdateElement.";
-            this.updateEl = unit.getAvailableUpdates ().get (0);
-            assert updateEl != null : "Updateable UpdateUnit " + unit + " has UpdateElement for update.";
+            if(unit.getAvailableUpdates().size() > 0) {
+                this.updateEl = unit.getAvailableUpdates ().get (0);
+                assert updateEl != null : "Updateable UpdateUnit " + unit + " has UpdateElement for update.";
+            }
             initState();
         }
         
@@ -598,6 +679,10 @@ public abstract class Unit {
         public CATEGORY getSourceCategory() {
             return updateEl.getSourceCategory();
         }
+    }
+
+    private static String getBundle (String key) {
+        return NbBundle.getMessage (Unit.class, key);
     }
     
 }
