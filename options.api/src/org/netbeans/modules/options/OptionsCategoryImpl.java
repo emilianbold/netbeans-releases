@@ -40,18 +40,16 @@
 package org.netbeans.modules.options;
 
 import java.awt.Image;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * OptionsCategory implementation class. Used by factory method from
@@ -132,9 +130,10 @@ public class OptionsCategoryImpl extends OptionsCategory {
     }
 
     final Map<String, Set<String>> getKeywordsByCategory() {
-        HashMap<String, Set<String>> result = new HashMap<String, Set<String>>();
-        if(keywordsCategory != null && keywords != null)
-            result.put(keywordsCategory, new HashSet(Collections.list(new StringTokenizer(keywords, ",")))); //NOI18N
-        return result;
+        if (keywordsCategory != null && keywords != null) {
+            return Collections.<String,Set<String>>singletonMap(keywordsCategory, new HashSet<String>(Arrays.asList(keywords.split(",")))); // NOI18N
+        } else {
+            return Collections.emptyMap();
+        }
     }
 }
