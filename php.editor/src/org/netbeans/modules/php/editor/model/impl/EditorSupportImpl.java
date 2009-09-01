@@ -55,6 +55,8 @@ import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -85,10 +87,17 @@ public class EditorSupportImpl implements EditorSupport {
                             FileScope fileScope = model.getFileScope();
                             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
                             for (ClassScope classScope : allClasses) {
-                                retval.add(new PhpClass(
+                                PhpClass phpClass = new PhpClass(
                                         classScope.getName(),
                                         classScope.getNamespaceName().append(classScope.getName()).toFullyQualified().toString(),
-                                        classScope.getOffset()));
+                                        classScope.getOffset());
+                                for (FieldElement fieldElement : classScope.getDeclaredFields()) {
+                                    phpClass.addField(fieldElement.getName(), fieldElement.getName(), fieldElement.getOffset());
+                                }
+                                for (MethodScope methodScope : classScope.getDeclaredMethods()) {
+                                    phpClass.addMethod(methodScope.getName(), methodScope.getName(), methodScope.getOffset());
+                                }
+                                retval.add(phpClass);
                             }
                         }
                     }
