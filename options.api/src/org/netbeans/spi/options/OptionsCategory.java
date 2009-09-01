@@ -73,12 +73,13 @@ import org.openide.util.ImageUtilities;
  *
  * where:
  * <br/><b>controller</b> should be an instance of <code>OptionsPanelController</code>
- * <br/><b>title</b> should be a pointer to Bundle where title of your tab inside OD is stored
- * <br/><b>categoryName</b> should be a pointer to Bundle where your tab categoryName is stored
+ * <br/><b>title</b> should be a localized string where title of your tab inside OD is stored
+ * <span class="nonnormative"><strong>Currently unused.</strong></span>
+ * <br/><b>categoryName</b> should be a localized string for your tab's category name
  * <br/><b>iconBase</b> should be relative path to icon wou wish to display inside OD
  * <br/><b>keywords</b> should be localized keywords list, separated by comma in Bundle, for quickserach purposes
  * <br/><b>keywordsCategory</b> should be relative path to your panel inside Options dialog
- * <br/><b>description</b> should be a pointer to Bundle where your tab description is stored
+ * <br/><b>description</b> should be a localized string where your tab description is stored
  * <span class="nonnormative"><strong>Currently unused.</strong></span>
  *
  * <br/><br/>
