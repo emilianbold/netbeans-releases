@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -118,6 +118,7 @@ public class ImportAnalysisTest extends GeneratorTest {
         suite.addTest(new ImportAnalysisTest("testImportNoClashJavaLang"));
         suite.addTest(new ImportAnalysisTest("testImportNoClashCurrentPackage127486"));
         suite.addTest(new ImportAnalysisTest("test130479"));
+        suite.addTest(new ImportAnalysisTest("test157162"));
         return suite;
     }
 
@@ -997,6 +998,26 @@ public class ImportAnalysisTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertFiles("testAddImportThroughMethod1.pass");
+    }
+    
+    public void test157162() throws IOException {
+        testFile = getFile(getSourceDir(), "org/netbeans/test/codegen/imports157162/test/Test.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                final TypeElement foo = workingCopy.getElements().getTypeElement("org.netbeans.test.codegen.imports157162.foo.Foo.Protected");
+                assertNotNull(foo);
+                Tree type = make.QualIdent(foo);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImports157162.pass");
     }
     
     String getSourcePckg() {

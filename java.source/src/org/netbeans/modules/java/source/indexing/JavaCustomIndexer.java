@@ -569,9 +569,8 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         final Queue<ElementHandle<TypeElement>> queue = new LinkedList<ElementHandle<TypeElement>>(classes);
         final Map<URL, Set<ElementHandle<TypeElement>>> bases = new HashMap<URL, Set<ElementHandle<TypeElement>>>();
-        for (URL depRoot : depRoots) {
-            SourceAnalyser sa = ClassIndexManager.getDefault().createUsagesQuery(depRoot, true).getSourceAnalyser();
-            if (!sa.isEmpty()) {
+        for (URL depRoot : depRoots) {            
+            if (!ClassIndexManager.getDefault().createUsagesQuery(depRoot, true).isEmpty()) {
                 final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
 
                 final List<URL> dep = deps != null ? deps.get(depRoot) : null;

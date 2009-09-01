@@ -741,6 +741,58 @@ public class CommentsTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
     }
+
+    public void testMethodFromString171043() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication11;\n" +
+            "public class Class1 {\n" +
+            "}\n");
+        String golden =
+            "package javaapplication11;\n" +
+            "public class Class1 {\n\n" +
+            "    public boolean equals(Object object) {\n" +
+            "        // TODO: Warning - this method won't work in the case the id fields are not set\n" +
+            "        if (!(object instanceof MyEntity)) {\n" +
+            "            return false;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ModifiersTree empty = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                ModifiersTree pub = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                MethodTree mt = make.Method(pub,
+                            "equals",
+                            make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.BOOLEAN)),
+                            Collections.<TypeParameterTree>emptyList(),
+                            Collections.singletonList(make.Variable(empty, "object", make.QualIdent(workingCopy.getElements().getTypeElement("java.lang.Object")), null)),
+                            Collections.<ExpressionTree>emptyList(),
+                            "    {\n" +
+                            "        // TODO: Warning - this method won't work in the case the id fields are not set\n" +
+                            "        if (!(object instanceof MyEntity)) {\n" +
+                            "            return false;\n" +
+                            "        }\n" +
+                            "    }",
+                            null);
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, mt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
