@@ -178,7 +178,7 @@ made subject to such option by the copyright holder.
 
             <folder name="Nodes">
                 <file name="org-netbeans-modules-java-api-common-project-ui-JavaSourceNodeFactory.instance">
-                    <attr name="position" intvalue="700"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
             </folder>
             
