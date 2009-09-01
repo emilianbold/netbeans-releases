@@ -70,6 +70,7 @@ public class ItemInfoRetriever {
     private static final String MIME_TYPE_ATTR = "mimeType";    //NOI18N
     private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";     //NOI18N
     private static final String LATEST = "latest";      //NO118N
+
     private Zembly zembly;
 
     public ItemInfoRetriever(Zembly zembly) {
@@ -122,7 +123,7 @@ public class ItemInfoRetriever {
                     wagParams.add(wp);
                 }
 
-                System.out.println("service: " + svc);
+                //System.out.println("service: " + svc);
             }
 
 

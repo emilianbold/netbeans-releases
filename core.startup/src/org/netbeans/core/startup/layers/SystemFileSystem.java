@@ -41,20 +41,13 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.beans.BeanInfo;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -71,7 +64,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
@@ -79,7 +71,7 @@ import org.openide.util.NbBundle;
 * @author Jan Jancura, Ian Formanek, Petr Hamernik
 */
 public final class SystemFileSystem extends MultiFileSystem 
-implements FileSystem.Status, FileChangeListener {
+implements FileChangeListener {
     // Must be public for BeanInfo to work: #11186.
 
     /** generated Serialized Version UID */
@@ -87,14 +79,6 @@ implements FileSystem.Status, FileChangeListener {
 
     /** system name of this filesystem */
     private static final String SYSTEM_NAME = "SystemFileSystem"; // NOI18N
-
-    /** name of file attribute with localizing bundle */
-    private static final String ATTR_BUNDLE = "SystemFileSystem.localizingBundle"; // NOI18N
-
-    /** name of file attribute with URL to 16x16 color icon */
-    private static final String ATTR_ICON_16 = "SystemFileSystem.icon"; // NOI18N
-    /** name of file attribute with URL to 32x32 color icon */
-    private static final String ATTR_ICON_32 = "SystemFileSystem.icon32"; // NOI18N
 
     private static final Logger LOG = Logger.getLogger(SystemFileSystem.class.getName());
 
@@ -186,113 +170,6 @@ implements FileSystem.Status, FileChangeListener {
     @Deprecated
     public @Override boolean isPersistent() {
         return true;
-    }
-
-    public @Override FileSystem.Status getStatus() {
-        return this;
-    }
-    
-    static final String annotateName(FileObject fo) {
-
-        String bundleName = (String) fo.getAttribute(ATTR_BUNDLE); // NOI18N
-        if (bundleName != null) {
-            try {
-                bundleName = org.openide.util.Utilities.translate(bundleName);
-                ResourceBundle b = NbBundle.getBundle(bundleName);
-                try {
-                    return b.getString(fo.getPath());
-                } catch (MissingResourceException ex) {
-                    // ignore--normal
-                    }
-            } catch (MissingResourceException ex) {
-                Exceptions.attachMessage(ex, warningMessage(bundleName, fo));
-                ModuleLayeredFileSystem.err.log(Level.WARNING, null, ex);
-                // ignore
-            }
-        }
-        return (String)fo.getAttribute("displayName"); // NOI18N
-    }
-    private static String warningMessage(String name, FileObject fo) {
-        Object by = fo.getAttribute("layers"); // NOI18N
-        if (by instanceof Object[]) {
-            by = Arrays.toString((Object[])by);
-        }
-        return "Cannot load " + name + " for " + fo + " defined by " + by; // NOI18N
-    }
-
-    /** Annotate name
-    */
-    public String annotateName(String s, Set<? extends FileObject> files) {
-
-        // Look for a localized file name.
-        // Note: all files in the set are checked. But please only place the attribute
-        // on the primary file, and use this primary file name as the bundle key.
-        for (FileObject fo : files) {
-            // annotate a name
-            String displayName = annotateName(fo);
-            if (displayName != null) {
-                return displayName;
-            }
-        }
-
-        return s;
-    }
-    
-    static Image annotateIcon(FileObject fo, int type) {
-        String attr = null;
-        if (type == BeanInfo.ICON_COLOR_16x16) {
-            attr = ATTR_ICON_16;
-        } else if (type == BeanInfo.ICON_COLOR_32x32) {
-            attr = ATTR_ICON_32;
-        }
-
-        if (attr != null) {
-            Object value = fo.getAttribute(attr);
-            if (value != null) {
-                if (value instanceof URL) {
-                    return Toolkit.getDefaultToolkit().getImage((URL) value);
-                } else if (value instanceof Image) {
-                    // #18832
-                    return (Image) value;
-                } else {
-                    ModuleLayeredFileSystem.err.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
-                }
-            }
-        }
-
-        String base = (String) fo.getAttribute("iconBase"); // NOI18N
-        if (base != null) {
-            if (type == BeanInfo.ICON_COLOR_16x16) {
-                return ImageUtilities.loadImage(base, true);
-            } else if (type == BeanInfo.ICON_COLOR_32x32) {
-                return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
-            }
-        }
-        return null;
-    }
-
-    private static String insertBeforeSuffix(String path, String toInsert) {
-        String withoutSuffix = path;
-        String suffix = ""; // NOI18N
-
-        if (path.lastIndexOf('.') >= 0) {
-            withoutSuffix = path.substring(0, path.lastIndexOf('.'));
-            suffix = path.substring(path.lastIndexOf('.'), path.length());
-        }
-
-        return withoutSuffix + toInsert + suffix;
-    }
-
-    /** Annotate icon
-    */
-    public Image annotateIcon(Image im, int type, Set<? extends FileObject> files) {
-        for (FileObject fo : files) {
-            Image img = annotateIcon(fo, type);
-            if (img != null) {
-                return img;
-            }
-        }
-        return im;
     }
 
     /** Initializes and creates new repository. This repository's system fs is
