@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.editor.javadoc;
 
 import com.sun.javadoc.Doc;
+import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.Tag;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -168,7 +170,10 @@ public final class JavadocImports {
             } else {
                 tags = Collections.emptyList();
             }
-            
+
+            final boolean isParam = toFind.getKind() == ElementKind.PARAMETER;
+            final boolean isTypeParam = toFind.getKind() == ElementKind.TYPE_PARAMETER;
+
             for (Tag tag : tags) {
                 JavaReference ref = findReference(tag, positions, jdTokenSequence);
 
@@ -208,6 +213,19 @@ public final class JavadocImports {
                             result.add(jdTokenSequence.token());
                         }
                     }
+                } else if ((isParam || isTypeParam) && tag != null && "@param".equals(tag.name())) { // NOI18N
+                    ParamTag ptag = (ParamTag) tag;
+                    boolean isKindMatching = (isParam && !ptag.isTypeParameter())
+                            || (isTypeParam && ptag.isTypeParameter());
+                    if (isKindMatching && toFind.getSimpleName().contentEquals(ptag.parameterName())) {
+                        Token<JavadocTokenId> token = findNameTokenOfParamTag(tag, positions, jdTokenSequence);
+                        if (token != null) {
+                            if (result == null) {
+                                result = new ArrayList<Token>();
+                            }
+                            result.add(token);
+                        }
+                    }
                 }
                 
             }
@@ -219,11 +237,12 @@ public final class JavadocImports {
     }
     
     /**
-     * Finds class or member of the reference {@code class#member} with respect
-     * to the passed {@code offset}.
+     * Resolves class or member of the reference {@code (class#member)},
+     * parameter {@code (@param parameter)} or type parameter {@code (@param <type_param>)}
+     * with respect to the passed {@code offset}.
      * 
      * @param javac a java context
-     * @param offset offset
+     * @param offset offset pointing to javadoc part to resolve
      * @return the found element or {@code null}.
      */
     public static Element findReferencedElement(CompilationInfo javac, int offset) {
@@ -276,6 +295,30 @@ public final class JavadocImports {
                         elmNameLength += result != null
                                 ? result.getSimpleName().length() + 1
                                 : 0;
+                    }
+                }
+            } else if (tag != null && "@param".equals(tag.name())) { // NOI18N
+                ParamTag ptag = (ParamTag) tag;
+                if (ptag.isTypeParameter()) {
+                    List<? extends TypeParameterElement> params =  null;
+                    if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                        params = ((ExecutableElement) el).getTypeParameters();
+                    } else if (kind.isClass() || kind.isInterface()) {
+                        params = ((TypeElement) el).getTypeParameters();
+                    } else {
+                        return null;
+                    }
+                    for (TypeParameterElement param : params) {
+                        if (param.getSimpleName().contentEquals(ptag.parameterName())) {
+                            return param;
+                        }
+                    }
+                } else if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                    ExecutableElement ee = (ExecutableElement) el;
+                    for (VariableElement param : ee.getParameters()) {
+                        if (param.getSimpleName().contentEquals(ptag.parameterName())) {
+                            return param;
+                        }
                     }
                 }
             }
@@ -334,9 +377,44 @@ public final class JavadocImports {
                         }
                     }
                 }
+            } else {
+                // try to resolve @param name
+                Token<JavadocTokenId> token = findNameTokenOfParamTag(tag, positions, jdTokenSequence);
+                return token;
             }
+
         }
         return null;
+    }
+
+    private static Token<JavadocTokenId> findNameTokenOfParamTag(Tag tag, DocPositions positions, TokenSequence<JavadocTokenId> jdTokenSequence) {
+        if (tag == null || !"@param".equals(tag.name())) { // NOI18N
+            return null;
+        }
+
+        ParamTag ptag = (ParamTag) tag;
+        int[] tagSpan = positions.getTagSpan(tag);
+        Token<JavadocTokenId> result = null;
+
+        if (ptag.isTypeParameter()) {
+            jdTokenSequence.move(tagSpan[0]);
+            if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.TAG
+                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.OTHER_TEXT
+                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.HTML_TAG
+                    ) {
+                result = jdTokenSequence.token();
+            }
+        } else {
+            jdTokenSequence.move(tagSpan[0]);
+            if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.TAG
+                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.OTHER_TEXT
+                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT
+                    ) {
+                result = jdTokenSequence.token();
+            }
+        }
+        
+        return result;
     }
     
     /**
@@ -379,6 +457,24 @@ public final class JavadocImports {
                         return false;
                 }
             }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the passed position {@code pos} is inside name part of
+     * some javadoc param tag.
+     *
+     * @param jdts javadoc token sequence to search
+     * @param pos position to check
+     * @return {@code true} if the position is inside the param name.
+     */
+    public static boolean isInsideParamName(TokenSequence<JavadocTokenId> jdts, int pos) {
+        jdts.move(pos);
+        if (jdts.moveNext() && (JavadocTokenId.IDENT == jdts.token().id() || JavadocTokenId.HTML_TAG == jdts.token().id())
+                && jdts.movePrevious() && JavadocTokenId.OTHER_TEXT == jdts.token().id()
+                && jdts.movePrevious() && JavadocTokenId.TAG == jdts.token().id()) {
+            return "@param".contentEquals(jdts.token().text());
         }
         return false;
     }
