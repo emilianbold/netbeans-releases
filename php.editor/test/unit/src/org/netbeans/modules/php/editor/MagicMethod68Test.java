@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,70 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.php.editor;
 
-package org.openide.filesystems;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
+/**
+ *
+ * @author tomslot
+ */
+public class MagicMethod68Test extends PHPTestBase {
 
-public class ExternalUtilTest extends NbTestCase {
+    public MagicMethod68Test(String testName) {
+        super(testName);
+    }
 
-    public ExternalUtilTest(String name) {
-        super(name);
+    public void testParamDeclTypes() throws Exception {
+        checkCompletion("testfiles/completion/lib/netbeans68version/magicmethods/magicmethods.php", "$clsB->method1()->method2()->^", false);
     }
 
     @Override
-    protected Level logLevel() {
-        return Level.FINEST;
-    }
-
-    public void testInitializationFromTwoThreads() throws Exception {
-        MockServices.setServices(MyRepo.class);
-
-        Repository r = ExternalUtil.getRepository();
-
-        assertNotNull("Repo created", r);
-        assertEquals("It is our class", MyRepo.class, r.getClass());
-        MyRepo.task.waitFinished();
-        assertEquals("Both repositories are same", r, MyRepo.fromRunnable);
-        assertEquals("One add", 1, MyFs.addCnt);
-        assertEquals("No remove", 0, MyFs.removeCnt);
-    }
-
-    public static final class MyRepo extends Repository implements Runnable {
-        static Repository fromRunnable;
-        static Task task;
-
-        public MyRepo() throws InterruptedException {
-            super(new MyFs());
-
-            task = RequestProcessor.getDefault().post(this);
-            task.waitFinished(500);
-        }
-
-        public void run() {
-            fromRunnable = ExternalUtil.getRepository();
-        }
-    }
-
-    private static final class MyFs extends MultiFileSystem {
-        static int addCnt;
-        static int removeCnt;
-
-        @Override
-        public void addNotify() {
-            addCnt++;
-            super.addNotify();
-        }
-
-        @Override
-        public void removeNotify() {
-            removeCnt++;
-            super.removeNotify();
-        }
-
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+                PhpSourcePath.SOURCE_CP,
+                ClassPathSupport.createClassPath(new FileObject[]{
+                    FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/netbeans68version/magicmethods"))
+                }));
     }
 }

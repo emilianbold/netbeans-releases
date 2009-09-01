@@ -152,26 +152,8 @@ public final class ShareAction extends CookieAction {
             proj = actionContext.lookup(Project.class);
         }
 
-        private synchronized boolean isKenaiProject(Project proj) {
+        private boolean isKenaiProject(Project proj) {
             assert proj != null;
-            ProjectHandle[] openProjects = DashboardImpl.getInstance().getOpenProjects();
-            for (int i = 0; i < openProjects.length; i++) {
-                ProjectHandle projectHandle = openProjects[i];
-                if (projectHandle == null) {
-                    continue;
-                }
-                List<SourceHandle> sources = SourceAccessorImpl.getDefault().getSources(projectHandle);
-                for (SourceHandle sourceHandle : sources) {
-                    if (sourceHandle == null) {
-                        continue;
-                    }
-                    for (NbProjectHandle nbProjectHandle : sourceHandle.getRecentProjects()) {
-                        if (((NbProjectHandleImpl) nbProjectHandle).getProject().equals(proj)) {
-                            return true;
-                        }
-                    }
-                }
-            }
             String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation");
             if (projRepo != null) {
                 final Matcher m = repositoryPattern.matcher(projRepo);

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.openide.filesystems.FileUtil;
@@ -64,27 +65,36 @@ class DiskMapTurboProvider implements TurboProvider {
     private File                            cacheStore;
     private int                             storeSerial;
 
-    private int                             cachedStoreSerial = -1;
-    private Map<File, FileInformation>      cachedValues;
-
-    public class Entry extends HashMap<String, List<Entry>> { }
-
-    public Entry index = new Entry();
+    private CacheIndex index = createCacheIndex();
+    private CacheIndex conflictedIndex = createCacheIndex();
 
     DiskMapTurboProvider() {
         initCacheStore();
     }
 
-    public synchronized Map<File, FileInformation>  getAllModifiedValues() {
-        if (modifiedFilesChanged() || cachedValues == null) {
-            HashMap<File, FileInformation> modifiedValues = new HashMap<File, FileInformation>();
+    File[] getIndexValues(File file, int includeStatus) {
+        if (includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT) {
+            return conflictedIndex.get(file);
+        } else {
+            return index.get(file);
+        }
+    }
+
+    File[] getAllIndexValues() {
+        return index.getAllValues();
+    }
+
+    public synchronized void computeIndex() {
+        long ts = System.currentTimeMillis();
+        long entriesCount = 0;
+        long failedReadCount = 0;
+        try {
             if (!cacheStore.isDirectory()) {
                 cacheStore.mkdirs();
             }
             File [] files = cacheStore.listFiles();
             if(files == null) {
-                cachedValues = Collections.unmodifiableMap(modifiedValues);
-                return cachedValues;
+                return;
             }
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -124,11 +134,14 @@ class DiskMapTurboProvider implements TurboProvider {
                         String path = readChars(dis, pathLen);
                         Map value = readValue(dis, path);
                         for (Iterator j = value.keySet().iterator(); j.hasNext();) {
+                            entriesCount++;
                             File f = (File) j.next();
                             FileInformation info = (FileInformation) value.get(f);
+                            if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                conflictedIndex.add(f);
+                            }
                             if ((info.getStatus() & STATUS_VALUABLE) != 0) {
-                                modifiedValues.put(f, info);
-                                addToIndex(f, info);
+                                index.add(f);
                             }
                         }
                     }
@@ -140,30 +153,20 @@ class DiskMapTurboProvider implements TurboProvider {
                 } finally {
                     if (dis != null) try { dis.close(); } catch (IOException e) {}
                 }
-                if (readFailed) file.delete(); // cache file is corrupted, delete it (will be recreated on-demand later)
+                if (readFailed) {
+                    // cache file is corrupted, delete it (will be recreated on-demand later)
+                    file.delete();
+                    failedReadCount++;
+                }
             }
-            cachedStoreSerial = storeSerial;
-            cachedValues = Collections.unmodifiableMap(modifiedValues);
+        } finally {
+            Subversion.LOG.info("Finished indexing svn cache with " + entriesCount + " entries. Elapsed time: " + (System.currentTimeMillis() - ts) + " ms.");
+            if(failedReadCount > 0) {
+                Subversion.LOG.info(" read failed " + failedReadCount + " times.");
+            }
         }
-        return cachedValues;
     }
 
-
-    private void addToIndex(File f, FileInformation info) {
-
-    }
-
-    public Map<File, FileInformation> getCachedValues() {
-        if (cachedValues != null) {
-            return cachedValues;
-        }
-        return Collections.emptyMap();
-    }
-    
-    boolean modifiedFilesChanged() {
-        return cachedStoreSerial != storeSerial;
-    }
-    
     public boolean recognizesAttribute(String name) {
         return ATTR_STATUS_MAP.equals(name);
     }
@@ -320,6 +323,8 @@ class DiskMapTurboProvider implements TurboProvider {
             if (oos != null) try { oos.close(); } catch (IOException e) {}
             if (dis != null) try { dis.close(); } catch (IOException e) {}
         }
+        adjustIndex(dir, value);
+
         storeSerial++;
         if (readFailed) {
             store.delete(); // cache file is corrupted, delete it (will be recreated on-demand later)
@@ -331,6 +336,27 @@ class DiskMapTurboProvider implements TurboProvider {
             Subversion.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    private void adjustIndex(File dir, Object value) {
+        Map map = (Map) value;
+        Set set = map != null ? map.keySet() : null;
+
+        // all modified files
+        index.add(dir, set);
+
+        // conflict
+        Set<File> conflictedSet = new HashSet();
+        if(set != null) {
+            for (Iterator i = set.iterator(); i.hasNext();) {
+                File file = (File) i.next();
+                FileInformation info = (FileInformation) map.get(file);
+                if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                    conflictedSet.add(file);
+                }
+            }
+        }
+        conflictedIndex.add(dir, conflictedSet);
     }
 
     /**
@@ -447,6 +473,15 @@ class DiskMapTurboProvider implements TurboProvider {
             if ((len -= n) == 0) break;
         }
         out.flush();
+    }
+
+    private static CacheIndex createCacheIndex() {
+        return new CacheIndex() {
+            @Override
+            protected boolean isManaged(File file) {
+                return SvnUtils.isManaged(file);
+}
+        };
     }
 
 }

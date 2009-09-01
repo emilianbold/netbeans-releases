@@ -53,8 +53,10 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -196,14 +198,10 @@ public final class DashboardImpl extends Dashboard {
 
     @Override
     public ProjectHandle[] getOpenProjects() {
-        ProjectHandle[] open = new ProjectHandle[model.getSize()];
-        int i=0;
-        for (TreeListNode n:model.getRootNodes()) {
-            if (n instanceof ProjectNode) {
-                open[i++]=(((ProjectNode) n).getProject());
-            }
-        }
-        return open;
+        TreeSet<ProjectHandle> s = new TreeSet();
+        s.addAll(openProjects);
+        s.addAll(memberProjects);
+        return s.toArray(new ProjectHandle[s.size()]);
     }
 
     @Override
@@ -302,9 +300,7 @@ public final class DashboardImpl extends Dashboard {
             }
             openProjects.add(project);
             storeAllProjects();
-            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
-            tmp.add(project);
-            addProjectsToModel(-1, tmp);
+            setOtherProjects(new ArrayList<ProjectHandle>(openProjects));
             userNode.set(login, !openProjects.isEmpty());
             switchMemberProjects();
             if( isOpened() ) {
@@ -417,11 +413,13 @@ public final class DashboardImpl extends Dashboard {
             if( !model.getRootNodes().contains(userNode) ) {
                 model.addRoot(0, userNode);
                 model.addRoot(1, openProjectsNode);
-                //model.addRoot(-1, myProjectsNode);
+                if (login!=null&& !model.getRootNodes().contains(myProjectsNode))
+                    model.addRoot(-1, myProjectsNode);
             }
-            if( model.getSize() > 2 )
+            if(login!=null?model.getSize() > 3:model.getSize()>2 )
                 return;
             addProjectsToModel(-1, openProjects);
+            addMemberProjectsToModel(-1, memberProjects);
         }
     }
 
@@ -600,8 +598,9 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void addProjectsToModel( int index, List<ProjectHandle> projects ) {
+        int counter = 2;
         for( ProjectHandle p : projects ) {
-            model.addRoot(2,new ProjectNode(p));
+            model.addRoot(counter++,new ProjectNode(p));
         }
     }
 

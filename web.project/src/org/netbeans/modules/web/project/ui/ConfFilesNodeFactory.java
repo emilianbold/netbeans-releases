@@ -479,8 +479,12 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             return (n == null) ? new Node[0] : new Node[]{n};
         }
 
-        public synchronized void refreshNodes() {
-            addNotify();
+        public void refreshNodes() {
+            SwingUtilities.invokeLater( new Runnable( ){
+                public void run() {
+                    addNotify();
+                };
+            });
         }
 
         private synchronized void addKey(FileObject key) {

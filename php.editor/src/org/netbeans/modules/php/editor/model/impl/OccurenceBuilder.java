@@ -876,7 +876,7 @@ class OccurenceBuilder {
         String vartype = VariousUtils.extractTypeFroVariableBase(varBase, 
                 Collections.<String,AssignmentImpl>emptyMap());
         FileScope fileScope = ModelUtils.getFileScope(scp);
-        return VariousUtils.getType(fileScope, scp, vartype, varBase.getStartOffset(), true);
+        return VariousUtils.getType(scp, vartype, varBase.getStartOffset(), true);
     }
 
     private static Collection<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
