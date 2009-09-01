@@ -42,20 +42,25 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
-import junit.framework.TestCase;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Test {@link ModuleListParser}.
  * @author Jesse Glick
  */
-public class ModuleListParserTest extends TestCase {
-
+public class ModuleListParserTest extends NbTestCase {
     public ModuleListParserTest(String name) {
         super(name);
     }
@@ -71,14 +76,14 @@ public class ModuleListParserTest extends TestCase {
     }
 
     protected @Override void setUp() throws Exception {
-        super.setUp();
+        clearWorkDir();
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         nball = new File(prop);
         new File(nball, "nbbuild/nbproject/private/scan-cache-full.ser").delete();
         new File(nball, "nbbuild/nbproject/private/scan-cache-standard.ser").delete();
     }
-    
+
     public void testScanSourcesInNetBeansOrg() throws Exception {
         Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("nb_all", nball.getAbsolutePath());
@@ -187,6 +192,64 @@ public class ModuleListParserTest extends TestCase {
             file(nball, "nbbuild/netbeans/ide11/modules/ext/org-netbeans-tax.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
     }
+
+    public void testScanBinariesForOSGi() throws Exception {
+        doScanBinariesForOSGi("osgi", "netigso.test");
+    }
+
+    public void testScanBinariesForOSGiInModulesDir() throws Exception {
+        doScanBinariesForOSGi("modules", "netigso.test_repackaged");
+    }
+
+    private void doScanBinariesForOSGi(String whereTo, String cnb) throws Exception {
+        Project fakeproj = new Project();
+        fakeproj.addBuildListener(new BuildListener() {
+            public void messageLogged(BuildEvent buildEvent) {
+                if (buildEvent.getPriority() <= Project.MSG_VERBOSE) {
+                    System.err.println(buildEvent.getMessage());
+                }
+            }
+            public void taskStarted(BuildEvent buildEvent) {}
+            public void taskFinished(BuildEvent buildEvent) {}
+            public void targetStarted(BuildEvent buildEvent) {}
+            public void targetFinished(BuildEvent buildEvent) {}
+            public void buildStarted(BuildEvent buildEvent) {}
+            public void buildFinished(BuildEvent buildEvent) {}
+        });
+
+        File osgiRepo = new File(getWorkDir(), whereTo);
+        osgiRepo.mkdirs();
+        Manifest man = ModuleDependenciesTest.createManifest();
+        man.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
+        String dashCnb = cnb.replace('.', '-');
+        generateJar(new File(osgiRepo, dashCnb + ".jar"), new String[0], man);
+
+        CreateModuleXML cmxml = new CreateModuleXML();
+        cmxml.setProject(fakeproj);
+        final File configDir = new File(new File(getWorkDir(), "config"), "Modules");
+        configDir.mkdirs();
+        cmxml.setXmldir(configDir);
+        FileSet fs = new FileSet();
+        fs.setDir(getWorkDir());
+        fs.setIncludes("**/*.jar");
+        cmxml.addAutoload(fs);
+        cmxml.execute();
+
+        String[] arr = configDir.list();
+        assertEquals("One file generated", 1, arr.length);
+        assertEquals(dashCnb + ".xml", arr[0]);
+
+        Hashtable<String,String> properties = new Hashtable<String,String>();
+        properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform10")
+                + File.pathSeparator + getWorkDir());
+        properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project"));
+        properties.put("suite.dir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1"));
+        long start = System.currentTimeMillis();
+        ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_SUITE, fakeproj);
+        System.err.println("Scanned " + nball + " binaries in " + (System.currentTimeMillis() - start) + "msec");
+        ModuleListParser.Entry e = p.findByCodeNameBase(cnb);
+        assertNotNull("found netigso module", e);
+    }
     
     public void testScanSourcesAndBinariesForExternalStandaloneModule() throws Exception {
         Hashtable<String,String> properties = new Hashtable<String,String>();
@@ -203,6 +266,19 @@ public class ModuleListParserTest extends TestCase {
         e = p.findByCodeNameBase("org.netbeans.modules.classfile");
         assertNotNull("found (fake) netbeans.org module by its binary", e);
         assertEquals("org.netbeans.modules.classfile", e.getCnb());
+    }
+
+    private File generateJar (File f, String[] content, Manifest manifest) throws IOException {
+        JarOutputStream os = new JarOutputStream (new FileOutputStream (f), manifest);
+
+        for (int i = 0; i < content.length; i++) {
+            os.putNextEntry(new JarEntry (content[i]));
+            os.closeEntry();
+        }
+        os.closeEntry ();
+        os.close();
+
+        return f;
     }
     
 }
