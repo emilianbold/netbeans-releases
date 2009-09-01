@@ -43,8 +43,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.parsing.impl.indexing.DeletedIndexable;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.Util;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
@@ -132,5 +136,31 @@ public final class IndexResult {
      */
     public URL getRoot() {
         return root;
+    }
+
+    /**
+     * Gets <code>Indexable</code> for this result. The indexable returned is giong
+     * to represent the file that was used for creating {@link IndexDocument} and indexed.
+     *
+     * <p class="nonnormative">
+     * Please note that this file may no longer exist on the disk in which case
+     * the returned <code>Indexable</code> is going to have limited capabilities.
+     * For example you want's be able to retrieve its mimetype.
+     *
+     * @return The <code>Indexable</code> representing the file that was used for
+     *   creating the index data represented by this <code>IndexResult</code>.
+     *
+     * @since 1.22
+     */
+    public Indexable getIndexable() {
+        FileObject file = getFile();
+        if (file != null) {
+            FileObject rootFo = URLMapper.findFileObject(root);
+            if (rootFo != null) {
+                return SPIAccessor.getInstance().create(new FileObjectIndexable(rootFo, file));
+            }
+        }
+        
+        return SPIAccessor.getInstance().create(new DeletedIndexable(root, getRelativePath()));
     }
 }

@@ -944,8 +944,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
      */
     private int findInterestingStart(JCTree tree) {
         if (tree.pos <= 0) return 0;
-        seq.move(tree.pos);
-        Tree shouldBeTree = null;
+        seq.move((int) info.getTrees().getSourcePositions().getStartPosition(unit, tree));
         while (seq.movePrevious() && tokenIndexAlreadyAdded < seq.index()) {
             switch (seq.token().id()) {
                 case WHITESPACE:
@@ -960,14 +959,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
                         as preceeding to tree.
                     */
                     return seq.offset() + seq.token().length();
-                default: {
-                    shouldBeTree = getTree(info.getTreeUtilities(), seq);
-                    if (shouldBeTree == null || tree.equals(shouldBeTree)) {
-                        //this is some kind of creepy token which is not interesting nor tree. Just skip it.
-                        continue;
-                    }
-                    break;
-                }
+                default:
+                    return seq.offset() + seq.token().length();
             }
         }
         return seq.offset(); 
