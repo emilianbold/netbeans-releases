@@ -67,18 +67,16 @@ public class OptionsCategoryImpl extends OptionsCategory {
     private String iconBase;
     private ImageIcon icon;
     private Callable<OptionsPanelController> controller;
-    private String description;
     private String keywords;
     private String keywordsCategory;
     private String advancedOptionsFolder; //folder for lookup
 
-    public OptionsCategoryImpl(String title, String categoryName, String iconBase, Callable<OptionsPanelController> controller, String description, String keywords, String keywordsCategory, String advancedOptionsFolder) {
+    public OptionsCategoryImpl(String title, String categoryName, String iconBase, Callable<OptionsPanelController> controller, String keywords, String keywordsCategory, String advancedOptionsFolder) {
         this.title = title;
         this.categoryName = categoryName;
         this.iconBase = iconBase;
         this.controller = controller;
         this.advancedOptionsFolder = advancedOptionsFolder;
-        this.description = description;
         this.keywords = keywords;
         this.keywordsCategory = keywordsCategory;
     }
@@ -111,10 +109,6 @@ public class OptionsCategoryImpl extends OptionsCategory {
     @Override
     public String getTitle () {
         return title;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     @Override

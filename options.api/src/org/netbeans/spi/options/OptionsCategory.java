@@ -67,7 +67,6 @@ import org.openide.util.ImageUtilities;
  *           &lt;attr name="keywords" bundlevalue="org.netbeans.core.ui.options.general.Bundle#KW_General"/&gt;
  *           &lt;attr name="keywordsCategory" stringvalue="General"/&gt;
  *           &lt;attr name="description" bundlevalue="org.netbeans.core.ui.options.general.Bundle#CTL_General_Options_Description"/&gt;
- *
  *           &lt;attr name="position" intvalue="100"/&gt;
  *       &lt;/file&gt;
  *   &lt;/folder&gt;</pre>
@@ -80,6 +79,7 @@ import org.openide.util.ImageUtilities;
  * <br/><b>keywords</b> should be localized keywords list, separated by comma in Bundle, for quickserach purposes
  * <br/><b>keywordsCategory</b> should be relative path to your panel inside Options dialog
  * <br/><b>description</b> should be a pointer to Bundle where your tab description is stored
+ * <span class="nonnormative"><strong>Currently unused.</strong></span>
  *
  * <br/><br/>
  * Or, when registering a category with sub-panels, instead of
@@ -93,11 +93,7 @@ import org.openide.util.ImageUtilities;
  * and supply a folder where instaces of <code>AdvancedOption</code> should be
  * registered. Its instances would be found automatically and shown as sub-panels
   <br/><br/>
- * Use standard way how to sort items registered in layers:
- * 
- * <pre style="background-color: rgb(255, 255, 153);">
- * &lt;attr name="GeneralPanel.instance/FooOptionsPanel.instance" boolvalue="true"/&gt;
- * </pre>
+ * Use standard {@code position} attributes to sort items registered in layers.
  *
  * @see AdvancedOption
  * @see OptionsPanelController
@@ -112,7 +108,6 @@ public abstract class OptionsCategory {
     private static final String CATEGORY_NAME = "categoryName"; // NOI18N
     private static final String ICON = "iconBase"; // NOI18N
     private static final String CONTROLLER = "controller"; // NOI18N
-    private static final String DESCRIPTION = "description"; // NOI18N
     private static final String KEYWORDS = "keywords"; // NOI18N
     private static final String KEYWORDS_CATEGORY = "keywordsCategory"; // NOI18N
     private static final String ADVANCED_OPTIONS_FOLDER = "advancedOptionsFolder"; // NOI18N
@@ -154,7 +149,7 @@ public abstract class OptionsCategory {
     /**
      * This text will be used in title component on the top of Options Dialog
      * when your panel will be selected.
-     *
+     * <p class="nonnormative"><strong>Currently unused.</strong></p>
      * @return title of this panel
      */
     public abstract String getTitle ();
@@ -181,7 +176,6 @@ public abstract class OptionsCategory {
         final String title = (String) attrs.get(TITLE);
         String categoryName = (String) attrs.get(CATEGORY_NAME);
         String iconBase = (String) attrs.get(ICON);
-        String description = (String) attrs.get(DESCRIPTION);
         String keywords = (String) attrs.get(KEYWORDS);
         String keywordsCategory = (String) attrs.get(KEYWORDS_CATEGORY);
         String advancedOptionsCategory = (String) attrs.get(ADVANCED_OPTIONS_FOLDER);
@@ -196,6 +190,6 @@ public abstract class OptionsCategory {
                     throw new Exception("got no controller from " + title + ": " + o);
                 }
             }
-        }, description, keywords, keywordsCategory, advancedOptionsCategory);
+        }, keywords, keywordsCategory, advancedOptionsCategory);
     }
 }
