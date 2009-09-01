@@ -112,7 +112,6 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         new Thread(new Runnable(){
             public void run() {
                 try {
-                    System.out.println("UPDATE KEYS on EventQueue: " + SwingUtilities.isEventDispatchThread());
                     Future<List<Key>> future = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
 
                         public List<Key> run(EjbJarMetadata metadata) throws Exception {
