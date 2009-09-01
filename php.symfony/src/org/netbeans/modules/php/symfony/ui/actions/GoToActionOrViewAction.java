@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.symfony.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -70,6 +72,9 @@ import org.openide.util.NbBundle;
  */
 public final class GoToActionOrViewAction extends TextAction implements ContextAwareAction {
     private static final long serialVersionUID = -1231423139431663L;
+
+    static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+
     private static final GoToActionOrViewAction INSTANCE = new GoToActionOrViewAction();
     private static final int DEFAULT_OFFSET = 0;
 
@@ -173,10 +178,14 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FileObject action = SymfonyUtils.getAction(fo);
-            if (action != null) {
-                UiUtils.open(action, getActionMethodOffset(action));
-            }
+            EXECUTOR.submit(new Runnable() {
+                public void run() {
+                    FileObject action = SymfonyUtils.getAction(fo);
+                    if (action != null) {
+                        UiUtils.open(action, getActionMethodOffset(action));
+                    }
+                }
+            });
         }
 
         private int getActionMethodOffset(FileObject action) {
@@ -220,15 +229,19 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-            PhpElement phpElement = editorSupport.getElement(fo, offset);
-            if (phpElement == null) {
-                return;
-            }
-            FileObject view = SymfonyUtils.getView(fo, phpElement);
-            if (view != null) {
-                UiUtils.open(view, DEFAULT_OFFSET);
-            }
+            EXECUTOR.submit(new Runnable() {
+                public void run() {
+                    EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+                    PhpElement phpElement = editorSupport.getElement(fo, offset);
+                    if (phpElement == null) {
+                        return;
+                    }
+                    FileObject view = SymfonyUtils.getView(fo, phpElement);
+                    if (view != null) {
+                        UiUtils.open(view, DEFAULT_OFFSET);
+                    }
+                }
+            });
         }
     }
 }
