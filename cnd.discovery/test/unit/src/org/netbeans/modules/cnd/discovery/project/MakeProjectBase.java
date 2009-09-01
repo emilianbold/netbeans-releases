@@ -39,23 +39,22 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
+import java.io.BufferedReader;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -69,6 +68,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -109,7 +111,7 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
         list.addAll(super.getServises());
         return list;
     }
-
+ 
     @Override
     protected void setUpMime() {
         // setting up MIME breaks other services
@@ -395,15 +397,7 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
         String dataPath = fileDataPath.getAbsolutePath();
 
         String createdFolder = dataPath+"/"+packageName;
-        final AtomicBoolean finish = new AtomicBoolean(false);
-        ExecutionListener listener = new ExecutionListener() {
-            public void executionStarted(int pid) {
-            }
-            public void executionFinished(int rc) {
-                finish.set(true);
-            }
-        };
-        NativeExecutor ne = null;
+        NativeProcessBuilder ne = null;
         File fileCreatedFolder = new File(createdFolder);
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
@@ -413,27 +407,39 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
             if (!new File(dataPath+"/"+tarName).exists()) {
                 command = tools.get("wget");
                 System.err.println(dataPath+"#"+command+" "+urlName);
-                ne = new NativeExecutor(dataPath, command, urlName, new String[0], "wget", "run", false, false);
-                waitExecution(ne, listener, finish);
+                //ne = new NativeExecutor(dataPath, command, urlName, new String[0], "wget", "run", false, false);
+                ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
+                .setWorkingDirectory(dataPath)
+                .setExecutable(command)
+                .setArguments(urlName);
+                waitExecution(ne);
 
                 command = tools.get("gzip");
                 System.err.println(dataPath+"#"+command+" -d "+zipName);
-                ne = new NativeExecutor(dataPath, command, "-d "+zipName, new String[0], "gzip", "run", false, false);
-                waitExecution(ne, listener, finish);
+                //ne = new NativeExecutor(dataPath, command, "-d "+zipName, new String[0], "gzip", "run", false, false);
+                ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
+                .setWorkingDirectory(dataPath)
+                .setExecutable(command)
+                .setArguments("-d", zipName);
+                waitExecution(ne);
             }
 
             command = tools.get("tar");
             System.err.println(dataPath+"#"+command+" xf "+tarName);
-            ne = new NativeExecutor(dataPath, command, "xf "+tarName, new String[0], "tar", "run", false, false);
-            waitExecution(ne, listener, finish);
+            //ne = new NativeExecutor(dataPath, command, "xf "+tarName, new String[0], "tar", "run", false, false);
+            ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
+            .setWorkingDirectory(dataPath)
+            .setExecutable(command)
+            .setArguments("xf", tarName);
+            waitExecution(ne);
 
-            execAdditionalScripts(finish, listener, createdFolder, additionalScripts, tools);
+            execAdditionalScripts(createdFolder, additionalScripts, tools);
         } else {
             final File configure = new File(createdFolder+File.separator+"configure");
             final File makeFile = detectConfigure(createdFolder);
             if (!configure.exists()) {
                 if (!makeFile.exists()){
-                    execAdditionalScripts(finish, listener, createdFolder, additionalScripts, tools);
+                    execAdditionalScripts(createdFolder, additionalScripts, tools);
                 }
             }
         }
@@ -443,37 +449,50 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
 
         command = tools.get("rm");
         System.err.println(createdFolder+"#"+command+" -rf nbproject");
-        ne = new NativeExecutor(createdFolder, tools.get("rm"), "-rf nbproject", new String[0], "rm", "run", false, false);
-        waitExecution(ne, listener, finish);
+        //ne = new NativeExecutor(createdFolder, tools.get("rm"), "-rf nbproject", new String[0], "rm", "run", false, false);
+        ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
+        .setWorkingDirectory(createdFolder)
+        .setExecutable(command)
+        .setArguments("-rf", "nbproject");
+        waitExecution(ne);
         return createdFolder;
     }
-    private void execAdditionalScripts(final AtomicBoolean finish, ExecutionListener listener, String createdFolder, List<String> additionalScripts, Map<String, String> tools) throws IOException {
+    private void execAdditionalScripts(String createdFolder, List<String> additionalScripts, Map<String, String> tools) throws IOException {
         if (additionalScripts != null) {
             for(String s: additionalScripts){
                 int i = s.indexOf(' ');
                 String command = s.substring(0,i);
                 String arguments = s.substring(i+1);
                 System.err.println(createdFolder+"#"+tools.get(command)+" "+arguments);
-                NativeExecutor ne = new NativeExecutor(createdFolder, tools.get(command), arguments, new String[0], command, "run", false, false);
-                waitExecution(ne, listener, finish);
+                //NativeExecutor ne = new NativeExecutor(createdFolder, tools.get(command), arguments, new String[0], command, "run", false, false);
+                NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
+                .setWorkingDirectory(createdFolder)
+                .setExecutable(command)
+                .setCommandLine(command+" "+arguments);
+                waitExecution(ne);
             }
         }
     }
 
-    private void waitExecution(NativeExecutor ne, ExecutionListener listener, AtomicBoolean finish){
-        finish.set(false);
-        ne.addExecutionListener(listener);
+    private void waitExecution(NativeProcessBuilder ne){
         try {
-            ne.execute();
+            NativeProcess process = ne.call();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            try {
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        return;
+                        //break;
+                    } else {
+                        System.out.println(line);
+                    }
+                }
+            } finally {
+                reader.close();
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        }
-        while(!finish.get()){
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
         }
     }
 }

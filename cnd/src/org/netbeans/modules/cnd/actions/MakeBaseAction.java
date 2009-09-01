@@ -42,20 +42,35 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.concurrent.Future;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  * Base class for Make Actions ...
@@ -77,26 +92,31 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         performAction(node, target, null, null, null, null);
     }
 
-    protected void performAction(Node node, String target, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
+    protected void performAction(Node node, String target, final ExecutionListener listener, final Writer outputListener, Project project, List<String> additionalEnvironment) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
         DataObject dataObject = node.getCookie(DataObject.class);
-        FileObject fileObject = dataObject.getPrimaryFile();
+        final FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
         File buildDir = getBuildDirectory(node,Tool.MakeTool);
         // Executable
         String executable = getCommand(node, project, Tool.MakeTool, "make"); // NOI18N
         // Arguments
-        String arguments = "-f " + makefile.getName() + " " + target; // NOI18N
+        String[] args;
+        if (target.length() == 0) {
+            args = new String[]{"-f", makefile.getName()}; // NOI18N
+        } else {
+            args = new String[]{"-f", makefile.getName(), target}; // NOI18N
+        }
         // Tab Name
-        String tabName = getString("MAKE_LABEL", node.getName());
+        String tabName = getString("MAKE_LABEL", node.getName()); // NOI18N
         if (target != null && target.length() > 0) {
             tabName += " " + target; // NOI18N
-        } // NOI18N
+        }
 
-        ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         String[] env = prepareEnv(execEnv);
         if (additionalEnvironment != null && additionalEnvironment.size()>0){
             String[] tmp = new String[env.length + additionalEnvironment.size()];
@@ -108,21 +128,107 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             }
             env = tmp;
         }
-        // Execute the makefile
-        NativeExecutor nativeExecutor = new NativeExecutor(
-                execEnv,
-                buildDir.getPath(),
-                executable,
-                arguments,
-                env,
-                tabName,
-                "make", // NOI18N
-                true,
-                true,
-                false);
-        if (outputListener != null) {
-            nativeExecutor.setOutputListener(outputListener);
+
+        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+        _tab.closeInputOutput(); // Close it...
+        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+        try {
+            tab.getOut().reset();
+        } catch (IOException ioe) {
         }
-        new ShellExecuter(nativeExecutor, listener).execute();
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
+        .setExecutable(executable)
+        .setWorkingDirectory(buildDir.getPath())
+        .setArguments(args)
+        .unbufferOutput(false)
+        .addNativeProcessListener(new ChangeListener() {
+           private long startTimeMillis;
+           public void stateChanged(ChangeEvent e) {
+                if (!(e instanceof NativeProcessChangeEvent)) {
+                    return;
+                }
+                NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+                NativeProcess process = (NativeProcess) event.getSource();
+                switch (event.state) {
+                    case INITIAL:
+                        break;
+                    case STARTING:
+                        startTimeMillis = System.currentTimeMillis();
+                        if (listener != null) {
+                            listener.executionStarted(event.pid);
+                        }
+                        break;
+                    case RUNNING:
+                        break;
+                    case CANCELLED:
+                    {
+                        if (listener != null) {
+                            listener.executionFinished(process.exitValue());
+                        }
+                        String message = getString("Output.MakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                        tab.getOut().println();
+                        tab.getOut().println(message);
+                        tab.getOut().flush();
+                        break;
+                    }
+                    case ERROR:
+                    {
+                        if (listener != null) {
+                            listener.executionFinished(-1);
+                        }
+                        String message = getString("Output.MakeFailedToStart"); // NOI18N
+                        tab.getOut().println();
+                        tab.getOut().println(message);
+                        tab.getOut().flush();
+                        break;
+                    }
+                    case FINISHED:
+                    {
+                        if (listener != null) {
+                            listener.executionFinished(process.exitValue());
+                        }
+                        String message;
+                        if (process.exitValue() != 0) {
+                            message = getString("Output.MakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                        } else {
+                            message = getString("Output.MakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                        }
+                        tab.getOut().println();
+                        tab.getOut().println(message);
+                        tab.getOut().flush();
+                        break;
+                    }
+                }
+            }
+        });
+        final LineConvertor lineConvertor = new CompilerLineConvertor(execEnv, fileObject.getParent());
+        LineConvertorFactory factory = new ExecutionDescriptor.LineConvertorFactory() {
+            public LineConvertor newLineConvertor() {
+                return new LineConvertor() {
+                    @Override
+                    public List<ConvertedLine> convert(String line) {
+                        if (outputListener != null) {
+                            try {
+                                outputListener.write(line);
+                                outputListener.write("\n"); // NOI18N
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        return lineConvertor.convert(line);
+                    }
+                };
+            }
+        };
+        ExecutionDescriptor descr = new ExecutionDescriptor()
+        .controllable(true)
+        .frontWindow(true)
+        .inputVisible(true)
+        .showProgress(true)
+        .inputOutput(tab)
+        .errConvertorFactory(factory)
+        .outConvertorFactory(factory);
+        final ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N
+        Future<Integer> result = es.run();
     }
 }
