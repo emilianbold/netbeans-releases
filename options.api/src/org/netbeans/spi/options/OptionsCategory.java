@@ -43,11 +43,12 @@ package org.netbeans.spi.options;
 
 import java.awt.Image;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.options.OptionsCategoryImpl;
+import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * This class represents one category (like "Fonts & Colors"
@@ -114,7 +115,7 @@ public abstract class OptionsCategory {
     private static final String DESCRIPTION = "description"; // NOI18N
     private static final String KEYWORDS = "keywords"; // NOI18N
     private static final String KEYWORDS_CATEGORY = "keywordsCategory"; // NOI18N
-    private static final String ADVANCEDOPTIONS_CATGEORY = "advancedOptionsFolder"; // NOI18N
+    private static final String ADVANCED_OPTIONS_FOLDER = "advancedOptionsFolder"; // NOI18N
 
     /**
      * Returns base name of 32x32 icon (gif, png) used in list on the left side of
@@ -176,16 +177,25 @@ public abstract class OptionsCategory {
      * @param attrs attributes loaded from layer.xml
      * @return new <code>OptionsCategory</code> instance
      */
-    static OptionsCategory createCategory(Map attrs) {
-        String title = (String) attrs.get(TITLE);
+    static OptionsCategory createCategory(final Map attrs) {
+        final String title = (String) attrs.get(TITLE);
         String categoryName = (String) attrs.get(CATEGORY_NAME);
         String iconBase = (String) attrs.get(ICON);
-        OptionsPanelController controller = (OptionsPanelController) attrs.get(CONTROLLER);
         String description = (String) attrs.get(DESCRIPTION);
         String keywords = (String) attrs.get(KEYWORDS);
         String keywordsCategory = (String) attrs.get(KEYWORDS_CATEGORY);
-        String advancedOptionsCategory = (String) attrs.get(ADVANCEDOPTIONS_CATGEORY);
-
-        return new OptionsCategoryImpl(title, categoryName, iconBase, controller, description, keywords, keywordsCategory, advancedOptionsCategory);
+        String advancedOptionsCategory = (String) attrs.get(ADVANCED_OPTIONS_FOLDER);
+//        new Exception("preloading options panel " + title).printStackTrace();
+        return new OptionsCategoryImpl(title, categoryName, iconBase, new Callable<OptionsPanelController>() {
+            public OptionsPanelController call() throws Exception {
+                Object o = attrs.get(CONTROLLER);
+//                new Exception("loading options panel " + title + ": " + o).printStackTrace();
+                if (o instanceof OptionsPanelController) {
+                    return (OptionsPanelController) o;
+                } else {
+                    throw new Exception("got no controller from " + title + ": " + o);
+                }
+            }
+        }, description, keywords, keywordsCategory, advancedOptionsCategory);
     }
 }

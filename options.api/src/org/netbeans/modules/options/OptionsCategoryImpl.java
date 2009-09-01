@@ -45,10 +45,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -64,17 +66,13 @@ public class OptionsCategoryImpl extends OptionsCategory {
     private String categoryName;
     private String iconBase;
     private ImageIcon icon;
-    private OptionsPanelController controller;
+    private Callable<OptionsPanelController> controller;
     private String description;
     private String keywords;
     private String keywordsCategory;
     private String advancedOptionsFolder; //folder for lookup
 
-    public OptionsCategoryImpl(String title, String categoryName, String iconBase, OptionsPanelController controller, String description, String keywords, String keywordsCategory, String advancedOptionsFolder) {
-        //either controller or folder where instances od AdvancedOptionControllers are lookedup
-        //have to be specified
-        assert !(controller == null && advancedOptionsFolder == null);
-
+    public OptionsCategoryImpl(String title, String categoryName, String iconBase, Callable<OptionsPanelController> controller, String description, String keywords, String keywordsCategory, String advancedOptionsFolder) {
         this.title = title;
         this.categoryName = categoryName;
         this.iconBase = iconBase;
@@ -121,11 +119,15 @@ public class OptionsCategoryImpl extends OptionsCategory {
 
     @Override
     public OptionsPanelController create() {
-        if(controller != null) {
-            return controller;
-        }
-        else {
+        if (advancedOptionsFolder != null) {
             return new TabbedController(advancedOptionsFolder);
+        } else {
+            try {
+                return controller.call();
+            } catch (Exception x) {
+                Exceptions.printStackTrace(x);
+                return new TabbedController("<error>"); // NOI18N
+            }
         }
     }
 

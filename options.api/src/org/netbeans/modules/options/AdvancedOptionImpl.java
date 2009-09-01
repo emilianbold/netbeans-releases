@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import org.openide.util.Exceptions;
 
 /**
  * Advanced Option implementation class. Used by factory method from
@@ -57,10 +59,10 @@ public class AdvancedOptionImpl extends AdvancedOption {
     private String displayName;
     private String tooltip;
     private String keywords;
-    private OptionsPanelController controller;
+    private Callable<OptionsPanelController> controller;
     private String keywordsCategory;
 
-    public AdvancedOptionImpl(OptionsPanelController controller, String displayName, String tooltip, String keywords, String keywordsCategory) {
+    public AdvancedOptionImpl(Callable<OptionsPanelController> controller, String displayName, String tooltip, String keywords, String keywordsCategory) {
         this.controller = controller;
         this.displayName = displayName;
         this.tooltip = tooltip;
@@ -92,7 +94,12 @@ public class AdvancedOptionImpl extends AdvancedOption {
 
     @Override
     public OptionsPanelController create() {
-        return controller;
+        try {
+            return controller.call();
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+            return new TabbedController("<error>"); // NOI18N
+        }
     }
 
 }
