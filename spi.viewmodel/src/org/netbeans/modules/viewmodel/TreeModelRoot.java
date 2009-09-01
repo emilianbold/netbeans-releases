@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
@@ -55,6 +59,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
+import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.TreeView;
 import org.openide.explorer.view.Visualizer;
@@ -80,6 +85,7 @@ public class TreeModelRoot implements ModelListener {
     private TreeModelNode rootNode;
     private WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
     private DefaultTreeFeatures treeFeatures;
+    private ExplorerManager manager;
     
     /** The children evaluator for view of this root. */
     private TreeModelNode.LazyEvaluator childrenEvaluator;
@@ -91,6 +97,7 @@ public class TreeModelRoot implements ModelListener {
 
     public TreeModelRoot (Models.CompoundModel model, TreeView treeView) {
         this.model = model;
+        this.manager = ExplorerManager.find(treeView);
         this.treeFeatures = new DefaultTreeFeatures(treeView);
         getRP();
         model.addModelListener (this);
@@ -98,6 +105,7 @@ public class TreeModelRoot implements ModelListener {
 
     public TreeModelRoot (Models.CompoundModel model, OutlineView outlineView) {
         this.model = model;
+        this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
         getRP();
         model.addModelListener (this);
@@ -185,6 +193,32 @@ public class TreeModelRoot implements ModelListener {
                         }
                         return ; // We're done
                     }
+                }
+                if (event instanceof ModelEvent.SelectionChanged) {
+                    final Object[] nodes = ((ModelEvent.SelectionChanged) event).getNodes();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            TreeModelNode[] tmNodes = new TreeModelNode[nodes.length];
+                            int i = 0;
+                            for (Object node : nodes) {
+                                TreeModelNode tmNode = findNode(node);
+                                if (tmNode != null) {
+                                    tmNodes[i++] = tmNode;
+                                }
+                            }
+                            if (i < nodes.length) {
+                                TreeModelNode[] tmNodes2 = new TreeModelNode[i];
+                                System.arraycopy(tmNodes, 0, tmNodes2, 0, i);
+                                tmNodes = tmNodes2;
+                            }
+                            try {
+                                manager.setSelectedNodes(tmNodes);
+                            } catch (PropertyVetoException ex) {
+                                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Selection of "+Arrays.toString(nodes)+" vetoed.", ex); // NOI18N
+                            }
+                        }
+                    });
+                    return ;
                 }
                 rootNode.setObject (model.getRoot ());
             }
