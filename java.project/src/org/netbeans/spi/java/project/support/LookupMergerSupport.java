@@ -202,6 +202,7 @@ public final class LookupMergerSupport {
             }
 
             public void addChangeListener(ChangeListener l) {
+                cs.removeChangeListener(l);
                 cs.addChangeListener(l);
             }
 
