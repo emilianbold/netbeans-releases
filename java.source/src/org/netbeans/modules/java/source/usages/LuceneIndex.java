@@ -735,7 +735,7 @@ class LuceneIndex extends Index {
         checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
-        boolean create = !isValid (false);
+        boolean create = !exists();
         long timeStamp = System.currentTimeMillis();
         final IndexWriter out = getWriter(create);
         try {
@@ -774,7 +774,7 @@ class LuceneIndex extends Index {
         checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
-        boolean create = !isValid (false);        
+        boolean create = !exists();
         long timeStamp = System.currentTimeMillis();
         final IndexWriter out = getWriter(create);
         try {
@@ -865,14 +865,7 @@ class LuceneIndex extends Index {
             }
             return res;
         }
-        try {
-            res = IndexReader.indexExists(this.directory);
-        } catch (IOException e) {
-            return res;
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.INFO, "Broken index: " + refCacheRoot.getAbsolutePath(), e);
-            return res;
-        }
+        res = exists();
         if (res && force) {
             try {
                 getReader();
@@ -955,6 +948,17 @@ class LuceneIndex extends Index {
             this.close(true);
             this.directory = createDirectory(refCacheRoot);
             closed = false;
+        }
+    }
+
+    public boolean exists () {
+        try {
+            return IndexReader.indexExists(this.directory);
+        } catch (IOException e) {
+            return false;
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.INFO, "Broken index: " + refCacheRoot.getAbsolutePath(), e);
+            return false;
         }
     }
 
