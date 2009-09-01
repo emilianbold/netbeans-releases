@@ -2159,29 +2159,28 @@ public class GdbDebugger implements PropertyChangeListener {
                 } else if (!path.endsWith(".exe")) { // NOI18N
                     path = path + ".exe"; // NOI18N
                 }
-                try {
-                    if (HostInfoUtils.fileExists(execEnv, path)) {
-                        return true;
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
-            
-            // MIME type is checked only localy for now
-            if (execEnv.isLocal()) {
-                File file = new File(path);
-                if (file.exists()) {
+
+            try {
+                // Check that the path exists
+                if (!HostInfoUtils.fileExists(execEnv, path)) {
+                    return false;
+                }
+                // MIME type is checked only localy for now
+                if (execEnv.isLocal()) {
+                    File file = new File(path);
+                    assert file.exists(); // should be always true here
                     String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
                     if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                         return true;
                     }
-                }
+                } 
+                return true;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            return false;
-        } else {
-            return false;
-        }
+        } 
+        return false;
     }
 
     /**
