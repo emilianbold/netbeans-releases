@@ -104,8 +104,8 @@
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
+                        <!-- for ProjectTrampoline implementation -->
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
-                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
