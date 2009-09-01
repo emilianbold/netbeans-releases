@@ -55,7 +55,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.wag.manager.util.Utilities;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -69,6 +68,9 @@ public class ZemblySession implements PropertyChangeListener {
     private static final String KEY_ATTR = "key";               //NOI18N
     private static final String SECRET_ATTR = "secret";         //NOI18N
     private static final String PROP_LOGIN = "login";           //NOI18N
+    private static final String EMAIL_PARAM = "email";          //NOI18N
+    private static final String PASSWORD_PARAM = "password";    //NOI18N
+    private static final String USE_CWP_PARAM = "useCWP";       //NOI18N
 
     private static ZemblySession instance;
     private Zembly zembly;
@@ -82,11 +84,12 @@ public class ZemblySession implements PropertyChangeListener {
     private ZemblyUserInfo userInfo;
     protected PropertyChangeSupport pps;
 
+
     static {
         ZemblySession session = ZemblySession.getInstance();
         Kenai kenai = Kenai.getDefault();
 
-        //kenai.addPropertyChangeListener(WeakListeners.propertyChange(session, kenai));
+    //kenai.addPropertyChangeListener(WeakListeners.propertyChange(session, kenai));
     }
 
     private ZemblySession() {
@@ -101,11 +104,11 @@ public class ZemblySession implements PropertyChangeListener {
         return instance;
     }
 
-    public void login(String username, char[] password) {
+    public void login(String username, char[] password) throws IOException, JSONException {
         if (userInfo == null) {
             // For local testing
             userInfo = zemblyLogin(username, new String(password));
-         
+
             fireChange(false, true, PROP_LOGIN);
         }
     }
@@ -194,35 +197,26 @@ public class ZemblySession implements PropertyChangeListener {
         return testDriver;
     }
 
-    private ZemblyUserInfo zemblyLogin(String username, String password) {
+    private ZemblyUserInfo zemblyLogin(String username, String password) throws IOException, JSONException {
         List<Parameter> params = new ArrayList<Parameter>();
-        params.add(new Parameter("email", username));
-        params.add(new Parameter("password", password));
-        params.add(new Parameter("useCWP", "true"));
+        params.add(new Parameter(EMAIL_PARAM, username));
+        params.add(new Parameter(PASSWORD_PARAM, password));
+        params.add(new Parameter(USE_CWP_PARAM, "true"));   //NOI18N
 
         //Utilities.trustZemblyCertificate();
 
         UrlConnection conn = new UrlConnection(LOGIN_URL, params);
-        try {
-            Response result = conn.post(null);
-     
-            return parseUserInfo(result.getString());
-        } catch (IOException ex) {
-            Utilities.handleException(ex);
-        }
+        Response result = conn.post(null);
 
-        //Utilities.untrustZemblyCertificate();
-
-        return null;
+        return parseUserInfo(result.getString());
     }
 
     private Zembly getZembly() {
         if (zembly == null) {
             try {
-                zembly = Zembly.getInstance("org/netbeans/modules/wag/manager/resources/zcl.properties");
+                zembly = Zembly.getInstance("org/netbeans/modules/wag/manager/resources/zcl.properties");   //NOI18N
 
                 Configuration config = zembly.getConfig();
-                //config.setBaseUrl("http://spunky.net:8080/things");
                 config.setConsumerKey(userInfo.getKey());
                 config.setConsumerSecret(userInfo.getSecret());
             } catch (Exception ex) {
@@ -233,29 +227,24 @@ public class ZemblySession implements PropertyChangeListener {
         return zembly;
     }
 
-    private ZemblyUserInfo parseUserInfo(String data) {
+    private ZemblyUserInfo parseUserInfo(String data) throws JSONException {
+        JSONTokener parser = new JSONTokener(data);
+        JSONObject obj = (JSONObject) parser.nextValue();
+        userInfo = new ZemblyUserInfo();
+
+        userInfo.setUserid(obj.getString(USERID_ATTR));
+        userInfo.setUsername(obj.getString(USERNAME_ATTR));
+
+        // The OAuth keys are not yet available from zembly.
         try {
-            JSONTokener parser = new JSONTokener(data);
-            JSONObject obj = (JSONObject) parser.nextValue();
-            userInfo = new ZemblyUserInfo();
-
-            userInfo.setUserid(obj.getString(USERID_ATTR));
-            userInfo.setUsername(obj.getString(USERNAME_ATTR));
-
-            // The OAuth keys are not yet available from zembly.
-            try {
-                userInfo.setKey(obj.getString(KEY_ATTR));
-                userInfo.setSecret(obj.getString(SECRET_ATTR));
-            } catch (JSONException ex) {
-                // ignore
+            userInfo.setKey(obj.getString(KEY_ATTR));
+            userInfo.setSecret(obj.getString(SECRET_ATTR));
+        } catch (JSONException ex) {
+            // ignore
             }
 
-            return userInfo;
-        } catch (JSONException ex) {
-            Utilities.handleException(ex);
-        }
+        return userInfo;
 
-        return null;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -277,7 +266,11 @@ public class ZemblySession implements PropertyChangeListener {
 
             // If new value is not null, that means login, otherwise, logout
             if (newValue != null) {
-                login(newValue.getUserName(), newValue.getPassword());
+                try {
+                    login(newValue.getUserName(), newValue.getPassword());
+                } catch (Exception ex) {
+                    Utilities.handleException(ex);
+                }
             } else {
                 logout();
             }
