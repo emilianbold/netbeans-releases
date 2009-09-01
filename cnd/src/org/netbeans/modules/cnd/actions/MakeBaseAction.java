@@ -106,12 +106,12 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         // Arguments
         String[] args;
         if (target.length() == 0) {
-            args = new String[]{"-f", makefile.getName()};
+            args = new String[]{"-f", makefile.getName()}; // NOI18N
         } else {
-            args = new String[]{"-f", makefile.getName(), target};
+            args = new String[]{"-f", makefile.getName(), target}; // NOI18N
         }
         // Tab Name
-        String tabName = getString("MAKE_LABEL", node.getName());
+        String tabName = getString("MAKE_LABEL", node.getName()); // NOI18N
         if (target != null && target.length() > 0) {
             tabName += " " + target; // NOI18N
         }
@@ -165,7 +165,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(process.exitValue());
                         }
-                        String message = getString("Output.MakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis));
+                        String message = getString("Output.MakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -176,7 +176,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(-1);
                         }
-                        String message = getString("Output.MakeFailedToStart");
+                        String message = getString("Output.MakeFailedToStart"); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -189,9 +189,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                         }
                         String message;
                         if (process.exitValue() != 0) {
-                            message = getString("Output.MakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.MakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         } else {
-                            message = getString("Output.MakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.MakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         }
                         tab.getOut().println();
                         tab.getOut().println(message);
@@ -210,7 +210,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                         if (outputListener != null) {
                             try {
                                 outputListener.write(line);
-                                outputListener.write("\n");
+                                outputListener.write("\n"); // NOI18N
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }

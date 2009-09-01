@@ -28,13 +28,13 @@ public final class ErrorAnnotation extends Annotation implements PropertyChangeL
      * directory "Editors/AnnotationTypes"
      * @return  name of the anotation type */
     public String getAnnotationType() {
-        return "org-netbeans-modules-cnd-error";
+        return "org-netbeans-modules-cnd-error"; // NOI18N
     }
 
     /** Returns the tooltip text for this annotation.
      * @return  tooltip for this annotation */
     public String getShortDescription() {
-        return NbBundle.getMessage(OutputWindowWriter.class, "HINT_CompilerError");
+        return NbBundle.getMessage(OutputWindowWriter.class, "HINT_CompilerError"); // NOI18N
     }
 
     public void attach(Line line) {

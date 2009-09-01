@@ -173,7 +173,7 @@ public final class GCCErrorParser extends ErrorParser {
             res.add(line, null, false);
             return res;
         }
-        throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern());
+        throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern()); // NOI18N
     }
 
     public Pattern[] getPattern() {

@@ -79,7 +79,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     private static final boolean TRACE = false;
 
     public String getName() {
-        return getString("BTN_Run");
+        return getString("BTN_Run"); // NOI18N
     }
 
     @Override
@@ -122,7 +122,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String bdir = bes.getRunDirectory();
         File buildDir = getAbsoluteBuildDir(bdir, shellFile);
         // Tab Name
-        String tabName = getString("RUN_LABEL", node.getName());
+        String tabName = getString("RUN_LABEL", node.getName()); // NOI18N
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
@@ -170,12 +170,12 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
        
         if (TRACE) {
-            System.err.println("Run "+shellCommand);
-            System.err.println("\tin folder   "+buildDir.getPath());
-            System.err.println("\targuments   "+argsFlat);
-            System.err.println("\tenvironment ");
+            System.err.println("Run "+shellCommand); // NOI18N
+            System.err.println("\tin folder   "+buildDir.getPath()); // NOI18N
+            System.err.println("\targuments   "+argsFlat); // NOI18N
+            System.err.println("\tenvironment "); // NOI18N
             for(String v : env) {
-                System.err.println("\t\t"+v);
+                System.err.println("\t\t"+v); // NOI18N
             }
         }
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
@@ -187,7 +187,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
-        .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString())
+        .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
         .addNativeProcessListener(new ChangeListener() {
            private long startTimeMillis;
@@ -213,7 +213,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(process.exitValue());
                         }
-                        String message = getString("Output.RunTerminated", formatTime(System.currentTimeMillis() - startTimeMillis));
+                        String message = getString("Output.RunTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -224,7 +224,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(-1);
                         }
-                        String message = getString("Output.RunFailedToStart");
+                        String message = getString("Output.RunFailedToStart"); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -237,9 +237,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                         }
                         String message;
                         if (process.exitValue() != 0) {
-                            message = getString("Output.RunFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.RunFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         } else {
-                            message = getString("Output.RunSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.RunSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         }
                         tab.getOut().println();
                         tab.getOut().println(message);
@@ -263,7 +263,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                         if (outputListener != null) {
                             try {
                                 outputListener.write(line);
-                                outputListener.write("\n");
+                                outputListener.write("\n"); // NOI18N
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -276,23 +276,6 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // Execute the shellfile
         final ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
         Future<Integer> result = es.run();
-
-        
-//        NativeExecutor nativeExecutor = new NativeExecutor(
-//            execEnv,
-//            buildDir.getPath(),
-//            shellCommand,
-//            argsFlat.toString(),
-//            env,
-//            tabName,
-//            "Run", // NOI18N
-//            false,
-//            true,
-//            false);
-//        if (outputListener != null) {
-//            nativeExecutor.setOutputListener(outputListener);
-//        }
-//        new ShellExecuter(nativeExecutor, listener).execute();
     }
     
 }

@@ -67,7 +67,7 @@ public final class SUNErrorParser extends ErrorParser {
             }
             return NO_RESULT;
         }
-        throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern());
+        throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern()); // NOI18N
     }
 
     public Pattern[] getPattern() {

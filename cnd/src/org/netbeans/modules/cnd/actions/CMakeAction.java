@@ -103,7 +103,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
         // Tab Name
-        String tabName = getString("CMAKE_LABEL", node.getName());
+        String tabName = getString("CMAKE_LABEL", node.getName()); // NOI18N
 
         String[] additionalEnvironment = getAdditionalEnvirounment(node);
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
@@ -124,12 +124,12 @@ public class CMakeAction extends AbstractExecutorRunAction {
             argsFlat.append(arguments[i]);
         }
         if (TRACE) {
-            System.err.println("Run "+executable);
-            System.err.println("\tin folder   "+buildDir.getPath());
-            System.err.println("\targuments   "+argsFlat);
-            System.err.println("\tenvironment ");
+            System.err.println("Run "+executable); // NOI18N
+            System.err.println("\tin folder   "+buildDir.getPath()); // NOI18N
+            System.err.println("\targuments   "+argsFlat); // NOI18N
+            System.err.println("\tenvironment "); // NOI18N
             for(String v : env) {
-                System.err.println("\t\t"+v);
+                System.err.println("\t\t"+v); // NOI18N
             }
         }
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
@@ -141,7 +141,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         }
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
-        .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString())
+        .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
         .addNativeProcessListener(new ChangeListener() {
            private long startTimeMillis;
@@ -167,7 +167,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(process.exitValue());
                         }
-                        String message = getString("Output.CMakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis));
+                        String message = getString("Output.CMakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -178,7 +178,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(-1);
                         }
-                        String message = getString("Output.CMakeFailedToStart");
+                        String message = getString("Output.CMakeFailedToStart"); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -191,9 +191,9 @@ public class CMakeAction extends AbstractExecutorRunAction {
                         }
                         String message;
                         if (process.exitValue() != 0) {
-                            message = getString("Output.CMakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.CMakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         } else {
-                            message = getString("Output.CMakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.CMakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         }
                         tab.getOut().println();
                         tab.getOut().println(message);
@@ -217,7 +217,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                         if (outputListener != null) {
                             try {
                                 outputListener.write(line);
-                                outputListener.write("\n");
+                                outputListener.write("\n"); // NOI18N
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -230,20 +230,5 @@ public class CMakeAction extends AbstractExecutorRunAction {
         // Execute the makefile
         final ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
         Future<Integer> result = es.run();
-//        NativeExecutor nativeExecutor = new NativeExecutor(
-//               execEnv,
-//                buildDir.getPath(),
-//                executable,
-//                argsFlat.toString(),
-//                env,
-//                tabName,
-//                "cmake", // NOI18N
-//                false,
-//                true,
-//                false);
-//        if (outputListener != null) {
-//            nativeExecutor.setOutputListener(outputListener);
-//        }
-//        new ShellExecuter(nativeExecutor, listener).execute();
     }
 }

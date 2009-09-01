@@ -41,18 +41,18 @@ public abstract class ErrorParser {
     protected FileObject resolveFile(String fileName) {
         if (Utilities.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
-            if (fileName.startsWith("/cygdrive/")) {
-                fileName = fileName.substring("/cygdrive/".length());
+            if (fileName.startsWith("/cygdrive/")) { // NOI18N
+                fileName = fileName.substring("/cygdrive/".length()); // NOI18N
                 fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1);
-            } else if (fileName.length() > 3 && fileName.charAt(0) == '/' && fileName.charAt(2) == '/') {
+            } else if (fileName.length() > 3 && fileName.charAt(0) == '/' && fileName.charAt(2) == '/') { // NOI18N
                 // NOI18N
-                fileName = "" + fileName.charAt(1) + ':' + fileName.substring(2);
+                fileName = "" + fileName.charAt(1) + ':' + fileName.substring(2); // NOI18N
             }
-            if (fileName.startsWith("/") || fileName.startsWith(".")) {
+            if (fileName.startsWith("/") || fileName.startsWith(".")) { // NOI18N
                 // NOI18N
                 return null;
             }
-            fileName = fileName.replace('/', '\\');
+            fileName = fileName.replace('/', '\\'); // NOI18N
         }
         fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName, true);
         File file = CndFileUtils.normalizeFile(new File(fileName));
@@ -75,8 +75,7 @@ public abstract class ErrorParser {
                 // the compiler(set) and the output should only be scanned for those patterns.
                 String absPath1 = relativePath;
                 String absPath2 = null;
-                if (absPath1.startsWith("/usr/lib")) {
-                    // NOI18N
+                if (absPath1.startsWith("/usr/lib")) { // NOI18N
                     absPath2 = absPath1.substring(4);
                 }
                 List<CompilerSet> compilerSets = CompilerSetManager.getDefault(execEnv).getCompilerSets();
@@ -117,14 +116,15 @@ public abstract class ErrorParser {
             }
         }
         FileObject myObj = relativeDir;
-        String delims = Utilities.isWindows() ? File.separator + '/' : File.separator;
+        String delims = Utilities.isWindows() ? File.separator + '/' : File.separator; // NOI18N
+
         // NOI18N
         StringTokenizer st = new StringTokenizer(relativePath, delims);
         while ((myObj != null) && st.hasMoreTokens()) {
             String nameExt = st.nextToken();
-            if ("..".equals(nameExt)) {
+            if ("..".equals(nameExt)) { // NOI18N
                 myObj = myObj.getParent();
-            } else if (".".equals(nameExt)) {
+            } else if (".".equals(nameExt)) { // NOI18N
             } else {
                 myObj = myObj.getFileObject(nameExt, null);
             }

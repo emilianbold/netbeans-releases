@@ -105,7 +105,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
         String[] args = getArguments(node, Tool.QMakeTool); // NOI18N
         // Tab Name
-        String tabName = getString("QMAKE_LABEL", node.getName());
+        String tabName = getString("QMAKE_LABEL", node.getName()); // NOI18N
 
         String[] additionalEnvironment = getAdditionalEnvirounment(node);
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
@@ -126,12 +126,12 @@ public class QMakeAction extends AbstractExecutorRunAction {
             argsFlat.append(args[i]);
         }
         if (TRACE) {
-            System.err.println("Run "+executable);
-            System.err.println("\tin folder   "+buildDir.getPath());
-            System.err.println("\targuments   "+argsFlat);
-            System.err.println("\tenvironment ");
+            System.err.println("Run "+executable); // NOI18N
+            System.err.println("\tin folder   "+buildDir.getPath()); // NOI18N
+            System.err.println("\targuments   "+argsFlat); // NOI18N
+            System.err.println("\tenvironment "); // NOI18N
             for(String v : env) {
-                System.err.println("\t\t"+v);
+                System.err.println("\t\t"+v); // NOI18N
             }
         }
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
@@ -142,7 +142,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         } catch (IOException ioe) {
         }
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setCommandLine(quoteExecutable(executable)+" "+argsFlat)
+        .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir.getPath())
         .setArguments(args)
         .unbufferOutput(false)
@@ -170,7 +170,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(process.exitValue());
                         }
-                        String message = getString("Output.QMakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis));
+                        String message = getString("Output.QMakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -181,7 +181,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                         if (listener != null) {
                             listener.executionFinished(-1);
                         }
-                        String message = getString("Output.QMakeFailedToStart");
+                        String message = getString("Output.QMakeFailedToStart"); // NOI18N
                         tab.getOut().println();
                         tab.getOut().println(message);
                         tab.getOut().flush();
@@ -194,9 +194,9 @@ public class QMakeAction extends AbstractExecutorRunAction {
                         }
                         String message;
                         if (process.exitValue() != 0) {
-                            message = getString("Output.QMakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.QMakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         } else {
-                            message = getString("Output.QMakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis));
+                            message = getString("Output.QMakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                         }
                         tab.getOut().println();
                         tab.getOut().println(message);
@@ -220,7 +220,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                         if (outputListener != null) {
                             try {
                                 outputListener.write(line);
-                                outputListener.write("\n");
+                                outputListener.write("\n"); // NOI18N
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
