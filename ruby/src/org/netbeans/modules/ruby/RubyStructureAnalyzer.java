@@ -1174,7 +1174,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                 for (AstElement co : nested) {
                     if (!co.isHidden()) {
-                        children.add(new RubyStructureItem((AstElement)co, result));
+                        children.add(new RubyStructureItem(co, result));
                     }
                 }
 
