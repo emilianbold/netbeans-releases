@@ -45,10 +45,12 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.IssueManagement;
+import org.netbeans.modules.maven.model.pom.License;
 import org.netbeans.modules.maven.model.pom.MailingList;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -148,6 +150,11 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
             mProj.setName(kProj.getDisplayName());
             mProj.setDescription(kProj.getDescription());
             mProj.setURL(kProj.getWebLocation().toExternalForm());
+
+            KenaiLicense[] kLicenses = kProj.getLicenses();
+            for (int i = 0; i < kLicenses.length; i++) {
+                updateLicense(mProj, kLicenses[i], factory);
+            }
 
             KenaiFeature[] kfs = kProj.getFeatures();
 
@@ -268,6 +275,27 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
         sb2.append(kf.getName());
         mList.setSubscribe(sb.toString());
         mList.setUnsubscribe(sb2.toString());
+    }
+
+    private static void updateLicense(Project mProj, KenaiLicense kLicense,
+            POMComponentFactory factory) {
+        List<License> mLicenses = mProj.getLicenses();
+        License mLicense = null;
+        if (mLicenses != null) {
+            for (License l : mLicenses) {
+                if (l.getName() != null && l.getName().equals(kLicense.getName())) {
+                    mLicense = l;
+                    break;
+                }
+            }
+        }
+        if (mLicense == null) {
+            mLicense = factory.createLicense();
+            mProj.addLicense(mLicense);
+        }
+        mLicense.setName(kLicense.getName());
+        mLicense.setUrl(kLicense.getUri().toString());
+        mLicense.setComments(kLicense.getDisplayName());
     }
 
 }
