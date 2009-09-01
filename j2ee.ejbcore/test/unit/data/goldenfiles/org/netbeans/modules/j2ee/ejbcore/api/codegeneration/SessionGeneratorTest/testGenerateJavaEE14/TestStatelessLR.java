@@ -12,7 +12,7 @@ import javax.ejb.SessionContext;
  *
  * @author {user}
  */
-public class TestStatefulLRBean implements SessionBean {
+public class TestStatelessLR implements SessionBean {
     
     private SessionContext context;
     
