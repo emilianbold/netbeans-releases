@@ -96,7 +96,7 @@ import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -343,7 +343,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 if (isKenaiRepository && (reportedStatusLabel.getIcon() == null)) {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
-                    JLabel label = KenaiUser.forName(userName).createUserWidget();
+                    JLabel label = KenaiUserUI.forName(userName).createUserWidget();
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
                     reportedStatusLabel = label;
@@ -365,7 +365,7 @@ public class IssuePanel extends javax.swing.JPanel {
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !assignedField.getText().equals(assignee))) {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
-                JLabel label = KenaiUser.forName(userName).createUserWidget();
+                JLabel label = KenaiUserUI.forName(userName).createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
                 assignedToStatusLabel = label;

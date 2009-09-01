@@ -85,7 +85,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -349,7 +349,7 @@ public class ChatPanel extends javax.swing.JPanel {
         online.setHorizontalTextPosition(JLabel.LEFT);
         if (isPrivate()) {
             topPanel.remove(online);
-            online = KenaiUser.forName(getPrivateName()).createUserWidget();
+            online = KenaiUserUI.forName(getPrivateName()).createUserWidget();
             online.setText(null);
             online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
             topPanel.add(online, java.awt.BorderLayout.EAST);

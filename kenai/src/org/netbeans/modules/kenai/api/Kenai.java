@@ -61,6 +61,7 @@ import org.netbeans.modules.kenai.KenaiImpl;
 import org.netbeans.modules.kenai.LicensesListData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
+import org.netbeans.modules.kenai.UserData;
 
 /**
  * Main entry point to Kenai integration.
@@ -251,6 +252,12 @@ public final class Kenai {
         Collection<ProjectData> prjs = impl.searchProjects(pattern);
         return new LazyCollection(prjs);
     }
+
+    Collection<KenaiUser> getProjectMembers(String name) throws KenaiException {
+        Collection<UserData> usrs = impl.getProjectMembers(name);
+        return new LazyCollection(usrs);
+    }
+
 
     /**
      * Getter for collection of available licences
@@ -468,6 +475,8 @@ public final class Kenai {
                         return (O) new KenaiLicense((LicensesListData.LicensesListItem) param);
                     } else if (param instanceof ServicesListItem) {
                         return (O) new KenaiService((ServicesListItem) param);
+                    } else if (param instanceof UserData) {
+                        return (O) new KenaiUser((UserData) param);
                     }
                     throw new IllegalStateException();
                 }
