@@ -144,9 +144,6 @@ made subject to such option by the copyright holder.
    </folder> <!-- Window -->
   </folder>
     <folder name="Shortcuts">
-        <file name="O-F7.shadow">
-            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
-        </file>
         <file name="OS-U.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance"/>
         </file>
