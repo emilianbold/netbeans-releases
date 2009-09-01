@@ -23,7 +23,7 @@
                     <code-name-base>org.netbeans.core.windows</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.14.2</specification-version>
+                        <specification-version>2.14.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
