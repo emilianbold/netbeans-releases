@@ -100,6 +100,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
@@ -1816,8 +1817,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     TreePath pathToClass = findClass(block);
 
                     assert pathToClass != null;
-
-                    ClassTree nueClass = GeneratorUtils.insertClassMember(copy, pathToClass, method);
+                    
+                    Tree parent = findMethod(block).getLeaf();
+                    ClassTree nueClass = null;
+                    if (parent.getKind() == Kind.METHOD) {
+                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
+                    } else {
+                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
+                    }
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
                     copy.rewrite(statements, make.Block(nueStatements, statements.isStatic()));
@@ -1921,8 +1928,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     assert pathToClass != null;
 
-                    ClassTree nueClass = GeneratorUtils.insertClassMember(copy, pathToClass, method);
-
+                    Tree parent = findMethod(expression).getLeaf();
+                    ClassTree nueClass = null;
+                    if (parent.getKind() == Kind.METHOD) {
+                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
+                    } else {
+                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
+                    }
+                    
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
                     copy.rewrite(expression.getLeaf(), invocation);
                 }

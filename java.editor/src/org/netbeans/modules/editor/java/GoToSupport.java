@@ -410,9 +410,9 @@ public class GoToSupport {
         Token<JavaTokenId> t = ts.token();
         
         if (JavaTokenId.JAVADOC_COMMENT == t.id()) {
-            // javadoc hyperlinking (references + XXX param names)
+            // javadoc hyperlinking (references + param names)
             TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
-            if (JavadocImports.isInsideReference(jdts, offset)) {
+            if (JavadocImports.isInsideReference(jdts, offset) || JavadocImports.isInsideParamName(jdts, offset)) {
                 jdts.move(offset);
                 jdts.moveNext();
                 if (token != null) {

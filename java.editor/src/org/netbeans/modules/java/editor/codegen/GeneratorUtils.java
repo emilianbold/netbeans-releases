@@ -123,6 +123,23 @@ public class GeneratorUtils {
         }
         return copy.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), idx, member);        
     }
+
+    public static ClassTree insertMethodAfter(WorkingCopy copy, TreePath path, MethodTree member, MethodTree precedingMethod) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TreeUtilities tu = copy.getTreeUtilities();
+        int idx = 0;
+        for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+            if (tree == precedingMethod) {
+                idx++;
+                break;
+            }
+
+            if (!tu.isSynthetic(new TreePath(path, tree)) && ClassMemberComparator.compare(member, tree) < 0)
+                break;
+            idx++;
+        }
+        return copy.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), idx, member);
+    }
     
     public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL))

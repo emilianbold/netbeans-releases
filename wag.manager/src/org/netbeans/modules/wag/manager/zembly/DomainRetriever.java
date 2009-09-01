@@ -75,7 +75,7 @@ public class DomainRetriever {
 
         try {
             String result = zembly.callService(LIST_DOMAIN_URI, new String[][]{});
-            System.out.println("all domains: " + result);
+            //System.out.println("all domains: " + result);
             return parseAllDomains(result);
         } catch (Exception ex) {
             Utilities.handleException(ex);
@@ -93,7 +93,7 @@ public class DomainRetriever {
                         {ITEM_TYPE_PARAM, ITEM_TYPE_VALUE},
                         {SHOW_DRAFTS_PARAM, SHOW_DRAFTS_VALUE}
                     });
-            System.out.println("your domains: " + result);
+            //System.out.println("your domains: " + result);
             return parseYourDomains(result);
         } catch (Exception ex) {
             Utilities.handleException(ex);
@@ -113,7 +113,7 @@ public class DomainRetriever {
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
                     WagDomain domain = new WagDomain(obj.getString(NAME_ATTR), obj.getString(PATH_ATTR));
-                    System.out.println("domain: " + domain);
+                    //System.out.println("domain: " + domain);
                     domains.add(domain);
                 }
             }
@@ -137,7 +137,7 @@ public class DomainRetriever {
             for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
                 WagDomain domain = new WagDomain(item.getString(NAME_ATTR), item.getString(PATH_ATTR));
-                System.out.println("your domain: " + domain);
+                //System.out.println("your domain: " + domain);
                 domains.add(domain);
             }
 
