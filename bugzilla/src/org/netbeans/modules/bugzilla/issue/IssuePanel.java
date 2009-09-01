@@ -73,6 +73,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -83,6 +84,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -240,6 +242,13 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         tasklistButton.setEnabled(false);
         reloadForm(true);
+
+        // Hack to "link" the width of both columns
+        Dimension dim = ccField.getPreferredSize();
+        int width1 = Math.max(osCombo.getPreferredSize().width, platformCombo.getPreferredSize().width);
+        int width2 = Math.max(priorityCombo.getPreferredSize().width, severityCombo.getPreferredSize().width);
+        int gap = LayoutStyle.getSharedInstance().getPreferredGap(osCombo, platformCombo, LayoutStyle.RELATED, SwingConstants.EAST, this);
+        ccField.setPreferredSize(new Dimension(2*Math.max(width1,width2)+gap,dim.height));
     }
 
     private static void swap(GroupLayout layout, JComponent comp1, JComponent comp2, JComponent temp) {
@@ -1242,23 +1251,23 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                            .add(layout.createSequentialGroup()
-                                                .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                .add(0, 0, 0)
-                                                .add(duplicateButton))
-                                            .add(layout.createSequentialGroup()
-                                                .add(blocksField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                .add(0, 0, 0)
-                                                .add(blocksButton))
-                                            .add(layout.createSequentialGroup()
-                                                .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                .add(0, 0, 0)
-                                                .add(dependsOnButton))
                                             .add(ccField)
                                             .add(qaContactField)
                                             .add(assignedField)
                                             .add(statusCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .add(resolutionField))
+                                            .add(resolutionField)
+                                            .add(layout.createSequentialGroup()
+                                                .add(duplicateField)
+                                                .add(0, 0, 0)
+                                                .add(duplicateButton))
+                                            .add(layout.createSequentialGroup()
+                                                .add(dependsField)
+                                                .add(0, 0, 0)
+                                                .add(dependsOnButton))
+                                            .add(layout.createSequentialGroup()
+                                                .add(blocksField)
+                                                .add(0, 0, 0)
+                                                .add(blocksButton)))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                             .add(layout.createSequentialGroup()
@@ -1383,8 +1392,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(urlWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(dependsLabel)
                     .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(dependsOnButton)
-                    .add(dependsOnWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(dependsOnWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(dependsOnButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keywordsLabel)
@@ -1393,8 +1402,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(keywordsWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(blocksLabel)
                     .add(blocksField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(blocksButton)
-                    .add(blocksWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(blocksWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(blocksButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(statusWhiteboardLabel)
