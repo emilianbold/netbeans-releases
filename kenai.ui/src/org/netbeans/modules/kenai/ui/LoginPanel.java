@@ -43,6 +43,7 @@ import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ToolTipManager;
@@ -92,6 +93,13 @@ public class LoginPanel extends javax.swing.JPanel {
             Logger.getLogger(LoginPanel.class.getName()).log(Level.INFO, errorMessage, ex);
         }
         error.setText(errorMessage);
+        Map<String, String> errors = ex.getErrors();
+        if (errors!=null) {
+            String msg = errors.get("message");//NOI18N
+            if (msg!=null) {
+                error.setToolTipText(msg);
+            }
+        }
         error.setVisible(true);
         password.requestFocus();
         setLoginButtonEnabled(true);

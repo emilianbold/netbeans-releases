@@ -74,7 +74,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.Status;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -475,7 +475,7 @@ public class KenaiConnection implements PropertyChangeListener {
                         }
                     }
                     Presence presence = (Presence) packet;
-                    KenaiUser user = KenaiUser.forName(StringUtils.parseResource(packet.getFrom()));
+                    KenaiUserUI user = KenaiUserUI.forName(StringUtils.parseResource(packet.getFrom()));
                     SPIAccessor.DEFAULT.firePropertyChange(
                             user,
                             presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);

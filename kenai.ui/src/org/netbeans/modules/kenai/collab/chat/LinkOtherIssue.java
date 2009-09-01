@@ -37,48 +37,38 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Becicka
  */
-@ServiceProvider(service=MemberAccessor.class)
-public class MemberAccessorImpl extends MemberAccessor{
+public class LinkOtherIssue extends AbstractAction {
+    
+    private JTextPane out;
+    
+    public LinkOtherIssue(JTextPane out) {
+        super(NbBundle.getMessage(LinkOtherIssue.class, "LINK_OTHER_ISSUE"));
+        this.out=out;
+    }
 
-    @Override
-    public List<MemberHandle> getMembers(ProjectHandle project) {
-        ArrayList<MemberHandle> handles = new ArrayList();
-        for (String user : KenaiConnection.getDefault().getMembers(project.getId())) {
-            handles.add(new MemberHandleImpl(user));
+    public void actionPerformed(ActionEvent e) {
+        String outText = "ISSUE:123";//NOI18N
+        try {
+            out.requestFocus();
+            int caretPosition = out.getCaretPosition();
+            out.getDocument().insertString( caretPosition, " " + outText + " ", null);
+            out.setSelectionStart(caretPosition+7);
+            out.setSelectionEnd(caretPosition+outText.length()+1);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return handles;
     }
-
-    @Override
-    public Action getStartChatAction(final MemberHandle member) {
-        return new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                KenaiUserUI.forName(member.getName()).startChat();
-            }
-        };
-    }
-
 }

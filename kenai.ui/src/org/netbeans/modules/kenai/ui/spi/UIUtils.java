@@ -264,17 +264,17 @@ public final class UIUtils {
     }
 
     public static JLabel createUserWidget(String user) {
-        return createUserWidget(KenaiUser.forName(user));
+        return createUserWidget(KenaiUserUI.forName(user));
     }
 
-    static JLabel createUserWidget(final KenaiUser u) {
+    static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUser());
         result.setIcon(u.getIcon());
         u.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
-                    result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                if (KenaiUserUI.PROP_PRESENCE.equals(evt.getPropertyName())) {
+                    result.firePropertyChange(KenaiUserUI.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
                     result.repaint();
                 }
             }
