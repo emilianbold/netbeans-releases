@@ -130,7 +130,7 @@ public final class AdvancedPanel extends JPanel {
         return model.getLookup ();
     }
     
-    void init (Lookup masterLookup) {
+    void init() {
         // init components
         tabbedPanel = new JTabbedPane();
         tabbedPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AdvancedPanel.class, "AdvancedPanel.tabbedPanel.AD"));
@@ -139,10 +139,10 @@ public final class AdvancedPanel extends JPanel {
         setLayout (new BorderLayout ());
         removeAll(); // #157434 - remove previous tabbedPanel
         add (tabbedPanel, BorderLayout.CENTER);
-        initTabbedPane (masterLookup);
+        initTabbedPane();
     }
 
-    private void initTabbedPane(Lookup masterLookup) {
+    private void initTabbedPane() {
         tabbedPanel.removeChangeListener(changeListener);
         tabbedPanel.removeAll();
         List<String> categories = model.getCategories();
@@ -201,14 +201,13 @@ public final class AdvancedPanel extends JPanel {
     
     private class LookupListenerImpl implements LookupListener {
         public void resultChanged(LookupEvent ev) {
-            final Lookup masterLookup = model.getLookup();
             model = new Model(subpath, listener);
             if(SwingUtilities.isEventDispatchThread()) {
-                initTabbedPane(masterLookup);
+                initTabbedPane();
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        initTabbedPane(masterLookup);
+                        initTabbedPane();
                     }
                 });
             }
