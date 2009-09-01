@@ -288,8 +288,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     public void openProject(String projectName) {                
         
         /* 1. check if project is open  */
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         boolean isOpen = true;
         try {
             ProjectRootNode prn = pto.getProjectRootNode(projectName);

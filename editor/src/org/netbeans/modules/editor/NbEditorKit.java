@@ -337,7 +337,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     private static Action translateContextLookupAction(Lookup contextLookup, Action action) {
         if (action instanceof ContextAwareAction && contextLookup != null){
             action = ((org.openide.util.ContextAwareAction)action)
-            .createContextAwareInstance(contextLookup);
+            .createContextAwareInstance(contextLookup); // May return null
         }
         return action;
     }
@@ -499,8 +499,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                         Lookup contextLookup = getContextLookup(component);
                         Action action = SystemAction.get(saClass);
                         action = translateContextLookupAction(contextLookup, action);
-                        
-                        JMenuItem item = createLocalizedMenuItem(action);
+                        JMenuItem item = (action != null) ? createLocalizedMenuItem(action) : null;
                         if (item != null) {
                             if (item instanceof DynamicMenuContent) {
                                 Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
@@ -881,24 +880,26 @@ public class NbEditorKit extends ExtKit implements Callable {
                 Lookup contextLookup = getContextLookup(target);
                 Action nonContextAction = action;
                 action = translateContextLookupAction(contextLookup, action);
-                item = createLocalizedMenuItem(action);
-                String actionName = (String) action.getValue(Action.NAME);
-                String itemText = getItemText(target, actionName, action);
-                if (itemText != null) {
-                    item.setText(itemText);
-                    Mnemonics.setLocalizedText(item, itemText);
-                }
-                // Search for shortcut by using original non-context action.
-                // Since JTextComponent.DefaultKeymap.getKeyStrokesForAction(Action a)
-                // uses == for comparison when searching for shortcut then
-                // there would be no match for ContextAwareAction that would produce
-                // a fresh action's instance. Thus it's better to use original action
-                // when searching for an accelerator.
-                addAcceleretors(nonContextAction, item, target);
-                item.setEnabled(action.isEnabled());
-                Object helpID = action.getValue ("helpID"); // NOI18N
-                if (helpID != null && (helpID instanceof String)) {
-                    item.putClientProperty ("HelpID", helpID); // NOI18N
+                if (action != null) {
+                    item = createLocalizedMenuItem(action);
+                    String actionName = (String) action.getValue(Action.NAME);
+                    String itemText = getItemText(target, actionName, action);
+                    if (itemText != null) {
+                        item.setText(itemText);
+                        Mnemonics.setLocalizedText(item, itemText);
+                    }
+                    // Search for shortcut by using original non-context action.
+                    // Since JTextComponent.DefaultKeymap.getKeyStrokesForAction(Action a)
+                    // uses == for comparison when searching for shortcut then
+                    // there would be no match for ContextAwareAction that would produce
+                    // a fresh action's instance. Thus it's better to use original action
+                    // when searching for an accelerator.
+                    addAcceleretors(nonContextAction, item, target);
+                    item.setEnabled(action.isEnabled());
+                    Object helpID = action.getValue ("helpID"); // NOI18N
+                    if (helpID != null && (helpID instanceof String)) {
+                        item.putClientProperty ("HelpID", helpID); // NOI18N
+                    }
                 }
             }
 

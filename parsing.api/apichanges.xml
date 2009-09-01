@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexingSupport.createDocument-IndexResult.getIndexable">
+      <api name="ParsingAPI"/>
+      <summary>Added IndexingSupport.createDocument(FileObject) and IndexResult.getIndexable()</summary>
+      <version major="1" minor="22"/>
+      <date day="1" month="9" year="2009"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added methods <code>IndexingSupport.createDocument(FileObject)</code> and <code>IndexResult.getIndexable()</code>
+              in order to allow <code>CustomIndexer</code>s and <code>BinaryIndexer</code>s to use
+              <code>IndexingSupport</code>.
+          </p>
+      </description>
+  </change>
   <change id="IndexingSupport.isValid">
       <api name="ParsingAPI"/>
       <summary>Added a method for checking an index validity</summary>
