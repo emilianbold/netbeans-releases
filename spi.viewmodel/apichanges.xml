@@ -319,6 +319,24 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="CheckNodeModelFilter" />
         <issue number="159545"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Check extension to NodeModel.</summary>
+        <version major="1" minor="19"/>
+        <date day="1" month="9" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            This API change allows to change a node selection in the tree table view.
+            SelectionChanged event is used to select a set of nodes (rows).
+            <p>
+                Added classes:<br/>
+                <code>org.netbeans.spi.viewmodel.ModelEvent.SelectionChanged</code>,
+            </p>
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="ModelEvent" />
+        <issue number="171194"/>
+    </change>
     
 
 </changes>
