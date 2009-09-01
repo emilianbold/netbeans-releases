@@ -134,7 +134,7 @@ public class LoginAction extends NodeAction {
                                 SwingUtilities.invokeLater(new Runnable() {
 
                                     public void run() {
-                                        //loginPanel.showError(ex);
+                                        loginPanel.showError(ex);
                                     }
                                 });
                             }
