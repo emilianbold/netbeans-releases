@@ -197,6 +197,12 @@ public class KenaiREST extends KenaiImpl {
         return cnd.is_unique?null:cnd.message;
     }
 
+    @Override
+    public Collection<UserData> getProjectMembers(String name) throws KenaiException {
+        MembersListData members = loadPage(baseURL.toString() + "/api/projects/"+name+"/members.json", MembersListData.class);
+        return new LazyList(members, MembersListData.class);
+    }
+
     private class LazyList<COLLECTION extends ListData, ITEM> extends AbstractCollection<ITEM> {
 
         private COLLECTION col;
@@ -261,6 +267,8 @@ public class KenaiREST extends KenaiImpl {
                 return (ITEM) ((ServicesListData) col).services[index];
             } else if (col instanceof LicensesListData) {
                 return (ITEM) ((LicensesListData) col).licenses[index];
+            } else if (col instanceof MembersListData) {
+                return (ITEM) ((MembersListData) col).members[index];
             }
             throw new IllegalStateException();
         }

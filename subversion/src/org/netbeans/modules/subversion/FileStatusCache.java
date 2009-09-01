@@ -172,17 +172,17 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return true if there are any files with the given status otherwise false
      */
-    public boolean containsFiles(Context context, int includeStatus) {
+    public boolean containsFiles(Context context, int includeStatus, boolean addExcluded) {
         long ts = System.currentTimeMillis();
         try {
             File[] roots = context.getRootFiles();
 
             // check to roots if they already apply to the given status
-            if(containsFilesIntern(roots, includeStatus, false)) {
+            if(containsFilesIntern(roots, includeStatus, false, addExcluded)) {
                 return true;
             }
             // check all files underneath the roots
-            return containsFiles(roots, includeStatus);
+            return containsFiles(roots, includeStatus, addExcluded);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.fine(" containsFiles(Context, int) took " + (System.currentTimeMillis() - ts));
@@ -197,10 +197,10 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return true if there are any files with the given status otherwise false
      */
-    public boolean containsFiles(Set<File> rootFiles, int includeStatus) {
+    public boolean containsFiles(Set<File> rootFiles, int includeStatus, boolean addExcluded) {
         long ts = System.currentTimeMillis();
         try {
-            return containsFiles(rootFiles.toArray(new File[rootFiles.size()]), includeStatus);
+            return containsFiles(rootFiles.toArray(new File[rootFiles.size()]), includeStatus, addExcluded);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.fine(" containsFiles(Set<File>, int) took " + (System.currentTimeMillis() - ts));
@@ -208,16 +208,16 @@ public class FileStatusCache {
         }
     }
 
-    private boolean containsFiles(File[] roots, int includeStatus) {
+    private boolean containsFiles(File[] roots, int includeStatus, boolean addExcluded) {
         for (File root : roots) {
-            if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root))) {
+            if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean containsFilesIntern(File[] indexRoots, int includeStatus, boolean recursively) {
+    private boolean containsFilesIntern(File[] indexRoots, int includeStatus, boolean recursively, boolean addExcluded) {
         if(indexRoots == null || indexRoots.length == 0) {
             return false;
         }
@@ -225,13 +225,13 @@ public class FileStatusCache {
 
             FileInformation fi = getCachedStatus(root);
 
-            if((fi != null && (fi.getStatus() & includeStatus) != 0) &&
-                !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath()))
+            if( (fi != null && (fi.getStatus() & includeStatus) != 0) &&
+                (addExcluded || !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath())))
             {
                 return true;
             }
             File[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
-            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively)) {
+            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded)) {
                 return true;
             }
         }
@@ -270,11 +270,16 @@ public class FileStatusCache {
             // get all files with given status underneath the roots files;
             // do it recusively if root isn't a flat folder
             for (File root : roots) {
-                set.addAll(listFiles(root, includeStatus, !VersioningSupport.isFlat(root)));
+                Set<File> files =
+                        listFilesIntern(
+                            cacheProvider.getIndexValues(root, includeStatus),
+                            includeStatus,
+                            !VersioningSupport.isFlat(root));
+                set.addAll(files);
             }
 
             // check also the root files for status and add them eventualy
-            set.addAll(listFilesIntern(roots, includeStatus, false));
+            set.addAll(listFilesIntern(roots, includeStatus, true));
 
             return set.toArray(new File[set.size()]);
         } finally {
@@ -321,10 +326,6 @@ public class FileStatusCache {
                 LOG.fine(" listFiles(Context, int) took " + (System.currentTimeMillis() - ts));
             }
         }
-    }
-
-    private Set<File> listFiles(File root, int includeStatus, boolean recursively) {
-        return listFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, recursively);
     }
 
     private Set<File> listFilesIntern(File[] roots, int includeStatus, boolean recursively) {

@@ -241,7 +241,6 @@
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.hudson.kenai</friend>
                 <friend>org.netbeans.modules.jira</friend>
-                <friend>org.netbeans.modules.kenai.collab</friend>
                 <package>org.netbeans.modules.kenai.ui.spi</package>
             </friend-packages>
         </data>

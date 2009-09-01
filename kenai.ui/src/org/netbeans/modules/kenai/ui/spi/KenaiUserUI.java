@@ -57,7 +57,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author Jan Becicka
  */
-public final class KenaiUser {
+public final class KenaiUserUI {
 
     static {
         SPIAccessor.DEFAULT = new SPIAccessorImpl();
@@ -72,16 +72,16 @@ public final class KenaiUser {
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private Icon icon;
 
-    private static HashMap<String, KenaiUser> users = new HashMap();
+    private static HashMap<String, KenaiUserUI> users = new HashMap();
 
-    private KenaiUser(String user) {
+    private KenaiUserUI(String user) {
         this.user=user;
     }
     
-    public static synchronized KenaiUser forName(final String user) {
-        KenaiUser kuser = users.get(user);
+    public static synchronized KenaiUserUI forName(final String user) {
+        KenaiUserUI kuser = users.get(user);
         if (kuser==null) {
-            kuser = new KenaiUser(user);
+            kuser = new KenaiUserUI(user);
             users.put(user, kuser);
         }
         return kuser;

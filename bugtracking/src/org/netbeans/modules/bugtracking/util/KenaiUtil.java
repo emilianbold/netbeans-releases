@@ -140,7 +140,7 @@ public class KenaiUtil {
         } catch (KenaiException ex) {
             return null;
         }
-        return KenaiRepositories.getInstance().getRepository(kp);
+        return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
     }
 
 }

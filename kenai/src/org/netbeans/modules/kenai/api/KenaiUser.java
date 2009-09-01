@@ -37,48 +37,79 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.api;
 
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.kenai.UserData;
 
 /**
  *
  * @author Jan Becicka
  */
-@ServiceProvider(service=MemberAccessor.class)
-public class MemberAccessorImpl extends MemberAccessor{
+public final class KenaiUser {
 
-    @Override
-    public List<MemberHandle> getMembers(ProjectHandle project) {
-        ArrayList<MemberHandle> handles = new ArrayList();
-        for (String user : KenaiConnection.getDefault().getMembers(project.getId())) {
-            handles.add(new MemberHandleImpl(user));
+    UserData data;
+
+    KenaiUser(UserData data) {
+        this.data = data;
+    }
+    
+    public String getUserName() {
+        return data.user_name;
+    }
+    
+    public String getFirstName() {
+        return data.first_name;
+    }
+    
+    public String getLastName() {
+        return data.last_name;
+    }
+    
+    public Role getRole() {
+        if ("registered".equals(data.role)) {
+            return Role.OBSERVER;
         }
-        return handles;
+        return Role.valueOf(data.role.toUpperCase());
+    }
+//    public Status getStatus() {
+//        return Status.UNKNOWN;
+//    }
+
+    @Override
+    public String toString() {
+        return getUserName() + " (" + getRole() + ")";
     }
 
     @Override
-    public Action getStartChatAction(final MemberHandle member) {
-        return new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                KenaiUserUI.forName(member.getName()).startChat();
-            }
-        };
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final KenaiUser other = (KenaiUser) obj;
+        if (this.data != other.data && (this.data == null || !this.data.user_name.equals(other.data.user_name))) {
+            return false;
+        }
+        return true;
     }
 
+    @Override
+    public int hashCode() {
+        return data.user_name.hashCode();
+    }
+
+//    public static enum Status {
+//        ONLINE,
+//        OFFLINE,
+//        DND,
+//        UNKNOWN
+//    }
+    
+    public static enum Role {
+        ADMIN,
+        OBSERVER,
+        DEVELOPER
+    }
 }

@@ -45,6 +45,7 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
@@ -75,6 +76,7 @@ public final class KenaiProject {
     private ProjectData     data;
     
     private KenaiFeature[] features;
+    private KenaiUser[] members;
 
     /**
      * I assume that this constructor does NOT provide full project information. If it does then
@@ -214,6 +216,14 @@ public final class KenaiProject {
         return features;
     }
 
+    public synchronized KenaiUser[] getMembers() throws KenaiException {
+        if (members==null) {
+            Collection<KenaiUser> projectMembers = Kenai.getDefault().getProjectMembers(getName());
+            members = projectMembers.toArray(new KenaiUser[projectMembers.size()]);
+        }
+        return members;
+    }
+
     /**
      * get features of given type
      * @param type
@@ -274,6 +284,7 @@ public final class KenaiProject {
             }
             this.data = prj;
             features = null;
+            members = null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }
