@@ -1,6 +1,5 @@
 package org.netbeans.modules.cnd.execution.impl;
 
-import org.netbeans.modules.cnd.execution.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +21,9 @@ public final class GCCErrorParser extends ErrorParser {
     private static final Pattern GCC_DIRECTORY_CD    = Pattern.compile("cd\\s+([\\S]+)[\\s;]");// NOI18N
     private static final Pattern GCC_STACK_HEADER = Pattern.compile("In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
     private static final Pattern GCC_STACK_NEXT =   Pattern.compile("                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
+    private static final Pattern[] patterns = new Pattern[]{GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD,
+                                                            GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER, GCC_ERROR_SCANNER_INTEL,
+                                                            MSVCErrorParser.MSVC_WARNING_SCANNER, MSVCErrorParser.MSVC_ERROR_SCANNER};
 
     private Stack<FileObject> relativesTo = new Stack<FileObject>();
     private Stack<Integer> relativesLevel = new Stack<Integer>();
@@ -49,7 +51,19 @@ public final class GCCErrorParser extends ErrorParser {
         }
     }
 
-    public Result handleLine(String line, Matcher m) throws IOException {
+    public Result handleLine(String line) throws IOException {
+        for (int pi = 0; pi < patterns.length; pi++) {
+            Pattern p = patterns[pi];
+            Matcher m = p.matcher(line);
+            boolean found = m.find();
+            if (found && m.start() == 0) {
+                return handleLine(line, m);
+            }
+        }
+        return null;
+    }
+
+    private Result handleLine(String line, Matcher m) throws IOException {
         if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
             String levelString = m.group(1);
             int level = levelString == null ? 0 : Integer.valueOf(levelString);
@@ -174,12 +188,6 @@ public final class GCCErrorParser extends ErrorParser {
             return res;
         }
         throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern()); // NOI18N
-    }
-
-    public Pattern[] getPattern() {
-        return new Pattern[]{GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD,
-                             GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER, GCC_ERROR_SCANNER_INTEL,
-                             MSVCErrorParser.MSVC_WARNING_SCANNER, MSVCErrorParser.MSVC_ERROR_SCANNER};
     }
 
     private static class StackIncludeItem {

@@ -10,12 +10,25 @@ public final class MSVCErrorParser extends ErrorParser {
 
     static final Pattern MSVC_WARNING_SCANNER = Pattern.compile( "([a-zA-Z0-0\\\\._]+)\\(([0-9]+)\\) : warning ([a-zA-Z0-9]+): .*" ); // NOI18N
     static final Pattern MSVC_ERROR_SCANNER = Pattern.compile( "([a-zA-Z0-0\\\\._]+)\\(([0-9]+)\\) : error ([a-zA-Z0-9]+): .*" ); // NOI18N
+    private static final Pattern[] patterns = new Pattern[]{MSVC_WARNING_SCANNER, MSVC_ERROR_SCANNER};
 
     public MSVCErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(execEnv, relativeTo);
     }
 
-    public Result handleLine(String line, Matcher m) throws IOException {
+    public Result handleLine(String line) throws IOException {
+        for (int pi = 0; pi < patterns.length; pi++) {
+            Pattern p = patterns[pi];
+            Matcher m = p.matcher(line);
+            boolean found = m.find();
+            if (found && m.start() == 0) {
+                return handleLine(line, m);
+            }
+        }
+        return null;
+    }
+
+    private Result handleLine(String line, Matcher m) throws IOException {
         if (m.pattern() == MSVC_ERROR_SCANNER || m.pattern() == MSVC_WARNING_SCANNER) {
             try {
                 String file = m.group(1);
@@ -33,9 +46,5 @@ public final class MSVCErrorParser extends ErrorParser {
             return NO_RESULT;
         }
         throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern()); // NOI18N
-    }
-
-    public Pattern[] getPattern() {
-        return new Pattern[]{MSVC_WARNING_SCANNER, MSVC_ERROR_SCANNER};
     }
 }

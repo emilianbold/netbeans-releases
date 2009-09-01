@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -128,6 +130,18 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             }
             env = tmp;
         }
+        Map<String, String> envMap = new HashMap<String, String>();
+        for(String s: env) {
+            int i = s.indexOf('='); // NOI18N
+            if (i>0) {
+                String key = s.substring(0, i);
+                String value = s.substring(i+1);
+                envMap.put(key, value);
+            }
+        }
+        if ("cc".equals(envMap.get("CC"))){ // NOI18N
+            envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
+        }
 
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
         _tab.closeInputOutput(); // Close it...
@@ -138,6 +152,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
+        .addEnvironmentVariables(envMap)
         .setWorkingDirectory(buildDir.getPath())
         .setArguments(args)
         .unbufferOutput(false)
@@ -201,6 +216,8 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 }
             }
         });
+        npb.redirectError();
+        
         final LineConvertor lineConvertor = new CompilerLineConvertor(execEnv, fileObject.getParent());
         LineConvertorFactory factory = new ExecutionDescriptor.LineConvertorFactory() {
             public LineConvertor newLineConvertor() {
@@ -226,6 +243,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .inputVisible(true)
         .showProgress(true)
         .inputOutput(tab)
+        .outLineBased(true)
         .errConvertorFactory(factory)
         .outConvertorFactory(factory);
         final ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N

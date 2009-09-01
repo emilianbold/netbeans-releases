@@ -12,12 +12,25 @@ import org.openide.filesystems.FileUtil;
 public final class CWErrorParser extends ErrorParser {
 
     private static final Pattern CW_ERROR_SCANNER = Pattern.compile("([^:\n]*):([0-9]+): .*"); // NOI18N
+    private static final Pattern[] patterns = new Pattern[]{CW_ERROR_SCANNER};
 
     public CWErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(execEnv, relativeTo);
     }
 
-    public Result handleLine(String line, Matcher m) throws IOException {
+    public Result handleLine(String line) throws IOException {
+        for (int pi = 0; pi < patterns.length; pi++) {
+            Pattern p = patterns[pi];
+            Matcher m = p.matcher(line);
+            boolean found = m.find();
+            if (found && m.start() == 0) {
+                return handleLine(line, m);
+            }
+        }
+        return null;
+    }
+
+    private Result handleLine(String line, Matcher m) throws IOException {
         if (m.pattern() == CW_ERROR_SCANNER) {
             try {
                 String file = m.group(1);
@@ -31,9 +44,5 @@ public final class CWErrorParser extends ErrorParser {
             }
         }
         return NO_RESULT;
-    }
-
-    public Pattern[] getPattern() {
-        return new Pattern[]{CW_ERROR_SCANNER};
     }
 }

@@ -103,7 +103,13 @@ public class ReconfigureProject {
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
                 qmake = dao;
             } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
-                make = dao;
+                if (dao.getPrimaryFile().hasExt("mk")) { // NOI18N
+                    if (make == null) {
+                        make = dao;
+                    }
+                } else {
+                    make = dao;
+                }
             }
         }
     }
@@ -225,7 +231,7 @@ public class ReconfigureProject {
     }
 
     private void postMake(){
-        String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), null, cFlags, cxxFlags,isSunCompiler());
+        String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), null, cFlags, cxxFlags, isSunCompiler());
         if (TRACE) {
             logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath() + arguments); // NOI18N
         }

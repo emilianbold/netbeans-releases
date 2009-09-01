@@ -42,7 +42,9 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -120,6 +122,15 @@ public class QMakeAction extends AbstractExecutorRunAction {
             }
             env = tmp;
         }
+        Map<String, String> envMap = new HashMap<String, String>();
+        for(String s: env) {
+            int i = s.indexOf('='); // NOI18N
+            if (i>0) {
+                String key = s.substring(0, i);
+                String value = s.substring(i+1);
+                envMap.put(key, value);
+            }
+        }
         StringBuilder argsFlat = new StringBuilder(arguments);
         for (int i = 0; i < args.length; i++) {
             argsFlat.append(" "); // NOI18N
@@ -144,7 +155,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir.getPath())
-        .setArguments(args)
+        .addEnvironmentVariables(envMap)
         .unbufferOutput(false)
         .addNativeProcessListener(new ChangeListener() {
            private long startTimeMillis;
@@ -206,11 +217,14 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 }
             }
         });
+        npb.redirectError();
+
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
         .inputVisible(true)
         .inputOutput(tab)
+        .outLineBased(true)
         .showProgress(true)
         .outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
             public LineConvertor newLineConvertor() {

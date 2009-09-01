@@ -48,14 +48,11 @@ import org.netbeans.modules.cnd.execution.impl.ErrorParser;
 import org.netbeans.modules.cnd.execution.impl.ErrorParser.Result;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -90,21 +87,13 @@ public class CompilerLineConvertor implements LineConvertor {
 
     private List<ConvertedLine> handleLine(String line) throws IOException {
         if (line.length() < LENGTH_TRESHOLD) {
-                // We can ignore strings which can't be compiler messages
-                // (their's length is capped by max(filename) + max(error desc)).
-                // See IZ#124796 for details about perf issues with very long lines.
+            // We can ignore strings which can't be compiler messages
+            // (their's length is capped by max(filename) + max(error desc)).
+            // See IZ#124796 for details about perf issues with very long lines.
             for (int cntr = 0; cntr < parsers.length; cntr++) {
-                Pattern[] patterns = parsers[cntr].getPattern();
-                for (int pi = 0; pi < patterns.length; pi++) {
-                    Pattern p = patterns[pi];
-                    Matcher m = p.matcher(line);
-                    boolean found = m.find();
-                    if (found && m.start() == 0) {
-                        Result res = parsers[cntr].handleLine(line, m);
-                        if (res.result()) {
-                            return res.converted();
-                        }
-                    }
+               Result res = parsers[cntr].handleLine(line);
+               if (res != null && res.result()) {
+                   return res.converted();
                 }
             }
         }

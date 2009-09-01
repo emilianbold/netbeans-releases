@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -34,9 +32,7 @@ public abstract class ErrorParser {
         this.execEnv = execEnv;
     }
 
-    public abstract Result handleLine(String line, Matcher m) throws IOException;
-
-    public abstract Pattern[] getPattern();
+    public abstract Result handleLine(String line) throws IOException;
 
     protected FileObject resolveFile(String fileName) {
         if (Utilities.isWindows()) {
