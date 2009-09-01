@@ -349,6 +349,98 @@ public class CacheIndexTest extends NbTestCase {
         assertValueSet(index.get(folder112), new File[] {file112_1});
     }
 
+    public void testAddRemoveParentContainsFiles() throws MalformedURLException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        CacheIndex ci = new CIndex();
+        Map<File, Set<File>> index = getIndex(ci);
+        index.clear();
+
+        File root = new File(wc, "root");
+
+        File folder1 =   new File(root,      "folder1");
+        File folder11 =  new File(folder1,     "folder11");
+        File file11_1 =  new File(folder11,     "file11_1");
+        File folder111 = new File(folder11,     "folder111");
+        File file111_1 = new File(folder111,      "file111_1");
+        folder111.mkdirs();
+        file11_1.createNewFile();
+        file111_1.createNewFile();
+
+        // add file111_1, file112_1 -> all versioned parents will be added
+        Set<File> s = new HashSet<File>();
+        s.add(file11_1);
+        ci.add(folder11, s);
+        s.clear();
+        s.add(file111_1);
+        ci.add(folder111, s);
+        checkParents(index, file111_1);
+
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder1});
+        assertValueSet(index.get(folder1), new File[] {folder11});
+        assertValueSet(index.get(folder11), new File[] {folder111, file11_1});
+        assertValueSet(index.get(folder111), new File[] {file111_1});
+
+        // remove file111_1 -> folder111 will be removed, folder11 remains
+        s = new HashSet<File>();        
+        ci.add(folder11, s);
+        checkParents(index, file111_1);
+
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder1});
+        assertValueSet(index.get(folder1), new File[] {folder11});
+        assertValueSet(index.get(folder11), new File[] {folder111});
+        assertValueSet(index.get(folder111), new File[] {file111_1});        
+    }
+
+    public void testAddRemoveNotExistingParentContainsFiles() throws MalformedURLException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        CacheIndex ci = new CIndex();
+        Map<File, Set<File>> index = getIndex(ci);
+        index.clear();
+
+        File root = new File(wc, "root");
+
+        File folder1 =   new File(root,      "folder1");
+        File folder11 =  new File(folder1,     "folder11");
+        File folder111 = new File(folder11,     "folder111");
+        File file111_1 = new File(folder111,      "file111_1");
+        File folder112 = new File(folder11,     "folder112");
+        File folder12 =  new File(folder1,     "folder12");
+        File file12_1 =  new File(folder12,     "file12_1");
+        folder111.mkdirs();
+        folder112.mkdirs();
+        folder12.mkdirs();
+        file111_1.createNewFile();
+        file12_1.createNewFile();
+
+        // add file111_1 -> all versioned parents will be added
+        Set<File> s = new HashSet<File>();
+        s.add(file111_1);
+        ci.add(folder111, s);
+        s.clear();
+        s.add(file12_1);
+        ci.add(folder12, s);
+        checkParents(index, file111_1, file12_1);
+
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder1});
+        assertValueSet(index.get(folder1), new File[] {folder11, folder12});
+        assertValueSet(index.get(folder11), new File[] {folder111});
+        assertValueSet(index.get(folder12), new File[] {file12_1});
+        assertValueSet(index.get(folder111), new File[] {file111_1});
+
+        // remove file112_1 which isn't indexed -> folder111 remains
+        s = new HashSet<File>();
+        ci.add(folder112, s);
+        checkParents(index, file111_1, file12_1);
+
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder1});
+        assertValueSet(index.get(folder1), new File[] {folder11, folder12});
+        assertValueSet(index.get(folder11), new File[] {folder111});
+        assertValueSet(index.get(folder12), new File[] {file12_1});
+        assertValueSet(index.get(folder111), new File[] {file111_1});
+    }
+
     private void assertValueSet(Set<File> s, File... expectedValues) {
         assertEquals(expectedValues.length, s.size());
         for (File ev : expectedValues) {
