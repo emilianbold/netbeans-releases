@@ -90,7 +90,7 @@ public class CheckPHPVersionRule extends PHPRule {
             }
         }
 
-        return true;
+        return false;
     }
 
     @Override
