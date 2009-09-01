@@ -279,7 +279,7 @@ public class FileStatusCache {
             }
 
             // check also the root files for status and add them eventualy
-            set.addAll(listFilesIntern(roots, includeStatus, true));
+            set.addAll(listFilesIntern(roots, includeStatus, false));
 
             return set.toArray(new File[set.size()]);
         } finally {
