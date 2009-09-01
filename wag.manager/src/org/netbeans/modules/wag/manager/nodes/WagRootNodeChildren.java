@@ -65,6 +65,7 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
         NOT_LOGGED_IN, ALL_DOMAINS, YOUR_DOMAINS, YOUR_SERVICES, MOST_USED_SERVICES,
         HIGHEST_RATED_SERVICES, NEWEST_APIS, SEARCH
     };
+
     private ZemblySession session;
 
     public WagRootNodeChildren() {
