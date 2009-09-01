@@ -37,43 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.editor;
+package org.netbeans.modules.php.symfony.util;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
-import org.netbeans.modules.php.api.editor.PhpVariable;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
-import org.netbeans.modules.php.symfony.util.SymfonyUtils;
+import java.io.File;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyEditorExtender extends EditorExtender {
-    private static final List<PhpElement> ELEMENTS = Arrays.<PhpElement>asList(
-            new PhpVariable("$sf_user", "sfUser"), // NOI18N
-            new PhpVariable("$sf_request", "sfWebRequest"), // NOI18N
-            new PhpVariable("$sf_response", "sfWebResponse")); // NOI18N
+public final class SymfonyUtils {
+    private static final String FILE_ACTION = "actions.class.php"; // NOI18N
+    private static final String FILE_ACTION_RELATIVE = "../actions/" + FILE_ACTION; // NOI18N
+    private static final String DIR_TEMPLATES = "templates"; // NOI18N
 
-    @Override
-    public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
-        if (SymfonyUtils.isView(fo)) {
-            return ELEMENTS;
-        }
-        return Collections.emptyList();
+    private SymfonyUtils() {
     }
 
-    @Override
-    public PhpClass getClass(FileObject fo, String variableName) {
-        if (SymfonyUtils.isView(fo)) {
-            for (PhpElement element : ELEMENTS) {
-                if (element.getName().equals(variableName)) {
-                    return new PhpClass(element.getName(), element.getFullyQualifiedName());
-                }
-            }
+    public static boolean isView(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        return DIR_TEMPLATES.equals(file.getParentFile().getName());
+    }
+
+    public static boolean isViewWithAction(FileObject fo) {
+        return isView(fo) && getAction(fo) != null;
+    }
+
+    public static boolean isAction(FileObject fo) {
+        return FILE_ACTION.equals(fo.getNameExt());
+    }
+
+    public static FileObject getAction(FileObject fo) {
+        File parent = FileUtil.toFile(fo).getParentFile();
+        File action = PropertyUtils.resolveFile(parent, FILE_ACTION_RELATIVE);
+        if (action != null) {
+            return FileUtil.toFileObject(action);
         }
         return null;
     }
