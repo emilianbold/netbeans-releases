@@ -43,7 +43,6 @@ package org.netbeans.modules.options.advanced;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -146,11 +145,9 @@ public final class AdvancedPanel extends JPanel {
     private void initTabbedPane(Lookup masterLookup) {
         tabbedPanel.removeChangeListener(changeListener);
         tabbedPanel.removeAll();
-        List categories = model.getCategories();
+        List<String> categories = model.getCategories();
         tabbedPanel.setVisible(categories.size() > 0);
-        Iterator it = categories.iterator();
-        while (it.hasNext()) {
-            String category = (String) it.next ();
+        for (String category : categories) {
             tabbedPanel.addTab(category, new JLabel(category));
         }
         tabbedPanel.addChangeListener(changeListener);
