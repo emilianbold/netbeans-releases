@@ -340,10 +340,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         List<String> errors = new ArrayList<String>();
         
         Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
-        FILE: while (files.hasMoreElements()) {
+        while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
-            if (skipFile(fo.getPath())) {
+            if (skipFile(fo)) {
                 continue;
             }
             
@@ -351,19 +351,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 DataObject obj = DataObject.find (fo);
                 InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
                 if (ic != null) {
-                    String iof = (String) fo.getAttribute("instanceOf");
-                    if (iof != null) {
-                        for (String clz : iof.split("[, ]+")) {
-                            try {
-                                Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass(clz);
-                            } catch (ClassNotFoundException x) {
-                                // E.g. Services/Hidden/org-netbeans-lib-jsch-antlibrary.instance in ide cluster
-                                // cannot be loaded (and would just be ignored) if running without java cluster
-                                System.err.println("Warning: skipping " + fo.getPath() + " due to inaccessible interface " + clz);
-                                continue FILE;
-                            }
-                        }
-                    }
                     Object o = ic.instanceCreate ();
                 }
             } catch (Exception ex) {
@@ -388,7 +375,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         FILE: while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
 
-            if (skipFile(fo.getPath())) {
+            if (skipFile(fo)) {
                 continue;
             }
 
@@ -891,7 +878,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return attrs;
     }
     
-    private boolean skipFile (String s) {
+    private boolean skipFile(FileObject fo) {
+        String s = fo.getPath();
+
         if (s.startsWith ("Templates/") && !s.startsWith ("Templates/Services")) {
             if (s.endsWith (".shadow") || s.endsWith (".java")) {
                 return true;
@@ -912,6 +901,20 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
         if (s.startsWith ("Shortcuts/D-BACK_QUOTE.shadow")) return true;
         
+        String iof = (String) fo.getAttribute("instanceOf");
+        if (iof != null) {
+            for (String clz : iof.split("[, ]+")) {
+                try {
+                    Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass(clz);
+                } catch (ClassNotFoundException x) {
+                    // E.g. Services/Hidden/org-netbeans-lib-jsch-antlibrary.instance in ide cluster
+                    // cannot be loaded (and would just be ignored) if running without java cluster
+                    System.err.println("Warning: skipping " + fo.getPath() + " due to inaccessible interface " + clz);
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
