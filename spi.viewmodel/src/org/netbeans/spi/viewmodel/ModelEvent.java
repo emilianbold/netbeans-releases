@@ -41,6 +41,7 @@
 
 package org.netbeans.spi.viewmodel;
 
+import java.util.Arrays;
 import java.util.EventObject;
 
 
@@ -245,4 +246,42 @@ public class ModelEvent extends EventObject {
         }
 
     }
+
+    /**
+     * Event to change a selection in the tree table view.
+     *
+     * @since 1.19
+     */
+    public static class SelectionChanged extends ModelEvent {
+
+        private Object[] nodes;
+        
+        /**
+         * Creates a new instance of SelectionChanged event.
+         *
+         * @param source the source of the event.
+         * @param nodes list of selected node instances. All nodes are deselected
+         * when this list is empty.
+         */
+        public SelectionChanged(Object source, Object... nodes) {
+            super (source);
+            this.nodes = nodes;
+        }
+
+        /**
+         * Returns selected node instances.
+         *
+         * @return selected node instances
+         */
+        public Object[] getNodes() {
+            return nodes;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString()+"(nodes = "+Arrays.toString(nodes)+")"; // NOI18N
+        }
+
+    }
+
 }
