@@ -335,7 +335,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ("<module_updates timestamp=\"" + date + "\">"); //NOI18N
                     pw.println ();
                 }
-
+                writeNotification(pw);
                 pw.println ();
 		Map<String,Element> licenses = new HashMap<String,Element>();
                 String prefix = null;
@@ -424,27 +424,6 @@ public class MakeUpdateDesc extends MatchingTask {
                     XMLUtil.write(license, os);
                 }
 
-                // write notification message/url if defined
-                if (notificationMessage == null) {
-                    notificationMessage = "";
-                }
-                if (notificationURL == null) {
-                    notificationURL = "";
-                }
-                if(notificationMessage.length() > 0 || notificationURL.length() > 0) {
-                    if(notificationMessage.length() == 0) {
-                        pw.println ("<notification url=\"" + xmlEscape(notificationURL.toString()) + "\"/>");
-                    } else if (notificationURL.length() == 0) {
-                        pw.println ("<notification>" + xmlEscape(notificationMessage) + "</notification>");
-                    } else {
-                        pw.println (
-                                "<notification url=\"" + xmlEscape(notificationURL.toString()) + "\">" +
-                                xmlEscape(notificationMessage) +
-                                "</notification>");
-                    }
-                    pw.println();
-                }
-
                 if ( entityincludes.size() <= 0 ) {
                     pw.println ("</module_updates>"); //NOI18N
                     pw.println ();
@@ -478,7 +457,30 @@ public class MakeUpdateDesc extends MatchingTask {
         public String relativePath;
         public boolean autoload, eager;
     }
-    
+
+    private void writeNotification(PrintWriter pw) {
+        // write notification message/url if defined
+        if (notificationMessage == null) {
+            notificationMessage = "";
+        }
+        if (notificationURL == null) {
+            notificationURL = "";
+        }
+        if (notificationMessage.length() > 0 || notificationURL.length() > 0) {
+            if (notificationMessage.length() == 0) {
+                pw.println("<notification url=\"" + xmlEscape(notificationURL.toString()) + "\"/>");
+            } else if (notificationURL.length() == 0) {
+                pw.println("<notification>" + xmlEscape(notificationMessage) + "</notification>");
+            } else {
+                pw.println(
+                        "<notification url=\"" + xmlEscape(notificationURL.toString()) + "\">" +
+                        xmlEscape(notificationMessage) +
+                        "</notification>");
+            }
+            pw.println();
+        }
+    }
+
     private Map<String,Collection<Module>> loadNBMs() throws BuildException {
         final Collator COLL = Collator.getInstance(/* XXX any particular locale? */);
         // like COLL but handles nulls ~ ungrouped modules (sorted to top):
