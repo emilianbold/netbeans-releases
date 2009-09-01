@@ -169,7 +169,7 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
         }
     }
 
-    private static final Pattern FUNCTION_PATTERN = Pattern.compile("\\s+(\\S+)\\s+\\+\\s+0x([0-9a-fA-F]+)(?:,\\s+line\\s+(\\d+)\\s+in\\s+\"(.+)\")?"); // NOI18N
+    private static final Pattern FUNCTION_PATTERN = Pattern.compile(" *(\\S+) *(?:\\+\\s+0x([0-9a-fA-F]+))?(?:,\\s+line\\s+(\\d+)\\s+in\\s+\"(.+)\")?"); // NOI18N
 
     public static List<FunctionCall> parseStack(ListIterator<String> it) {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
