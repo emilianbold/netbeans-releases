@@ -40,24 +40,27 @@
 package org.netbeans.modules.php.symfony.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.text.TextAction;
 import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.util.SymfonyUtils;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -68,6 +71,7 @@ import org.openide.util.NbBundle;
 public final class GoToActionOrViewAction extends TextAction implements ContextAwareAction {
     private static final long serialVersionUID = -1231423139431663L;
     private static final GoToActionOrViewAction INSTANCE = new GoToActionOrViewAction();
+    private static final int DEFAULT_OFFSET = 0;
 
     private GoToActionOrViewAction() {
         super(getFullName());
@@ -91,18 +95,18 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
     public Action createContextAwareInstance(Lookup actionContext) {
         FileObject fo = FileUtils.getFileObject(actionContext);
-        return getGoToAction(fo);
+        return getGoToAction(fo, getOffset(actionContext));
     }
 
     public void actionPerformed(ActionEvent e) {
         FileObject fo = NbEditorUtilities.getFileObject(getTextComponent(e).getDocument());
-        Action action = getGoToAction(fo);
+        Action action = getGoToAction(fo, getTextComponent(e).getCaretPosition());
         if (action != null) {
             action.actionPerformed(e);
         }
     }
 
-    private Action getGoToAction(FileObject fo) {
+    private Action getGoToAction(FileObject fo, int offset) {
         if (!isValid(fo)) {
             return null;
         }
@@ -110,7 +114,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
         if (SymfonyUtils.isViewWithAction(fo)) {
             return new GoToActionAction(fo);
         } else if (SymfonyUtils.isAction(fo)) {
-            return new GoToViewAction(fo);
+            return new GoToViewAction(fo, offset);
         }
         return null;
     }
@@ -124,6 +128,35 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
             return false;
         }
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
+    }
+
+    private int getOffset(Lookup context) {
+        EditorCookie editorCookie = context.lookup(EditorCookie.class);
+        if (editorCookie != null) {
+            return getOffset(editorCookie);
+        }
+        FileObject fo = FileUtils.getFileObject(context);
+        if (fo == null) {
+            return DEFAULT_OFFSET;
+        }
+        try {
+            editorCookie = DataObject.find(fo).getLookup().lookup(EditorCookie.class);
+            return getOffset(editorCookie);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return DEFAULT_OFFSET;
+    }
+
+    private int getOffset(EditorCookie editorCookie) {
+        if (editorCookie == null) {
+            return DEFAULT_OFFSET;
+        }
+        JEditorPane[] openedPanes = editorCookie.getOpenedPanes();
+        if (openedPanes == null || openedPanes.length == 0) {
+            return DEFAULT_OFFSET;
+        }
+        return openedPanes[0].getCaretPosition();
     }
 
     static final class GoToActionAction extends AbstractAction {
@@ -159,14 +192,14 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
                 }
                 return phpClass.getOffset();
             }
-            return 0;
+            return DEFAULT_OFFSET;
         }
 
         static String getActionMethodName(String filename) {
             Matcher matcher = ACTION_METHOD_NAME.matcher(filename);
             if (matcher.find()) {
                 String group = matcher.group(1);
-                return "execute" + group.substring(0, 1).toUpperCase() + group.substring(1); // NOI18N
+                return SymfonyUtils.ACTION_METHOD_PREFIX + group.substring(0, 1).toUpperCase() + group.substring(1);
             }
             return null;
         }
@@ -176,20 +209,25 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
         private static final long serialVersionUID = -95232154930113404L;
 
         private final FileObject fo;
+        private final int offset;
 
-        public GoToViewAction(FileObject fo) {
+        public GoToViewAction(FileObject fo, int offset) {
             super(NbBundle.getMessage(GoToActionOrViewAction.class, "LBL_GoToView"));
             assert SymfonyUtils.isAction(fo);
             this.fo = fo;
+            this.offset = offset;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // XXX
-            File parent = FileUtil.toFile(fo).getParentFile();
-            File view = PropertyUtils.resolveFile(parent, "../templates/indexSuccess.php"); // NOI18N
+            EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+            PhpElement phpElement = editorSupport.getElement(fo, offset);
+            if (phpElement == null) {
+                return;
+            }
+            FileObject view = SymfonyUtils.getView(fo, phpElement);
             if (view != null) {
-                UiUtils.open(FileUtil.toFileObject(view), 0);
+                UiUtils.open(view, DEFAULT_OFFSET);
             }
         }
     }

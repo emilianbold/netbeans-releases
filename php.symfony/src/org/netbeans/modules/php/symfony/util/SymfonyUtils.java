@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.symfony.util;
 
 import java.io.File;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -48,9 +50,15 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Mysik
  */
 public final class SymfonyUtils {
+    public static final String ACTION_METHOD_PREFIX = "execute"; // NOI18N
+
     private static final String FILE_ACTION = "actions.class.php"; // NOI18N
     private static final String FILE_ACTION_RELATIVE = "../actions/" + FILE_ACTION; // NOI18N
+
     private static final String DIR_TEMPLATES = "templates"; // NOI18N
+    private static final String VIEW_FILE_SUFFIX = "Success.php"; // NOI18N
+    private static final String FILE_VIEW = "../" + DIR_TEMPLATES + "/%s" + VIEW_FILE_SUFFIX; // NOI18N
+    private static final String FILE_DEFAULT_VIEW = "index"; // NOI18N
 
     private SymfonyUtils() {
     }
@@ -71,8 +79,36 @@ public final class SymfonyUtils {
     public static FileObject getAction(FileObject fo) {
         File parent = FileUtil.toFile(fo).getParentFile();
         File action = PropertyUtils.resolveFile(parent, FILE_ACTION_RELATIVE);
-        if (action != null) {
+        if (action.isFile()) {
             return FileUtil.toFileObject(action);
+        }
+        return null;
+    }
+
+    public static FileObject getView(FileObject fo, PhpElement phpElement) {
+        FileObject view = null;
+        if (phpElement instanceof PhpClass.Method) {
+            String methodName = phpElement.getName();
+            if (methodName.startsWith(ACTION_METHOD_PREFIX)) {
+                String partName = methodName.substring(ACTION_METHOD_PREFIX.length());
+                view = getView(fo, partName.substring(0, 1).toLowerCase() + partName.substring(1));
+            }
+        }
+        if (view == null) {
+            view = getDefaultView(fo);
+        }
+        return view;
+    }
+
+    private static FileObject getDefaultView(FileObject fo) {
+        return getView(fo, FILE_DEFAULT_VIEW);
+    }
+
+    private static FileObject getView(FileObject fo, String viewName) {
+        File parent = FileUtil.toFile(fo).getParentFile();
+        File view = PropertyUtils.resolveFile(parent, String.format(FILE_VIEW, viewName));
+        if (view.isFile()) {
+            return FileUtil.toFileObject(view);
         }
         return null;
     }
