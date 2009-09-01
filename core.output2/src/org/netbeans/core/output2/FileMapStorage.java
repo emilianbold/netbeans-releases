@@ -44,7 +44,9 @@ import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -240,11 +242,20 @@ class FileMapStorage implements Storage {
         }
         final FileChannel oldChannel = fileChannel;
         final File oldFile = outfile;
+        final MappedByteBuffer mbb = contents instanceof MappedByteBuffer ? (MappedByteBuffer) contents : null;
+        fileChannel = null;
+        closed = true;
+        outfile = null;
+        buffer = null;
+        contents = null;
         if (oldChannel != null || oldFile != null) {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
                     try {
+                        if (mbb != null) {
+                            unmap(mbb);
+                        }
                         if (oldChannel != null && oldChannel.isOpen()) {
                             oldChannel.close();
                         }
@@ -257,11 +268,23 @@ class FileMapStorage implements Storage {
                 }
             });
         }
-        fileChannel = null;
-        closed = true;
-        outfile = null;
-        buffer = null;
-        contents = null;
+    }
+
+    File getOutputFile() {
+        return outfile;
+    }
+
+    /**
+     * Workaround for JDK issue #4715154 (http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154)
+     */
+    private void unmap(Object buffer) {
+        try {
+            Method getCleanerMethod = buffer.getClass().getMethod("cleaner", new Class[0]);
+            getCleanerMethod.setAccessible(true);
+            sun.misc.Cleaner cleaner = (sun.misc.Cleaner) getCleanerMethod.invoke(buffer, new Object[0]);
+            cleaner.clean();
+        } catch (Exception e) {
+        }
     }
 
     /**

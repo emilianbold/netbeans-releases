@@ -38,23 +38,16 @@
  */
 package org.netbeans.modules.cnd.actions;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.AbstractAction;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -67,12 +60,10 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -312,86 +303,42 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return NbBundle.getBundle(AbstractExecutorRunAction.class).getString(key);
     }
 
-    protected final static String getString(String key, String a1) {
+    protected final static String getString(String key, String ... a1) {
         return NbBundle.getMessage(AbstractExecutorRunAction.class, key, a1);
     }
 
-    protected static class ShellExecuter implements ExecutionListener {
-        private final NativeExecutor nativeExecutor;
-        private final ProgressHandle progressHandle;
-        private ExecutorTask executorTask = null;
-
-        public ShellExecuter(NativeExecutor nativeExecutor, ExecutionListener listener) {
-            this.nativeExecutor = nativeExecutor;
-            nativeExecutor.addExecutionListener(this);
-            if (listener != null) {
-                nativeExecutor.addExecutionListener(listener);
-            }
-            this.progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
+    protected static String formatTime(long millis) {
+        StringBuilder buf = new StringBuilder();
+        long seconds = millis / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        if (hours > 0) {
+            buf.append(' ').append(hours).append(getString("Time.Hour")); // NOI18N
         }
-
-        public void execute() {
-            try {
-                executorTask = nativeExecutor.execute();
-            } catch (IOException ioe) {
-            }
+        if (minutes > 0) {
+            buf.append(' ').append(minutes % 60).append(getString("Time.Minute")); // NOI18N
         }
-
-        public void executionFinished(int rc) {
-            progressHandle.finish();
+        if (seconds > 0) {
+            buf.append(' ').append(seconds % 60).append(getString("Time.Second")); // NOI18N
         }
-
-        public void executionStarted(int pid) {
-            progressHandle.start();
+        if (hours == 0 && minutes == 0 && seconds == 0) {
+            buf.append(' ').append(millis).append(getString("Time.Millisecond")); // NOI18N
         }
-
-        public ExecutorTask getExecutorTask() {
-            return executorTask;
-        }
+        return buf.toString();
     }
 
-    private static final class StopAction extends AbstractAction {
-        private final ShellExecuter shellExecutor;
+    protected static String quoteExecutable(String orig) {
+        StringBuilder sb = new StringBuilder();
+        String escapeChars = Utilities.isWindows() ? " \"'()" : " \"'()!"; // NOI18N
 
-        public StopAction(ShellExecuter shellExecutor) {
-            this.shellExecutor = shellExecutor;
+        for (char c : orig.toCharArray()) {
+            if (escapeChars.indexOf(c) >= 0) { // NOI18N
+                sb.append('\\');
+            }
+            sb.append(c);
         }
 
-//        @Override
-//        public Object getValue(String key) {
-//            if (key.equals(Action.SMALL_ICON)) {
-//                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
-//            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-//                return getString("TargetExecutor.StopAction.stop");
-//            } else {
-//                return super.getValue(key);
-//            }
-//        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled()) {
-                return;
-            }
-            setEnabled(false);
-            if (shellExecutor.getExecutorTask() != null) {
-                shellExecutor.getExecutorTask().stop();
-            }
-        }
-    }
-
-    private static ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle(nativeExecutor.getTabeName(), new Cancellable() {
-            public boolean cancel() {
-                sa.actionPerformed(null);
-                return true;
-            }
-        }, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                nativeExecutor.getTab().select();
-            }
-        });
-        handle.setInitialDelay(0);
-        return handle;
+        return sb.toString();
     }
 
     @Override

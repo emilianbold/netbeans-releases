@@ -44,20 +44,35 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.openide.LifecycleManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  * Base class for Make Actions ...
@@ -66,7 +81,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     private static final boolean TRACE = false;
 
     public String getName() {
-        return getString("BTN_Run");
+        return getString("BTN_Run"); // NOI18N
     }
 
     @Override
@@ -88,7 +103,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project) {
+    public static void performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return;
@@ -109,7 +124,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String bdir = bes.getRunDirectory();
         File buildDir = getAbsoluteBuildDir(bdir, shellFile);
         // Tab Name
-        String tabName = getString("RUN_LABEL", node.getName());
+        String tabName = getString("RUN_LABEL", node.getName()); // NOI18N
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
@@ -155,34 +170,127 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             }
             env = tmp;
         }
-       
-        if (TRACE) {
-            System.err.println("Run "+shellCommand);
-            System.err.println("\tin folder   "+buildDir.getPath());
-            System.err.println("\targuments   "+argsFlat);
-            System.err.println("\tenvironment ");
-            for(String v : env) {
-                System.err.println("\t\t"+v);
+        Map<String, String> envMap = new HashMap<String, String>();
+        for(String s: env) {
+            int i = s.indexOf('='); // NOI18N
+            if (i>0) {
+                String key = s.substring(0, i);
+                String value = s.substring(i+1);
+                envMap.put(key, value);
             }
         }
-
-        // Execute the shellfile
-        
-        NativeExecutor nativeExecutor = new NativeExecutor(
-            execEnv,
-            buildDir.getPath(),
-            shellCommand,
-            argsFlat.toString(),
-            env,
-            tabName,
-            "Run", // NOI18N
-            false,
-            true,
-            false);
-        if (outputListener != null) {
-            nativeExecutor.setOutputListener(outputListener);
+       
+        if (TRACE) {
+            System.err.println("Run "+shellCommand); // NOI18N
+            System.err.println("\tin folder   "+buildDir.getPath()); // NOI18N
+            System.err.println("\targuments   "+argsFlat); // NOI18N
+            System.err.println("\tenvironment "); // NOI18N
+            for(String v : env) {
+                System.err.println("\t\t"+v); // NOI18N
+            }
         }
-        new ShellExecuter(nativeExecutor, listener).execute();
+        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+        _tab.closeInputOutput(); // Close it...
+        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+        try {
+            tab.getOut().reset();
+        } catch (IOException ioe) {
+        }
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
+        .setWorkingDirectory(buildDir.getPath())
+        .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
+        .unbufferOutput(false)
+        .addEnvironmentVariables(envMap)
+        .addNativeProcessListener(new ChangeListener() {
+           private long startTimeMillis;
+           public void stateChanged(ChangeEvent e) {
+                if (!(e instanceof NativeProcessChangeEvent)) {
+                    return;
+                }
+                NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+                NativeProcess process = (NativeProcess) event.getSource();
+                switch (event.state) {
+                    case INITIAL:
+                        break;
+                    case STARTING:
+                        startTimeMillis = System.currentTimeMillis();
+                        if (listener != null) {
+                            listener.executionStarted(event.pid);
+                        }
+                        break;
+                    case RUNNING:
+                        break;
+                    case CANCELLED:
+                    {
+                        if (listener != null) {
+                            listener.executionFinished(process.exitValue());
+                        }
+                        String message = getString("Output.RunTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                        tab.getOut().println();
+                        tab.getOut().println(message);
+                        tab.getOut().flush();
+                        break;
+                    }
+                    case ERROR:
+                    {
+                        if (listener != null) {
+                            listener.executionFinished(-1);
+                        }
+                        String message = getString("Output.RunFailedToStart"); // NOI18N
+                        tab.getOut().println();
+                        tab.getOut().println(message);
+                        tab.getOut().flush();
+                        break;
+                    }
+                    case FINISHED:
+                    {
+                        if (listener != null) {
+                            listener.executionFinished(process.exitValue());
+                        }
+                        String message;
+                        if (process.exitValue() != 0) {
+                            message = getString("Output.RunFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                        } else {
+                            message = getString("Output.RunSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                        }
+                        tab.getOut().println();
+                        tab.getOut().println(message);
+                        tab.getOut().flush();
+                        break;
+                    }
+                }
+            }
+        });
+        npb.redirectError();
+
+        ExecutionDescriptor descr = new ExecutionDescriptor()
+        .controllable(true)
+        .frontWindow(true)
+        .inputVisible(true)
+        .inputOutput(tab)
+        .outLineBased(true)
+        .showProgress(true)
+        .outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
+            public LineConvertor newLineConvertor() {
+                return new LineConvertor() {
+                    @Override
+                    public List<ConvertedLine> convert(String line) {
+                        if (outputListener != null) {
+                            try {
+                                outputListener.write(line);
+                                outputListener.write("\n"); // NOI18N
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        return null;
+                    }
+                };
+            }
+        });
+        // Execute the shellfile
+        final ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
+        Future<Integer> result = es.run();
     }
     
 }
