@@ -46,6 +46,28 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="Repository.defaultFileSystem.status">
+            <api name="filesystems"/>
+            <summary>System filesystem label/icon annotations work without full module system</summary>
+            <version major="7" minor="25"/>
+            <date day="31" month="8" year="2009"/>
+            <author login="jglick"/>
+            <compatibility modification="yes">
+                <p>
+                    An application or unit test installing a custom system filesystem
+                    and <em>not</em> overriding <code>getStatus</code> but <em>expecting</em>
+                    the default implementation to do nothing could be broken.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    For convenience from unit tests, the system filesystem will now always
+                    process annotations such as <code>displayName</code> in its <code>FileSystem.Status</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileSystem"/>
+            <issue number="171092"/>
+        </change>
          <change id="runWhenDeliveryOver">
             <api name="filesystems"/>
             <summary>Support for processing batch events</summary>

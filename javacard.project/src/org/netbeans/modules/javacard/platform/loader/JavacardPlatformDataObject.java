@@ -48,7 +48,6 @@ import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.constants.JCConstants;
 import org.netbeans.modules.javacard.platform.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.platform.JavacardPlatformImpl;
-import org.netbeans.modules.javacard.project.Updater;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
@@ -202,7 +201,7 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
             }
             sheet.put (set);
             set.setDisplayName(set.getName());
-            PropertiesBasedDataObject ob = getLookup().lookup(PropertiesBasedDataObject.class);
+            PropertiesBasedDataObject<?> ob = getLookup().lookup(PropertiesBasedDataObject.class);
             sheet.put(ob.getPropertiesAsPropertySet());
             return sheet;
         }
