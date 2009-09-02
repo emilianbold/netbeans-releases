@@ -77,8 +77,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final ImageIcon TABLE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/table.png", false); // NOI18N
     private static final ImageIcon ALIAS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/alias.png", false); // NOI18N
     private static final ImageIcon COLUMN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/column.png", false); // NOI18N
-    // TODO - use own icon
-    private static final ImageIcon KEYWORD_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/catalog.png", false); // NOI18N
+    private static final ImageIcon KEYWORD_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/keyword.png", false); // NOI18N
 
     private final SubstitutionHandler substHandler;
     private final String substText;
