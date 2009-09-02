@@ -43,6 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="dlight-metrics-annotations" foreColor="magenta"/>
-    <fontcolor name="dlight-metrics-text-highlighting" bgColor="FFFFDDFF"/>
+    <fontcolor name="dlight-metrics-annotations" foreColor="FF009000"/>
+    <fontcolor name="dlight-metrics-text-highlighting" bgColor="FFD7F1D7"/>
 </fontscolors>
