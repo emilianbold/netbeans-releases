@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -78,9 +79,11 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
             ScanDialog.runWhenScanFinished (new Runnable () {
                 public void run () {
                     try {
-                        Future<Void> f = js.runWhenScanFinished(JavaCodeTemplateFilter.this, true);
-                        if (!f.isDone())
-                            f.cancel(true);
+                        js.runUserActionTask (new Task<CompilationController> () {
+                            public void run (CompilationController controller ) throws Exception {
+                                JavaCodeTemplateFilter.this.run (controller);
+                            }
+                        }, true);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
