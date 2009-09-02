@@ -166,6 +166,9 @@ public final class LayerBuilder {
                 if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(originatingElement.asType(), typeMirror)) {
                     throw new LayerGenerationException(clazz + " is not assignable to " + typeMirror, originatingElement);
                 }
+                if (!originatingElement.getModifiers().contains(Modifier.PUBLIC)) {
+                    throw new LayerGenerationException(clazz + " is not public", originatingElement);
+                }
                 return new String[] {clazz, null};
             }
             case METHOD: {
