@@ -542,6 +542,15 @@ public enum ProjectKind {
         }
     }
 
+    public static ProjectKind forManifestType(String type) {
+        for (ProjectKind kind : values()) {
+            if (type.equals(kind.getManifestApplicationType())) {
+                return kind;
+            }
+        }
+        return null;
+    }
+
     public String getBundleFileExtension() {
         switch (this) {
             case WEB :
