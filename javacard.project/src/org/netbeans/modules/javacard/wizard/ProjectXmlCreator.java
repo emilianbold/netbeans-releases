@@ -58,13 +58,12 @@ import org.openide.loaders.DataObject;
  * @author Tim Boudreau
  */
 public final class ProjectXmlCreator extends FileCreator { //public for unit tests
-
     private final String projectName;
     private final StringBuilder sb = new StringBuilder();
     private ProjectKind kind;
 
     public ProjectXmlCreator(String projectName, ProjectKind kind) {
-        super ("nbproject", "project.xml", false);
+        super ("nbproject", "project.xml", false); //NOI18N
         this.projectName = projectName;
         this.kind = kind;
     }
@@ -76,25 +75,25 @@ public final class ProjectXmlCreator extends FileCreator { //public for unit tes
 
     public FileObject create(FileObject project) throws IOException {
         sb.setLength(0);
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        sb.append("<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n");
-        write(1, "<type>org.netbeans.modules.javacard.JCPROJECT</type>");
-        write(1, "<configuration>");
-        write(2, "<data xmlns=\"" + JCProjectType.PROJECT_CONFIGURATION_NAMESPACE +
-                "\">");
-        write(2, "<!-- Do not use Project Properties customizer when editing this file manually. -->");
-        write(3, "<name>" + projectName + "</name>");
-        write(3, "<properties>");
-        write(4, "<property name=\"javacard.project.subtype\">" + kind + "</property>");
-        write(3, "</properties>");
-        write(3, "<source-roots>");
-        write(4, "<root id=\"src.dir\"/>");
-        write(3, "</source-roots>");
-        write(3, "<dependencies>");
-        write(3, "</dependencies>");
-        write(2, "</data>");
-        write(1, "</configuration>");
-        write(0, "</project>");
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //NOI18N
+        sb.append("<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n"); //NOI18N
+        write(1, "<type>org.netbeans.modules.javacard.JCPROJECT</type>"); //NOI18N
+        write(1, "<configuration>"); //NOI18N
+        write(2, "<data xmlns=\"" + JCProjectType.PROJECT_CONFIGURATION_NAMESPACE + //NOI18N
+                "\">"); //NOI18N
+        write(2, "<!-- Do not use Project Properties customizer when editing this file manually. -->"); //NOI18N
+        write(3, "<name>" + projectName + "</name>"); //NOI18N
+        write(3, "<properties>"); //NOI18N
+        write(4, "<property name=\"javacard.project.subtype\">" + kind + "</property>"); //NOI18N
+        write(3, "</properties>"); //NOI18N
+        write(3, "<source-roots>"); //NOI18N
+        write(4, "<root id=\"src.dir\"/>"); //NOI18N
+        write(3, "</source-roots>"); //NOI18N
+        write(3, "<dependencies>"); //NOI18N
+        write(3, "</dependencies>"); //NOI18N
+        write(2, "</data>"); //NOI18N
+        write(1, "</configuration>"); //NOI18N
+        write(0, "</project>"); //NOI18N
 
         FileObject projectXml = FileUtil.createData(project, AntProjectHelper.PROJECT_XML_PATH);
         FileLock lock = projectXml.lock();
@@ -116,9 +115,9 @@ public final class ProjectXmlCreator extends FileCreator { //public for unit tes
 
     void write(int indent, String toWrite) {
         char[] c = new char[indent * 4];
-        Arrays.fill(c, ' ');
+        Arrays.fill(c, ' '); //NOI18N
         sb.append(c);
         sb.append(toWrite);
-        sb.append('\n');
+        sb.append('\n'); //NOI18N
     }
 }

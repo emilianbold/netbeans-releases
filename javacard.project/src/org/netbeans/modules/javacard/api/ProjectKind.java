@@ -475,14 +475,27 @@ public enum ProjectKind {
         FileObject fo = helper.getProjectDirectory().getFileObject(
                 AntProjectHelper.PROJECT_XML_PATH);
         try {
-            if (fo != null) {
-                InputStream in = new BufferedInputStream(fo.getInputStream());
-                return fastKindForProject(in);
-            }
+            return fastKindForProject(fo);
         } catch (IOException ioe) {
             Logger.getLogger(ProjectKind.class.getName()).log(Level.INFO,
                     "Error parsing project.xml for " + helper.getProjectDirectory().getPath(), //NOI18N
                     ioe);
+        }
+        return null;
+    }
+
+    public static ProjectKind kindForProject (FileObject projectXml) throws IOException {
+        return fastKindForProject(projectXml);
+    }
+
+    static ProjectKind fastKindForProject(FileObject fo) throws IOException {
+        if (fo != null) {
+            InputStream in = new BufferedInputStream(fo.getInputStream());
+            try {
+                return fastKindForProject(in);
+            } finally {
+                in.close();
+            }
         }
         return null;
     }
