@@ -350,10 +350,9 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.nbheaven.sqe.core.maven</friend>
-                <!-- a temporary experimental module-->
-                <friend>org.netbeans.modules.maven.maven.checkstyle.bridge</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
+                <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.maven.buildplan</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
@@ -363,7 +362,9 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>
+                <friend>org.netbeans.modules.maven.killer</friend>
                 <friend>org.netbeans.modules.maven.kit</friend>
+                <friend>org.netbeans.modules.maven.maven.checkstyle.bridge</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.profiler</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
@@ -371,7 +372,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.spring</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
-                <friend>org.netbeans.modules.maven.killer</friend>
                 <package>org.netbeans.modules.maven.api</package>
                 <package>org.netbeans.modules.maven.api.archetype</package>
                 <package>org.netbeans.modules.maven.api.classpath</package>
