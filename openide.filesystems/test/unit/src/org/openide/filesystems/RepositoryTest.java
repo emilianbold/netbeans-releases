@@ -72,23 +72,6 @@ public class RepositoryTest extends NbTestCase {
         MockLookup.setInstances();
     }
 
-    public void testContentOfFileSystemIsInfluencedByLookup () throws Exception {
-        FileSystem mem = FileUtil.createMemoryFileSystem();
-        String dir = "/yarda/own/file";
-        org.openide.filesystems.FileUtil.createFolder (mem.getRoot (), dir);
-        
-        // XXX fails to test that Repo contents are right from *initial* lookup
-        // (try commenting out 'resultChanged(null);' in ExternalUtil.MainFS - still passes)
-        assertNull ("File is not there yet", FileUtil.getConfigFile(dir));
-        MockLookup.setInstances(mem);
-        try {
-            assertNotNull ("The file is there now", FileUtil.getConfigFile(dir));
-        } finally {
-            MockLookup.setInstances();
-        }
-        assertNull ("File is no longer there", FileUtil.getConfigFile(dir));
-    }
-
     public void testRepositoryIncludesAllLayers() throws Exception {
         Thread.currentThread().setContextClassLoader(new ClassLoader() {
             protected @Override Enumeration<URL> findResources(String name) throws IOException {
@@ -202,6 +185,23 @@ public class RepositoryTest extends NbTestCase {
         assertEquals("F!", s.annotateName("f", Collections.singleton(f)));
         // XXX test SystemFileSystem.localizingBundle, iconBase, SystemFileSystem.icon
         // (move tests from org.netbeans.core.projects.SystemFileSystemTest)
+    }
+
+    public void testContentOfFileSystemIsInfluencedByLookup () throws Exception {
+        FileSystem mem = FileUtil.createMemoryFileSystem();
+        String dir = "/yarda/own/file";
+        org.openide.filesystems.FileUtil.createFolder (mem.getRoot (), dir);
+
+        // XXX fails to test that Repo contents are right from *initial* lookup
+        // (try commenting out 'resultChanged(null);' in ExternalUtil.MainFS - still passes)
+        assertNull ("File is not there yet", FileUtil.getConfigFile(dir));
+        MockLookup.setInstances(mem);
+        try {
+            assertNotNull ("The file is there now", FileUtil.getConfigFile(dir));
+        } finally {
+            MockLookup.setInstances();
+        }
+        assertNull ("File is no longer there", FileUtil.getConfigFile(dir));
     }
 
 }

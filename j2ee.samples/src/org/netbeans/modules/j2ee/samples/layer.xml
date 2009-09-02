@@ -80,6 +80,15 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                         <attr name="prjType" stringvalue="web"/>
                     </file>
+                    <file name="PetCatalog.zip" url="PetCatalog.zip">
+                        <attr name="position" intvalue="457"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/PetCatalog.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="prjType" stringvalue="web"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
