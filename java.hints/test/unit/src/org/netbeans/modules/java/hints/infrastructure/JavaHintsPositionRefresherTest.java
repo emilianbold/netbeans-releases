@@ -41,10 +41,12 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -203,8 +205,16 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
         prepareTest(fileName, code);
-        Context ctx = prepareContext(caretPosition[0]);
-        Map<String, List<ErrorDescription>> errorDescriptionsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+        final Context ctx = prepareContext(caretPosition[0]);
+        final Map<String, List<ErrorDescription>> errorDescriptionsAt = new HashMap<String, List<ErrorDescription>>();
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                Map<String, List<ErrorDescription>> eds = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+                errorDescriptionsAt.putAll(eds);
+            }
+        });
+
         StringBuffer buf = new StringBuffer();
         for (Entry<String, List<ErrorDescription>> e : errorDescriptionsAt.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {
