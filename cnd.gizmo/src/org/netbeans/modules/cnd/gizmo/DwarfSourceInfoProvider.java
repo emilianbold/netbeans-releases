@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
-import java.io.FileNotFoundException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
 import java.util.Collections;
@@ -51,11 +50,9 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
-import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -82,9 +79,11 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             if (0 <= parenIdx) {
                 functionName = functionSignature.substring(0, parenIdx);
             }
-            sourceInfo = findDwarf2Line(executable, functionName, offset, serviceInfo);
-            if (sourceInfo != null) {
-                return sourceInfo;
+            if (offset > 0) {
+                sourceInfo = findDwarf2Line(executable, functionName, offset, serviceInfo);
+                if (sourceInfo != null) {
+                    return sourceInfo;
+                }
             }
             Map<String, SourceFileInfo> sourceInfoMap = getSourceInfo(executable, lineNumber, serviceInfo);
             sourceInfo = sourceInfoMap.get(functionSignature);
@@ -115,10 +114,13 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             Dwarf dwarf = new Dwarf(executable);
             try {
                 for (CompilationUnit unit : dwarf.getCompilationUnits()){
-                    for (DwarfEntry entry : unit.getDeclarations()){
+                    for (DwarfEntry entry : unit.getDeclarations(false)){
                         if (entry.getKind()== TAG.DW_TAG_subprogram){
                             String name = entry.getName();
                             if (name.equals(function) || entry.getQualifiedName().equals(function)) {
+                                if (entry.getLowAddress() == 0) {
+                                    continue;
+                                }
                                 LineNumber number = unit.getLineNumber(entry.getLowAddress() + shift);
                                 if (number != null) {
                                     return new SourceFileInfo(toAbsolutePath(serviceInfo, number.file), number.line, 0);
@@ -144,12 +146,17 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 Dwarf dwarf = new Dwarf(executable);
                 try {
                     for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {
-                        for (DwarfEntry entry : compilationUnit.getDeclarations()) {
+                        for (DwarfEntry entry : compilationUnit.getDeclarations(false)) {
                             if (entry.getKind().equals(TAG.DW_TAG_subprogram)) {
-                                SourceFileInfo sourceInfo = new SourceFileInfo(
-                                        toAbsolutePath(serviceInfo, entry.getDeclarationFilePath()),
-                                        lineNumber > 0 ? lineNumber : entry.getLine(), 0);
-                                sourceInfoMap.put(entry.getQualifiedName(), sourceInfo);
+                                if (entry.getLowAddress() == 0) {
+                                    continue;
+                                }
+                                if (entry.getDeclarationFilePath() != null) {
+                                    SourceFileInfo sourceInfo = new SourceFileInfo(
+                                            toAbsolutePath(serviceInfo, entry.getDeclarationFilePath()),
+                                            lineNumber > 0 ? lineNumber : entry.getLine(), 0);
+                                    sourceInfoMap.put(entry.getQualifiedName(), sourceInfo);
+                                }
                             }
                         }
                     }

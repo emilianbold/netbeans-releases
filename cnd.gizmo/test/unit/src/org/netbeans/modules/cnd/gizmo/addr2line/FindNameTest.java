@@ -64,31 +64,43 @@ public class FindNameTest extends NbTestCase {
         super("FindNameTest");
     }
 
-    public void testFractalBuddhabrot() {
+    public void testPkgConfig() {
+        baseTest(0x2a, "g_hash_table_new", "testglib");
+    }
+
+    public void testPkgConfig1() {
+        baseTest(0x71, "g_tree_new", "testglib");
+    }
+
+    public void testPkgConfig2() {
+        baseTest(0x0, "g_free", "testglib");
+    }
+
+    public void testBuddhabrot() {
         baseTest(0xef, "main", "buddhabrot");
     }
 
-    public void testFractalFractal0() {
+    public void testFractal0() {
         baseTest(0x10f, "main", "fractal");
     }
 
-    public void testFractalFractal1() {
+    public void testFractal1() {
         baseTest(0x602, "Mandelbrot", "fractal");
     }
 
-    public void testFractalFractal2() {
+    public void testFractal2() {
         baseTest(0x463, "Mandelbrot", "fractal");
     }
 
-    public void testFractalFractal3() {
+    public void testFractal3() {
         baseTest(0x2b9, "Mandelbrot", "fractal");
     }
 
-    public void testFractalFractal4() {
+    public void testFractal4() {
         baseTest(0x16, "complex::operator+", "fractal");
     }
 
-    public void testFractalFractal5() {
+    public void testFractal5() {
         baseTest(0xd, "complex::operator+", "fractal");
     }
 
@@ -113,36 +125,51 @@ public class FindNameTest extends NbTestCase {
         System.err.println("Gdb result:\t"+line);
         long base = 0;
         LineNumber number = null;
+        LineNumber candidate = null;
         try {
             Dwarf dwarf = new Dwarf(executable);
             try {
                 loop:for (CompilationUnit unit : dwarf.getCompilationUnits()){
-                    for (DwarfEntry entry : unit.getDeclarations()){
+                    for (DwarfEntry entry : unit.getDeclarations(false)){
                         if (entry.getKind() == TAG.DW_TAG_subprogram){
                             String name = entry.getName();
                             if (name.equals(function) || entry.getQualifiedName().equals(function)) {
+                                base = entry.getLowAddress();
+                                if (base == 0) {
+                                    continue;
+                                }
                                 //System.err.println(""+entry);
                                 Set<LineNumber> numbers = unit.getLineNumbers();
                                 TreeSet<LineNumber> sorted = new TreeSet<LineNumber>(numbers);
                                 //for(LineNumber l : sorted) {
                                 //    System.err.println(""+l);
                                 //}
-                                base = entry.getLowAddress();
                                 long target = base + shift;
-                                //System.err.println("base   address: 0x"+Long.toHexString(base));
-                                //System.err.println("target address: 0x"+Long.toHexString(target));
-                                LineNumber candidate = null;
+                                System.err.println("base   address: 0x"+Long.toHexString(base));
+                                System.err.println("target address: 0x"+Long.toHexString(target));
+                                LineNumber prev = null;
+                                long prevOffset = Long.MAX_VALUE;
                                 for (LineNumber n : sorted) {
-                                    if (n.startOffset < target && target <= n.endOffset) {
-                                        candidate = n;
+                                    if (n.startOffset <= target) {
+                                        if (target < n.endOffset) {
+                                            candidate = n;
+                                            break;
+                                        }
+                                    }
+                                    if (prevOffset <= target && target < n.startOffset) {
+                                        candidate = prev;
                                         break;
                                     }
+                                    prevOffset = n.endOffset;
+                                    prev = n;
                                 }
                                 System.err.println("Dwarf Map:\t" + candidate);
-                                number = unit.getLineNumber(base + shift);
+                                number = unit.getLineNumber(target);
                                 //unit.getSourceFileFullName();
                                 System.err.println("Dwarf Proces:\t" + number);
-                                break loop;
+                                if (number != null) {
+                                    break loop;
+                                }
                             }
                         }
                     }
@@ -162,7 +189,11 @@ public class FindNameTest extends NbTestCase {
         System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
         assertNotNull(number);
         assertEquals(number.line, source.getLineNumber());
-        //assertTrue(line.indexOf(""+number.line)>=0);
+        assertNotNull(candidate);
+        assertEquals(number.line, candidate.line);
+        //if (line.indexOf(", line ")>0) {
+        //    assertTrue(line.indexOf(" "+number.line+" ")>=0);
+        //}
     }
 
     private Dwarf2NameFinder getDwarfSource(String resource){
