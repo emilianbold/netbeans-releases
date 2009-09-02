@@ -67,8 +67,9 @@ import java.util.concurrent.Callable;
  *
  * where:
  * <br/><b>controller</b> should be an instance of <code>OptionsPanelController</code>
- * <br/><b>displayName</b> should be a pointer to Bundle where your tab displayname is stored
- * <br/><b>toolTip</b> should be a pointer to Bundle where your tab toolTip is stored
+ * <br/><b>displayName</b> should be a localized string for your tab display name
+ * <br/><b>toolTip</b> should be a localized string for your tab tool tip
+ * <span class="nonnormative"><strong>Currently unused.</strong></span>
  * <br/><b>keywords</b> should be localized keywords list, separated by comma in Bundle, for quickserach purposes
  * <br/><b>keywordsCategory</b> should be relative path to your panel inside Options dialog
  * <br/><br/>
@@ -104,7 +105,7 @@ public abstract class AdvancedOption {
     
     /**
      * Returns tooltip to be used on category name.
-     *
+     * <p class="nonnormative"><strong>Currently unused.</strong></p>
      * @return tooltip for this category
      */
     public abstract String getTooltip ();
