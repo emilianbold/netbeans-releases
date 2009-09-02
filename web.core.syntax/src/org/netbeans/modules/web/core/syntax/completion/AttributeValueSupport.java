@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 
 /** Support for attribute value completion for JSP tags and directives.
  *
@@ -79,8 +78,8 @@ public abstract class AttributeValueSupport {
     private static void initialize() {
         supports = new HashMap();
         // jsp:useBean
-        putSupport(new AttrSupports.ScopeSupport(true, "jsp:useBean", "scope"));     // NOI18N
-        putSupport(new AttrSupports.ClassNameSupport(true, "jsp:useBean", "class")); // NOI18N
+        //putSupport(new AttrSupports.ScopeSupport(true, "jsp:useBean", "scope"));     // NOI18N
+        //putSupport(new AttrSupports.ClassNameSupport(true, "jsp:useBean", "class")); // NOI18N
         // jsp:getProperty, jsp:setProperty
         putSupport(new AttrSupports.GetSetPropertyName(true, "jsp:getProperty", "name")); // NOI18N
         putSupport(new AttrSupports.GetSetPropertyName(true, "jsp:setProperty", "name")); // NOI18N

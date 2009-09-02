@@ -82,7 +82,9 @@ import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -124,7 +126,7 @@ import org.w3c.dom.Text;
     sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public class PhpProject implements Project {
+public class PhpProject implements Project, AntProjectListener {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
@@ -148,6 +150,8 @@ public class PhpProject implements Project {
     volatile FileObject testsDirectory;
     // @GuardedBy(ProjectManager.mutex())
     volatile FileObject seleniumDirectory;
+    // @GuardedBy(ProjectManager.mutex())
+    volatile String name;
 
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
@@ -176,6 +180,7 @@ public class PhpProject implements Project {
         lookup = createLookup(configuration);
 
         addWeakPropertyEvaluatorListener(ignoredFoldersListener);
+        helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, helper));
     }
 
     public Lookup getLookup() {
@@ -470,29 +475,34 @@ public class PhpProject implements Project {
         return new ArrayList<PhpFrameworkProvider>(frameworks);
     }
 
-    /*
-     * Copied from MakeProject.
-     */
     public String getName() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-            public String run() {
-                Element data = getHelper().getPrimaryConfigurationData(true);
-                NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1
-                            && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
+        if (name == null) {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                public Void run() {
+                    synchronized (this) {
+                        if (name == null) {
+                            Element data = getHelper().getPrimaryConfigurationData(true);
+                            NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                            if (nl.getLength() == 1) {
+                                nl = nl.item(0).getChildNodes();
+                                if (nl.getLength() == 1
+                                        && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                                    name = ((Text) nl.item(0)).getNodeValue();
+                                }
+                            }
+                        }
+                        if (name == null) {
+                            name = "???"; // NOI18N
+                        }
                     }
+                    return null;
                 }
-                return "???"; // NOI18N
-            }
-        });
+            });
+        }
+        assert name != null;
+        return name;
     }
 
-    /*
-     * Copied from MakeProject.
-     */
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
@@ -572,6 +582,13 @@ public class PhpProject implements Project {
         return refHelper;
     }
 
+    public void configurationXmlChanged(AntProjectEvent ev) {
+        name = null;
+    }
+
+    public void propertiesChanged(AntProjectEvent ev) {
+    }
+
     private final class Info implements ProjectInformation {
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -621,6 +638,7 @@ public class PhpProject implements Project {
             // do it in a background thread
             getIgnoredFiles();
             getFrameworks();
+            getName();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
@@ -737,7 +755,7 @@ public class PhpProject implements Project {
         }
 
         public void fileChanged(FileEvent fe) {
-            processFileChange();
+            // probably not interesting for us
         }
 
         public void fileDeleted(FileEvent fe) {

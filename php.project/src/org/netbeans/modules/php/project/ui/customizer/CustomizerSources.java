@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerSources extends JPanel implements SourcesFolderProvider, HelpCtx.Provider {
-    private static final long serialVersionUID = -5884643669887545071L;
+    private static final long serialVersionUID = -58848442119887545L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
     private final CopyFilesVisual copyFilesVisual;
@@ -96,11 +96,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
-
-        // disabled for now
-        phpVersionLabel.setVisible(false);
-        phpVersionComboBox.setVisible(false);
-        phpVersionInfoLabel.setVisible(false);
 
         this.category = category;
         this.properties = properties;

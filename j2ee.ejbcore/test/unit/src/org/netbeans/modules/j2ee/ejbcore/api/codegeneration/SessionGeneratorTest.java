@@ -75,21 +75,21 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-        Session session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, "TestStatelessLRBean");
+        Session session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, "TestStatelessLR");
 
         assertNotNull(session);
         assertEquals("TestStatelessLRSB", session.getDefaultDisplayName());
-        assertEquals("TestStatelessLRBean", session.getEjbName());
+        assertEquals("TestStatelessLR", session.getEjbName());
         assertEquals("testGenerateJavaEE14.TestStatelessLRRemoteHome", session.getHome());
         assertEquals("testGenerateJavaEE14.TestStatelessLRRemote", session.getRemote());
         assertEquals("testGenerateJavaEE14.TestStatelessLRLocalHome", session.getLocalHome());
         assertEquals("testGenerateJavaEE14.TestStatelessLRLocal", session.getLocal());
-        assertEquals("testGenerateJavaEE14.TestStatelessLRBean", session.getEjbClass());
+        assertEquals("testGenerateJavaEE14.TestStatelessLR", session.getEjbClass());
         assertEquals("Stateless", session.getSessionType());
         assertEquals("Container", session.getTransactionType());
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestStatelessLRBean.java")), 
-                getGoldenFile("testGenerateJavaEE14/TestStatelessLRBean.java"), 
+                FileUtil.toFile(packageFileObject.getFileObject("TestStatelessLR.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestStatelessLR.java"), 
                 FileUtil.toFile(packageFileObject)
                 );
         assertFile(
@@ -117,21 +117,21 @@ public class SessionGeneratorTest extends TestBase {
         
         sessionGenerator = new SessionGenerator("TestStatefulLR", packageFileObject, false, true, Session.SESSION_TYPE_STATEFUL, false, false, true, true);
         sessionGenerator.generate();
-        session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, "TestStatefulLRBean");
+        session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, "TestStatefulLR");
 
         assertNotNull(session);
         assertEquals("TestStatefulLRSB", session.getDefaultDisplayName());
-        assertEquals("TestStatefulLRBean", session.getEjbName());
+        assertEquals("TestStatefulLR", session.getEjbName());
         assertNull(session.getHome());
         assertNull(session.getRemote());
         assertEquals("testGenerateJavaEE14.TestStatefulLRLocalHome", session.getLocalHome());
         assertEquals("testGenerateJavaEE14.TestStatefulLRLocal", session.getLocal());
-        assertEquals("testGenerateJavaEE14.TestStatefulLRBean", session.getEjbClass());
+        assertEquals("testGenerateJavaEE14.TestStatefulLR", session.getEjbClass());
         assertEquals("Stateful", session.getSessionType());
         assertEquals("Container", session.getTransactionType());
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestStatefulLRBean.java")), 
-                getGoldenFile("testGenerateJavaEE14/TestStatefulLRBean.java"), 
+                FileUtil.toFile(packageFileObject.getFileObject("TestStatefulLR.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestStatefulLR.java"), 
                 FileUtil.toFile(packageFileObject)
                 );
         assertFile(
@@ -163,8 +163,8 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
 
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestStatelessBean.java")), 
-                getGoldenFile("testGenerateJavaEE50/TestStatelessBean.java"), 
+                FileUtil.toFile(packageFileObject.getFileObject("TestStateless.java")), 
+                getGoldenFile("testGenerateJavaEE50/TestStateless.java"), 
                 FileUtil.toFile(packageFileObject)
                 );
         assertFile(
@@ -184,8 +184,8 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
 
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestStatefulBean.java")), 
-                getGoldenFile("testGenerateJavaEE50/TestStatefulBean.java"), 
+                FileUtil.toFile(packageFileObject.getFileObject("TestStateful.java")), 
+                getGoldenFile("testGenerateJavaEE50/TestStateful.java"), 
                 FileUtil.toFile(packageFileObject)
                 );
         assertFile(
@@ -211,8 +211,8 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
 
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestStatelessBean.java")),
-                getGoldenFile("testGenerateJavaEE60/TestStatelessBean.java"),
+                FileUtil.toFile(packageFileObject.getFileObject("TestStateless.java")),
+                getGoldenFile("testGenerateJavaEE60/TestStateless.java"),
                 FileUtil.toFile(packageFileObject)
                 );
         assertFile(
@@ -232,8 +232,8 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
 
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestStatefulBean.java")),
-                getGoldenFile("testGenerateJavaEE60/TestStatefulBean.java"),
+                FileUtil.toFile(packageFileObject.getFileObject("TestStateful.java")),
+                getGoldenFile("testGenerateJavaEE60/TestStateful.java"),
                 FileUtil.toFile(packageFileObject)
                 );
         assertFile(
@@ -250,8 +250,8 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
 
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestSingletonBean.java")),
-                getGoldenFile("testGenerateJavaEE60/TestSingletonBean.java"),
+                FileUtil.toFile(packageFileObject.getFileObject("TestSingleton.java")),
+                getGoldenFile("testGenerateJavaEE60/TestSingleton.java"),
                 FileUtil.toFile(packageFileObject)
                 );
         assertNull(packageFileObject.getFileObject("TestSingletonLocal.java"));
