@@ -100,7 +100,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
     private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
+    private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
     private static String CSS_FOLDER = "css"; //NOI18N
+    private static String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static String DEFAULT_CSS = "default.css"; //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
@@ -526,9 +528,14 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 FileObject target;
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
 
-                if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){ 
-                    is= JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(baseFolder + TEMPLATE_XHTML);
+                if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){
+                    if (isJSF20) {
+                        is= JSFFrameworkProvider.class.getClassLoader()
+                            .getResourceAsStream(baseFolder + TEMPLATE_XHTML2);
+                    } else {
+                        is= JSFFrameworkProvider.class.getClassLoader()
+                            .getResourceAsStream(baseFolder + TEMPLATE_XHTML);
+                    }
                     content = readResource(is, encoding.name());
                     target = FileUtil.createData(webModule.getDocumentBase(), TEMPLATE_XHTML);
                     createFile(target, content, encoding.name());
@@ -540,11 +547,14 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     createFile(target, content, encoding.name());
                 }
-                if (webModule.getDocumentBase().getFileObject(CSS_FOLDER+File.separator+DEFAULT_CSS) == null){
-                    is = JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(baseFolder + DEFAULT_CSS);  
+                String defaultCSSFolder = CSS_FOLDER;
+                if (isJSF20) {
+                    defaultCSSFolder = CSS_FOLDER2;
+                }
+                if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+File.separator+DEFAULT_CSS) == null){
+                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + DEFAULT_CSS);  
                     content = readResource(is, encoding.name());
-                    target = FileUtil.createData(webModule.getDocumentBase().createFolder(CSS_FOLDER), DEFAULT_CSS);
+                    target = FileUtil.createData(webModule.getDocumentBase(), defaultCSSFolder + File.separator+DEFAULT_CSS);
                     createFile(target, content, encoding.name());
                 }
             }
