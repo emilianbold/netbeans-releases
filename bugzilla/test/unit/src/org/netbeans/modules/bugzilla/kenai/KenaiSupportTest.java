@@ -52,7 +52,9 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
@@ -143,6 +145,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
     public void testCreateRepositoryFromLocation () throws Throwable {
         KenaiRepository repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -150,6 +153,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("https://testkenai.com/bugzilla/buglist.cgi?product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -157,14 +161,15 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?product=someproject&vole=tyvole&etwas=1");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
-        assertNotNull(repo);
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
         assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
 
         repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -172,6 +177,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject&vole=tyvole&etwas=1");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -179,6 +185,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("http://testkenai.com/bgzll/buglist.cgi?product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -186,6 +193,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("kekskenai.com", getFieldValue(repo, "host"));
@@ -193,6 +201,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("http://testkenai.com/buglist.cgi?product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -200,6 +209,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("http://testkenai.com:8080/bugzilla/buglist.cgi?product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -207,6 +217,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         repo = createRepository("http://testkenai.com:8080/buglist.cgi?product=someproject");
         assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
         assertEquals("someproject", getFieldValue(repo, "product"));
         assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
         assertEquals("testkenai.com", getFieldValue(repo, "host"));
@@ -223,11 +234,11 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
     }
 
-    private KenaiRepository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private KenaiRepository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, KenaiException {
         KenaiSupportImpl support = new KenaiSupportImpl();
-        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", String.class, String.class);
+        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", KenaiProject.class, String.class, String.class);
         m.setAccessible(true);
-        return (KenaiRepository) m.invoke(support, "Kenai repo", location);
+        return (KenaiRepository) m.invoke(support, getKenaiProject(), "Kenai repo", location);
     }
 
 
@@ -237,6 +248,8 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
         return f.get(obj);
     }
 
-
+    private KenaiProject getKenaiProject() throws KenaiException {
+        return Kenai.getDefault().getProject("koliba");
+    }
 
 }
