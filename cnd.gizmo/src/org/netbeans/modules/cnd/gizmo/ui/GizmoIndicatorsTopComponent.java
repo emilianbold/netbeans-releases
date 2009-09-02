@@ -274,10 +274,10 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
         JPanel panel = getNextPanel();
         panel.removeAll();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(componentToAdd);
         if (viewportManager != null) {
             panel.add(viewportManager);
         }
-        panel.add(componentToAdd);
         setActive();
         repaint();
     }

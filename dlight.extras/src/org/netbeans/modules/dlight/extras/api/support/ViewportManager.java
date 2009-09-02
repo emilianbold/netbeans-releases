@@ -38,9 +38,15 @@
  */
 package org.netbeans.modules.dlight.extras.api.support;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -52,22 +58,32 @@ import org.netbeans.modules.dlight.util.UIThread;
 /**
  * @author Alexey Vladykin
  */
-public final class ViewportManager extends JScrollBar
+public final class ViewportManager extends JPanel
         implements AdjustmentListener, ChangeListener {
 
     private static final long EXTENT = 20000L; // 20 seconds
 
+    private final ViewBar viewbar;
+    private final JScrollBar scrollbar;
     private final ViewportModel viewportModel;
     private boolean isAdjusting;
 
     public ViewportManager() {
-        super(JScrollBar.HORIZONTAL);
+        super(new BorderLayout());
+
         viewportModel = new DefaultViewportModel();
         viewportModel.setLimits(new Range<Long>(0L, 0L));
         viewportModel.setViewport(new Range<Long>(0L, EXTENT));
         viewportModel.addChangeListener(this);
+
+        viewbar = new ViewBar(15);
+
+        scrollbar = new JScrollBar(JScrollBar.HORIZONTAL);
         adjust();
-        addAdjustmentListener(this);
+        scrollbar.addAdjustmentListener(this);
+
+        add(viewbar, BorderLayout.CENTER);
+        add(scrollbar, BorderLayout.SOUTH);
     }
 
     public void addManagedComponent(ViewportAware component) {
@@ -77,12 +93,17 @@ public final class ViewportManager extends JScrollBar
     private void adjust() {
         Range<Long> limits = viewportModel.getLimits();
         Range<Long> viewport = viewportModel.getViewport();
+        long start = Math.min(limits.getStart(), viewport.getStart());
+        long end = Math.max(limits.getEnd(), viewport.getEnd());
         isAdjusting = true;
-        setMinimum((int)TimeUnit.MILLISECONDS.toSeconds(Math.min(limits.getStart(), viewport.getStart())));
-        setMaximum((int)TimeUnit.MILLISECONDS.toSeconds(Math.max(limits.getEnd(), viewport.getEnd())));
-        setValue((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart()));
-        setVisibleAmount((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd() - viewport.getStart()));
+        scrollbar.setMinimum((int)TimeUnit.MILLISECONDS.toSeconds(start));
+        scrollbar.setMaximum((int)TimeUnit.MILLISECONDS.toSeconds(end));
+        scrollbar.setValue((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart()));
+        scrollbar.setVisibleAmount((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd() - viewport.getStart()));
         isAdjusting = false;
+
+        viewbar.setStart((float) viewport.getStart() / (end - start));
+        viewbar.setEnd((float) viewport.getEnd() / (end - start));
     }
 
     public void stateChanged(ChangeEvent e) {
@@ -99,6 +120,41 @@ public final class ViewportManager extends JScrollBar
         if (!isAdjusting) {
             long viewportStart = TimeUnit.SECONDS.toMillis(e.getValue());
             viewportModel.setViewport(new Range<Long>(viewportStart, viewportStart + EXTENT));
+        }
+    }
+
+    private class ViewBar extends JComponent {
+        private final int margin;
+        private float start;
+        private float end;
+
+        public ViewBar(int margin) {
+            this.margin = margin;
+            this.start = 0f;
+            this.end = 1f;
+            setMinimumSize(new Dimension(50, 30));
+            setPreferredSize(new Dimension(50, 30));
+        }
+
+        public void setStart(float start) {
+            this.start = start;
+            repaint();
+        }
+
+        public void setEnd(float end) {
+            this.end = end;
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
+            g.setColor(Color.BLACK);
+            int startx = margin + (int)((getWidth() - 2 * margin - 1) * start);
+            g.drawLine(startx, 0, startx, getHeight());
+            int endx = margin + (int)((getWidth() - 2 * margin - 1) * end);
+            g.drawLine(endx, 0, endx, getHeight());
         }
     }
 }
