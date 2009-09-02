@@ -123,6 +123,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -364,6 +365,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     // -----------------------------------------------------------------------
     // FileChangeListener implementation
     // -----------------------------------------------------------------------
+    
+    final FileEventLog eventQueue = new FileEventLog();
 
     public void fileFolderCreated(FileEvent fe) {
         if (!authorize(fe)) {
@@ -383,13 +386,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root);
                 ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
                 if (entry == null || entry.includes(fo)) {
-                    scheduleWork(new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourcForBinaryRoot), false);
+                    final Work wrk = new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourcForBinaryRoot);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root, FileUtil.getRelativePath(URLMapper.findFileObject(root), fo), fe, wrk);
                     processed = true;
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
-                    scheduleWork(new BinaryWork(root), false);
+                    final Work wrk = new BinaryWork(root);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root, null, fe, wrk);
                     processed = true;
                 }
             }
@@ -420,13 +425,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                 ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
                 if (entry == null || entry.includes(fo)) {
-                    scheduleWork(new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourceForBinaryRoot), false);
+                    final Work wrk = new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourceForBinaryRoot);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root, FileUtil.getRelativePath(URLMapper.findFileObject(root), fo), fe, wrk);
                     processed = true;
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
-                    scheduleWork(new BinaryWork(root), false);
+                    final Work wrk = new BinaryWork(root);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root, null, fe, wrk);
                     processed = true;
                 }
             }
@@ -453,13 +460,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
                     String relativePath = FileUtil.getRelativePath(URLMapper.findFileObject(root), fo);
                     assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
-                    scheduleWork(new DeleteWork(root, Collections.singleton(relativePath)), false);
+                    final Work wrk = new DeleteWork(root, Collections.singleton(relativePath));
+                    eventQueue.record(FileEventLog.FileOp.DELETE, root, relativePath, fe, wrk);
                     processed = true;
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
-                    scheduleWork(new BinaryWork(root), false);
+                    final Work wrk = new BinaryWork(root);
+                    eventQueue.record(FileEventLog.FileOp.DELETE, root, null, fe, wrk);
                     processed = true;
                 }
             }
@@ -486,26 +495,25 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (root != null) {
                 FileObject rootFo = URLMapper.findFileObject(root);
                 String oldFilePath = FileUtil.getRelativePath(rootFo, newFile.getParent()) + "/" + oldNameExt; //NOI18N
-
                 if (newFile.isData()) {
-                    scheduleWork(new DeleteWork(root, Collections.singleton(oldFilePath)), false);
+                    final Work work = new DeleteWork(root, Collections.singleton(oldFilePath));
+                    eventQueue.record(FileEventLog.FileOp.DELETE, root, oldFilePath, fe, work);
                 } else {
                     Set<String> oldFilePaths = new HashSet<String>();
                     collectFilePaths(newFile, oldFilePath, oldFilePaths);
-                    scheduleWork(new DeleteWork(root, oldFilePaths), false);
+                    for (String path : oldFilePaths) {
+                        final Work work = new DeleteWork(root, oldFilePaths);
+                        eventQueue.record(FileEventLog.FileOp.DELETE, root, path, fe, work);
+                    }
                 }
+                
 
                 if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
                     final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                     ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                    if (entry == null || entry.includes(newFile)) {
-                        // delaying of this task was just copied from the old java.source RepositoryUpdater
+                    if (entry == null || entry.includes(newFile)) {                        
                         final FileListWork flw = new FileListWork(scannedRoots2Dependencies,root, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot);
-                        RequestProcessor.getDefault().create(new Runnable() {
-                            public void run() {
-                                scheduleWork(flw, false);
-                            }
-                        }).schedule(FILE_LOCKS_DELAY);
+                        eventQueue.record(FileEventLog.FileOp.CREATE, root, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
                     }
                 }
                 processed = true;
@@ -516,13 +524,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     if (parentFile != null) {
                         try {
                             URL oldBinaryRoot = new File (parentFile, oldNameExt).toURI().toURL();
-                            scheduleWork(new BinaryWork(oldBinaryRoot), false);
+                            eventQueue.record(FileEventLog.FileOp.DELETE, oldBinaryRoot, null, fe, new BinaryWork(oldBinaryRoot));    //NOI18N
                         } catch (MalformedURLException mue) {
                             LOGGER.log(Level.WARNING, null, mue);
                         }
                     }
 
-                    scheduleWork(new BinaryWork(root), false);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root, null, fe,new BinaryWork(root));
                     processed = true;
                 }
             }
