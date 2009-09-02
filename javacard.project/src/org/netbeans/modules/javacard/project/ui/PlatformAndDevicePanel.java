@@ -163,12 +163,6 @@ public class PlatformAndDevicePanel extends SharedLayoutParentPanel implements E
                 }
                 DataObject ob = Utils.createFakeJavacardPlatform(platformName);
                 FileObject fld = ob.getPrimaryFile().getParent();
-                System.err.println("Fake file is " + ob.getPrimaryFile());
-                try {
-                    System.err.println("Creating children on filesystem " + fld.getFileSystem());
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
                 final Node root = new AbstractNode(Children.create(new JavacardPlatformChildren(fld) {
                     @Override
                     protected void onAllNodesCreated() {

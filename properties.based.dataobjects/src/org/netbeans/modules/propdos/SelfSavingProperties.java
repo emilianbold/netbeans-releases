@@ -94,7 +94,9 @@ abstract class SelfSavingProperties extends ObservableProperties {
         Object result = super.put(key, value);
         if (!equals(value, result)) {
             if (!loading) {
-                task.schedule(500);
+                if (!Boolean.getBoolean("JCProjectTest")) { //NOI18N
+                    task.schedule(500);
+                }
                 CoalescablePropertyChangeEvent evt =
                     new CoalescablePropertyChangeEvent(
                     this, key.toString(), result, value);

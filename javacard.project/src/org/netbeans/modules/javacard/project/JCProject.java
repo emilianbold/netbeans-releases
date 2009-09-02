@@ -46,7 +46,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,9 +57,14 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.jar.Attributes.Name;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,7 +151,6 @@ import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -280,9 +283,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 deviceProperties,
                 privatePropsEval,
                 publicPropsEval);
-//        System.err.println("KEYSTORE PATH: " + result.getProperty(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PATH));
         return result;
-//        return new WrapperPropertyEvaluator(result);
     }
 
     public ReferenceHelper getReferenceHelper() {
@@ -519,6 +520,179 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         return ClassPathSupport.createClassPath(getRoots().getRoots());
     }
 
+    private final Object classpathClosureLock = new Object();
+    private String classpathClosureString;
+
+    public List<File> getClasspathClosure() {
+        List<File> result = getClasspathClosure(new ArrayList<File>(20));
+        Set<File> s = new HashSet<File>(result);
+        if (s.size() != result.size()) {
+            Map<File, Integer> m = new HashMap <File, Integer>();
+            for (File f : result) {
+                Integer i = m.get(f);
+                if (i == null) {
+                    i = 1;
+                    m.put (f, i);
+                } else {
+                    i++;
+                    m.put (f, i);
+                }
+            }
+            for (Iterator<File> it=result.iterator(); it.hasNext();) {
+                File f = it.next();
+                int val = m.get(f);
+                if (val > 1) {
+                    val--;
+                    m.put(f, val);
+                    it.remove();
+                }
+            }
+        }
+        return result;
+    }
+
+    public String getClasspathClosureAsString() {
+        synchronized (classpathClosureLock) {
+            if (classpathClosureString != null) {
+                return classpathClosureString;
+            }
+        }
+        List<File> files = getClasspathClosure();
+        StringBuilder sb = new StringBuilder();
+        for (File f : files) {
+            if (sb.length() > 0) {
+                sb.append (File.pathSeparatorChar);
+            }
+            sb.append (f.getAbsolutePath());
+        }
+        synchronized (classpathClosureLock) {
+            classpathClosureString = sb.toString();
+        }
+        return sb.toString();
+    }
+
+    private void getClasspathClosure (Project p, List<File> l, Set<Project> visitedProjects) {
+        assert p != null;
+        AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
+        if (prov != null) {
+            for (AntArtifact a : prov.getBuildArtifacts()) {
+                if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(a.getType())) {
+                    for (URI uri : a.getArtifactLocations()) {
+                        try {
+                            l.add (new File(uri));
+                        } catch (Exception e) {
+                            File proj = FileUtil.toFile (p.getProjectDirectory());
+                            String relPath = uri.toString().replace('/', File.separatorChar);
+                            l.add (new File(proj, relPath));
+                        }
+                    }
+                }
+            }
+        }
+        JCProject jcp = p.getLookup().lookup(JCProject.class);
+        if (jcp != null && !visitedProjects.contains(jcp)) {
+            jcp.getClasspathClosure(l, visitedProjects);
+            visitedProjects.add (jcp);
+        } else {
+            //XXX get subproject proivider, iterate all deps
+            SubprojectProvider subs = p.getLookup().lookup(SubprojectProvider.class);
+            if (subs != null) {
+                for (Project sub : subs.getSubprojects()) {
+                    if (!visitedProjects.contains(sub)) {
+                        getClasspathClosure(sub, l, visitedProjects);
+                    }
+                }
+            }
+        }
+        visitedProjects.add(p);
+    }
+
+    protected List<File> getClasspathClosure(List<File> l) {
+        return getClasspathClosure(l, new HashSet<Project>());
+    }
+
+    protected List<File> getClasspathClosure(List<File> l, Set<Project> visitedProjects) {
+        try {
+            //Fetch the dependencies w/ resolved files and iterate
+            ResolvedDependencies deps = this.syncGetResolvedDependencies();
+            for (ResolvedDependency d : deps.all()) {
+                String path = d.getPath(ArtifactKind.ORIGIN);
+                File f = path == null ? null : new File (path);
+                if (f != null) {
+                    if (d.isProject()) {
+                        if (f != null && f.exists()) {
+                            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(FileUtil.normalizeFile(f)));
+                            if (p != null && !visitedProjects.contains(p)) {
+                                getClasspathClosure(p, l, visitedProjects);
+                                visitedProjects.add (p);
+                            }
+                        }
+                    } else {
+                        l.add(f);
+                        if (FileUtil.isArchiveFile(f.toURI().toURL())) {
+                            JarFile jf = new JarFile(f);
+                            try {
+                                Manifest mf = jf.getManifest();
+                                if (mf != null) {
+                                    String s = mf.getMainAttributes().getValue(
+                                            "Class-Path"); //NOI18N
+
+                                    if (s != null && s.trim().length() > 0) {
+                                        String[] elements = s.split(" "); //NOI18N
+                                        File dir = f.getParentFile();
+                                        for (String el : elements) {
+                                            File fel = new File (dir, 
+                                                el.replace('/', //NOI18N
+                                                File.separatorChar));
+                                            l.add (fel);
+                                        }
+                                    }
+                                } else {
+                                    Logger log = Logger.getLogger(
+                                            JCProject.class.getName());
+
+                                    if (log.isLoggable(Level.WARNING)) {
+                                        log.log(Level.WARNING, "Project at " + //NOI18N
+                                            getProjectDirectory().getPath() +
+                                            " dependent jar missing manifest: " //NOI18N
+                                            + f.getAbsolutePath());
+                                    }
+                                }
+                            } finally {
+                                jf.close();
+                            }
+                        }
+                    }
+                } else {
+                    Logger log = Logger.getLogger(
+                            JCProject.class.getName());
+
+                    if (log.isLoggable(Level.WARNING)) {
+                        log.log(Level.WARNING, "Project at " + //NOI18N
+                            getProjectDirectory().getPath() +
+                            " cannot resolve dependency path: " //NOI18N
+                            + path);
+                    }
+                }
+            }
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return l;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + 
+                "(kind=" + //NOI18N
+                kind.name() +
+                " path=" + //NOI18N
+                getProjectDirectory().getPath() +
+                ")"; //NOI18N
+    }
+
     private final ClassPath getLibClassPath() {
         synchronized (pml) {
             if (libPath == null) {
@@ -541,9 +715,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                                         if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(a.getType())) {
                                             URI[] uris = a.getArtifactLocations();
                                             for (URI u : uris) {
-                                                //XXX either the docs are wrong, or our AntArtifactProvider impl is wrong
-//                                                url = new URL (url.toString() + u.toString());
-                                                System.err.println("URI: " + u);
                                                 url = new URL(u.toString());
                                                 if (FileUtil.isArchiveFile(url)) {
                                                     url = FileUtil.getArchiveRoot(url);
@@ -568,10 +739,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     }
                     libPath = ClassPathSupport.createClassPath(
                             urls.toArray(new URL[urls.size()]));
-                    System.err.println("Class Path:");
-                    for (URL url : urls) {
-                        System.err.println("   " + url);
-                    }
                 } catch (SAXException ex) {
                     libPath = ClassPathSupport.createClassPath("");
                     Exceptions.printStackTrace(ex);
@@ -713,7 +880,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 Set<Item> copy = new HashSet<Item>(items);
                 items.removeAll(copy);
                 for (Item item : copy) {
-                    System.err.println("DLG FOR " + item.project.getProjectDirectory().getPath());
                     if (item.project.isBadPlatformOrCard()) {
                         String platform = item.project.evaluator().getProperty(
                                 ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
@@ -848,27 +1014,22 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
         public Set<? extends Project> getSubprojects() {
             Set<Project> result = new HashSet<Project>();
-            String cp = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH);
-            if (cp != null && cp.length() > 0) {
-                String[] jars = cp.trim().split(File.pathSeparator);
-                for (String jar : jars) {
-                    File f = new File(jar);
-                    if (!f.exists()) {
-                        File projDir = FileUtil.toFile(getProjectDirectory());
-                        f = new File(projDir, jar);
-                        if (!f.exists()) {
-                            Logger.getLogger(JCProject.class.getName()).log(Level.INFO,
-                                    "Non-existent JAR on classpath of " + //NOI18N
-                                    getProjectDirectory().getPath() +
-                                    " - '" + jar + "'"); //NOI18N
-                            continue;
+            try {
+                for (ResolvedDependency dep : syncGetResolvedDependencies().all()) {
+                    if (dep.isProject()) {
+                        FileObject fo = dep.resolve(ArtifactKind.ORIGIN);
+                        if (fo != null) {
+                            Project p = FileOwnerQuery.getOwner(fo);
+                            if (p != null) {
+                                result.add(p);
+                            }
                         }
                     }
-                    Project project = FileOwnerQuery.getOwner(f.toURI());
-                    if (project != null) {
-                        result.add(project);
-                    }
                 }
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
             return result;
         }
@@ -1192,7 +1353,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
         public Cancellable requestDependencies(Receiver receiver) {
             DependenciesFinder finder = new DependenciesFinder(receiver);
-            System.err.println("Posting dependencies finder");
             RequestProcessor.getDefault().post(finder);
             return finder;
         }
@@ -1251,16 +1411,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             }
 
             private Dependencies collectDependencies() throws SAXException, IOException {
-//                FileObject fo = getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
-//                InputStream in = new BufferedInputStream(fo.getInputStream());
-//                try {
-//                    InputSource src = new InputSource(in);
-////                    Dependencies result = Dependencies.parse(src, eval);
-//
-//                    return result;
-//                } finally {
-//                    in.close();
-//                }
                 Element cfgRoot = antHelper.getPrimaryConfigurationData(true);
                 return Dependencies.parse(cfgRoot);
             }
@@ -1300,6 +1450,9 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         }
 
         public Void run() throws Exception {
+            synchronized (classpathClosureLock) {
+                classpathClosureString = null;
+            }
             Element config = antHelper.getPrimaryConfigurationData(true);
             resolver.save(JCProject.this, this, config);
             antHelper.putPrimaryConfigurationData(config, true);
@@ -1371,7 +1524,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                                             try {
                                                 f1 = new File(uri);
                                             } catch (IllegalArgumentException e) { //non-absolute URI
-                                                System.err.println("URI IS " + uri);
                                                 File projDir = FileUtil.toFile (p.getProjectDirectory());
                                                 f1 = new File (projDir, uri.toString());
                                             }
@@ -1395,7 +1547,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             pub.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH, sb.toString());
             antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pub);
             //end deletia
-
             ProjectManager.getDefault().saveProject(JCProject.this);
             return null;
         }
