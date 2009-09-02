@@ -43,6 +43,7 @@ package org.netbeans.spi.options;
 
 import org.netbeans.modules.options.AdvancedOptionImpl;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * This class represents one category (like "Ant"
@@ -124,13 +125,22 @@ public abstract class AdvancedOption {
      * @param attrs attributes defined in layer
      * @return instance of <code>AdvancedOption</code>
      */
-    static AdvancedOption createSubCategory(Map attrs) {
-        String displayName = (String) attrs.get(DISPLAYNAME);
+    static AdvancedOption createSubCategory(final Map attrs) {
+        final String displayName = (String) attrs.get(DISPLAYNAME);
         String tooltip = (String) attrs.get(TOOLTIP);
         String keywords = (String) attrs.get(KEYWORDS);
-        OptionsPanelController controller = (OptionsPanelController) attrs.get(CONTROLLER);
         String keywordsCategory = (String) attrs.get(KEYWORDS_CATEGORY);
-
-        return new AdvancedOptionImpl(controller, displayName, tooltip, keywords, keywordsCategory);
+//        new Exception("preloading advanced options panel " + displayName).printStackTrace();
+        return new AdvancedOptionImpl(new Callable<OptionsPanelController>() {
+            public OptionsPanelController call() throws Exception {
+                Object o = attrs.get(CONTROLLER);
+//                new Exception("loading advanced options panel " + displayName + ": " + o).printStackTrace();
+                if (o instanceof OptionsPanelController) {
+                    return (OptionsPanelController) o;
+                } else {
+                    throw new Exception("got no controller from " + displayName + ": " + o);
+                }
+            }
+        }, displayName, tooltip, keywords, keywordsCategory);
     }
 }

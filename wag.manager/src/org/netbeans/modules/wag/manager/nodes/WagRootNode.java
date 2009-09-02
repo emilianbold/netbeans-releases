@@ -45,10 +45,12 @@ import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.wag.manager.actions.LoginAction;
 import org.netbeans.modules.wag.manager.actions.ViewZemblyApiBrowserAction;
+import org.netbeans.modules.wag.manager.util.WagPreferences;
 import org.netbeans.modules.wag.manager.zembly.ZemblySession;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -76,6 +78,7 @@ public class WagRootNode extends AbstractNode implements PropertyChangeListener 
         session = ZemblySession.getInstance();
         session.addPropertyChangeListener(WeakListeners.propertyChange(this, session));
         setDisplayName();
+        tryLogin();
     }
 
     @Override
@@ -118,6 +121,28 @@ public class WagRootNode extends AbstractNode implements PropertyChangeListener 
                     session.getUserInfo().getUsername()));
         } else {
             setDisplayName(NbBundle.getMessage(WagRootNode.class, "Web_API_Gateway"));
+        }
+    }
+
+    private void tryLogin() {
+        WagPreferences preferences = WagPreferences.getInstance();
+
+        if (preferences.getOnlineStatus()) {
+            final String username = preferences.getUsername();
+            final char[] password = preferences.getPassword();
+
+            if (username != null) {
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        try {
+                            ZemblySession.getInstance().login(username, password);
+                        } catch (Exception ex) {
+                            // ignore since we are just trying
+                        }
+                    }
+                });
+            }
         }
     }
 }
