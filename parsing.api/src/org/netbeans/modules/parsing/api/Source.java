@@ -356,7 +356,7 @@ public final class Source {
                         try {
                             int length = d.getLength ();
                             if (length < 0)
-                                text[0] = "";
+                                text[0] = ""; //NOI18N
                             else
                                 text[0] = d.getText (0, length);
                         } catch (BadLocationException ble) {
@@ -366,22 +366,12 @@ public final class Source {
                 });
             }
         } catch (OutOfMemoryError oome) {
-            // Diagnostics and workaround for issues such as #170290
-            LOG.log(Level.INFO, null, oome);
-
             // Use empty snapshot
             text[0] = ""; //NOI18N
 
-            // Help JVM to reclaim the memory occupied by the partially loaded snapshot
-            for (int i = 0; i < 3; i++) {
-                System.gc(); System.runFinalization();
-                try {
-                    Thread.sleep(123);
-                } catch (InterruptedException ex) {
-                    break;
-                }
-            }
-            
+            // Diagnostics and workaround for issues such as #170290
+            LOG.log(Level.INFO, null, oome);
+
             if (doc != null) {
                 LOG.warning("Can't create snapshot of " + doc + ", size=" + doc.getLength() + ", mimeType=" + mimeType); //NOI18N
             } else {
