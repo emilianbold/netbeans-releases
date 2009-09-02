@@ -540,10 +540,6 @@ class J2SEActionProvider implements ActionProvider {
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]));
         final JavaSource js = JavaSource.create(info);
-        ScanDialog.runWhenScanFinished (new Runnable () {
-            public void run () {
-            }
-        }, true);
         js.runWhenScanFinished(new org.netbeans.api.java.source.Task<CompilationController>() {
             public void run(final CompilationController controller) throws Exception {
                 runnable.run();
