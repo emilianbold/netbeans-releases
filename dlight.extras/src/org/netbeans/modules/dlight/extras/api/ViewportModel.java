@@ -36,38 +36,61 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.util;
+package org.netbeans.modules.dlight.extras.api;
+
+import javax.swing.event.ChangeListener;
 
 /**
- * Range of numeric values.
- *
- * @param <T> number class
+ * Model for components that have viewport or are otherwise
+ * involved in viewport management.
  *
  * @author Alexey Vladykin
  */
-public final class Range<T extends Number & Comparable<? super T>> {
+public interface ViewportModel {
 
-    private final T start;
-    private final T end;
+    /**
+     * Returns limits. Limits is the available data range,
+     * which can be viewed through this viewport.
+     *
+     * @return current limits
+     */
+    Range<Long> getLimits();
 
-    public Range(T start, T end) {
-        if (start != null && end != null && 0 < start.compareTo(end)) {
-            throw new IllegalArgumentException("Must be start <= end"); // NOI18N
-        }
-        this.start = start;
-        this.end = end;
-    }
+    /**
+     * Sets limits.
+     *
+     * @param limits  new limits
+     */
+    void setLimits(Range<Long> limits);
 
-    public T getStart() {
-        return start;
-    }
+    /**
+     * Returns viewport. Viewport's start and
+     * end are in milliseconds since session start.
+     *
+     * @return current viewport
+     */
+    Range<Long> getViewport();
 
-    public T getEnd() {
-        return end;
-    }
+    /**
+     * Sets viewport. Start and/or end can be <code>null</code>
+     * to keep current values.
+     *
+     * @param viewport  new viewport
+     */
+    void setViewport(Range<Long> viewport);
 
-    @Override
-    public String toString() {
-        return String.valueOf(start) + ".." + String.valueOf(end); // NOI18N
-    }
+    /**
+     * Adds change listener. <code>ChangeEvent</code>s are sent
+     * when limits or viewport are modified.
+     *
+     * @param listener  listener to add
+     */
+    void addChangeListener(ChangeListener listener);
+
+    /**
+     * Removes change listener.
+     *
+     * @param listener  listener to remove
+     */
+    void removeChangeListener(ChangeListener listener);
 }

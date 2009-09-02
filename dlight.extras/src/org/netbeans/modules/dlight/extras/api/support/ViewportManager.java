@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.ui;
+package org.netbeans.modules.dlight.extras.api.support;
 
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -44,11 +44,10 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JScrollBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.dlight.spi.indicator.ViewportAware;
-import org.netbeans.modules.dlight.util.Range;
-import org.netbeans.modules.dlight.spi.indicator.ViewportModel;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.Range;
+import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.openide.util.ChangeSupport;
 
 /**
  * @author Alexey Vladykin
@@ -58,12 +57,12 @@ public final class ViewportManager extends JScrollBar
 
     private static final long EXTENT = 20000L; // 20 seconds
 
-    private final SharedViewportModel viewportModel;
+    private final ViewportModel viewportModel;
     private boolean isAdjusting;
 
     public ViewportManager() {
         super(JScrollBar.HORIZONTAL);
-        viewportModel = new SharedViewportModel();
+        viewportModel = new DefaultViewportModel();
         viewportModel.setLimits(new Range<Long>(0L, 0L));
         viewportModel.setViewport(new Range<Long>(0L, EXTENT));
         viewportModel.addChangeListener(this);
@@ -100,83 +99,6 @@ public final class ViewportManager extends JScrollBar
         if (!isAdjusting) {
             long viewportStart = TimeUnit.SECONDS.toMillis(e.getValue());
             viewportModel.setViewport(new Range<Long>(viewportStart, viewportStart + EXTENT));
-        }
-    }
-
-    private static class SharedViewportModel implements ViewportModel {
-
-        private final ChangeSupport changeSupport;
-        private long lowerLimit;
-        private long upperLimit;
-        private long viewportStart;
-        private long viewportEnd;
-
-        public SharedViewportModel() {
-            this.changeSupport = new ChangeSupport(this);
-        }
-
-        public synchronized Range<Long> getLimits() {
-            return new Range<Long>(lowerLimit, upperLimit);
-        }
-
-        public synchronized void setLimits(Range<Long> limits) {
-            boolean changed = false;
-            boolean autoscroll = upperLimit <= viewportEnd;
-            if (limits.getStart() != null) {
-                long newLowerLimit = limits.getStart();
-                if (newLowerLimit < lowerLimit) {
-                    lowerLimit = newLowerLimit;
-                    changed = true;
-                }
-            }
-            if (limits.getEnd() != null) {
-                long newUpperLimit = limits.getEnd();
-                if (upperLimit < newUpperLimit) {
-                    upperLimit = newUpperLimit;
-                    changed = true;
-                }
-            }
-            if (changed) {
-                if (autoscroll) {
-                    long tmpViewportStart = Math.max(0, upperLimit - EXTENT);
-                    setViewport(new Range<Long>(tmpViewportStart, tmpViewportStart + EXTENT));
-                } else {
-                    changeSupport.fireChange();
-                }
-            }
-        }
-
-        public synchronized Range<Long> getViewport() {
-            return new Range<Long>(viewportStart, viewportEnd);
-        }
-
-        public synchronized void setViewport(Range<Long> viewport) {
-            boolean changed = false;
-            if (viewport.getStart() != null) {
-                long newViewportStart = viewport.getStart();
-                if (viewportStart != newViewportStart) {
-                    viewportStart = newViewportStart;
-                    changed = true;
-                }
-            }
-            if (viewport.getEnd() != null) {
-                long newViewportEnd = viewport.getEnd();
-                if (viewportEnd != newViewportEnd) {
-                    viewportEnd = newViewportEnd;
-                    changed = true;
-                }
-            }
-            if (changed) {
-                changeSupport.fireChange();
-            }
-        }
-
-        public void addChangeListener(ChangeListener listener) {
-            changeSupport.addChangeListener(listener);
-        }
-
-        public void removeChangeListener(ChangeListener listener) {
-            changeSupport.removeChangeListener(listener);
         }
     }
 }

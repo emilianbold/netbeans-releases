@@ -36,62 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.indicator;
-
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.dlight.util.Range;
+package org.netbeans.modules.dlight.extras.api;
 
 /**
- * Model for components that have viewport or are otherwise
- * involved in viewport management.
+ * Entity that deals with viewport.
  *
  * @author Alexey Vladykin
  */
-public interface ViewportModel {
+public interface ViewportAware {
 
-    /**
-     * Returns limits. Limits is the available data range,
-     * which can be viewed through this viewport.
-     *
-     * @return current limits
-     */
-    Range<Long> getLimits();
+    ViewportModel getViewportModel();
 
-    /**
-     * Sets limits.
-     *
-     * @param limits  new limits
-     */
-    void setLimits(Range<Long> limits);
-
-    /**
-     * Returns viewport. Viewport's start and
-     * end are in milliseconds since session start.
-     *
-     * @return current viewport
-     */
-    Range<Long> getViewport();
-
-    /**
-     * Sets viewport. Start and/or end can be <code>null</code>
-     * to keep current values.
-     *
-     * @param viewport  new viewport
-     */
-    void setViewport(Range<Long> viewport);
-
-    /**
-     * Adds change listener. <code>ChangeEvent</code>s are sent
-     * when limits or viewport are modified.
-     *
-     * @param listener  listener to add
-     */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes change listener.
-     *
-     * @param listener  listener to remove
-     */
-    void removeChangeListener(ChangeListener listener);
+    void setViewportModel(ViewportModel viewportModel);
 }

@@ -36,17 +36,38 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.dlight.spi.indicator;
+package org.netbeans.modules.dlight.extras.api;
 
 /**
- * Entity that deals with viewport.
+ * Range of numeric values.
+ *
+ * @param <T> number class
  *
  * @author Alexey Vladykin
  */
-public interface ViewportAware {
+public final class Range<T extends Number & Comparable<? super T>> {
 
-    ViewportModel getViewportModel();
+    private final T start;
+    private final T end;
 
-    void setViewportModel(ViewportModel viewportModel);
+    public Range(T start, T end) {
+        if (start != null && end != null && 0 < start.compareTo(end)) {
+            throw new IllegalArgumentException("Must be start <= end"); // NOI18N
+        }
+        this.start = start;
+        this.end = end;
+    }
+
+    public T getStart() {
+        return start;
+    }
+
+    public T getEnd() {
+        return end;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(start) + ".." + String.valueOf(end); // NOI18N
+    }
 }
