@@ -79,13 +79,7 @@ public class StorageTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        System.setProperty("netbeans.user", System.getProperty("nbjunit.workdir", "/tmp/"));
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         emptyStorage();
     }
 
