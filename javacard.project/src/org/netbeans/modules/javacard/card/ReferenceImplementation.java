@@ -50,7 +50,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.javacard.constants.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.project.JCProject;
-import org.netbeans.modules.javacard.project.libraries.LibrariesManager;
 
 /**
  *
@@ -148,7 +147,7 @@ public final class ReferenceImplementation extends SunJavaCardServer {
             "--classpath", //NOI18N
             new File(p.getProjectDirectory().toString(), p.evaluator().getProperty("dist.bundle")).getAbsolutePath()
             + File.pathSeparator
-            + p.getLookup().lookup(LibrariesManager.class).getProjectLibraryClasspath(p),
+            + p.getClasspathClosureAsString()
         };
     }
 
