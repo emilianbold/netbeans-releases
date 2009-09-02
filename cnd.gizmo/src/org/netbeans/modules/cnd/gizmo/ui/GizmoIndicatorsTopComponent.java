@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo.ui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -273,10 +274,10 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
         }
         JPanel panel = getNextPanel();
         panel.removeAll();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(componentToAdd);
+        panel.setLayout(new BorderLayout());
+        panel.add(componentToAdd, BorderLayout.CENTER);
         if (viewportManager != null) {
-            panel.add(viewportManager);
+            panel.add(viewportManager, BorderLayout.SOUTH);
         }
         setActive();
         repaint();

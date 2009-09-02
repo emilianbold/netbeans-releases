@@ -123,7 +123,7 @@ public final class ViewportManager extends JPanel
         }
     }
 
-    private class ViewBar extends JComponent {
+    private static class ViewBar extends JComponent {
         private final int margin;
         private float start;
         private float end;
@@ -134,6 +134,7 @@ public final class ViewportManager extends JPanel
             this.end = 1f;
             setMinimumSize(new Dimension(50, 30));
             setPreferredSize(new Dimension(50, 30));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         }
 
         public void setStart(float start) {
