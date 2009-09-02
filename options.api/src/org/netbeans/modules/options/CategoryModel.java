@@ -314,7 +314,6 @@ public final class CategoryModel implements LookupListener {
         private OptionsCategory category;
         private OptionsPanelController controller;
         private boolean isUpdated;
-        private HelpCtx helpCtx;
         private JComponent component;
         private Lookup lookup;
         private final String id;
@@ -360,10 +359,6 @@ public final class CategoryModel implements LookupListener {
 
         public String getCategoryName() {
             return category.getCategoryName();
-        }
-
-        public String getTitle() {
-            return category.getTitle();
         }
 
         private synchronized OptionsPanelController create() {
