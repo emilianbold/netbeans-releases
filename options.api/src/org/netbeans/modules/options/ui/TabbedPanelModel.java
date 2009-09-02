@@ -47,8 +47,9 @@ import javax.swing.JComponent;
 
 public abstract class TabbedPanelModel {
 
-    public abstract List getCategories ();
+    public abstract List<String> getCategories();
 
+    /** XXX unused */
     public abstract String getToolTip (String category);
 
     public abstract JComponent getPanel (String category);
