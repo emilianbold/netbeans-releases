@@ -223,9 +223,12 @@ public class StorageTest extends NbTestCase {
     }
 
 
-    private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
         File f = getStorageRootFile();
         BugtrackingUtil.deleteRecursively(f);
+        Field field = IssueStorage.class.getDeclaredField("storage");
+        field.setAccessible(true);
+        field.set(IssueStorage.getInstance(), f);
     }
 
     private File getStorageRootFile() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {
