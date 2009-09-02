@@ -477,14 +477,8 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                                 }
                             }
                         });
-                    } else {
-                        System.err.println("Could not find eprom file");
                     }
-                } else {
-                    System.err.println("Could not find eprom folder");
                 }
-            } else {
-                System.err.println("could not find platform");
             }
         }
 
@@ -501,10 +495,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                 }
             }
             return false;
-        }
-
-        public void run() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

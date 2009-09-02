@@ -42,23 +42,23 @@ made subject to such option by the copyright holder.
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Registering a Sun Java System Application Server/GlassFish Instance</title>
+        <title>Registering a GlassFish Application Server Instance</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>Registering a Sun Java System Application Server/GlassFish Instance</h2>
+        <h2>Registering a GlassFish Application Server Instance</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>To begin developing enterprise applications you must first register an instance of the
-        Sun Java System Application Server/GlassFish with the IDE.</p>
+        GlassFish application server or the Sun Java System Application Server with the IDE.</p>
 
         <p>If you deploy your applications to a remote instance of the
-        Sun Java System Application Server/GlassFish, those libraries are available at runtime. However, during 
+        application server, those libraries are available at runtime. However, during
         development, to compile your project you need a local instance of this server and libraries.</p>
-        <p>You can have multiple instances of the Sun Java System Application Server/GlassFish registered with the 
+        <p>You can have multiple instances of the GlassFish application server registered with the
         IDE, but you must first specify the local folder that contains the local installation of 
         the server. You only need to specify the location of the local installation once.</p>
     
-        <p><b>To register an instance of the Sun Java System Application Server/GlassFish:</b></p>
+        <p><b>To register an instance of the GlassFish application server or Sun Java System Application Server:</b></p>
         <ol>
             <li>Choose Tools &gt; Servers.</li>
             <li>In the Servers dialog box, click Add Server to open the Add Server wizard.
@@ -77,27 +77,28 @@ made subject to such option by the copyright holder.
                 </li></ul>
             </li>
             <li>Click Finish to complete the Add Server Instance wizard. 
-            Alternatively, click Next if you want to enter a username and password for the domain.</li>
+            Alternatively, click Next if you want to enter a username and password for the domain.
             <ul class="note">
                 <li>If you do not enter a username and password when you register the server instance, 
                 you are prompted to supply the username and password when needed.<br>
                 The default username/password is admin/adminadmin.</li>
             </ul>
+            </li>
             <li>Click Close in the Servers dialog box.</li>
         </ol>  
-        <p>Once a server instance is registered with the IDE, a node for the server instance is visible in the Services
+        <p>After a server instance is registered with the IDE, a node for the server instance is visible in the Services
         window under the Servers node. 
         You can perform the following tasks by right-clicking 
         the server instance node and choosing a task from the pop-up menu:</p> 
         <ul>
             <li>Start and stop a local server instance</li>
             <li>Remove an instance of the server</li> 
-            <li>Open the Sun Java System Application Server admin console in a browser</li> 
+            <li>Open the server's admin console in a browser</li>
             <li>View the server log file</li> 
             <li>View the properties of the server</li>
             <li>Contact the GlassFish Update Center to check for available software and server updates</li>
         </ul>
-        <p><b>To remove an instance of the Java System Application Server/GlassFish:</b></p>
+        <p><b>To remove an instance of the server:</b></p>
         <ol>
             <li>Choose Tools &gt; Servers.</li>
             <li>In the Servers dialog box, select the server name in the left pane.</li>
@@ -112,7 +113,7 @@ made subject to such option by the copyright holder.
         </ul>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="working_withSJS.html">Working With the Sun Java System Application Server/GlassFish</a></dd>
+            <dd><a href="working_withSJS.html">Working With the GlassFish Application Server</a></dd>
         </dl>
         <hr>
 
