@@ -53,7 +53,6 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
-import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -130,7 +129,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public String getNormalizedName() {
-        return getName().toLowerCase();
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase();
     }
 
     static boolean nameKindMatch(Pattern p, String text) {
