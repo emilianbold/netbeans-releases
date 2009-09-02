@@ -842,9 +842,11 @@ public final class FileUtil extends Object {
             if ((fileURL != null) && "file".equals(fileURL.getProtocol())) {
                 retVal = new File(URI.create(fileURL.toExternalForm()));
             }
+            if (retVal != null) {
+                retVal = normalizeFile(retVal);
+            }
         }
-
-        return (retVal != null) ? normalizeFile(retVal) : null;
+        return retVal;
     }
 
     /**
