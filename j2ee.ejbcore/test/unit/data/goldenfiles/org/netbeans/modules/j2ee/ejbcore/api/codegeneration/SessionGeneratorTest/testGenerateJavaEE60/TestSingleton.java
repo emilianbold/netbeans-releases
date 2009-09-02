@@ -3,16 +3,16 @@
  * and open the template in the editor.
  */
 
-package testGenerateJavaEE50;
+package testGenerateJavaEE60;
 
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
 
 /**
  *
  * @author {user}
  */
-@Stateless
-public class TestStatelessBean implements TestStatelessRemote, TestStatelessLocal {
+@Singleton
+public class TestSingleton {
     
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")

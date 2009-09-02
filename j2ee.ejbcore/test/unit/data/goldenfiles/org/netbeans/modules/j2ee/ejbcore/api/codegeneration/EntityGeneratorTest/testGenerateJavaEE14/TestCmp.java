@@ -5,23 +5,22 @@
 
 package testGenerateJavaEE14;
 
+import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
-import javax.ejb.FinderException;
 
 /**
  *
  * @author {user}
  */
-public class TestBmpBean implements EntityBean {
+public abstract class TestCmp implements EntityBean {
 
     private EntityContext context;
     
-    // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click the + sign on the left to edit the code.">
+    // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click on the + sign on the left to edit the code.">
 
-    // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise beans, Web services)
-    // TODO Add business methods
-    // TODO Add create methods
+    // TODO Consider creating Transfer Object to encapsulate data
+    // TODO Review finder methods
 
     /**
      * @see javax.ejb.EntityBean#setEntityContext(javax.ejb.EntityContext)
@@ -62,25 +61,35 @@ public class TestBmpBean implements EntityBean {
      * @see javax.ejb.EntityBean#ejbLoad()
      */
     public void ejbLoad() {
-        // TODO add code to retrieve data
+        
     }
     
     /**
      * @see javax.ejb.EntityBean#ejbStore()
      */
     public void ejbStore() {
-        // TODO add code to persist data
+        
     }
 
     // </editor-fold>
     
-    /**
-     * See EJB 2.0 and EJB 2.1 section 12.2.5
-     */
-    public java.lang.Long ejbFindByPrimaryKey(java.lang.Long aKey) throws FinderException {
-        // TODO add code to locate aKey from persistent storage
-        // throw javax.ejb.ObjectNotFoundException if aKey is not in
-        // persistent storage.
+    public abstract java.lang.Long getPk();
+
+    public abstract void setPk(java.lang.Long key);
+    
+    public java.lang.Long ejbCreate(java.lang.Long key)  throws CreateException {
+        if (key == null) {
+            throw new CreateException("The field \"key\" must not be null");
+        }
+        
+        // TODO add additional validation code, throw CreateException if data is not valid
+        setPk(key);
+
+        return null;
+    }
+
+    public void ejbPostCreate(java.lang.Long key) {
+        // TODO populate relationships here if appropriate
     }
 
 }

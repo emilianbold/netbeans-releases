@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
 
             <!-- Templates accessible from Tools | TemplateManager -->
 
-            <attr name="position" intvalue="500"/>
+            <attr name="position" intvalue="850"/>
             <folder name="EJB21">
                 <attr name="position" intvalue="0"/>
                 <file name="SessionEjbClass.java" url="templates/EJB21SessionEjbClass.template">

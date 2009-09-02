@@ -60,12 +60,10 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
     @Override
     public final void actionPerformed(ActionEvent e) {
         PhpModule phpModule = PhpModule.inferPhpModule();
-        if (phpModule == null) {
-            return;
-        }
-        if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-            return;
-        }
+
+        assert phpModule != null : "php module should be found";
+        assert SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule) : "symfony project should be in phpmodule" + phpModule;
+
         actionPerformed(phpModule);
     }
 

@@ -59,7 +59,7 @@ import org.openide.util.ChangeSupport;
  *
  * @author mkleint
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-clientproject",position=600)
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-clientproject",position=400)
 public final class SetupDirNodeFactory implements NodeFactory {
     
     /** Creates a new instance of LibrariesNodeFactory */

@@ -91,6 +91,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
@@ -112,6 +113,35 @@ public class VariousUtils {
     public static final String FIELD_TYPE_PREFIX = "fld:";
     public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
     public static final String VAR_TYPE_PREFIX = "var:";
+    public static enum Kind {
+        CONSTRUCTOR,
+        FUNCTION,
+        METHOD,
+        STATIC_METHOD,
+        FIELD,
+        STATIC_FIELD,
+        VAR;
+        @Override
+        public String toString() {
+            switch(this) {
+                case CONSTRUCTOR:
+                    return VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
+                case FUNCTION:
+                    return VariousUtils.FUNCTION_TYPE_PREFIX;
+                case METHOD:
+                    return VariousUtils.METHOD_TYPE_PREFIX;
+                case STATIC_METHOD:
+                    return VariousUtils.STATIC_METHOD_TYPE_PREFIX;
+                case FIELD:
+                    return VariousUtils.FIELD_TYPE_PREFIX;
+                case STATIC_FIELD:
+                    return VariousUtils.STATIC_FIELD__TYPE_PREFIX;
+                case VAR:
+                    return VariousUtils.VAR_TYPE_PREFIX;
+            }
+            return super.toString();
+        }
+    };
 
     public static String extractTypeFroVariableBase(VariableBase varBase) {
         return extractTypeFroVariableBase(varBase, Collections.<String, AssignmentImpl>emptyMap());
@@ -225,10 +255,67 @@ public class VariousUtils {
 
         return null;
     }
+    
+    public static String replaceVarNames(String semiTypeName, Map<String,String> var2Type)  {
+        StringBuilder retval = new StringBuilder();
+        String[] fragments = semiTypeName.split("[@:]");
+        for (int i = 0; i < fragments.length; i++) {            
+            String frag = fragments[i];
+            if (frag.trim().length() == 0) continue;
+            if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
+                if (i+1 < fragments.length) {
+                    String varName = fragments[++i];
+                    String type = var2Type.get(varName);
+                    if (type != null) {
+                        retval.append(type);
+                        continue;
+                    }
+                }
+                return null;
+            }
+            Kind[] values = VariousUtils.Kind.values();
+            boolean isPrefix = false;
+            for (Kind kind : values) {
+                if (kind.toString().startsWith(frag)) {
+                    isPrefix = true;
+                    break;
+                }
+            }
+            if (isPrefix) {
+                retval.append("@");//NOI18N
+                retval.append(frag);
+                retval.append(":");//NOI18N
+                isPrefix = true;
+            } else {
+                retval.append(frag);
+            }
+        }
+        return retval.toString();
+    }
+    public static Collection<? extends VariableName> getAllVariables(VariableScope varScope, String semiTypeName)  {
+        List<VariableName> retval = new ArrayList<VariableName>();
+        String[] fragments = semiTypeName.split("[@:]");
+        for (int i = 0; i < fragments.length; i++) {
+            String frag = fragments[i];
+            if (frag.trim().length() == 0) continue;
+            if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
+                if (i+1 < fragments.length) {
+                    String varName = fragments[++i];
+                    VariableName var = varName != null ? ModelUtils.getFirst(varScope.getDeclaredVariables(), varName) : null;
+                    if (var != null) {
+                        retval.add(var);
+                    } else {
+                        return Collections.emptyList();
+                    }
+                }
+            }
+        }
+        return retval;
+    }
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
     //TODO: needs to be improved to properly return more types
-    public static List<? extends TypeScope> getType(FileScope topScope, VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
+    public static List<? extends TypeScope> getType( VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
         List<? extends TypeScope> recentTypes = Collections.emptyList();
         List<? extends TypeScope> oldRecentTypes = Collections.emptyList();
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
@@ -249,6 +336,8 @@ public class VariousUtils {
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
                 } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
+                } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.startsWith(frag)) {
+                    operation = VariousUtils.FIELD_TYPE_PREFIX;
                 } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
                     operation = VariousUtils.VAR_TYPE_PREFIX;
                 } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
@@ -259,25 +348,25 @@ public class VariousUtils {
                         NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
                         QualifiedNameKind kind = filter.getKind();
                         String query = kind.isUnqualified() ? frag : filter.getName();
-                        recentTypes = CachingSupport.getClasses(query,topScope);
+                        recentTypes = CachingSupport.getClasses(query,varScope);
                         if (!kind.isUnqualified()) {
                             recentTypes = filter.filterModelElements(recentTypes, true);
                         }
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
-                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(tScope, frag, topScope, PHPIndex.ANY_ATTR);
+                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(tScope, frag, varScope, PHPIndex.ANY_ATTR);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(meth.getReturnTypes());
+                                newRecentTypes.addAll(meth.getReturnTypes(true));
                             }
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
-                        FunctionScope fnc = ModelUtils.getFirst(CachingSupport.getFunctions(frag, topScope));
+                        FunctionScope fnc = ModelUtils.getFirst(CachingSupport.getFunctions(frag, varScope));
                         if (fnc != null) {
-                            newRecentTypes.addAll(fnc.getReturnTypes());
+                            newRecentTypes.addAll(fnc.getReturnTypes(true));
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
@@ -301,8 +390,8 @@ public class VariousUtils {
                             NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
                             QualifiedNameKind kind = filter.getKind();
                             String query = kind.isUnqualified() ? frag : filter.getName();
-                            recentTypes = CachingSupport.getClasses(query, topScope);
-                            List<? extends ClassScope> classes = CachingSupport.getClasses(clsName, topScope);
+                            recentTypes = CachingSupport.getClasses(query, varScope);
+                            List<? extends ClassScope> classes = CachingSupport.getClasses(clsName, varScope);
                             if (!kind.isUnqualified()) {
                                 classes = filter.filterModelElements(classes, true);
                             }
@@ -311,9 +400,9 @@ public class VariousUtils {
                                     cls = ModelUtils.getFirst(cls.getSuperClasses());
                                     if (cls == null) continue;
                                 }
-                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(cls, frgs[1], topScope, PHPIndex.ANY_ATTR);
+                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(cls, frgs[1], varScope, PHPIndex.ANY_ATTR);
                                 for (MethodScope meth : inheritedMethods) {
-                                   newRecentTypes.addAll(meth.getReturnTypes());
+                                   newRecentTypes.addAll(meth.getReturnTypes(true));
                                 }
                             }
                         }
@@ -343,7 +432,7 @@ public class VariousUtils {
                                 MethodScope mScope = (MethodScope) varScope;
                                 if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
                                     String clsName = ((ClassScope) mScope.getInScope()).getName();
-                                    newRecentTypes.addAll(CachingSupport.getClasses(clsName, topScope));
+                                    newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
                                 }
                             }
                         }
@@ -360,7 +449,7 @@ public class VariousUtils {
                         for (TypeScope type : oldRecentTypes) {
                             if (type instanceof ClassScope) {
                                 ClassScope cls = (ClassScope) type;
-                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, topScope, PHPIndex.ANY_ATTR);
+                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PHPIndex.ANY_ATTR);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
                                         newRecentTypes.addAll(var.getFieldTypes(fieldElement, offset));
@@ -382,10 +471,10 @@ public class VariousUtils {
             QualifiedName qn = QualifiedName.create(semiTypeName);
             final QualifiedNameKind kind = qn.getKind();
             String query = kind.isUnqualified() ? semiTypeName : filter.getName();
-            List<? extends TypeScope> retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, topScope));
+            List<? extends TypeScope> retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, varScope));
             if (retval.isEmpty() && varScope instanceof  MethodScope) {
                 query = translateSpecialClassName(varScope, query);
-                retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, topScope));
+                retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, varScope));
             }
 
             if (!kind.isUnqualified()) {
@@ -447,7 +536,7 @@ public class VariousUtils {
                         } else {
                             retval.push(meth);
                         }
-                        type = ModelUtils.getFirst(meth.getReturnTypes());
+                        type = ModelUtils.getFirst(meth.getReturnTypes(true));
                         if (type == null) {
                             semiTypeName = null;
                             break;
@@ -462,7 +551,7 @@ public class VariousUtils {
                         } else {
                             retval.push(fnc);
                         }
-                        type = ModelUtils.getFirst(fnc.getReturnTypes());
+                        type = ModelUtils.getFirst(fnc.getReturnTypes(true));
                         if (type == null) {
                             semiTypeName = null;
                             break;
@@ -502,7 +591,7 @@ public class VariousUtils {
                         } else {
                             retval.push(meth);
                         }
-                        type = ModelUtils.getFirst(meth.getReturnTypes());
+                        type = ModelUtils.getFirst(meth.getReturnTypes(true));
                         if (type == null) {
                             semiTypeName = null;
                             break;
@@ -627,6 +716,13 @@ public class VariousUtils {
             String filedName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (filedName != null) {
                 return "@" + FIELD_TYPE_PREFIX + filedName;
+            }
+        } else if (varBase instanceof StaticFieldAccess) {
+            StaticFieldAccess fieldAccess = (StaticFieldAccess) varBase;
+            String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getClassName());
+            String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
+            if (clsName != null && fldName != null) {
+                return clsName+"@" + STATIC_FIELD__TYPE_PREFIX + fldName;
             }
         }
 

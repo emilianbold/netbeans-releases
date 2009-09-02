@@ -114,7 +114,7 @@ public final class EJBNameOptions extends AdvancedOption {
     public String getSessionEjbClassPrefix() { return prefs().get(SESSION_EJBCLASS_PREFIX, ""); } // NOI18N
     public void setSessionEjbClassPrefix(String prefix) { prefs().put(SESSION_EJBCLASS_PREFIX, prefix); }
     
-    public String getSessionEjbClassSuffix() { return prefs().get(SESSION_EJBCLASS_SUFFIX, "Bean"); } // NOI18N
+    public String getSessionEjbClassSuffix() { return prefs().get(SESSION_EJBCLASS_SUFFIX, ""); } // NOI18N
     public void setSessionEjbclassSuffix(String suffix) { prefs().put(SESSION_EJBCLASS_SUFFIX, suffix); }
     
     public String getSessionLocalPrefix() { return prefs().get(SESSION_LOCAL_PREFIX, ""); } // NOI18N
@@ -144,7 +144,7 @@ public final class EJBNameOptions extends AdvancedOption {
     public String getSessionEjbNamePrefix() { return prefs().get(SESSION_EJBNAME_PREFIX, ""); } // NOI18N
     public void setSessionEjbNamePrefix(String prefix) { prefs().put(SESSION_EJBNAME_PREFIX, prefix); }
     
-    public String getSessionEjbNameSuffix() { return prefs().get(SESSION_EJBNAME_SUFFIX, "Bean"); } // NOI18N
+    public String getSessionEjbNameSuffix() { return prefs().get(SESSION_EJBNAME_SUFFIX, ""); } // NOI18N
     public void setSessionEjbNameSuffix(String suffix) { prefs().put(SESSION_EJBNAME_SUFFIX, suffix); }
     
     public String getSessionDisplayNamePrefix() { return prefs().get(SESSION_DISPLAYNAME_PREFIX, ""); } // NOI18N
@@ -158,7 +158,7 @@ public final class EJBNameOptions extends AdvancedOption {
     public String getEntityEjbClassPrefix() { return prefs().get(ENTITY_EJBCLASS_PREFIX, ""); } // NOI18N
     public void setEntityEjbClassPrefix(String prefix) { prefs().put(ENTITY_EJBCLASS_PREFIX, prefix); }
     
-    public String getEntityEjbClassSuffix() { return prefs().get(ENTITY_EJBCLASS_SUFFIX, "Bean"); } // NOI18N
+    public String getEntityEjbClassSuffix() { return prefs().get(ENTITY_EJBCLASS_SUFFIX, ""); } // NOI18N
     public void setEntityEjbClassSuffix(String suffix) { prefs().put(ENTITY_EJBCLASS_SUFFIX, suffix); }
     
     public String getEntityLocalPrefix() { return prefs().get(ENTITY_LOCAL_PREFIX, ""); } // NOI18N
@@ -188,7 +188,7 @@ public final class EJBNameOptions extends AdvancedOption {
     public String getEntityEjbNamePrefix() { return prefs().get(ENTITY_EJBNAME_PREFIX, ""); } // NOI18N
     public void setEntityEjbNamePrefix(String prefix) { prefs().put(ENTITY_EJBNAME_PREFIX, prefix); }
     
-    public String getEntityEjbNameSuffix() { return prefs().get(ENTITY_EJBNAME_SUFFIX, "Bean"); } // NOI18N
+    public String getEntityEjbNameSuffix() { return prefs().get(ENTITY_EJBNAME_SUFFIX, ""); } // NOI18N
     public void setEntityEjbNameSuffix(String suffix) { prefs().put(ENTITY_EJBNAME_SUFFIX, suffix); }
     
     public String getEntityDisplayNamePrefix() { return prefs().get(ENTITY_DISPLAYNAME_PREFIX, ""); } // NOI18N
@@ -208,13 +208,13 @@ public final class EJBNameOptions extends AdvancedOption {
     public String getMessageDrivenEjbClassPrefix() { return prefs().get(MESSAGEDRIVEN_EJBCLASS_PREFIX, ""); } // NOI18N
     public void setMessageDrivenEjbClassPrefix(String prefix) { prefs().put(MESSAGEDRIVEN_EJBCLASS_PREFIX, prefix); }
     
-    public String getMessageDrivenEjbClassSuffix() { return prefs().get(MESSAGEDRIVEN_EJBCLASS_SUFFIX, "Bean"); } // NOI18N
+    public String getMessageDrivenEjbClassSuffix() { return prefs().get(MESSAGEDRIVEN_EJBCLASS_SUFFIX, ""); } // NOI18N
     public void setMessageDrivenEjbClassSuffix(String suffix) { prefs().put(MESSAGEDRIVEN_EJBCLASS_SUFFIX, suffix); }
     
     public String getMessageDrivenEjbNamePrefix() { return prefs().get(MESSAGEDRIVEN_EJBNAME_PREFIX, ""); } // NOI18N
     public void setMessageDrivenEjbNamePrefix(String prefix) { prefs().put(MESSAGEDRIVEN_EJBNAME_PREFIX, prefix); }
     
-    public String getMessageDrivenEjbNameSuffix() { return prefs().get(MESSAGEDRIVEN_EJBNAME_SUFFIX, "Bean"); } // NOI18N
+    public String getMessageDrivenEjbNameSuffix() { return prefs().get(MESSAGEDRIVEN_EJBNAME_SUFFIX, ""); } // NOI18N
     public void setMessageDrivenEjbNameSuffix(String suffix) { prefs().put(MESSAGEDRIVEN_EJBNAME_SUFFIX, suffix); }
 
     public String getMessageDrivenDisplayNamePrefix() { return prefs().get(MESSAGEDRIVEN_DISPLAYNAME_PREFIX, ""); } // NOI18N
