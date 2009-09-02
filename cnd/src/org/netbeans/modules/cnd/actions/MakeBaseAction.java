@@ -119,29 +119,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
 
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        String[] env = prepareEnv(execEnv);
-        if (additionalEnvironment != null && additionalEnvironment.size()>0){
-            String[] tmp = new String[env.length + additionalEnvironment.size()];
-            for(int i=0; i < env.length; i++){
-                tmp[i] = env[i];
-            }
-            for(int i=0; i < additionalEnvironment.size(); i++){
-                tmp[env.length + i] = additionalEnvironment.get(i);
-            }
-            env = tmp;
-        }
-        Map<String, String> envMap = new HashMap<String, String>();
-        for(String s: env) {
-            int i = s.indexOf('='); // NOI18N
-            if (i>0) {
-                String key = s.substring(0, i);
-                String value = s.substring(i+1);
-                envMap.put(key, value);
-            }
-        }
-        if ("cc".equals(envMap.get("CC"))){ // NOI18N
+        Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
+        if (isSunStudio(node, project)) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
+        traceExecutable(executable, buildDir, args, envMap);
 
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
         _tab.closeInputOutput(); // Close it...
@@ -156,87 +138,10 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .setWorkingDirectory(buildDir.getPath())
         .setArguments(args)
         .unbufferOutput(false)
-        .addNativeProcessListener(new ChangeListener() {
-           private long startTimeMillis;
-           public void stateChanged(ChangeEvent e) {
-                if (!(e instanceof NativeProcessChangeEvent)) {
-                    return;
-                }
-                NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-                NativeProcess process = (NativeProcess) event.getSource();
-                switch (event.state) {
-                    case INITIAL:
-                        break;
-                    case STARTING:
-                        startTimeMillis = System.currentTimeMillis();
-                        if (listener != null) {
-                            listener.executionStarted(event.pid);
-                        }
-                        break;
-                    case RUNNING:
-                        break;
-                    case CANCELLED:
-                    {
-                        if (listener != null) {
-                            listener.executionFinished(process.exitValue());
-                        }
-                        String message = getString("Output.MakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                        tab.getOut().println();
-                        tab.getOut().println(message);
-                        tab.getOut().flush();
-                        break;
-                    }
-                    case ERROR:
-                    {
-                        if (listener != null) {
-                            listener.executionFinished(-1);
-                        }
-                        String message = getString("Output.MakeFailedToStart"); // NOI18N
-                        tab.getOut().println();
-                        tab.getOut().println(message);
-                        tab.getOut().flush();
-                        break;
-                    }
-                    case FINISHED:
-                    {
-                        if (listener != null) {
-                            listener.executionFinished(process.exitValue());
-                        }
-                        String message;
-                        if (process.exitValue() != 0) {
-                            message = getString("Output.MakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                        } else {
-                            message = getString("Output.MakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                        }
-                        tab.getOut().println();
-                        tab.getOut().println(message);
-                        tab.getOut().flush();
-                        break;
-                    }
-                }
-            }
-        });
+        .addNativeProcessListener(new ProcessChangeListener(listener, tab, "Make")); // NOI18N
         npb.redirectError();
         
-        final LineConvertor lineConvertor = new CompilerLineConvertor(execEnv, fileObject.getParent());
-        LineConvertorFactory factory = new ExecutionDescriptor.LineConvertorFactory() {
-            public LineConvertor newLineConvertor() {
-                return new LineConvertor() {
-                    @Override
-                    public List<ConvertedLine> convert(String line) {
-                        if (outputListener != null) {
-                            try {
-                                outputListener.write(line);
-                                outputListener.write("\n"); // NOI18N
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        return lineConvertor.convert(line);
-                    }
-                };
-            }
-        };
+        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(execEnv, fileObject.getParent()));
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)

@@ -39,15 +39,27 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -59,22 +71,33 @@ import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Sergey Grinev
  */
 public abstract class AbstractExecutorRunAction extends NodeAction {
+    private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.cnd.actions.AbstractExecutorRunAction"); // NOI18N
+    static {
+        if (TRACE) {
+            logger.setLevel(Level.ALL);
+        }
+    }
 
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
@@ -143,6 +166,31 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 return null;
             }
         }
+    }
+
+    protected static boolean isSunStudio(Node node, Project project){
+        DataObject dataObject = node.getCookie(DataObject.class);
+        FileObject fileObject = dataObject.getPrimaryFile();
+        if (project == null) {
+            project = findProject(node);
+        }
+        if (project == null) {
+            project = findInOpenedProject(fileObject);
+        }
+        CompilerSet set = null;
+        if (project != null) {
+            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
+            if (toolchain != null) {
+                set = toolchain.getCompilerSet();
+            }
+        }
+        if (set == null) {
+            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        }
+        if (set == null) {
+            return false;
+        }
+        return set.isSunCompiler();
     }
 
     protected static String getCommand(Node node, Project project, int tool, String defaultName){
@@ -261,15 +309,19 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return toolName;
     }
 
-    protected static String[] getAdditionalEnvirounment(Node node){
+    private static List<String> getAdditionalEnvirounment(Node node){
+        List<String> res = new ArrayList<String>();
         ExecutionSupport mes = node.getCookie(ExecutionSupport.class);
         if (mes != null) {
-            return mes.getEnvironmentVariables();
+            for(String s : mes.getEnvironmentVariables()){
+                res.add(s);
+            }
+            return res;
         }
-        return null;
+        return res;
     }
 
-    protected static String[] prepareEnv(ExecutionEnvironment execEnv) {
+    private static List<String> prepareEnv(ExecutionEnvironment execEnv) {
         CompilerSet cs = null;
         String csdirs = ""; // NOI18N
         String dcsn = CppSettings.getDefault().getCompilerSetName();
@@ -286,13 +338,33 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 }
             }
         }
-        String[] envp;
+        List<String> res = new ArrayList<String>();
         if (csdirs.length() > 0) {
-            envp = new String[] { pi.getPathAsStringWith(csdirs) };
-        } else {
-            envp = new String[0];
+            res.add(pi.getPathAsStringWith(csdirs));
         }
-        return envp;
+        return res;
+    }
+
+    protected static Map<String, String> getEnv(ExecutionEnvironment execEnv, Node node, List<String> additionalEnvironment) {
+        List<String> nodeEnvironment = getAdditionalEnvirounment(node);
+        if (additionalEnvironment != null) {
+            nodeEnvironment.addAll(additionalEnvironment);
+        }
+        nodeEnvironment.addAll(prepareEnv(execEnv));
+        Map<String, String> envMap = new HashMap<String, String>();
+        for(String s: nodeEnvironment) {
+            int i = s.indexOf('='); // NOI18N
+            if (i>0) {
+                String key = s.substring(0, i);
+                String value = s.substring(i+1).trim();
+                if (value.length()>1 && (value.startsWith("\"") && value.endsWith("\"") || // NOI18N
+                                         value.startsWith("'") && value.endsWith("'"))) { // NOI18N
+                    value = value.substring(1,value.length()-1);
+                }
+                envMap.put(key, value);
+            }
+        }
+        return envMap;
     }
 
     public HelpCtx getHelpCtx() {
@@ -365,5 +437,130 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         //}
         buildDir = CndFileUtils.normalizeFile(buildDir.getAbsoluteFile());
         return buildDir;
+    }
+
+    protected static void traceExecutable(String executable, File buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
+        if (TRACE) {
+            StringBuilder buf = new StringBuilder("Run " + executable); // NOI18N
+            buf.append("\n\tin folder   " + buildDir.getPath()); // NOI18N
+            buf.append("\n\targuments   " + argsFlat); // NOI18N
+            buf.append("\n\tenvironment "); // NOI18N
+            for (Map.Entry<String, String> v : envMap.entrySet()) {
+                buf.append("\n\t\t" + v.getKey() + "=" + v.getValue()); // NOI18N
+            }
+            logger.log(Level.INFO, buf.toString());
+        }
+    }
+
+    protected static void traceExecutable(String executable, File buildDir, String[] args, Map<String, String> envMap) {
+        if (TRACE) {
+            StringBuilder argsFlat = new StringBuilder();
+            for (int i = 0; i < args.length; i++) {
+                argsFlat.append(" "); // NOI18N
+                argsFlat.append(args[i]);
+            }
+            traceExecutable(executable, buildDir, argsFlat, envMap);
+        }
+    }
+
+    protected static final class ProcessChangeListener implements ChangeListener {
+        private final ExecutionListener listener;
+        private final InputOutput tab;
+        private final String resourceKey;
+        private long startTimeMillis;
+
+        public ProcessChangeListener(ExecutionListener listener, InputOutput tab, String resourceKey) {
+            this.listener = listener;
+            this.tab = tab;
+            this.resourceKey = resourceKey;
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            if (!(e instanceof NativeProcessChangeEvent)) {
+                return;
+            }
+            NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+            NativeProcess process = (NativeProcess) event.getSource();
+            switch (event.state) {
+                case INITIAL:
+                    break;
+                case STARTING:
+                    startTimeMillis = System.currentTimeMillis();
+                    if (listener != null) {
+                        listener.executionStarted(event.pid);
+                    }
+                    break;
+                case RUNNING:
+                    break;
+                case CANCELLED:
+                {
+                    if (listener != null) {
+                        listener.executionFinished(process.exitValue());
+                    }
+                    String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                    tab.getOut().println();
+                    tab.getOut().println(message);
+                    tab.getOut().flush();
+                    break;
+                }
+                case ERROR:
+                {
+                    if (listener != null) {
+                        listener.executionFinished(-1);
+                    }
+                    String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
+                    tab.getOut().println();
+                    tab.getOut().println(message);
+                    tab.getOut().flush();
+                    break;
+                }
+                case FINISHED:
+                {
+                    if (listener != null) {
+                        listener.executionFinished(process.exitValue());
+                    }
+                    String message;
+                    if (process.exitValue() != 0) {
+                        message = getString("Output."+resourceKey+"Failed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                    } else {
+                        message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                    }
+                    tab.getOut().println();
+                    tab.getOut().println(message);
+                    tab.getOut().flush();
+                    break;
+                }
+            }
+        }
+    }
+
+    protected static final class ProcessLineConvertorFactory implements LineConvertorFactory {
+        private final Writer outputListener;
+        private final LineConvertor lineConvertor;
+
+        public ProcessLineConvertorFactory(Writer outputListener, LineConvertor lineConvertor) {
+            this.outputListener = outputListener;
+            this.lineConvertor = lineConvertor;
+        }
+
+        public LineConvertor newLineConvertor() {
+            return new LineConvertor() {
+                @Override
+                public List<ConvertedLine> convert(String line) {
+                    if (outputListener != null) {
+                        try {
+                            outputListener.write(line);
+                            outputListener.write("\n"); // NOI18N
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    if (lineConvertor != null) {
+                        return lineConvertor.convert(line);
+                    }
+                    return null;
+                }
+            };
+        }
     }
 }

@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -105,33 +106,14 @@ public class CMakeAction extends AbstractExecutorRunAction {
         // Tab Name
         String tabName = getString("CMAKE_LABEL", node.getName()); // NOI18N
 
-        String[] additionalEnvironment = getAdditionalEnvirounment(node);
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        String[] env = prepareEnv(execEnv);
-        if (additionalEnvironment != null && additionalEnvironment.length>0){
-            String[] tmp = new String[env.length + additionalEnvironment.length];
-            for(int i=0; i < env.length; i++){
-                tmp[i] = env[i];
-            }
-            for(int i=0; i < additionalEnvironment.length; i++){
-                tmp[env.length + i] = additionalEnvironment[i];
-            }
-            env = tmp;
-        }
+        Map<String, String> envMap = getEnv(execEnv, node, null);
         StringBuilder argsFlat = new StringBuilder();
         for (int i = 0; i < arguments.length; i++) {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(arguments[i]);
         }
-        if (TRACE) {
-            System.err.println("Run "+executable); // NOI18N
-            System.err.println("\tin folder   "+buildDir.getPath()); // NOI18N
-            System.err.println("\targuments   "+argsFlat); // NOI18N
-            System.err.println("\tenvironment "); // NOI18N
-            for(String v : env) {
-                System.err.println("\t\t"+v); // NOI18N
-            }
-        }
+        traceExecutable(executable, buildDir, argsFlat, envMap);
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
         _tab.closeInputOutput(); // Close it...
         final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
@@ -143,92 +125,17 @@ public class CMakeAction extends AbstractExecutorRunAction {
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
-        .addNativeProcessListener(new ChangeListener() {
-           private long startTimeMillis;
-           public void stateChanged(ChangeEvent e) {
-                if (!(e instanceof NativeProcessChangeEvent)) {
-                    return;
-                }
-                NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-                NativeProcess process = (NativeProcess) event.getSource();
-                switch (event.state) {
-                    case INITIAL:
-                        break;
-                    case STARTING:
-                        startTimeMillis = System.currentTimeMillis();
-                        if (listener != null) {
-                            listener.executionStarted(event.pid);
-                        }
-                        break;
-                    case RUNNING:
-                        break;
-                    case CANCELLED:
-                    {
-                        if (listener != null) {
-                            listener.executionFinished(process.exitValue());
-                        }
-                        String message = getString("Output.CMakeTerminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                        tab.getOut().println();
-                        tab.getOut().println(message);
-                        tab.getOut().flush();
-                        break;
-                    }
-                    case ERROR:
-                    {
-                        if (listener != null) {
-                            listener.executionFinished(-1);
-                        }
-                        String message = getString("Output.CMakeFailedToStart"); // NOI18N
-                        tab.getOut().println();
-                        tab.getOut().println(message);
-                        tab.getOut().flush();
-                        break;
-                    }
-                    case FINISHED:
-                    {
-                        if (listener != null) {
-                            listener.executionFinished(process.exitValue());
-                        }
-                        String message;
-                        if (process.exitValue() != 0) {
-                            message = getString("Output.CMakeFailed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                        } else {
-                            message = getString("Output.CMakeSuccessful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                        }
-                        tab.getOut().println();
-                        tab.getOut().println(message);
-                        tab.getOut().flush();
-                        break;
-                    }
-                }
-            }
-        });
+        .addNativeProcessListener(new ProcessChangeListener(listener, tab, "CMake")); // NOI18N
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
         .inputVisible(true)
         .inputOutput(tab)
         .showProgress(true)
-        .outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
-            public LineConvertor newLineConvertor() {
-                return new LineConvertor() {
-                    @Override
-                    public List<ConvertedLine> convert(String line) {
-                        if (outputListener != null) {
-                            try {
-                                outputListener.write(line);
-                                outputListener.write("\n"); // NOI18N
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        return null;
-                    }
-                };
-            }
-        });
+        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
         // Execute the makefile
         final ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
         Future<Integer> result = es.run();
     }
+
 }
