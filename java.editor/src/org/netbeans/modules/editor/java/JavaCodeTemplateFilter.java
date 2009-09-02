@@ -46,10 +46,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -58,6 +57,7 @@ import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,19 +76,35 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
         this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
         final JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
-            ScanDialog.runWhenScanFinished (new Runnable () {
-                public void run () {
-                    try {
-                        js.runUserActionTask (new Task<CompilationController> () {
-                            public void run (CompilationController controller ) throws Exception {
-                                JavaCodeTemplateFilter.this.run (controller);
+            if (SwingUtilities.isEventDispatchThread())
+                ScanDialog.runWhenScanFinished (
+                    new Runnable () {
+                        public void run () {
+                            try {
+                                js.runUserActionTask (new Task<CompilationController> () {
+                                    public void run (CompilationController controller ) throws Exception {
+                                        JavaCodeTemplateFilter.this.run (controller);
+                                    }
+                                }, true);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                        }, true);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                        }
+                    },
+                    NbBundle.getMessage (
+                        JavaCodeTemplateFilter.class,
+                        "JavaCodeTemplateFilter_action_name"
+                    )
+                );
+            else
+                try {
+                    js.runWhenScanFinished (
+                        JavaCodeTemplateFilter.this,
+                        true
+                    );
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            }, "JavaCodeTemplateFilter");
         }
     }
 
