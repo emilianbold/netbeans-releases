@@ -77,6 +77,16 @@ made subject to such option by the copyright holder.
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBSpringSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+
+                    <!-- message-board-war Sample -->
+                    <file name="MessageBoardSample" url="MessageBoard.zip">
+                        <attr name="position" intvalue="530"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.MessageBoardSampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/MessageBoardSampleDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                     
                     <!-- CustomerDBClient Sample -->
                     <!--<file name="CustomerDBClientSampleProject" url="CustomerDBClient.zip">
