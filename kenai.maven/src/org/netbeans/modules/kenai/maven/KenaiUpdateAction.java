@@ -39,12 +39,15 @@
 package org.netbeans.modules.kenai.maven;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiLicense;
@@ -66,6 +69,9 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  * An action which updates portions of Maven POM according to the information
@@ -73,13 +79,15 @@ import org.openide.util.NbBundle;
  *
  * @author dafe
  */
-public final class KenaiUpdateAction extends AbstractAction implements ContextAwareAction {
+public final class KenaiUpdateAction extends AbstractAction implements ContextAwareAction, TaskListener {
 
     private Lookup context;
     private String uri;
+    private Task updateTask;
 
     public KenaiUpdateAction() {
         putValue(Action.NAME, NbBundle.getMessage(KenaiUpdateAction.class, "CTL_KenaiUpdateAction"));
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(KenaiUpdateAction.class, "TIP_KenaiUpdateAction"));
     }
 
     public KenaiUpdateAction(Lookup context) {
@@ -107,38 +115,78 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        FileObject fo = context.lookup(FileObject.class);
-
-        ModelSource ms = Utilities.createModelSource(fo);
-        POMModel model = null;
-        if (ms.isEditable()) {
-            model = POMModelFactory.getDefault().getModel(ms);
-        } else {
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NotEditable"));
+        if (updateTask != null) {
+            // update is in progress, so ignore another request
+            return;
         }
 
-        KenaiProject project = null;
+        updateTask = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                doPerformAction();
+            }
+        });
+
+        // for clearing updateTask field properly
+        updateTask.addTaskListener(this);
+    }
+
+    private void doPerformAction () {
+        ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(KenaiUpdateAction.class, "LBL_UpdateProgress"));
+
         try {
-            project = KenaiProject.forRepository(uri);
-        } catch (KenaiException ex) {
-            String msgNoProject = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NoProject");
-            StatusDisplayer.getDefault().setStatusText(msgNoProject);
-            Logger.getLogger(KenaiUpdateAction.class.getName()).log(
-                    Level.WARNING, msgNoProject, ex);
-        }
+            handle.start(4);
 
-        if (model != null && project != null) {
+            FileObject fo = context.lookup(FileObject.class);
+
+            ModelSource ms = Utilities.createModelSource(fo);
+            POMModel model = null;
+            if (ms.isEditable()) {
+                model = POMModelFactory.getDefault().getModel(ms);
+            } else {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NotEditable"));
+            }
+
+            handle.progress(1);
+
+            KenaiProject project = null;
             try {
-                performUpdate(model, project);
+                project = KenaiProject.forRepository(uri);
             } catch (KenaiException ex) {
-                String msgFail = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_UpdateFail");
+                String msgNoProject = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NoProject");
+                StatusDisplayer.getDefault().setStatusText(msgNoProject);
+                Logger.getLogger(KenaiUpdateAction.class.getName()).log(
+                        Level.WARNING, msgNoProject, ex);
+            }
+
+            handle.progress(2);
+
+            if (model != null && project != null) {
+                try {
+                    performUpdate(model, project);
+                } catch (KenaiException ex) {
+                    String msgFail = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_UpdateFail");
+                    StatusDisplayer.getDefault().setStatusText(msgFail);
+                    Logger.getLogger(KenaiUpdateAction.class.getName()).log(
+                            Level.WARNING, msgFail, ex);
+                }
+            }
+
+            handle.progress(3);
+
+            try {
+                Utilities.saveChanges(model);
+            } catch (IOException ex) {
+                String msgFail = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_SaveFail");
                 StatusDisplayer.getDefault().setStatusText(msgFail);
                 Logger.getLogger(KenaiUpdateAction.class.getName()).log(
                         Level.WARNING, msgFail, ex);
             }
-        }
 
+        } finally {
+            handle.finish();
+        }
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -307,6 +355,13 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
         mLicense.setName(kLicense.getName());
         mLicense.setUrl(kLicense.getUri().toString());
         mLicense.setComments(kLicense.getDisplayName());
+    }
+
+    /**
+     * TaskListener impl
+     */
+    public void taskFinished(org.openide.util.Task task) {
+        updateTask = null;
     }
 
 }
