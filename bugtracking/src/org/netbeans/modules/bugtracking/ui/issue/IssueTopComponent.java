@@ -383,10 +383,25 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @return top-component that should display the given issue.
      */
     public static synchronized IssueTopComponent find(Issue issue) {
+        return find(issue, true);
+    }
+
+    /**
+     * Returns top-component that should display the given issue. 
+     *
+     * @param issue issue for which the top-component should be found.
+     * @param forceCreate determines wheter a TopComponent is created if none available yet
+     *
+     * @return top-component that should display the given issue.
+     */
+    public static synchronized IssueTopComponent find(Issue issue, boolean forceCreate) {
         for (IssueTopComponent tc : openIssues) {
             if (issue.equals(tc.getIssue())) {
                 return tc;
             }
+        }
+        if(!forceCreate) {
+            return null;
         }
         IssueTopComponent tc = new IssueTopComponent();
         tc.setIssue(issue);
