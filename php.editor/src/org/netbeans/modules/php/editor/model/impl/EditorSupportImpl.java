@@ -53,6 +53,7 @@ import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.api.editor.PhpFunction;
+import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -65,6 +66,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -166,7 +168,12 @@ public class EditorSupportImpl implements EditorSupport {
             }
             phpElement = phpClass;
         } else if (scope instanceof FunctionScope) {
-            phpElement = new PhpFunction(scope.getName(), scope.getName(), scope.getOffset());
+            phpElement = new PhpFunction(
+                    scope.getName(),
+                    scope.getNamespaceName().append(scope.getName()).toFullyQualified().toString(),
+                    scope.getOffset());
+        } else if (scope instanceof VariableScope) {
+            phpElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
         }
         return phpElement;
     }
