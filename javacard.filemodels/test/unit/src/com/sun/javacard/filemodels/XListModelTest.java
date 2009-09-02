@@ -40,6 +40,7 @@
 package com.sun.javacard.filemodels;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -51,7 +52,7 @@ import static org.junit.Assert.*;
 public class XListModelTest {
 
     @Test
-    public void testModel() {
+    public void testModel() throws IOException {
         System.out.println("testModel");
         ByteArrayInputStream in = new ByteArrayInputStream (CONTENT.getBytes());
         XListModel mdl = new XListModel(in, null);
