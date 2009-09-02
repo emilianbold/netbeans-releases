@@ -36,111 +36,78 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.wag.manager.util;
 
-package org.netbeans.modules.wag.manager.model;
-
-import java.util.List;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author peterliu
  */
-public class WagService implements Comparable<WagService> {
+public class WagPreferences {
 
-    private String displayName;
-    private String callableName;
-    private String uuid;
-    private String description;
-    private String url;
-    private List<WagServiceParameter> parameters;
+    private static final String ZEMBLY_USERNAME_PREF = "zemblyUsernamePref";    //NOI18N
+    private static final String ZEMBLY_PASSWORD_PREF = "zemblyPasswordPref";    //NOI18N
+    private static final String ZEMBLY_ONLINE_STATUS_PREF = "zemblyOnlineStatusPref";    //NOI18N
+    private static WagPreferences instance;
+    private static Preferences preferences;
 
-    public WagService() {
-
+    private WagPreferences() {
+        preferences = NbPreferences.forModule(WagPreferences.class);
     }
 
-    public void setDisplayName(String name) {
-        this.displayName = name;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setCallableName(String name) {
-        this.callableName = name;
-    }
-
-    public String getCallableName() {
-        return callableName;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setDescription(String desc) {
-        this.description = desc;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setParameters(List<WagServiceParameter> params) {
-        this.parameters = params;
-    }
-
-    public List<WagServiceParameter> getParameters() {
-        return parameters;
-    }
-   
-    @Override
-    public int hashCode() {
-        return uuid.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof WagService) {
-            return uuid.equals(((WagService) obj).getUuid());
+    public static final WagPreferences getInstance() {
+        if (instance == null) {
+            instance = new WagPreferences();
         }
 
-        return false;
+        return instance;
     }
 
-    @Override
-    public String toString() {
-        return callableName + "(" + getParamString() + ")";
+    public void setUsername(String username) {
+        if (username != null) {
+            preferences.put(ZEMBLY_USERNAME_PREF, username);
+        } else {
+            preferences.remove(ZEMBLY_USERNAME_PREF);
+        }
     }
 
-    private String getParamString() {
-        String paramStr = "";
+    public String getUsername() {
+        return preferences.get(ZEMBLY_USERNAME_PREF, null);
+    }
 
-        int index = 0;
-        for (WagServiceParameter p : parameters) {
-            if (index++ > 0) {
-                paramStr += ", ";
-            }
-
-            paramStr += p.getName();
+    public void setPassword(char[] password) {
+        if (password != null) {
+            preferences.put(ZEMBLY_PASSWORD_PREF,
+                    Scrambler.getInstance().scramble(new String(password)));
+        } else {
+            preferences.remove(ZEMBLY_PASSWORD_PREF);
         }
 
-        return paramStr;
     }
 
-    public int compareTo(WagService svc) {
-        return displayName.compareTo(svc.getDisplayName());
+    public char[] getPassword() {
+        String password = preferences.get(ZEMBLY_PASSWORD_PREF, null);
+
+        if (password != null) {
+            return Scrambler.getInstance().descramble(password).toCharArray();
+        } else {
+            return null;
+        }
+    }
+
+    public void setOnlineStatus(boolean flag) {
+        preferences.put(ZEMBLY_ONLINE_STATUS_PREF, Boolean.toString(flag));
+    }
+
+    public boolean getOnlineStatus() {
+        String status = preferences.get(ZEMBLY_ONLINE_STATUS_PREF, null);
+
+        if (status == null) {
+            return false;
+        } else {
+            return Boolean.valueOf(status);
+        }
     }
 }

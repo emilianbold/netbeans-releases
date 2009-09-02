@@ -95,7 +95,7 @@ public final class Model extends TabbedPanelModel {
         this.lkpListener = listener;
     }
     
-    public List getCategories () {
+    public List<String> getCategories () {
         init ();
         List<String> l = new ArrayList<String>(categoryToOption.keySet ());
         // Sort Miscellaneous (aka Advanced) subcategories. Order of other categories
