@@ -362,6 +362,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.getController().opened();
         }
+        BugtrackingManager.LOG.fine("IssueTopComponent Opened " + (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     @Override
@@ -374,6 +375,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(prepareTask != null) {
             prepareTask.cancel();
         }
+        BugtrackingManager.LOG.fine("IssueTopComponent Closed " + (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     /**
