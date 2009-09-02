@@ -44,37 +44,26 @@ made subject to such option by the copyright holder.
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Undeploying an Application or Module from the Sun Java System Application Server/GlassFish</title>
+        <title>Undeploying an Application or Module from the GlassFish Application Server</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 <body>
-    <h2>Undeploying an Application or Module from the Sun Java System Application Server/GlassFish</h2>
+    <h2>Undeploying an Application or Module from the GlassFish Application Server</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
-    <p>When the Sun Java System Application Server/GlassFish is running, you can undeploy, enable, and disable an application
+    <p>When the GlassFish application server is running, you can undeploy, enable, and disable an application
     or module in the Services window of the IDE.
     By default, applications and modules are automatically registered, deployed and made available on the
     server when you run a project, and are automatically redeployed when they have been modified in the IDE.</p>    
     <p>Deployed applications are visible in the Services window under the server instance node under
-    Enterprise Applications or Web Applications. Deployed EJB Modules are visible in the EJB Modules node.
+    the Applications node. Deployed EJB Modules are visible in the EJB Modules node.
     When you undeploy an application or module, the archive file (<tt>ear</tt>, <tt>war</tt>, <tt>jar</tt>) 
     is removed from the server and is no longer visible in the Services window.</p>
     <p><b>To undeploy an application or module:</b></p>
     <ol>
-        <li>Ensure the Java System Application Server/GlassFish is running.</li>
-        <li>In the Services window, expand the server instance node 
-        and the node containing the application or module.</li>
+        <li>Ensure the GlassFish application server is running.</li>
+        <li>In the Services window, expand the server instance's Applications node.</li>
         <li>Right-click the application or module and choose Undeploy.</li>
     </ol>
-    
-    <p>The following options are also available as pop-up menu items:</p>
-    <ul>
-        <li><b>Disable.</b> Disabling the application makes the archive file unavailable but it remains on the server. 
-        In order to use the application you need to enable it.</li>
-        <li><b>Enable.</b> Enabling an application that has been disabled makes the application available.</li>
-        <li><b>Properties.</b> Choosing properties opens the properties window.
-        Some of the properties can be modified through the properties window.</li>
-    </ul>
-    
     
     
     <dl>
