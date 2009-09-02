@@ -102,46 +102,4 @@ public class AddDeviceAction extends Single<JavacardPlatform> {
             }
         }
     }
-    /*
-    final ProblemPanel pnl = new ProblemPanel();
-    nue.setProblemHandler(pnl);
-    pnl.setInnerComponent(nue);
-    final DialogDescriptor dd = new DialogDescriptor (pnl, NbBundle.getMessage(AddDeviceAction.class,
-    "TTL_NEW_DEVICE")); //NOI18N
-    ChangeListener cl = new ChangeListener() {
-
-    public void stateChanged(ChangeEvent e) {
-    String p = nue.getProblem();
-    //                dd.setValid (p == null || p.trim().length() == 0);
-    System.err.println("Change.  Problem = '" + p + "' isProblem=" + nue.isProblem());
-    dd.setValid (!nue.isProblem());
-    pnl.setProblem (p);
-    }
-    };
-    nue.addChangeListener(cl);
-    cl.stateChanged(null);
-    if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
-    final EditableProperties p = new EditableProperties (true);
-    KeysAndValues kv = new KeysAndValues.EditablePropertiesAdapter(p);
-    nue.write(kv);
-    try {
-    fld.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
-    public void run() throws IOException {
-    FileObject data = fld.createData(nue.getDeviceName(), JCConstants.JAVACARD_DEVICE_FILE_EXTENSION);
-    OutputStream out = new BufferedOutputStream (data.getOutputStream());
-    try {
-    p.store(out);
-    } finally {
-    out.close();
-    }
-    }
-
-    });
-    } catch (IOException ex) {
-    Exceptions.printStackTrace(ex);
-    }
-    }
-    }
-     */
 }
