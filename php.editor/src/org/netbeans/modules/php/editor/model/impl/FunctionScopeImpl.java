@@ -45,8 +45,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
@@ -127,11 +129,36 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     
 
     public final Collection<? extends TypeScope> getReturnTypes() {
+        return getReturnTypes(false);
+    }
+
+
+    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
         if (returnType != null && returnType.length() > 0) {
             retval = new ArrayList<TypeScope>();
-            for (String typeName : returnType.split("\\|")) {
-                retval.addAll(CachingSupport.getTypes(typeName, this));
+            for (String typeName : returnType.split("\\|")) {//NOI18N
+                    if (resolve && typeName.contains("@")) {//NOI18N
+                        try {
+                            if (recursionDetection.add(typeName) && recursionDetection.size() < 30) {
+                            retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+                            }
+                        } finally {
+                            recursionDetection.remove(typeName);
+                        }
+                    } else {
+                        retval.addAll(CachingSupport.getTypes(typeName, this));
+                    }
+            }
+            returnType = null;//NOI18N
+            for (TypeScope typeScope : retval) {
+                if (returnType == null) {
+                    returnType = typeScope.getName();
+                } else {
+                    returnType += "|"+typeScope.getName();//NOI18N
+                }
             }
         }
         return retval;

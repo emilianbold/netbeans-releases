@@ -202,6 +202,7 @@ made subject to such option by the copyright holder.
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
             <file name="JsfFormFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfFormFromEntity.xml"/>
             <file name="JsfTableFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTableFromEntity.xml"/>
+            <file name="JSFMetadata.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JSFMetadata.xml"/>
         </folder>
     </folder>
 

@@ -115,15 +115,15 @@ public class CmpGeneratorTest extends TestBase {
         
         // check XML
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, pkgName + ".ManufacturerBean");
+        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, pkgName + ".Manufacturer");
         assertNotNull(entity);
         assertEquals("ManufacturerEB", entity.getDefaultDisplayName());
-        assertEquals("ManufacturerBean", entity.getEjbName());
+        assertEquals("Manufacturer", entity.getEjbName());
         assertNull(entity.getHome());
         assertNull(entity.getRemote());
         assertEquals(pkgName + ".ManufacturerLocalHome", entity.getLocalHome());
         assertEquals(pkgName + ".ManufacturerLocal", entity.getLocal());
-        assertEquals(pkgName + ".ManufacturerBean", entity.getEjbClass());
+        assertEquals(pkgName + ".Manufacturer", entity.getEjbClass());
         assertEquals("Container", entity.getPersistenceType());
         assertEquals("java.lang.Integer", entity.getPrimKeyClass());
         assertFalse(entity.isReentrant());
