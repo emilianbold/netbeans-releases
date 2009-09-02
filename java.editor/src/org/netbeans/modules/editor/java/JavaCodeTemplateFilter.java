@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.openide.util.Exceptions;
@@ -72,15 +73,19 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
         this.startOffset = offset;
         this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
-        JavaSource js = JavaSource.forDocument(component.getDocument());
+        final JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
-            try {
-                Future<Void> f = js.runWhenScanFinished(this, true);
-                if (!f.isDone())
-                    f.cancel(true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            ScanDialog.runWhenScanFinished (new Runnable () {
+                public void run () {
+                    try {
+                        Future<Void> f = js.runWhenScanFinished(JavaCodeTemplateFilter.this, true);
+                        if (!f.isDone())
+                            f.cancel(true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }, "JavaCodeTemplateFilter");
         }
     }
 
