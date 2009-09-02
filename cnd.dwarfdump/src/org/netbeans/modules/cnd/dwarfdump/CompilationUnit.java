@@ -398,6 +398,9 @@ public class CompilationUnit {
     }
 
     public LineNumber getLineNumber(long target) throws IOException{
+        if (statement_list == null) {
+            initStatementList();
+        }
         Number statementListOffset = (Number)root.getAttributeValue(ATTR.DW_AT_stmt_list);
         if (statementListOffset != null) {
             return lineInfoSection.getLineNumber(statementListOffset.longValue(), target);
