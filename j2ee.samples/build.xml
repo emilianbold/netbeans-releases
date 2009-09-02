@@ -17,5 +17,6 @@
         <zip basedir="samples_src/JsfJpa" excludes="${excludes}" destfile="${examples}/JsfJpa.zip"/>
         <zip basedir="samples_src/JsfJpaCrud" excludes="${excludes}" destfile="${examples}/JsfJpaCrud.zip"/>
         <zip basedir="samples_src/WebJpa" excludes="${excludes}" destfile="${examples}/WebJpa.zip"/>
+        <zip basedir="samples_src/PetCatalog" excludes="${excludes}" destfile="${examples}/PetCatalog.zip"/>
     </target>
 </project>
