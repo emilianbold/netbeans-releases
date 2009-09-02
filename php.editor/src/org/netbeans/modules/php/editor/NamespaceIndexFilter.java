@@ -71,7 +71,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
         return filter(originalElems, getName().trim().length() == 0);
     }
 
-    public List<? extends ModelElement> filterModelElements(final List<? extends ModelElement> originalElems, boolean strictCCOption) {
+    public Collection<? extends ModelElement> filterModelElements(final Collection<? extends ModelElement> originalElems, boolean strictCCOption) {
         if (getKind().isUnqualified()) {
             return originalElems;
         }

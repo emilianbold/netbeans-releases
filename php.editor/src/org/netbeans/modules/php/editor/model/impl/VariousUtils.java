@@ -315,9 +315,9 @@ public class VariousUtils {
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
     //TODO: needs to be improved to properly return more types
-    public static List<? extends TypeScope> getType( VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
-        List<? extends TypeScope> recentTypes = Collections.emptyList();
-        List<? extends TypeScope> oldRecentTypes = Collections.emptyList();
+    public static Collection<? extends TypeScope> getType( VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
+        Collection<? extends TypeScope> recentTypes = Collections.emptyList();
+        Collection<? extends TypeScope> oldRecentTypes = Collections.emptyList();
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
         
         if (semiTypeName != null && semiTypeName.contains("@")) {
@@ -391,7 +391,7 @@ public class VariousUtils {
                             QualifiedNameKind kind = filter.getKind();
                             String query = kind.isUnqualified() ? frag : filter.getName();
                             recentTypes = CachingSupport.getClasses(query, varScope);
-                            List<? extends ClassScope> classes = CachingSupport.getClasses(clsName, varScope);
+                            Collection<? extends ClassScope> classes = CachingSupport.getClasses(clsName, varScope);
                             if (!kind.isUnqualified()) {
                                 classes = filter.filterModelElements(classes, true);
                             }
@@ -471,7 +471,7 @@ public class VariousUtils {
             QualifiedName qn = QualifiedName.create(semiTypeName);
             final QualifiedNameKind kind = qn.getKind();
             String query = kind.isUnqualified() ? semiTypeName : filter.getName();
-            List<? extends TypeScope> retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, varScope));
+            Collection<? extends TypeScope> retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, varScope));
             if (retval.isEmpty() && varScope instanceof  MethodScope) {
                 query = translateSpecialClassName(varScope, query);
                 retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, varScope));

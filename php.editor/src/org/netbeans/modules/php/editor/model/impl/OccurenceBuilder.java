@@ -590,7 +590,7 @@ class OccurenceBuilder {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             if (Kind.CLASS.equals(nodeInfo.getKind()) && isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                List<? extends ModelElement> elems = null;
+                Collection<? extends ModelElement> elems = null;
                 QualifiedName nodeQN = QualifiedName.create(nodeInfo.getTypeName());
                 elems = CachingSupport.getClasses(nodeQN.toName().toString(), fileScope);
                 if (elems != null && !elems.isEmpty()) {
@@ -633,7 +633,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<ClassName>, Scope> entry : clasNames.entrySet()) {
             ASTNodeInfo<ClassName> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                List<? extends ModelElement> elems = CachingSupport.getClasses(idName, fileScope);
+                Collection<? extends ModelElement> elems = CachingSupport.getClasses(idName, fileScope);
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
@@ -656,11 +656,11 @@ class OccurenceBuilder {
     }
 
     private void buildClassIDs(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getName();
+        QualifiedName qualifiedName = nodeCtxInfo.getQualifiedName();
         for (Entry<ASTNodeInfo<Expression>, Scope> entry : clasIDs.entrySet()) {
             ASTNodeInfo<Expression> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                List<? extends ModelElement> elems = CachingSupport.getClasses(idName, fileScope);
+                Collection<? extends ModelElement> elems = CachingSupport.getClasses(qualifiedName.toString(), fileScope);
                 if (!elems.isEmpty()) {
 
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
@@ -745,7 +745,7 @@ class OccurenceBuilder {
             String name = nodeInfo.getName();
             Scope scope = entry.getValue();
             if (Kind.FIELD.equals(nodeInfo.getKind()) && scope instanceof ClassScope && idName.equalsIgnoreCase(name)) {
-                List<? extends ClassScope> classes = CachingSupport.getClasses(scope.getName(), scope);
+                Collection<? extends ClassScope> classes = CachingSupport.getClasses(scope.getName(), scope);
 
                 Collection<ModelElement> allFields = new HashSet<ModelElement>();
                 if (!classes.isEmpty()) {

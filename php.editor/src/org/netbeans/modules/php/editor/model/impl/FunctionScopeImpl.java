@@ -50,6 +50,7 @@ import java.util.List;
 
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -148,7 +149,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                         } finally {
                             recursionDetection.remove(typeName);
                         }
-                    } else {
+                    } else {                        
                         retval.addAll(CachingSupport.getTypes(typeName, this));
                     }
             }
