@@ -44,8 +44,9 @@ import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.util.List;
 import javax.swing.ActionMap;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
@@ -55,6 +56,7 @@ import org.netbeans.modules.maven.repository.register.RepositoryRegisterUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.awt.Toolbar;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -144,7 +146,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         jSplitPane1 = new javax.swing.JSplitPane();
         pnlBrowse = new javax.swing.JPanel();
         pnlFind = new javax.swing.JPanel();
-        jToolBar1 = new javax.swing.JToolBar();
+        jToolBar1 = new EditorToolbar();
         btnIndex = new javax.swing.JButton();
         btnAddRepo = new javax.swing.JButton();
         btnFind = new javax.swing.JButton();
@@ -375,6 +377,29 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 
         public Object readResolve() {
             return M2RepositoryBrowserTopComponent.getDefault();
+        }
+    }
+
+    private static class EditorToolbar extends Toolbar {
+        public EditorToolbar() {
+            Border b = UIManager.getBorder("Nb.Editor.Toolbar.border"); //NOI18N
+            setBorder(b);
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+        }
+
+        @Override
+        public String getUIClassID() {
+            if( UIManager.get("Nb.Toolbar.ui") != null ) { //NOI18N
+                return "Nb.Toolbar.ui"; //NOI18N
+            }
+            return super.getUIClassID();
+        }
+
+        @Override
+        public String getName() {
+            return "editorToolbar"; //NOI18N
         }
     }
 }

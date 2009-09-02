@@ -165,6 +165,16 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="OptionsDialog">
         <file name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
+            <attr name="advancedOptionsFolder" stringvalue="OptionsDialog/org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"/>
+            <attr name="title" bundlevalue="org.netbeans.modules.php.project.ui.options.Bundle#PHPOptionsCategory_title"/>
+            <attr name="categoryName" bundlevalue="org.netbeans.modules.php.project.ui.options.Bundle#PHPOptionsCategory_name"/>
+            <attr name="iconBase" stringvalue="org/netbeans/modules/php/project/ui/resources/php-options-icon.png"/>
+            <!--
+            <attr name="keywords" bundlevalue="..."/>
+            <attr name="keywordsCategory" stringvalue="..."/>
+            <attr name="description" bundlevalue="..."/>
+            -->
             <attr name="position" intvalue="650"/>
         </file>
         <folder name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory">
