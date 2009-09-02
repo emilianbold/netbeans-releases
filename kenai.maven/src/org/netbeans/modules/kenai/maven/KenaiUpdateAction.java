@@ -40,6 +40,8 @@ package org.netbeans.modules.kenai.maven;
 
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -58,13 +60,19 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Scm;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
+/**
+ * An action which updates portions of Maven POM according to the information
+ * obtained from asociated KenaiProject.
+ *
+ * @author dafe
+ */
 public final class KenaiUpdateAction extends AbstractAction implements ContextAwareAction {
 
     private Lookup context;
@@ -100,31 +108,34 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
 
     public void actionPerformed(ActionEvent arg0) {
         FileObject fo = context.lookup(FileObject.class);
-        /*Project prj = actionContext.lookup(Project.class);
-        if (prj == null) {
-            if (fo != null) {
-                prj = FileOwnerQuery.getOwner(fo);
-            }
-        }*/
 
         ModelSource ms = Utilities.createModelSource(fo);
         POMModel model = null;
         if (ms.isEditable()) {
             model = POMModelFactory.getDefault().getModel(ms);
+        } else {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NotEditable"));
         }
 
         KenaiProject project = null;
         try {
             project = KenaiProject.forRepository(uri);
         } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
+            String msgNoProject = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NoProject");
+            StatusDisplayer.getDefault().setStatusText(msgNoProject);
+            Logger.getLogger(KenaiUpdateAction.class.getName()).log(
+                    Level.WARNING, msgNoProject, ex);
         }
 
         if (model != null && project != null) {
             try {
                 performUpdate(model, project);
             } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
+                String msgFail = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_UpdateFail");
+                StatusDisplayer.getDefault().setStatusText(msgFail);
+                Logger.getLogger(KenaiUpdateAction.class.getName()).log(
+                        Level.WARNING, msgFail, ex);
             }
         }
 
