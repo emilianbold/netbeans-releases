@@ -54,6 +54,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.editor.hints.Context;
@@ -61,6 +62,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.PositionRefresher;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Refreshes all Java Hints on current line upon Alt-Enter or mouseclick
@@ -69,16 +71,23 @@ import org.openide.util.Exceptions;
 public class JavaHintsPositionRefresher implements PositionRefresher {
 
     @Override
-    public Map<String, List<ErrorDescription>> getErrorDescriptionsAt(Context context, Document doc) {
-        JavaSource js = JavaSource.forDocument(doc);
+    public Map<String, List<ErrorDescription>> getErrorDescriptionsAt(final Context context, final Document doc) {
+        final JavaSource js = JavaSource.forDocument(doc);
         final Map<String, List<ErrorDescription>> eds = new HashMap<String, List<ErrorDescription>>();
-        
-        try {
-            js.runUserActionTask(new RefreshTask(eds, context, doc), true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
 
+        Runnable r = new Runnable() {
+
+            public void run() {
+                try {
+                    js.runUserActionTask(new RefreshTask(eds, context, doc), true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        
+        ScanDialog.runWhenScanFinished(r, NbBundle.getMessage(JavaHintsPositionRefresher.class, "Refresh_hints")); // NOI18N
+        
         return eds;
     }
 
@@ -112,7 +121,7 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             if (ctx.isCanceled()) {
                 return;
             }
-            
+
             //HintsTask
             int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
             int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
@@ -132,7 +141,7 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
                     encounteredLeafs.add(leaf);
                 }
             }
-            
+
             eds.put(HintsTask.class.getName(), new ArrayList<ErrorDescription>(errs));
 
             if (ctx.isCanceled()) {
