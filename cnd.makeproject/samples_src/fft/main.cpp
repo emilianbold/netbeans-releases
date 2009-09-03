@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     if (argc == 1) {
         printf("No input params.\n");
         printf("Usage: fft input.bmp output.bmp\n");
-        printf("Generating test \"in.txt\".\n");
+        printf("Generating test image \"in.bmp\".\n");
         Bitmap bmp;
         bmp.GenerateTestImage();
         bmp.Save("in.bmp");
