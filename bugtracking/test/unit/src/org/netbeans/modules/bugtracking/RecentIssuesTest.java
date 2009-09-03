@@ -55,6 +55,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.openide.util.Lookup;
 
 /**
@@ -231,6 +232,11 @@ public class RecentIssuesTest extends NbTestCase {
         public Issue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public Query[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public Issue[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public Collection<RepositoryUser> getUsers() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
     }
 
