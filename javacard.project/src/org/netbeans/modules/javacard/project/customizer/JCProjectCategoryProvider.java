@@ -81,9 +81,8 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
             case CUSTOMIZER_ID_RUN :
                 switch (kind) {
                     case CLASSIC_APPLET :
-                        return new CapProjectCustomizerRun((AppletProjectProperties) uiProps);
                     case EXTENDED_APPLET :
-                        return new EapProjectCustomizerRun((AppletProjectProperties) uiProps);
+                        return new AppletProjectCustomizerRun((AppletProjectProperties) uiProps);
                     case WEB :
                         return new WebProjectCustomizerRun ((WebProjectProperties) uiProps);
                     case EXTENSION_LIBRARY :
