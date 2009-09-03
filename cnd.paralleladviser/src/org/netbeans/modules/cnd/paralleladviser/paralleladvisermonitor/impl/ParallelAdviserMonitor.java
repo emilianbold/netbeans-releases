@@ -51,10 +51,10 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.paralleladviser.codemodel.CodeModelUtils;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.ParallelAdviserTopComponent;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -83,168 +82,215 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescr
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * Parallel Adviser indicator.
+ * Parallel Adviser monitor.
  *
  * @author Nick Krasilnikov
  */
-/*package*/ class ParallelAdviserIndicator extends Indicator<ParallelAdviserIndicatorConfiguration> {
+public class ParallelAdviserMonitor implements IndicatorNotificationsListener, DLightSessionListener {
 
-    private final ParallelAdviserIndicatorPanel panel;
-    private final CpuHighLoadIntervalFinder highLoadFinder;
-    private final UnnecessaryThreadsIntervalFinder unnecessaryThreadsFinder;
+    private static final ParallelAdviserMonitor instance = new ParallelAdviserMonitor();
+    private CpuHighLoadIntervalFinder highLoadFinder;
+    private UnnecessaryThreadsIntervalFinder unnecessaryThreadsFinder;
 
-    ParallelAdviserIndicator(ParallelAdviserIndicatorConfiguration configuration) {
-        super(configuration);
-        panel = new ParallelAdviserIndicatorPanel();
+    public static ParallelAdviserMonitor getInstance() {
+        return instance;
+    }
+
+    private ParallelAdviserMonitor() {
         highLoadFinder = new CpuHighLoadIntervalFinder();
         unnecessaryThreadsFinder = new UnnecessaryThreadsIntervalFinder();
     }
 
-    @Override
+    public void startup() {
+        DLightManager.getDefault().addDLightSessionListener(this);
+    }
+
+    public void shutdown() {
+    }
+
+    public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
+    }
+
+    public void sessionAdded(DLightSession newSession) {
+        highLoadFinder = new CpuHighLoadIntervalFinder();
+        unnecessaryThreadsFinder = new UnnecessaryThreadsIntervalFinder();
+        newSession.addIndicatorNotificationListener(this);
+    }
+
+    public void sessionRemoved(DLightSession removedSession) {
+    }
+
+    public void reset() {
+    }
+
     public void updated(List<DataRow> data) {
         if (getProcessorsNumber() <= 1) {
             // no need to parallelize application on machine with single core processor.
             return;
         }
 
-        highLoadFinder.update(data);
+        for (DataRow dataRow : data) {
 
-        if (highLoadFinder.isHighLoadInterval()) {
+            highLoadFinder.update(dataRow);
 
-            SunStudioDataCollector collector = new SunStudioDataCollector();
+            if (highLoadFinder.isHighLoadInterval()) {
 
-            for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
-                if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < highLoadFinder.ticks / 2) {
-                    break;
-                }
-                String functionName = functionCall.getFunction().getQuilifiedName();
-                functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
-                functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
-                CsmFunction function = CodeModelUtils.getFunction(collector.getProject(), functionName);
-                for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
-                    if (CodeModelUtils.canParallelize(loop)) {
-                        LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
-                        panel.notifyUser();
+                SunStudioDataCollector collector = new SunStudioDataCollector();
 
-                        Runnable updateView = new Runnable() {
+                for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
+                    if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < highLoadFinder.ticks / 2) {
+                        break;
+                    }
+                    String functionName = functionCall.getFunction().getQuilifiedName();
+                    functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
+                    functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
+                    CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
+                    for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
+                        if (CodeModelUtils.canParallelize(loop)) {
+                            LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
+                            //panel.notifyUser();
+                            System.out.println("Parallel Adviser notification!!!"); // NOI18N
 
-                            public void run() {
-                                ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
-                                view.updateTips();
+                            Runnable updateView = new Runnable() {
+
+                                public void run() {
+                                    ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
+                                    view.updateTips();
+                                }
+                            };
+                            if (SwingUtilities.isEventDispatchThread()) {
+                                updateView.run();
+                            } else {
+                                SwingUtilities.invokeLater(updateView);
                             }
-                        };
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            updateView.run();
-                        } else {
-                            SwingUtilities.invokeLater(updateView);
+                        }
+                    }
+                }
+
+                DTraceDataCollector collector2 = new DTraceDataCollector();
+
+                for (FunctionCallWithMetric functionCall : collector2.getFunctionCallsSortedByInclusiveTime()) {
+                    final Column c_iUser = new Column(
+                            FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
+                            FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
+                            FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
+                    if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos() / 1000000000 < highLoadFinder.ticks / 2) {
+                        break;
+                    }
+                    String functionName = functionCall.getFunction().getQuilifiedName();
+                    functionName = functionName.replaceAll(".*\\`", ""); // NOI18N
+                    functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
+                    functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
+                    CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
+                    for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
+                        if (CodeModelUtils.canParallelize(loop)) {
+                            LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
+                            //panel.notifyUser();
+                            System.out.println("Parallel Adviser notification!!!"); // NOI18N
+                            Runnable updateView = new Runnable() {
+
+                                public void run() {
+                                    ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
+                                    view.updateTips();
+                                }
+                            };
+                            if (SwingUtilities.isEventDispatchThread()) {
+                                updateView.run();
+                            } else {
+                                SwingUtilities.invokeLater(updateView);
+                            }
                         }
                     }
                 }
             }
 
-            DTraceDataCollector collector2 = new DTraceDataCollector();
+            unnecessaryThreadsFinder.update(dataRow);
+            if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
+                UnnecessaryThreadsTipsProvider.clearTips();
+                UnnecessaryThreadsTipsProvider.addTip(new UnnecessaryThreadsAdvice());
+                //panel.notifyUser();
+                System.out.println("Parallel Adviser notification!!!"); // NOI18N
+                Runnable updateView = new Runnable() {
 
-            for (FunctionCallWithMetric functionCall : collector2.getFunctionCallsSortedByInclusiveTime()) {
-                final Column c_iUser = new Column(
-                        FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
-                        FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
-                        FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
-                if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos() / 1000000000 < highLoadFinder.ticks / 2) {
-                    break;
-                }
-                String functionName = functionCall.getFunction().getQuilifiedName();
-                functionName = functionName.replaceAll(".*\\`", ""); // NOI18N
-                functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
-                functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
-                CsmFunction function = CodeModelUtils.getFunction(collector2.getProject(), functionName);
-                for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
-                    if (CodeModelUtils.canParallelize(loop)) {
-                        LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
-                        panel.notifyUser();
-                        Runnable updateView = new Runnable() {
-
-                            public void run() {
-                                ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
-                                view.updateTips();
-                            }
-                        };
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            updateView.run();
-                        } else {
-                            SwingUtilities.invokeLater(updateView);
-                        }
+                    public void run() {
+                        ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
+                        view.updateTips();
                     }
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    updateView.run();
+                } else {
+                    SwingUtilities.invokeLater(updateView);
                 }
             }
+
+
+//        DLightTarget target = getTarget();
+//        if(target instanceof NativeExecutableTarget) {
+//            NativeExecutableTarget nativeTarget = (NativeExecutableTarget) target;
+//
+//            InputOutput io = nativeTarget.getInputOutput();
+//            io.getErr().println("1010:111 sdlfk");
+//        }
+
         }
-
-        unnecessaryThreadsFinder.update(data);
-        if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
-            UnnecessaryThreadsTipsProvider.clearTips();
-            UnnecessaryThreadsTipsProvider.addTip(new UnnecessaryThreadsAdvice());
-            panel.notifyUser();
-            Runnable updateView = new Runnable() {
-
-                public void run() {
-                    ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
-                    view.updateTips();
-                }
-            };
-            if (SwingUtilities.isEventDispatchThread()) {
-                updateView.run();
-            } else {
-                SwingUtilities.invokeLater(updateView);
-            }
-        }
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return panel;
-    }
-
-    @Override
-    protected void tick() {
-    }
-
-    @Override
-    protected void repairNeeded(boolean needed) {
-    }
-
-    public void reset() {
     }
 
     private static String getMessage(String name) {
-        return NbBundle.getMessage(ParallelAdviserIndicator.class, name);
+        return NbBundle.getMessage(ParallelAdviserMonitor.class, name);
+    }
+
+    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
+
+    private static CsmProject getProject() {
+        DLightSession session = DLightManager.getDefault().getActiveSession();
+        if (session == null) {
+            return null;
+        }
+        ServiceInfoDataStorage serviceInfoStorage = session.getServiceInfoDataStorage();
+        if (serviceInfoStorage == null) {
+            return null;
+        }
+        Map<String, String> serviceInfo = serviceInfoStorage.getInfo();
+        if (serviceInfo == null) {
+            return null;
+        }
+        String projectFolderName = serviceInfo.get(GIZMO_PROJECT_FOLDER);
+        if (projectFolderName == null) {
+            return null;
+        }
+        CsmProject csmProject = null;
+        try {
+            Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
+            csmProject = CsmModelAccessor.getModel().getProject(prj);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return csmProject;
     }
 
     private static class SunStudioDataCollector {
 
-        public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
-        private ServiceInfoDataStorage dataStorage;
         private DataProvider dataProvider;
         private DataTableMetadata metadata;
 
         public SunStudioDataCollector() {
-            dataStorage = null;
-            dataProvider = null;
-
             metadata =
                     SunStudioDCConfiguration.getCPUTableMetadata(
                     SunStudioDCConfiguration.c_name,
@@ -255,11 +301,10 @@ import org.openide.util.NbBundle;
 
             DLightSession session = DLightManager.getDefault().getActiveSession();
             dataProvider = session.createDataProvider(dataModel, metadata);
-            dataStorage = session.getServiceInfoDataStorage();
         }
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
-            if (dataStorage != null && dataProvider != null) {
+            if (dataProvider != null) {
                 FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
                 List<FunctionCallWithMetric> functions = ((FunctionsListDataProvider) dataProvider).getFunctionsList(metadata, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
                 Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
@@ -273,45 +318,28 @@ import org.openide.util.NbBundle;
                 return Collections.<FunctionCallWithMetric>emptyList();
             }
         }
-
-        public CsmProject getProject() {
-            if (dataStorage == null) {
-                return null;
-            }
-            Map<String, String> serviceInfo = dataStorage.getInfo();
-            String projectFolderName = serviceInfo.get(GIZMO_PROJECT_FOLDER);
-            if (projectFolderName == null) {
-                return null;
-            }
-            CsmProject csmProject = null;
-            try {
-                Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
-                csmProject = CsmModelAccessor.getModel().getProject(prj);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return csmProject;
-        }
     }
+    
     private int processorsNumber = 0;
 
     private int getProcessorsNumber() {
         if (processorsNumber == 0) {
             processorsNumber = 1;
-            DLightTarget target = getTarget();
-            if (target != null) {
-                HostInfo hostInfo = null;
-                try {
-                    hostInfo = HostInfoUtils.getHostInfo(target.getExecEnv());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                if (hostInfo != null) {
-                    processorsNumber = hostInfo.getCpuNum();
+            DLightSession session = DLightManager.getDefault().getActiveSession();
+            if (session != null) {
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(session.getServiceInfoDataStorage().getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
+                if (env != null) {
+                    HostInfo hostInfo = null;
+                    try {
+                        hostInfo = HostInfoUtils.getHostInfo(env);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (CancellationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (hostInfo != null) {
+                        processorsNumber = hostInfo.getCpuNum();
+                    }
                 }
             }
         }
@@ -321,57 +349,27 @@ import org.openide.util.NbBundle;
     private static class DTraceDataCollector {
 
         public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
-        private DataStorage dataStorage;
         private DataProvider dataProvider;
         private DataTableMetadata metadata;
 
         public DTraceDataCollector() {
-            dataStorage = null;
-            dataProvider = null;
-
-            List<DataStorage> storages = DLightManager.getDefault().getActiveSession().getStorages();
-
             Column timestamp = new Column("time_stamp", Long.class); // NOI18N
             Column cpuId = new Column("cpu_id", Integer.class); // NOI18N
             Column threadId = new Column("thread_id", Integer.class); // NOI18N
             Column mstate = new Column("mstate", Integer.class); // NOI18N
-            Column duration = new Column("duration", Long.class); // NOI18N
-            Column stackId = new Column("leaf_id", Long.class); // NOI18N
+            Column duration = new Column("duration", Integer.class); // NOI18N
+            Column stackId = new Column("leaf_id", Integer.class); // NOI18N
             metadata = new DataTableMetadata("CallStack", // NOI18N
                     Arrays.asList(timestamp, cpuId, threadId, mstate, duration, stackId), null);
 
             DataModelScheme dataModel = DataModelSchemeProvider.getInstance().getScheme("model:functions"); //NOI18N
 
-            Collection<? extends DataProviderFactory> factories = Lookup.getDefault().lookupAll(DataProviderFactory.class);
-
-            for (DataStorage storage : storages) {
-                if (!storage.hasData(metadata)) {
-                    continue;
-                }
-                Collection<DataStorageType> dataStorageTypes = storage.getStorageTypes();
-                for (DataStorageType dss : dataStorageTypes) {
-                    // As DataStorage is already specialized, there is always only one
-                    // returned DataSchema
-                    for (DataProviderFactory providerFactory : factories) {
-                        if (providerFactory.provides(dataModel) && providerFactory.getSupportedDataStorageTypes().contains(dss)) {
-                            dataProvider = providerFactory.create();
-                            break;
-                        }
-                    }
-                    if (dataProvider != null) {
-                        dataStorage = storage;
-                        dataProvider.attachTo(dataStorage);
-                        break;
-                    }
-                }
-                if (dataProvider != null) {
-                    break;
-                }
-            }
+            DLightSession session = DLightManager.getDefault().getActiveSession();
+            dataProvider = session.createDataProvider(dataModel, metadata);
         }
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
-            if (dataStorage != null && dataProvider != null) {
+            if (dataProvider != null) {
                 FunctionDatatableDescription funcDescription = new FunctionDatatableDescription("name", null, "name"); // NOI18N
                 final Column c_eUser = new Column(
                         FunctionMetric.CpuTimeExclusiveMetric.getMetricID(),
@@ -393,24 +391,6 @@ import org.openide.util.NbBundle;
                 return Collections.<FunctionCallWithMetric>emptyList();
             }
         }
-
-        public CsmProject getProject() {
-            Map<String, String> serviceInfo = ((ServiceInfoDataStorage) dataStorage).getInfo();
-            String projectFolderName = serviceInfo.get(GIZMO_PROJECT_FOLDER);
-            if (projectFolderName == null) {
-                return null;
-            }
-            CsmProject csmProject = null;
-            try {
-                Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
-                csmProject = CsmModelAccessor.getModel().getProject(prj);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return csmProject;
-        }
     }
 
     private class UnnecessaryThreadsIntervalFinder {
@@ -428,20 +408,18 @@ import org.openide.util.NbBundle;
             return result;
         }
 
-        public void update(List<DataRow> data) {
+        public void update(DataRow dataRow) {
             Column threadsCol = new Column("threads", Integer.class); // NOI18N
             Column latTimeCol = new Column(MSAState.WaitingCPU.toString(), Integer.class);
             Column runTimeCol = new Column(MSAState.Running.toString(), Integer.class);
-            for (DataRow dataRow : data) {
-                Object threadsObj = dataRow.getData(threadsCol.getColumnName());
-                Object latTimeObj = dataRow.getData(latTimeCol.getColumnName());
-                Object runTimeObj = dataRow.getData(runTimeCol.getColumnName());
-                if (latTimeObj != null && runTimeObj != null && threadsObj != null) {
-                    if (areUnnecessaryThreadsUsed((Integer) threadsObj, (Integer) latTimeObj, (Integer) runTimeObj)) {
-                        interval++;
-                    } else {
-                        interval = 0;
-                    }
+            Object threadsObj = dataRow.getData(threadsCol.getColumnName());
+            Object latTimeObj = dataRow.getData(latTimeCol.getColumnName());
+            Object runTimeObj = dataRow.getData(runTimeCol.getColumnName());
+            if (latTimeObj != null && runTimeObj != null && threadsObj != null) {
+                if (areUnnecessaryThreadsUsed((Integer) threadsObj, (Integer) latTimeObj, (Integer) runTimeObj)) {
+                    interval++;
+                } else {
+                    interval = 0;
                 }
             }
         }
@@ -477,18 +455,16 @@ import org.openide.util.NbBundle;
             return processorUtilizationSum / ticks;
         }
 
-        public void update(List<DataRow> data) {
-            for (DataRow dataRow : data) {
-                Object usrTime = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
-                if (usrTime != null) {
-                    ticks++;
-                    processorUtilizationSum += (Float) usrTime;
+        public void update(DataRow dataRow) {
+            Object usrTime = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+            if (usrTime != null) {
+                ticks++;
+                processorUtilizationSum += (Float) usrTime;
 
-                    if (isSingleThreadOnOneProcessorHighLoaded(dataRow)) {
-                        interval++;
-                    } else {
-                        interval = 0;
-                    }
+                if (isSingleThreadOnOneProcessorHighLoaded(dataRow)) {
+                    interval++;
+                } else {
+                    interval = 0;
                 }
             }
         }
