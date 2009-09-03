@@ -5,16 +5,16 @@
 
 package testGenerateJavaEE60;
 
-import javax.ejb.Stateless;
+import javax.ejb.Stateful;
 
 /**
  *
  * @author {user}
  */
-@Stateless
-public class TestStatelessBean implements TestStatelessRemote, TestStatelessLocal {
+@Stateful
+public class TestStateful implements TestStatefulRemote {
     
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
- 
+    
 }

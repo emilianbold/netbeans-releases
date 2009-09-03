@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.project.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.php.project.PhpLanguageOptionsAccessor;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.filesystems.FileObject;
@@ -47,7 +50,7 @@ import org.openide.util.NbBundle;
 /**
  * Helper class to get PHP language properties like ASP tags supported etc.
  * @author Tomas Mysik
- * @since 2.3
+ * @since 2.18
  */
 public final class PhpLanguageOptions {
     /**
@@ -60,8 +63,22 @@ public final class PhpLanguageOptions {
     public static final boolean ASP_TAGS_ENABLED = false;
 
     /**
-     * PHP version used for hints.
-     * @since 2.16
+     * Property which is fired when {@link Properties#areShortTagsEnabled()} changes.
+     */
+    public static final String PROP_SHORT_TAGS = PhpLanguageOptions.class.getName() + ".shortTags";
+    /**
+     * Property which is fired when {@link Properties#areAspTagsEnabled()} changes.
+     */
+    public static final String PROP_ASP_TAGS = PhpLanguageOptions.class.getName() + ".aspTags";
+    /**
+     * Property which is fired when {@link Properties#getPhpVersion()} changes.
+     */
+    public static final String PROP_PHP_VERSION = PhpLanguageOptions.class.getName() + ".phpVersion";
+
+    /**
+     * PHP version, currently used only for hints.
+     * @see Properties#getPhpVersion()
+     * @see #getProperties(FileObject)
      */
     public static enum PhpVersion {
         PHP_5(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_5")),
@@ -84,7 +101,28 @@ public final class PhpLanguageOptions {
         }
     };
 
+    static final PhpLanguageOptions INSTANCE = new PhpLanguageOptions();
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    static {
+        PhpLanguageOptionsAccessor.setDefault(new PhpLanguageOptionsAccessor() {
+
+            @Override
+            public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+                INSTANCE.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        });
+    }
+
     private PhpLanguageOptions() {
+    }
+
+    /**
+     * Get the default instance of {@link PhpLanguageOptions} class.
+     * @return the default instance of {@link PhpLanguageOptions} class.
+     */
+    public static PhpLanguageOptions getDefault() {
+        return INSTANCE;
     }
 
     /**
@@ -96,7 +134,7 @@ public final class PhpLanguageOptions {
      * @see #ASP_TAGS_ENABLED
      * @see PhpVersion
      */
-    public static Properties getProperties(FileObject file) {
+    public Properties getProperties(FileObject file) {
         boolean shortTagsEnabled = SHORT_TAGS_ENABLED;
         boolean aspTagsEnabled = ASP_TAGS_ENABLED;
         PhpVersion phpVersion = PhpVersion.PHP_5;
@@ -110,6 +148,28 @@ public final class PhpLanguageOptions {
             }
         }
         return new Properties(shortTagsEnabled, aspTagsEnabled, phpVersion);
+    }
+
+    /**
+     * Add listener that is notified when any "important" PHP language property changes.
+     * @param listener a listener to add
+     * @see #removePropertyChangeListener(PropertyChangeListener)
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove listener.
+     * @param listener a listener to remove
+     * @see #addPropertyChangeListener(PropertyChangeListener)
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
     /**

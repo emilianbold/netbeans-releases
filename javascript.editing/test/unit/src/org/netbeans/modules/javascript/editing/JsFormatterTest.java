@@ -66,6 +66,92 @@ public class JsFormatterTest extends JsTestBase {
     //    }
     //}
 
+    public void testSemi01() throws Exception {
+        format(
+                "var p; p = 'hello';",
+                "var p;\n" +
+                "p = 'hello';", null
+                );
+    }
+
+    public void testSemi02() throws Exception {
+        format(
+                "var p;                           p = 'hello';",
+                "var p;\n" +
+                "p = 'hello';", null
+                );
+    }
+
+    public void testSemi03() throws Exception {
+        format(
+                "var p;p = 'hello';",
+                "var p;\n" +
+                "p = 'hello';", null
+                );
+    }
+
+    public void testSemi04() throws Exception {
+        format(
+                "var p; p = getName(); p = stripName(p);",
+                "var p;\n" +
+                "p = getName();\n" +
+                "p = stripName(p);", null
+                );
+    }
+    
+    public void testSemi05() throws Exception {
+        format(
+                "var p; for(var i = 0, l = o.length; i < l; i++) {             createDom(o[i], el);   p = true;} p = stripName(p);",
+                "var p;\n" +
+                "for(var i = 0, l = o.length; i < l; i++) {\n" +
+                "    createDom(o[i], el);\n" +
+                "    p = true;\n" +
+                "}\n" +
+                "p = stripName(p);", null
+                );
+    }
+
+    public void testSemi06() throws Exception {
+        format(
+                "if (a == b) { a=c;\n" +
+                "    } else if (c == b) { v=d;}",
+
+                "if (a == b) {\n" +
+                "    a=c;\n" +
+                "} else if (c == b) {\n" +
+                "    v=d;\n" +
+                "}", null);
+    }
+
+    public void testSemi07() throws Exception {
+        format(
+                "var test = function() { a = b; };",
+
+                "var test = function() {\n" +
+                "    a = b;\n" +
+                "};", null);
+    }
+
+    public void testSemi08() throws Exception {
+        format(
+                "Spry.forwards = 1; // const\n" +
+                "Spry.backwards = 2; // const\n",
+
+                "Spry.forwards = 1; // const\n" +
+                "Spry.backwards = 2; // const\n", null);
+    }
+
+
+    public void testCommentAtTheEdnOfLine() throws Exception {
+        format (
+                "for(var i = 0, l = o.length; i < l; i++) { // some comment \ncreateDom(o[i], el);  p = true;       } //comment2\n p = stripName(p);",
+                "for(var i = 0, l = o.length; i < l; i++) { // some comment \n" +
+                "    createDom(o[i], el);\n" +
+                "    p = true;\n" +
+                "} //comment2\n" +
+                "p = stripName(p);", null);
+    }
+
     public void testFormat1() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/prototype.js",new IndentPrefs(2,2));
@@ -319,7 +405,8 @@ public class JsFormatterTest extends JsTestBase {
                 "        // comment\n" +
                 "        foo();\n" +
                 "        break;\n" +
-                "    default: break;\n", null
+                "    default:\n" +
+                "        break;\n", null
                 );
     }
     
@@ -373,12 +460,15 @@ public class JsFormatterTest extends JsTestBase {
         format(
                 " switch (n) {\n" +
                 " case 1: foo(); break;\n" +
-                " default: bar();\n" +
+                " default:            bar();\n" +
                 " }\n" +
                 " bar();\n",
                 "switch (n) {\n" +
-                "    case 1: foo(); break;\n" +
-                "    default: bar();\n" +
+                "    case 1:\n" +
+                "        foo();\n" +
+                "        break;\n" +
+                "    default:\n" +
+                "        bar();\n" +
                 "}\n" +
                 "bar();\n", null
                 );
@@ -392,13 +482,35 @@ public class JsFormatterTest extends JsTestBase {
                 " }\n" +
                 " bar();\n",
                 "switch(n) {\n" +
-                "    case 1: foo(); break;\n" +
-                "    default: bar();\n" +
+                "    case 1:\n" +
+                "        foo();\n" +
+                "        break;\n" +
+                "    default:\n" +
+                "        bar();\n" +
                 "}\n" +
                 "bar();\n", null
                 );
     }
-    
+
+    public void testSwitch6() throws Exception {
+        format(
+                " switch (n) {   //comment1\n" +
+                " case 0:\n" +
+                " case 1:    // comment2\n" +
+                " foo();\n" +
+                " break;\n" +
+                " default:   // comment3\nbreak;\n",
+
+                "switch (n) {   //comment1\n" +
+                "    case 0:\n" +
+                "    case 1:    // comment2\n" +
+                "        foo();\n" +
+                "        break;\n" +
+                "    default:   // comment3\n" +
+                "        break;\n", null
+                );
+    }
+
     public void testCommaIndent1() throws Exception {
         insertNewline("hobbies: [ \"chess\",^", "hobbies: [ \"chess\",\n    ^", null);
     }
@@ -472,10 +584,10 @@ public class JsFormatterTest extends JsTestBase {
     public void testBraceNewline1() throws Exception {
         format(
                 "if (true) { foo(); } else { bar(); }",
-                "if (true) { \n" +
-                "    foo(); \n" +
-                "} else { \n" +
-                "    bar(); \n" +
+                "if (true) {\n" +
+                "    foo();\n" +
+                "} else {\n" +
+                "    bar();\n" +
                 "}", null
                 );
     }
@@ -489,11 +601,11 @@ public class JsFormatterTest extends JsTestBase {
                 "}",
                 "var Prototype = {\n" +
                 "    emptyFunction: function() { },\n" +
-                "    K: function(x) { \n" +
-                "        return x \n" +
+                "    K: function(x) {\n" +
+                "        return x\n" +
                 "    },\n" +
-                "    L: function(x) { \n" +
-                "        return x \n" +
+                "    L: function(x) {\n" +
+                "        return x\n" +
                 "    }\n" +
                 "}", null
                 );
@@ -522,6 +634,104 @@ public class JsFormatterTest extends JsTestBase {
                 "    }\n" +
                 "};", null
                 );
+    }
+
+    public void testBraceNewline4() throws Exception {
+        format (
+                "if (this.options.asynchronous)\n" +
+                "setTimeout(function() { this.respondToReadyState(1) }.bind(this), 10);",
+
+                "if (this.options.asynchronous)\n" +
+                "    setTimeout(function() {\n" +
+                "        this.respondToReadyState(1)\n" +
+                "    }.bind(this), 10);", null);
+    }
+
+    public void testBraceNewline5() throws Exception {
+        format (
+            "do {        valueT += element.scrollTop  || " +
+            "0; valueL += element.scrollLeft || 0; element = element.parentNode; }         while (element);",
+
+            "do {\n" +
+            "    valueT += element.scrollTop  || 0;\n" +
+            "    valueL += element.scrollLeft || 0;\n" +
+            "    element = element.parentNode;\n" +
+            "} while (element);", null);
+    }
+
+    public void testBraceNewline6() throws Exception {
+        format(
+                "if(a) {  if(b) {  a=b;  } else {  b=a;   } }",
+
+                "if(a) {\n" +
+                "    if(b) {\n" +
+                "        a=b;\n" +
+                "    } else {\n" +
+                "        b=a;\n" +
+                "    }\n" +  
+                "}", null);
+    }
+
+    public void testBraceNewline7() throws Exception {
+        format(
+                "if(a) {  if(b) {  a=b;  } else {  b=a;   }}",
+
+                "if(a) {\n" +
+                "    if(b) {\n" +
+                "        a=b;\n" +
+                "    } else {\n" +
+                "        b=a;\n" +
+                "    }\n" +
+                "}", null);
+    }
+
+    public void testBraceNewline8() throws Exception {
+        format ("var miArgs = [{}];", "var miArgs = [{}];", null);
+    }
+
+    public void testBraceNewline9() throws Exception {
+        format ("var p = <paul><age>{num}</age></paul>",
+
+                "var p = <paul><age>{\n" +
+                "num\n" +
+                "}</age></paul>", null);
+    }
+
+    public void testBraceNewline10() throws Exception {
+        format ("if (!document.getElementsByClassName) document.getElementsByClassName = function(instanceMethods){\n" +
+                "  function iter(name) {\n" +
+                "    return name.blank() ? null : \"[contains(concat(' ', @class, ' '), ' \" + name + \" ')]\";\n" +
+                "  }\n" +
+                "}(Element.Methods);",
+
+                "if (!document.getElementsByClassName) document.getElementsByClassName = function(instanceMethods){\n" +
+                "    function iter(name) {\n" +
+                "        return name.blank() ? null : \"[contains(concat(' ', @class, ' '), ' \" + name + \" ')]\";\n" +
+                "    }\n" +
+                "}(Element.Methods);", null);
+    }
+
+    public void testBraceNewLine11() throws Exception {
+        format("switch (tagName) {\n" +
+                "case 'foo': {   \n" +
+                "foo(); }\n" +
+                "}",
+
+                "switch (tagName) {\n" +
+                "    case 'foo': {\n" +
+                "        foo();\n" +
+                "    }\n" +
+                "}", null);
+    }
+
+    public void testBraceNewLine12 () throws Exception {
+        format("if (a == b) { if (b == c) { a = c;}}",
+
+                "if (a == b) {\n" +
+                "    if (b == c) {\n" +
+                "        a = c;\n" +
+                "    }\n" +
+                "}", null);
     }
 
     public void testFunction1() throws Exception {
