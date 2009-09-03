@@ -39,15 +39,21 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
@@ -74,6 +80,7 @@ public final class KenaiProject {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     private ProjectData     data;
+    private static HashMap<String, Icon> imageCache = new HashMap<String, Icon>(); //imageUrl -> image
     
     private KenaiFeature[] features;
     private KenaiUser[] members;
@@ -165,6 +172,47 @@ public final class KenaiProject {
     public synchronized String getImageUrl() throws KenaiException {
         fetchDetailsIfNotAvailable();
         return data.image;
+    }
+
+    /**
+     * Synchronously (!) loads the image of the project and stores it in the image cache
+     */
+    public synchronized void cacheProjectImage() {
+        String key = "dummy"; //NOI18N
+        try {
+            key = getImageUrl();
+        } catch (KenaiException ex) {
+        }
+        Icon icon = imageCache.get(key);
+        if (icon == null) {
+            BufferedImage img = null;
+            try {
+                img = ImageIO.read(new URL(getImageUrl()));
+                icon = new ImageIcon(img);
+                imageCache.put(key, icon);
+            } catch (IOException ex) {
+                // load failed
+            }
+        }
+    }
+
+    /**
+     * Returns the image of the project, loads it if needed (synchronous load)
+     * @param loadIfNeeded indicates if image should be loaded and cached if it wasn't already cached
+     * @return the image of the project or null, if loading image fails or if image is not cached and loadIfNeeded is false
+     */
+    public synchronized Icon getProjectIcon(boolean loadIfNeeded) {
+        String key = "dummy"; //NOI18N
+        try {
+            key = getImageUrl();
+        } catch (KenaiException ex) {
+        }
+        Icon retIcon = imageCache.get(key);
+        if (retIcon == null && loadIfNeeded) {
+            cacheProjectImage();
+            retIcon = imageCache.get(key);
+        }
+        return retIcon;
     }
 
     /**
