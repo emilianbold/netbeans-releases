@@ -105,6 +105,7 @@ public final class MIMEResolverImpl {
 
     /** Returns resolvable MIME Types for given declarative resolver. */
     public static String[] getMIMETypes(MIMEResolver resolver) {
+        ((Impl) resolver).init();  // #171312 - resolver must be parsed
         return ((Impl)resolver).implResolvableMIMETypes;
     }
 

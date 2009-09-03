@@ -46,12 +46,10 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.editor.ext.html.parser.AstNode.NodeType;
 import org.netbeans.editor.ext.html.test.TestBase;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 
 /**
  *
@@ -67,14 +65,6 @@ public class AstNodeUtilsTest extends TestBase {
     public AstNodeUtilsTest(String testName) {
         super(testName);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
-    }
-
-
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();

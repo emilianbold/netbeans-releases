@@ -181,10 +181,15 @@ public class GoToSupport {
                                 }
                             }
 
-                            UiUtils.open(location.getFileObject(), location.getOffset());
+                            FileObject f = location.getFileObject();
+                            int offset = location.getOffset();
 
-                            String desc = "Description not yet implemented";
-                            result[0] = "<html><body>" + desc;
+                            if (f != null && f.isValid()) {
+                                UiUtils.open(f, offset);
+                            }
+
+//                            String desc = "Description not yet implemented";
+//                            result[0] = "<html><body>" + desc;
                         }
 
                     } else {

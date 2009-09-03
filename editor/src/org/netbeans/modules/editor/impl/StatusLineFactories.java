@@ -129,7 +129,8 @@ public final class StatusLineFactories {
             if (editorUI != null) {
                 StatusBar statusBar = editorUI.getStatusBar();
                 statusBar.setVisible(!underMainWindow);
-                if (underMainWindow) {
+                boolean shouldUpdateGlobal = underMainWindow && component.isShowing();
+                if (shouldUpdateGlobal) {
                     statusBar.updateGlobal();
                     LOG.fine("  end of refreshStatusLine() - found main window component\n\n"); // NOI18N
                     return; // First non-docked one found and updated -> quit

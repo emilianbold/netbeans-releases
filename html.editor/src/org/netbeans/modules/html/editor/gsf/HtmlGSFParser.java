@@ -50,7 +50,6 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -99,9 +98,6 @@ public class HtmlGSFParser extends Parser {
         // no-op, we don't support state changes
     }
 
-    public HtmlGSFParser() {
-        NbReaderProvider.setupReaders(); //initialize DTD registry
-    }
     /** logger for timers/counters */
     private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());

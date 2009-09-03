@@ -61,7 +61,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -89,7 +88,6 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     public HtmlCompletionQueryTest(String name) throws IOException, BadLocationException {
         super(name);
-        NbReaderProvider.setupReaders(); //initialize DTD providers
     }
 
     @Override

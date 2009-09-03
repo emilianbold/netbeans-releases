@@ -72,11 +72,6 @@ import org.openide.util.Exceptions;
  */
 public class HtmlCompletionProvider implements CompletionProvider {
 
-    /** Creates a new instance of JavaDocCompletionProvider */
-    public HtmlCompletionProvider() {
-        NbReaderProvider.setupReaders();
-    }
-
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
         int dotPos = component.getCaret().getDot();

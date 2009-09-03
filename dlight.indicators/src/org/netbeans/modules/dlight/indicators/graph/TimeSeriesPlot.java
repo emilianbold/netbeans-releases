@@ -72,6 +72,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series) {
         upperLimit = scale;
         graph = new GraphPainter(series);
+        graph.addData(new float[series.size()]); // 0th tick - all zeros
         timeMarksProvider = AxisMarksProviderFactory.newTimeMarksProvider();
         valueMarksProvider = AxisMarksProviderFactory.newValueMarksProvider(formatter);
         ViewportModel model = new DefaultViewportModel();
