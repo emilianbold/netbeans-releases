@@ -46,11 +46,14 @@ import java.net.URL;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.ToolTipManager;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author Jan Becicka
@@ -76,6 +79,8 @@ public class LoginPanel extends javax.swing.JPanel {
     /** Creates new form LoginPanel */
     public LoginPanel() {
         initComponents();
+        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.ONLINE_STATUS_PREF, "true")));
         lblKenaiLogoCenter.setBorder(null);
         lblKenaiLogoLeft.setBorder(null);
         lblKenaiLogoRight.setBorder(null);
@@ -148,6 +153,7 @@ public class LoginPanel extends javax.swing.JPanel {
         lblKenaiLogoRight = new javax.swing.JLabel();
         error = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
+        chkIsOnline = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
@@ -185,6 +191,8 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setForeground(java.awt.Color.red);
         error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(chkIsOnline, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkIsOnline.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -212,7 +220,8 @@ public class LoginPanel extends javax.swing.JPanel {
                             .add(chkRememberMe)
                             .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                             .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                            .add(forgotPassword))))
+                            .add(forgotPassword)
+                            .add(chkIsOnline))))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
@@ -240,7 +249,9 @@ public class LoginPanel extends javax.swing.JPanel {
                     .add(password, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chkRememberMe)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chkIsOnline)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(forgotPassword)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -278,6 +289,7 @@ public class LoginPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JCheckBox chkIsOnline;
     javax.swing.JCheckBox chkRememberMe;
     javax.swing.JLabel error;
     javax.swing.JButton forgotPassword;
@@ -307,5 +319,9 @@ public class LoginPanel extends javax.swing.JPanel {
 
     public void setPassword(char[] pwd) {
         password.setText(new String(pwd));
+    }
+
+    public boolean isOnline() {
+        return chkIsOnline.isSelected();
     }
 }

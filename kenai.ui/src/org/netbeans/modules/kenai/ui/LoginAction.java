@@ -48,8 +48,6 @@ import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
-
-
 /**
  * @author Jan Becicka
  */
@@ -65,18 +63,24 @@ public final class LoginAction extends AbstractAction {
     public static synchronized LoginAction getDefault() {
         if (instance==null) {
             instance=new LoginAction();
-            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent pce) {
-                    if (pce.getNewValue()==null) {
-                        instance.setLogout(false);
-                    } else {
-                       instance.setLogout(true);
-                    }
-                    final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                    preferences.put(UIUtils.ONLINE_STATUS_PREF, Boolean.toString(pce.getNewValue()!=null));
+            Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
 
+                public void propertyChange(PropertyChangeEvent pce) {
+                    if (Kenai.PROP_LOGIN.equals(pce.getPropertyName()))  {
+                        if (pce.getNewValue() == null) {
+                            instance.setLogout(false);
+                        } else {
+                            instance.setLogout(true);
+                        }
+                        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+                        preferences.put(UIUtils.LOGIN_STATUS_PREF, Boolean.toString(pce.getNewValue() != null));
+
+                    } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
+                        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+                        preferences.put(UIUtils.ONLINE_STATUS_PREF, Boolean.toString(pce.getNewValue() != null));
                     }
-                });
+                }
+            });
         }
         return instance;
     }
