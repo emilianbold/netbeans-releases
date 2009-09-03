@@ -37,20 +37,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.spi;
+package org.netbeans.modules.dlight.management.api;
 
-import java.util.Collection;
+import org.openide.windows.InputOutput;
+
 
 /**
  *
  * @author mt154047
  */
-public interface GizmoOptionsDataProvidersListProvider {
-
-    Collection<DataProvider> getDataProviders();
-
-    interface DataProvider{
-        String getDisplayedName();
-    }
-
+public interface DLightSessionIOProvider {
+    InputOutput getInputOutput();
 }

@@ -231,7 +231,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         if (component == null) {
             return;
         }
-        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+//        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
         component.addMouseListener(new MouseAdapter() {
 

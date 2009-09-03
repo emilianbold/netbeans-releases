@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.core.stack.storage.impl;
 
+import com.sun.org.apache.bcel.internal.generic.Select;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -312,8 +313,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
-            PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
-            ResultSet rs = select.executeQuery();
+            ResultSet rs = null;
+            if (metadata.getViewStatement() != null){
+                PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
+                rs = select.executeQuery();
+            }else{
+                rs = sqlStorage.select(metadata.getName(), metricsColumn);
+            }
             while (rs.next()) {
                 Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
                 for (FunctionMetric m : metrics) {

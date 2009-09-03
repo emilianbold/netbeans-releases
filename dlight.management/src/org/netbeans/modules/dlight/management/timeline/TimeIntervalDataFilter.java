@@ -36,52 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.gizmo.options.GizmoOptionsImpl;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.DLightTool;
+package org.netbeans.modules.dlight.management.timeline;
 
-public final class GizmoToolsController {
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.util.Range;
 
-    private static GizmoToolsController instance = new GizmoToolsController();
+/**
+ *
+ * @author mt154047
+ */
+public final class TimeIntervalDataFilter implements DataFilter{
+    private Range<Long> timeInterval;
 
-    private GizmoToolsController() {
+    TimeIntervalDataFilter(Range<Long> timeInterval) {
+        this.timeInterval = timeInterval;
     }
 
-    public static GizmoToolsController getDefault() {
-        return instance;
+    public Range<Long> getInterval(){
+        return timeInterval;
     }
-
-    public void enableTool(final Project project, final String id) {
-        enableTool(project, id, true);
-    }
-
-    public void disableTool(final Project project, final String id) {
-        enableTool(project, id, false);
-    }
-
-    public void enableTool(final Project project, final String id, final boolean enable) {
-        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-        GizmoOptionsImpl gizmoOptions = GizmoOptionsImpl.getOptions(conf);
-
-        DLightTool t = getTool(id);
-        if (t != null) {
-            if (enable) {
-                t.enable();
-            } else {
-                t.disable();
-            }
-            gizmoOptions.setValueByName(t.getName(), enable);
-        }
-    }
-
-    private DLightTool getTool(final String id) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
-        return gizmoConfiguration.getToolByID(id);
-    }
+    
 }

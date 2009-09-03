@@ -37,15 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.spi;
+package org.netbeans.modules.dlight.api.datafilter;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  *
- * @author mt154047
  */
-public interface GizmoOptionsIndicatorsListProvider {
-    List<String> getIndicatorNames();
-
+public interface DataFilterManager {
+    void cleanAllDataFilter();
+    void cleanAllDataFilter(Class clazz);
+    boolean removeDataFilter(DataFilter filter);
+    void addDataFilter(DataFilter filter);
+    void addDataFilterListener(DataFilterListener l);
+    Collection<? extends DataFilter> getDataFilter(Class<? extends DataFilter> clazz);
 }

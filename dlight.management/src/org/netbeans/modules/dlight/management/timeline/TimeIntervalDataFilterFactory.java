@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.dataprovider;
+package org.netbeans.modules.dlight.management.timeline;
 
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
-
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
+import org.netbeans.modules.dlight.util.Range;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
- * Along with DataProvider SPI impplementator should implement
- * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} which
- * will be used to create the data provider instance
  *
  */
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
+public final class TimeIntervalDataFilterFactory implements DataFilterFactory{
+    public static final String TIME_INTERVAL_FILTER = "datafilter.timeinterval";
 
-public interface DataProvider extends VisualizerDataProvider{
+    public DataFilter createFilter(String filterID, String filterSpec) {
+        if (!TIME_INTERVAL_FILTER.equals(filterID)){
+            return null;
+        }
+        int index = filterSpec.indexOf(Range.STRING_DELIMITER);
+        if ( index== -1){
+            return null;
+        }
+        //get before and after
+        Long startTime = Long.valueOf(filterSpec.substring(0, index - 1));
+        Long endtime = Long.valueOf(filterSpec.substring(index + Range.STRING_DELIMITER.length(), filterSpec.length()));
 
-  /**
-   * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
-   * be extracted from this storage. This method is invoked  automatically by infrastracture
-   * when  Visualizer need to be displayed.
-   * It will be invoked automatically when needed.</i></b>
-   * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.
-   */
-  void attachTo(DataStorage storage);
+        return create(new Range<Long>(startTime, endtime));
+    }
+
+    public static TimeIntervalDataFilter create(Range<Long> timeInterval ){
+        return new TimeIntervalDataFilter(timeInterval);
+    }
+
+    public Collection<String> getSupportedFilterIDs() {
+        return Arrays.asList(TIME_INTERVAL_FILTER);
+    }
 
 }
