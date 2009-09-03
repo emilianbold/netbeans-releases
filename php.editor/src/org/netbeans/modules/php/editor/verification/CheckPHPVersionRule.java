@@ -83,7 +83,7 @@ public class CheckPHPVersionRule extends PHPRule {
         FileObject fobj = NbEditorUtilities.getFileObject(context.doc);
 
         if (fobj != null){
-            Properties props = PhpLanguageOptions.getProperties(fobj);
+            Properties props = PhpLanguageOptions.getDefault().getProperties(fobj);
 
             if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_5) {
                 return true;
