@@ -420,7 +420,7 @@ public class RubyElementCtx {
                     Set<IndexedMethod> methods = index.getMethods(getName(), fqn, Kind.EXACT);
                     IndexedMethod method = !methods.isEmpty() 
                             ? methods.iterator().next()
-                            : index.getOverridingMethod(fqn, getName());
+                            : index.getSuperMethod(fqn, getName());
 
                     if (method != null) {
                         defClass = method.getIn();
