@@ -36,62 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.extras.api;
 
-import org.netbeans.modules.dlight.util.Range;
-import javax.swing.event.ChangeListener;
+package org.netbeans.modules.dlight.management.api;
+
+import org.openide.windows.InputOutput;
+
 
 /**
- * Model for components that have viewport or are otherwise
- * involved in viewport management.
  *
- * @author Alexey Vladykin
+ * @author mt154047
  */
-public interface ViewportModel {
-
-    /**
-     * Returns limits. Limits is the available data range,
-     * which can be viewed through this viewport.
-     *
-     * @return current limits
-     */
-    Range<Long> getLimits();
-
-    /**
-     * Sets limits.
-     *
-     * @param limits  new limits
-     */
-    void setLimits(Range<Long> limits);
-
-    /**
-     * Returns viewport. Viewport's start and
-     * end are in milliseconds since session start.
-     *
-     * @return current viewport
-     */
-    Range<Long> getViewport();
-
-    /**
-     * Sets viewport. Start and/or end can be <code>null</code>
-     * to keep current values.
-     *
-     * @param viewport  new viewport
-     */
-    void setViewport(Range<Long> viewport);
-
-    /**
-     * Adds change listener. <code>ChangeEvent</code>s are sent
-     * when limits or viewport are modified.
-     *
-     * @param listener  listener to add
-     */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes change listener.
-     *
-     * @param listener  listener to remove
-     */
-    void removeChangeListener(ChangeListener listener);
+public interface DLightSessionIOProvider {
+    InputOutput getInputOutput();
 }

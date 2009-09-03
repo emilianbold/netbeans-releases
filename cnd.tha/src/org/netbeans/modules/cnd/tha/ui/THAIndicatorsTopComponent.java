@@ -68,6 +68,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
@@ -105,6 +106,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     private THAIndicatorsTopComponentActionsProvider actionsProvider = null;
     private final PopupAction popupAction = new PopupAction("popupTHAIndicatorTopComponentAction");//NOI18N
     private THAConfiguration thaConfiguration = null;
+    private THAActionsProvider thaActionsProvider;
 
 
     static {
@@ -138,8 +140,9 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         installActions();
     }
 
-    void setTHAConfiguration(THAConfiguration thaConfiguration){
+    void setConfiguration(THAActionsProvider thaActionsProvider, THAConfiguration thaConfiguration){
         this.thaConfiguration = thaConfiguration;
+        this.thaActionsProvider = thaActionsProvider;
     }
 
     public ExplorerManager getExplorerManager() {
@@ -190,7 +193,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
     void setProject(Project project){
         this.project = project;
-        controlPanel = THAControlPanel.create(project, thaConfiguration);
+        controlPanel = THAControlPanel.create(thaActionsProvider, project, thaConfiguration);
         add(controlPanel, BorderLayout.NORTH);
         setSession(null);
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N

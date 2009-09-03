@@ -346,7 +346,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private static final class NativeExecutableTargetExecutionService
             implements DLightTargetExecutionService<NativeExecutableTarget> {
 
-        public void start(
+        public InputOutput start(
                 final NativeExecutableTarget target,
                 final ExecutionEnvVariablesProvider executionEnvProvider) {
             Runnable r = new Runnable() {
@@ -361,6 +361,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             } else {
                 r.run();
             }
+            return target.io;
         }
 
         public synchronized void terminate(NativeExecutableTarget target) {

@@ -182,6 +182,10 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
         }        
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
+        DLightTargetListener listener = pae.getContext().lookup(DLightTargetListener.class);
+        if (listener != null){
+            target.addTargetListener(listener);
+        }
 
 
         //WE are here only when Profile On RUn 

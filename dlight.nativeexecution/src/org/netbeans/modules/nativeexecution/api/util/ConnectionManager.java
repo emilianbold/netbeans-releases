@@ -292,9 +292,9 @@ public final class ConnectionManager {
                             Session session = jsch.getSession(user, host, sshPort);
                             session.setUserInfo(userInfo);
                             if (USE_JZLIB) {
-                                session.setConfig("compression.s2c", "zlib@openssh.com,zlib,none");
-                                session.setConfig("compression.c2s", "zlib@openssh.com,zlib,none");
-                                session.setConfig("compression_level", "9");
+                                session.setConfig("compression.s2c", "zlib@openssh.com,zlib,none");//NOI18N
+                                session.setConfig("compression.c2s", "zlib@openssh.com,zlib,none");//NOI18N
+                                session.setConfig("compression_level", "9");//NOI18N
                             }
                             session.connect();
                             return session;

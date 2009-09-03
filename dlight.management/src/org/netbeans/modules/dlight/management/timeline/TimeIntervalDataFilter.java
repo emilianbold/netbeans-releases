@@ -37,20 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.spi;
+package org.netbeans.modules.dlight.management.timeline;
 
-import java.util.Collection;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.util.Range;
 
 /**
  *
  * @author mt154047
  */
-public interface GizmoOptionsDataProvidersListProvider {
+public final class TimeIntervalDataFilter implements DataFilter{
+    private Range<Long> timeInterval;
 
-    Collection<DataProvider> getDataProviders();
-
-    interface DataProvider{
-        String getDisplayedName();
+    TimeIntervalDataFilter(Range<Long> timeInterval) {
+        this.timeInterval = timeInterval;
     }
 
+    public Range<Long> getInterval(){
+        return timeInterval;
+    }
+    
 }
