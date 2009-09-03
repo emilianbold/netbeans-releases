@@ -41,8 +41,6 @@ package org.netbeans.modules.bugtracking.ui.issue.cache;
 
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueStorage;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.*;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -56,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.openide.util.Exceptions;
