@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <target name="netbeans-extra" depends="projectized-common.netbeans-extra">
         <echo message="Hello From Extra"/>
         <mkdir dir="build"/>
-        <unzip src="external/dbxgui.suite.zip" dest="build/" overwrite="true"/>
+        <unzip src="external/ss-dbxgui-bundle-0.9.0.zip" dest="build/" overwrite="true"/>
         <copy todir="${cluster}" overwrite="true">
             <fileset dir="build/dbxgui.suite"/>
         </copy>
