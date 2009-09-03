@@ -42,29 +42,20 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -95,6 +86,8 @@ public class QMakeAction extends AbstractExecutorRunAction {
     }
 
     public static void performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+        //Save file
+        saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File proFile = FileUtil.toFile(fileObject);
@@ -123,12 +116,13 @@ public class QMakeAction extends AbstractExecutorRunAction {
             tab.getOut().reset();
         } catch (IOException ioe) {
         }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "QMake"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir.getPath())
         .addEnvironmentVariables(envMap)
         .unbufferOutput(false)
-        .addNativeProcessListener(new ProcessChangeListener(listener, tab, "QMake")); // NOI18N
+        .addNativeProcessListener(processChangeListener);
         npb.redirectError();
 
         ExecutionDescriptor descr = new ExecutionDescriptor()
@@ -138,6 +132,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         .inputOutput(tab)
         .outLineBased(true)
         .showProgress(true)
+        .postExecution(processChangeListener)
         .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
         final ExecutionService es = ExecutionService.newService(npb, descr, "qmake"); // NOI18N
         Future<Integer> result = es.run();

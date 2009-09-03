@@ -74,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -439,6 +440,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return buildDir;
     }
 
+    protected static void saveNode(Node node) {
+        //Save file
+        SaveCookie save = node.getLookup().lookup(SaveCookie.class);
+        if (save != null) {
+            try {
+                save.save();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
     protected static void traceExecutable(String executable, File buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder buf = new StringBuilder("Run " + executable); // NOI18N
@@ -463,11 +475,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static final class ProcessChangeListener implements ChangeListener {
+    protected static final class ProcessChangeListener implements ChangeListener, Runnable {
         private final ExecutionListener listener;
         private final InputOutput tab;
         private final String resourceKey;
         private long startTimeMillis;
+        private Runnable postRunnable;
 
         public ProcessChangeListener(ExecutionListener listener, InputOutput tab, String resourceKey) {
             this.listener = listener;
@@ -479,8 +492,8 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
             }
-            NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-            NativeProcess process = (NativeProcess) event.getSource();
+            final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+            final NativeProcess process = (NativeProcess) event.getSource();
             switch (event.state) {
                 case INITIAL:
                     break;
@@ -497,10 +510,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }
-                    String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                    tab.getOut().println();
-                    tab.getOut().println(message);
-                    tab.getOut().flush();
+                    postRunnable = new Runnable() {
+                        public void run() {
+                            String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                            tab.getOut().println();
+                            tab.getOut().println(message);
+                            tab.getOut().flush();
+                        }
+                    };
                     break;
                 }
                 case ERROR:
@@ -508,10 +525,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     if (listener != null) {
                         listener.executionFinished(-1);
                     }
-                    String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
-                    tab.getOut().println();
-                    tab.getOut().println(message);
-                    tab.getOut().flush();
+                    postRunnable = new Runnable() {
+                        public void run() {
+                            String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
+                            tab.getOut().println();
+                            tab.getOut().println(message);
+                            tab.getOut().flush();
+                        }
+                    };
                     break;
                 }
                 case FINISHED:
@@ -519,17 +540,27 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }
-                    String message;
-                    if (process.exitValue() != 0) {
-                        message = getString("Output."+resourceKey+"Failed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                    } else {
-                        message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                    }
-                    tab.getOut().println();
-                    tab.getOut().println(message);
-                    tab.getOut().flush();
+                    postRunnable = new Runnable() {
+                        public void run() {
+                            String message;
+                            if (process.exitValue() != 0) {
+                                message = getString("Output."+resourceKey+"Failed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                            } else {
+                                message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                            }
+                            tab.getOut().println();
+                            tab.getOut().println(message);
+                            tab.getOut().flush();
+                        }
+                    };
                     break;
                 }
+            }
+        }
+
+        public void run() {
+            if (postRunnable != null) {
+                postRunnable.run();
             }
         }
     }

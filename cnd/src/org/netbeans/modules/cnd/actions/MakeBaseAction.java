@@ -44,17 +44,12 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -62,15 +57,12 @@ import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -86,7 +78,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
     protected void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++){
-            performAction(activatedNodes[i], "");
+            performAction(activatedNodes[i], "");// NOI18N
         }
     }
 
@@ -132,13 +124,14 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             tab.getOut().reset();
         } catch (IOException ioe) {
         }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "Make"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
         .addEnvironmentVariables(envMap)
         .setWorkingDirectory(buildDir.getPath())
         .setArguments(args)
         .unbufferOutput(false)
-        .addNativeProcessListener(new ProcessChangeListener(listener, tab, "Make")); // NOI18N
+        .addNativeProcessListener(processChangeListener);
         npb.redirectError();
         
         LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(execEnv, fileObject.getParent()));
@@ -149,6 +142,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .showProgress(true)
         .inputOutput(tab)
         .outLineBased(true)
+        .postExecution(processChangeListener)
         .errConvertorFactory(factory)
         .outConvertorFactory(factory);
         final ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N

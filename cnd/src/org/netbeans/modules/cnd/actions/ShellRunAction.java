@@ -44,16 +44,10 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -61,16 +55,12 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.openide.LifecycleManager;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -78,7 +68,6 @@ import org.openide.windows.InputOutput;
  * Base class for Make Actions ...
  */
 public class ShellRunAction extends AbstractExecutorRunAction {
-    private static final boolean TRACE = false;
 
     public String getName() {
         return getString("BTN_Run"); // NOI18N
@@ -109,13 +98,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             return;
         }
         //Save file
-        SaveCookie save = node.getLookup().lookup(SaveCookie.class);
-        if (save != null) {
-            try {
-                save.save();
-            } catch (IOException ex) {
-            }
-        }
+        saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
@@ -166,12 +149,13 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             tab.getOut().reset();
         } catch (IOException ioe) {
         }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "Run"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
         .addEnvironmentVariables(envMap)
-        .addNativeProcessListener(new ProcessChangeListener(listener, tab, "Run")); // NOI18N
+        .addNativeProcessListener(processChangeListener);
         npb.redirectError();
 
         ExecutionDescriptor descr = new ExecutionDescriptor()
@@ -181,10 +165,10 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         .inputOutput(tab)
         .outLineBased(true)
         .showProgress(true)
+        .postExecution(processChangeListener)
         .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
         // Execute the shellfile
         final ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
         Future<Integer> result = es.run();
     }
-    
 }

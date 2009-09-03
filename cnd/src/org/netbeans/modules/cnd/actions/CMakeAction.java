@@ -42,27 +42,19 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -71,7 +63,6 @@ import org.openide.windows.InputOutput;
  * @author Alexander Simon
  */
 public class CMakeAction extends AbstractExecutorRunAction {
-    private static final boolean TRACE = false;
 
     @Override
     public String getName () {
@@ -94,6 +85,8 @@ public class CMakeAction extends AbstractExecutorRunAction {
     }
 
     public static void performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+        //Save file
+        saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         // Build directory
@@ -121,21 +114,24 @@ public class CMakeAction extends AbstractExecutorRunAction {
             tab.getOut().reset();
         } catch (IOException ioe) {
         }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "CMake"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
-        .addNativeProcessListener(new ProcessChangeListener(listener, tab, "CMake")); // NOI18N
+        .addNativeProcessListener(processChangeListener);
+        npb.redirectError();
+
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
         .inputVisible(true)
         .inputOutput(tab)
         .showProgress(true)
+        .postExecution(processChangeListener)
         .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
         // Execute the makefile
         final ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
         Future<Integer> result = es.run();
     }
-
 }
