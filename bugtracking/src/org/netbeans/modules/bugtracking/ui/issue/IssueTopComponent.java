@@ -131,7 +131,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             onRepoSelected();
         } else {
             if(defaultRepository == null) {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox);
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, false);
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
             }
