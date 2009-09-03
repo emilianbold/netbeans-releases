@@ -94,6 +94,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Parallel Adviser monitor.
@@ -149,6 +150,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
 
             if (highLoadFinder.isHighLoadInterval()) {
 
+                DLightSession session = DLightManager.getDefault().getActiveSession();
+                InputOutput io = session.getInputOutput();
+
                 SunStudioDataCollector collector = new SunStudioDataCollector();
 
                 for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
@@ -161,7 +165,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                     CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
                     for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
                         if (CodeModelUtils.canParallelize(loop)) {
-                            LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
+                            LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
+                            LoopParallelizationTipsProvider.addTip(tip);
+                            tip.setNotification(io.getErr());
                             //panel.notifyUser();
                             System.out.println("Parallel Adviser notification!!!"); // NOI18N
 
@@ -198,7 +204,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                     CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
                     for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
                         if (CodeModelUtils.canParallelize(loop)) {
-                            LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
+                            LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
+                            LoopParallelizationTipsProvider.addTip(tip);
+                            tip.setNotification(io.getErr());
                             //panel.notifyUser();
                             System.out.println("Parallel Adviser notification!!!"); // NOI18N
                             Runnable updateView = new Runnable() {
@@ -404,7 +412,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
 
         public boolean isUnnecessaryThreadsInterval() {
-            boolean result = (interval > 0) && (interval % INTERVAL_BOUND == 0);
+            boolean result = (interval > 0) ;//&& (interval % INTERVAL_BOUND == 0);
             return result;
         }
 
