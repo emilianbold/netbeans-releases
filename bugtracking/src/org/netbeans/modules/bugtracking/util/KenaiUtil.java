@@ -76,6 +76,16 @@ public class KenaiUtil {
     }
 
     /**
+     * Returns true if the given repository is a Kenai repository
+     *
+     * @param repo
+     * @return
+     */
+    public static boolean isKenai(Repository repo) {
+        return repo.getLookup().lookup(KenaiProject.class) != null;
+    }
+    
+    /**
      * Returns an instance of PasswordAuthentication holding the actuall
      * Kenai credentials.
      *

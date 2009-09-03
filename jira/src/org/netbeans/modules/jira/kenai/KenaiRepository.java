@@ -55,6 +55,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -70,13 +71,15 @@ public class KenaiRepository extends JiraRepository {
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
+    private final KenaiProject kenaiProject;
 
-    public KenaiRepository(String repoName, String url, String host, String project) {
+    public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
         super(repoName, repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
+        this.kenaiProject = kenaiProject;
     }
 
     @Override
@@ -112,6 +115,15 @@ public class KenaiRepository extends JiraRepository {
         return ret;
     }
 
+    @Override
+    protected Object[] getLookupObjects() {
+        Object[] obj = super.getLookupObjects();
+        Object[] obj2 = new Object[obj.length + 1];
+        System.arraycopy(obj, 0, obj2, 0, obj.length);
+        obj2[obj.length] = kenaiProject;
+        return obj2;
+    }
+    
     private Query[] getDefinedQueries() {
         List<Query> queries = new ArrayList<Query>();
 
