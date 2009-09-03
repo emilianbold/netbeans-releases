@@ -61,14 +61,13 @@ final class THAControlPanel extends JToolBar{
     private final Project project;
     private final THAConfiguration thaConfiguration;
 
-    static synchronized final THAControlPanel create(Project project, THAConfiguration thaConfiguration){
-        return new THAControlPanel(project, thaConfiguration);
+    static synchronized final THAControlPanel create(THAActionsProvider actionsSupport, Project project, THAConfiguration thaConfiguration){
+        return new THAControlPanel(actionsSupport, project, thaConfiguration);
     }
 
-    public THAControlPanel(Project project, final THAConfiguration thaConfiguration) {
+    public THAControlPanel(THAActionsProvider actionsSupport, Project project, final THAConfiguration thaConfiguration) {
         this.project = project;
         this.thaConfiguration = thaConfiguration;
-        final THAActionsProvider actionsSupport = THAActionsProvider.getSupportFor(project, thaConfiguration);
         final JLabel statusLabel = new JLabel();
         final String collectionKind = getMessage(thaConfiguration.collectDataRaces() ?
             "THAControlPanel.DeadlocksAndRaces" : "THAControlPanel.Deadlocks"); // NOI18N
@@ -81,6 +80,8 @@ final class THAControlPanel extends JToolBar{
                 } else if (THAActionsProvider.RESUME_COMMAND.equals(e.getActionCommand())){
                     statusLabel.setText(getMessage("THAControlPanel.Recording", collectionKind)); // NOI18N
                     statusLabel.setForeground(Color.GREEN);
+                } else if (THAActionsProvider.STOP_COMMAND.equals(e.getActionCommand())){
+                    statusLabel.setText("");//NOI18N
                 }
             }
         });

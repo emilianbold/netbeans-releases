@@ -27,9 +27,9 @@
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="jLabel4" max="32767" attributes="1"/>
                   <Component id="startCollectingComboBox" max="32767" attributes="1"/>
-                  <Component id="collectComboBox" alignment="0" pref="161" max="32767" attributes="1"/>
+                  <Component id="collectComboBox" alignment="0" min="-2" pref="184" max="-2" attributes="1"/>
               </Group>
-              <EmptySpace pref="93" max="32767" attributes="0"/>
+              <EmptySpace pref="70" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

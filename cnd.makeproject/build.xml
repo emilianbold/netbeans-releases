@@ -121,5 +121,10 @@ made subject to such option by the copyright holder.
                 <patternset refid="sample-src-pattern-set"/>
             </fileset>
         </zip>
+        <zip zipfile="${sample-dist}/fft.zip" >
+            <fileset dir="${sample-src}/fft">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
     </target>
 </project>

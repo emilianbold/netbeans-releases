@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.extras.api;
 
+import org.netbeans.modules.dlight.util.Range;
 import javax.swing.event.ChangeListener;
 
 /**

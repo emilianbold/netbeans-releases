@@ -46,10 +46,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -143,6 +141,7 @@ public class ReconfigureAction extends NodeAction {
         ReconfigureProject reconfigurator = new ReconfigureProject(p);
         String cFlags;
         String cxxFlags;
+        String linkerFlags = "";
         if (reconfigurator.isSunCompiler()){
             cFlags = "-g"; // NOI18N
             cxxFlags = "-g"; // NOI18N
@@ -150,7 +149,7 @@ public class ReconfigureAction extends NodeAction {
             cFlags = "-g3 -gdwarf-2"; // NOI18N
             cxxFlags = "-g3 -gdwarf-2"; // NOI18N
         }
-        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, reconfigurator.getRestOptions(), getLegend(reconfigurator));
+        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, linkerFlags, reconfigurator.getRestOptions(), getLegend(reconfigurator));
         JButton runButton = new JButton(NbBundle.getMessage(getClass(), "ReconfigureButton")); // NOI18N
         runButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ReconfigureButtonAD")); // NOI18N
         Object options[] =  new Object[]{runButton, DialogDescriptor.CANCEL_OPTION};
@@ -173,8 +172,8 @@ public class ReconfigureAction extends NodeAction {
     private String getLegend(ReconfigureProject reconfigurator){
         CompilerOptions options = reconfigurator.getLastCompilerOptions();
         if (options != null && options.CFlags != null && options.CppFlags != null &&
-            options.CCompiler != null && options.CppCompiler != null) {
-            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler+"/"+options.CppCompiler, options.CFlags, options.CppFlags); // NOI18N
+            options.CCompiler != null && options.CppCompiler != null && options.LinkerFlags != null) {
+            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler+"/"+options.CppCompiler, options.CFlags, options.CppFlags, options.LinkerFlags); // NOI18N
         }
         return ""; // NOI18N
     }

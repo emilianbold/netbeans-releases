@@ -37,15 +37,43 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.spi;
+package org.netbeans.modules.dlight.management.timeline;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
+import org.netbeans.modules.dlight.util.Range;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author mt154047
  */
-public interface GizmoOptionsIndicatorsListProvider {
-    List<String> getIndicatorNames();
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
+public final class TimeIntervalDataFilterFactory implements DataFilterFactory{
+    public static final String TIME_INTERVAL_FILTER = "datafilter.timeinterval";//NOI18N
+
+    public DataFilter createFilter(String filterID, String filterSpec) {
+        if (!TIME_INTERVAL_FILTER.equals(filterID)){
+            return null;
+        }
+        int index = filterSpec.indexOf(Range.STRING_DELIMITER);
+        if ( index== -1){
+            return null;
+        }
+        //get before and after
+        Long startTime = Long.valueOf(filterSpec.substring(0, index - 1));
+        Long endtime = Long.valueOf(filterSpec.substring(index + Range.STRING_DELIMITER.length(), filterSpec.length()));
+
+        return create(new Range<Long>(startTime, endtime));
+    }
+
+    public static TimeIntervalDataFilter create(Range<Long> timeInterval ){
+        return new TimeIntervalDataFilter(timeInterval);
+    }
+
+    public Collection<String> getSupportedFilterIDs() {
+        return Arrays.asList(TIME_INTERVAL_FILTER);
+    }
 
 }

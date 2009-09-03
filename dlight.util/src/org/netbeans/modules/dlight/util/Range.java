@@ -36,52 +36,39 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo;
+package org.netbeans.modules.dlight.util;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.gizmo.options.GizmoOptionsImpl;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.DLightTool;
+/**
+ * Range of numeric values.
+ *
+ * @param <T> number class
+ *
+ * @author Alexey Vladykin
+ */
+public final class Range<T extends Number & Comparable<? super T>> {
+    public static final String STRING_DELIMITER = "..";//NOI18N
+    private final T start;
+    private final T end;
 
-public final class GizmoToolsController {
-
-    private static GizmoToolsController instance = new GizmoToolsController();
-
-    private GizmoToolsController() {
-    }
-
-    public static GizmoToolsController getDefault() {
-        return instance;
-    }
-
-    public void enableTool(final Project project, final String id) {
-        enableTool(project, id, true);
-    }
-
-    public void disableTool(final Project project, final String id) {
-        enableTool(project, id, false);
-    }
-
-    public void enableTool(final Project project, final String id, final boolean enable) {
-        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-        GizmoOptionsImpl gizmoOptions = GizmoOptionsImpl.getOptions(conf);
-
-        DLightTool t = getTool(id);
-        if (t != null) {
-            if (enable) {
-                t.enable();
-            } else {
-                t.disable();
-            }
-            gizmoOptions.setValueByName(t.getName(), enable);
+    public Range(T start, T end) {
+        if (start != null && end != null && 0 < start.compareTo(end)) {
+            throw new IllegalArgumentException("Must be start <= end"); // NOI18N
         }
+        this.start = start;
+        this.end = end;
     }
 
-    private DLightTool getTool(final String id) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
-        return gizmoConfiguration.getToolByID(id);
+    public T getStart() {
+        return start;
     }
+
+    public T getEnd() {
+        return end;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(start) + STRING_DELIMITER + String.valueOf(end); // NOI18N
+    }
+
 }
