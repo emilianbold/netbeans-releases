@@ -43,6 +43,7 @@ import java.awt.FontMetrics;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.indicators.ValueFormatter;
+import org.netbeans.modules.dlight.util.DLightMath;
 
 /**
  * @author Alexey Vladykin
@@ -71,7 +72,7 @@ public final class AxisMarksProviderFactory {
                 if (value % 5 == 0) {
                     text = formatTime(value);
                 }
-                marks.add(new AxisMark(map(value, viewportStart, viewportEnd, 0, axisSize), text));
+                marks.add(new AxisMark(DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
             }
             return marks;
         }
@@ -107,7 +108,7 @@ public final class AxisMarksProviderFactory {
             }
             marks.add(new AxisMark(midPos,
                     maxVal - minVal < 2? null : formatValue(midVal),
-                    map(maxPos - minPos, 5 * axisFontMetrics.getAscent() / 2, 3 * axisFontMetrics.getAscent(), 0, 255)));
+                    DLightMath.map(maxPos - minPos, 5 * axisFontMetrics.getAscent() / 2, 3 * axisFontMetrics.getAscent(), 0, 255)));
             if (4 * axisFontMetrics.getAscent() <= maxPos - minPos) {
                 createMarks(midVal, maxVal, midPos, maxPos, axisFontMetrics, marks);
             }
@@ -122,25 +123,4 @@ public final class AxisMarksProviderFactory {
         }
     }
 
-    /**
-     * Maps <code>value</code> from range <code>a..b</code> into <code>x..y</code>.
-     * Values less than <code>a</code> are mapped to <code>x</code>.
-     * Values greater than <code>b</code> are mapped to <code>y</code>.
-     *
-     * @param value  value to be mapped
-     * @param a  source range lower bound
-     * @param b  source range upper bound
-     * @param x  destination range lower bound
-     * @param y  destination range upper bound
-     * @return value mapped from range <code>a..b</code> into <code>x..y</code>
-     */
-    private static int map(int value, int a, int b, int x, int y) {
-        if (value <= a) {
-            return x;
-        } else if (value < b) {
-            return x + (value - a) * (y - x) / (b - a);
-        } else {
-            return y;
-        }
-    }
 }
