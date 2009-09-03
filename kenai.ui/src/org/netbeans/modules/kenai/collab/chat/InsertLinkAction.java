@@ -37,48 +37,67 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-@ServiceProvider(service=MemberAccessor.class)
-public class MemberAccessorImpl extends MemberAccessor{
+public class InsertLinkAction extends AbstractAction {
 
-    @Override
-    public List<MemberHandle> getMembers(ProjectHandle project) {
-        ArrayList<MemberHandle> handles = new ArrayList();
-        for (String user : KenaiConnection.getDefault().getMembers(project.getId())) {
-            handles.add(new MemberHandleImpl(user));
+    private String outText;
+    private JTextPane out;
+
+    public InsertLinkAction(JTextComponent component, JTextPane out, boolean insertLineNumber) {
+        super();
+        assert component != null;
+        Document document = component.getDocument();
+        FileObject fo = NbEditorUtilities.getFileObject(document);
+        int line = NbDocument.findLineNumber((StyledDocument) document, component.getCaretPosition()) + 1;
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (insertLineNumber) {
+            putValue(NAME, fo.getNameExt() + ":" + line);
+        } else {
+            putValue(NAME, fo.getNameExt());
         }
-        return handles;
-    }
-
-    @Override
-    public Action getStartChatAction(final MemberHandle member) {
-        return new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                KenaiUserUI.forName(member.getName()).startChat();
+        if (cp != null) {
+            outText = cp.getResourceName(fo);
+        } else {
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p != null) {
+                outText = "{$" + ProjectUtils.getInformation(p).getName() + "}/" + FileUtil.getRelativePath(p.getProjectDirectory(), fo); //NOI18N
+                } else {
+                outText = fo.getPath();
             }
-        };
+        }
+        if (insertLineNumber)
+            outText += ":" + line; //NOI18N
+        this.out = out;
     }
 
+    public void actionPerformed(ActionEvent e) {
+        try {
+            out.getDocument().insertString(out.getCaretPosition(), "FILE:"+outText, null);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }
+

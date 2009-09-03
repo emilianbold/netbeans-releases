@@ -51,23 +51,38 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author tomas
+ * @author  Marian Petras
  */
 public class RepositoryComboRenderer extends DefaultListCellRenderer {
     
     private final String loadingReposText = NbBundle.getMessage(
                             RepositoryComboSupport.class,
                             "RepositoryComboSupport.loadingRepositories");   //NOI18N
+    private final String noRepositories = NbBundle.getMessage(
+                            RepositoryComboSupport.class,
+                            "RepositoryComboSupport.noRepositories");   //NOI18N
+    private final String selectRepoText = NbBundle.getMessage(
+                            RepositoryComboSupport.class,
+                            "RepositoryComboSupport.selectRepository"); //NOI18N
+
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         String text;
         Repository repo = null;
         if (value == null) {
             text = null;
-        } else if (value == RepositoryComboSupport.LOADING_REPOSITORIES) {
-            text = loadingReposText;
-        } else {
+        } else if (value instanceof Repository) {
             repo = (Repository) value;
             text = repo.getDisplayName();
+        } else {
+            if (value == RepositoryComboSupport.LOADING_REPOSITORIES) {
+                text = loadingReposText;
+            } else if (value == RepositoryComboSupport.NO_REPOSITORIES) {
+                text = noRepositories;
+            } else {
+                assert (value == RepositoryComboSupport.SELECT_REPOSITORY);
+                text = selectRepoText;
+            }
         }
         Component result = super.getListCellRendererComponent(list,
                                                               text,
@@ -76,14 +91,13 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
                                                               cellHasFocus);
         if (result instanceof JLabel) {
             JLabel label = (JLabel) result;
-            if ((value == RepositoryComboSupport.LOADING_REPOSITORIES)) {
+            if (repo != null) {
+                label.setIcon((Icon) repo.getIcon());
+            } else {
                 Font font = label.getFont();
                 label.setFont(new Font(font.getName(),
                                        font.getStyle() | Font.ITALIC,
                                        font.getSize()));
-            }
-            if (repo != null) {
-                label.setIcon((Icon) repo.getIcon());
             }
         }
         return result;

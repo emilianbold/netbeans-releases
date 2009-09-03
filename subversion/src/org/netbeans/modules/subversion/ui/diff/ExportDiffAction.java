@@ -114,7 +114,7 @@ public class ExportDiffAction extends ContextAction {
     
     public boolean enable(Node[] nodes) {
         Context ctx = getCachedContext(nodes);
-        if(!Subversion.getInstance().getStatusCache().containsFiles(ctx, enabledForStatus)) {
+        if(!Subversion.getInstance().getStatusCache().containsFiles(ctx, enabledForStatus, true)) {
             return false;
         }  
         TopComponent activated = TopComponent.getRegistry().getActivated();
@@ -138,7 +138,7 @@ public class ExportDiffAction extends ContextAction {
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            noop = Subversion.getInstance().getStatusCache().containsFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            noop = Subversion.getInstance().getStatusCache().containsFiles(context, FileInformation.STATUS_LOCAL_CHANGE, true);
         }
         if (noop) {
             NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(ExportDiffAction.class, "BK3001"), NotifyDescriptor.INFORMATION_MESSAGE);

@@ -79,13 +79,7 @@ public class StorageTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        System.setProperty("netbeans.user", System.getProperty("nbjunit.workdir", "/tmp/"));
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         emptyStorage();
     }
 
@@ -229,9 +223,12 @@ public class StorageTest extends NbTestCase {
     }
 
 
-    private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
         File f = getStorageRootFile();
         BugtrackingUtil.deleteRecursively(f);
+        Field field = IssueStorage.class.getDeclaredField("storage");
+        field.setAccessible(true);
+        field.set(IssueStorage.getInstance(), f);
     }
 
     private File getStorageRootFile() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {

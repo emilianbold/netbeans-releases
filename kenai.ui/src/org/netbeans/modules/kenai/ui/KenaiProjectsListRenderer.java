@@ -46,17 +46,21 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
@@ -83,32 +87,49 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
         if (searchInfo.kenaiFeature != null) {
             repoPathLabel.setText(searchInfo.kenaiFeature.getLocation());
             repoTypeLabel.setText("(" + searchInfo.kenaiFeature.getService() + ")"); // NOI18N
+        } else {
+            remove(repoPanel);
         }
         try {
             String description = searchInfo.kenaiProject.getDescription();
             description = description.replaceAll("\n+", " "); // NOI18N
             description = description.replaceAll("\t+", " "); // NOI18N
+            Icon icon = searchInfo.kenaiProject.getProjectIcon(false);
+            iconLabel.setIcon(icon);
             projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
-            tagsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text") + " " + // NOI18N
-                    searchInfo.kenaiProject.getTags());
+            String tags = searchInfo.kenaiProject.getTags();
+            if (tags.length() > 60) {
+                int k = tags.indexOf(' ', 60);
+                if (k != -1) {
+                    tags = tags.substring(0, k) + " ..."; //NOI18N
+                }
+            }
+            if (tags.length() > 0) {
+                String tl = NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text"); //NOI18N
+                tagsLabel.setText("<html><i>" + tl + " " + tags.replaceAll(" ", ", ") + "</i></html>");// NOI18N
+            } else {
+                tagsLabel.setText(""); //NOI18N
+            }
         } catch (KenaiException kenaiException) {
             Exceptions.printStackTrace(kenaiException);
         }
         if (isSelected) {
             setBackground(jlist.getSelectionBackground());
             projectDescLabel.setBackground(jlist.getSelectionBackground());
+            detailsButton.setForeground(jlist.getSelectionForeground());
+            repoPathLabel.setForeground(jlist.getSelectionForeground());
             repoPanel.setBackground(jlist.getSelectionBackground());
+            projectDescLabel.setForeground(jlist.getSelectionForeground());
+            tagsLabel.setForeground(jlist.getSelectionForeground());
         } else {
-            if (index % 2 == 0) {
-                setBackground(new Color(225, 225, 225));
-                projectDescLabel.setBackground(new Color(225, 225, 225));
-                repoPanel.setBackground(new Color(225, 225, 225));
-            } else {
-                setBackground(jlist.getBackground());
-                projectDescLabel.setBackground(jlist.getBackground());
-                repoPanel.setBackground(jlist.getBackground());
-            }
+            setBackground(new Color(255, 255, 255));
+            projectDescLabel.setBackground(new Color(255, 255, 255));
+            repoPanel.setBackground(new Color(255, 255, 255));
+            detailsButton.setForeground(ColorManager.getDefault().getLinkColor());
+            repoPathLabel.setForeground(ColorManager.getDefault().getLinkColor());
+            projectDescLabel.setForeground(new Color(128, 128, 128));
+            tagsLabel.setForeground(new Color(128, 128, 128));
         }
 
         this.url=searchInfo.kenaiProject.getWebLocation();
@@ -131,6 +152,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
     private void initComponents() {
         GridBagConstraints gridBagConstraints;
 
+        iconLabel = new JLabel();
         projectNameLabel = new JLabel();
         tagsLabel = new JLabel();
         projectDescLabel = new JTextArea();
@@ -138,9 +160,24 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
         repoPanel = new JPanel();
         repoPathLabel = new JLabel();
         repoTypeLabel = new JLabel();
+        jPanel1 = new JPanel();
 
         setLayout(new GridBagLayout());
 
+        iconLabel.setBackground(new Color(255, 255, 255));
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        iconLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+        iconLabel.setMaximumSize(new Dimension(150, 150));
+        iconLabel.setMinimumSize(new Dimension(100, 100));
+        iconLabel.setOpaque(true);
+        iconLabel.setPreferredSize(new Dimension(150, 150));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.anchor = GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new Insets(4, 4, 4, 0);
+        add(iconLabel, gridBagConstraints);
+
+        projectNameLabel.setForeground(new Color(0, 22, 103));
         projectNameLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -150,31 +187,35 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(4, 6, 0, 0);
         add(projectNameLabel, gridBagConstraints);
 
+        tagsLabel.setFont(new Font("Lucida Grande", 0, 10));
+        tagsLabel.setForeground(new Color(128, 128, 128));
         tagsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(8, 6, 6, 0);
+        gridBagConstraints.insets = new Insets(4, 6, 6, 0);
         add(tagsLabel, gridBagConstraints);
 
+        projectDescLabel.setFont(new Font("Lucida Grande", 0, 12));
+        projectDescLabel.setForeground(new Color(128, 128, 128));
         projectDescLabel.setLineWrap(true);
         projectDescLabel.setWrapStyleWord(true);
         projectDescLabel.setFocusable(false);
         projectDescLabel.setOpaque(false);
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(8, 6, 0, 14);
+        gridBagConstraints.insets = new Insets(4, 6, 0, 14);
         add(projectDescLabel, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = GridBagConstraints.SOUTHEAST;
         gridBagConstraints.insets = new Insets(0, 0, 6, 6);
@@ -203,19 +244,29 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
         repoPanel.add(repoTypeLabel, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(6, 6, 0, 0);
+        gridBagConstraints.insets = new Insets(4, 8, 0, 0);
         add(repoPanel, gridBagConstraints);
+
+        jPanel1.setPreferredSize(new Dimension(10, 1));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton detailsButton;
+    private JLabel iconLabel;
+    private JPanel jPanel1;
     private JTextArea projectDescLabel;
     private JLabel projectNameLabel;
     private JPanel repoPanel;

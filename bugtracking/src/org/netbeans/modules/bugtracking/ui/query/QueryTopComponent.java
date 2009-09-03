@@ -155,17 +155,22 @@ public final class QueryTopComponent extends TopComponent
                 }
             });
             if(defaultRepository == null) {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox);
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, true);
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
             }
             repositoryComboBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
-                        onRepoSelected();
+                        Object item = e.getItem();
+                        if (item instanceof Repository) {
+                            onRepoSelected();
+                        }
                     } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                        Repository repo = (Repository) e.getItem();
-                        repo.removePropertyChangeListener(QueryTopComponent.this);
+                        Object item = e.getItem();
+                        if (item instanceof Repository) {
+                            ((Repository) item).removePropertyChangeListener(QueryTopComponent.this);
+                        }
                     }
                 }
             });
