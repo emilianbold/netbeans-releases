@@ -52,6 +52,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.openide.util.Exceptions;
 
 public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
@@ -60,6 +61,9 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     public HtmlIndenter(Context context) {
         super(HTMLTokenId.language(), context);
+        // TODO need to be done correctly, now just hotfix. The reason for this
+        // is to be have php support in yaml files. 
+        NbReaderProvider.setupReaders();
         try {
             dtd = SyntaxParser.parse(getDocument().getText(0, getDocument().getLength())).getDTD();
         } catch (BadLocationException ex) {
