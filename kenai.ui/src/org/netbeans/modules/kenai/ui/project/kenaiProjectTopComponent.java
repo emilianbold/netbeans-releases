@@ -459,26 +459,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         loadingImageTask = SingleImageRequestProcessor.post(new Runnable() {
 
             public void run() {
-                try {
-                    URL imgUrl = new URL(proj.getImageUrl());
-                    if (Thread.interrupted()) {
-                        return;
+                proj.cacheProjectImage();
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        projectImage.setIcon(proj.getProjectIcon(false));
                     }
-                    final Icon ico = ImageUtilities.image2Icon(ImageIO.read(imgUrl));
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            projectImage.setIcon(ico);
-                        }
-                    });
-                } catch (IOException ex) { // image load failed - use default image instead
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            projectImage.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/default.jpg", false)); //NOI18N
-                        }
-                    });
-                }
+                });
             }
         });
 
