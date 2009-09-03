@@ -397,7 +397,7 @@ public class RubyElementCtx {
                 }
                 String lhs = call.getLhs();
 
-                if ((types.isKnown()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+                if (!types.isKnown() && lhs != null && node != null && call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(node, getPath());
 
                     if (method != null) {
