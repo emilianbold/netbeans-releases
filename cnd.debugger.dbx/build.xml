@@ -44,11 +44,7 @@ made subject to such option by the copyright holder.
     <description>Builds, tests, and runs the project org.netbeans.modules.cnd.debugger.dbx</description>
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="netbeans-extra" depends="projectized-common.netbeans-extra">
-        <echo message="Hello From Extra"/>
         <mkdir dir="build"/>
-        <unzip src="external/ss-dbxgui-bundle-0.9.0.zip" dest="build/" overwrite="true"/>
-        <copy todir="${cluster}" overwrite="true">
-            <fileset dir="build/dbxgui.suite"/>
-        </copy>
+        <unzip src="external/ss-dbxgui-bundle-0.9.0.zip" dest="${cluster}" overwrite="true"/>
     </target>
 </project>
