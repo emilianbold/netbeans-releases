@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
 public final class TimeIntervalDataFilterFactory implements DataFilterFactory{
-    public static final String TIME_INTERVAL_FILTER = "datafilter.timeinterval";
+    public static final String TIME_INTERVAL_FILTER = "datafilter.timeinterval";//NOI18N
 
     public DataFilter createFilter(String filterID, String filterSpec) {
         if (!TIME_INTERVAL_FILTER.equals(filterID)){
