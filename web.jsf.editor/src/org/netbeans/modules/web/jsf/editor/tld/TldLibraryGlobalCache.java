@@ -81,6 +81,19 @@ public class TldLibraryGlobalCache {
 
     private Collection<TldLibrary> findLibraries(FileObject classpathRoot) {
         List<TldLibrary> libs = new ArrayList<TldLibrary>();
+        for (FileObject file : findLibraryDescriptors(classpathRoot)) {
+            try {
+                //found library, create a new instance and cache it
+                libs.add(TldLibrary.create(file));
+            } catch (TldLibraryException ex) {
+                Logger.global.info(ex.getMessage());
+            }
+        }
+        return libs;
+    }
+
+    public static Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot) {
+        Collection<FileObject> files = new ArrayList<FileObject>();
         Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
         while (fos.hasMoreElements()) {
             FileObject fo = fos.nextElement();
@@ -89,17 +102,12 @@ public class TldLibraryGlobalCache {
                 for (FileObject file : fo.getChildren()) {
                     if (file.getNameExt().toLowerCase(Locale.US).endsWith(".tld")) { //NOI18N
                         //found library, create a new instance and cache it
-                        try {
-                            //found library, create a new instance and cache it
-                            libs.add(TldLibrary.create(file));
-                        } catch (TldLibraryException ex) {
-                            Logger.global.info(ex.getMessage());
-                        }
+                        files.add(file);
                     }
                 }
             }
         }
-        return libs;
+        return files;
     }
 
     public synchronized Collection<TldLibrary> getDefaultLibraries() {
