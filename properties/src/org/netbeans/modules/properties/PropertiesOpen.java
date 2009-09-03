@@ -100,7 +100,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.DialogDescriptor;
-import org.openide.filesystems.FileUtil;
+import org.openide.text.DataEditorSupport;
 
 
 /** 
@@ -1213,32 +1213,26 @@ public class PropertiesOpen extends CloneableOpenSupport
             
             final String displayName = displayName();
             final String htmlDisplayName = htmlDisplayName();
+            final String toolTip = messageToolTip();
             
             Enumeration<CloneableTopComponent> en = getReference().getComponents();
             while (en.hasMoreElements()) {
                 CloneableTopComponent tc = en.nextElement();
                 tc.setDisplayName(displayName);
                 tc.setHtmlDisplayName(htmlDisplayName);
+                tc.setToolTipText(toolTip);
             }
         }
         
-        /**
-         */
-        private String addModifiedInfo(String name) {
-            boolean modified = false;
+        private boolean isModified() {
             PropertiesFileEntry entry;
             for (int i=0;i<bundleStructure.getEntryCount();i++) {
                 entry = bundleStructure.getNthEntry(i);
-                if(entry != null && entry.getDataObject().getCookie(SaveCookie.class) != null) {
-                    modified = true;
-                    break;
+                if(entry != null && entry.getDataObject().getLookup().lookup(SaveCookie.class) != null) {
+                    return true;
                 }
             }
-            int version = modified ? 1 : 3;
-            return NbBundle.getMessage(PropertiesCloneableTopComponent.class,
-                                       "LBL_EditorName",                //NOI18N
-                                       new Integer(version),
-                                       name);
+            return false;
         }
 
         /**
@@ -1253,7 +1247,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                 bundleStructure.updateEntries();
             }
             String nameBase = bundleStructure.getNthEntry(0).getDataObject().getNodeDelegate().getDisplayName();
-            return addModifiedInfo(nameBase);
+            return DataEditorSupport.annotateName(nameBase, false, isModified(), false);
         }
         
         /**
@@ -1275,13 +1269,13 @@ public class PropertiesOpen extends CloneableOpenSupport
             } else {
                 displayName = node.getDisplayName();
             }
-            return addModifiedInfo(displayName);
+            return DataEditorSupport.annotateName(displayName, true, isModified(), false);
         }
         
         /** Gets string for tooltip. */
         private String messageToolTip() {
             FileObject fo = bundleStructure.getNthEntry(0).getFile();
-            return FileUtil.getFileDisplayName(fo);
+            return DataEditorSupport.toolTip(fo, isModified(), false);
         }
         
         /**

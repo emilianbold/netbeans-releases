@@ -133,6 +133,8 @@ public class SwitcherTable extends JTable {
         super.setFont(f);
     }
     
+    private static final boolean TABNAMES_HTML = Boolean.parseBoolean(System.getProperty("nb.tabnames.html", "true")); // #47290
+
     public Component prepareRenderer(
             TableCellRenderer renderer,
             int row,
@@ -160,15 +162,14 @@ public class SwitcherTable extends JTable {
             icon = nullIcon;
         }
         boolean active = item.isActive();
-        boolean pretty = Boolean.getBoolean("nb.tabnames.html");
-        ren.setText((selected || active) && !pretty ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
+        ren.setText((selected || active) && !TABNAMES_HTML ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
         ren.setIcon(icon);
         ren.setBorder(rendererBorder);
         ren.setIconTextGap(26 - icon.getIconWidth());
         
         if (active) {
-            if (pretty) {
-                ren.setText(ren.getText() + " ←");
+            if (TABNAMES_HTML) {
+                ren.setText(ren.getText() + " ←"); // NOI18N
             } else if (Utilities.isWindows()) {
                 ren.setFont(getFont().deriveFont(Font.BOLD, getFont().getSize()));
             } else {
@@ -183,6 +184,7 @@ public class SwitcherTable extends JTable {
     }
     
     private String stripHtml( String htmlText ) {
+        // XXX could be useful with TABNAMES_HTML on Win XP L&F (dark selection background)
         if( null == htmlText )
             return null;
         String res = htmlText.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
