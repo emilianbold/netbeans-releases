@@ -45,8 +45,11 @@
 
 package org.netbeans.modules.cnd.tha.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -62,6 +65,20 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
         startCollectingComboBox.setSelectedIndex(0);
         collectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Deadlocks", "Dataraces and Deadlocks" })); // NOI18N
         collectComboBox.setSelectedIndex(0);
+        startCollectingComboBox.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                NbPreferences.forModule(THAConfigurationPanel.this.getClass()).putInt("StartMode", startCollectingComboBox.getSelectedIndex());//NOI18N
+            }
+        });
+        startCollectingComboBox.setSelectedIndex(NbPreferences.forModule(getClass()).getInt("StartMode", 0)); // NOI18N
+        collectComboBox.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                NbPreferences.forModule(THAConfigurationPanel.this.getClass()).putInt("CollectedData", collectComboBox.getSelectedIndex());//NOI18N
+            }
+        });
+        collectComboBox.setSelectedIndex(NbPreferences.forModule(getClass()).getInt("CollectedData", 0)); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -102,8 +119,8 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(startCollectingComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(collectComboBox, 0, 161, Short.MAX_VALUE))
-                .addContainerGap(93, Short.MAX_VALUE))
+                    .add(collectComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 184, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(70, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
