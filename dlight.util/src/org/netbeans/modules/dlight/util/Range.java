@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.extras.api;
+package org.netbeans.modules.dlight.util;
 
 /**
  * Range of numeric values.
