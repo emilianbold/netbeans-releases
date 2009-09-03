@@ -40,13 +40,18 @@
  */
 package org.netbeans.modules.javacard.project;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
@@ -55,9 +60,11 @@ import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import static org.junit.Assert.*;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Cancellable;
 
 /**
@@ -75,6 +82,8 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
     File jar2;
     File jar3;
     File jar4;
+    File jar3src;
+    FileObject jar1srcRoot;
     private static int ct;
 
     @Before
@@ -118,6 +127,25 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
         //JAR which the lib project depends on, which should appear in the closure of the CAP project's classpath
         jar4 = createJar("org/netbeans/modules/javacard/project/StillSomethingElse.class", "jar4.jar", "StillSomethingElse.class", null);
 
+        jar3src = createZip ("org/netbeans/modules/javacard/project/SomethingElse.java", SOMETHING_ELSE, "jar3.zip", "SomethingElse.java");
+        File jar1src = new File(getWorkDir(), "jar1-sources");
+        if (!jar1src.exists()) {
+            assertTrue (jar1src.mkdirs());
+        }
+        jar1srcRoot = FileUtil.toFileObject (jar1src);
+        assertNotNull (jar1srcRoot);
+        FileObject srcFile = jar1srcRoot.getFileObject("org/netbeans/modules/javacard/project/Nothing.java");
+        if (srcFile==null) {
+            srcFile = FileUtil.createData(jar1srcRoot, "org/netbeans/modules/javacard/project/Nothing.java");
+            OutputStream out = srcFile.getOutputStream();
+            InputStream in = new ByteArrayInputStream (NOTHING.getBytes());
+            try {
+                FileUtil.copy (in, out);
+            } finally {
+                out.close();
+            }
+        }
+
         ResolvedDependencies deps = project.syncGetResolvedDependencies();
         Dependency libDep = new Dependency("lib1", DependencyKind.CLASSIC_LIB, DeploymentStrategy.DEPLOY_TO_CARD);
         Map<ArtifactKind, String> m = new HashMap<ArtifactKind, String>();
@@ -126,11 +154,14 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
 
         m = new HashMap<ArtifactKind, String>();
         m.put(ArtifactKind.ORIGIN, jar1.getAbsolutePath());
+        m.put(ArtifactKind.SOURCES_PATH, jar1src.getAbsolutePath());
+        
         Dependency jarDep = new Dependency("jar1", DependencyKind.RAW_JAR, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
         deps.add(jarDep, m);
 
         m = new HashMap<ArtifactKind, String>();
         m.put(ArtifactKind.ORIGIN, jar3.getAbsolutePath());
+        m.put(ArtifactKind.SOURCES_PATH, jar3src.getAbsolutePath());
         jarDep = new Dependency("jar3", DependencyKind.RAW_JAR, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
         deps.add(jarDep, m);
 
@@ -147,6 +178,9 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
         deps.save();
     }
 
+    private static String NOTHING = "package org.netbeans.modules.javacard.project;\npublic class Nothing {\n    public String foo() {\n        return \"foo\";\n    }\n}\n";
+    private static String SOMETHING_ELSE = "package org.netbeans.modules.javacard.project;\npublic class SomethingElse {\n    public String foo() {\n        return \"foo\";\n    }\n}\n";
+    
     @Test
     public void testDependencies() throws Exception {
         System.out.println("testDependencies");
@@ -200,4 +234,48 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
         assertEquals (jar4.getAbsolutePath(), lib.getClasspathClosureAsString());
     }
 
+    public void testClassPathProvider() throws Exception {
+        System.out.println("testClassPathProvider");
+        ClassPathProvider prov = project.getLookup().lookup(ClassPathProvider.class);
+        ClassPath compileCp = prov.findClassPath(project.getProjectDirectory().getFileObject("src"), ClassPath.COMPILE);
+        assertNotNull (compileCp);
+        FileObject fo = compileCp.findResource("org/netbeans/modules/javacard/project/Nothing.class");
+        assertNotNull (fo);
+    }
+
+    public void testSourceForBinaryQueryOverDirectory() throws Exception {
+        System.out.println("testSourceForBinaryQueryOverDirectory");
+        URL u = FileUtil.getArchiveRoot(jar1.toURI().toURL());
+        FileObject archive = URLMapper.findFileObject(u);
+        assertNotNull (archive);
+        FileObject classFile = archive.getFileObject ("org/netbeans/modules/javacard/project/Nothing.class");
+        assertNotNull (classFile);
+        URL cfUrl = classFile.getURL();
+        assertNotNull (cfUrl);
+
+        SourceForBinaryQueryImplementation q = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
+        Result r = q.findSourceRoots(u);
+        assertNotNull (r);
+        FileObject[] roots = r.getRoots();
+        assertEquals (1, roots.length);
+        assertEquals (jar1srcRoot, roots[0]);
+    }
+
+    public void testSourceForBinaryQueryOverArchive() throws Exception {
+        System.out.println("testSourceForBinaryQueryOverArchive");
+        URL u = FileUtil.getArchiveRoot(jar3.toURI().toURL());
+        FileObject archive = URLMapper.findFileObject(u);
+        assertNotNull (archive);
+        FileObject classFile = archive.getFileObject ("org/netbeans/modules/javacard/project/SomethingElse.class");
+        assertNotNull (classFile);
+        URL cfUrl = classFile.getURL();
+        assertNotNull (cfUrl);
+
+        SourceForBinaryQueryImplementation q = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
+        Result r = q.findSourceRoots(u);
+        assertNotNull (r);
+        FileObject[] roots = r.getRoots();
+        assertEquals (1, roots.length);
+        assertEquals (FileUtil.toFileObject(FileUtil.normalizeFile(jar3src)), roots[0]);
+    }
 }
