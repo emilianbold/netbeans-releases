@@ -49,5 +49,5 @@ public interface FunctionScope extends Scope, VariableScope {
     List<? extends String> getParameterNames();
     List<? extends Parameter> getParameters();
     Collection<? extends TypeScope> getReturnTypes();
-
+    Collection<? extends TypeScope> getReturnTypes(boolean resolve);
 }

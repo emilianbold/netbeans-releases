@@ -15,6 +15,6 @@ METHOD     findAll(String, Closure)                   List
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
-METHOD     findIndexValues(int, Closure)              List
+METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int

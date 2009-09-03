@@ -54,6 +54,8 @@
                       <Component id="browseFolderButton" min="-2" max="-2" attributes="1"/>
                   </Group>
                   <Component id="ajaxifyCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="overrideExistingCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="customizeTemplatesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -95,7 +97,10 @@
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="ajaxifyCheckbox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="32" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="overrideExistingCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="54" max="32767" attributes="0"/>
+              <Component id="customizeTemplatesLabel" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -132,7 +137,7 @@
     <Component class="javax.swing.JButton" name="browseFolderButton">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MNE_Browse2" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MNE_Browse" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_Browse" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -313,6 +318,22 @@
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="overrideExistingCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Override existing files"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="overrideExistingCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="customizeTemplatesLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;u&gt;Customize Template&lt;/u&gt;"/>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="customizeTemplatesLabelMouseClicked"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

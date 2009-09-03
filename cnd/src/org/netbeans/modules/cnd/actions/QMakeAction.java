@@ -40,24 +40,30 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Writer;
+import java.util.Map;
+import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Alexander Simon
  */
 public class QMakeAction extends AbstractExecutorRunAction {
-    private static final boolean TRACE = false;
 
     @Override
     public String getName () {
@@ -79,7 +85,9 @@ public class QMakeAction extends AbstractExecutorRunAction {
         performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project) {
+    public static void performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+        //Save file
+        saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File proFile = FileUtil.toFile(fileObject);
@@ -91,51 +99,42 @@ public class QMakeAction extends AbstractExecutorRunAction {
         String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
         String[] args = getArguments(node, Tool.QMakeTool); // NOI18N
         // Tab Name
-        String tabName = getString("QMAKE_LABEL", node.getName());
+        String tabName = getString("QMAKE_LABEL", node.getName()); // NOI18N
 
-        String[] additionalEnvironment = getAdditionalEnvirounment(node);
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        String[] env = prepareEnv(execEnv);
-        if (additionalEnvironment != null && additionalEnvironment.length>0){
-            String[] tmp = new String[env.length + additionalEnvironment.length];
-            for(int i=0; i < env.length; i++){
-                tmp[i] = env[i];
-            }
-            for(int i=0; i < additionalEnvironment.length; i++){
-                tmp[env.length + i] = additionalEnvironment[i];
-            }
-            env = tmp;
-        }
+        Map<String, String> envMap = getEnv(execEnv, node, null);
         StringBuilder argsFlat = new StringBuilder(arguments);
         for (int i = 0; i < args.length; i++) {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
         }
-        if (TRACE) {
-            System.err.println("Run "+executable);
-            System.err.println("\tin folder   "+buildDir.getPath());
-            System.err.println("\targuments   "+argsFlat);
-            System.err.println("\tenvironment ");
-            for(String v : env) {
-                System.err.println("\t\t"+v);
-            }
+        traceExecutable(executable, buildDir, argsFlat, envMap);
+        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+        _tab.closeInputOutput(); // Close it...
+        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+        try {
+            tab.getOut().reset();
+        } catch (IOException ioe) {
         }
-        // Execute the makefile
-        NativeExecutor nativeExecutor = new NativeExecutor(
-                execEnv,
-                buildDir.getPath(),
-                executable,
-                argsFlat.toString(),
-                env,
-                tabName,
-                "qmake", // NOI18N
-                false,
-                true,
-                false);
-        if (outputListener != null) {
-            nativeExecutor.setOutputListener(outputListener);
-        }
-        new ShellExecuter(nativeExecutor, listener).execute();
-    }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "QMake"); // NOI18N
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
+        .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
+        .setWorkingDirectory(buildDir.getPath())
+        .addEnvironmentVariables(envMap)
+        .unbufferOutput(false)
+        .addNativeProcessListener(processChangeListener);
+        npb.redirectError();
 
+        ExecutionDescriptor descr = new ExecutionDescriptor()
+        .controllable(true)
+        .frontWindow(true)
+        .inputVisible(true)
+        .inputOutput(tab)
+        .outLineBased(true)
+        .showProgress(true)
+        .postExecution(processChangeListener)
+        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
+        final ExecutionService es = ExecutionService.newService(npb, descr, "qmake"); // NOI18N
+        Future<Integer> result = es.run();
+    }
 }

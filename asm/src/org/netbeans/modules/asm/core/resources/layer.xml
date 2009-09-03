@@ -42,11 +42,11 @@
                     </folder>
                 </folder>
 
-                <folder name="SideBar">
+                <!--<folder name="SideBar">
                     <file name="org-netbeans-modules-asm-core-assistance-LiveRangeSidebarFactory.instance">
                         <attr name="position" intvalue="3830"/>
                     </file>
-		</folder>
+		</folder>-->
 
 
                 <file name="EditorKit.instance">

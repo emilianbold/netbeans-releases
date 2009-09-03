@@ -70,7 +70,7 @@ public class ResolveConflictsAction extends ContextAction {
     @Override
     protected boolean enable(Node[] nodes) {
         Context ctx = getCachedContext(nodes);
-        return Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
+        return Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT, true);
     }
 
     protected void performContextAction(Node[] nodes) {

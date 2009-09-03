@@ -141,8 +141,7 @@ public class ModelUtils {
         if (scp != null) {
             String vartype = VariousUtils.extractTypeFroVariableBase(varBase);
             if (vartype != null) {
-                FileScope fileScope = ModelUtils.getFileScope(scp);
-                retval = VariousUtils.getType(fileScope, scp, vartype, varBase.getStartOffset(), true);
+                retval = VariousUtils.getType(scp, vartype, varBase.getStartOffset(), true);
             }
         }
         return retval;
@@ -156,7 +155,7 @@ public class ModelUtils {
         if (scp != null) {
                 String semiType = VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, scp);
                 if (semiType != null) {
-                    return VariousUtils.getType(ModelUtils.getFileScope(scp), scp, semiType, offset, true);
+                    return VariousUtils.getType( scp, semiType, offset, true);
                 }
 
         }

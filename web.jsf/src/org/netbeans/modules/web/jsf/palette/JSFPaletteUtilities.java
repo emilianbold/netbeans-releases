@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.jsf.palette;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -59,7 +58,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
-import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -68,7 +66,6 @@ import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.text.IndentEngine;
 import org.openide.util.Exceptions;
 
 /**
@@ -203,6 +200,15 @@ public final class JSFPaletteUtilities {
     }
     
     private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
+
+    public static void expandJSFTemplate(FileObject template, Map<String, Object> values, FileObject target) throws IOException {
+        Writer w = new OutputStreamWriter(target.getOutputStream());
+        try {
+            expandJSFTemplate(template, values, FileEncodingQuery.getEncoding(template), w);
+        } finally {
+            w.close();
+        }
+    }
 
     public static void expandJSFTemplate(FileObject template, Map<String, Object> values, Charset targetEncoding, Writer w) throws IOException {
         Charset sourceEnc = FileEncodingQuery.getEncoding(template);

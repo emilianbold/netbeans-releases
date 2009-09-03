@@ -52,13 +52,21 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpFunction;
+import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -85,10 +93,7 @@ public class EditorSupportImpl implements EditorSupport {
                             FileScope fileScope = model.getFileScope();
                             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
                             for (ClassScope classScope : allClasses) {
-                                retval.add(new PhpClass(
-                                        classScope.getName(),
-                                        classScope.getNamespaceName().append(classScope.getName()).toFullyQualified().toString(),
-                                        classScope.getOffset()));
+                                retval.add((PhpClass) getPhpElement(classScope));
                             }
                         }
                     }
@@ -117,7 +122,59 @@ public class EditorSupportImpl implements EditorSupport {
         return retval;
     }
 
-    public PhpElement getElement() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public PhpElement getElement(FileObject fo, final int offset) {
+        Source source = Source.create(fo);
+        final List<PhpElement> retval = new ArrayList<PhpElement>(1);
+        if (source != null) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result pr = resultIterator.getParserResult();
+                        if (pr instanceof PHPParseResult) {
+                            Model model = ModelFactory.getModel((PHPParseResult) pr);
+                            retval.add(getPhpElement(model.getVariableScope(offset)));
+                        }
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return retval.isEmpty() ? null : retval.get(0);
+    }
+
+    private PhpElement getPhpElement(Scope scope) {
+        PhpElement phpElement = null;
+        if (scope instanceof MethodScope) {
+            PhpClass phpClass = (PhpClass) getPhpElement((TypeScope) scope.getInScope());
+            for (PhpClass.Method method : phpClass.getMethods()) {
+                if (method.getName().equals(scope.getName())) {
+                    phpElement = method;
+                    break;
+                }
+            }
+        } else if (scope instanceof ClassScope) {
+            ClassScope classScope = (ClassScope) scope;
+            PhpClass phpClass = new PhpClass(
+                    classScope.getName(),
+                    classScope.getNamespaceName().append(classScope.getName()).toFullyQualified().toString(),
+                    classScope.getOffset());
+            for (FieldElement fieldElement : classScope.getDeclaredFields()) {
+                phpClass.addField(fieldElement.getName(), fieldElement.getName(), fieldElement.getOffset());
+            }
+            for (MethodScope methodScope : classScope.getDeclaredMethods()) {
+                phpClass.addMethod(methodScope.getName(), methodScope.getName(), methodScope.getOffset());
+            }
+            phpElement = phpClass;
+        } else if (scope instanceof FunctionScope) {
+            phpElement = new PhpFunction(
+                    scope.getName(),
+                    scope.getNamespaceName().append(scope.getName()).toFullyQualified().toString(),
+                    scope.getOffset());
+        } else if (scope instanceof VariableScope) {
+            phpElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
+        }
+        return phpElement;
     }
 }

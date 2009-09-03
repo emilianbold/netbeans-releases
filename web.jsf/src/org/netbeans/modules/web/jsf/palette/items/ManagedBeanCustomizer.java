@@ -90,11 +90,11 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public class ManagedBeanCustomizer extends javax.swing.JPanel {
+public class ManagedBeanCustomizer extends javax.swing.JPanel implements CancellableDialog {
 
-    public static final String VIEW_TEMPLATE = "/Templates/JSF/JSF_From_Entity/view.ftl"; // NOI18N
-    public static final String EDIT_TEMPLATE = "/Templates/JSF/JSF_From_Entity/edit.ftl"; // NOI18N
-    public static final String TABLE_TEMPLATE = "/Templates/JSF/JSF_From_Entity/table.ftl"; // NOI18N
+    public static final String VIEW_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/view.ftl"; // NOI18N
+    public static final String EDIT_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/edit.ftl"; // NOI18N
+    public static final String TABLE_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/table.ftl"; // NOI18N
     
     private Project project;
     private boolean collection;
@@ -263,6 +263,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
             new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.tableTemplate"), TABLE_TEMPLATE).actionPerformed(null);
         } else {
             JPopupMenu menu = new JPopupMenu();
+            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.allTemplates"), VIEW_TEMPLATE, EDIT_TEMPLATE));
             menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.viewTemplate"), VIEW_TEMPLATE));
             menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.editTemplate"), EDIT_TEMPLATE));
             menu.show(customizeTemplatesLabel, evt.getX(), evt.getY());
@@ -275,27 +276,34 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
         updateValidity("");
     }
 
-    private void setCancelled() {
+    public void cancel() {
         cancelled = true;
+        dialog.setVisible(false);
     }
 
     public boolean isCancelled() {
         return cancelled;
     }
 
-    private static class OpenTemplateAction extends AbstractAction {
+    public static class OpenTemplateAction extends AbstractAction {
 
-        private String templateFileName;
-        private ManagedBeanCustomizer panel;
+        private String[] templateFileName;
+        private CancellableDialog panel;
 
-        public OpenTemplateAction(ManagedBeanCustomizer panel, String actionName, String templateFileName) {
+        public OpenTemplateAction(CancellableDialog panel, String actionName, String ... templateFileName) {
             this.templateFileName = templateFileName;
             this.panel = panel;
             this.putValue(Action.NAME, actionName);
         }
 
         public void actionPerformed(ActionEvent arg0) {
-            FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(templateFileName);
+            for (String template : templateFileName) {
+                openSingle(template);
+            }
+        }
+
+        private void openSingle(String template) {
+            FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(template);
             try {
                 final DataObject dob = DataObject.find(tableTemplate);
                 EventQueue.invokeLater(new Runnable() {
@@ -303,8 +311,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel {
                         dob.getLookup().lookup(EditCookie.class).edit();
                     }
                 });
-                panel.setCancelled();
-                panel.dialog.setVisible(false);
+                panel.cancel();
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }

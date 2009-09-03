@@ -659,7 +659,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
                             PhpClass phpClass = editorExtender.getClass(fileObject, variableName);
                             if (phpClass != null) {
-                                types = VariousUtils.getType(ModelUtils.getFileScope(variableScope), variableScope, phpClass.getFullyQualifiedName(), request.anchor, true);
+                                types = VariousUtils.getType(variableScope, phpClass.getFullyQualifiedName(), request.anchor, true);
                             }
                         }
                     }

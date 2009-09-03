@@ -66,8 +66,11 @@ public interface EditorSupport {
     Collection<FileObject> filesForClass(FileObject sourceRoot, PhpClass phpClass);
 
     /**
-     * Get {@link PhpElement PHP element} for the current caret position.
+     * Get {@link PhpElement PHP element} for the given file and offset.
+     * @param fo file to search in
+     * @param offset offset in the file
      * @return {@link PhpElement PHP element}, can be <code>null</code> if not in any
+     * @since 1.17
      */
-    PhpElement getElement();
+    PhpElement getElement(FileObject fo, int offset);
 }
