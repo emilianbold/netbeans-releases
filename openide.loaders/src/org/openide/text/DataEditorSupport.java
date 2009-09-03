@@ -191,7 +191,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         );
     }
 
-    static boolean TABNAMES_HTML = Boolean.getBoolean("nb.tabnames.html"); // #47290
+    static boolean TABNAMES_HTML = Boolean.parseBoolean(System.getProperty("nb.tabnames.html", "true")); // #47290
 
     /**
      * Marks up a tab name according to modified and read-only status.
