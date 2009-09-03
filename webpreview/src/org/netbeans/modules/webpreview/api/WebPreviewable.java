@@ -37,9 +37,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.browser.api;
+package org.netbeans.modules.webpreview.api;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.core.browser.api.WebBrowser;
+import org.netbeans.modules.webpreview.Accessor;
 
 /**
  * Editor windows must have an instance of this class in their Lookup to indicate
@@ -54,6 +56,10 @@ import java.beans.PropertyChangeListener;
 public final class WebPreviewable {
 
     final Impl impl;
+
+    static {
+        Accessor.setDefault(new AccessorImpl());
+    }
 
     /**
      * Name of boolean property which is fired when web preview for associated
@@ -73,7 +79,7 @@ public final class WebPreviewable {
     public static interface Impl {
 
         /**
-         *
+         * Return true if web preview is enabled, otherwise false
          * @return True if web preview is enabled.
          */
         boolean isPreviewEnabled();
@@ -108,6 +114,12 @@ public final class WebPreviewable {
          */
         void addPropertyChangeListener( PropertyChangeListener l );
 
+        /**
+         * Remove listener for watching changes in PROP_PREVIEW_ENABLED
+         * @param l
+         */
         void removePropertyChangeListener( PropertyChangeListener l );
+
     }
+    
 }
