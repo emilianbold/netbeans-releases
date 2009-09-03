@@ -36,22 +36,20 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.toolsui;
-
-import org.netbeans.modules.dlight.api.tool.DLightTool;
+package org.netbeans.modules.dlight.api.tool;
 
 /**
  *
  * @author thp
  */
-public class DLightToolWrapper {
+public class DLightToolUIWrapper {
 
     private DLightTool dLightTool;
     private boolean enabled;
     private boolean onByDefault;
     private boolean visible;
 
-    public DLightToolWrapper(DLightTool dLightTool, boolean enabled) {
+    public DLightToolUIWrapper(DLightTool dLightTool, boolean enabled) {
         this.dLightTool = dLightTool;
         this.enabled = enabled;
         this.onByDefault = true;

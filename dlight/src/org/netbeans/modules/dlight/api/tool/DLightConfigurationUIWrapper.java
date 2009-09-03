@@ -36,32 +36,29 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.toolsui;
+package org.netbeans.modules.dlight.api.tool;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.DLightTool;
 
 /**
  *
  * @author thp
  */
-public class DLightConfigurationWrapper {
+public class DLightConfigurationUIWrapper {
     private DLightConfiguration dLightConfiguration;
     private boolean custom;
     private String name;
-    private List<DLightToolWrapper> tools;
+    private List<DLightToolUIWrapper> tools;
 
-    public DLightConfigurationWrapper(DLightConfiguration dLightConfiguration, List<DLightTool> allDLightTools) {
+    public DLightConfigurationUIWrapper(DLightConfiguration dLightConfiguration, List<DLightTool> allDLightTools) {
         this.dLightConfiguration = dLightConfiguration;
         this.name = dLightConfiguration.getConfigurationName();
         this.custom = false;
         initWrapper(allDLightTools);
     }
 
-    public DLightConfigurationWrapper(String name, List<DLightTool> allDLightTools) {
+    public DLightConfigurationUIWrapper(String name, List<DLightTool> allDLightTools) {
         this.dLightConfiguration = DLightConfigurationManager.getInstance().getDefaultConfiguration();
         this.name = name;
         this.custom = true;
@@ -69,11 +66,11 @@ public class DLightConfigurationWrapper {
     }
 
     private void initWrapper(List<DLightTool> allDLightTools) {
-        tools = new ArrayList<DLightToolWrapper>();
+        tools = new ArrayList<DLightToolUIWrapper>();
         List<DLightTool> confDlightTools = dLightConfiguration.getToolsSet();
         int i = 0;
         for (DLightTool dlightTool : allDLightTools) {
-            tools.add(new DLightToolWrapper(dlightTool, inList(dlightTool, confDlightTools)));
+            tools.add(new DLightToolUIWrapper(dlightTool, inList(dlightTool, confDlightTools)));
         }
     }
     
@@ -136,14 +133,23 @@ public class DLightConfigurationWrapper {
     /**
      * @return the tools
      */
-    public List<DLightToolWrapper> getTools() {
+    public List<DLightToolUIWrapper> getTools() {
         return tools;
+    }
+
+    public DLightToolUIWrapper getToolUIWrapper(DLightTool dlightTool) {
+        for (DLightToolUIWrapper dt : getTools()) {
+            if (dt.getdLightTool().getID().equals(dlightTool.getID())) {
+                return dt;
+            }
+        }
+        return null;
     }
 
     /**
      * @param tools the tools to set
      */
-    public void setTools(List<DLightToolWrapper> tools) {
+    public void setTools(List<DLightToolUIWrapper> tools) {
         this.tools = tools;
     }
 }

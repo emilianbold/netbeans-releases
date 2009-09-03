@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,44 +31,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.debugger.gdb.disassembly;
+package org.netbeans.modules.dlight.extras.api;
 
 /**
+ * Entity that deals with viewport.
  *
- * @author eu155513
+ * @author Alexey Vladykin
  */
-public class RegisterValue {
-    private final String name;
-    private final String value;
-    private final boolean modified;
+public interface ViewportAware {
 
-    public RegisterValue(String name, String value, boolean modified) {
-        this.name = name;
-        this.value = value;
-        this.modified = modified;
-    }
+    ViewportModel getViewportModel();
 
-    public boolean isModified() {
-        return modified;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        String mod = modified ? " (modified)" : ""; // NOI18N
-        return name + "=" + value + mod; // NOI18N
-    }
+    void setViewportModel(ViewportModel viewportModel);
 }

@@ -36,10 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.indicator;
+package org.netbeans.modules.dlight.extras.api;
 
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.dlight.util.Range;
 
 /**
  * Model for components that have viewport or are otherwise

@@ -36,39 +36,54 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.ui;
+package org.netbeans.modules.dlight.extras.api.support;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.dlight.spi.indicator.ViewportAware;
-import org.netbeans.modules.dlight.util.Range;
-import org.netbeans.modules.dlight.spi.indicator.ViewportModel;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.Range;
+import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.openide.util.ChangeSupport;
 
 /**
  * @author Alexey Vladykin
  */
-public final class ViewportManager extends JScrollBar
+public final class ViewportManager extends JPanel
         implements AdjustmentListener, ChangeListener {
 
     private static final long EXTENT = 20000L; // 20 seconds
 
-    private final SharedViewportModel viewportModel;
+    private final ViewBar viewbar;
+    private final JScrollBar scrollbar;
+    private final ViewportModel viewportModel;
     private boolean isAdjusting;
 
     public ViewportManager() {
-        super(JScrollBar.HORIZONTAL);
-        viewportModel = new SharedViewportModel();
+        super(new BorderLayout());
+
+        viewportModel = new DefaultViewportModel();
         viewportModel.setLimits(new Range<Long>(0L, 0L));
         viewportModel.setViewport(new Range<Long>(0L, EXTENT));
         viewportModel.addChangeListener(this);
+
+        viewbar = new ViewBar(15);
+
+        scrollbar = new JScrollBar(JScrollBar.HORIZONTAL);
         adjust();
-        addAdjustmentListener(this);
+        scrollbar.addAdjustmentListener(this);
+
+        add(viewbar, BorderLayout.CENTER);
+        add(scrollbar, BorderLayout.SOUTH);
     }
 
     public void addManagedComponent(ViewportAware component) {
@@ -78,12 +93,17 @@ public final class ViewportManager extends JScrollBar
     private void adjust() {
         Range<Long> limits = viewportModel.getLimits();
         Range<Long> viewport = viewportModel.getViewport();
+        long start = Math.min(limits.getStart(), viewport.getStart());
+        long end = Math.max(limits.getEnd(), viewport.getEnd());
         isAdjusting = true;
-        setMinimum((int)TimeUnit.MILLISECONDS.toSeconds(Math.min(limits.getStart(), viewport.getStart())));
-        setMaximum((int)TimeUnit.MILLISECONDS.toSeconds(Math.max(limits.getEnd(), viewport.getEnd())));
-        setValue((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart()));
-        setVisibleAmount((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd() - viewport.getStart()));
+        scrollbar.setMinimum((int)TimeUnit.MILLISECONDS.toSeconds(start));
+        scrollbar.setMaximum((int)TimeUnit.MILLISECONDS.toSeconds(end));
+        scrollbar.setValue((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart()));
+        scrollbar.setVisibleAmount((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd() - viewport.getStart()));
         isAdjusting = false;
+
+        viewbar.setStart((float) viewport.getStart() / (end - start));
+        viewbar.setEnd((float) viewport.getEnd() / (end - start));
     }
 
     public void stateChanged(ChangeEvent e) {
@@ -103,80 +123,39 @@ public final class ViewportManager extends JScrollBar
         }
     }
 
-    private static class SharedViewportModel implements ViewportModel {
+    private static class ViewBar extends JComponent {
+        private final int margin;
+        private float start;
+        private float end;
 
-        private final ChangeSupport changeSupport;
-        private long lowerLimit;
-        private long upperLimit;
-        private long viewportStart;
-        private long viewportEnd;
-
-        public SharedViewportModel() {
-            this.changeSupport = new ChangeSupport(this);
+        public ViewBar(int margin) {
+            this.margin = margin;
+            this.start = 0f;
+            this.end = 1f;
+            setMinimumSize(new Dimension(50, 30));
+            setPreferredSize(new Dimension(50, 30));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         }
 
-        public synchronized Range<Long> getLimits() {
-            return new Range<Long>(lowerLimit, upperLimit);
+        public void setStart(float start) {
+            this.start = start;
+            repaint();
         }
 
-        public synchronized void setLimits(Range<Long> limits) {
-            boolean changed = false;
-            boolean autoscroll = upperLimit <= viewportEnd;
-            if (limits.getStart() != null) {
-                long newLowerLimit = limits.getStart();
-                if (newLowerLimit < lowerLimit) {
-                    lowerLimit = newLowerLimit;
-                    changed = true;
-                }
-            }
-            if (limits.getEnd() != null) {
-                long newUpperLimit = limits.getEnd();
-                if (upperLimit < newUpperLimit) {
-                    upperLimit = newUpperLimit;
-                    changed = true;
-                }
-            }
-            if (changed) {
-                if (autoscroll) {
-                    long tmpViewportStart = Math.max(0, upperLimit - EXTENT);
-                    setViewport(new Range<Long>(tmpViewportStart, tmpViewportStart + EXTENT));
-                } else {
-                    changeSupport.fireChange();
-                }
-            }
+        public void setEnd(float end) {
+            this.end = end;
+            repaint();
         }
 
-        public synchronized Range<Long> getViewport() {
-            return new Range<Long>(viewportStart, viewportEnd);
-        }
-
-        public synchronized void setViewport(Range<Long> viewport) {
-            boolean changed = false;
-            if (viewport.getStart() != null) {
-                long newViewportStart = viewport.getStart();
-                if (viewportStart != newViewportStart) {
-                    viewportStart = newViewportStart;
-                    changed = true;
-                }
-            }
-            if (viewport.getEnd() != null) {
-                long newViewportEnd = viewport.getEnd();
-                if (viewportEnd != newViewportEnd) {
-                    viewportEnd = newViewportEnd;
-                    changed = true;
-                }
-            }
-            if (changed) {
-                changeSupport.fireChange();
-            }
-        }
-
-        public void addChangeListener(ChangeListener listener) {
-            changeSupport.addChangeListener(listener);
-        }
-
-        public void removeChangeListener(ChangeListener listener) {
-            changeSupport.removeChangeListener(listener);
+        @Override
+        protected void paintComponent(Graphics g) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
+            g.setColor(Color.BLACK);
+            int startx = margin + (int)((getWidth() - 2 * margin - 1) * start);
+            g.drawLine(startx, 0, startx, getHeight());
+            int endx = margin + (int)((getWidth() - 2 * margin - 1) * end);
+            g.drawLine(endx, 0, endx, getHeight());
         }
     }
 }
