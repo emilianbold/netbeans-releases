@@ -42,6 +42,7 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -50,7 +51,7 @@ import org.openide.util.Lookup;
  * 
  * Represents a bug tracking repository (server)
  * 
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public abstract class Repository implements Lookup.Provider {
 
@@ -154,6 +155,13 @@ public abstract class Repository implements Lookup.Provider {
      * @return
      */
     public abstract Query[] getQueries();
+
+    /**
+     * Returns all known repository users.
+     *
+     * @return all known repository users.
+     */
+    public abstract Collection<RepositoryUser> getUsers();
 
     /**
      * Runs a query against the bugtracking repository to get all issues

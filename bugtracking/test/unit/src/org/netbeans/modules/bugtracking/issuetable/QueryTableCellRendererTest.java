@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -21,6 +22,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
@@ -435,6 +437,11 @@ public class QueryTableCellRendererTest {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
             });
+        }
+
+        @Override
+        public Collection<RepositoryUser> getUsers() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     };
 }

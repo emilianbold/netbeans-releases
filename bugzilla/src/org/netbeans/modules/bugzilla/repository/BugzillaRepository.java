@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -67,6 +69,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
@@ -84,7 +87,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class BugzillaRepository extends Repository {
 
@@ -460,6 +463,11 @@ public class BugzillaRepository extends Repository {
      */
     public boolean isShortUsernamesEnabled() {
         return taskRepository != null && "true".equals(taskRepository.getProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
+    }
+
+    @Override
+    public Collection<RepositoryUser> getUsers() {
+        return Collections.emptyList();
     }
 
     private class Cache extends IssueCache<TaskData> {
