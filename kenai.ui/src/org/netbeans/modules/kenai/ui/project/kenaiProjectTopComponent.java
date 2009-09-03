@@ -390,14 +390,10 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
      * Obtain the kenaiProjectTopComponent instance.
      */
     public static synchronized kenaiProjectTopComponent getInstance(KenaiProject forProject) {
-        boolean hard = false;
         if (inst == null){
             inst = new kenaiProjectTopComponent(forProject);
-            hard = true;
-        } else if (!inst.instProj.equals(forProject)) {
-            hard = true;
         }
-        inst.reinitialize(forProject, hard);
+        inst.reinitialize(forProject, true); //always hard reinit...
         inst.setName(forProject.getDisplayName());
         return inst;
     }

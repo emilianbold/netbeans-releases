@@ -141,7 +141,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
 
     private String getRecentIssuesTable(KenaiProject instProj) {
         IssueHandle[] recentIssues = KenaiIssueAccessor.getDefault().getRecentIssues(instProj);
-        if (recentIssues == null) {
+        if (recentIssues == null || recentIssues.length == 0) {
             return ""; //NOI18N
         }
         String issueTable = String.format("<br><h4>%s</h4><table>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_RECENTLY_OPENED")); //NOI18N
