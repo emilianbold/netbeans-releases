@@ -63,7 +63,7 @@ public final class ImportUtils {
                 } else if (rest.startsWith("'")){ // NOI18N
                     rest = "\""+rest+"\""; // NOI18N
                 } else {
-                    if (rest.indexOf(' ')>0) { // NOI18N
+                    if (rest.indexOf(' ')>0 || rest.indexOf('=')>0) { // NOI18N
                         rest = "\""+rest+"\""; // NOI18N
                     }
                 }
