@@ -76,6 +76,11 @@ final class FunctionCallNode extends AbstractNode implements GoToSourceAction.Go
     }
 
     @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{action};
+    }
+
+    @Override
     public Action getPreferredAction() {
         return action;
     }
