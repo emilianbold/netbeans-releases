@@ -59,16 +59,23 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
+import org.netbeans.modules.kenai.ui.KenaiPopupMenu;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -80,9 +87,12 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                         SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
                         NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
 
+    private KenaiProject instPr = null;
+
     /** Creates new form IssuesInformationPanel */
-    public IssuesInformationPanel() {
+    public IssuesInformationPanel(KenaiProject proj) {
         initComponents();
+        instPr = proj;
         issuesInfoPane.addHyperlinkListener(new HyperlinkListener() {
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -95,6 +105,16 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if (e.getDescription().startsWith("issue:")) { //NOI18N
+                        final String issueNumber = e.getDescription().substring(6);
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            public void run() {
+                                KenaiIssueAccessor.getDefault().open(instPr, issueNumber);
+                            }
+                        });
+                        return;
+                    }
                     URLDisplayer.getDefault().showURL(e.getURL());
                     return;
                 }
@@ -119,6 +139,20 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
         }
     }
 
+    private String getRecentIssuesTable(KenaiProject instProj) {
+        IssueHandle[] recentIssues = KenaiIssueAccessor.getDefault().getRecentIssues(instProj);
+        if (recentIssues == null) {
+            return ""; //NOI18N
+        }
+        String issueTable = String.format("<br><h4>%s</h4><table>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_RECENTLY_OPENED")); //NOI18N
+        for (int i = 0; i < recentIssues.length; i++) {
+            IssueHandle issue = recentIssues[i];
+            issueTable += String.format("<tr><td><a href=\"issue:%s\">%s</a></td><td>%s</td></tr>", issue.getID(), issue.getID(), issue.getDisplayName()); //NOI18N
+        }
+        issueTable += "</table>"; //NOI18N
+        return issueTable;
+    }
+
     private String buildIssueInformation(KenaiProject instProj) throws KenaiException {
         String _appStr = String.format("<html><div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_PROJECT_ISSUES")); //NOI18N
         KenaiFeature[] issueTrackers = instProj.getFeatures(Type.ISSUES);
@@ -139,20 +173,21 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
             _appStr += String.format("<table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td><img src=\"%s\"></td><td width=\"10px\"></td><td><h3>%s</h3></td></tr></table><br>", //NOI18N
                     IssuesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/" + type), //NOI18N
                     itrac.getDisplayName());
-            _appStr += String.format("%s:<br><p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", //NOI18N
-                    NbBundle.getMessage(IssuesInformationPanel.class, "MSG_ISSUE_TRACKER_ONLINE"), //NOI18N
-                    kenaiProjectTopComponent.linkImageHTML,
-                    itrac.getWebLocation(),
-                    itrac.getWebLocation());
             if (Thread.interrupted()) {
                 return WAIT_STRING;
             }
-            _appStr += String.format("<br><br><h4>%s</h4>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_DID_YOU_FIND_ISSUE")); //NOI18N
+            _appStr += String.format("<h4>%s</h4>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_DID_YOU_FIND_ISSUE")); //NOI18N
             _appStr += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td>"; //NOI18N
             _appStr += String.format("<input id=\"find\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_FIND_ISSUE")); // NOI18N
             _appStr += "</td></tr><tr><td>"; //NOI18N
             _appStr += String.format("<input id=\"enter\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_NEW_REPORT")); //NOI18N
             _appStr += "</td></tr></table>";//NOI18N
+            _appStr += String.format("<br>%s:<br><p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", //NOI18N
+                    NbBundle.getMessage(IssuesInformationPanel.class, "MSG_ISSUE_TRACKER_ONLINE"), //NOI18N
+                    kenaiProjectTopComponent.linkImageHTML,
+                    itrac.getWebLocation(),
+                    itrac.getWebLocation());
+            _appStr += getRecentIssuesTable(instProj);
         } else {
             //There are no issue trackers
             _appStr += String.format("<i>%s</i>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_NO_ISSUE_TRACKERS")); //NOI18N
@@ -173,6 +208,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
         issuesInfoPane = new javax.swing.JEditorPane();
 
         setBackground(new java.awt.Color(255, 255, 255));
+        setPreferredSize(new java.awt.Dimension(0, 800));
         setLayout(new java.awt.BorderLayout());
 
         issuesInfoPane.setContentType(org.openide.util.NbBundle.getMessage(IssuesInformationPanel.class, "IssuesInformationPanel.issuesInfoPane.contentType")); // NOI18N
@@ -212,14 +248,34 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                     issuesInfoPane.setCaretPosition(0);
                     registerHTMLButton(doc, "enter", new ActionListener() { //NOI18N
 
-                        public void actionPerformed(ActionEvent e) {
-                            QueryAccessor.getDefault().getCreateIssueAction(new ProjectHandleImpl(instProj)).actionPerformed(e);
+                        public void actionPerformed(final ActionEvent e) {
+                            final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
+                            DashboardImpl.getInstance().addProject(pHandle, false);
+                            RequestProcessor.getDefault().post(new Runnable() {
+
+                                public void run() {
+                                    ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
+                                    h.start();
+                                    QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
+                                    h.finish();
+                                }
+                            });
                         }
                     });
                     registerHTMLButton(doc, "find", new ActionListener() { //NOI18N
 
-                        public void actionPerformed(ActionEvent e) {
-                            QueryAccessor.getDefault().getFindIssueAction(new ProjectHandleImpl(instProj)).actionPerformed(e);
+                        public void actionPerformed(final ActionEvent e) {
+                            final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
+                            DashboardImpl.getInstance().addProject(pHandle, false);
+                            RequestProcessor.getDefault().post(new Runnable() {
+
+                                public void run() {
+                                    ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
+                                    h.start();
+                                    QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
+                                    h.finish();
+                                }
+                            });
                         }
                     });
                 }

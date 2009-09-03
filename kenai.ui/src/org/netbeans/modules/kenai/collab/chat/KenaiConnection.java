@@ -296,14 +296,17 @@ public class KenaiConnection implements PropertyChangeListener {
         public void processPacket(Packet packet) {
             synchronized (KenaiConnection.this) {
                 final Message msg = (Message) packet;
-                final String name = StringUtils.parseName(msg.getFrom());
+                String n = StringUtils.parseName(msg.getFrom());
+                if (n.contains("@")) {
+                    n = StringUtils.parseName(n);
+                }
+                final String name = n;
                 final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", "jabber:client");
                 if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) {
-                    final String name2 = msg.getFrom().substring(0, msg.getFrom().indexOf('@'));
                     post(new Runnable() {
                         public void run() {
                             try {
-                                Kenai.getDefault().getProject(name2).firePropertyChange(KenaiProject.PROP_PROJECT_NOTIFICATION, null, ne);
+                                Kenai.getDefault().getProject(name).firePropertyChange(KenaiProject.PROP_PROJECT_NOTIFICATION, null, ne);
                             } catch (KenaiException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -414,9 +417,8 @@ public class KenaiConnection implements PropertyChangeListener {
                         privateListeners.clear();
                         privateMessageQueue.clear();
                         privateChats.clear();
-                        //TODO: just to init DEFAULT
-                        KenaiUserUI fake;
-                        SPIAccessor.DEFAULT.clear();
+                        if (SPIAccessor.DEFAULT!=null)
+                            SPIAccessor.DEFAULT.clear();
                     }
                     PresenceIndicator.getDefault().setStatus(Kenai.Status.OFFLINE);
                     ChatNotifications.getDefault().clearAll();
