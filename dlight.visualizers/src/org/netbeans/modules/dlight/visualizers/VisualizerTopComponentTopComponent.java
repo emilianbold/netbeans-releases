@@ -46,8 +46,12 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.management.api.DLightManager;
+import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizers.support.TimeIntervalPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -55,15 +59,17 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-public final class VisualizerTopComponentTopComponent extends TopComponent implements VisualizerContainer {
+public final class VisualizerTopComponentTopComponent extends TopComponent implements VisualizerContainer, DLightSessionListener {
 
     private static VisualizerTopComponentTopComponent instance;
     private static final String PREFERRED_ID = "VisualizerTopComponentTopComponent";//NOI18N
     //private List<JComponent> visualizerComponents = new ArrayList<JComponent>();
     //private CloseListener closeListener = new CloseListener();
     private JPanel performanceMonitorViewsArea = new JPanel();
+    private TimeIntervalPanel toolbarArea = new TimeIntervalPanel(null);
     private JComponent viewComponent;
     private String currentToolName;
+    private DLightSession session;
 //    private JTabbedPane tabbedPane = null;
     //private HashMap<String, Visualizer> visualizerComponents = new HashMap<String, Visualizer>();
     
@@ -143,7 +149,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        DLightManager.getDefault().removeDLightSessionListener(this);
     }
 
     /** replaces this in object stream */
@@ -184,6 +190,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
+        toolbarArea.update(DLightManager.getDefault().getActiveSession());
         this.setName( toolName);
         this.setToolTipText(toolName);
         validate();
@@ -233,11 +240,25 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         }
         this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
+        toolbarArea.update(DLightManager.getDefault().getActiveSession());
         this.setName( toolName);
         this.setToolTipText(toolName);
         validate();
         repaint();
 
+    }
+
+    public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
+        this.session = newSession;
+        toolbarArea.update(session);
+    }
+
+    public void sessionAdded(DLightSession newSession) {
+    //    throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sessionRemoved(DLightSession removedSession) {
+      //  throw new UnsupportedOperationException("Not supported yet.");
     }
 
     static final class ResolvableHelper implements Serializable {
@@ -255,7 +276,9 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 //        tabbedPane.addPropertyChangeListener(closeListener);
         performanceMonitorViewsArea.setLayout(new BorderLayout());
         //     performanceMonitorViewsArea.add(tabbedPane, BorderLayout.CENTER);
+        this.add(toolbarArea, BorderLayout.NORTH);
         this.add(performanceMonitorViewsArea, BorderLayout.CENTER);
+
     }
 
     public void closePerformanceMonitor(Visualizer view) {

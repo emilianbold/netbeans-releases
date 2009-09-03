@@ -62,10 +62,12 @@ import org.netbeans.modules.dlight.management.api.impl.SessionDataFiltersSupport
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
+import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
@@ -85,7 +87,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference {
+public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference, DataFilterManager {
     private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
@@ -352,9 +354,34 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         DLightExecutorService.submit(sessionRunnable, "DLight session"); // NOI18N
     }
 
-    void addDataFilterListener(DataFilterListener listener) {
+    public void addDataFilterListener(DataFilterListener listener) {
         dataFiltersSupport.addDataFilterListener(listener);
     }
+
+    public void addDataFilter(DataFilter filter) {
+        //if the filter is TimeIntervalFilter: remove first
+        if (filter instanceof TimeIntervalDataFilter){
+            dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class);
+        }
+        dataFiltersSupport.addFilter(filter);
+    }
+
+    public void cleanAllDataFilter() {
+        dataFiltersSupport.cleanAll();
+    }
+
+    public void cleanAllDataFilter(Class clazz) {
+        dataFiltersSupport.cleanAll(clazz);
+    }
+
+    public Collection<? extends DataFilter> getDataFilter(Class<? extends DataFilter> clazz) {
+        return dataFiltersSupport.getDataFilter(clazz);
+    }
+
+    public boolean removeDataFilter(DataFilter filter) {
+        return dataFiltersSupport.removeFilter(filter);
+    }
+
 
     public final void addIndicatorNotificationListener(IndicatorNotificationsListener l){
         if (l == null){
