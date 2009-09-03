@@ -144,6 +144,10 @@ public final class ImportUtils {
                     if (inQuote == 0) {
                         value.setLength(0);
                         inValue = true;
+                    } else {
+                        if (inValue) {
+                            value.append(c);
+                        }
                     }
                     i++;
                     continue;

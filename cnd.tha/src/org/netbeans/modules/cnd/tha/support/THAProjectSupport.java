@@ -284,7 +284,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
     private boolean doInstrumentationMakefile() {
         THAInstrumentationSupport instrSupport = getInstrumentationSupport();
-        ReconfigureProvider.getDefault().reconfigure(project, "-g "+instrSupport.getCompilerOptions(), "-g "+instrSupport.getCompilerOptions());
+        ReconfigureProvider.getDefault().reconfigure(project, "-g "+instrSupport.getCompilerOptions(), "-g "+instrSupport.getCompilerOptions()); // NOI18N
         return false;
     }
 
@@ -340,7 +340,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
     }
 
     private boolean undoInstrumentationMakefile() {
-        ReconfigureProvider.getDefault().reconfigure(project, "-g", "-g");
+        ReconfigureProvider.getDefault().reconfigure(project, "-g", "-g"); // NOI18N
         return false;
     }
 

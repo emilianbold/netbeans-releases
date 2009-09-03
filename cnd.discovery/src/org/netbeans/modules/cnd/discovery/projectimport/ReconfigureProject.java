@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.discovery.projectimport;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -235,7 +237,17 @@ public class ReconfigureProject {
         if (TRACE) {
             logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath()); // NOI18N
         }
-        MakeAction.execute(make.getNodeDelegate(), "", null, null, makeProject, ImportUtils.parseEnvironment(arguments)); // NOI18N
+        Node node = make.getNodeDelegate();
+        ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+        List<String> vars = ImportUtils.parseEnvironment(arguments);
+        if (ses != null) {
+            try {
+                ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        MakeAction.execute(node, "", null, null, makeProject,vars); // NOI18N
     }
 
     private String getConfigureArguments(String configure, String otherOptions, String cCompilerFlags, String cppCompilerFlags, boolean isSunCompiler) {
@@ -481,6 +493,22 @@ public class ReconfigureProject {
                 }
             }
         } else if (make != null && make != null) {
+            ExecutionSupport ses = make.getNodeDelegate().getCookie(ExecutionSupport.class);
+            if (ses != null) {
+                String[] args = ses.getEnvironmentVariables();
+                if (args != null && args.length > 0) {
+                    List<String> list = new ArrayList<String>();
+                    for (int i = 0; i < args.length; i++) {
+                        list.add(args[i]);
+                    }
+                    list = ImportUtils.quoteList(list);
+                    StringBuilder b = new StringBuilder();
+                    for (String s : list) {
+                        b.append(s).append(' '); // NOI18N
+                    }
+                    return b.toString();
+                }
+            }
         }
         return null;
     }
