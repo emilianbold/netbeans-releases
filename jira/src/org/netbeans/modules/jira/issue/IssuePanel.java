@@ -117,7 +117,7 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -530,7 +530,7 @@ public class IssuePanel extends javax.swing.JPanel {
             fixPrefSize(createdField);
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
-                JLabel label = KenaiUser.forName(reporter).createUserWidget();
+                JLabel label = KenaiUserUI.forName(reporter).createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
                 reporterStatusLabel = label;
@@ -555,7 +555,7 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)), NbJiraIssue.IssueField.STATUS);
             String assignee = issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE);
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !assigneeField.getText().equals(assignee))) {
-                JLabel label = KenaiUser.forName(assignee).createUserWidget();
+                JLabel label = KenaiUserUI.forName(assignee).createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
                 assigneeStatusLabel = label;

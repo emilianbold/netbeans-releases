@@ -87,7 +87,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     return null;
                 }
 
-                KenaiRepository repo = createKenaiRepository(project.getDisplayName(), f.getLocation());
+                KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), f.getLocation());
                 if(repo == null) {
                     return null;
                 }
@@ -150,7 +150,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         }
     }
 
-    private KenaiRepository createKenaiRepository(String displayName, String location) {
+    private KenaiRepository createKenaiRepository(KenaiProject kenaiProject, String displayName, String location) {
         final URL loc;
         try {
             loc = new URL(location);
@@ -187,7 +187,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             }
         }
 
-        return new KenaiRepository(displayName, url, host, productParamUrl, product);
+        return new KenaiRepository(kenaiProject, displayName, url, host, productParamUrl, product);
     }
 }
 

@@ -393,7 +393,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         if( index < 0 || index >= model.size() )
             index = 0;
         Dimension minSize = null;
-        if( index >= model.size() )
+        if( index >= model.size() || null == model.getTab(index).getComponent() )
             minSize = new Dimension( 100, 10 );
         else
             minSize = model.getTab(index).getComponent().getMinimumSize();

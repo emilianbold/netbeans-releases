@@ -42,6 +42,8 @@ package org.netbeans.modules.bugtracking.util;
 import java.awt.EventQueue;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +53,9 @@ import javax.swing.JComponent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 import static java.util.logging.Level.FINEST;
 
 /**
@@ -68,20 +72,24 @@ import static java.util.logging.Level.FINEST;
  * @author  Marian Petras
  * @author  Tomas Stupka
  */
-public final class RepositoryComboSupport implements HierarchyListener, Runnable {
+public final class RepositoryComboSupport implements HierarchyListener, ItemListener, Runnable {
 
-    static final String LOADING_REPOSITORIES = "loading";       //NOI18N
+    static final String LOADING_REPOSITORIES = "loading";               //NOI18N
+    static final String NO_REPOSITORIES = "no repositories";            //NOI18N
+    static final String SELECT_REPOSITORY = "select";                   //NOI18N
+
     private static final Logger LOG = Logger.getLogger(RepositoryComboSupport.class.getName());
 
     private final JComponent component;
     private final JComboBox comboBox;
     private final File refFile;
+    private final Node[] selectedNodes;
     private boolean tooLate;
     private boolean repositoriesDisplayed = false;
     private boolean defaultRepoSelected = false;
     private volatile Repository[] repositories;
-    private volatile boolean defaultRepoAvailable;
-    private boolean preselectFirst = false;
+    private volatile boolean defaultRepoComputationPending;
+    private boolean preselectSingleRepo = false;
     private volatile Repository defaultRepo;
 
     /**
@@ -90,11 +98,24 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
      *
      * @param component component with the combobox
      * @param comboBox repository combobox
+     * @param selectRepoIfSingle  if {@code true} and there is only one repository
+     *                        known, then the (only) repository is preselected;
+     *                        otherwise no repository is selected in the combo
      * @return
      */
-    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox) {
-        RepositoryComboSupport repositoryComboSupport = new RepositoryComboSupport(component, comboBox, null, null);
-        repositoryComboSupport.preselectFirst = true;
+    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, boolean selectRepoIfSingle) {
+        assert EventQueue.isDispatchThread();
+
+        Node[] selectedNodes = TopComponent.getRegistry().getCurrentNodes();
+        if (selectedNodes == null) {
+            selectedNodes = new Node[0];
+        }
+
+        RepositoryComboSupport repositoryComboSupport
+                = new RepositoryComboSupport(component, comboBox, (Repository) null,
+                                                                  (File) null,
+                                                                  selectedNodes);
+        repositoryComboSupport.preselectSingleRepo = selectRepoIfSingle;
         component.addHierarchyListener(repositoryComboSupport);
         return repositoryComboSupport;
     }
@@ -110,7 +131,13 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Repository defaultRepo) {
-        RepositoryComboSupport repositoryComboSupport = new RepositoryComboSupport(component, comboBox, defaultRepo, null);
+        if (defaultRepo == null) {
+            throw new IllegalArgumentException("default repository must be specified"); //NOI18N
+        }
+
+        RepositoryComboSupport repositoryComboSupport = new RepositoryComboSupport(component, comboBox, defaultRepo,
+                                                                                                        (File) null,
+                                                                                                        (Node[]) null);
         component.addHierarchyListener(repositoryComboSupport);
         return repositoryComboSupport;
     }
@@ -126,22 +153,51 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, File referenceFile) {
-        RepositoryComboSupport repositoryComboSupport = new RepositoryComboSupport(component, comboBox, null, referenceFile);
+        if (referenceFile == null) {
+            throw new IllegalArgumentException("reference file must be specified"); //NOI18N
+        }
+
+        RepositoryComboSupport repositoryComboSupport = new RepositoryComboSupport(component, comboBox, (Repository) null,
+                                                                                                        referenceFile,
+                                                                                                        (Node[]) null);
         component.addHierarchyListener(repositoryComboSupport);
         return repositoryComboSupport;
     }
 
-    private RepositoryComboSupport(JComponent panel, JComboBox comboBox, Repository defaultRepo, File refFile) {
-        super();     
+    private RepositoryComboSupport(JComponent panel, JComboBox comboBox, Repository defaultRepo,
+                                                                         File refFile,
+                                                                         Node[] selectedNodes) {
+        assert EventQueue.isDispatchThread();
+
+        checkJustOneSpecified(defaultRepo, refFile, selectedNodes);
+
         this.component = panel;
-        this.refFile = refFile;
         this.comboBox = comboBox;
         this.defaultRepo = defaultRepo;
-        defaultRepoAvailable = defaultRepo != null;
+        this.refFile = refFile;
+        this.selectedNodes = selectedNodes;
+
+        defaultRepoComputationPending = (defaultRepo == null);
 
         comboBox.setModel(new DefaultComboBoxModel(new Object[] {LOADING_REPOSITORIES}));
         comboBox.setRenderer(new RepositoryComboRenderer());
 
+    }
+
+    private void checkJustOneSpecified(Object... items) {
+        boolean oneSpecifed = false;
+        for (Object item : items) {
+            if (item == null) {
+                continue;
+            }
+            if (oneSpecifed) {
+                throw new IllegalArgumentException("At most one item may be specified."); //NOI18N
+            }
+            oneSpecifed = true;
+        }
+        if (!oneSpecifed) {
+            throw new IllegalArgumentException("At least one item must be specified."); //NOI18N
+        }
     }
 
     public void hierarchyChanged(HierarchyEvent e) {
@@ -167,26 +223,94 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
          */
         tooLate = true;
         component.removeHierarchyListener(this);
+
+        comboBox.removeItemListener(this);
+    }
+
+    /**
+     * This is called when an issue tracker is selected/deselected in the
+     * Issue Tracker combo-box (at the top of the Issue Window).
+     * This method causes that if item "Select Issue Tracker" is selected
+     * in the combo-box and the user selects a real issue tracker (repository),
+     * the item "Select Issue Tracker" is removed.
+     * 
+     * @param  e  {@code ItemEvent} that holds information about the
+     *            (de)selection event
+     */
+    public void itemStateChanged(ItemEvent e) {
+        if ((e.getStateChange() == ItemEvent.DESELECTED)
+                && (e.getItem() == SELECT_REPOSITORY)
+                && (comboBox.getItemAt(0) == SELECT_REPOSITORY)) {
+            if (comboBox.isPopupVisible()) {
+
+                /*
+                 * We do not want to remove item "Select repository..."
+                 * while the popup is visible. Only remove it once the user
+                 * closes the popup with another item selected.
+                 */
+
+                /*
+                 * Do not respond to item selection changes while the popup
+                 * is visible:
+                 */
+                comboBox.removeItemListener(this);
+
+                comboBox.addPopupMenuListener(new PopupMenuListener() {
+                    public void popupMenuCanceled(PopupMenuEvent e) {
+                        comboBox.removePopupMenuListener(this);
+
+                        /* Restore the item selection listener: */
+                        comboBox.addItemListener(RepositoryComboSupport.this);
+                    }
+                    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                        comboBox.removePopupMenuListener(this);
+
+                        /* Restore the item selection listener: */
+                        comboBox.addItemListener(RepositoryComboSupport.this);
+                    }
+                    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                        comboBox.removePopupMenuListener(this);
+                        if (comboBox.getSelectedItem() != SELECT_REPOSITORY) {
+                            comboBox.removeItemAt(0);
+                        } else {
+                            /* Restore the item selection listener: */
+                            comboBox.addItemListener(RepositoryComboSupport.this);
+                        }
+                    }
+                });
+            } else {
+                comboBox.removeItemAt(0);
+                comboBox.removeItemListener(this);
+            }
+        }
     }
 
     public void run() {
         if (RequestProcessor.getDefault().isRequestProcessorThread()) {
-
             loadRepositories();
-            EventQueue.invokeLater(this);
 
-            if(defaultRepo == null) {
+            if ((defaultRepoComputationPending)
+                    && (repositories.length == 1)
+                    && preselectSingleRepo) {
+                defaultRepo = repositories[0];
+                defaultRepoComputationPending = false;
+            }
+
+            if (defaultRepoComputationPending) {
+                EventQueue.invokeLater(this);   //schedule display of list of repositories
                 try {
                     findDefaultRepository();
                 } finally {
-                    defaultRepoAvailable = true;
+                    defaultRepoComputationPending = false;
                 }
+                EventQueue.invokeLater(this);   //schedule selection of default repository (if any)
+            } else {
+                EventQueue.invokeLater(this);   //schedule display of list of repositories
+                                                //and selection of default repository (if any) at once
             }
-            EventQueue.invokeLater(this);
-
         } else {
             assert EventQueue.isDispatchThread();
-            if (defaultRepoSelected) {
+            if (repositoriesDisplayed && defaultRepoSelected) {
                 /*
                  * The default repository selection was performed during the
                  * previous invocation of this method from AWT thread
@@ -210,27 +334,40 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
 
             component.removeHierarchyListener(this);
 
-            boolean repositoriesJustDisplayed = false;
-            if (!repositoriesDisplayed) {
-                setRepositories(repositories);
-                repositoriesJustDisplayed = true;
-                repositoriesDisplayed = true;
-            }
-            if (defaultRepoAvailable) {
-                if (repositoriesJustDisplayed) {
-                    LOG.finest("                      - going also to select the default repository (if any)"); //NOI18N
-                }
+            if (!repositoriesDisplayed && !defaultRepoComputationPending) {
+                /*
+                 * The list of repositories has been loaded very quickly
+                 * and also the default repository (if any) has been
+                 * already determined very quickly.
+                 */
                 try {
-                    if (defaultRepo != null) {
-                        preselectRepository(defaultRepo, false);
-                    } else if(preselectFirst && comboBox.getModel().getSize() > 0) {
-                        Object item = comboBox.getModel().getElementAt(0);
-                        if(item != null && item instanceof Repository) {
-                            preselectRepository((Repository) item, false);
-                        }
-                    } else {
-                        LOG.finest(" - default repository not determined - abort"); //NOI18N
-                    }
+                    LOG.finest("run() called from AWT - going to display the list of repositories" + //NOI18N
+                               " and also to select the default repository (if any)");               //NOI18N
+                    setRepositories(repositories, (defaultRepo == null));
+                    preselectRepository((Repository) defaultRepo);
+                } finally {
+                    repositoriesDisplayed = true;
+                    defaultRepoSelected = true;
+                }
+            } else if (!repositoriesDisplayed) {
+                /*
+                 * We are going to just display the list of repositories;
+                 * the default repository has not been determined yet.
+                 */
+                LOG.finest("run() called from AWT - going to display the list of repositories"); //NOI18N
+                try {
+                    setRepositories(repositories, true);
+                } finally {
+                    repositoriesDisplayed = true;
+                }
+            } else {
+                assert (!defaultRepoSelected);
+                /*
+                 * We are going to preselect the default repository (if any).
+                 */
+                LOG.finest("run() called from AWT - going to select the repository (if any)"); //NOI18N
+                try {
+                    preselectRepository(defaultRepo);
                 } finally {
                     defaultRepoSelected = true;
                 }
@@ -252,7 +389,7 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
      *
      * @param  repoToPreselect  repository to preselect
      */
-    private void preselectRepository(final Repository repoToPreselect, boolean onlyIfNotSelected) {
+    private void preselectRepository(final Repository repoToPreselect) {
         assert EventQueue.isDispatchThread();
 
         if (repoToPreselect == null) {
@@ -264,8 +401,8 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
             LOG.finer("preselectRepository(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
         }
 
-        if (onlyIfNotSelected && isRepositorySelected()) {
-            LOG.finest(" - cancelled - already selected by the user");  //NOI18N
+        if (comboBox.getSelectedItem() instanceof Repository) {
+            /* the user has already selected some item - do not change it */
             return;
         }
 
@@ -281,46 +418,56 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
                     LOG.finer("popupMenuCanceled()");                   //NOI18N
                     comboBox.removePopupMenuListener(this);
                     LOG.finest(" - processing deferred selection");     //NOI18N
-                    preselectRepositoryUnconditionally(repoToPreselect);
+                    preselectItemUnconditionally(repoToPreselect);
                 }
             });
         } else {
-            preselectRepositoryUnconditionally(repoToPreselect);
+            preselectItemUnconditionally(repoToPreselect);
         }
     }
 
-    private void preselectRepositoryUnconditionally(Repository repoToPreselect) {
+    private void preselectItemUnconditionally(Object item) {
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("preselectRepositoryUnconditionally(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
+            LOG.finer("preselectItemUnconditionally(" + getItemName(item) + ')'); //NOI18N
         }
 
-        comboBox.setSelectedItem(repoToPreselect);
+        comboBox.setSelectedItem(item);
     }
 
-    /**
-     * Determines whether some bug-tracking repository is selected in the
-     * Issue Tracker combo-box.
-     *
-     * @return  {@code true} if some repository is selected,
-     *          {@code false} otherwise
-     */
-    private boolean isRepositorySelected() {
-        Object selectedItem = comboBox.getSelectedItem();
-        return (selectedItem != null) && (selectedItem != LOADING_REPOSITORIES);
+    private static String getItemName(Object item) {
+        if (item instanceof Repository) {
+            return ((Repository) item).getDisplayName();
+        } else{
+            return item.toString();
+        }
     }
 
-    private void setRepositories(Repository[] repos) {
-        Repository[] comboData;
-        if (repos == null) {
-            comboData = new Repository[0];
+    private void setRepositories(Repository[] repos, boolean displayHint) {
+        assert EventQueue.isDispatchThread();
+
+        comboBox.setPopupVisible(false);
+
+        int reposCount = (repos != null) ? repos.length : 0;
+        Object[] comboData;
+
+        int startIndex = 0;
+        if (reposCount == 0) {
+            comboData = new Object[1];
+            comboData[0] = NO_REPOSITORIES;
+        } else if (displayHint) {
+            comboData = new Object[reposCount + 1];
+            comboData[startIndex++] = SELECT_REPOSITORY;
         } else {
-            comboData = new Repository[repos.length];
-            if (repos.length != 0) {
-                System.arraycopy(repos, 0, comboData, 0, repos.length);
-            }
+            comboData = new Object[reposCount];
+        }
+        if (reposCount != 0) {
+            System.arraycopy(repos, 0, comboData, startIndex, reposCount);
         }
         comboBox.setModel(new DefaultComboBoxModel(comboData));
-        comboBox.setSelectedItem(null);             // HACK to force itemSeleted evetn after first time selection
+
+        if (comboBox.getSelectedItem() == SELECT_REPOSITORY) {
+            comboBox.addItemListener(this);
+        }
     }
 
     public void refreshRepositoryModel() {
@@ -339,7 +486,7 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
                             if(item instanceof Repository) {
                                 lastSelection = (Repository) item;
                             }
-                            preselectRepository(lastSelection, false);
+                            preselectRepository(lastSelection);
                         }
                     });
                 } else {
@@ -373,15 +520,18 @@ public final class RepositoryComboSupport implements HierarchyListener, Runnable
 
         startTimeMillis = System.currentTimeMillis();
 
+        assert (refFile == null) ^ (selectedNodes == null);
+
         if (refFile != null) {
-            result = BugtrackingOwnerSupport.getInstance()
-                     .getRepository(refFile, false);
-            if ((result == null) && LOG.isLoggable(FINEST)) {
-                LOG.finest(" could not find issue tracker for " + refFile); //NOI18N
-            }
+            result = BugtrackingOwnerSupport.getInstance().getRepository(refFile,
+                                                                         false);
         } else {
-            result = BugtrackingOwnerSupport.getInstance()
-                    .getRepository(BugtrackingOwnerSupport.ContextType.ALL_PROJECTS);
+            assert (selectedNodes != null);
+            result = BugtrackingOwnerSupport.getInstance().getRepository(selectedNodes);
+        }
+
+        if ((result == null) && LOG.isLoggable(FINEST)) {
+            LOG.finest(" could not find issue tracker for " + refFile); //NOI18N
         }
 
         endTimeMillis = System.currentTimeMillis();

@@ -60,8 +60,8 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesPlot;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.ViewportAware;
-import org.netbeans.modules.dlight.spi.indicator.ViewportModel;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
@@ -81,7 +81,6 @@ public final class TimeSeriesIndicator
     private final Legend legend;
     private final JButton button;
     private final int graphCount;
-    private int time;
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);

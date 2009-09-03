@@ -86,6 +86,11 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        // cleanup repositories
+        String[] repos = BugzillaConfig.getInstance().getRepositories();
+        for (String id : repos) {
+            BugzillaConfig.getInstance().removeRepository(id);
+        }
     }
 
     @Override
@@ -96,7 +101,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
     public void testController() throws Throwable {
         BugzillaConnector bc = getConnector();
-        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();
+        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();       
         RepositoryController c = getController(repo);
 
         // populate

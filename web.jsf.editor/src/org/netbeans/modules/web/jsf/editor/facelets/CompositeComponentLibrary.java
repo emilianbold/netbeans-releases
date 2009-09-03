@@ -96,7 +96,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     @Override
     public TldLibrary getAssociatedTLDLibrary() {
-        TldLibrary tldlib = support.getJsfSupport().getTldLibraries().get(getNamespace());
+        TldLibrary tldlib = support.getJsfSupport().getTldLibrary(getNamespace());
         if (tldlib != null) {
             //ohh, someone made a TLD for us, nice...
             return tldlib;

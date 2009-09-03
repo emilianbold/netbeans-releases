@@ -47,10 +47,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.dlight.spi.indicator.ViewportAware;
-import org.netbeans.modules.dlight.spi.indicator.ViewportModel;
-import org.netbeans.modules.dlight.util.Range;
-import org.openide.util.ChangeSupport;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.ViewportModel;
+import org.netbeans.modules.dlight.extras.api.Range;
+import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
 
 /**
  * Displays a graph
@@ -72,9 +72,11 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series) {
         upperLimit = scale;
         graph = new GraphPainter(series);
+        graph.addData(new float[series.size()]); // 0th tick - all zeros
         timeMarksProvider = AxisMarksProviderFactory.newTimeMarksProvider();
         valueMarksProvider = AxisMarksProviderFactory.newValueMarksProvider(formatter);
         ViewportModel model = new DefaultViewportModel();
+        model.setLimits(new Range<Long>(0L, 0L));
         model.setViewport(new Range<Long>(0L, EXTENT));
         setViewportModel(model);
         setOpaque(true);
@@ -199,84 +201,6 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
                         break;
                 }
             }
-        }
-    }
-
-    private static class DefaultViewportModel implements ViewportModel {
-
-        private final ChangeSupport changeSupport;
-        private long lowerLimit;
-        private long upperLimit;
-        private long viewportStart;
-        private long viewportEnd;
-
-        public DefaultViewportModel() {
-            this.changeSupport = new ChangeSupport(this);
-        }
-
-        public synchronized Range<Long> getLimits() {
-            return new Range<Long>(lowerLimit, upperLimit);
-        }
-
-        public synchronized void setLimits(Range<Long> limits) {
-            boolean changed = false;
-            boolean autoscroll = upperLimit <= viewportEnd;
-            long viewportLength = viewportEnd - viewportStart;
-            if (limits.getStart() != null) {
-                long newLowerLimit = limits.getStart();
-                if (lowerLimit != newLowerLimit) {
-                    lowerLimit = newLowerLimit;
-                    changed = true;
-                }
-            }
-            if (limits.getEnd() != null) {
-                long newUpperLimit = limits.getEnd();
-                if (upperLimit != newUpperLimit) {
-                    upperLimit = newUpperLimit;
-                    changed = true;
-                }
-            }
-            if (changed) {
-                if (autoscroll) {
-                    long tmpViewportStart = Math.max(0, upperLimit - viewportLength);
-                    setViewport(new Range<Long>(tmpViewportStart, tmpViewportStart + viewportLength));
-                } else {
-                    changeSupport.fireChange();
-                }
-            }
-        }
-
-        public synchronized Range<Long> getViewport() {
-            return new Range<Long>(viewportStart, viewportEnd);
-        }
-
-        public synchronized void setViewport(Range<Long> viewport) {
-            boolean changed = false;
-            if (viewport.getStart() != null) {
-                long newViewportStart = viewport.getStart();
-                if (viewportStart != newViewportStart) {
-                    viewportStart = newViewportStart;
-                    changed = true;
-                }
-            }
-            if (viewport.getEnd() != null) {
-                long newViewportEnd = viewport.getEnd();
-                if (viewportEnd != newViewportEnd) {
-                    viewportEnd = newViewportEnd;
-                    changed = true;
-                }
-            }
-            if (changed) {
-                changeSupport.fireChange();
-            }
-        }
-
-        public void addChangeListener(ChangeListener listener) {
-            changeSupport.addChangeListener(listener);
-        }
-
-        public void removeChangeListener(ChangeListener listener) {
-            changeSupport.removeChangeListener(listener);
         }
     }
 }

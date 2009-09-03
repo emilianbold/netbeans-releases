@@ -62,7 +62,10 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import org.netbeans.modules.javacard.api.CardState;
+import org.netbeans.modules.javacard.api.JavacardPlatform;
 import org.netbeans.modules.javacard.card.ReferenceImplementation;
+import org.netbeans.modules.javacard.card.loader.CardDataObject;
+import org.netbeans.modules.javacard.card.loader.CardDataObject;
 import org.openide.awt.StatusDisplayer;
 
 
@@ -202,6 +205,28 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                                 "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
                     } else {
+                        final Card card = project.getCard();
+                        boolean start = ActionNames.COMMAND_JC_CREATE.equals(command) || ActionNames.COMMAND_JC_DELETE.equals(command) ||
+                                ActionNames.COMMAND_JC_LOAD.equals(command) || ActionNames.COMMAND_JC_UNLOAD.equals(command);
+                        if (start && card.isNotRunning()) {
+                            try {
+                                StatusDisplayer.getDefault().setStatusText(
+                                    NbBundle.getMessage(JCProjectActionProvider.class,
+                                    "MSG_STARTING_SERVER",  //NOI18N
+                                    card.getDisplayName()));
+                                card.startServer(false, project).await();
+                            } catch (InterruptedException ex) {
+                                if (!card.isRunning()) {
+                                    StatusDisplayer.getDefault().setStatusText(
+                                            NbBundle.getMessage(
+                                            JCProjectActionProvider.class,
+                                            "MSG_WAIT_FAILED", //NOI18N
+                                            card.getDisplayName()));
+                                    return;
+                                }
+                            }
+                        }
+
                         ActionUtils.runTarget(buildFo, targetNames, props).addTaskListener(new TaskListener() {
 
                             public void taskFinished(Task task) {
@@ -214,6 +239,13 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                                     // After successfull build, all files are
                                     // marked as not-modified
                                     modifiedFiles = new TreeSet<String>();
+                                }
+                                JavacardPlatform platform = project.getPlatform();
+                                String platformName = platform.getSystemName();
+                                String cardName = card.getId();
+                                DataObject dob = Utils.findDeviceForPlatform(platformName, cardName);
+                                if (dob instanceof CardDataObject) {
+                                    ((CardDataObject) dob).refreshNode();
                                 }
                             }
                         });

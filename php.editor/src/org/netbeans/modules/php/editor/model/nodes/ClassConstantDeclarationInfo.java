@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -73,6 +74,11 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
         return getOriginalNode().getName();
     }
 
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.createUnqualifiedName(getName());
+    }
+        
     @Override
     public OffsetRange getRange() {
         Identifier name = getOriginalNode();

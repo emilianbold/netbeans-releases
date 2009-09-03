@@ -54,4 +54,10 @@ public class ReconfigureProviderImpl extends ReconfigureProvider {
         ReconfigureProject reconfigurator = new ReconfigureProject(makeProject);
         reconfigurator.reconfigure(cFlags, cxxFlags);
     }
+
+    @Override
+    public String getLastFlags(Project makeProject) {
+        ReconfigureProject reconfigurator = new ReconfigureProject(makeProject);
+        return reconfigurator.getLastFlags();
+    }
 }
