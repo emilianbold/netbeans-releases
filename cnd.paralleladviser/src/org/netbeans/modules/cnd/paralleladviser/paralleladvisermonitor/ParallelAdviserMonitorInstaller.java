@@ -49,26 +49,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
+package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor;
 
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
+import org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl.ParallelAdviserMonitor;
 
 /**
- * Configuration for Parallel Adviser indicator.
+ * Installer class for Parallel Adviser monitor.
  *
  * @author Nick Krasilnikov
  */
-public final class ParallelAdviserIndicatorConfiguration extends IndicatorConfiguration {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.model.CsmModelStateListener.class)
+public class ParallelAdviserMonitorInstaller implements CsmModelStateListener {
 
-    /*package*/ static final String ID = "ParallelAdvisertIndicatorConfiguration_ID"; // NOI18N
-
-    public ParallelAdviserIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-        super(metadata, position, true);
-    }
-
-    @Override
-    public String getID() {
-        return ID;
+    public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
+        switch (newState) {
+            case ON:
+                ParallelAdviserMonitor.getInstance().startup();
+                break;
+            case CLOSING:
+                ParallelAdviserMonitor.getInstance().shutdown();
+                break;
+        }
     }
 }
