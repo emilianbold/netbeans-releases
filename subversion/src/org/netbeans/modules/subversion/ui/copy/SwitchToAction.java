@@ -122,7 +122,7 @@ public class SwitchToAction extends ContextAction {
             return;
         }                
         final RepositoryFile repositoryRoot = new RepositoryFile(rootUrl, rootUrl, SVNRevision.HEAD);
-        boolean hasChanges = Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
+        boolean hasChanges = Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE, true);
 
         final RequestProcessor rp = createRequestProcessor(nodes);
 

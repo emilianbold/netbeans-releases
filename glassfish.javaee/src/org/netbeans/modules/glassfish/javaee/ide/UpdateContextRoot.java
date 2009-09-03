@@ -94,17 +94,18 @@ public class UpdateContextRoot implements ProgressListener {
                                     moduleId.setPath(newCR); //e.getValue());
                                     returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
                                     return;
+                                } else {
+                                    returnProgress.operationStateChanged(OperationState.COMPLETED, "no moduleid update necessary");
                                 }
-                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
                             }
                         } catch (InterruptedException ex) {
-                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid..");
                             Exceptions.printStackTrace(ex);
                         } catch (ExecutionException ex) {
-                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid...");
                             Exceptions.printStackTrace(ex);
                         } catch (TimeoutException ex) {
-                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid....");
                             Exceptions.printStackTrace(ex);
                         }
                     }

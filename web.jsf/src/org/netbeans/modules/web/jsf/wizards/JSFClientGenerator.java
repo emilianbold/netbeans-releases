@@ -134,7 +134,7 @@ public class JSFClientGenerator {
     private static final String WELCOME_JSF_JSP_PAGE = "welcomeJSF.jsp";  //NOI18N
     private static final String WELCOME_JSF_FL_PAGE = "index.xhtml";  //NOI18N
     private static final String TEMPLATE_JSF_FL_PAGE = "template.xhtml";  //NOI18N
-    private static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
+    public  static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
     private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
     private static final String JSFCRUD_AJAX_JSPF = "AjaxScripts.jspf"; //NOI18N
@@ -142,6 +142,7 @@ public class JSFClientGenerator {
     static final String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
     private static final String TEMPLATE_FOLDER = RESOURCE_FOLDER+"templates/";  //NOI18N
     private static final String COMMAND_LINK_TEMPLATE = "commandLink.template"; //NOI18N
+    private static final String COMMAND_LINK_TEMPLATE2 = "commandLink-jsf2.template"; //NOI18N
     private static final String FACADE_SUFFIX = "Facade"; //NOI18N
     private static final String CONVERTER_SUFFIX = "Converter"; //NOI18N
     private static final String COTROLLER_SUFFIX = "Controller"; //NOI18N
@@ -366,7 +367,7 @@ public class JSFClientGenerator {
         final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
             (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><scfaceript type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
             
-        boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding);
+        boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding, "");
         final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" immediate=\"true\" />\n" : "";  //NOI18N
 
         progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + File.separator + LIST_JSP);
@@ -414,7 +415,8 @@ public class JSFClientGenerator {
         addStuffToFacesConfigXml(classpathInfo, wm, managedBean, facesConfigControllerClass, jpaControllerClass, entityClass, converterName, fieldName, facesConfigJsfFolder, idGetter.get(0), pkgName, utilPackage);
     }
 
-    private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags, String projectEncoding) throws FileNotFoundException, IOException {
+    public static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags, 
+            String projectEncoding, String pageLink) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
         FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_JSP_PAGE); //NOI18N
         FileObject indexfl = documentBase.getFileObject(WELCOME_JSF_FL_PAGE);
@@ -512,8 +514,8 @@ public class JSFClientGenerator {
                 replace.append(find);
                 replace.append(endLine);
                 String managedBeanName = getManagedBeanName(simpleEntityName);
-                String commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE), "UTF-8"); //NOI18N
-                commandLink = commandLink.replaceAll(MANAGED_BEAN_NAME_VAR, managedBeanName);
+                String commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE2), "UTF-8"); //NOI18N
+                commandLink = commandLink.replaceAll("\\_\\_PAGE\\_LINK\\_\\_", pageLink);
                 commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
                 if (content.indexOf(commandLink) > -1) {
                     //return, indicating welcomeJsp exists

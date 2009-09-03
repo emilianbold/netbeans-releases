@@ -83,7 +83,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
 
     @Override
     public String getName() {
-        return methodName;
+        return getQualifiedName().toName().toString();
     }
 
     public String getReturnType() {
@@ -92,7 +92,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
 
     @Override
     public QualifiedName getQualifiedName() {
-        return QualifiedName.create(getName());
+        return QualifiedName.create(methodName).toName();
     }
 
     @Override

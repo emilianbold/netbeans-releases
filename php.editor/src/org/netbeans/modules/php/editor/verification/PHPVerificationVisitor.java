@@ -75,6 +75,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -194,6 +195,19 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
         super.visit(node);
     }
+
+    @Override
+    public void visit(NamespaceDeclaration node) {
+        for (PHPRule rule : rules) {
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
+    
 
     @Override
     public void visit(GotoLabel node) {

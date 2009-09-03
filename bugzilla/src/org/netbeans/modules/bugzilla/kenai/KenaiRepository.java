@@ -51,6 +51,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -67,17 +68,19 @@ public class KenaiRepository extends BugzillaRepository {
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
+    private final Object kenaiProject;
 
-    KenaiRepository(String repoName, String url, String host, String userName, String password, String urlParam, String product) {
+    KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, String password, String urlParam, String product) {
         super(repoName, repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
         this.host = host;
+        this.kenaiProject = kenaiProject;
     }
 
-    public KenaiRepository(String repoName, String url, String host, String urlParam, String product) {
-        this(repoName, url, host, getKenaiUser(), getKenaiPassword(), urlParam, product);
+    public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String urlParam, String product) {
+        this(kenaiProject, repoName, url, host, getKenaiUser(), getKenaiPassword(), urlParam, product);
     }
 
     @Override
@@ -179,6 +182,15 @@ public class KenaiRepository extends BugzillaRepository {
         setCredentials(user, new String(password));
 
         return true;
+    }
+
+    @Override
+    protected Object[] getLookupObjects() {
+        Object[] obj = super.getLookupObjects();
+        Object[] obj2 = new Object[obj.length + 1];
+        System.arraycopy(obj, 0, obj2, 0, obj.length);
+        obj2[obj.length] = kenaiProject;
+        return obj2;
     }
 
     /**

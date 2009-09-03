@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo.ui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -65,11 +66,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.support.ViewportManager;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.ViewportAware;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.util.ImageUtilities;
@@ -272,11 +274,11 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
         }
         JPanel panel = getNextPanel();
         panel.removeAll();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BorderLayout());
+        panel.add(componentToAdd, BorderLayout.CENTER);
         if (viewportManager != null) {
-            panel.add(viewportManager);
+            panel.add(viewportManager, BorderLayout.SOUTH);
         }
-        panel.add(componentToAdd);
         setActive();
         repaint();
     }

@@ -52,8 +52,6 @@ import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.project.ImportAction;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor.Task;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -79,8 +77,6 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.ImageUtilities;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakSet;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -661,28 +657,20 @@ public class Annotator {
     }
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
-        boolean isVersioned = false;
         List<File> filesToRefresh = new LinkedList<File>();
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();            
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 filesToRefresh.add(file);
-            } else if ((info.getStatus() & STATUS_BADGEABLE) != 0) {
-                isVersioned = true;
-                break;
             }
         }
         cache.refreshAsync(filesToRefresh);
         
-        if (!isVersioned) {
-            return null;
-        }
-        
         if(cache.ready()) {
-            if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_VERSIONED_CONFLICT, false)) {
                 return getBadge(badgeConflicts, icon, toolTipConflict);
-            } else if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_LOCAL_CHANGE)) {
+            } else if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_LOCAL_CHANGE, false)) {
                 return getBadge(badgeModified, icon, toolTipModified);
             }
         }
