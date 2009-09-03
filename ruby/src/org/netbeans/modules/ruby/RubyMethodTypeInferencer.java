@@ -87,17 +87,20 @@ final class RubyMethodTypeInferencer {
     }
 
 
-    private Node callNodeToInfer;
-    private ContextKnowledge knowledge;
+    private final Node callNodeToInfer;
+    private final ContextKnowledge knowledge;
+    private final boolean fast;
 
-    private RubyMethodTypeInferencer(final Node nodeToInfer, final ContextKnowledge knowledge) {
+
+    private RubyMethodTypeInferencer(final Node nodeToInfer, final ContextKnowledge knowledge, boolean fast) {
         assert AstUtilities.isCall(nodeToInfer) : "Must be a call node";
         this.callNodeToInfer = nodeToInfer;
         this.knowledge = knowledge;
+        this.fast = fast;
     }
 
-    static RubyType inferTypeFor(final Node nodeToInfer, final ContextKnowledge knowledge) {
-        return new RubyMethodTypeInferencer(nodeToInfer, knowledge).inferType();
+    static RubyType inferTypeFor(final Node nodeToInfer, final ContextKnowledge knowledge, boolean fast) {
+        return new RubyMethodTypeInferencer(nodeToInfer, knowledge, fast).inferType();
     }
 
     /**
@@ -184,8 +187,9 @@ final class RubyMethodTypeInferencer {
             }
         }
 
-        // this can be very time consuming, return if TI is not enabled
-        if (!TypeInferenceSettings.getDefault().getMethodTypeInference()) {
+        // this can be very time consuming, return if TI is not enabled and
+        // we're operating in the fast mode
+        if (fast && !TypeInferenceSettings.getDefault().getMethodTypeInference()) {
             return RubyType.createUnknown();
         }
 

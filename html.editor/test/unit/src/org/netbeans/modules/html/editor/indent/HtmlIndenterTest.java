@@ -50,7 +50,6 @@ import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.test.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -66,8 +65,6 @@ public class HtmlIndenterTest extends TestBase2 {
     protected void setUp() throws Exception {
         super.setUp();
 
-        NbReaderProvider.setupReaders();
-        
         AbstractIndenter.inUnitTestRun = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
