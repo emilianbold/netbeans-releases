@@ -63,7 +63,7 @@ public abstract class CacheIndex {
 
     /**
      * Returns true if the given file is managed by the particular vcs
-     * @param file 
+     * @param file
      * @return true if the given file is managed by the particular vcs otherwise false
      */
     protected abstract boolean isManaged(File file);
@@ -75,13 +75,12 @@ public abstract class CacheIndex {
             return new File[0];
         }
 
-        Set<File> ret = index.get(key);
-        if(ret == null) {
-            LOG.log(Level.FINE, " get({0}) returns no files", new Object[]{key});
-            return new File[0];
-        }
-
-        synchronized(ret) {
+        synchronized(this) {
+            Set<File> ret = index.get(key);
+            if(ret == null) {
+                LOG.log(Level.FINE, " get({0}) returns no files", new Object[]{key});
+                return new File[0];
+            }
 
             LOG.log(Level.FINE, " get({0}) returns {1}", new Object[]{key, ret.size()});
             if(LOG.isLoggable(Level.FINER)) {
@@ -97,14 +96,14 @@ public abstract class CacheIndex {
 
         Collection<Set<File>> values = index.values();
         Set<File> ret = new HashSet();
-        for (Set<File> valuesSet : values) {
-            synchronized(valuesSet) {
+        synchronized(this) {
+            for (Set<File> valuesSet : values) {
                 for (File v : valuesSet) {
                     ret.add(v);
                 }
             }
         }
-        
+
         LOG.log(Level.FINE, " getAllValues() returns {0}", new Object[]{ret.size()});
         if(LOG.isLoggable(Level.FINER)) {
             LOG.finer("   " + ret);
@@ -118,22 +117,23 @@ public abstract class CacheIndex {
 
         assert file != null;
         if(file == null) {
-            return;        
+            return;
         }
 
-        File parent = file.getParentFile();        
-        Set<File> set = index.get(parent);
-        if(set == null) {
-            LOG.log(Level.FINER, "  add({0}) - creating new file entry", new Object[]{file});
-            set = Collections.synchronizedSet(new HashSet<File>());
-            index.put(parent, set);
-        }
+        File parent = file.getParentFile();
+        synchronized(this) {
+            Set<File> set = index.get(parent);
+            if(set == null) {
+                LOG.log(Level.FINER, "  add({0}) - creating new file entry", new Object[]{file});
+                set = Collections.synchronizedSet(new HashSet<File>());
+                set.add(file);
+                index.put(parent, set);
+            } else {
+                set.add(file);
+            }
 
-        synchronized(set) {
-            set.add(file);
+            ensureParents(parent);           
         }
-
-        ensureParents(parent);
     }
 
     public void add(File file, Set<File> files) {
@@ -141,39 +141,35 @@ public abstract class CacheIndex {
         if(LOG.isLoggable(Level.FINER)) {
             LOG.finer("   " + files);
         }
+        if(files == null) {
+            files = new HashSet<File>(0);
+        }
+        Set<File> newSet = new HashSet<File>(files.size());
 
-        if(files == null || files.size() == 0) {
-            LOG.log(Level.FINE, "  add({0}, Set<File>) - remove entries", new Object[]{file});
-            removeEntries(file);
-        } else {
-            Set<File> toBeRemoved = new HashSet<File>();
+        synchronized(this) {
             Set<File> oldSet = index.get(file);
             if(oldSet != null) {
                 for (File f : oldSet) {
-                    if(!files.contains(f)) {
-                        toBeRemoved.add(f);
+                    if(!files.contains(f) && // removed from the set but
+                       index.get(f) != null) // remove only if there are no files underneath
+                    {
+                        newSet.add(f);
                     }
                 }
             }
-            Set<File> newSet = new HashSet<File>(files.size());
             newSet.addAll(files);
 
             LOG.log(Level.FINE, "  add({0}, Set<File>) - add entries", new Object[]{file});
             index.put(file, Collections.synchronizedSet(newSet));
-
-            ensureParents(file);
-
-            LOG.log(Level.FINE, "  add({0}, Set<File>) - {1} files removed", new Object[]{file, toBeRemoved.size()});
-            if(LOG.isLoggable(Level.FINER)) {
-                LOG.finer("   " + toBeRemoved);
+            if(newSet.size() > 0) {
+                ensureParents(file);
+            } else  {
+                cleanUpParents(file);
             }
 
-            for (File f : toBeRemoved) {
-                removeEntries(f);
-            }
         }
     }
-    
+
     private void ensureParents(File file) {
         File pFile = file;
         LOG.log(Level.FINE, "  ensureParents({0})", new Object[]{pFile});
@@ -186,18 +182,18 @@ public abstract class CacheIndex {
                 break;
             }
 
-            Set<File> set = index.get(parent);
-            if (set == null) {
-                LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - no entry" , new Object[]{pFile, parent});
-                if (!isManaged(parent)) {
-                    LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - not managed - done!", new Object[]{pFile, parent});
-                    break;
+            synchronized(this) {
+                Set<File> set = index.get(parent);
+                if (set == null) {
+                    LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - no entry" , new Object[]{pFile, parent});
+                    if (!isManaged(parent)) {
+                        LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - not managed - done!", new Object[]{pFile, parent});
+                        break;
+                    }
+                    set = new HashSet<File>();
+                    LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - creating parent node", new Object[]{pFile, parent});
+                    index.put(parent, set);
                 }
-                set = new HashSet<File>();
-                LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - creating parent node", new Object[]{pFile, parent});
-                index.put(parent, set);
-            }
-            synchronized(set) {
                 LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - adding file {2}", new Object[]{pFile, parent, file});
                 set.add(file);
             }
@@ -205,63 +201,56 @@ public abstract class CacheIndex {
         }
     }
 
-    private void removeEntries(File file) {
+    private void cleanUpParents(File file) {
         File pFile = file;
-        LOG.log(Level.FINE, "  removeEntries({0})", new Object[]{pFile});
+        LOG.log(Level.FINE, "  cleanUpParents({0})", new Object[]{pFile});
 
         Set<File> set = index.get(file);
-        if(set != null) {
-            synchronized(set) {
-                // there might be something underneath
-                Iterator<File> it = set.iterator();
-                while(it.hasNext()) {
-                    File f = it.next();
-                    if(index.get(f) == null) {
-                        LOG.log(Level.FINE, "  removeEntries({0}) - child {1} empty - remove", new Object[]{pFile});            
-                        it.remove();
-                    } else {
-                        LOG.log(Level.FINE, "  removeEntries({0}) - child {1} still has some entries", new Object[]{pFile});                                    
-                    }
-                }
-            }
-        }
         if(set != null && set.size() > 0) {
-            LOG.log(Level.FINE, "  removeEntries({0}) - children underneath. stop.", new Object[]{pFile});
+            LOG.log(Level.FINE, "  cleanUpParents({0}) - children underneath. stop.", new Object[]{pFile});
             return;
         }
 
-        LOG.log(Level.FINE, "  removeEntries({0}) - removing node", new Object[]{pFile});
+        LOG.log(Level.FINE, "  cleanUpParents({0}) - removing node", new Object[]{pFile});
         index.remove(file);
-
         while(true) {
             File parent = file.getParentFile();
-            LOG.log(Level.FINE, "  removeEntries({0}) - parent {1}", new Object[]{pFile, parent});
+            LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1}", new Object[]{pFile, parent});
 
             if (parent == null) {
-                LOG.log(Level.FINE, "  ensureParents({0}) - done", new Object[]{pFile, parent});
+                LOG.log(Level.FINE, "  cleanUpParents({0}) - done", new Object[]{pFile, parent});
                 break;
             }
 
-            set = index.get(parent);
-            if(set == null) {
-                LOG.log(Level.FINE, "  removeEntries({0}) - parent {1} empty - stop", new Object[]{pFile, parent});
-                break;
-            }
-            synchronized(set) {
+            synchronized(this) {
+                set = index.get(parent);
+                if(set == null) {
+                    LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} empty - stop", new Object[]{pFile, parent});
+                    break;
+                }
+
                 if(set.size() == 1) {
-                    LOG.log(Level.FINE, "  removeEntries({0}) - parent {1} size 1 - remove", new Object[]{pFile, parent});
-                    index.remove(parent);
+                    Iterator<File> it = set.iterator();
+                    if(index.get(it.next()) == null) {
+                        // file under parent point to nowhere -> remove whole parent node
+                        LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} size 1 - remove", new Object[]{pFile, parent});
+                        index.remove(parent);
+                    } else {
+                        break;
+                    }
                 } else {
-                    synchronized(set) {
-                        LOG.log(Level.FINE, "  removeEntries({0}) - parent {1} - remove file {2}", new Object[]{pFile, parent, file});
+                    LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} - remove file {2}", new Object[]{pFile, parent, file});
+                    // more then one file under parent node -> remove only file from parents children if it's pointing to nowhere
+                    if(index.get(file) == null) {
                         set.remove(file);
+                    } else {
+                        break;
                     }
                     break;
                 }
             }
             file = parent;
-
         }
-    }
 
+    }
 }

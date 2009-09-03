@@ -397,7 +397,7 @@ public class RubyElementCtx {
                 }
                 String lhs = call.getLhs();
 
-                if ((types.isKnown()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+                if (!types.isKnown() && lhs != null && node != null && call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(node, getPath());
 
                     if (method != null) {
@@ -405,7 +405,7 @@ public class RubyElementCtx {
                         // up and do it a bit more cleverly
                         ContextKnowledge knowledge =
                             new ContextKnowledge(null, method, node, astOffset, lexOffset, info);
-                        RubyTypeInferencer rti = RubyTypeInferencer.create(knowledge);
+                        RubyTypeInferencer rti = RubyTypeInferencer.create(knowledge, false);
                         types = rti.inferType(lhs);
                     }
                 } else if (call == Call.LOCAL) {
@@ -420,7 +420,7 @@ public class RubyElementCtx {
                     Set<IndexedMethod> methods = index.getMethods(getName(), fqn, Kind.EXACT);
                     IndexedMethod method = !methods.isEmpty() 
                             ? methods.iterator().next()
-                            : index.getOverridingMethod(fqn, getName());
+                            : index.getSuperMethod(fqn, getName());
 
                     if (method != null) {
                         defClass = method.getIn();

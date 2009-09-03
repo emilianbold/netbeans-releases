@@ -42,7 +42,7 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JTextField;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -60,7 +60,7 @@ public class CreatePrivateChatAction extends AbstractAction {
         DialogDescriptor toD = new DialogDescriptor(to, "Send private message to ");
         DialogDisplayer.getDefault().createDialog(toD).setVisible(true);
         if (toD.getValue()==DialogDescriptor.OK_OPTION) {
-            KenaiUser user = KenaiUser.forName(to.getText());
+            KenaiUserUI user = KenaiUserUI.forName(to.getText());
             user.startChat();
         }
     }

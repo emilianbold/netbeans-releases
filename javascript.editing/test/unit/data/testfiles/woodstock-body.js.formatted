@@ -225,8 +225,8 @@ webui.suntheme4_2.body = function(viewId, path, defaultFocusElementId,
             var domNode = document.getElementById(this.defaultFocusId);
             if (domNode == null) {
                 var _this = this; // Closure magic.
-                return setTimeout(function() { 
-                    _this.setDefaultFocus(); 
+                return setTimeout(function() {
+                    _this.setDefaultFocus();
                 }, 10);
             }
 
@@ -307,8 +307,8 @@ webui.suntheme4_2.body = function(viewId, path, defaultFocusElementId,
             var domNode = document.getElementById(this.focusElementId);
             if (domNode == null) {
                 var _this = this; // Closure magic.
-                return setTimeout(function() { 
-                    _this.setInitialFocus(); 
+                return setTimeout(function() {
+                    _this.setInitialFocus();
                 }, 10);
             }
 

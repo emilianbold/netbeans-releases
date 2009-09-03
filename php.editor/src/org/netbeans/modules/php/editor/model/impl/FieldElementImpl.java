@@ -64,7 +64,7 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class FieldElementImpl extends ScopeImpl implements FieldElement {
-    private String defaultType;
+    String defaultType;
     private String className;
 
     FieldElementImpl(Scope inScope, String defaultType, SingleFieldDeclarationInfo nodeInfo) {
@@ -89,6 +89,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         } else {
             className = inScope.getName();
         }
+        this.defaultType = indexedConstant.getTypeName();
     }
 
     private FieldElementImpl(Scope inScope, String name,

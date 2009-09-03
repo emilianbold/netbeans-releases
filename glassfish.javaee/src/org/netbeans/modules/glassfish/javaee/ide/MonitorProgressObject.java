@@ -81,19 +81,17 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     private final Hk2DeploymentManager dm;
     private final Hk2TargetModuleID moduleId;
     private final CommandType commandType;
-    private final boolean isEar;
 
-    public MonitorProgressObject(Hk2DeploymentManager dm, Hk2TargetModuleID moduleId, boolean isEar) {
-        this(dm, moduleId, CommandType.DISTRIBUTE, isEar);
+    public MonitorProgressObject(Hk2DeploymentManager dm, Hk2TargetModuleID moduleId) {
+        this(dm, moduleId, CommandType.DISTRIBUTE);
     }
     
-    public MonitorProgressObject(Hk2DeploymentManager dm, Hk2TargetModuleID moduleId, CommandType commandType, boolean isEar) {
+    public MonitorProgressObject(Hk2DeploymentManager dm, Hk2TargetModuleID moduleId, CommandType commandType) {
         this.dm = dm;
         this.moduleId = moduleId;
         this.commandType = commandType;
         this.operationStatus = new Hk2DeploymentStatus(commandType, 
                 StateType.RUNNING, ActionType.EXECUTE, "Initializing...");
-        this.isEar = isEar;
     }
 
     public DeploymentStatus getDeploymentStatus() {
@@ -148,20 +146,16 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
 
     private TargetModuleID[] computeResultTMID() {
         TargetModuleID[] retVal = new TargetModuleID[]{moduleId};
-        if (!isEar) {
-            return retVal;
-        } else {
-            try {
-                retVal = createModuleIdTree(moduleId);
-            } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
-            } catch (TimeoutException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
-            }
-            return retVal;
-        }
+         try {
+            retVal = createModuleIdTree(moduleId);
+         } catch (InterruptedException ex) {
+             Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+         } catch (ExecutionException ex) {
+             Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+         } catch (TimeoutException ex) {
+             Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+         }
+         return retVal;
     }
 
     private void loopThroughListeners(DeploymentStatus status) {

@@ -103,6 +103,8 @@ import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
@@ -245,7 +247,15 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         return fastCheckProblem;
     }
-    
+
+    private Set<String> asNames(Collection<? extends IndexedElement> elems) {
+        Set<String> names = new HashSet<String>(elems.size());
+        for (IndexedElement each : elems) {
+            names.add(each.getName());
+        }
+        return names;
+    }
+
     public Problem checkParameters() {
         
         Problem checkProblem = null;
@@ -254,12 +264,20 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             RubyIndex index = RubyIndex.get(treePathHandle.getInfo());
             String className = treePathHandle.getDefClass();
             String methodName = AstUtilities.getName(treePathHandle.getNode());
-            Set<IndexedMethod> inherited = index.getInheritedMethods(className, methodName, Kind.EXACT);
-            overridesMethods.addAll(inherited);
+            Set<IndexedMethod> methodsInSameTree = index.getAllOverridingMethodsInHierachy(methodName, className);
+            overridesMethods.addAll(methodsInSameTree);
+
             // inherited contains also the method itself
             if (overridesMethods.size() > 1) {
+                Set<String> superClassNames = asNames(index.getSuperClasses(className));
+                // does the method override a super method that is defined in a class in the project sources
                 boolean overridesFromSources = false;
+                // does the method overrided a super method that is also overridden in a class in a 
+                // different branch of the class hierarhcy
+                boolean classesInOtherBranch = false;
+
                 for (IndexedMethod method : overridesMethods) {
+                    // warn about matches under non-source roots (we don't rename them)
                     if (!isUnderSourceRoot(method.getFileObject())) {
                         checkProblem =
                                 createProblem(checkProblem,
@@ -268,9 +286,17 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     } else if (!method.getFileObject().equals(treePathHandle.getFileObject())){
                         overridesFromSources = true;
                     }
+                    if (!classesInOtherBranch 
+                            && !className.equals(method.getIn())
+                            && !superClassNames.contains(method.getIn())) {
+                        classesInOtherBranch = true;
+                    }
                 }
                 if (overridesFromSources) {
                     checkProblem = createProblem(checkProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_Overrides"));
+                }
+                if (classesInOtherBranch) {
+                    checkProblem = createProblem(checkProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_Overrides_tree"));
                 }
             }
         }
