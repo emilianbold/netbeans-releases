@@ -414,9 +414,8 @@ public class KenaiConnection implements PropertyChangeListener {
                         privateListeners.clear();
                         privateMessageQueue.clear();
                         privateChats.clear();
-                        //TODO: just to init DEFAULT
-                        KenaiUserUI fake;
-                        SPIAccessor.DEFAULT.clear();
+                        if (SPIAccessor.DEFAULT!=null)
+                            SPIAccessor.DEFAULT.clear();
                     }
                     PresenceIndicator.getDefault().setStatus(Kenai.Status.OFFLINE);
                     ChatNotifications.getDefault().clearAll();
