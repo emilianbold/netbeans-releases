@@ -48,17 +48,14 @@ import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
 
-public final class CapProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
+public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
     private Map<Object, String> selection2url;
-    private AppletProjectProperties props;
     private static final int SELECTING_SERVLET = 1;
     private static final int SELECTING_PAGE = 2;
     private int selecting;
 
-    public CapProjectCustomizerRun(AppletProjectProperties props) {
-        this.props = props;
+    public AppletProjectCustomizerRun(AppletProjectProperties props) {
         initComponents();
         platformAndDevicePanel21.setProperties(props);
         servletComboBox.setModel(props.SCRIPTS);
@@ -98,8 +95,8 @@ public final class CapProjectCustomizerRun extends javax.swing.JPanel implements
         platformAndDevicePanel21 = new org.netbeans.modules.javacard.project.ui.PlatformAndDevicePanel();
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javacard/resources/rc.png"))); // NOI18N
-        jButton2.setText(org.openide.util.NbBundle.getMessage(CapProjectCustomizerRun.class, "CapProjectCustomizerRun.jButton2.text")); // NOI18N
-        jButton2.setToolTipText(org.openide.util.NbBundle.getMessage(CapProjectCustomizerRun.class, "CapProjectCustomizerRun.jButton2.toolTipText")); // NOI18N
+        jButton2.setText(org.openide.util.NbBundle.getMessage(AppletProjectCustomizerRun.class, "AppletProjectCustomizerRun.jButton2.text")); // NOI18N
+        jButton2.setToolTipText(org.openide.util.NbBundle.getMessage(AppletProjectCustomizerRun.class, "AppletProjectCustomizerRun.jButton2.toolTipText")); // NOI18N
         jButton2.addActionListener(this);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 0, 0, 0));
@@ -109,11 +106,11 @@ public final class CapProjectCustomizerRun extends javax.swing.JPanel implements
         servletComboBox.addActionListener(this);
 
         launchBrowserCheckBox.setSelected(true);
-        launchBrowserCheckBox.setText(org.openide.util.NbBundle.getMessage(CapProjectCustomizerRun.class, "CapProjectCustomizerRun.launchBrowserCheckBox.text")); // NOI18N
+        launchBrowserCheckBox.setText(org.openide.util.NbBundle.getMessage(AppletProjectCustomizerRun.class, "AppletProjectCustomizerRun.launchBrowserCheckBox.text")); // NOI18N
         launchBrowserCheckBox.addChangeListener(this);
         launchBrowserCheckBox.addActionListener(this);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(CapProjectCustomizerRun.class, "CapProjectCustomizerRun.jLabel2.text")); // NOI18N
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(AppletProjectCustomizerRun.class, "AppletProjectCustomizerRun.jLabel2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -158,29 +155,30 @@ public final class CapProjectCustomizerRun extends javax.swing.JPanel implements
 
     public void actionPerformed(java.awt.event.ActionEvent evt) {
         if (evt.getSource() == servletComboBox) {
-            CapProjectCustomizerRun.this.servletComboBoxActionPerformed(evt);
+            AppletProjectCustomizerRun.this.servletComboBoxActionPerformed(evt);
         }
         else if (evt.getSource() == launchBrowserCheckBox) {
-            CapProjectCustomizerRun.this.launchBrowserCheckBoxActionPerformed(evt);
+            AppletProjectCustomizerRun.this.launchBrowserCheckBoxActionPerformed(evt);
         }
         else if (evt.getSource() == jButton2) {
-            CapProjectCustomizerRun.this.jButton2ActionPerformed(evt);
+            AppletProjectCustomizerRun.this.jButton2ActionPerformed(evt);
         }
     }
 
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
         if (evt.getSource() == servletComboBox) {
-            CapProjectCustomizerRun.this.servletComboBoxItemStateChanged(evt);
+            AppletProjectCustomizerRun.this.servletComboBoxItemStateChanged(evt);
         }
     }
 
     public void stateChanged(javax.swing.event.ChangeEvent evt) {
         if (evt.getSource() == launchBrowserCheckBox) {
-            CapProjectCustomizerRun.this.launchBrowserCheckBoxStateChanged(evt);
+            AppletProjectCustomizerRun.this.launchBrowserCheckBoxStateChanged(evt);
         }
     }// </editor-fold>//GEN-END:initComponents
 
     private void servletComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_servletComboBoxActionPerformed
+
 }//GEN-LAST:event_servletComboBoxActionPerformed
 
     private void launchBrowserCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_launchBrowserCheckBoxActionPerformed
