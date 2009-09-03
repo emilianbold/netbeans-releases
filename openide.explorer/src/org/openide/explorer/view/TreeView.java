@@ -1119,20 +1119,21 @@ public abstract class TreeView extends JScrollPane {
     void removedNodes(List<VisualizerNode> removed) {
         TreeSelectionModel sm = tree.getSelectionModel();
 	TreePath[] selPaths = (sm != null) ? sm.getSelectionPaths() : null;
-        if (selPaths == null) return;
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
             visHolder.removeRecur(vn.getChildren(false));
-            TreePath path = new TreePath(vn.getPathToRoot());
-	    for(TreePath tp : selPaths) {
-                if (path.isDescendant(tp)) {
-                    if (remSel == null) {
-                        remSel = new ArrayList<TreePath>();
+            if (selPaths != null) {
+                TreePath path = new TreePath(vn.getPathToRoot());
+                for(TreePath tp : selPaths) {
+                    if (path.isDescendant(tp)) {
+                        if (remSel == null) {
+                            remSel = new ArrayList<TreePath>();
+                        }
+                        remSel.add(tp);
                     }
-                    remSel.add(tp);
                 }
-	    }
+            }
         }
         
         if (remSel != null) {
