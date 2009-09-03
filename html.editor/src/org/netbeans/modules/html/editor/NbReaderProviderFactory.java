@@ -36,42 +36,54 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.editor;
 
-import org.netbeans.editor.ext.html.dtd.Registry;
-import org.netbeans.modules.html.editor.test.TestBase;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import org.netbeans.editor.ext.html.dtd.spi.ReaderProvider;
+import org.netbeans.editor.ext.html.dtd.spi.ReaderProviderFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class NbReaderProviderTest extends TestBase {
+@ServiceProvider(service = ReaderProviderFactory.class)
+public class NbReaderProviderFactory extends ReaderProviderFactory {
 
-    public NbReaderProviderTest() {
-        super(NbReaderProviderTest.class.getName());
+    private final String DTD_FOLDER = "DTDs"; // NOI18 // NOI18N
+    private Collection<ReaderProvider> PROVIDERS;
+
+    @Override
+    public Collection<ReaderProvider> getProviders() {
+        if (PROVIDERS == null) {
+            initializeProviders();
+        }
+        return PROVIDERS;
     }
 
-    public void testHTML32() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 3.2 Final//EN", null));
+    private void initializeProviders() {
+        PROVIDERS = new LinkedList<ReaderProvider>();
+        FileObject rootFolder = FileUtil.getConfigRoot();
+        FileObject dtdFolder = rootFolder.getFileObject(DTD_FOLDER);
+        if (dtdFolder != null) {
+            processSubfolders(dtdFolder);
+        }
+
     }
 
-    public void testHTML40() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0 Transitional//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0 Frameset//EN", null));
+    private void processSubfolders(FileObject dtdFolder) {
+        for (Enumeration en = dtdFolder.getFolders(false); en.hasMoreElements();) {
+            FileObject folder = (FileObject) en.nextElement();
+            addFolder(folder);
+        }
     }
 
-    public void testHTML401() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01 Transitional//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01 Frameset//EN", null));
+    private void addFolder(FileObject folder) {
+        PROVIDERS.add(new NbReaderProvider(folder));
     }
-
-    public void testXHTML() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Strict//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Transitional//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Frameset//EN", null));
-    }
-
+    
 }
