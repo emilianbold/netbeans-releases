@@ -82,12 +82,13 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.windows.InputOutput;
 
 /**
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference, DataFilterManager {
+public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference, DataFilterManager, DLightSessionIOProvider {
     private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
@@ -106,6 +107,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private final String name;
     private boolean closeOnExit = false;
     private final SessionDataFiltersSupport dataFiltersSupport;
+    private InputOutput io;
 
     public static enum SessionState {
 
@@ -346,7 +348,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     DLightTarget.ExecutionEnvVariablesProvider envProvider =
                             context.getDLightTargetExecutionEnvProvider();
 
-                    targetAccess.getDLightTargetExecution(target).start(target, envProvider);
+                    DLightSession.this.io = targetAccess.getDLightTargetExecution(target).start(target, envProvider);
                 }
             }
         };
@@ -358,6 +360,17 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         dataFiltersSupport.addDataFilterListener(listener);
     }
 
+    public DLightSessionIOProvider getDLigthSessionIOProvider(){
+        return this;
+    }
+    
+    public InputOutput getInputOutput(){
+        if (this.state == SessionState.CONFIGURATION){
+            return null;//nothing to return, we are in configuration state
+        }
+        return io;
+    }
+    
     public void addDataFilter(DataFilter filter) {
         //if the filter is TimeIntervalFilter: remove first
         if (filter instanceof TimeIntervalDataFilter){
@@ -365,7 +378,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
         dataFiltersSupport.addFilter(filter);
     }
-
+    
     public void cleanAllDataFilter() {
         dataFiltersSupport.cleanAll();
     }
