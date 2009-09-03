@@ -210,7 +210,11 @@ public class SvnHookImpl extends SvnHook {
         panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnResolve());
         panel.commitRadioButton.setSelected(false);
 
-        RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
+        if (referenceFile != null) {
+            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
+        } else {
+            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, false);
+        }
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
         panel.changeFormatButton.addActionListener(new ActionListener() {
