@@ -37,41 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor;
+package org.netbeans.editor.ext.html.dtd.spi;
 
-import org.netbeans.editor.ext.html.dtd.Registry;
-import org.netbeans.modules.html.editor.test.TestBase;
+import java.util.Collection;
 
 /**
  *
  * @author marekfukala
  */
-public class NbReaderProviderTest extends TestBase {
+public abstract class ReaderProviderFactory {
 
-    public NbReaderProviderTest() {
-        super(NbReaderProviderTest.class.getName());
-    }
-
-    public void testHTML32() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 3.2 Final//EN", null));
-    }
-
-    public void testHTML40() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0 Transitional//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0 Frameset//EN", null));
-    }
-
-    public void testHTML401() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01 Transitional//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01 Frameset//EN", null));
-    }
-
-    public void testXHTML() {
-        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Strict//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Transitional//EN", null));
-        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Frameset//EN", null));
-    }
-
+    public abstract Collection<ReaderProvider> getProviders();
+    
 }
