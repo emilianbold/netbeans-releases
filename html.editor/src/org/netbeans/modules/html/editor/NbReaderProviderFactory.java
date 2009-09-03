@@ -36,67 +36,54 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.html.editor;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import org.netbeans.editor.ext.html.dtd.spi.ReaderProvider;
+import org.netbeans.editor.ext.html.dtd.spi.ReaderProviderFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Per web-module instance
  *
  * @author marekfukala
  */
-public class TldClassPathSupport implements PropertyChangeListener {
+@ServiceProvider(service = ReaderProviderFactory.class)
+public class NbReaderProviderFactory extends ReaderProviderFactory {
 
-    private final ClassPath cp;
-    //uri -> library map
-    private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private boolean cache_valid = false;
+    private final String DTD_FOLDER = "DTDs"; // NOI18 // NOI18N
+    private Collection<ReaderProvider> PROVIDERS;
 
-    public TldClassPathSupport(ClassPath cp) {
-        this.cp = cp;
-        cp.addPropertyChangeListener(this);
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        cache_valid = false;
-    }
-
-    public synchronized Map<String, TldLibrary> getLibraries() {
-        if (!cache_valid) {
-            LIBRARIES.clear();
-            for (FileObject cpRoot : cp.getRoots()) {
-                Collection<TldLibrary> libs = TldLibraryGlobalCache.getDefault().getLibraries(cpRoot);
-                for(TldLibrary lib : libs) {
-                    LIBRARIES.put(lib.getURI(), lib);
-                }
-            }
-
-            //add default libraries
-            for(TldLibrary lib : TldLibraryGlobalCache.getDefault().getDefaultLibraries()) {
-                LIBRARIES.put(lib.getURI(), lib);
-            }
-
-            cache_valid = true;
-//            dumpLibs();
+    @Override
+    public Collection<ReaderProvider> getProviders() {
+        if (PROVIDERS == null) {
+            initializeProviders();
         }
-        return LIBRARIES;
+        return PROVIDERS;
     }
 
-    public ClassPath getClassPath() {
-        return cp;
-    }
-
-    private void dumpLibs() {
-        System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : getLibraries().values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; "+ (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") +")");
+    private void initializeProviders() {
+        PROVIDERS = new LinkedList<ReaderProvider>();
+        FileObject rootFolder = FileUtil.getConfigRoot();
+        FileObject dtdFolder = rootFolder.getFileObject(DTD_FOLDER);
+        if (dtdFolder != null) {
+            processSubfolders(dtdFolder);
         }
 
     }
+
+    private void processSubfolders(FileObject dtdFolder) {
+        for (Enumeration en = dtdFolder.getFolders(false); en.hasMoreElements();) {
+            FileObject folder = (FileObject) en.nextElement();
+            addFolder(folder);
+        }
+    }
+
+    private void addFolder(FileObject folder) {
+        PROVIDERS.add(new NbReaderProvider(folder));
+    }
+    
 }

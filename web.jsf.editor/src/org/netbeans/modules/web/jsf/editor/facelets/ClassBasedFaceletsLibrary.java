@@ -60,7 +60,7 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
     }
 
     public TldLibrary getAssociatedTLDLibrary() {
-        return support.getJsfSupport().getTldLibraries().get(getNamespace());
+        return support.getJsfSupport().getTldLibrary(getNamespace());
     }
     
     public void putConverter(String name, String id) {

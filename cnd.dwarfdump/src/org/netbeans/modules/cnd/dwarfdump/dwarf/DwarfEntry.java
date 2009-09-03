@@ -451,6 +451,14 @@ public class DwarfEntry {
         return 0;
     }
 
+    public long getHighAddress() throws IOException{
+        byte[] bytes = (byte[])getAttributeValue(ATTR.DW_AT_high_pc);
+        if (bytes != null) {
+            return getAddress(bytes);
+        }
+        return 0;
+    }
+
     public long getAddress(byte[] bytes){
         long n = 0;
         int size = bytes.length;
