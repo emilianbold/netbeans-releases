@@ -37,48 +37,39 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.actions;
+package org.netbeans.modules.php.project;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.openide.util.Exceptions;
 
 /**
  * @author Tomas Mysik
  */
-public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
+public abstract class PhpLanguageOptionsAccessor {
 
-    protected BaseAction() {
-        putValue("noIconInMenu", true); // NOI18N
-        putValue(NAME, getFullName());
-        putValue("menuText", getPureName()); // NOI18N
+    private static volatile PhpLanguageOptionsAccessor accessor;
+
+    public static void setDefault(PhpLanguageOptionsAccessor accessor) {
+        if (PhpLanguageOptionsAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor");
+        }
+        PhpLanguageOptionsAccessor.accessor = accessor;
     }
 
-    @Override
-    public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
-
-        if (phpModule == null) {
-            return;
-        }
-        if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-            return;
+    public static synchronized PhpLanguageOptionsAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
         }
 
-        actionPerformed(phpModule);
+        Class<?> c = PhpLanguageOptions.class;
+        try {
+            Class.forName(c.getName(), true, PhpLanguageOptionsAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException cnf) {
+            Exceptions.printStackTrace(cnf);
+        }
+        assert accessor != null;
+        return accessor;
     }
 
-    protected String getFullName() {
-        return NbBundle.getMessage(BaseAction.class, "LBL_SymfonyAction", getPureName());
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected abstract String getPureName();
-    protected abstract void actionPerformed(PhpModule phpModule);
+    public abstract void firePropertyChange(String propertyName, Object oldValue, Object newValue);
 }

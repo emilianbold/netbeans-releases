@@ -39,46 +39,21 @@
 
 package org.netbeans.modules.php.symfony.ui.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.symfony.ui.actions.GoToActionOrViewAction.GoToActionAction;
 
-/**
- * @author Tomas Mysik
- */
-public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
+public class GoToActionOrViewActionTest extends NbTestCase {
 
-    protected BaseAction() {
-        putValue("noIconInMenu", true); // NOI18N
-        putValue(NAME, getFullName());
-        putValue("menuText", getPureName()); // NOI18N
+    public GoToActionOrViewActionTest(String name) {
+        super(name);
     }
 
-    @Override
-    public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
+    public void testGetActionMethodName() {
+        assertEquals("executeIndex", GoToActionAction.getActionMethodName("indexSuccess"));
+        assertEquals("executeNew", GoToActionAction.getActionMethodName("newSuccess"));
+        assertEquals("executeNew", GoToActionAction.getActionMethodName("newError"));
 
-        if (phpModule == null) {
-            return;
-        }
-        if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-            return;
-        }
-
-        actionPerformed(phpModule);
+        assertEquals("execute_admin", GoToActionAction.getActionMethodName("_adminInc"));
+        assertNull(GoToActionAction.getActionMethodName("_admin"));
     }
-
-    protected String getFullName() {
-        return NbBundle.getMessage(BaseAction.class, "LBL_SymfonyAction", getPureName());
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected abstract String getPureName();
-    protected abstract void actionPerformed(PhpModule phpModule);
 }

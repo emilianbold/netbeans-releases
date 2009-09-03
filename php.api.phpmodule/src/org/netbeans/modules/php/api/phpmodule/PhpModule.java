@@ -79,6 +79,16 @@ public abstract class PhpModule {
     public abstract FileObject getTestDirectory();
 
     /**
+     * Gets PHP module for the given {@link FileObject}.
+     * @param fo {@link FileObject} to get PHP module for
+     * @return PHP module or <code>null</code> if not found
+     * @since 1.16
+     */
+    public static PhpModule forFileObject(FileObject fo) {
+        return lookupPhpModule(FileOwnerQuery.getOwner(fo));
+    }
+
+    /**
      * Infers PHP module - from the currently selected top component, open projects etc.
      * @return PHP module or <code>null</code> if not found.
      */
@@ -101,7 +111,7 @@ public abstract class PhpModule {
         }
         FileObject fo = globalContext.lookup(FileObject.class);
         if (fo != null) {
-            result = lookupPhpModule(FileOwnerQuery.getOwner(fo));
+            result = forFileObject(fo);
             if (result != null) {
                 return result;
             }
