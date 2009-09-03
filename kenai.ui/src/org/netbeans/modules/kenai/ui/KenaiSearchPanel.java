@@ -710,6 +710,7 @@ public class KenaiSearchPanel extends JPanel {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
+                    project.cacheProjectImage();
                     if (PanelType.OPEN.equals(panelType)) {
                         addElementLater(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
