@@ -36,21 +36,23 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Locale;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibraryGlobalCache;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.xml.sax.InputSource;
 
 /**
  *
@@ -58,32 +60,58 @@ import org.xml.sax.InputSource;
  */
 public class JsfBinaryIndexer extends BinaryIndexer {
 
-    private static final String INDEXER_NAME = "JSFBinaryIndexer";
-    private static final int INDEX_VERSION = 1;
+    static final String INDEXER_NAME = "jsfBinary"; //NOI18N
+    static final int INDEX_VERSION = 1;
+
+    static final String LIB_NAMESPACE_KEY = "namespace"; //NOI18N
 
     @Override
     protected void index(Context context) {
-//        System.out.println("JsfBinaryIndexer: scanning " + context.getRoot());
+        if(context.getRoot() == null) {
+            return ;
+        }
 
         processTlds(context);
     }
 
-
     private void processTlds(Context context) {
         FileObject root = context.getRoot();
         //find all TLDs in the jar file
-        Collection<FileObject> tldDescriptors = TldLibraryGlobalCache.findLibraryDescriptors(root);
-        for(FileObject file : tldDescriptors) {
+        for (FileObject file : findLibraryDescriptors(root)) {
             try {
                 String namespace = TldLibrary.parseNamespace(file.getInputStream());
-                if(namespace != null) {
-//                    IndexingSupport.getInstance(context).createDocument()
+                if (namespace != null) {
+                    IndexingSupport sup = IndexingSupport.getInstance(context);
+                    IndexDocument doc = sup.createDocument(file);
+                    doc.addPair(LIB_NAMESPACE_KEY, namespace, true, true);
+                    sup.addDocument(doc);
                 }
             } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
+    }
+
+
+    private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot) {
+        Collection<FileObject> files = new ArrayList<FileObject>();
+        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
+        while (fos.hasMoreElements()) {
+            FileObject fo = fos.nextElement();
+            if ("META-INF".equals(fo.getName())) { //NOI18N
+                //look for tag library definition files (.taglib.xml)
+                for (FileObject file : fo.getChildren()) {
+                    if (file.getNameExt().toLowerCase(Locale.US).endsWith(".tld")) { //NOI18N
+                        //found library, create a new instance and cache it
+                        files.add(file);
+                    }
+                }
+            }
+        }
+        return files;
     }
 
     public static class Factory extends BinaryIndexerFactory {
@@ -107,7 +135,5 @@ public class JsfBinaryIndexer extends BinaryIndexer {
         public int getIndexVersion() {
             return INDEX_VERSION;
         }
-
     }
-
 }

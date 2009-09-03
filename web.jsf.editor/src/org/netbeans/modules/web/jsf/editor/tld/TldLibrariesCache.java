@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
+import java.util.logging.Logger;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -51,51 +51,55 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-public class TldClassPathSupport implements PropertyChangeListener {
+public class TldLibrariesCache {
 
-    private final ClassPath cp;
     //uri -> library map
     private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private boolean cache_valid = false;
+    private static Collection<TldLibrary> DEFAULT_LIBRARIES;
+    private JsfSupport support;
 
-    public TldClassPathSupport(ClassPath cp) {
-        this.cp = cp;
-        cp.addPropertyChangeListener(this);
-    }
+    public TldLibrariesCache(JsfSupport support) {
+        this.support = support;
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        cache_valid = false;
-    }
-
-    public synchronized Map<String, TldLibrary> getLibraries() {
-        if (!cache_valid) {
-            LIBRARIES.clear();
-            for (FileObject cpRoot : cp.getRoots()) {
-                Collection<TldLibrary> libs = TldLibraryGlobalCache.getDefault().getLibraries(cpRoot);
-                for(TldLibrary lib : libs) {
-                    LIBRARIES.put(lib.getURI(), lib);
-                }
-            }
-
-            //add default libraries
-            for(TldLibrary lib : TldLibraryGlobalCache.getDefault().getDefaultLibraries()) {
-                LIBRARIES.put(lib.getURI(), lib);
-            }
-
-            cache_valid = true;
-//            dumpLibs();
+        //add default libraries
+        for (TldLibrary lib : getDefaultLibraries()) {
+            LIBRARIES.put(lib.getURI(), lib);
         }
-        return LIBRARIES;
     }
 
-    public ClassPath getClassPath() {
-        return cp;
+    public synchronized TldLibrary getLibrary(String namespace) throws TldLibraryException {
+        TldLibrary lib = LIBRARIES.get(namespace);
+        if(lib == null) {
+            FileObject file = support.getBinariesIndex().getTldFile(namespace);
+            if(file != null) {
+                lib = TldLibrary.create(file);
+                LIBRARIES.put(namespace, lib);
+            }
+        }
+        return lib;
+        
+    }
+
+     public static synchronized Collection<TldLibrary> getDefaultLibraries() {
+        if (DEFAULT_LIBRARIES == null) {
+            DEFAULT_LIBRARIES = new ArrayList<TldLibrary>();
+            try {
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/composite.tld"))); //NOI18N
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/ui.tld"))); //NOI18N
+            } catch (TldLibraryException ex) {
+                //warn user, this should not happen
+                Logger.global.warning(ex.getMessage());
+            }
+        }
+        return DEFAULT_LIBRARIES;
     }
 
     private void dumpLibs() {
         System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : getLibraries().values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; "+ (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") +")");
+        for (TldLibrary l : LIBRARIES.values()) {
+            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
         }
 
     }

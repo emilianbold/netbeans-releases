@@ -173,7 +173,7 @@ public class TldLibrary {
                 @Override
                 public void characters(char[] ch, int start, int length) throws SAXException {
                     if(inURI) {
-                        ns[0] = new String(ch, start, length);
+                        ns[0] = new String(ch, start, length).trim();
                         //stop parsing
                         throw new SAXException(STOP_PARSING_MGS);
                     }
