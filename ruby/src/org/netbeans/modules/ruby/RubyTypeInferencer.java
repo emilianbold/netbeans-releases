@@ -53,13 +53,27 @@ public final class RubyTypeInferencer {
 
     private final ContextKnowledge knowledge;
     private RubyTypeAnalyzer analyzer;
+    private final boolean fast;
 
     public static RubyTypeInferencer create(ContextKnowledge knowledge) {
-        return new RubyTypeInferencer(knowledge);
+        return new RubyTypeInferencer(knowledge, true);
     }
 
-    private RubyTypeInferencer(final ContextKnowledge knowledge) {
+    /**
+     * Creates a new type inferencer.
+     * 
+     * @param knowledge
+     * @param fast skip possibly long running queries (provides less
+     * exact results).
+     * @return
+     */
+    public static RubyTypeInferencer create(ContextKnowledge knowledge, boolean fast) {
+        return new RubyTypeInferencer(knowledge, fast);
+    }
+
+    private RubyTypeInferencer(final ContextKnowledge knowledge, boolean fast) {
         this.knowledge = knowledge;
+        this.fast = fast;
     }
 
     private void initializeAnalyzer() {
@@ -156,7 +170,7 @@ public final class RubyTypeInferencer {
                 break;
         }
         if (type == null && AstUtilities.isCall(node)) {
-            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge);
+            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge, fast);
         }
         if (type == null) {
             type = getTypeForLiteral(node);
