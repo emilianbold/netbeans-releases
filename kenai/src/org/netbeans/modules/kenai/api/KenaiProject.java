@@ -229,7 +229,8 @@ public final class KenaiProject {
         return data.private_hidden;
     }
 
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://([a-z]+\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
+    private static final int repositoryPatternProjectGroup = 5;
 
     /**
      * Looks up a project by repository location.
@@ -242,7 +243,7 @@ public final class KenaiProject {
     public static KenaiProject forRepository(String uri) throws KenaiException {
         Matcher m = repositoryPattern.matcher(uri);
         if (m.matches()) {
-            return Kenai.getDefault().getProject(m.group(4));
+            return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
 
         return null;
