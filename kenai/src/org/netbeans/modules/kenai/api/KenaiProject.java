@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
+import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 
@@ -77,6 +78,7 @@ public final class KenaiProject {
     
     private KenaiFeature[] features;
     private KenaiUser[] members;
+    private KenaiLicense[] licenses;
 
     /**
      * I assume that this constructor does NOT provide full project information. If it does then
@@ -241,7 +243,23 @@ public final class KenaiProject {
     }
 
     /**
-     * Creates new feateru for this project
+     * @return licenses of given project
+     * @see KenaiLicense
+     */
+    public synchronized KenaiLicense[] getLicenses() throws KenaiException {
+        fetchDetailsIfNotAvailable();
+        if (licenses==null) {
+            licenses=new KenaiLicense[data.licenses.length];
+            int i=0;
+            for (LicenceData licence : data.licenses) {
+                licenses[i++] = new KenaiLicense(licence);
+            }
+        }
+        return licenses;
+    }
+
+    /**
+     * Creates new feature for this project
      * @param name
      * @param display_name
      * @param description
@@ -285,6 +303,7 @@ public final class KenaiProject {
             this.data = prj;
             features = null;
             members = null;
+            licenses = null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }

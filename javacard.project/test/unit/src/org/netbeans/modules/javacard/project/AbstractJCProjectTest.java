@@ -41,6 +41,7 @@ package org.netbeans.modules.javacard.project;
 import com.sun.javacard.AID;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -132,14 +133,12 @@ public class AbstractJCProjectTest extends NbTestCase {
             Attributes a = m.getMainAttributes();
             a.putValue("Manifest-Version", "1.0");
             a.putValue("Class-Path", classpath);
-            System.err.println("Writing jar " + name + " with classpath " + classpath + " main attrs size " + m.getMainAttributes().size());
             //sanity check
             assertEquals(classpath, m.getMainAttributes().getValue("Class-Path"));
         }
         jo = new JarOutputStream(bo, m);
-        String act = contents;
         BufferedInputStream bi = new BufferedInputStream(ProjectDependenciesTest.class.getResourceAsStream(resName));
-        JarEntry je = new JarEntry(act);
+        JarEntry je = new JarEntry(contents);
         jo.putNextEntry(je);
         byte[] buf = new byte[1024];
         int anz;
@@ -163,6 +162,31 @@ public class AbstractJCProjectTest extends NbTestCase {
 
         return fakeLib.getCanonicalFile();
     }
+
+    protected File createZip(String contentsName, String contents, String name, String resName) throws Exception {
+        File tmp = new File(System.getProperty("java.io.tmpdir"));
+        final File zipFile = new File(tmp, name);
+        zipFile.deleteOnExit();
+        if (!zipFile.exists()) {
+            assertTrue(zipFile.createNewFile());
+        }
+        BufferedOutputStream bo = new BufferedOutputStream(new FileOutputStream(zipFile));
+        JarOutputStream jo;
+        jo = new JarOutputStream(bo);
+        InputStream bi = new ByteArrayInputStream(contents.getBytes());
+        JarEntry je = new JarEntry(contentsName);
+        jo.putNextEntry(je);
+        byte[] buf = new byte[1024];
+        int anz;
+        while ((anz = bi.read(buf)) != -1) {
+            jo.write(buf, 0, anz);
+        }
+        bi.close();
+        jo.close();
+        bo.close();
+        return zipFile.getCanonicalFile();
+    }
+
 
     protected JCProject createProject(FileObject projTemplate, String name, ProjectKind kind, String pkg, final String nameSpaces, String mainClassName) throws Exception {
         JCProject result;

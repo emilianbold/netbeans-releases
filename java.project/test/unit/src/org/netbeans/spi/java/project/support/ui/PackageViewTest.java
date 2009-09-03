@@ -495,7 +495,8 @@ public class PackageViewTest extends NbTestCase {
         a.getFileSystem().refresh(false);
         assertNodes(rootNode.getChildren(), new String[] { "a" },true );
     }
-    
+
+    @RandomlyFails // NB-Core-Build #3190
     public void testFindPath() throws Exception {
 	// Create children        
         SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
