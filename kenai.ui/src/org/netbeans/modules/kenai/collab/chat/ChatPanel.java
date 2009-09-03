@@ -81,10 +81,12 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.DropDownButtonFactory;
@@ -853,6 +855,27 @@ public class ChatPanel extends javax.swing.JPanel {
         if (lastFocused!=null) {
             dropDownMenu.add(new JSeparator());
         }
+
+        IssueHandle[] issues;
+        if (muc==null) {
+            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+        } else {
+            try {
+                issues = KenaiIssueAccessor.getDefault().getRecentIssues(Kenai.getDefault().getProject(StringUtils.parseName(muc.getRoom())));
+            } catch (KenaiException ex) {
+                issues = new IssueHandle[0];
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+
+        for (int i=0;i<3 && i< issues.length;i++) {
+            dropDownMenu.add(new InsertLinkAction(issues[i], outbox));
+        }
+        if (issues.length>0) {
+            dropDownMenu.add(new JSeparator());
+        }
+
         dropDownMenu.add(new LinkOtherFileAction(outbox));
         dropDownMenu.add(new LinkOtherIssue(outbox));
     }//GEN-LAST:event_dropDownMenuPopupMenuWillBecomeVisible
@@ -891,12 +914,33 @@ public class ChatPanel extends javax.swing.JPanel {
     private String lastNickPrinted = null;
     private String rgb = null;
 
+    private String getMessageBody(Message m) {
+        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", "jabber:client");
+        if (ne==null) {
+            return m.getBody();
+        }
+        KenaiNotification n = ne.getNotification();
+        if (n.getType() != KenaiService.Type.SOURCE) {
+            return m.getBody();
+        }
+        String author = n.getAuthor();
+        String body = m.getBody().substring(m.getBody().indexOf(']')+2);
+        String id = n.getModifications().get(0).getId();
+        String projectName = StringUtils.parseName(m.getFrom());
+        if (projectName.contains("@")) {
+            projectName = StringUtils.parseName(projectName);
+        }
+        String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id;
+        return author + ": " + body + "\n" + url;
+    }
+
     protected void insertMessage(Message message) {
         try {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
             String fromRes = suc==null?StringUtils.parseResource(message.getFrom()):StringUtils.parseName(message.getFrom());
-            history.addMessage(message.getBody()); //Store the message to the history
+            String messageBody = getMessageBody(message);
+            history.addMessage(messageBody); //Store the message to the history
             Random random = new Random(fromRes.hashCode());
             float randNum = random.nextFloat();
             Color headerColor = Color.getHSBColor(randNum, 0.1F, 0.95F);
@@ -925,7 +969,7 @@ public class ChatPanel extends javax.swing.JPanel {
                         DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
             }
             rgb = messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue(); // NOI18N
-            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceSmileys(replaceLinks(removeTags(message.getBody()))) + "</div>"; // NOI18N
+            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceSmileys(replaceLinks(removeTags(messageBody))) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
             inbox.revalidate();

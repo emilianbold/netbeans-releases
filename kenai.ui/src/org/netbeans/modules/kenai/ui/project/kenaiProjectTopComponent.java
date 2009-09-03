@@ -77,7 +77,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
 
     private static final String PREFERRED_ID = "kenaiProjectTopComponent"; //NOI18N
-    private static final String KENAI_URL = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")); //NOI18N
+    private static final String KENAI_URL = Kenai.getDefault().getUrl().toString(); //NOI18N
 
     private static kenaiProjectTopComponent inst = null;
     private KenaiProject instProj = null;
@@ -542,7 +542,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
     private void addSpecificContent() {
         dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_COMMUNICATE"), new ForumsAndMailingListsPanel()); //NOI18N
-        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_TEST"), new IssuesInformationPanel()); //NOI18N
+        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_TEST"), new IssuesInformationPanel(instProj)); //NOI18N
         dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_DEVELOP"), new SourcesInformationPanel(mainScrollPane.getVerticalScrollBar())); //NOI18N
     }
 

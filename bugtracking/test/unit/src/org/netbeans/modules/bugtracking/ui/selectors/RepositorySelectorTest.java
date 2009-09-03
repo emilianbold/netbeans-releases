@@ -45,6 +45,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -53,6 +54,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -206,6 +208,11 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         public Lookup getLookup() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection<RepositoryUser> getUsers() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

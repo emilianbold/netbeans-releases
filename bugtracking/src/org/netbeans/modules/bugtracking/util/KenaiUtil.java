@@ -40,16 +40,22 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.net.PasswordAuthentication;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class KenaiUtil {
 
@@ -151,6 +157,24 @@ public class KenaiUtil {
             return null;
         }
         return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
+    }
+
+    public static Collection<RepositoryUser> getProjectMembers(String projectName) {
+        List<RepositoryUser> members = null;
+        try {
+            KenaiProject kp = Kenai.getDefault().getProject(projectName);
+            KenaiUser[] users = kp.getMembers();
+            members = new ArrayList<RepositoryUser>(users.length);
+            for (KenaiUser user : users) {
+                members.add(new RepositoryUser(user.getUserName(), user.getFirstName()+" "+user.getLastName())); // NOI18N
+            }
+        } catch (KenaiException kex) {
+            kex.printStackTrace();
+        }
+        if (members == null) {
+            members = Collections.emptyList();
+        }
+        return members;
     }
 
 }

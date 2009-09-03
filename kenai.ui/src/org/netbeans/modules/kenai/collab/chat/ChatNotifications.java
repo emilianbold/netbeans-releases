@@ -109,7 +109,11 @@ public class ChatNotifications {
 
     synchronized void addGroupMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
-        final String chatRoomName = StringUtils.parseName(msg.getFrom());
+        String name = StringUtils.parseName(msg.getFrom());
+        if (name.contains("@")) {
+            name = StringUtils.parseName(name);
+        }
+        final String chatRoomName = name;
         final MessagingHandleImpl r = getMessagingHandle(chatRoomName);
         r.notifyMessageReceived(msg);
         String title = null;
