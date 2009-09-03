@@ -247,7 +247,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     //PENDING replace second getRoots() with null if
                     //http://www.netbeans.org/issues/show_bug.cgi?id=162270 gets
                     //fixed
-                    QuerySupport.createCompiledSourceForBinaryQuery(antHelper, evaluator(), getRoots(), getRoots()),
+                    new ProxySourceForBinaryQuery(QuerySupport.createCompiledSourceForBinaryQuery(antHelper, evaluator(), getRoots(), getRoots()), new JCSourceForBinaryQuery(this)),
                     QuerySupport.createTemplateAttributesProvider(antHelper, encodingQuery),
                     //PENDING replace second getRoots() with null if
                     //http://www.netbeans.org/issues/show_bug.cgi?id=162270 gets

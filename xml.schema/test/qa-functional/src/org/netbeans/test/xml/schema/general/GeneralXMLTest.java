@@ -92,6 +92,7 @@ public class GeneralXMLTest extends JellyTestCase {
     {
       public boolean equals( java.lang.String caption, java.lang.String match )
       {
+        //System.out.println( caption + " == " + match );
         return caption.equals( match );
       }
     }
@@ -653,7 +654,7 @@ public class GeneralXMLTest extends JellyTestCase {
       //System.out.println( ">>>" + oto.getText( i, i ) + "<<<" );
 
     String sLast = oto.getLine( iCount - 1 );
-    if( sLast.endsWith( "\r" ) || sLast.endsWith( "\n" ) )
+    if( sLast.endsWith( "\r" ) || sLast.endsWith( "\n" ) || sLast.equals( "" ) )
       iCount--;
     if( asIdeals.length != iCount )
       fail( "Wrong number of output lines: " + iCount );
