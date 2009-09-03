@@ -48,13 +48,13 @@ import org.netbeans.modules.kenai.collab.chat.SPIAccessor;
 class SPIAccessorImpl extends SPIAccessor {
 
     @Override
-    public void firePropertyChange(KenaiUser forName, boolean oldOne, boolean newOne) {
-        forName.firePropertyChange(KenaiUser.PROP_PRESENCE, oldOne, newOne);
+    public void firePropertyChange(KenaiUserUI forName, boolean oldOne, boolean newOne) {
+        forName.firePropertyChange(KenaiUserUI.PROP_PRESENCE, oldOne, newOne);
     }
 
     @Override
     public void clear() {
-        KenaiUser.clear();
+        KenaiUserUI.clear();
     }
 
 

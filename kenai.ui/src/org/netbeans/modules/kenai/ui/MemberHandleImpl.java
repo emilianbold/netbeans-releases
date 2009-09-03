@@ -41,7 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
 
 /**
@@ -50,9 +50,9 @@ import org.netbeans.modules.kenai.ui.spi.MemberHandle;
  */
 public class MemberHandleImpl extends MemberHandle {
 
-    private KenaiUser delegate;
+    private KenaiUserUI delegate;
     public MemberHandleImpl (String name) {
-        this.delegate = KenaiUser.forName(name);
+        this.delegate = KenaiUserUI.forName(name);
     }
 
     @Override

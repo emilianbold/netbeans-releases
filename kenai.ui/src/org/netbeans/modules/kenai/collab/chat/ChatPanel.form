@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Container class="javax.swing.JPopupMenu" name="dropDownMenu">
+      <Events>
+        <EventHandler event="popupMenuWillBecomeInvisible" listener="javax.swing.event.PopupMenuListener" parameters="javax.swing.event.PopupMenuEvent" handler="dropDownMenuPopupMenuWillBecomeInvisible"/>
+        <EventHandler event="popupMenuWillBecomeVisible" listener="javax.swing.event.PopupMenuListener" parameters="javax.swing.event.PopupMenuEvent" handler="dropDownMenuPopupMenuWillBecomeVisible"/>
+      </Events>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+      <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="temp">
+        </MenuItem>
+      </SubComponents>
+    </Container>
+  </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -21,7 +37,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="splitter" pref="402" max="32767" attributes="0"/>
+          <Component id="splitter" pref="403" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -60,22 +76,36 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="toolbar" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="195" max="32767" attributes="0"/>
+                          <Component id="sendLinkButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="197" max="32767" attributes="0"/>
                           <Component id="sendButton" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="sendButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="toolbar" alignment="2" pref="33" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="sendButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="sendLinkButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                 </DimensionLayout>
               </Layout>
               <SubComponents>
+                <Component class="javax.swing.JButton" name="sendLinkButton">
+                  <Properties>
+                    <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                      <Image iconType="3" name="/org/netbeans/modules/kenai/ui/resources/insertlink.png"/>
+                    </Property>
+                    <Property name="focusable" type="boolean" value="false"/>
+                    <Property name="horizontalTextPosition" type="int" value="0"/>
+                    <Property name="verticalTextPosition" type="int" value="3"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendLinkButtonActionPerformed"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="DropDownButtonFactory.createDropDownButton(ImageUtilities.loadImageIcon(&quot;/org/netbeans/modules/kenai/ui/resources/insertlink.png&quot;, true), dropDownMenu)"/>
+                  </AuxValues>
+                </Component>
                 <Component class="javax.swing.JButton" name="sendButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -86,32 +116,6 @@
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendButtonActionPerformed"/>
                   </Events>
                 </Component>
-                <Container class="javax.swing.JToolBar" name="toolbar">
-                  <Properties>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="null"/>
-                    </Property>
-                    <Property name="floatable" type="boolean" value="false"/>
-                    <Property name="rollover" type="boolean" value="true"/>
-                  </Properties>
-
-                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
-                  <SubComponents>
-                    <Component class="javax.swing.JButton" name="sendLinkButton">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/kenai/ui/resources/insertlink.png"/>
-                        </Property>
-                        <Property name="focusable" type="boolean" value="false"/>
-                        <Property name="horizontalTextPosition" type="int" value="0"/>
-                        <Property name="verticalTextPosition" type="int" value="3"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendLinkButtonActionPerformed"/>
-                      </Events>
-                    </Component>
-                  </SubComponents>
-                </Container>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JScrollPane" name="outboxScrollPane">

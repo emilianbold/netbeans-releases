@@ -74,7 +74,7 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -173,7 +173,7 @@ public class CommentsPanel extends JPanel {
         rightLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
-            stateLabel = KenaiUser.forName(author).createUserWidget();
+            stateLabel = KenaiUserUI.forName(author).createUserWidget();
             stateLabel.setText(null);
         }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N

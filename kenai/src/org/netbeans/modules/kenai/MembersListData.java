@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,51 +34,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai;
 
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
 
 /**
  *
  * @author Jan Becicka
  */
-@ServiceProvider(service=MemberAccessor.class)
-public class MemberAccessorImpl extends MemberAccessor{
+@IgnoreNonExisting
+public class MembersListData extends ListData {
+
+    public UserData members[];
 
     @Override
-    public List<MemberHandle> getMembers(ProjectHandle project) {
-        ArrayList<MemberHandle> handles = new ArrayList();
-        for (String user : KenaiConnection.getDefault().getMembers(project.getId())) {
-            handles.add(new MemberHandleImpl(user));
-        }
-        return handles;
+    public int size() {
+        return members.length;
     }
-
-    @Override
-    public Action getStartChatAction(final MemberHandle member) {
-        return new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                KenaiUserUI.forName(member.getName()).startChat();
-            }
-        };
-    }
-
 }

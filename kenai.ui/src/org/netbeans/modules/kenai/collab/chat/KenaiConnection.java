@@ -73,8 +73,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.Status;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -210,7 +209,7 @@ public class KenaiConnection implements PropertyChangeListener {
         try {
             connect();
             initChats();
-            PresenceIndicator.getDefault().setStatus(Status.ONLINE);
+            PresenceIndicator.getDefault().setStatus(Kenai.Status.ONLINE);
             isConnectionFailed = false;
         } catch (XMPPException ex) {
             isConnectionFailed = true;
@@ -387,12 +386,12 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
     public void propertyChange(final PropertyChangeEvent e) {
-        if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+        if (Kenai.PROP_XMPP_LOGIN.equals(e.getPropertyName())) {
             if (e.getNewValue() != null) {
                 post(new Runnable() {
                     public void run() {
                         synchronized(KenaiConnection.this) {
-                            final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
+                            final PasswordAuthentication pa = Kenai.getDefault().getPasswordAuthentication();
                             USER = pa.getUserName();
                             tryConnect();
                         }
@@ -415,9 +414,11 @@ public class KenaiConnection implements PropertyChangeListener {
                         privateListeners.clear();
                         privateMessageQueue.clear();
                         privateChats.clear();
+                        //TODO: just to init DEFAULT
+                        KenaiUserUI fake;
                         SPIAccessor.DEFAULT.clear();
                     }
-                    PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
+                    PresenceIndicator.getDefault().setStatus(Kenai.Status.OFFLINE);
                     ChatNotifications.getDefault().clearAll();
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -475,7 +476,7 @@ public class KenaiConnection implements PropertyChangeListener {
                         }
                     }
                     Presence presence = (Presence) packet;
-                    KenaiUser user = KenaiUser.forName(StringUtils.parseResource(packet.getFrom()));
+                    KenaiUserUI user = KenaiUserUI.forName(StringUtils.parseResource(packet.getFrom()));
                     SPIAccessor.DEFAULT.firePropertyChange(
                             user,
                             presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);

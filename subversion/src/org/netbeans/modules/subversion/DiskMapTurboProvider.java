@@ -343,19 +343,25 @@ class DiskMapTurboProvider implements TurboProvider {
         Set set = map != null ? map.keySet() : null;
 
         // all modified files
-        index.add(dir, set);
-
-        // conflict
         Set<File> conflictedSet = new HashSet();
+        Set<File> newSet = new HashSet();
         if(set != null) {
             for (Iterator i = set.iterator(); i.hasNext();) {
                 File file = (File) i.next();
                 FileInformation info = (FileInformation) map.get(file);
+
+                // conflict
                 if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
                     conflictedSet.add(file);
                 }
+
+                // all but uptodate
+                if((info.getStatus() & STATUS_VALUABLE) != 0) {
+                    newSet.add(file);
+                }
             }
         }
+        index.add(dir, set);
         conflictedIndex.add(dir, conflictedSet);
     }
 
