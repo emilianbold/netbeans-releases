@@ -36,51 +36,68 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.web.jsf.editor.index;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Logger;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
- * TODO use indexing
  *
  * @author marekfukala
  */
-public class TldLibraryGlobalCache {
+public class JsfBinaryIndexer extends BinaryIndexer {
 
-    private static TldLibraryGlobalCache INSTANCE;
+    static final String INDEXER_NAME = "jsfBinary"; //NOI18N
+    static final int INDEX_VERSION = 1;
 
-    public static synchronized TldLibraryGlobalCache getDefault() {
-        if (INSTANCE == null) {
-            INSTANCE = new TldLibraryGlobalCache();
+    static final String LIB_NAMESPACE_KEY = "namespace"; //NOI18N
+
+    @Override
+    protected void index(Context context) {
+        if(context.getRoot() == null) {
+            return ;
         }
-        return INSTANCE;
-    }
-    //classpath entry -> libraries map
-    private final Map<FileObject, Collection<TldLibrary>> LIBRARIES = new WeakHashMap<FileObject, Collection<TldLibrary>>();
-    private Collection<TldLibrary> DEFAULT_LIBRARIES;
 
-    public Collection<TldLibrary> getLibraries(FileObject classpathRoot) {
-        synchronized (LIBRARIES) {
-            Collection<TldLibrary> cached = LIBRARIES.get(classpathRoot);
-            if (cached == null) {
-                //no entry for this jar so far
-                LIBRARIES.put(classpathRoot, findLibraries(classpathRoot));
-                cached = LIBRARIES.get(classpathRoot);
+        processTlds(context);
+    }
+
+    private void processTlds(Context context) {
+        FileObject root = context.getRoot();
+        //find all TLDs in the jar file
+        for (FileObject file : findLibraryDescriptors(root)) {
+            try {
+                String namespace = TldLibrary.parseNamespace(file.getInputStream());
+                if (namespace != null) {
+                    IndexingSupport sup = IndexingSupport.getInstance(context);
+                    IndexDocument doc = sup.createDocument(file);
+                    doc.addPair(LIB_NAMESPACE_KEY, namespace, true, true);
+                    sup.addDocument(doc);
+                }
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            return cached;
         }
+
     }
 
-    private Collection<TldLibrary> findLibraries(FileObject classpathRoot) {
-        List<TldLibrary> libs = new ArrayList<TldLibrary>();
+
+    private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot) {
+        Collection<FileObject> files = new ArrayList<FileObject>();
         Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
         while (fos.hasMoreElements()) {
             FileObject fo = fos.nextElement();
@@ -89,32 +106,34 @@ public class TldLibraryGlobalCache {
                 for (FileObject file : fo.getChildren()) {
                     if (file.getNameExt().toLowerCase(Locale.US).endsWith(".tld")) { //NOI18N
                         //found library, create a new instance and cache it
-                        try {
-                            //found library, create a new instance and cache it
-                            libs.add(TldLibrary.create(file));
-                        } catch (TldLibraryException ex) {
-                            Logger.global.info(ex.getMessage());
-                        }
+                        files.add(file);
                     }
                 }
             }
         }
-        return libs;
+        return files;
     }
 
-    public synchronized Collection<TldLibrary> getDefaultLibraries() {
-        if (DEFAULT_LIBRARIES == null) {
-            DEFAULT_LIBRARIES = new ArrayList<TldLibrary>();
-            try {
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/composite.tld"))); //NOI18N
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/ui.tld"))); //NOI18N
-            } catch (TldLibraryException ex) {
-                //warn user, this should not happen
-                Logger.global.warning(ex.getMessage());
-            }
+    public static class Factory extends BinaryIndexerFactory {
+
+        @Override
+        public BinaryIndexer createIndexer() {
+            return new JsfBinaryIndexer();
         }
-        return DEFAULT_LIBRARIES;
+
+        @Override
+        public void rootsRemoved(Iterable<? extends URL> removedRoots) {
+//            System.out.println("JsfBinaryIndexer: roots removed");
+        }
+
+        @Override
+        public String getIndexerName() {
+            return INDEXER_NAME;
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return INDEX_VERSION;
+        }
     }
 }

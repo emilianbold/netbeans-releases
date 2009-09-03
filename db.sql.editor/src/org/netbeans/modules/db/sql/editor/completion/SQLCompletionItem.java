@@ -65,8 +65,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final String SCHEMA_COLOR = "<font color=#006666>"; // NOI18N
     private static final String TABLE_COLOR = "<font color=#cc7800>"; // NOI18N
     private static final String COLUMN_COLOR = "<font color=#0707ab>"; // NOI18N
-    // TODO - use own color
-    private static final String KEYWORD_COLOR = "<font color=#0707ab>"; // NOI18N
+    private static final String KEYWORD_COLOR = "<font color=#005180>"; // NOI18N
     private static final String COLOR_END = "</font>"; // NOI18N
 
     private static final String BOLD = "<b>"; // NOI18N

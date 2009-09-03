@@ -64,7 +64,6 @@ import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
@@ -112,7 +111,6 @@ public class JspIndenterTest extends TestBase2 {
         MockLookup.setInstances(new TestClassPathProvider(createClassPaths()), testLanguageProvider);
         initParserJARs();
         
-        NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
         // init TestLanguageProvider

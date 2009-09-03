@@ -36,66 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.awt.Image;
-import javax.swing.Action;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
+package org.netbeans.editor.ext.html.dtd.spi;
+
+import java.util.Collection;
 
 /**
  *
- * @author mt154047
+ * @author marekfukala
  */
-final class FunctionCallNode extends AbstractNode implements GoToSourceAction.GoToSourceActionReadnessListener {
+public abstract class ReaderProviderFactory {
 
-    private final FunctionCall functionCall;
-    private GoToSourceAction action;
-
-    FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
-        super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCaller(functionCall)));
-        this.functionCall = functionCall;
-        action = new GoToSourceAction(stackModel.getSourceFileInfoProvider(), functionCall, this);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return functionCall.getDisplayedName();
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.mergeImages(CallStackUISupport.functionIcon, CallStackUISupport.upBadge, 0, 0);
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{action};
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        return action;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        if (!action.isEnabled()) {
-            String baseName = super.getHtmlDisplayName();
-            baseName = baseName != null ? baseName : getDisplayName();
-            return "<font color='!controlShadow'>" + baseName; // NOI18N
-            }
-        return super.getHtmlDisplayName();
-    }
-
-    public void ready() {
-        fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
-    }
+    public abstract Collection<ReaderProvider> getProviders();
+    
 }
