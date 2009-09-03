@@ -46,7 +46,7 @@ package org.netbeans.modules.dlight.util;
  * @author Alexey Vladykin
  */
 public final class Range<T extends Number & Comparable<? super T>> {
-
+    public static final String STRING_DELIMITER = "..";//NOI18N
     private final T start;
     private final T end;
 
@@ -68,6 +68,7 @@ public final class Range<T extends Number & Comparable<? super T>> {
 
     @Override
     public String toString() {
-        return String.valueOf(start) + ".." + String.valueOf(end); // NOI18N
+        return String.valueOf(start) + STRING_DELIMITER + String.valueOf(end); // NOI18N
     }
+
 }
