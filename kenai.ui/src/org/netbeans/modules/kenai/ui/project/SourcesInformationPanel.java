@@ -228,7 +228,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 final KenaiFeature repo = repos[k];
 
                 DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://"); //NOI18N
+                String base = Kenai.getDefault().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
                 String urlStr = base + repo.getWebLocation().getPath().replaceAll("/show$", "/history.atom"); //NOI18N
                 int entriesCount = 0;
                 NodeList entries = null;
