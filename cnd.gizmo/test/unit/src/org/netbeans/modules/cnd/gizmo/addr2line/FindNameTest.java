@@ -43,6 +43,8 @@ import org.netbeans.modules.cnd.gizmo.addr2line.dwarf2line.Dwarf2NameFinder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.junit.NbTestCase;
@@ -52,6 +54,9 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
+import org.netbeans.modules.cnd.gizmo.DwarfSourceInfoProvider;
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.util.Exceptions;
 
 /**
@@ -126,7 +131,12 @@ public class FindNameTest extends NbTestCase {
         long base = 0;
         LineNumber number = null;
         LineNumber candidate = null;
+        SourceFileInfo fileInfo = null;
         try {
+            DwarfSourceInfoProvider provider = new DwarfSourceInfoProvider();
+            Map<String, String> serviceInfo = new HashMap<String, String>();
+            serviceInfo.put(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
+            fileInfo = provider.fileName(function, -1, shift, serviceInfo);
             Dwarf dwarf = new Dwarf(executable);
             try {
                 loop:for (CompilationUnit unit : dwarf.getCompilationUnits()){
@@ -184,9 +194,13 @@ public class FindNameTest extends NbTestCase {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        if (fileInfo != null) {
+            System.err.println("Dwarf Provider:\t" + fileInfo.getFileName() + ":" + fileInfo.getLine());
+        }
         Dwarf2NameFinder source = getDwarfSource(executable);
         source.lookup(base + shift);
         System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+        assertNotNull(fileInfo);
         assertNotNull(number);
         assertEquals(number.line, source.getLineNumber());
         assertNotNull(candidate);

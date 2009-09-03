@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ReconfigureProvider;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
@@ -169,6 +170,9 @@ public final class THAProjectSupport implements PropertyChangeListener {
         //if it is sparc it means we do not need option
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc.isMakefileConfiguration()){
+            return isConfiguredForInstrumentationMakefile();
+        }
         if (!instrSupport.isInstrumentationNeeded(mc.getDevelopmentHost().getExecutionEnvironment())){
             return true;
         }
@@ -178,6 +182,16 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         return false;
     }
+
+    private boolean isConfiguredForInstrumentationMakefile() {
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        String args = ReconfigureProvider.getDefault().getLastFlags(project);
+        if (args.indexOf(instrSupport.getCompilerOptions())>=0) {
+            return true;
+        }
+        return false;
+    }
+
 
     public boolean isInstrumented() {
         if (!isSupported(project)) {
@@ -237,6 +251,9 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc.isMakefileConfiguration()){
+            return doInstrumentationMakefile();
+        }
 
         THAInstrumentationSupport instrSupport = getInstrumentationSupport();
 
@@ -265,6 +282,12 @@ public final class THAProjectSupport implements PropertyChangeListener {
         return true;
     }
 
+    private boolean doInstrumentationMakefile() {
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        ReconfigureProvider.getDefault().reconfigure(project, "-g "+instrSupport.getCompilerOptions(), "-g "+instrSupport.getCompilerOptions());
+        return false;
+    }
+
     public boolean undoInstrumentation() {
         THAInstrumentationSupport instrSupport = getInstrumentationSupport();
 
@@ -276,6 +299,9 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc.isMakefileConfiguration()){
+            return undoInstrumentationMakefile();
+        }
 
         String linkerOptions = mc.getLinkerConfiguration().getCommandLineConfiguration().getValue();
         String linkerInstrOption = instrSupport.getLinkerOptions();
@@ -311,6 +337,11 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
 
         return changed;
+    }
+
+    private boolean undoInstrumentationMakefile() {
+        ReconfigureProvider.getDefault().reconfigure(project, "-g", "-g");
+        return false;
     }
 
     private static String loc(String key, String... params) {
