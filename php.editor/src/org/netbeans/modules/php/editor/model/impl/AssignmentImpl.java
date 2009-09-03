@@ -128,7 +128,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         if (tName != null) {
             //StackOverflow prevention
             if (canBeProcessed(tName)) {
-                types = VariousUtils.getType(topScope, (VariableScope) getInScope(),
+                types = VariousUtils.getType( (VariableScope) getInScope(),
                         tName, getOffset(), false);
             }
         }

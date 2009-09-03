@@ -91,7 +91,7 @@ public class FileAnnotationInfo {
         return null;
     }
 
-    public LineAnnotationInfo getLineAnnotationInfoByOffset(int offset) {
+    public LineAnnotationInfo getLineAnnotationInfoByLineOffset(int offset) {
         for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
             if (lineInfo.getPosition() != null) {
                 if (lineInfo.getPosition().getOffset() == offset) {

@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -416,7 +417,10 @@ public class RubyElementCtx {
                         fqn = RubyIndex.OBJECT;
                     }
 
-                    IndexedMethod method = index.getOverridingMethod(fqn, getName());
+                    Set<IndexedMethod> methods = index.getMethods(getName(), fqn, Kind.EXACT);
+                    IndexedMethod method = !methods.isEmpty() 
+                            ? methods.iterator().next()
+                            : index.getSuperMethod(fqn, getName());
 
                     if (method != null) {
                         defClass = method.getIn();
@@ -426,7 +430,7 @@ public class RubyElementCtx {
 
                 if (defClass == null) {
                     // Just an inherited method call?
-                    if (!types.isKnown() && lhs == null) {
+                    if (!types.isKnown() && (lhs == null || "self".equals(lhs))) {
                         defClass = AstUtilities.getFqnName(getPath());
                     } else if (types.isKnown()) {
                         // TODO handle all types - types.getRealTypes();

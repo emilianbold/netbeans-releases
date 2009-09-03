@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
@@ -168,12 +168,172 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-
     @Override
     public void visit(ReturnStatement node) {
-        markerBuilder.prepare(node, modelBuilder.getCurrentScope());
+        final ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        markerBuilder.prepare(node,currentScope);        
+        String typeName = null;
+
+        if (currentScope instanceof FunctionScope) {
+            FunctionScopeImpl functionScope = (FunctionScopeImpl) currentScope;
+            Expression expression = node.getExpression();
+            if (expression instanceof ClassInstanceCreation) {
+                ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
+                ASTNodeInfo<ClassInstanceCreation> inf = ASTNodeInfo.create(instanceCreation);
+                typeName = inf.getName();
+            } else if (expression instanceof VariableBase) {
+                typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
+                if (typeName != null) {
+                    Collection<? extends VariableName> allVariables = VariousUtils.getAllVariables(functionScope, typeName);
+                    Map<String,String> var2Type = new HashMap<String, String>();
+                    for (VariableName variable : allVariables) {
+                        String name = variable.getName();
+                        String type = resolveVariableType(name, functionScope, node);
+                        if (type == null) {
+                            var2Type = Collections.emptyMap();
+                            break;
+                        }
+                        var2Type.put(name, type);
+                    }
+                    if (!var2Type.isEmpty()) {
+                        typeName = VariousUtils.replaceVarNames(typeName, var2Type);
+                    }
+                }
+            }
+            
+            if (typeName != null) {
+                Set<String> types = new HashSet<String>();
+                if (functionScope.returnType != null) {
+                    String[] split = functionScope.returnType.split("\\|");//NOI18N
+                    for (String tp : split) {
+                        types.add(tp);
+                    }
+                }
+                //TODO: qualified name is lost now
+                String tp = QualifiedName.create(typeName).toName().toString();
+                if (types.isEmpty()) {
+                    functionScope.returnType = tp;
+                } else if (types.add(tp)){
+                    functionScope.returnType += "|" + tp;//NOI18N
+                }
+            }
+        }
         super.visit(node);
     }
+
+    /*private String resolveFieldType(String varName, String fieldName, FunctionScopeImpl functionScope, ReturnStatement node) {
+        VariableNameImpl var = (VariableNameImpl) ModelUtils.getFirst(functionScope.getDeclaredVariables(), varName);
+        if (var != null) {
+            String typeName = var.findFieldType(node.getStartOffset(), fieldName);
+            if (typeName != null) {
+                if (!typeName.contains("@")) {//NOI18N
+                    return typeName;
+                } else {
+                    String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
+                    if (variableName != null && !variableName.equalsIgnoreCase(varName)) {
+                        return resolveVariableType(variableName, functionScope, node);
+                    }
+                }
+            }
+        }
+        if (varName != null) {
+            String varTypeName = resolveVariableType(varName, functionScope, node);
+            if (varTypeName != null) {
+                ClassScope classScope = ModelUtils.getFirst(ModelUtils.getDeclaredClasses(fileScope), varTypeName);
+                if (classScope != null) {
+                    FieldElementImpl fieldElement = (FieldElementImpl) ModelUtils.getFirst(classScope.getDeclaredFields(), fieldName, "$" + fieldName);
+                    if (fieldElement != null && fieldElement.defaultType != null) {
+                        return fieldElement.defaultType;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private String resolveFieldType(FieldAccess fieldAccess, FunctionScopeImpl varScope, ReturnStatement node) {
+        final VariableBase dispatcher = fieldAccess.getDispatcher();
+        final Variable field = fieldAccess.getField();
+        final String fieldName = CodeUtils.extractVariableName(field);        
+        if (dispatcher instanceof Variable && fieldName != null) {
+            final String varName = CodeUtils.extractVariableName((Variable) dispatcher);
+            if (varName != null) {
+                return resolveFieldType(varName, fieldName, varScope, node);
+            }
+        }
+        return null;
+    }*/
+    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    private String resolveVariableType(String varName, FunctionScopeImpl varScope, ReturnStatement node) {
+        try {
+            if (varName != null && recursionDetection.add(varName)) {
+                if (varName.equalsIgnoreCase("$this") && varScope instanceof MethodScope) {//NOI18N
+                    return varScope.getInScope().getName();
+                }
+                VariableNameImpl var = (VariableNameImpl) ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
+                if (var != null) {
+                    AssignmentImpl assignment = var.findVarAssignment(node.getStartOffset());
+                    if (assignment != null) {
+                        String typeName = assignment.typeNameFromUnion();
+                        if (typeName != null) {
+                            if (!typeName.contains("@")) {//NOI18N
+                                return typeName;
+                            } else {
+                                String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
+                                if (variableName != null && !variableName.equalsIgnoreCase(varName)) {
+                                    return resolveVariableType(variableName, varScope, node);
+                                }
+                                return typeName;
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (varName != null) {
+                recursionDetection.remove(varName);
+            }
+        }
+        return null;
+    }
+
+    public static String getName(String semiType, VariousUtils.Kind kind, boolean strict) {
+        if (semiType != null) {
+            String prefix = "@" + kind.toString(); // NOI18N
+            if (semiType.startsWith(prefix)) {
+                String[] split = semiType.split(prefix, 2);
+                if (split.length > 1) {
+
+                    if (split[1].contains("@")) {
+                        if (strict) {
+                            return null;
+                        } else {
+                            split = split[1].split("@");
+                            if (split.length < 1) {
+                                return null;
+                            }
+                            return split[0];
+                        }
+                    } else {
+                        return split[1];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    /*public static String[] getField(String semiType) {
+        if (semiType != null) {
+            String prefix = "@" + VariousUtils.VAR_TYPE_PREFIX; // NOI18N
+            if (semiType.startsWith(prefix)) {
+                String[] split = semiType.split(prefix, 2);
+                if (split.length > 1 && (split[1].length() +prefix.length() == semiType.length())) {
+                    return split[1];
+                }
+            }
+        }
+        return null;
+    }*/
 
     @Override
     public void visit(Program program) {

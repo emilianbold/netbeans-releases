@@ -170,7 +170,6 @@ public class DwarfLineInfoSection extends ElfSection {
         }
     }
 
-    @SuppressWarnings("fallthrough")
     private Set<LineNumber> interpret(DwarfStatementList section, long shift) throws IOException {
         long address = 0;
         long base_address = 0;
@@ -185,7 +184,6 @@ public class DwarfLineInfoSection extends ElfSection {
         String sourceFile = null;
         Set<LineNumber> result = new HashSet<LineNumber>();
 
-        interpret:
         while (reader.getFilePointer() < header.getSectionOffset() + shift + section.total_length) {
 
             int opcode = reader.readByte() & 0xFF;
@@ -229,10 +227,10 @@ public class DwarfLineInfoSection extends ElfSection {
                                 reader.seek(reader.getFilePointer() + insn_len);
                                 break;
                         }
-                        // fallthrough is legitimate (program author said)
+                        break;
                     }
                     case DW_LNS_copy:
-                        lineNumber = prev_lineno;
+                        lineNumber = prev_lineno == 1 ? lineno : prev_lineno;
                         sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
                         result.add(new LineNumber(sourceFile, lineNumber, prev_base_address, address));
                         prev_lineno = lineno;
@@ -298,7 +296,6 @@ public class DwarfLineInfoSection extends ElfSection {
         return result;
     }
 
-    @SuppressWarnings("fallthrough")
     private LineNumber interpret(long target, DwarfStatementList section, long shift) throws IOException {
         long address = 0;
         long base_address = 0;
@@ -312,7 +309,6 @@ public class DwarfLineInfoSection extends ElfSection {
         int lineNumber = -1;
         String sourceFile = null;
 
-        interpret:
         while (reader.getFilePointer() < header.getSectionOffset() + shift + section.total_length) {
 
             int opcode = reader.readByte() & 0xFF;
@@ -357,11 +353,11 @@ public class DwarfLineInfoSection extends ElfSection {
                                 reader.seek(reader.getFilePointer() + insn_len);
                                 break;
                         }
-                        // fallthrough is legitimate (program author said)
+                        break;
                     }
                     case DW_LNS_copy:
                         if (prev_base_address <= target && address > target) {
-                            lineNumber = prev_lineno;
+                            lineNumber = prev_lineno == 1 ? lineno : prev_lineno;
                             sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
                             return new LineNumber(sourceFile, lineNumber, prev_base_address, address);
                         }
