@@ -542,7 +542,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
     private void addSpecificContent() {
         dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_COMMUNICATE"), new ForumsAndMailingListsPanel()); //NOI18N
-        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_TEST"), new IssuesInformationPanel()); //NOI18N
+        dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_TEST"), new IssuesInformationPanel(instProj)); //NOI18N
         dynamicContentPane.add(NbBundle.getMessage(kenaiProjectTopComponent.class, "MSG_DEVELOP"), new SourcesInformationPanel(mainScrollPane.getVerticalScrollBar())); //NOI18N
     }
 
