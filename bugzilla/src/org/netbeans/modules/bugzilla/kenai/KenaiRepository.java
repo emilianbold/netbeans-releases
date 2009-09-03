@@ -232,4 +232,8 @@ public class KenaiRepository extends BugzillaRepository {
         return KenaiUtil.getProjectMembers(product.toLowerCase());
     }
 
+    public String getHost() {
+        return host;
+    }
+
 }
