@@ -64,6 +64,8 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -499,36 +501,7 @@ public class WizardDescriptor extends DialogDescriptor {
         updateState();
 
         // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                final Window w = SwingUtilities.getWindowAncestor((Component) getMessage());
-                if (w != null) {
-                    w.addWindowListener (new WindowListener () {
-                        public void windowActivated (WindowEvent e) {
-                        }
-                        public void windowClosed (WindowEvent e) {
-                        }
-                        public void windowClosing (WindowEvent e) {
-                            if (!changeStateInProgress) {
-                                if (WizardDescriptor.this.getValue () == null || WizardDescriptor.NEXT_OPTION.equals (WizardDescriptor.this.getValue ())) {
-                                    WizardDescriptor.this.setValue (NotifyDescriptor.CLOSED_OPTION);
-                                }
-                                w.setVisible (false);
-                                w.dispose ();
-                            }
-                        }
-                        public void windowDeactivated (WindowEvent e) {
-                        }
-                        public void windowDeiconified (WindowEvent e) {
-                        }
-                        public void windowIconified (WindowEvent e) {
-                        }
-                        public void windowOpened (WindowEvent e) {
-                        }
-                    });
-                }
-            }
-        });
+        SwingUtilities.invokeLater (new WindowListenerImpl(this));
     }
 
     /** Set a different list of panels.
@@ -3030,4 +3003,56 @@ public class WizardDescriptor extends DialogDescriptor {
         public void previousPanel() {
         }
     } // end of EmptyPanel
+
+    private static class WindowListenerImpl implements WindowListener, Runnable {
+        private final Reference<WizardDescriptor> ref;
+        private Window w;
+
+        public WindowListenerImpl(WizardDescriptor wd) {
+            this.ref = new WeakReference<WizardDescriptor>(wd);
+        }
+
+        public void run () {
+            WizardDescriptor wd = ref.get();
+            if (wd == null) {
+                return;
+            }
+            w = SwingUtilities.getWindowAncestor((Component) wd.getMessage());
+            if (w != null) {
+                w.addWindowListener (this);
+            }
+        }
+
+        public void windowActivated(WindowEvent e) {
+        }
+
+        public void windowClosed(WindowEvent e) {
+        }
+
+        public void windowClosing(WindowEvent e) {
+            WizardDescriptor wd = ref.get();
+            if (wd == null) {
+                return;
+            }
+            if (!wd.changeStateInProgress) {
+                if (wd.getValue() == null || WizardDescriptor.NEXT_OPTION.equals(wd.getValue())) {
+                    wd.setValue(NotifyDescriptor.CLOSED_OPTION);
+                }
+                w.setVisible(false);
+                w.dispose();
+            }
+        }
+
+        public void windowDeactivated(WindowEvent e) {
+        }
+
+        public void windowDeiconified(WindowEvent e) {
+        }
+
+        public void windowIconified(WindowEvent e) {
+        }
+
+        public void windowOpened(WindowEvent e) {
+        }
+    } // end of WindowListenerImpl
 }

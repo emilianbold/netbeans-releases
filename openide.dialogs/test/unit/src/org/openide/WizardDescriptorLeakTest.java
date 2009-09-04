@@ -39,32 +39,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.windows.services;
+package org.openide;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-/** Tests issue 96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter
- *
- * @author Jiri Rechtacek
- */
-public class NbPresenterLeakTest extends NbTestCase {
+public class WizardDescriptorLeakTest extends NbTestCase {
 
-    public NbPresenterLeakTest (String testName) {
+    public WizardDescriptorLeakTest (String testName) {
         super (testName);
     }
 
@@ -73,41 +61,11 @@ public class NbPresenterLeakTest extends NbTestCase {
         return false;
     }
 
-    @RandomlyFails // NB-Core-Build #1189
-    public void testLeakingNbPresenterDescriptor () throws InterruptedException, InvocationTargetException {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels(), null);
-        wizardDescriptor.setModal (false);
-        Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
-        WeakReference<WizardDescriptor> w = new WeakReference<WizardDescriptor> (wizardDescriptor);
-        
-        SwingUtilities.invokeAndWait (new EDTJob(dialog, true));
-        SwingUtilities.invokeAndWait (new EDTJob(dialog, false));
-        boolean cancelled = wizardDescriptor.getValue() !=
-            WizardDescriptor.FINISH_OPTION;
-        Dialog d = new JDialog();
-        
-        // workaround for JDK bug 6575402
-        JPanel p = new JPanel();
-        d.setLayout(new BorderLayout());
-        d.add(p, BorderLayout.CENTER);
-        JButton btn = new JButton("Button");
-        p.add(btn, BorderLayout.NORTH);
-        
-        SwingUtilities.invokeAndWait (new EDTJob(d, true));
-        Thread.sleep(1000); // let it actually paint
-        SwingUtilities.invokeAndWait (new EDTJob(d, false));
-
-        //assertNull ("BufferStrategy was disposed.", dialog.getBufferStrategy ());
-        
-        dialog = null;
-        wizardDescriptor = null;
-        
-        assertGC ("Dialog disappears.", w);
-    }
+    private static Object HOLDER;
 
     /** Preventing following memory leak by making sure dispose() clear all
      * references to DialogDescriptor.
-     *
+     * 
      * <pre>
 private static java.awt.Component java.awt.KeyboardFocusManager.focusOwner->
 javax.swing.JFrame@1e89fdb-focusTraversalPolicy->
@@ -149,6 +107,7 @@ org.netbeans.modules.java.j2seproject.J2SEProject@161761f
         WeakReference<Object> m = new WeakReference<Object> (wizardDescriptor.getMessage());
         wizardDescriptor = null;
         dialog.dispose();
+        HOLDER = dialog;
 
         assertGC("After dispose the descriptor can disappear", w);
         assertGC("After dispose the message can disappear", m);
@@ -161,22 +120,6 @@ org.netbeans.modules.java.j2seproject.J2SEProject@161761f
         });
     }
 
-    
-    private static class EDTJob implements Runnable {
-        private Dialog d;
-        private boolean visibility;
-        
-        EDTJob (Dialog d, boolean vis) {
-            this.d = d;
-            visibility = vis;
-        }
-        public void run() {
-            d.setVisible(visibility);
-            if (!visibility) {
-                d.dispose();
-            }
-        }
-    }
     
     private WizardDescriptor.Panel<?>[] getPanels () {
         WizardDescriptor.Panel p1 = new WizardDescriptor.Panel () {

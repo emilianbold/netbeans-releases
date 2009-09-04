@@ -1002,6 +1002,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             }
         }
     }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        descriptor = null;
+    }
     
     public Void run() {
         doShow();

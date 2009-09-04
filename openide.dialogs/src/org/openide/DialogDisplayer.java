@@ -246,7 +246,7 @@ public abstract class DialogDisplayer {
         }
 
         private static final class StandardDialog extends JDialog {
-            final NotifyDescriptor nd;
+            NotifyDescriptor nd;
             private Component messageComponent;
             private final JPanel buttonPanel;
             private final Object[] closingOptions;
@@ -311,6 +311,14 @@ public abstract class DialogDisplayer {
                 nd.setValue(NotifyDescriptor.CANCEL_OPTION);
                 haveFinalValue = true;
                 dispose();
+            }
+
+            @Override
+            public void dispose() {
+                super.dispose();
+                getContentPane().removeAll();
+                nd = null;
+                messageComponent = null;
             }
 
             public void updateMessage() {
