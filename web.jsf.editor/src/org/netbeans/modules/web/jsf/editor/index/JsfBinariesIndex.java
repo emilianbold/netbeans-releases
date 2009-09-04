@@ -39,6 +39,7 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,5 +118,21 @@ public class JsfBinariesIndex {
             Exceptions.printStackTrace(ex);
         }
         return null;
+    }
+
+    public Collection<FileObject> getAllFaceletsLibraryDescriptors() {
+        Collection<FileObject> files = new ArrayList<FileObject>();
+        try {
+            Collection<? extends IndexResult> results = index.query(JsfBinaryIndexer.LIB_FACELETS_KEY, "true", QuerySupport.Kind.EXACT, JsfBinaryIndexer.LIB_FACELETS_KEY);
+
+            for (IndexResult result : results) {
+                FileObject file = result.getFile();
+                files.add(file);
+
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return files;
     }
 }
