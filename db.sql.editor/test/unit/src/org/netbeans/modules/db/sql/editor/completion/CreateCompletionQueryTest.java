@@ -34,21 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.sql.editor.completion;
 
-package org.netbeans.modules.db.sql.analyzer;
-
-/**
+/** Tests completion of SQL CREATE statement.
  *
- * @author Andrei Badea
+ * @author Jiri Skrivanek
  */
-public enum SQLStatementKind {
+public class CreateCompletionQueryTest extends CompletionQueryTestCase {
 
-    CREATE,
-    DELETE,
-    DROP,
-    INSERT,
-    SELECT,
-    UPDATE
+    public CreateCompletionQueryTest(String testName) {
+        super(testName);
+    }
+
+    public void testCreate() {
+        String sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "|";
+        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT |";
+        assertItems(doQuery(sql), "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * |";
+        assertItems(doQuery(sql), "FROM");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM |";
+        assertItems(doQuery(sql), "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM tab_customer;\n" +
+            "|";
+        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM tab_customer;\n" +
+            "  SELECT |";
+        assertItems(doQuery(sql), "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM tab_customer;\n" +
+            "  SELECT | FROM tab_customer;\n" +
+            "END";
+        assertItems(doQuery(sql), "col_customer_id", "tab_customer");
+    }
 }

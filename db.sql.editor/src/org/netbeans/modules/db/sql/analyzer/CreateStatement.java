@@ -34,21 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.sql.analyzer;
+
+import java.util.SortedMap;
 
 /**
  *
- * @author Andrei Badea
+ * @author Jiri Skrivanek
  */
-public enum SQLStatementKind {
+public class CreateStatement extends SQLStatement {
 
-    CREATE,
-    DELETE,
-    DROP,
-    INSERT,
-    SELECT,
-    UPDATE
+    private int bodyStartOffset;
+    private int bodyEndOffset;
+
+    CreateStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, int bodyStartOffset, int bodyEndOffset) {
+        super(startOffset, endOffset, offset2Context);
+        this.bodyStartOffset = bodyStartOffset;
+        this.bodyEndOffset = bodyEndOffset;
+        this.kind = SQLStatementKind.CREATE;
+    }
+
+    /** Returns true if statement has some body after BEGIN. */
+    public boolean hasBody() {
+        return this.bodyEndOffset > this.bodyStartOffset;
+    }
+
+    /** Returns start offset of script after BEGIN. */
+    public int getBodyStartOffset() {
+        return this.bodyStartOffset;
+    }
+
+    /** Returns end offset of script after BEGIN. */
+    public int getBodyEndOffset() {
+        return this.bodyEndOffset;
+    }
 }
