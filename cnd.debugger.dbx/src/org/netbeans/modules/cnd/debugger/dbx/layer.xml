@@ -42,4 +42,12 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
+    <folder name="Debugger">
+        <file name="com-sun-tools-debugger-dbxgui-debugger-actions-AttachPanel$DbxAttachType.instance">
+            <attr name="serviceName" stringvalue="com.sun.tools.debugger.dbxgui.debugger.actions.AttachPanel$DbxAttachType"/>
+            <attr name="serviceClass" stringvalue="org.netbeans.spi.debugger.ui.AttachType"/>
+            <attr bundlevalue="com.sun.tools.debugger.dbxgui.debugger.actions.Bundle#DbxDebuggerEngine" name="displayName"/>
+            <attr methodvalue="org.netbeans.spi.debugger.ui.AttachType$ContextAware.createService" name="instanceCreate"/>
+        </file>
+    </folder>
 </filesystem>
