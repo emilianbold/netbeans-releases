@@ -46,6 +46,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -56,6 +57,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -401,6 +403,11 @@ public class CacheTest extends NbTestCase {
         public Issue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public Query[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public Issue[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public Collection<RepositoryUser> getUsers() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
         private class TestCache extends IssueCache<String> {
             public TestCache(String nameSpace) {
