@@ -42,6 +42,9 @@ package org.netbeans.modules.versioning.util;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.PasswordAuthentication;
+import java.net.URI;
+import java.util.Date;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 
@@ -50,6 +53,17 @@ import javax.swing.JLabel;
  * @author Tomas Stupka
  */
 public abstract class VCSKenaiSupport {
+
+    /**
+     * Some kenai vcs repository was changed
+     */
+    public final static String PROP_KENAI_VCS_NOTIFICATION = "kenai.vcs.notification"; // NOI18N
+
+    public enum Service {
+        VCS_SVN,
+        VCS_HG,
+        UNKNOWN;
+    }
 
     /**
      * Returns an instance of PasswordAuthentication holding the actuall
@@ -101,6 +115,10 @@ public abstract class VCSKenaiSupport {
 
     public abstract boolean isUserOnline(String user);
 
+    public abstract void addVCSNoficationListener(PropertyChangeListener l);
+
+    public abstract void removeVCSNoficationListener(PropertyChangeListener l);
+
     public abstract class KenaiUser {
 
         public abstract boolean isOnline();
@@ -116,6 +134,33 @@ public abstract class VCSKenaiSupport {
         public abstract String getUser();
 
         public abstract void startChat();
+    }
+
+    public abstract class VCSKenaiNotification {
+
+        public abstract URI getUri();
+
+        public abstract Date getStamp();
+
+        public abstract Service getService();
+
+        public abstract List<VCSKenaiModification> getModifications();
+
+        public abstract String getAuthor();
+    }
+
+    public abstract static class VCSKenaiModification {
+        public static enum Type {
+            NEW,
+            CHANGE,
+            DELETE
+        }
+
+        public abstract Type getType();
+
+        public abstract String getResource();
+
+        public abstract String getId();
     }
     
 }
