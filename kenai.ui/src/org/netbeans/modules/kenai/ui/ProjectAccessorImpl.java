@@ -187,7 +187,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     public Action getNewKenaiProjectAction() {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                ShareAction.actionPerformed((Node) null);
+                ShareAction.actionPerformed(new Node[0]);
             }
         };
     }
