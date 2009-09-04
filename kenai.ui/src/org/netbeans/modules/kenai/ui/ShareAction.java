@@ -41,7 +41,6 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,12 +71,11 @@ public final class ShareAction extends CookieAction {
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(hg\\.|svn\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     protected void performAction(Node[] activatedNodes) {
-        assert activatedNodes.length == 1;
-        actionPerformed(activatedNodes[0]);
+        actionPerformed(activatedNodes);
     }
 
     protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
+        return CookieAction.MODE_ANY;
     }
 
     public String getName() {
@@ -109,7 +107,7 @@ public final class ShareAction extends CookieAction {
         return remoteLocation == null;
     }
 
-    public static void actionPerformed(Node e) {
+    public static void actionPerformed(Node [] e) {
         if (Subversion.isClientAvailable(true)) {
 
             WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e));
@@ -163,22 +161,18 @@ public final class ShareAction extends CookieAction {
 
         public JMenuItem getPopupPresenter() {
             JMenuItem item = new JMenuItem(NbBundle.getMessage(ShareAction.class, "CTL_ShareAction"));
-            if (proj == null || isKenaiProject(proj) || getActivatedNodes().length > 1) {
-                item.setVisible(false);
-            } else {
-                item.addActionListener(new ActionListener() {
+            item.addActionListener(new ActionListener() {
 
-                    public void actionPerformed(ActionEvent e) {
-                        performAction(getActivatedNodes());
-                    }
-                });
-            }
+                public void actionPerformed(ActionEvent e) {
+                    performAction(getActivatedNodes());
+                }
+            });
             return item;
         }
 
         public void actionPerformed(ActionEvent e) {
             try {
-                ShareAction.actionPerformed(DataObject.find(proj.getProjectDirectory()).getNodeDelegate());
+                ShareAction.actionPerformed(new Node [] { DataObject.find(proj.getProjectDirectory()).getNodeDelegate() });
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
