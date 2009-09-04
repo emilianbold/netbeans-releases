@@ -58,8 +58,8 @@ import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -194,9 +194,12 @@ public class NotificationsManager {
                             ISVNStatus[] statuses = client.getStatus(file, false, false, true);
                             if (statuses.length == 1) { // is an interesting status
                                 ISVNStatus status = statuses[0];
-                                if (status.getRepositoryTextStatus().equals(SVNStatusKind.MODIFIED)
-                                    || status.getRepositoryTextStatus().equals(SVNStatusKind.DELETED)
-                                    || status.getRepositoryTextStatus().equals(SVNStatusKind.ADDED)) {
+                                SVNStatusKind repositoryTextStatus = status.getRepositoryTextStatus();
+                                if (repositoryTextStatus != null && 
+                                    (  repositoryTextStatus.equals(SVNStatusKind.MODIFIED)
+                                    || repositoryTextStatus.equals(SVNStatusKind.DELETED)
+                                    || repositoryTextStatus.equals(SVNStatusKind.ADDED)))
+                                {
                                     // this will refresh versioning view as well
                                     cache.refresh(file, status);
                                     // notify in a bubble
