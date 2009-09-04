@@ -1,0 +1,56 @@
+/* 
+    Document   : Ajax
+    Created on : 05-Aug-2009, 14:21:54
+    Author     : mkuchtiak
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+body {
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 12pt;
+    color: navy;
+}
+
+span {
+   font-weight: bold;
+   font-size: 10pt;
+}
+
+.header {
+    /*height:30%;*/
+    border: 1px solid #000000;
+    background-image: url(masthead.png);
+}
+
+.subheader {
+    clear:both;
+    height: 10px;
+    color: #FFFFFF;
+    font-size:14px;
+    padding: 10px;
+}
+
+.banner {
+    vertical-align:middle;
+    padding: 10px;
+}
+
+.tabMain {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #000000;
+  padding: 2px;
+  background-color: #ffffff;
+}
+
+.tabMain tr th {
+  background-color: #5b87a5;
+  color:#ffffff;
+  text-align:left
+}
+.tabMain tr td {
+  background-color: #ffffff;
+  text-align:right;
+  padding: 1.0px;
+}
