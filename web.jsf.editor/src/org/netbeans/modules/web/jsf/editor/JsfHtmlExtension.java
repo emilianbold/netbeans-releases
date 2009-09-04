@@ -366,12 +366,14 @@ public class JsfHtmlExtension extends HtmlExtension {
                 return Collections.emptyList();
             }
 
-            for(String namespace : jsfs.getFaceletsLibraries().keySet()) {
+            Collection<String> nss = new ArrayList<String>(jsfs.getFaceletsLibraries().keySet());
+            //add also xhtml ns to the completion
+            nss.add(JsfUtils.XHTML_NS);
+            for(String namespace : nss) {
                 if(namespace.startsWith(context.getPrefix())) {
-                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset()));
+                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
                 }
             }
-
         }
 
         return items;

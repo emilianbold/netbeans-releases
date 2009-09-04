@@ -118,16 +118,17 @@ public abstract class HtmlExtension {
         private String itemText;
         private AstNode currentNode;
         private String attributeName; //for attribute value completion
+        private boolean valueQuoted;
 
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText) {
             this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, null);
         }
 
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode) {
-            this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, currentNode, null);
+            this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, currentNode, null, false);
         }
         
-        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode, String attributeName) {
+        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode, String attributeName, boolean valueQuoted) {
             this.result = result;
             this.originalOffset = originalOffset;
             this.astoffset = astoffset;
@@ -136,6 +137,7 @@ public abstract class HtmlExtension {
             this.currentNode = currentNode;
             this.itemText = itemText;
             this.attributeName = attributeName;
+            this.valueQuoted = valueQuoted;
         }
 
         public String getPrefix() {
@@ -169,6 +171,10 @@ public abstract class HtmlExtension {
 
         public String getAttributeName() {
             return attributeName;
+        }
+
+        public boolean isValueQuoted() {
+            return valueQuoted;
         }
 
     }
