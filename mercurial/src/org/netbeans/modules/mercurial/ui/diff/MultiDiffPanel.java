@@ -486,7 +486,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         default:
             throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
         }
-        File [] files = HgUtils.getModifiedFiles(context, status);
+        File [] files = HgUtils.getModifiedFiles(context, status, true);
         final int localDisplayStatuses = status;
         final Setup[] localSetups = computeSetups(files);
         Runnable runnable = new Runnable() {

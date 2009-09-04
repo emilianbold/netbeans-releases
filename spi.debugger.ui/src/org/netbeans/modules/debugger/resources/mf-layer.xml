@@ -251,9 +251,6 @@ made subject to such option by the copyright holder.
         </folder>
 
     <folder name="Shortcuts">
-        <file name="F5.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
-	</file>
         <file name="DS-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
 	</file>
@@ -275,9 +272,6 @@ made subject to such option by the copyright holder.
         <file name="SO-2.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
         </file>
-        <file name="SO-5.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
-        </file>
         <file name="SO-8.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
         </file>
@@ -287,23 +281,8 @@ made subject to such option by the copyright holder.
         <file name="DS-F7.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
         </file>
-        <file name="D-F8.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
-        </file>
-        <file name="F4.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
-        </file>
         <file name="D-F7.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
-        </file>
-        <file name="F7.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
-        </file>
-        <file name="F8.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
-        </file>
-        <file name="D-F5.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
         </file>
         <file name="S-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>

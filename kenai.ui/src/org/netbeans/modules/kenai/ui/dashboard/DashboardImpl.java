@@ -108,7 +108,8 @@ public final class DashboardImpl extends Dashboard {
     private final TreeList treeList = new TreeList(model);
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
     private final ArrayList<ProjectHandle> openProjects = new ArrayList<ProjectHandle>(50);
-    private final JScrollPane dashboardComponent;
+    //TODO: this should not be public
+    public final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
     private boolean memberProjectsLoaded = false;

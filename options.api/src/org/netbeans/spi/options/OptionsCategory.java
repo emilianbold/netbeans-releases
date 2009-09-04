@@ -43,11 +43,12 @@ package org.netbeans.spi.options;
 
 import java.awt.Image;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.options.OptionsCategoryImpl;
+import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * This class represents one category (like "Fonts & Colors"
@@ -66,19 +67,20 @@ import org.openide.util.Utilities;
  *           &lt;attr name="keywords" bundlevalue="org.netbeans.core.ui.options.general.Bundle#KW_General"/&gt;
  *           &lt;attr name="keywordsCategory" stringvalue="General"/&gt;
  *           &lt;attr name="description" bundlevalue="org.netbeans.core.ui.options.general.Bundle#CTL_General_Options_Description"/&gt;
- *
  *           &lt;attr name="position" intvalue="100"/&gt;
  *       &lt;/file&gt;
  *   &lt;/folder&gt;</pre>
  *
  * where:
  * <br/><b>controller</b> should be an instance of <code>OptionsPanelController</code>
- * <br/><b>title</b> should be a pointer to Bundle where title of your tab inside OD is stored
- * <br/><b>categoryName</b> should be a pointer to Bundle where your tab categoryName is stored
+ * <br/><b>title</b> should be a localized string where title of your tab inside OD is stored
+ * <span class="nonnormative"><strong>Currently unused.</strong></span>
+ * <br/><b>categoryName</b> should be a localized string for your tab's category name
  * <br/><b>iconBase</b> should be relative path to icon wou wish to display inside OD
  * <br/><b>keywords</b> should be localized keywords list, separated by comma in Bundle, for quickserach purposes
  * <br/><b>keywordsCategory</b> should be relative path to your panel inside Options dialog
- * <br/><b>description</b> should be a pointer to Bundle where your tab description is stored
+ * <br/><b>description</b> should be a localized string where your tab description is stored
+ * <span class="nonnormative"><strong>Currently unused.</strong></span>
  *
  * <br/><br/>
  * Or, when registering a category with sub-panels, instead of
@@ -92,11 +94,7 @@ import org.openide.util.Utilities;
  * and supply a folder where instaces of <code>AdvancedOption</code> should be
  * registered. Its instances would be found automatically and shown as sub-panels
   <br/><br/>
- * Use standard way how to sort items registered in layers:
- * 
- * <pre style="background-color: rgb(255, 255, 153);">
- * &lt;attr name="GeneralPanel.instance/FooOptionsPanel.instance" boolvalue="true"/&gt;
- * </pre>
+ * Use standard {@code position} attributes to sort items registered in layers.
  *
  * @see AdvancedOption
  * @see OptionsPanelController
@@ -111,10 +109,9 @@ public abstract class OptionsCategory {
     private static final String CATEGORY_NAME = "categoryName"; // NOI18N
     private static final String ICON = "iconBase"; // NOI18N
     private static final String CONTROLLER = "controller"; // NOI18N
-    private static final String DESCRIPTION = "description"; // NOI18N
     private static final String KEYWORDS = "keywords"; // NOI18N
     private static final String KEYWORDS_CATEGORY = "keywordsCategory"; // NOI18N
-    private static final String ADVANCEDOPTIONS_CATGEORY = "advancedOptionsFolder"; // NOI18N
+    private static final String ADVANCED_OPTIONS_FOLDER = "advancedOptionsFolder"; // NOI18N
 
     /**
      * Returns base name of 32x32 icon (gif, png) used in list on the left side of
@@ -153,7 +150,7 @@ public abstract class OptionsCategory {
     /**
      * This text will be used in title component on the top of Options Dialog
      * when your panel will be selected.
-     *
+     * <p class="nonnormative"><strong>Currently unused.</strong></p>
      * @return title of this panel
      */
     public abstract String getTitle ();
@@ -176,16 +173,24 @@ public abstract class OptionsCategory {
      * @param attrs attributes loaded from layer.xml
      * @return new <code>OptionsCategory</code> instance
      */
-    static OptionsCategory createCategory(Map attrs) {
-        String title = (String) attrs.get(TITLE);
+    static OptionsCategory createCategory(final Map attrs) {
+        final String title = (String) attrs.get(TITLE);
         String categoryName = (String) attrs.get(CATEGORY_NAME);
         String iconBase = (String) attrs.get(ICON);
-        OptionsPanelController controller = (OptionsPanelController) attrs.get(CONTROLLER);
-        String description = (String) attrs.get(DESCRIPTION);
         String keywords = (String) attrs.get(KEYWORDS);
         String keywordsCategory = (String) attrs.get(KEYWORDS_CATEGORY);
-        String advancedOptionsCategory = (String) attrs.get(ADVANCEDOPTIONS_CATGEORY);
-
-        return new OptionsCategoryImpl(title, categoryName, iconBase, controller, description, keywords, keywordsCategory, advancedOptionsCategory);
+        String advancedOptionsCategory = (String) attrs.get(ADVANCED_OPTIONS_FOLDER);
+//        new Exception("preloading options panel " + title).printStackTrace();
+        return new OptionsCategoryImpl(title, categoryName, iconBase, new Callable<OptionsPanelController>() {
+            public OptionsPanelController call() throws Exception {
+                Object o = attrs.get(CONTROLLER);
+//                new Exception("loading options panel " + title + ": " + o).printStackTrace();
+                if (o instanceof OptionsPanelController) {
+                    return (OptionsPanelController) o;
+                } else {
+                    throw new Exception("got no controller from " + title + ": " + o);
+                }
+            }
+        }, keywords, keywordsCategory, advancedOptionsCategory);
     }
 }

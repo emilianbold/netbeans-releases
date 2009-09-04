@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -241,18 +242,25 @@ public class PHPFormatter implements Formatter {
                 final WSTransformer wsTransformer = new WSTransformer(context);
                 PHPParseResult result = (PHPParseResult) info;
                 result.getProgram().accept(wsTransformer);
-               
-                for (WSTransformer.Replacement replacement : wsTransformer.getReplacements()){
-                    if (replacement.offset() < context.startOffset()
-                            || replacement.offset() > context.endOffset()){
+                wsTransformer.tokenScan();
+
+                List<WSTransformer.Replacement> replacements = wsTransformer.getReplacements();
+                Collections.sort(replacements);
+                Collections.reverse(replacements);
+
+                for (WSTransformer.Replacement replacement : replacements){
+                    int offset = replacement.offset();
+
+                    if (offset < context.startOffset()
+                            || offset > context.endOffset()){
                         continue;
                     }
 
                     try {
-                        doc.insertString(replacement.offset(), replacement.newString(), null);
+                        doc.insertString(offset, replacement.newString(), null);
 
                         if (replacement.length() > 0){
-                            doc.remove(replacement.offset() - replacement.length(), replacement.length());
+                            doc.remove(offset - replacement.length(), replacement.length());
                         }
 
                     } catch (BadLocationException ex) {

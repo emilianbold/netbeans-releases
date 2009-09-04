@@ -231,7 +231,6 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                 }
                 //XXX check for circular dependencies if target is library project
                 JCProject jp = p.getLookup().lookup(JCProject.class);
-                System.err.println("Looked up project " + jp + " from project " + p);
                 if (jp != null) {
                     if (pkind != null && (pkind.isClassic() && !jp.kind().isClassic())) {
                         throw new WizardValidationException(component,
@@ -269,7 +268,6 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                 }
         }
         assert realKind != null : "Kind not found"; //NOI18N
-        System.err.println("Real kind is " + realKind);
         settings.put(PROP_ACTUAL_DEP_KIND, realKind);
         switch (realKind) {
             case CLASSIC_LIB_JAR:

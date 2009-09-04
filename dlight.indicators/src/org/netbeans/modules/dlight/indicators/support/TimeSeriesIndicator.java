@@ -56,11 +56,12 @@ import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
-import org.netbeans.modules.dlight.indicators.graph.Range;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesPlot;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
@@ -70,20 +71,19 @@ import org.netbeans.modules.dlight.util.UIUtilities;
  *
  * @author Alexey Vladykin
  */
-public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConfiguration> {
+public final class TimeSeriesIndicator
+        extends Indicator<TimeSeriesIndicatorConfiguration>
+        implements ViewportAware {
 
-    private final TimeSeriesIndicatorManager manager;
     private final DataRowToTimeSeries dataRowHandler;
     private final GraphPanel<TimeSeriesPlot, Legend> panel;
     private final TimeSeriesPlot graph;
     private final Legend legend;
     private final JButton button;
     private final int graphCount;
-    private int time;
 
-    public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration, TimeSeriesIndicatorManager manager) {
+    public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
-        this.manager = manager;
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.dataRowHandler = accessor.getDataRowHandler(configuration);
         this.graph = createGraph(configuration);
@@ -110,20 +110,12 @@ public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConf
         return graph;
     }
 
-    public Range<Integer> getSelection() {
-        return graph.getSelection();
+    public ViewportModel getViewportModel() {
+        return graph.getViewportModel();
     }
 
-    public void setSelection(Range<Integer> selection) {
-        graph.setSelection(selection);
-    }
-
-    public Range<Integer> getViewport() {
-        return graph.getViewport();
-    }
-
-    public void setViewport(Range<Integer> viewport) {
-        graph.setViewport(viewport);
+    public void setViewportModel(ViewportModel viewportModel) {
+        graph.setViewportModel(viewportModel);
     }
 
     @Override
@@ -186,7 +178,6 @@ public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConf
         for (Map.Entry<String, String> entry : details.entrySet()) {
             legend.updateDetail(entry.getKey(), entry.getValue());
         }
-        manager.tick(this, ++time);
     }
 
     @Override
@@ -203,10 +194,5 @@ public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConf
     @Override
     public JComponent getComponent() {
         return panel;
-    }
-
-    @Override
-    public JComponent getAuxComponent() {
-        return manager.getComponent();
     }
 }

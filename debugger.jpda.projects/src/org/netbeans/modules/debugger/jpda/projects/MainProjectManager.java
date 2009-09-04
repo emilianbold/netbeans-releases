@@ -84,9 +84,9 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     
     
     private Action a;
-    private Project currentProject;
+    private Project currentProject; // The current/main project
     private Reference<Project> lastSelectedProjectRef = new WeakReference(null);
-    private boolean isMainProject;
+    private boolean isMainProject;  // true iff currentProject is the main project.
     private PropertyChangeSupport pcs;
 
 
@@ -228,6 +228,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
             Project theMainProject = OpenProjects.getDefault().getMainProject();
             Project currentGone = null;
+            Project currentNew = null;
             Project lastGone = null;
             synchronized (this) {
                 boolean isCurrent = false;
@@ -252,9 +253,13 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
                     lastSelectedProjectRef = new WeakReference<Project>(null);
                 }
                 isMainProject = theMainProject != null;
+                if (isMainProject && currentProject == null) {
+                    currentProject = theMainProject;
+                    currentNew = currentProject;
+                }
             }
-            if (currentGone != null) {
-                pcs.firePropertyChange (PROP_MAIN_PROJECT, currentGone, null);
+            if (currentGone != currentNew) {
+                pcs.firePropertyChange (PROP_MAIN_PROJECT, currentGone, currentNew);
             }
             if (lastGone != null) {
                 pcs.firePropertyChange (PROP_SELECTED_PROJECT, lastGone, null);

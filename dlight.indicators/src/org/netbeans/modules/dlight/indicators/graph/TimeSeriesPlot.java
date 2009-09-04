@@ -39,33 +39,46 @@
 package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.FontMetrics;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.indicators.ValueFormatter;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.Graphics;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.ViewportModel;
+import org.netbeans.modules.dlight.extras.api.Range;
+import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
 
 /**
  * Displays a graph
  * @author Vladimir Kvashin
  * @author Alexey Vladykin
  */
-public class TimeSeriesPlot extends JComponent {
+public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener {
+
+    private static final long EXTENT = 20000; // 20 seconds
 
     private final GraphPainter graph;
+    private ViewportModel viewportModel;
     private int upperLimit;
     private Axis hAxis;
     private Axis vAxis;
-    private int viewportStart;
-    private int viewportEnd;
     private AxisMarksProvider timeMarksProvider;
     private AxisMarksProvider valueMarksProvider;
 
     public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series) {
         upperLimit = scale;
         graph = new GraphPainter(series);
+        graph.addData(new float[series.size()]); // 0th tick - all zeros
         timeMarksProvider = AxisMarksProviderFactory.newTimeMarksProvider();
         valueMarksProvider = AxisMarksProviderFactory.newValueMarksProvider(formatter);
+        ViewportModel model = new DefaultViewportModel();
+        model.setLimits(new Range<Long>(0L, 0L));
+        model.setViewport(new Range<Long>(0L, EXTENT));
+        setViewportModel(model);
         setOpaque(true);
 //        ToolTipManager.sharedInstance().registerComponent(this);
 //        addAncestorListener(new AncestorListener() {
@@ -112,6 +125,9 @@ public class TimeSeriesPlot extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         FontMetrics fm = g.getFontMetrics();
+        Range<Long> viewport = viewportModel.getViewport();
+        int viewportStart = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart());
+        int viewportEnd = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd());
         List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), fm);
         List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - fm.getAscent() / 2, fm);
         graph.paint(g, upperLimit, valueMarks, viewportStart, viewportEnd, timeMarks, 0, 0, getWidth(), getHeight(), isEnabled());
@@ -119,40 +135,27 @@ public class TimeSeriesPlot extends JComponent {
 
     public void addData(float... newData) {
         graph.addData(newData);
+        viewportModel.setLimits(new Range<Long>(0L, TimeUnit.SECONDS.toMillis(graph.getDataSize())));
         repaintAll();
     }
 
-    public Range<Integer> getViewport() {
-        return new Range<Integer>(viewportStart, viewportEnd);
+    public ViewportModel getViewportModel() {
+        return viewportModel;
     }
 
-    public void setViewport(Range<Integer> viewport) {
-        boolean changed = false;
-        if (viewport.getStart() != null) {
-            int newViewportStart = viewport.getStart();
-            if (viewportStart != newViewportStart) {
-                viewportStart = newViewportStart;
-                changed = true;
-            }
+    public void setViewportModel(ViewportModel viewportModel) {
+        if (this.viewportModel != null) {
+            this.viewportModel.removeChangeListener(this);
         }
-        if (viewport.getEnd() != null) {
-            int newViewportEnd = viewport.getEnd();
-            if (viewportEnd != newViewportEnd) {
-                viewportEnd = newViewportEnd;
-                changed = true;
-            }
-        }
-        if (changed) {
+        this.viewportModel = viewportModel;
+        this.viewportModel.addChangeListener(this);
+        repaintAll();
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        if (e.getSource() == viewportModel) {
             repaintAll();
         }
-    }
-
-    public Range<Integer> getSelection() {
-        return null;
-    }
-
-    public void setSelection(Range<Integer> selection) {
-        repaintAll();
     }
 
     private void repaintAll() {
@@ -190,6 +193,9 @@ public class TimeSeriesPlot extends JComponent {
                         graph.paintVerticalAxis(g, 0, 0, getWidth(), getHeight(), valueMarks, getBackground());
                         break;
                     case HORIZONTAL:
+                        Range<Long> viewport = viewportModel.getViewport();
+                        int viewportStart = (int)(viewport.getStart() / 1000);
+                        int viewportEnd = (int)(viewport.getEnd() / 1000);
                         List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), fm);
                         graph.paintHorizontalAxis(g, 0, 0, getWidth(), getHeight(), timeMarks, getBackground());
                         break;

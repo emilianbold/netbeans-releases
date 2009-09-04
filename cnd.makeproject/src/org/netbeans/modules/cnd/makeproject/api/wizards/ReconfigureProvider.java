@@ -50,11 +50,12 @@ public abstract class ReconfigureProvider {
     private static ReconfigureProvider DEFAULT = new Default();
 
     public abstract void reconfigure(Project makeProject, String cFlags, String cxxFlags);
+    public abstract String getLastFlags(Project makeProject);
 
     protected ReconfigureProvider() {
     }
 
-    private static ReconfigureProvider getDefault() {
+    public static ReconfigureProvider getDefault() {
         return DEFAULT;
     }
 
@@ -77,6 +78,15 @@ public abstract class ReconfigureProvider {
             if (service != null) {
                 service.reconfigure(makeProject, cFlags, cxxFlags);
             }
+        }
+
+        @Override
+        public String getLastFlags(Project makeProject) {
+            ReconfigureProvider service = getService();
+            if (service != null) {
+                return service.getLastFlags(makeProject);
+            }
+            return null;
         }
     }
 }

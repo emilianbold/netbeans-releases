@@ -263,11 +263,11 @@ public class Dwarf2NameFinder {
         }
     }
 
-    @SuppressWarnings("fallthrough")
     private boolean interpret(long target, ByteBuffer section, LinkedList fnames,
             dw2_debug_line header, boolean scan_only) {
         long address = 0;
         long base_address = 0;
+        long prev_base_address = 0;
         String define_file = null;
         int fileno = 0;
         int lineno = 1;
@@ -300,7 +300,7 @@ public class Dwarf2NameFinder {
                                 if (Configuration.DEBUG) {
                                     logger.log(DEBUG, "End of sequence"); // NOI18N
                                 }
-                                if (!scan_only && (base_address <= target && address > target)) {
+                                if (!scan_only && (prev_base_address <= target && address > target)) {
                                     lineNumber = prev_lineno;
                                     sourceFile = (String) ((prev_fileno >= 0 && prev_fileno < fnames.size())
                                             ? fnames.get(prev_fileno) : define_file);
@@ -327,11 +327,15 @@ public class Dwarf2NameFinder {
                                 break;
 
                             case DW_LNE_set_address:
+                                prev_base_address = base_address;
                                 base_address = section.get() & 0xFF;
                                 base_address |= (section.get() & 0xFFL) << 8;
                                 base_address |= (section.get() & 0xFFL) << 16;
                                 base_address |= (section.get() & 0xFFL) << 24;
                                 address = base_address;
+                                if (prev_base_address == 0) {
+                                    prev_base_address = base_address;
+                                }
                                 if (Configuration.DEBUG) {
                                     logger.log(DEBUG, "Set address to 0x{0}", Long.toHexString(address)); // NOI18N
                                 }
@@ -367,14 +371,14 @@ public class Dwarf2NameFinder {
                                 section.position(section.position() + (int) insn_len);
                                 break;
                         }
-                        // fallthrough is legitimate (program author said)
+                        break;
                     }
                     case DW_LNS_copy:
                         if (Configuration.DEBUG) {
                             logger.log(DEBUG, "Copy"); // NOI18N
                         }
-                        if (!scan_only && (base_address <= target && address > target)) {
-                            lineNumber = prev_lineno;
+                        if (!scan_only && (prev_base_address <= target && address > target)) {
+                            lineNumber = prev_lineno == 1 ? lineno : prev_lineno;
                             sourceFile = (String) ((prev_fileno >= 0 && prev_fileno < fnames.size())
                                     ? fnames.get(prev_fileno) : define_file);
                             if (Configuration.DEBUG) {
@@ -492,7 +496,7 @@ public class Dwarf2NameFinder {
                                 Integer.valueOf(addr_adv),
                                 Long.toHexString(new_addr)});
                 }
-                if (!scan_only && base_address <= target && new_addr >= target) {
+                if (!scan_only && prev_base_address <= target && new_addr >= target) {
                     lineNumber = new_addr == target ? new_line : lineno;
                     sourceFile = (String) ((fileno >= 0 && fileno < fnames.size())
                             ? fnames.get(fileno) : define_file);

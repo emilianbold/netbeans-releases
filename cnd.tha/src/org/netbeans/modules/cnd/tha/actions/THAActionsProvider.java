@@ -104,8 +104,10 @@ public final class THAActionsProvider implements DLightTargetListener {
                 }
 
                 THAConfiguration thaConfiguration = configurationPanel.getTHAConfiguration();
+                if (!start(project, thaConfiguration)){
+                    return;
+                }
                 THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(project, thaConfiguration);
-                start(project, thaConfiguration);
                 topComponent.open();
                 topComponent.requestActive();
             }
@@ -392,17 +394,17 @@ public final class THAActionsProvider implements DLightTargetListener {
         }
     }
 
-    static private void start(Project project, THAConfiguration thaConfiguration) {
+    static private boolean start(Project project, THAConfiguration thaConfiguration) {
         THAProjectSupport support = THAProjectSupport.getSupportFor(project);
 
         if (support == null) {
-            return;
+            return false;
         }
 
         if (!support.isConfiguredForInstrumentation()) {
             boolean instrResult = support.doInstrumentation();
             if (!instrResult) {
-                return;
+                return false;
             }
         }
         // Initiate RUN ...
@@ -413,6 +415,7 @@ public final class THAActionsProvider implements DLightTargetListener {
                 ap.invokeAction("custom.action", Lookups.fixed(thaConfiguration)); // NOI18N
             }
         }
+        return true;
     }
 
     void sendSignal() {

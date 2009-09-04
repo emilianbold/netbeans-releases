@@ -258,13 +258,9 @@ public class JCProjectProperties {
         synchronized (this) {
             d = this.deps;
         }
-        System.err.println("store dependencies: " + d);
         if (d != null && d.isModified()) {
-            System.err.println("deps modified - saving");
             d.save();
             legacyStoreDependencies(d);
-        } else {
-            System.err.println("not saving dependencies");
         }
     }
 
@@ -457,8 +453,6 @@ public class JCProjectProperties {
                     d = JCProjectProperties.this.deps;
                 }
             }
-            System.err.println("Project Properties deps loaded as " + d);
-            System.err.println("Passing " + d + " to " + r);
             r.receive(d);
         }
 

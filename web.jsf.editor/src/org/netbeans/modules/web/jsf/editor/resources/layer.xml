@@ -7,6 +7,9 @@
         </folder>
     </folder>
     <folder name="Editors">
+        <file name="org-netbeans-modules-web-jsf-editor-index-JsfBinaryIndexer$Factory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory"/>
+        </file>
         <folder name="text">
             <folder name="html">
                 <file name="org-netbeans-modules-web-jsf-editor-HtmlSourceTask$Factory.instance">

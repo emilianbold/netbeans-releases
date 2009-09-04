@@ -63,9 +63,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
 /**
  *

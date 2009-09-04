@@ -520,10 +520,6 @@ made subject to such option by the copyright holder.
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
 	</file>
                 
-        <file name="F6.shadow">
-            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
-	</file>
-                
         <file name="O-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
 	</file> 

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.card.loader;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.modules.propdos.PropertiesBasedDataObject;
 import org.netbeans.modules.propdos.ObservableProperties;
@@ -77,7 +78,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import org.netbeans.api.validation.adapters.DialogBuilder;
@@ -86,6 +87,7 @@ import org.netbeans.spi.actions.Single;
 import org.openide.DialogDescriptor;
 import org.openide.actions.PropertiesAction;
 import org.openide.loaders.DataNode;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -94,7 +96,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
 
     private static final String ICON_BASE = "org/netbeans/modules/javacard/resources/card.png"; //NOI18N
     private Reference<Card> cardRef;
-    private Reference<ServerDataNode> nodeRef;
+    private Reference<CardDataNode> nodeRef;
     private String platformName;
     private String myName;
 
@@ -108,9 +110,16 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
 
     @Override
     protected Node createNodeDelegate() {
-        ServerDataNode result = new ServerDataNode(this);
-        nodeRef = new WeakReference<ServerDataNode>(result);
+        CardDataNode result = new CardDataNode(this);
+        nodeRef = new WeakReference<CardDataNode>(result);
         return result;
+    }
+
+    public void refreshNode() {
+        CardDataNode nd = nodeRef == null ? null : nodeRef.get();
+        if (nd != null) {
+            nd.updateChildren();
+        }
     }
 
     @Override
@@ -189,7 +198,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         synchronized (cardLock) {
             cardRef = new WeakReference<Card>(result);
         }
-        ServerDataNode nd = nodeRef == null ? null : nodeRef.get();
+        CardDataNode nd = nodeRef == null ? null : nodeRef.get();
         if (nd != null) {
             nd.checkForRunningStateChange();
         }
@@ -209,7 +218,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
     }
 
     public void onStateChange(Card card, CardState old, CardState nue) {
-        ServerDataNode nd = nodeRef == null ? null : nodeRef.get();
+        CardDataNode nd = nodeRef == null ? null : nodeRef.get();
         if (nd != null) {
             nd.checkForRunningStateChange();
         }
@@ -275,19 +284,78 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         }
     }
 
-    final class ServerDataNode extends DataNode {
-        private final ClearEpromAction clearEpromAction = new ClearEpromAction();
+    private static final class WeakCardStateObserver implements CardStateObserver {
+        private final Reference<CardStateObserver> proxy;
+        WeakCardStateObserver(Card card, CardStateObserver real) {
+            this.proxy = new WeakReference<CardStateObserver> (real);
+        }
 
-        ServerDataNode(CardDataObject ob) {
+        public void onStateChange(Card card, CardState old, CardState nue) {
+            CardStateObserver real = proxy.get();
+            if (real == null) {
+                card.removeCardStateObserver(this);
+            } else {
+                real.onStateChange(card, old, nue);
+            }
+        }
+    }
+
+    final class CardDataNode extends DataNode {
+        private final ClearEpromAction clearEpromAction = new ClearEpromAction();
+        private volatile boolean listening;
+        private CardStateObserver childrenUpdater = new CardStateObserver() {
+            public void onStateChange(Card card, CardState old, CardState nue) {
+                if (getDataObject().isValid()) {
+                    updateChildren();
+                }
+            }
+        };
+
+        CardDataNode(CardDataObject ob) {
             super(ob, Children.LEAF, ob.getLookup());
             setName(ob.getName());
+            updateChildren();
+        }
+
+        private Card card;
+        private void startListening (Card card) {
+            if (card != null && (!listening || this.card != card)) {
+                card.addCardStateObserver(new WeakCardStateObserver(card,
+                        childrenUpdater));
+                listening = true;
+            }
+            this.card = card; //hold a reference so it doesn't disappear
+        }
+
+        void updateChildren() {
+            checkForRunningStateChange();
+            if (!getDataObject().isValid()) {
+                setChildren(Children.LEAF);
+                return;
+            }
+            Card c = getDataObject().getLookup().lookup(Card.class);
+            //Use !c.isNotRunning() so if the state is "starting" we will
+            //have appropriate children
+            boolean activeChildren = c == null ? false : !c.isNotRunning();
+            startListening (card);
+            if (activeChildren) {
+                Children kids = Children.create (new CardChildren((CardDataObject) getDataObject()), true);
+                setChildren(kids);
+            } else {
+                AbstractNode nd = new AbstractNode (Children.LEAF);
+                nd.setDisplayName (NbBundle.getMessage(CardDataNode.class,
+                        "MSG_NOT_STARTED")); //NOI18N
+                Children kids = new Children.Array();
+                kids.add(new Node[] { nd });
+                setChildren(kids);
+            }
         }
 
         @Override
         public Image getIcon(int ignored) {
             Image result = ImageUtilities.loadImage(ICON_BASE);
-            Card server = cardRef == null ? null : cardRef.get();
-            if (server != null && server.isRunning()) {
+            Card card = cardRef == null ? null : cardRef.get();
+            if (card != null && card.isRunning()) {
                 Image badge = ImageUtilities.loadImage(
                         "org/netbeans/modules/javacard/resources/running.png"); //NOI18N
                 result = ImageUtilities.mergeImages(result, badge, 11, 11);
@@ -301,7 +369,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             PropertiesBasedDataObject<?> ob = getLookup().lookup(PropertiesBasedDataObject.class);
             sheet.put(ob.getPropertiesAsPropertySet());
             Sheet.Set set = new Sheet.Set();
-            set.setDisplayName(NbBundle.getMessage(ServerDataNode.class, 
+            set.setDisplayName(NbBundle.getMessage(CardDataNode.class,
                     "PROP_SET_OTHER")); //NOI18N
             set.setName(set.getDisplayName());
             set.put(new StateProp());
@@ -316,8 +384,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
 
         @Override
         public String getHtmlDisplayName() {
-            Card card = getLookup().lookup(Card.class);
-
             if (card != null && !card.isValid()) {
                 return "<font color='!nb.errorForeground'>" + //NOI18N
                         card.getId();
@@ -347,6 +413,8 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                 null,
                 new StopServerAction(this),
                 clearEpromAction,
+                null,
+                new RefreshChildrenAction(),
                 null,
                 SystemAction.get(DeleteAction.class),
                 null,
@@ -403,6 +471,18 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             public String getValue() throws IllegalAccessException, InvocationTargetException {
                 Card card = getLookup().lookup(Card.class);
                 return card.getState().toString();
+            }
+        }
+
+        private class RefreshChildrenAction extends AbstractAction {
+            RefreshChildrenAction() {
+                putValue (NAME, NbBundle.getMessage(RefreshChildrenAction.class,
+                        "ACTION_REFRESH")); //NOI18N
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                checkForRunningStateChange();
+                updateChildren();
             }
         }
     }
@@ -477,20 +557,17 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                                 }
                             }
                         });
-                    } else {
-                        System.err.println("Could not find eprom file");
                     }
-                } else {
-                    System.err.println("Could not find eprom folder");
                 }
-            } else {
-                System.err.println("could not find platform");
             }
         }
 
         @Override
         protected boolean isEnabled(Card target) {
             if (enqueued) {
+                return false;
+            }
+            if (target.isRunning()) {
                 return false;
             }
             boolean result = super.isEnabled(target);
@@ -501,10 +578,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                 }
             }
             return false;
-        }
-
-        public void run() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

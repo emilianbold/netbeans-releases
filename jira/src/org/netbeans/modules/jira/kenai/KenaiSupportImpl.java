@@ -107,7 +107,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
 
                 String product = location.substring(idx + "/browse/".length()); // NOI18N
 
-                KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, product);
+                KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
                 if(repo.getConfiguration() == null) {
                     // something went wrong, can't use the repo anyway => return null
                     Jira.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N

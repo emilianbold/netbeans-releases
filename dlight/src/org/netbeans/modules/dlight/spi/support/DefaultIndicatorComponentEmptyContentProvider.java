@@ -59,19 +59,19 @@ public final class DefaultIndicatorComponentEmptyContentProvider {
         return instance;
     }
 
-    public List<Indicator> getEmptyContent(String configurationName) {
+    public List<Indicator<?>> getEmptyContent(String configurationName) {
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
 
         if (gizmoConfiguration == null) {
             return null;
         }
 
-        List<Indicator> indicators = gizmoConfiguration.getIndicators();
+        List<Indicator<?>> indicators = gizmoConfiguration.getIndicators();
 
-        Iterator<Indicator> it = indicators.iterator();
+        Iterator<Indicator<?>> it = indicators.iterator();
 
         while (it.hasNext()) {
-            Indicator ind = it.next();
+            Indicator<?> ind = it.next();
             if (!ind.isVisible()) {
                 it.remove();
             }

@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
@@ -77,7 +78,7 @@ public class MyProjectNode extends LeafNode {
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
     private final MessagingAccessor maccessor;
-    private final MessagingHandle mh;
+    private MessagingHandle mh;
 
     private JPanel component = null;
     private JLabel lbl = null;
@@ -91,6 +92,8 @@ public class MyProjectNode extends LeafNode {
     private final Object LOCK = new Object();
 
     private final PropertyChangeListener projectListener;
+    private TreeLabel rightPar;
+    private TreeLabel leftPar;
 
     public MyProjectNode( final ProjectHandle project ) {
         super( null );
@@ -104,7 +107,20 @@ public class MyProjectNode extends LeafNode {
                         lbl.setText(project.getDisplayName());
                 } else if(MessagingHandle.PROP_MESSAGE_COUNT.equals(evt.getPropertyName())) {
                     if (btnMessages!=null) {
+                        if (mh.getMessageCount()<0) {
+                            setOnline(false);
+                        }
                         btnMessages.setText(mh.getMessageCount()+"");
+                    }
+                } else if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
+                    if (evt.getOldValue()==null) {
+                        if (mh.getMessageCount()>=0)
+                            setOnline(true);
+                    } else if (evt.getNewValue()==null) {
+                        setOnline(false);
+                        mh.removePropertyChangeListener(projectListener);
+                        mh=maccessor.getMessaging(project);
+                        mh.addPropertyChangeListener(projectListener);
                     }
                 } else if (QueryHandle.PROP_QUERY_RESULT.equals(evt.getPropertyName())) {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
@@ -122,6 +138,7 @@ public class MyProjectNode extends LeafNode {
         this.qaccessor = QueryAccessor.getDefault();
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);
+        Kenai.getDefault().addPropertyChangeListener(projectListener);
     }
 
     ProjectHandle getProject() {
@@ -144,14 +161,14 @@ public class MyProjectNode extends LeafNode {
                 MessagingHandle messaging = maccessor.getMessaging(project);
                 int count = messaging.getMessageCount();
 
-                if (messaging.getOnlineCount()>=0) {
-                    component.add(new TreeLabel("("), new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                    btnMessages = new LinkButton(count + "", ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), maccessor.getOpenMessagesAction(project));
-                    btnMessages.setHorizontalTextPosition(JLabel.LEFT);
-                    component.add(btnMessages, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                    component.add(new JLabel(")"), new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                }
-
+                leftPar = new TreeLabel("(");
+                rightPar = new TreeLabel(")");
+                component.add(leftPar, new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                btnMessages = new LinkButton(count + "", ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), maccessor.getOpenMessagesAction(project));
+                btnMessages.setHorizontalTextPosition(JLabel.LEFT);
+                component.add(btnMessages, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                setOnline(messaging.getOnlineCount() >= 0);
                 
                 post(new Runnable() {
 
@@ -192,6 +209,26 @@ public class MyProjectNode extends LeafNode {
         return accessor.getDefaultAction(project);
     }
 
+    private void setOnline(final boolean b) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                if (btnBugs == null) {
+                    if (leftPar != null) {
+                        leftPar.setVisible(b);
+                    }
+                    if (rightPar != null) {
+                        rightPar.setVisible(b);
+                    }
+                }
+                if (btnMessages != null) {
+                    btnMessages.setVisible(b);
+                }
+                DashboardImpl.getInstance().dashboardComponent.repaint();
+            }
+        });
+    }
+
     private Action getOpenAction() {
         return new AbstractAction() {
 
@@ -228,6 +265,10 @@ public class MyProjectNode extends LeafNode {
         super.dispose();
         if( null != project )
             project.removePropertyChangeListener( projectListener );
+        if (null != mh) {
+            mh.removePropertyChangeListener(projectListener);
+        }
+        Kenai.getDefault().removePropertyChangeListener(projectListener);
         synchronized(MyProjectNode.class) {
             rp=null;
         }
@@ -242,11 +283,8 @@ public class MyProjectNode extends LeafNode {
                 btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug));
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
                 component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,5,0,0), 0,0) );
-                if (btnMessages == null) {
-                    component.add(new TreeLabel("("), new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                    component.add(new JLabel(")"), new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                }
-
+                leftPar.setVisible(true);
+                rightPar.setVisible(true);
                 component.validate();
             }
         });

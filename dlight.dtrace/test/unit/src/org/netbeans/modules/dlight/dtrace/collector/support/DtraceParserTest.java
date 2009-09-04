@@ -91,7 +91,7 @@ public class DtraceParserTest extends NbTestCase {
                         new Column("size", Integer.class),
                         new Column("address", Long.class),
                         new Column("total", Integer.class),
-                        new Column("stackid", Integer.class)),
+                        new Column("stackid", Long.class)),
                 null);
         doTest(getDataFile(), new DtraceDataAndStackParser(metadata, new SDSImpl()));
     }

@@ -200,6 +200,7 @@ public class Outline extends ETable {
     private Boolean cachedRootVisible = null;
     private RenderDataProvider renderDataProvider = null;
     private ComponentListener componentListener = null;
+    private boolean selectionDisabled = false;
     /** Creates a new instance of Outline */
     public Outline() {
         init();
@@ -552,6 +553,8 @@ public class Outline extends ETable {
                      me.getClickCount() > 1) {
 
                     boolean expanded = getLayoutCache().isExpanded(path);
+                    //me.consume();  - has no effect!
+                    //System.err.println("  event consumed.");
                     if (!expanded) {
                         getTreePathSupport().expandPath(path);
                         
@@ -568,6 +571,7 @@ public class Outline extends ETable {
                     } else {
                         getTreePathSupport().collapsePath(path);
                     }
+                    selectionDisabled = true;
                     return false;
                 }
             }
@@ -683,6 +687,50 @@ public class Outline extends ETable {
 //        System.err.println("row count is " + getRowCount());
     }
     
+    @Override
+    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+        if (selectionDisabled) {
+            //selectionDisabled = false;
+            //System.err.println("\nSelection DISABLED.");
+            return ;
+        }
+        super.changeSelection(rowIndex, columnIndex, toggle, extend);
+    }
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        switch(e.getID()) {
+          case MouseEvent.MOUSE_PRESSED:
+              selectionDisabled = false;
+              break;
+          case MouseEvent.MOUSE_RELEASED:
+              selectionDisabled = false;
+              break;
+          case MouseEvent.MOUSE_CLICKED:
+              selectionDisabled = false;
+              break;
+          case MouseEvent.MOUSE_ENTERED:
+              selectionDisabled = false;
+              break;
+          case MouseEvent.MOUSE_EXITED:
+              selectionDisabled = false;
+              break;
+          case MouseEvent.MOUSE_MOVED:
+              break;
+          case MouseEvent.MOUSE_DRAGGED:
+              if (selectionDisabled) {
+                  //System.err.println("\nDrag DISABLED.");
+                  return ;
+              }
+              break;
+          case MouseEvent.MOUSE_WHEEL:
+              break;
+        }
+        super.processMouseEvent(e);
+    }
+
+
+
     /** Create a component listener to handle size changes if the table model
      * is large-model */
     private ComponentListener getComponentListener() {

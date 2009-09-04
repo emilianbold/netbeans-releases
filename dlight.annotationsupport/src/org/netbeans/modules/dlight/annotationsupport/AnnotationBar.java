@@ -30,6 +30,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Style;
@@ -332,12 +333,12 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (component == null) {
             return;
         }
-//        BaseTextUI textUI = (BaseTextUI) component.getUI();
-//        Element rootElem = textUI.getRootView(component).getElement();
+        BaseTextUI textUI = (BaseTextUI) component.getUI();
+        Element rootElem = textUI.getRootView(component).getElement();
         int offset = view.getStartOffset();
-//        int line = rootElem.getElementIndex(offset);
+        int line = rootElem.getElementIndex(offset);
 //        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLine(line + 1);
-        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByOffset(offset);
+        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLineOffset(offset);
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());

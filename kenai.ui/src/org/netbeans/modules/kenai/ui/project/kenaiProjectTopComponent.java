@@ -42,10 +42,6 @@ package org.netbeans.modules.kenai.ui.project;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.net.URL;
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
@@ -75,7 +71,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private RequestProcessor.Task loadingImageTask = null;
     private RequestProcessor.Task loadingDynamicContentTask = null;
 
-    public static final String linkImageHTML = String.format("<img src=\"%s\">&nbsp;", kenaiProjectTopComponent.class.getResource("/org/netbeans/modules/kenai/ui/resources/insertlink-bottom.png"));
+    public static final String linkImageHTML = String.format("<img src=\"%s\" style=\"padding-right: 3px;\">", kenaiProjectTopComponent.class.getResource("/org/netbeans/modules/kenai/ui/resources/insertlink-bottom.png"));
 
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
@@ -459,26 +455,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         loadingImageTask = SingleImageRequestProcessor.post(new Runnable() {
 
             public void run() {
-                try {
-                    URL imgUrl = new URL(proj.getImageUrl());
-                    if (Thread.interrupted()) {
-                        return;
+                proj.cacheProjectImage();
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        projectImage.setIcon(proj.getProjectIcon(false));
                     }
-                    final Icon ico = ImageUtilities.image2Icon(ImageIO.read(imgUrl));
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            projectImage.setIcon(ico);
-                        }
-                    });
-                } catch (IOException ex) { // image load failed - use default image instead
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            projectImage.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/default.jpg", false)); //NOI18N
-                        }
-                    });
-                }
+                });
             }
         });
 

@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -90,6 +91,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -208,7 +210,9 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private  Node iconDelegate;
 
         public ConfFilesNode(Project prj) {
-            super(ConfFilesChildren.forProject(prj), createLookup(prj));
+            //super(ConfFilesChildren.forProject(prj), createLookup(prj));
+            super(Children.create(ConfFilesChildrenFactory.forProject(prj), true), 
+                    createLookup(prj));
             this.project = prj;
             setName("configurationFiles"); // NOI18N
             iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
@@ -356,10 +360,354 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
         }
     }
+    
+    /**
+     * Additional fix for IZ#170098 - 39s - expanding nodes can take ages 
+     * @author ads
+     *
+     */
+    private static final class ConfFilesChildrenFactory extends 
+        ChildFactory.Detachable<FileObject>
+    {
+        private static final String[] WELL_KNOWN_FILES = {"web.xml", "webservices.xml", 
+            "struts-config.xml", "faces-config.xml", "portlet.xml", "navigator.xml", 
+            "managed-beans.xml"}; //NOI18N
+        
+        private static final java.util.Comparator<FileObject> COMPARATOR = 
+            new NodeComparator();
+        
+        private ConfFilesChildrenFactory(ProjectWebModule webModule) {
+            myWebModule = webModule;
+            myKeys = Collections.emptySet();
+        }
+        
+        public static ConfFilesChildrenFactory forProject(Project project) {
+            ProjectWebModule pwm = (ProjectWebModule) project.getLookup().lookup(
+                    ProjectWebModule.class);
+            return new ConfFilesChildrenFactory(pwm);
+        }
+        
+        void update(){
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    refresh( false );
+                }
+            });
+        }
+        
+        @Override
+        protected void removeNotify() {
+            removeListeners();
+        }
+        
+        /* (non-Javadoc)
+         * @see org.openide.nodes.ChildFactory#createNodeForKey(java.lang.Object)
+         */
+        public Node createNodeForKey( FileObject fo ) {
+            Node node = null;
 
-    private static final class ConfFilesChildren extends Children.Keys<FileObject> {
+            try {
+                DataObject dataObject = DataObject.find(fo);
+                node = dataObject.getNodeDelegate().cloneNode();
+                if (fo.isFolder()) {
+                    DataFolder dataFolder = DataFolder.findFolder(fo);
+                    node = new FilterNode(node, dataFolder
+                            .createNodeChildren(new VisibilityQueryDataFilter(
+                                    null)));
+                }
+            }
+            catch (DataObjectNotFoundException dnfe) {
+            }
 
-        private static final String[] wellKnownFiles = {"web.xml", "webservices.xml", "struts-config.xml", "faces-config.xml", "portlet.xml", "navigator.xml", "managed-beans.xml"}; //NOI18N
+            return node;
+        }
+        
+
+        /* (non-Javadoc)
+         * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
+         */
+        @Override
+        protected boolean createKeys( List<FileObject> keys ) {
+            boolean result = false;
+            myKeys = new HashSet<FileObject>( );
+            if ( addWellKnownFiles( ) ){
+                result = true;
+            }
+            if ( !result && addConfDirectoryFiles( ) ){
+                result =  true;
+            }
+            if ( !result && addPersistenceXmlDirectoryFiles( ) ){
+                result = true;
+            }
+            if ( !result && addServerSpecificFiles( ) ){
+                result = true;
+            }
+            if ( !result && addFrameworkFiles(  ) ){
+                result = true;
+            }
+            if ( !result && addWebFragments(  ) ){
+                result = true;
+            }
+            keys.addAll( myKeys );
+            Collections.sort( keys, COMPARATOR);
+            return true;
+        }
+        
+        private void removeListeners() {
+            getWebModule().removeConfigurationFilesListener(
+                    myServerSpecificFilesListener);
+
+            FileObject webInf = getWebModule().getWebInf(true);
+            if (webInf != null) {
+                getWebModule().getWebInf().removeFileChangeListener(myWebInfListener);
+            }
+            if (myConfDir != null) {
+                myConfDir.removeFileChangeListener(myAnyFileListener);
+            }
+            if ( myPersistenceXmlDir != null ){
+                myPersistenceXmlDir.removeFileChangeListener(myAnyFileListener);
+            }
+        }
+        
+        private boolean addWellKnownFiles(  ) {
+            FileObject webInf = getWebModule().getWebInf(true);
+            if (webInf == null) {
+                return false;
+            }
+            boolean result = false;
+            for (int i = 0; i < WELL_KNOWN_FILES.length; i++) {
+                FileObject fo = webInf.getFileObject(WELL_KNOWN_FILES[i]);
+                if (fo != null) {
+                    myKeys.add(fo);
+                }
+                if ( Thread.interrupted() ){
+                    result = true;
+                    break;
+                }
+            }
+
+            webInf.addFileChangeListener(myWebInfListener);
+            return result;
+        }
+        
+        private boolean addConfDirectoryFiles( ) {
+            myConfDir = getWebModule().getConfDir();
+            if (myConfDir == null) {
+                return false;
+            }
+            boolean result = false;
+            FileObject[] children = myConfDir.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                if (VisibilityQuery.getDefault().isVisible(children[i])) {
+                    myKeys.add(children[i]);
+                }
+                if ( Thread.interrupted()){
+                    result = true;
+                    break;
+                }
+            }
+
+            myConfDir.addFileChangeListener(myAnyFileListener);
+            return result;
+        }
+        
+        private boolean addPersistenceXmlDirectoryFiles(  ) {
+            myPersistenceXmlDir = getWebModule().getPersistenceXmlDir();
+            if (myPersistenceXmlDir == null ||
+                    (myConfDir != null && FileUtil.toFile(myPersistenceXmlDir).
+                            equals(FileUtil.toFile(myConfDir)))) 
+            {
+                return false;
+            }
+            boolean result = false;
+            FileObject[] children = myPersistenceXmlDir.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                if (VisibilityQuery.getDefault().isVisible(children[i])) {
+                    myKeys.add(children[i]);
+                }
+                if ( Thread.interrupted() ){
+                    result = true;
+                    break;
+                }
+            }
+
+            myPersistenceXmlDir.addFileChangeListener(myAnyFileListener);
+            return result;
+        }
+        
+        private boolean addServerSpecificFiles( ) {
+            FileObject[] files = getWebModule().getConfigurationFiles();
+
+            boolean result = false;
+            for (int i = 0; i < files.length; i++) {
+                myKeys.add(files[i]);
+                if ( Thread.interrupted() ){
+                    result = true;
+                    break;
+                }
+            }
+
+            getWebModule().addConfigurationFilesListener(myServerSpecificFilesListener);
+            return result;
+        }
+        
+        private boolean addFrameworkFiles(  ) {
+            List<WebFrameworkProvider> providers = WebFrameworks.getFrameworks();
+            boolean result = false;
+            start :
+            for (int i = 0; i < providers.size(); i++) {
+                WebFrameworkProvider provider = (WebFrameworkProvider) providers.get(i);
+                FileObject wmBase = getWebModule().getDocumentBase();
+                File[] files = null;
+                if (wmBase != null) {
+                    files = provider.getConfigurationFiles(WebModule.getWebModule(wmBase));
+                }
+                if (files != null) {
+                    for (int j = 0; j < files.length; j++) {
+                        FileObject fo = FileUtil.toFileObject(files[j]);
+                        if (fo != null) {
+                            myKeys.add(fo);
+                            // XXX - do we need listeners on these files?
+                            //fo.addFileChangeListener(anyFileListener);
+                        }
+                        if ( Thread.interrupted()) {
+                            result = true;
+                            break start;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        
+        private boolean addWebFragments( ) { 
+            try {
+                List<FileObject> frags = getWebModule().getMetadataModel().
+                    runReadAction(new MetadataModelAction<WebAppMetadata, 
+                            List<FileObject>>() 
+                    {
+                        public List<FileObject> run(WebAppMetadata metadata) 
+                            throws Exception 
+                        {
+                            return metadata.getFragmentFiles();
+                        }
+                });
+                myKeys.addAll(frags);
+            } catch (MetadataModelException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            FileObject[] roots = getWebModule().getSourceRoots();
+            if (roots != null) {
+                for (FileObject root : roots) {
+                    ClassPath cp = getWebModule().getClassPathProvider().
+                        findClassPath(root, ClassPath.COMPILE);
+                    if (cp != null) {
+                        cp.removePropertyChangeListener(myClassPathListener);
+                        cp.addPropertyChangeListener(myClassPathListener);
+                    }
+                }
+            }
+            return Thread.interrupted();
+        }
+        
+        private ProjectWebModule getWebModule(){
+            return myWebModule;
+        }
+        
+        private boolean isWellKnownFile(String name) {
+            for (int i = 0; i < WELL_KNOWN_FILES.length; i++) {
+                if (name.equals(WELL_KNOWN_FILES[i])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private final FileChangeListener myWebInfListener = new FileChangeAdapter() {
+
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                if (isWellKnownFile(fe.getFile().getNameExt())) {
+                    refresh(false);
+                }
+            }
+
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                // if the old file name was in keys, the new file name
+                // is now there (since it's the same FileObject)
+                if ( myKeys.contains(fe.getFile())) {
+                    refresh( false );
+                } else {
+                    // the key is not contained, so add it if it's well-known
+                    if (isWellKnownFile(fe.getFile().getNameExt())) {
+                        refresh( false );
+                    }
+                }
+            }
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                if (isWellKnownFile(fe.getFile().getNameExt())) {
+                    refresh(false);
+                }
+            }
+        };
+        
+        private final FileChangeListener myAnyFileListener = new FileChangeAdapter() {
+
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                refresh( false );
+            }
+
+            @Override
+            public void fileFolderCreated(FileEvent fe) {
+                refresh( false );
+            }
+
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                refresh(false);
+            }
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                refresh(false);
+            }
+        };
+        
+        private final ConfigurationFilesListener myServerSpecificFilesListener = 
+            new ConfigurationFilesListener() 
+        {
+
+            public void fileCreated(FileObject fo) {
+                refresh(false);
+            }
+
+            public void fileDeleted(FileObject fo) {
+                refresh(false);
+            }
+        };
+        
+        private final ClassPathChangeListener myClassPathListener = 
+                new ClassPathChangeListener(this);
+        
+        private ProjectWebModule myWebModule;
+        private Set<FileObject> myKeys;
+        private FileObject myConfDir;
+        private FileObject myPersistenceXmlDir;
+    }
+
+    /*
+     * Original Children realization before above fix for IZ#170098. 
+     * private static final class ConfFilesChildren extends Children.Keys<FileObject> {
+
+        private static final String[] wellKnownFiles = {"web.xml", "webservices.xml", 
+            "struts-config.xml", "faces-config.xml", "portlet.xml", "navigator.xml", 
+            "managed-beans.xml"}; //NOI18N
         private final ProjectWebModule pwm;
         private final HashSet<FileObject> keys;
         private final java.util.Comparator<FileObject> comparator = new NodeComparator();
@@ -427,7 +775,9 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
         };
 
-        private final ConfigurationFilesListener serverSpecificFilesListener = new ConfigurationFilesListener() {
+        private final ConfigurationFilesListener serverSpecificFilesListener = 
+            new ConfigurationFilesListener() 
+        {
 
             public void fileCreated(FileObject fo) {
                 addKey(fo);
@@ -648,37 +998,6 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             return false;
         }
 
-        private static final class NodeComparator implements java.util.Comparator<FileObject> {
-
-            public int compare(FileObject fo1, FileObject fo2) {
-
-                int result = compareType(fo1, fo2);
-                if (result == 0) {
-                    result = compareNames(fo1, fo2);
-                }
-                if (result == 0) {
-                    return fo1.getPath().compareTo(fo2.getPath());
-                }
-                return result;
-            }
-
-            private int compareType(FileObject fo1, FileObject fo2) {
-                int folder1 = fo1.isFolder() ? 0 : 1;
-                int folder2 = fo2.isFolder() ? 0 : 1;
-
-                return folder1 - folder2;
-            }
-
-            private int compareNames(FileObject do1, FileObject do2) {
-                return do1.getNameExt().compareTo(do2.getNameExt());
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                return o instanceof NodeComparator;
-            }
-
-        }
     }
 
     private static class ClassPathChangeListener implements PropertyChangeListener {
@@ -689,6 +1008,48 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         public void propertyChange(PropertyChangeEvent evt) {
             confFiles.refreshNodes();
         }
+    }*/
+    
+    private static final class NodeComparator implements java.util.Comparator<FileObject> {
+
+        public int compare(FileObject fo1, FileObject fo2) {
+
+            int result = compareType(fo1, fo2);
+            if (result == 0) {
+                result = compareNames(fo1, fo2);
+            }
+            if (result == 0) {
+                return fo1.getPath().compareTo(fo2.getPath());
+            }
+            return result;
+        }
+
+        private int compareType(FileObject fo1, FileObject fo2) {
+            int folder1 = fo1.isFolder() ? 0 : 1;
+            int folder2 = fo2.isFolder() ? 0 : 1;
+
+            return folder1 - folder2;
+        }
+
+        private int compareNames(FileObject do1, FileObject do2) {
+            return do1.getNameExt().compareTo(do2.getNameExt());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof NodeComparator;
+        }
+
+    }
+    
+    private static class ClassPathChangeListener implements PropertyChangeListener {
+        ClassPathChangeListener(ConfFilesChildrenFactory factory) {
+            myFactory =  factory;
+        }
+        public void propertyChange(PropertyChangeEvent evt) {
+            myFactory.update();
+        }
+        private ConfFilesChildrenFactory myFactory;
     }
 
 }

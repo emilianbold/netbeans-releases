@@ -108,6 +108,7 @@ public class BugzillaRepository extends Repository {
 
     public static final String ATTRIBUTE_URL = "bugzilla.repository.attribute.url"; //NOI18N
     public static final String ATTRIBUTE_DISPLAY_NAME = "bugzilla.repository.attribute.displayName"; //NOI18N
+    private Lookup lookup;
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -185,7 +186,14 @@ public class BugzillaRepository extends Repository {
     }
 
     public Lookup getLookup() {
-        return Lookups.singleton(getIssueCache());
+        if(lookup == null) {
+            lookup = Lookups.fixed(getLookupObjects());
+        }
+        return lookup;
+    }
+
+    protected Object[] getLookupObjects() {
+        return new Object[] { getIssueCache() };
     }
 
     synchronized void resetRepository() {

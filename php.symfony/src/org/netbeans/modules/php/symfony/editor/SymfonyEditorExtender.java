@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.symfony.editor;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,14 +46,13 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
+import org.netbeans.modules.php.symfony.util.SymfonyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
  */
 public class SymfonyEditorExtender extends EditorExtender {
-    private static final String TEMPLATES = "templates"; // NOI18N
     private static final List<PhpElement> ELEMENTS = Arrays.<PhpElement>asList(
             new PhpVariable("$sf_user", "sfUser"), // NOI18N
             new PhpVariable("$sf_request", "sfWebRequest"), // NOI18N
@@ -62,7 +60,7 @@ public class SymfonyEditorExtender extends EditorExtender {
 
     @Override
     public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
-        if (isView(fo)) {
+        if (SymfonyUtils.isView(fo)) {
             return ELEMENTS;
         }
         return Collections.emptyList();
@@ -70,7 +68,7 @@ public class SymfonyEditorExtender extends EditorExtender {
 
     @Override
     public PhpClass getClass(FileObject fo, String variableName) {
-        if (isView(fo)) {
+        if (SymfonyUtils.isView(fo)) {
             for (PhpElement element : ELEMENTS) {
                 if (element.getName().equals(variableName)) {
                     return new PhpClass(element.getName(), element.getFullyQualifiedName());
@@ -78,11 +76,5 @@ public class SymfonyEditorExtender extends EditorExtender {
             }
         }
         return null;
-    }
-
-    // try to be as fast as possible...
-    private boolean isView(FileObject fo) {
-        File file = FileUtil.toFile(fo);
-        return TEMPLATES.equals(file.getParentFile().getName());
     }
 }

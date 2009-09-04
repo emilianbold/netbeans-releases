@@ -62,6 +62,7 @@
                 <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
+                <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.indicators</friend>
                 <friend>org.netbeans.modules.dlight.management</friend>
