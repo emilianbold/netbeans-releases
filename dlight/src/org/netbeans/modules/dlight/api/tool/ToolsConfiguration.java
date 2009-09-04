@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,8 +50,11 @@ import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
 import org.openide.util.Exceptions;
 
 /**
@@ -58,10 +62,13 @@ import org.openide.util.Exceptions;
  */
 final class ToolsConfiguration {
 
+    private static final String ENABLE_BY_DEFAULT_ATTRIBUTE = "enabledByDefault";//NOI18N
     private static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders"; //NOI18N
     private final FileObject rootFolder;
     private boolean useRootFolder = false;
     private List<DLightTool> cachedList = null;
+    //String - toolID, FileObject - FileObject
+    private final HashMap<String, FileObject> toolsProviders = new HashMap<String, FileObject>();
 
     static ToolsConfiguration create(FileObject fileObject) {
         return new ToolsConfiguration(fileObject, false);
@@ -81,6 +88,73 @@ final class ToolsConfiguration {
             return getToolsSet();
         }
         return cachedList;
+    }
+
+
+    FileObject getFileObject(String toolID){
+        if (toolsProviders.isEmpty()){
+            //tru to read
+            getToolsSet();
+        }
+        return toolsProviders.get(toolID);
+    }
+
+
+    boolean remove(String toolID){
+        if (toolsProviders.isEmpty()){
+            //tru to read
+            getToolsSet();
+        }
+        FileObject fo = toolsProviders.get(toolID);
+        if (fo == null){
+            return false;
+        }
+        try {
+            fo.delete();
+        } catch (IOException ex) {
+            return false;
+        }
+        return true;
+    }
+    
+    boolean register(FileObject fileObject, boolean isEnabled) {
+        FileObject configurationsFolder = useRootFolder ? rootFolder : rootFolder.getFileObject(KNOWN_TOOLS_SET);
+        if (configurationsFolder == null) {
+            return false;
+        }
+        
+        if (configurationsFolder.getFileObject(fileObject.getName(), "shadow") == null){//NOI18N
+            try {
+                //NOI18N
+                FileObject fo = configurationsFolder.createData(fileObject.getName(), "shadow"); //NOI18N
+                fo.setAttribute("originalFile", fileObject.getPath());
+                fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
+            } catch (IOException ex) {
+                return false;
+            }
+
+        }else{
+            FileObject fo  = configurationsFolder.getFileObject(fileObject.getName(), "shadow");
+            try {
+                fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
+            } catch (IOException ex) {
+                return false;
+            }
+        }
+       // try {            
+//            DataObject dobj = DataObject.find(fileObject);
+//            DataFolder configurationDataObject  = DataFolder.findFolder(configurationsFolder);
+//            try {
+//                DataShadow shadow = dobj.createShadow(configurationDataObject);
+//
+//            } catch (IOException ex) {
+//                return false;
+//            }
+//        } catch (DataObjectNotFoundException ex) {
+//            return false;
+//        }
+        return true;
+
     }
 
     /**
@@ -103,7 +177,7 @@ final class ToolsConfiguration {
         }
 
         for (FileObject child : children) {
-            Enumeration<String> attrs = child.getAttributes();          
+            Enumeration<String> attrs = child.getAttributes();
             DataObject dobj = null;
             try {
                 dobj = DataObject.find(child);
@@ -121,7 +195,22 @@ final class ToolsConfiguration {
                 @SuppressWarnings("unchecked")
                 Class<? extends DLightToolConfigurationProvider> clazz = (Class<? extends DLightToolConfigurationProvider>) ic.instanceClass();
                 DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
-                result.add(DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create()));
+                DLightTool tool = DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create());
+                toolsProviders.put(tool.getID(), child);
+                boolean enabledByDefault = true;
+                while (attrs.hasMoreElements()) {
+                    String an = attrs.nextElement();
+                    if (ENABLE_BY_DEFAULT_ATTRIBUTE.equals(an)) {
+                        enabledByDefault = (Boolean) child.getAttribute(an);
+                        break;
+                    }
+                }
+                if (enabledByDefault) {
+                    tool.enable();
+                } else {
+                    tool.disable();
+                }
+                result.add(tool);
 //        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
 //        result.add(clazz.getConstructor().newInstance());
             } catch (InstantiationException ex) {

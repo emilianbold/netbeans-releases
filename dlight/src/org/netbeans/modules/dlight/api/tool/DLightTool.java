@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.impl.IDPProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorProvider;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
@@ -386,5 +387,5 @@ public final class DLightTool implements Validateable<DLightTarget> {
         public void turnCollectorsState(DLightTool tool, boolean turnedOn) {
             tool.turnCollectorsState(null, turnedOn);
         }
+        }
     }
-}
