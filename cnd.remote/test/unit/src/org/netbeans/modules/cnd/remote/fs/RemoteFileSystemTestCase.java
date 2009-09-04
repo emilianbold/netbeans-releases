@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -65,7 +64,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         System.setProperty("nativeexecution.support.logger.level", "0");
     }
 
-    private final FileSystem fs;
+    private final RemoteFileSystem fs;
     private final FileObject rootFO;
     private final ExecutionEnvironment execEnv;
     
@@ -102,6 +101,33 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
 
     private String getFileName(ExecutionEnvironment execEnv, String absPath) {
         return execEnv.toString() + ':' + absPath;
+    }
+
+    @ForAllEnvironments
+    public void testSyncDirStruct() throws Exception {
+
+        String dirName = "/usr/include";
+
+        // set up local test directory
+        File rfsCache = fs.getCache();
+        File localDir = File.createTempFile("usr-include", null, rfsCache);
+        if (localDir.exists()) {
+            boolean result = localDir.isFile() ? localDir.delete() : removeDirectory(localDir);
+            assertTrue("Can't remove file or directory " + localDir, result);
+        } else {
+            boolean result = localDir.mkdirs();
+            assertTrue("Can't create directory " + localDir, result);
+        }
+
+        // set up test file
+        File stdioFile = new File(localDir,"stdio.h");
+        if (stdioFile.exists()) {
+            assertTrue("Can't delete file " + stdioFile, stdioFile.delete());
+        }
+        
+        RemoteFileSupport remoteFileSupport = fs.getRemoteFileSupport();
+        remoteFileSupport.syncDirStruct(localDir, dirName);
+        assertTrue("File " + stdioFile + " should exist", stdioFile.exists());
     }
 
     @ForAllEnvironments

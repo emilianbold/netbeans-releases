@@ -43,57 +43,44 @@ import java.io.File;
 import java.io.FileWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class UploadTestCase extends RemoteTestBase {
+public class DownloadTestCase extends RemoteTestBase {
 
     static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
 //        System.setProperty("cnd.remote.logger.level", "0");
 //        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-    public UploadTestCase(String testName, ExecutionEnvironment execEnv) {
+    public DownloadTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @ForAllEnvironments
-    public void testCopyTo() throws Exception {
-        File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
-        FileWriter fstream = new FileWriter(localFile);
-        StringBuilder sb = new StringBuilder("File from "); //NOI18N
-        try {
-            InetAddress addr = InetAddress.getLocalHost();
-            sb.append( addr.getHostName() );
-        } catch (UnknownHostException e) {
-        }
-        sb.append("\ntime: " + System.currentTimeMillis()+ "\n"); //NOI18N
-        BufferedWriter out = new BufferedWriter(fstream);
-        out.write(sb.toString());
-        out.close();
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
-        RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
-        String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
-        rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
-        assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
-        String catCommand = "cat " + remoteFile;
-        RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
-//            assert rcs2.run() == 0; // add more output
-        int rc = rcs2.run();
-        if (rc != 0) {
-            assert false : "RemoteCommandSupport: " + catCommand + " returned " + rc + " on " + execEnv;
-        }
-        assert rcs2.getOutput().equals(sb.toString());
-        assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
+    public void testCopyFrom() throws Exception {
+        File localFile = File.createTempFile("cnd", ".cnd");
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        String remoteFile = "/usr/include/stdio.h";
+        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
+        int rc = task.get().intValue();
+        assertEquals("Copying finished with rc != 0: ", 0, rc);
+        String content = readFile(localFile);
+        String text2search = "printf";
+        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
+                content.indexOf(text2search) >= 0);
+        localFile.delete();
     }
     
     public static Test suite() {
-        return new RemoteDevelopmentTest(UploadTestCase.class);
+        return new RemoteDevelopmentTest(DownloadTestCase.class);
     }
 }

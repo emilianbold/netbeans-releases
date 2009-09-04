@@ -132,6 +132,10 @@ public abstract class RemoteFileObjectBase extends FileObject {
         return fileSystem;
     }
 
+    protected RemoteFileSupport getRemoteFileSupport() {
+        return fileSystem.getRemoteFileSupport();
+    }
+
     @Override
     public String getName() {
         int pointPos = nameExt.lastIndexOf('.');
@@ -171,6 +175,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public boolean isVirtual() {
         return ! cache.exists();
     }
