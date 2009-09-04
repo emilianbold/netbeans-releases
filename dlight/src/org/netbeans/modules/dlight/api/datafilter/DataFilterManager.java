@@ -36,38 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.extras.api;
+
+package org.netbeans.modules.dlight.api.datafilter;
+
+import java.util.Collection;
 
 /**
- * Range of numeric values.
  *
- * @param <T> number class
- *
- * @author Alexey Vladykin
  */
-public final class Range<T extends Number & Comparable<? super T>> {
-
-    private final T start;
-    private final T end;
-
-    public Range(T start, T end) {
-        if (start != null && end != null && 0 < start.compareTo(end)) {
-            throw new IllegalArgumentException("Must be start <= end"); // NOI18N
-        }
-        this.start = start;
-        this.end = end;
-    }
-
-    public T getStart() {
-        return start;
-    }
-
-    public T getEnd() {
-        return end;
-    }
-
-    @Override
-    public String toString() {
-        return String.valueOf(start) + ".." + String.valueOf(end); // NOI18N
-    }
+public interface DataFilterManager {
+    void cleanAllDataFilter();
+    void cleanAllDataFilter(Class clazz);
+    boolean removeDataFilter(DataFilter filter);
+    void addDataFilter(DataFilter filter);
+    void addDataFilterListener(DataFilterListener l);
+    Collection<? extends DataFilter> getDataFilter(Class<? extends DataFilter> clazz);
 }

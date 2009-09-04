@@ -288,8 +288,6 @@
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.cnd.gizmo.api</package>
-                <package>org.netbeans.modules.cnd.gizmo.spi</package>
                 <package>org.netbeans.modules.cnd.gizmo.support</package>
             </public-packages>
         </data>

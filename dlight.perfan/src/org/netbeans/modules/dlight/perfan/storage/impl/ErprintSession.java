@@ -56,6 +56,7 @@ public class ErprintSession {
     private final NativeProcessBuilder npb;
     private volatile Erprint er_print;
     private final SunStudioFiltersProvider dataFiltersProvider;
+    private String filterString;
 
     public ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
         id = idCounter.incrementAndGet();
@@ -70,22 +71,25 @@ public class ErprintSession {
     }
 
     private void applyFilters() {
-        if (dataFiltersProvider == null) {
-            return;
-        }
+        if (dataFiltersProvider != null) {
+            final List<DataFilter> filters = dataFiltersProvider.getDataFilters();
 
-        final List<DataFilter> filters = dataFiltersProvider.getDataFilters();
-
-        synchronized (filters) {
-            for (DataFilter filter : filters) {
-                try {
-                    if (filter instanceof CollectedObjectsFilter) {
-                        er_print.selectObjects((CollectedObjectsFilter) filter);
+            synchronized (filters) {
+                for (DataFilter filter : filters) {
+                    try {
+                        if (filter instanceof CollectedObjectsFilter) {
+                            er_print.selectObjects((CollectedObjectsFilter) filter);
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
+        }
+        try {
+            er_print.setFilter(filterString);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -153,6 +157,10 @@ public class ErprintSession {
         } finally {
             erp.releaseLock();
         }
+    }
+
+    public void setFilter(String filterString) {
+        this.filterString = filterString;
     }
 
     public List<DeadlockImpl> getDeadlocks(boolean restart) throws IOException {

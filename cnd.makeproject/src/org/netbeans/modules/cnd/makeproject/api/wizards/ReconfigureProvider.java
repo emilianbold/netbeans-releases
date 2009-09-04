@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 public abstract class ReconfigureProvider {
     private static ReconfigureProvider DEFAULT = new Default();
 
-    public abstract void reconfigure(Project makeProject, String cFlags, String cxxFlags);
+    public abstract void reconfigure(Project makeProject, String cFlags, String cxxFlags, String linkerFlags);
     public abstract String getLastFlags(Project makeProject);
 
     protected ReconfigureProvider() {
@@ -73,10 +73,10 @@ public abstract class ReconfigureProvider {
             return null;
         }
 
-        public void reconfigure(Project makeProject, String cFlags, String cxxFlags) {
+        public void reconfigure(Project makeProject, String cFlags, String cxxFlags, String linkerFlags) {
             ReconfigureProvider service = getService();
             if (service != null) {
-                service.reconfigure(makeProject, cFlags, cxxFlags);
+                service.reconfigure(makeProject, cFlags, cxxFlags, linkerFlags);
             }
         }
 

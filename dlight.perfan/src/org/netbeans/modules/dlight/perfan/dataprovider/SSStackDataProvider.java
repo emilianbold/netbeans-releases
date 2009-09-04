@@ -66,6 +66,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
+import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.HotSpotFunctionsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
@@ -122,16 +123,32 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     private PerfanDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
     private volatile HotSpotFunctionsFilter filter;
+    private volatile TimeIntervalDataFilter timeIntervalDataFilter;
 
     public void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
         this.serviceInfoStorage = serviceInfoStorage;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet) {
+        boolean hasTimeIntervalFilter = false;
         for (DataFilter f : newSet) {
             if (f instanceof HotSpotFunctionsFilter) {
                 filter =  (HotSpotFunctionsFilter) f;
             }
+            if (f instanceof TimeIntervalDataFilter){
+                timeIntervalDataFilter = (TimeIntervalDataFilter)f;
+                hasTimeIntervalFilter = true;
+            }
+        }
+        if (!hasTimeIntervalFilter && timeIntervalDataFilter != null){
+            //clear filter
+           if (storage != null){
+               storage.setFilter("\"\"");//NOI18Ns
+           }
+           timeIntervalDataFilter = null;
+        }
+        if (hasTimeIntervalFilter && timeIntervalDataFilter != null){
+            storage.setFilter(timeIntervalDataFilter.getInterval() == null ? "\"\"" : "TSTAMP>" + timeIntervalDataFilter.getInterval().getStart() + "&&TSTAMP<"  + timeIntervalDataFilter.getInterval().getEnd());//NOI18N
         }
     }
 
@@ -365,6 +382,9 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             String[] er_result = null;
 
             try {
+                if (SSStackDataProvider.this.timeIntervalDataFilter != null){
+                    
+                }
                 er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
             } catch (InterruptedException ex) {
                 log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
