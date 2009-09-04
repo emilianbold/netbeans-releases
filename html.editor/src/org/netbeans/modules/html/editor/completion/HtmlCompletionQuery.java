@@ -323,19 +323,24 @@ public class HtmlCompletionQuery extends UserTask {
                 }
 
                 DTD.Attribute arg = tag.getAttribute(argName);
-                if (arg == null /*|| arg.getType() != DTD.Attribute.TYPE_SET*/) {
-                    return null;
-                }
 
                 result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {
                     anchor = offset;
-                    result.addAll(translateValues(anchor, arg.getValueList("")));
-                    AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
-                    if (valuesCompletion != null) {
-                        result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                    if (arg != null) {
+                        result.addAll(translateValues(anchor, arg.getValueList("")));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        if (valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                        }
                     }
+
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, preText, itemText, node, argName);
+                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                        result.addAll(e.completeAttributeValue(context));
+                    }
+
                 } else {
                     String quotationChar = null;
                     if (preText != null && preText.length() > 0) {
@@ -350,11 +355,19 @@ public class HtmlCompletionQuery extends UserTask {
 
                     anchor = documentItemOffset + (quotationChar != null ? 1 : 0);
 
-                    result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
-                    AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
-                    if (valuesCompletion != null) {
-                        result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                    if (arg != null) {
+                        result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        if (valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                        }
                     }
+
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node, argName);
+                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                        result.addAll(e.completeAttributeValue(context));
+                    }
+
                 }
             }
         } else if (id == HTMLTokenId.SCRIPT) {

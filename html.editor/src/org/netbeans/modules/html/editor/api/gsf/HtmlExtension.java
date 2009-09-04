@@ -117,13 +117,17 @@ public abstract class HtmlExtension {
         private String preText;
         private String itemText;
         private AstNode currentNode;
+        private String attributeName; //for attribute value completion
 
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText) {
             this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, null);
         }
 
- 
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode) {
+            this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, currentNode, null);
+        }
+        
+        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode, String attributeName) {
             this.result = result;
             this.originalOffset = originalOffset;
             this.astoffset = astoffset;
@@ -131,6 +135,7 @@ public abstract class HtmlExtension {
             this.ccItemStartOffset = ccItemStartOffset;
             this.currentNode = currentNode;
             this.itemText = itemText;
+            this.attributeName = attributeName;
         }
 
         public String getPrefix() {
@@ -160,6 +165,10 @@ public abstract class HtmlExtension {
 
         public AstNode getCurrentNode() {
             return currentNode;
+        }
+
+        public String getAttributeName() {
+            return attributeName;
         }
 
     }

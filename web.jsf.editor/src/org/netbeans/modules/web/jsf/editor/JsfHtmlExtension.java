@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -69,6 +70,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -353,7 +355,26 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
-        return Collections.EMPTY_LIST;
+        List<CompletionItem> items = new ArrayList<CompletionItem>();
+
+        if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) {
+            //xml namespace completion for facelets namespaces
+            HtmlParserResult result = context.getResult();
+            Source source = result.getSnapshot().getSource();
+            JsfSupport jsfs = JsfSupport.findFor(source);
+            if (jsfs == null) {
+                return Collections.emptyList();
+            }
+
+            for(String namespace : jsfs.getFaceletsLibraries().keySet()) {
+                if(namespace.startsWith(context.getPrefix())) {
+                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset()));
+                }
+            }
+
+        }
+
+        return items;
     }
 
     @Override
@@ -370,7 +391,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                 if (lib instanceof CompositeComponentLibrary) {
                     String tagName = leaf.getNameWithoutPrefix();
                     CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
-                    if(component == null) {
+                    if (component == null) {
                         return DeclarationLocation.NONE;
                     }
                     FileObject file = component.getComponentModel().getSourceFile();
@@ -381,10 +402,10 @@ public class JsfHtmlExtension extends HtmlExtension {
                     int jumpOffset = 0;
                     TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
                     htmlTs.move(astOffset);
-                    if(htmlTs.moveNext() || htmlTs.movePrevious()) {
-                        if(htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (htmlTs.moveNext() || htmlTs.movePrevious()) {
+                        if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
                             //jumpOffset = 0;
-                        } else if(htmlTs.token().id() == HTMLTokenId.ARGUMENT){
+                        } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
                             final String attributeName = htmlTs.token().text().toString();
                             //find the attribute in the interface
 
@@ -392,19 +413,21 @@ public class JsfHtmlExtension extends HtmlExtension {
                             final int[] attrOffset = new int[1];
                             try {
                                 ParserManager.parse(Collections.singleton(source), new UserTask() {
+
                                     @Override
                                     public void run(ResultIterator resultIterator) throws Exception {
                                         Result result = resultIterator.getParserResult(caretOffset);
-                                        if(result instanceof HtmlParserResult) {
-                                            HtmlParserResult hresult = (HtmlParserResult)result;
+                                        if (result instanceof HtmlParserResult) {
+                                            HtmlParserResult hresult = (HtmlParserResult) result;
                                             AstNode root = hresult.root(JsfUtils.COMPOSITE_LIBRARY_NS);
                                             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+
                                                 public void visit(AstNode node) {
-                                                    if(node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
-                                                        for(AstNode child : node.children()) {
-                                                            if(child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
+                                                    if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
+                                                        for (AstNode child : node.children()) {
+                                                            if (child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
                                                                 String nameAttrvalue = child.getUnqotedAttributeValue("name");
-                                                                if(nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
+                                                                if (nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
                                                                     //we found it
                                                                     attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
                                                                     break;
@@ -489,7 +512,4 @@ public class JsfHtmlExtension extends HtmlExtension {
         //just delegate to the hints registry and add all gathered results
         hints.addAll(HintsRegistry.getDefault().gatherHints(context));
     }
-
-
-
 }
