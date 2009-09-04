@@ -7,7 +7,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Map;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -422,7 +421,7 @@ public class QueryTableCellRendererTest {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
                 @Override
-                protected void setTaskData(Issue issue, Object issueData) {
+                protected void setIssueData(Issue issue, Object issueData) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
                 @Override
@@ -432,6 +431,16 @@ public class QueryTableCellRendererTest {
 
                 @Override
                 protected String getRecentChanges(Issue issue) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                protected long getLastModified(Issue issue) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                protected long getCreated(Issue issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
             });
