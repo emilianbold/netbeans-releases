@@ -118,17 +118,25 @@ public class ELExpression {
     private String myAttributeValue;
 
     private int contextOffset = -1;
+    private int myStartOffset = -1;
 
     public ELExpression(Document doc) {
         this.doc = doc;
         this.replace = "";
     }
-
-    private void setContextOffset(int offset) {
-        this.contextOffset = offset;
+    
+    /**
+     * Expression could contain operations, keywords, ...
+     * In this case context expression divided to several parts by such operations, ...
+     * In this case start offset is the beginning of such part EL which 
+     * includes context offset.   
+     * @return start index of context expression
+     */
+    public int getStartOffset(){
+        return myStartOffset;
     }
-
-    protected int getContextOffset() {
+    
+    public int getContextOffset() {
         return contextOffset;
     }
 
@@ -228,6 +236,7 @@ public class ELExpression {
                     }
                 }
                 token = ts.token();
+                myStartOffset = ts.offset();
                 if (!ts.movePrevious()) {
                     //we are on the beginning of the EL token sequence
                     break;
@@ -392,6 +401,10 @@ public class ELExpression {
         }
 
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
+    }
+    
+    private void setContextOffset(int offset) {
+        this.contextOffset = offset;
     }
     
     private String[] getParts() {
