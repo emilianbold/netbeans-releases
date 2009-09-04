@@ -101,6 +101,14 @@ public abstract class VCSKenaiSupport {
 
     public abstract boolean isUserOnline(String user);
 
+    /**
+     * Returns a path to a web page showing information about a revision in the repository.
+     * @param sourcesUrl repository url
+     * @param revision required revision
+     * @return 
+     */
+    public abstract String getRevisionUrl (String sourcesUrl, String revision);
+
     public abstract class KenaiUser {
 
         public abstract boolean isOnline();

@@ -36,24 +36,64 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.nodes.Node;
-import org.openide.windows.WindowManager;
+import java.awt.Component;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 
 /**
- * @author Jan Becicka
+ *
+ * @author Maros Sandor
  */
-public final class ShareMenuAction implements ActionListener {
+public class SummaryWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
 
-    public void actionPerformed(ActionEvent e) {
-        Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-        if (n.length > 0) {
-            ShareAction.actionPerformed(n);
-        } else {
-            ShareAction.actionPerformed((Node []) null);
+    private SummaryWizardPanelGUI   component;
+
+    private final ChangeSupport     changeSupport = new ChangeSupport(this);
+
+    public SummaryWizardPanel() {
+    }
+
+    public Component getComponent() {
+        if (component == null) {
+            component = new SummaryWizardPanelGUI(this);
         }
+        return component;
+    }
+
+    public HelpCtx getHelp() {
+        return new HelpCtx(SummaryWizardPanel.class.getName());
+    }
+
+    public void readSettings(Object settings) {
+        component.read((WizardDescriptor) settings);
+    }
+
+    public void storeSettings(Object settings) {
+        component.store((WizardDescriptor) settings);
+    }
+
+    public boolean isValid() {
+        return true;
+    }
+
+    public final void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    protected final void fireChangeEvent() {
+        changeSupport.fireChange();
+    }
+
+    public boolean isFinishPanel() {
+        return true;
     }
 }

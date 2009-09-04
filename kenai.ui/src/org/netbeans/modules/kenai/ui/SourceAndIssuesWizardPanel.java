@@ -40,9 +40,17 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Component;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanelGUI.SharedItem;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
@@ -57,6 +65,25 @@ public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
     private WizardDescriptor settings;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final Node[] activeNodes;
+
+    public SourceAndIssuesWizardPanel(Node [] activeNodes) {
+        this.activeNodes = activeNodes;
+    }
+
+    List<SourceAndIssuesWizardPanelGUI.SharedItem> getInitialItems() {
+        List<SourceAndIssuesWizardPanelGUI.SharedItem> items = new ArrayList<SourceAndIssuesWizardPanelGUI.SharedItem>();
+        for (Node node : activeNodes) {
+            Project prj = node.getLookup().lookup(Project.class);
+            if (prj != null) {
+                File file = FileUtil.toFile(prj.getProjectDirectory());
+                if (VersioningSupport.getOwner(file) == null) {
+                    items.add(new SharedItem(file));
+                }
+            }
+        }
+        return items;
+    }
 
     public Component getComponent() {
         if (component == null) {

@@ -84,20 +84,6 @@ public class BugzillaQuery extends Query {
         this(null, repository, null, false, false, true);
     }
 
-//    protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
-//        super();
-//        this.name = name;
-//        this.repository = repository;
-//        this.urlParameters = urlParameters;
-//        this.initialUrlDef = false;
-//        this.saved = saved;
-//        // let the subclass create the controller
-//    }
-
-//    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean urlDef, boolean saved, boolean initControler) {
-//        this(name, repository, urlParameters, saved, urlDef, initControler);
-//    }
-
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, boolean urlDef, boolean initControler) {
         this.repository = repository;
         this.saved = saved;
