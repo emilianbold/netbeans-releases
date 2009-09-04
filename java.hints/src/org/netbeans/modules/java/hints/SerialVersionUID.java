@@ -99,7 +99,8 @@ public class SerialVersionUID extends AbstractHint {
         }
         cancel.set(false);
         TypeElement type = (TypeElement) info.getTrees().getElement(treePath);
-        if (type == null || type.getKind() == ElementKind.INTERFACE || !isSerializable(type) || hasSerialVersionUID(type) || hasSuppressWarning(type, SERIAL)) {
+        if (type == null || type.getKind() == ElementKind.INTERFACE || type.getKind() == ElementKind.ENUM ||
+                !isSerializable(type) || hasSerialVersionUID(type) || hasSuppressWarning(type, SERIAL)) {
             return null;
         }
         // Contrary to popular belief, abstract classes *should* define serialVersionUID,
@@ -198,30 +199,7 @@ public class SerialVersionUID extends AbstractHint {
             Set<Modifier> modifiers = EnumSet.of(PRIVATE, STATIC, FINAL);
             VariableTree svuid = make.Variable(make.Modifiers(modifiers), SVUID, make.Identifier("long"), make.Literal(1L)); //NO18N
 
-            ClassTree decl;
-            if (copy.getTreeUtilities().isEnum(classTree)) {
-                List<? extends Tree> members = classTree.getMembers();
-                ArrayList<Tree> newMembers = new ArrayList<Tree>(members);
-
-                int lastEnumConstantPosition = 0;
-                for (Tree t : members) {
-                    if (t.getKind() == Kind.VARIABLE && copy.getTreeUtilities().isEnumConstant((VariableTree) t)) {
-                        lastEnumConstantPosition = members.indexOf(t);
-                    }
-                }
-                if (lastEnumConstantPosition > 0) {
-                    VariableTree lastMember = (VariableTree) members.get(lastEnumConstantPosition);
-                    ModifiersTree modds = make.Modifiers(ENUM_FLAG, Collections.<AnnotationTree>emptyList());
-                    VariableTree var = make.Variable(modds, lastMember.getName().toString(), lastMember.getType(), lastMember.getInitializer());
-                    newMembers.set(lastEnumConstantPosition, var);
-                }
-
-                newMembers.add(svuid);
-
-                decl = make.Enum(classTree.getModifiers(), classTree.getSimpleName(), classTree.getImplementsClause(), newMembers);
-            } else {
-                decl = GeneratorUtilities.get(copy).insertClassMember(classTree, svuid);
-            }
+            ClassTree decl = GeneratorUtilities.get(copy).insertClassMember(classTree, svuid);
             copy.rewrite(classTree, decl);
         }
 

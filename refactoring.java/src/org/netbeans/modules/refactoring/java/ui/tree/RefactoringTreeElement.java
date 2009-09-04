@@ -44,11 +44,8 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 import com.sun.source.tree.Tree;
 import javax.swing.Icon;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.netbeans.modules.refactoring.java.ui.UIUtilities;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.netbeans.modules.refactoring.spi.ui.*;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,7 +59,7 @@ public class RefactoringTreeElement implements TreeElement {
     
     RefactoringTreeElement(RefactoringElement element) {
         this.refactoringElement = element;
-        thisFeature = getFeature(((ElementGrip) element.getLookup().lookup(ElementGrip.class)));
+        thisFeature = getFeature(element.getLookup().lookup(ElementGrip.class));
         parent =  thisFeature;
         if (parent == null) {
             parent = thisFeature;

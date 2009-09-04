@@ -98,25 +98,9 @@ public class SerialVersionUIDTest extends TreeRuleTestBase {
         performFixTest(test, golden, HINT_DEFAULT);
     }
 
-    //w/o semicolon on end of enum constants
-    public void testSerialVersionEnum0() throws Exception {
+    public void testSerialVersionNotOfferedForEnum() throws Exception {
         String test = "package test; public enum Te|st { B, C }";
-        String golden = "package test; public enum Test { B, C; private static final long serialVersionUID = 1L; }";
-        performFixTest(test, golden, HINT_DEFAULT);
-    }
-
-    //with semicolon on end of enum constants
-    public void testSerialVersionEnum1() throws Exception {
-        String test = "package test; public enum Te|st { B, C; }";
-        String golden = "package test; public enum Test { B, C; private static final long serialVersionUID = 1L; }";
-        performFixTest(test, golden, HINT_DEFAULT);
-    }
-
-    //correct position
-    public void testSerialVersionEnum2() throws Exception {
-        String test = "package test; public enum Te|st { B, C; private int i;}";
-        String golden = "package test; public enum Test { B, C; private int i; private static final long serialVersionUID = 1L; }";
-        performFixTest(test, golden, HINT_DEFAULT);
+        performAnalysisTest(test);
     }
 
     public void testAnonymous() throws Exception {
