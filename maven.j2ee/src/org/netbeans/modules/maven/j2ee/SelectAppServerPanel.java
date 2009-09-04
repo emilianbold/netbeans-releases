@@ -46,8 +46,13 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,9 +61,11 @@ import org.openide.util.NbBundle;
  */
 public class SelectAppServerPanel extends javax.swing.JPanel {
     private NotificationLineSupport nls;
+    private Project project;
 
     /** Creates new form SelectAppServerPanel */
-    public SelectAppServerPanel(boolean showIgnore) {
+    public SelectAppServerPanel(boolean showIgnore, Project project) {
+        this.project = project;
         initComponents();
         buttonGroup1.add(rbSession);
         buttonGroup1.add(rbPermanent);
@@ -80,6 +87,8 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         } else {
             rbIgnore.setVisible(false);
         }
+        updateProjectLbl();
+        rbPermanentStateChanged(null);
     }
 
     String getSelectedServerType() {
@@ -98,6 +107,10 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
 
     boolean isIgnored() {
         return rbIgnore.isSelected();
+    }
+
+    Project getChosenProject() {
+        return project;
     }
 
     private void loadComboModel() {
@@ -134,6 +147,8 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         rbSession = new javax.swing.JRadioButton();
         rbPermanent = new javax.swing.JRadioButton();
         rbIgnore = new javax.swing.JRadioButton();
+        lblProject = new javax.swing.JLabel();
+        btChange = new javax.swing.JButton();
 
         lblServer.setLabelFor(comServer);
         org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.lblServer.text")); // NOI18N
@@ -142,8 +157,24 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(rbSession, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbSession.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(rbPermanent, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbPermanent.text")); // NOI18N
+        rbPermanent.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                rbPermanentStateChanged(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(rbIgnore, org.openide.util.NbBundle.getBundle(SelectAppServerPanel.class).getString("SelectAppServerPanel.rbIgnore.text")); // NOI18N
+
+        lblProject.setFont(lblProject.getFont().deriveFont(lblProject.getFont().getSize()-1f));
+        org.openide.awt.Mnemonics.setLocalizedText(lblProject, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.lblProject.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btChange, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.btChange.text")); // NOI18N
+        btChange.setToolTipText(org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.btChange.toolTipText")); // NOI18N
+        btChange.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btChangeActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -151,14 +182,20 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rbIgnore)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(lblProject))
+                    .add(layout.createSequentialGroup()
                         .add(lblServer)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(comServer, 0, 323, Short.MAX_VALUE))
-                    .add(rbSession)
-                    .add(rbPermanent))
+                        .add(comServer, 0, 363, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, rbSession)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(rbPermanent)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 168, Short.MAX_VALUE)
+                        .add(btChange))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, rbIgnore))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -171,17 +208,77 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
                 .add(18, 18, 18)
                 .add(rbSession)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbPermanent)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(rbPermanent)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(lblProject))
+                    .add(btChange))
+                .add(18, 18, 18)
                 .add(rbIgnore)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void rbPermanentStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbPermanentStateChanged
+        boolean isSel = rbPermanent.isSelected();
+        btChange.setEnabled(isSel);
+        lblProject.setEnabled(isSel);
+        if (nls != null) {
+            if (isSel) {
+                nls.setInformationMessage(NbBundle.getMessage(
+                        SelectAppServerPanel.class, "MSG_ParentHint"));
+            } else {
+                nls.clearMessages();
+            }
+        }
+    }//GEN-LAST:event_rbPermanentStateChanged
+
+    private void btChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btChangeActionPerformed
+        /*JFileChooser fc = new JFileChooser(FileUtil.toFile(projDir));
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setControlButtonsAreShown(false);*/
+        SelectProjectPanel spp = new SelectProjectPanel(project);
+        final DialogDescriptor dd = new DialogDescriptor(spp,
+                NbBundle.getMessage(SelectAppServerPanel.class, "TIT_ChooseParent"));
+        spp.attachDD(dd);
+        /*fc.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(propName) ||
+                        JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals(propName)) {
+                    Object val = evt.getNewValue();
+                    if (val instanceof File) {
+                        FileObject curFO = FileUtil.toFileObject((File)val);
+                        if (curFO != null) {
+                            if (curFO.getFileObject("pom.xml") != null) {
+                                fcNls.clearMessages();
+                                dd.setValid(true);
+                                return;
+                            }
+                        }
+                    }
+                    fcNls.setErrorMessage(NbBundle.getMessage(
+                            SelectAppServerPanel.class, "ERR_NotMaven"));
+                    dd.setValid(false);
+                }
+            }
+        });*/
+
+        Object obj = DialogDisplayer.getDefault().notify(dd);
+        if (obj == NotifyDescriptor.OK_OPTION) {
+            project = spp.getSelectedProject();
+            updateProjectLbl();
+        }
+
+    }//GEN-LAST:event_btChangeActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btChange;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox comServer;
+    private javax.swing.JLabel lblProject;
     private javax.swing.JLabel lblServer;
     javax.swing.JRadioButton rbIgnore;
     javax.swing.JRadioButton rbPermanent;
@@ -209,6 +306,14 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
             nls.setWarningMessage(NbBundle.getMessage(SelectAppServerPanel.class, "WARN_Ignore_Server"));
         } else {
             nls.clearMessages();
+        }
+    }
+
+    private void updateProjectLbl () {
+        ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
+        if (pi != null) {
+            lblProject.setText(NbBundle.getMessage(SelectAppServerPanel.class,
+                    "MSG_InProject", pi.getDisplayName()));
         }
     }
 
