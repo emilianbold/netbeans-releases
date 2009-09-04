@@ -108,9 +108,10 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     srcFeedPane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     if (e.getDescription().startsWith("http://") || e.getDescription().startsWith("https://")) { //NOI18N
                         srcFeedPane.setToolTipText(e.getDescription());
-                    } else if (e.getDescription().startsWith("#")) { //NOI18N
-                        srcFeedPane.setToolTipText("Scroll down to this repository...");
                     }
+//                    else if (e.getDescription().startsWith("#")) { //NOI18N
+//                        srcFeedPane.setToolTipText("Scroll down to this repository...");
+//                    }
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
@@ -119,19 +120,19 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if (e.getDescription().startsWith("#repo")) { //NOI18N
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            public void run() {
-                                vbar.setValue(0);
-                                srcFeedPane.scrollToReference(e.getDescription().substring(1));
-                                Rectangle scrollVal = srcFeedPane.getVisibleRect();
-                                scrollVal.translate(0, 280); //Fix - scrollbar is not by the JEditorPane, but it is global - the header height must be added
-                                srcFeedPane.scrollRectToVisible(scrollVal);
-                            }
-                        });
-                        return;
-                    }
+//                    if (e.getDescription().startsWith("#repo")) { //NOI18N
+//                        SwingUtilities.invokeLater(new Runnable() {
+//
+//                            public void run() {
+//                                vbar.setValue(0);
+//                                srcFeedPane.scrollToReference(e.getDescription().substring(1));
+//                                Rectangle scrollVal = srcFeedPane.getVisibleRect();
+//                                scrollVal.translate(0, 280); //Fix - scrollbar is not by the JEditorPane, but it is global - the header height must be added
+//                                srcFeedPane.scrollRectToVisible(scrollVal);
+//                            }
+//                        });
+//                        return;
+//                    }
                     URLDisplayer.getDefault().showURL(e.getURL());
                     return;
                 }
@@ -220,22 +221,24 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
             if (repos.length == 0) {
                 return String.format("<div class=\"section\"><i>%s</i></div>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_NO_REPOS")); //NOI18N
             }
-            _appString += String.format("<h4>%s</h4>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_REPO_LIST")); //NOI18N
-            for (int k = 0; k < repos.length; k++) {
-                if (Thread.interrupted()) {
-                    return WAIT_STRING;
+            if (repos.length > 1) {
+                _appString += String.format("<h3>%s</h3>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_REPO_LIST")); //NOI18N
+                for (int k = 0; k < repos.length; k++) {
+                    if (Thread.interrupted()) {
+                        return WAIT_STRING;
+                    }
+                    final KenaiFeature repo = repos[k];
+                    String repotype = "MSG_UNKNOWN_SCM";
+                    if (repo.getService().equals(KenaiService.Names.SUBVERSION)) {
+                        repotype = "MSG_SUBVERSION";
+                    } else if (repo.getService().equals(KenaiService.Names.GIT)) {
+                        repotype = "MSG_GIT";
+                    } else if (repo.getService().equals(KenaiService.Names.MERCURIAL)) {
+                        repotype = "MSG_MERCURIAL";
+                    }
+                    _appString += String.format("<div class=\"item\">-&nbsp;%s <i>(%s)</i></div>", //NOI18N
+                            repo.getDisplayName(), NbBundle.getMessage(SourcesInformationPanel.class, repotype));
                 }
-                final KenaiFeature repo = repos[k];
-                String repotype = "MSG_UNKNOWN_SCM";
-                if (repo.getService().equals(KenaiService.Names.SUBVERSION)) {
-                    repotype = "MSG_SUBVERSION";
-                } else if (repo.getService().equals(KenaiService.Names.GIT)) {
-                    repotype = "MSG_GIT";
-                } else if (repo.getService().equals(KenaiService.Names.MERCURIAL)) {
-                    repotype = "MSG_MERCURIAL";
-                }
-                _appString += String.format("<div class=\"item\"><a href=\"#repo%d\">%s</a> <i>(%s)</i></div>", //NOI18N
-                        k, repo.getDisplayName(), NbBundle.getMessage(SourcesInformationPanel.class, repotype));
             }
             for (int k = 0; k < repos.length; k++) {
                 if (Thread.interrupted()) {
