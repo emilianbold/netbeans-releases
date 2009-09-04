@@ -271,7 +271,12 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     public ISVNInfo getInfo(SVNUrl url, SVNRevision revision, SVNRevision pegging) throws SVNClientException {
         InfoCommand cmd = new InfoCommand(url, revision, pegging);
         exec(cmd);
-        return cmd.getInfo()[0];
+        ISVNInfo[] infos = cmd.getInfo();
+        ISVNInfo info = null;
+        if (infos.length > 0) {
+            info = infos[0];
+        }
+        return info;
     }  
     
     public void copy(File fileForm, File fileTo) throws SVNClientException {
