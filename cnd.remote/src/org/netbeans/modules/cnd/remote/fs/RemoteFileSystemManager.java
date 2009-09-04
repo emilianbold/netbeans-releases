@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.fs;
 
+import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Run a non-interactive command. Output from the command will be available via the toString() method.
- * 
- * @author gordonp
+ * Manages instances of the RemoteFileSystem class
+ *
+ * TODO: release instances when they are not used
+ *
+ * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.CommandProvider.class)
-public class RemoteCommandProvider implements CommandProvider {
+public class RemoteFileSystemManager {
     
-    private RemoteCommandSupport support;
+    private static RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
+    
+    private Map<ExecutionEnvironment, RemoteFileSystem> fileSystems = new HashMap<ExecutionEnvironment, RemoteFileSystem>();
 
-    public RemoteCommandProvider() {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " .ctor");
+    public static RemoteFileSystemManager getInstance() {
+        return INSTANCE;
     }
 
-    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
-        support = new RemoteCommandSupport(execEnv, cmd, env);
-        return support.run();
-    }
-
-    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, String... args) {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
-        support = new RemoteCommandSupport(execEnv, cmd, env, args);
-        return support.run();
-    }
-
-    public String getOutput() {
-        return support.getOutput();
+    public RemoteFileSystem get(ExecutionEnvironment execEnv) {
+        synchronized(this) {
+            RemoteFileSystem result = fileSystems.get(execEnv);
+            if (result == null) {
+                result = new RemoteFileSystem(execEnv);
+                fileSystems.put(execEnv, result);
+            }
+            return result;
+        }
     }
 }

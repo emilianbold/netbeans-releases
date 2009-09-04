@@ -40,7 +40,9 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Map;
@@ -49,6 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -173,6 +176,33 @@ public final class CndFileUtils {
     public static boolean isExistingDirectory(File file, String filePath) {
         return getFlags(file, filePath, false).directory;
     }
+
+   /**
+    * Gets file input stream. File can be either a "classic" file,
+    * or other kind of file, say, remote one.
+    *
+    * NB: can be ver slow; e.g. can cause connection to the host in the case of the remote file
+    *
+    * NB: does nothing to buffer the file - it's up to caller
+    *
+    * @param filePath is either just a path to local file
+    * or a URL of remote or other kind of file
+    *
+    * @return input stream
+    *
+    * @throws java.io.IOException
+    */
+   public static InputStream getInputStream(CharSequence filePath) throws IOException {
+       File file = new File(filePath.toString());
+       FileObject fo = FileUtil.toFileObject(file);
+       InputStream is;
+       if (fo != null) {
+           is = fo.getInputStream();
+       } else {
+           is = new FileInputStream(file);
+       }
+       return is;
+   }
 
     private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
         assert file != null || absolutePath != null;

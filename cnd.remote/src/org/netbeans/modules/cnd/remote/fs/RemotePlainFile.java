@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.fs;
 
-import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 
 /**
- * Run a non-interactive command. Output from the command will be available via the toString() method.
- * 
- * @author gordonp
+ *
+ * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.CommandProvider.class)
-public class RemoteCommandProvider implements CommandProvider {
-    
-    private RemoteCommandSupport support;
+public class RemotePlainFile extends RemoteFileObjectBase {
 
-    public RemoteCommandProvider() {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " .ctor");
+    public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, String remotePath, File cache) {
+        super(fileSystem, execEnv, remotePath, cache);
     }
 
-    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
-        support = new RemoteCommandSupport(execEnv, cmd, env);
-        return support.run();
+    @Override
+    public final FileObject[] getChildren() {
+        return new FileObject[0];
     }
 
-    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, String... args) {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
-        support = new RemoteCommandSupport(execEnv, cmd, env, args);
-        return support.run();
+    @Override
+    public final boolean isFolder() {
+        return false;
     }
 
-    public String getOutput() {
-        return support.getOutput();
+    @Override
+    public boolean isData() {
+        return true;
+    }
+
+    @Override
+    public final FileObject getFileObject(String name, String ext) {
+        return null;
+    }
+
+    @Override
+    public FileObject getFileObject(String relativePath) {
+        return null;
+    }
+
+    @Override
+    public InputStream getInputStream() throws FileNotFoundException {
+        return new FileInputStream(cache);
     }
 }
