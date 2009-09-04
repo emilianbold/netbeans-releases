@@ -106,6 +106,9 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         try {
             support =  new ImportProgressSupport(importPanel.progressPanel, importPanel.progressLabel);  
             SVNUrl url = getUrl();
+            if (url == null) {
+                return;
+            }
             support.setRepositoryRoot(url);            
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
             RequestProcessor.Task task = support.start(rp, url, org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_Progress"));
@@ -120,7 +123,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
 
     private SVNUrl getUrl() {        
         RepositoryFile repositoryFile = getRepositoryFile();
-        return repositoryFile.getRepositoryUrl();
+        return repositoryFile == null ? null : repositoryFile.getRepositoryUrl();
     }
     
     public boolean validateUserInput() {
@@ -194,6 +197,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             return repositoryPaths.getRepositoryFiles()[0]; // more files doesn't make sence
         } catch (MalformedURLException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);
+            invalid(new AbstractStep.WizardMessage(ex.getLocalizedMessage(), false)); // NOI18N
         } 
         return null;
     }

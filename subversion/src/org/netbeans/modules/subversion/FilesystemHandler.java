@@ -51,6 +51,7 @@ import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -394,6 +395,11 @@ class FilesystemHandler extends VCSInterceptor {
         } else {
             return super.getAttribute(file, attrName);
         }
+    }
+
+    @Override
+    public void beforeEdit(File file) {
+        NotificationsManager.getInstance().scheduleFor(file);
     }
 
     private String getRemoteRepository(File file) {

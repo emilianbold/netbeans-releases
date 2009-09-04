@@ -67,6 +67,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JButton;
@@ -133,6 +134,8 @@ import org.openide.util.TaskListener;
  */
 class J2SEActionProvider implements ActionProvider {
     public static final String AUTOMATIC_BUILD_TAG = ".netbeans_automatic_build";
+
+    private static final Logger LOG = Logger.getLogger(J2SEActionProvider.class.getName());
 
     // Commands available from J2SE project
     private static final String[] supportedActions = {
@@ -838,6 +841,15 @@ class J2SEActionProvider implements ActionProvider {
     private void prepareDirtyList(Properties p, boolean isExplicitBuildTarget) {
         String doDepend = project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND);
         String buildClassesDirValue = project.evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
+        if (buildClassesDirValue == null) {            
+            //Log
+            StringBuilder logRecord = new StringBuilder();
+            logRecord.append("EVALUATOR: "+evaluator.getProperties().toString()+";");       //NOI18N
+            logRecord.append("PROJECT_PROPS: "+updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).entrySet()+";");    //NOI18N
+            logRecord.append("PRIVATE_PROPS: "+updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).entrySet()+";");    //NOI18N
+            LOG.warning("No build.classes.dir property: " + logRecord.toString());
+            return;
+        }
         File buildClassesDir = project.getAntProjectHelper().resolveFile(buildClassesDirValue);
         synchronized (this) {
             if (dirty == null) {

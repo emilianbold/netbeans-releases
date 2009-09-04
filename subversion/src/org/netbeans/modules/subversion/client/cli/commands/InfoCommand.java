@@ -178,6 +178,9 @@ public class InfoCommand extends SvnCommand {
         if(map != null) {
             infos.add(new Info(map));
         }
+        if (infos.size() == 0 && url != null) {
+            org.netbeans.modules.subversion.Subversion.LOG.warning("InfoCommand: Map is null for: " + output);
+        }
         return infos.toArray(new Info[infos.size()]);
     }
     

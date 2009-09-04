@@ -73,6 +73,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     private static final String DTRACE = "DTrace";//NOI18N
     private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
     private static final String PROC_READER = "ProcReader";//NOI18N
+    private static final String PROCFS_READER = "ProcFSReader";//NOI18N
     private Project currentProject;
     private boolean areCollectorsTurnedOn = false;
     private boolean profileOnRun = true;
@@ -132,7 +133,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
 
         DLightCollectorString = DTRACE;
-        DLightIndicatorDPStrings = Arrays.asList(PROC_READER, PRSTAT_INDICATOR, DTRACE);
+        DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, PRSTAT_INDICATOR, DTRACE);
 
         if (currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
@@ -140,6 +141,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             DLightIndicatorDPStrings.add(SUNSTUDIO);
             DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
             DLightIndicatorDPStrings.add(PROC_READER);
+            DLightIndicatorDPStrings.add(PROCFS_READER);
             if (!hasSunStudio) {
                 //if we are on Linux set LL, I do not think it is correct if user had selected Sun Studio in Project Properties
                 String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
@@ -171,7 +173,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
                 DLightCollectorString = "";//NOI18N
             }
 
-            DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
+            DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, LL_MONITOR);
             return true;
         }
         return false;
@@ -203,6 +205,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             for (String idpStringName : DLightIndicatorDPStrings) {
                 if (idp.getName().equals(idpStringName)) {
                     result.add(idp);
+                    break;
                 }
             }
         }

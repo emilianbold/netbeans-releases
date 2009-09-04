@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.api.impl;
+package org.netbeans.modules.editor.actions;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.AbstractEditorAction;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.editor.EditorActionNames;
 
 /**
+ * Toggle toolbar/lines visibility.
  *
- * @author Alexander Simon
+ * @author Miloslav Metelka
  */
-public abstract class ThreadMapVisualizerConfigurationAccessor {
-    private static volatile ThreadMapVisualizerConfigurationAccessor DEFAULT;
+@EditorActionRegistrations({
+    @EditorActionRegistration(
+        name = EditorActionNames.toggleToolbar,
+        menuPath = "View",
+        menuPosition = 800,
+        menuText = "#" + EditorActionNames.toggleToolbar + "_menu_text",
+        preferencesKey = SimpleValueNames.TOOLBAR_VISIBLE_PROP
+    ),
+    @EditorActionRegistration(
+        name = EditorActionNames.toggleLineNumbers,
+        menuPath = "View",
+        menuPosition = 850,
+        menuText = "#" + EditorActionNames.toggleLineNumbers + "_menu_text",
+        preferencesKey = SimpleValueNames.LINE_NUMBER_VISIBLE
+    )
+})
+public final class ToggleAction extends AbstractEditorAction {
 
-    public static ThreadMapVisualizerConfigurationAccessor getDefault() {
-        ThreadMapVisualizerConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
+    private static final Logger LOG = Logger.getLogger(ToggleAction.class.getName());
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public void actionPerformed(ActionEvent evt, JTextComponent component) {
+        // Leave empty - AlwaysEnabledAction toggles state in preferences by default
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("actionPerformed: actionName=" + actionName());
         }
-        try {
-            Class.forName(ThreadMapVisualizerConfigurationAccessor.class.getName(), true,
-                ThreadMapVisualizerConfigurationAccessor.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
     }
 
-    public static void setDefault(ThreadMapVisualizerConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public ThreadMapVisualizerConfigurationAccessor() {
-    }
-
-    public abstract List<Column> getTableColumns(ThreadMapVisualizerConfiguration configuration);
-
-//    public abstract ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration);
 }

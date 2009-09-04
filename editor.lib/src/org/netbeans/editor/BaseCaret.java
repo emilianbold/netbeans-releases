@@ -105,7 +105,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
@@ -122,10 +122,10 @@ DocumentListener, ActionListener,
 AtomicLockListener, FoldHierarchyListener {
 
     /** Caret type representing block covering current character */
-    public static final String BLOCK_CARET = "block-caret"; // NOI18N
+    public static final String BLOCK_CARET = EditorPreferencesDefaults.BLOCK_CARET; // NOI18N
 
     /** Default caret type */
-    public static final String LINE_CARET = "line-caret"; // NOI18N
+    public static final String LINE_CARET = EditorPreferencesDefaults.LINE_CARET; // NOI18N
 
     /** One dot thin line compatible with Swing default caret */
     public static final String THIN_LINE_CARET = "thin-line-caret"; // NOI18N

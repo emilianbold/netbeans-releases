@@ -43,7 +43,6 @@ package org.netbeans.test.ide;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**

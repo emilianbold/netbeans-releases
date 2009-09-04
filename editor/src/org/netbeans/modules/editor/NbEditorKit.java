@@ -105,8 +105,8 @@ import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.ColoringMap;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -200,36 +200,22 @@ public class NbEditorKit extends ExtKit implements Callable {
                                        new NavigationHistoryForwardAction(),
                                        new SearchBar.IncrementalSearchForwardAction(),
                                        new SearchBar.IncrementalSearchBackwardAction(),
-                                       new ToggleToolbarAction(),
-                                       new NbToggleLineNumbersAction(),
+//                                       new ToggleToolbarAction(),
+//                                       new NbToggleLineNumbersAction(),
                                        new NbGenerateGoToPopupAction(),
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
 
-    protected @Override Action[] getCustomActions() {
-        List<Action> actions = EditorActionsProvider.getEditorActions(getContentType());
-        
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Custom layer actions for '" + getContentType() + "' {"); //NOI18N
-            for(Action a : actions) {
-                LOG.fine("    " + a); //NOI18N
-            }
-            LOG.fine("} End of custom layer actions for '" + getContentType() + "'"); //NOI18N
-        }
-        
-        if (!actions.isEmpty()) {
-            Action [] superActions = super.getCustomActions();
-            if (superActions == null || superActions.length == 0) {
-                return actions.toArray(new Action[actions.size()]);
-            } else {
-                return TextAction.augmentList(superActions, actions.toArray(new Action[actions.size()]));
-            }
-        } else {
-            return super.getCustomActions();
-        }
+    @Override
+    protected Action[] getDeclaredActions() {
+        List<Action> declaredActionList = EditorActionsProvider.getEditorActions(getContentType());
+        Action[] declaredActions = new Action[declaredActionList.size()];
+        declaredActionList.toArray(declaredActions);
+        return declaredActions;
     }
-        
+
+
     protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
         Action a = getActionByName(editorActionName);
         if (a != null) {
@@ -283,7 +269,10 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
         return bundle;
     }
-    
+
+    /**
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
     //@EditorActionRegistration(name = toggleToolbarAction)
     // Registration in createActions() due to getPopupMenuItem()
     public static class ToggleToolbarAction extends BaseAction {
@@ -575,10 +564,13 @@ public class NbEditorKit extends ExtKit implements Callable {
 
     }
 
-    /** Switch visibility of line numbers in editor */
+    /**
+     * Switch visibility of line numbers in editor.
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
     //@EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
     // Registration in createActions() due to getPopupMenuItem() in predecessor
-    public static class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
+    public static final class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
         public NbToggleLineNumbersAction() {
         }

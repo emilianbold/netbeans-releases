@@ -39,6 +39,8 @@
 
 package org.netbeans.core.browser.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -47,6 +49,13 @@ import org.openide.util.Lookup;
  * @author S. Aubrecht
  */
 public abstract class EmbeddedBrowserFactory {
+
+    /**
+     * The name of property which is fired when embedded browser is enabled or
+     * disabled. The property value is undefined.
+     * @since 1.1
+     */
+    public static final String PROP_ENABLED = "enabled"; //NOI18N
 
     /**
      * @return The one and only instance.
@@ -64,6 +73,14 @@ public abstract class EmbeddedBrowserFactory {
                 @Override
                 public WebBrowser createEmbeddedBrowser() {
                     throw new IllegalStateException();
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {
                 }
             };
         }
@@ -85,4 +102,18 @@ public abstract class EmbeddedBrowserFactory {
      * @see WebBrowser#dispose()
      */
     public abstract WebBrowser createEmbeddedBrowser();
+
+    /**
+     * Add property change listener
+     * @param l
+     * @since 1.1
+     */
+    public abstract void addPropertyChangeListener( PropertyChangeListener l );
+
+    /**
+     * Remove property change listener
+     * @param l
+     * @since 1.1
+     */
+    public abstract void removePropertyChangeListener( PropertyChangeListener l );
 }

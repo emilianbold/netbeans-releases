@@ -38,11 +38,10 @@
  */
 package org.netbeans.modules.dlight.visualizers.api;
 
-import javax.swing.Action;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 
@@ -53,7 +52,7 @@ import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationI
  * of Table visualizer, it should return that it supports model scheme which can be retrieved  using
  * {@link org.netbeans.modules.dlight.api.support.DataModelSchemeProvider#getScheme(java.lang.String)} where id equals to "model:table".
  */
-public final class TableVisualizerConfiguration implements VisualizerConfiguration {
+public final class TableVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
     private DataTableMetadata metadata;
     private String emptyRuntimeMessage;

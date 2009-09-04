@@ -39,13 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib;
+package org.netbeans.modules.editor.lib2;
 
 import java.awt.Insets;
 import java.awt.Dimension;
-import org.netbeans.editor.Acceptor;
-import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.BaseCaret;
 
 /**
  * This class contains settings default values copied over from SettingsDefaults and ExtSettingsDefaults.
@@ -57,9 +54,11 @@ public final class EditorPreferencesDefaults {
     private EditorPreferencesDefaults() {
         // no-op
     }
+
+    public static final String LINE_CARET = "line-caret";
+    public static final String BLOCK_CARET = "block-caret";
     
-    // not in SettingsDefaults not ExtSettingsDefaults
-    public static final boolean defaultToolbarVisible = true;
+    public static final boolean defaultToolbarVisible = true; // Currently unused - see ToggleAction in editor.actions
     public static final boolean defaultPopupMenuEnabled = true;
     
     // -----------------------------------------------------------------------
@@ -98,8 +97,8 @@ public final class EditorPreferencesDefaults {
 
     public static final boolean defaultExpandTabs = true;
 
-    public static final String defaultCaretTypeInsertMode = BaseCaret.LINE_CARET;
-    public static final String defaultCaretTypeOverwriteMode = BaseCaret.BLOCK_CARET;
+    public static final String defaultCaretTypeInsertMode = LINE_CARET;
+    public static final String defaultCaretTypeOverwriteMode = BLOCK_CARET;
     public static final boolean defaultCaretItalicInsertMode = false;
     public static final boolean defaultCaretItalicOverwriteMode = false;
     /** @since 1.23 */

@@ -1309,6 +1309,7 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
 
     private class DiagramChangeListener implements PropertyChangeListener
     {
+        // XXX consider using DataEditorSupport.annotateName
         private final static String SPACE_STAR = " *";
         public void propertyChange(PropertyChangeEvent evt)
         {

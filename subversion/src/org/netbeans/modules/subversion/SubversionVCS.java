@@ -199,6 +199,8 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Subversion.PROP_ANNOTATIONS_CHANGED)) {
             fireAnnotationsChanged((Set<File>) evt.getNewValue());
+        } else if (evt.getPropertyName().equals(Subversion.PROP_BASE_FILE_CHANGED)) {
+            fireStatusChanged((Set<File>) evt.getNewValue());
         } else if (evt.getPropertyName().equals(Subversion.PROP_VERSIONED_FILES_CHANGED)) {
             Subversion.LOG.fine("cleaning unversioned parents cache");
             unversionedParents.clear();

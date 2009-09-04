@@ -45,7 +45,12 @@ public interface ThreadMapData {
 
     List<ThreadData> getThreadsData();
 
-    TimeDuration getPrecision();
+    /**
+     * "Aproximate" sampling time
+     * @return
+     */
+    @Deprecated
+    TimeDuration getSamplingPeriod();
 
     /**
      * 

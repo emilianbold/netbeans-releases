@@ -96,9 +96,9 @@ public class EditorActionRegistrationTest extends NbTestCase {
         String nonPublicClassSource =
                 "import org.netbeans.api.editor.EditorActionRegistration;\n" +
                 "import javax.swing.AbstractAction;\n" +
-                "import javax.swing.event.ActionEvent;\n" +
+                "import java.awt.event.ActionEvent;\n" +
                 "@EditorActionRegistration(name = \"NonPublicClass\", shortDescription = \"\")\n" +
-                "static final class EditorTestActionNonPublic extends AbstractAction {\n" +
+                "final class EditorTestActionNonPublic extends AbstractAction {\n" +
                 "        public EditorTestActionNonPublic() {}\n" +
                 "        @Override\n" +
                 "        public void actionPerformed(ActionEvent evt) {}\n"+
@@ -110,9 +110,9 @@ public class EditorActionRegistrationTest extends NbTestCase {
         String nonPublicConstructorSource =
                 "import org.netbeans.api.editor.EditorActionRegistration;\n" +
                 "import javax.swing.AbstractAction;\n" +
-                "import javax.swing.event.ActionEvent;\n" +
+                "import java.awt.event.ActionEvent;\n" +
                 "@EditorActionRegistration(name = \"NonPublicClass\", shortDescription = \"\")\n" +
-                "public static final class EditorTestActionNonPublic extends AbstractAction {\n" +
+                "public final class EditorTestActionNonPublic extends AbstractAction {\n" +
                 "        EditorTestActionNonPublic() {}\n" +
                 "        @Override\n" +
                 "        public void actionPerformed(ActionEvent evt) {}\n"+
@@ -126,7 +126,7 @@ public class EditorActionRegistrationTest extends NbTestCase {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, out);
         assertFalse("Compilation failed", res);
-        if (!out.toString().contains("is not public")) {
+        if (!out.toString().contains("not public")) {
             fail(out.toString());
         }
     }
