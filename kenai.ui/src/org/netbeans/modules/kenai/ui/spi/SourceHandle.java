@@ -28,6 +28,18 @@ public abstract class SourceHandle {
     public abstract boolean isSupported();
 
     /**
+     * Returns SCM feature's name, deduced from the Kenai server response.<br><br>
+     * Usage should be with KenaiService.Names.*, such as:<br><br>
+     * <pre>
+     * // source is an instance of SourceHandle...
+     * String featureName = source.getScmFeatureName();
+     * if (featureName.equals(KenaiService.Names.SUBVERSION)) { ... }
+     * </pre>
+     * @return the name of the issue tracking fature
+     */
+    public abstract String getScmFeatureName();
+
+    /**
      * getter for max 5 recent projects
      * @return
      */

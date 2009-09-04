@@ -56,6 +56,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -556,6 +558,10 @@ public class KenaiSearchPanel extends JPanel {
         }
     }
 
+    // added to support search by the projects root url...
+    private static Pattern projectURLPattern = Pattern.compile(Kenai.getDefault().getUrl().toString().replaceFirst("^https://", "http://") + "/projects/([^/]*)/?.*");
+    private static final int projectURLGroup = 1;
+
     private void invokeSearch() {
 
         kenaiProjectsTabPane.setSelectedComponent(searchResultsPanel);
@@ -599,6 +605,10 @@ public class KenaiSearchPanel extends JPanel {
             public void run() {
                 Iterator<KenaiProject> projectsIterator = null;
                 String searchPattern = searchTextField.getText();
+                Matcher m = projectURLPattern.matcher(searchPattern);
+                if (m.matches()) {
+                    searchPattern = m.group(projectURLGroup);
+                }
                 try {
                     projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
                 } catch (KenaiException em) {
