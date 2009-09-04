@@ -109,7 +109,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Object getAttribute(String attrName) {
-        if (attrName.equals("java.io.File")) {
+        if (attrName.equals("java.io.File")) { // NOI18N
             return cache;
         }
         return null;
@@ -118,7 +118,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Enumeration<String> getAttributes() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -148,12 +148,12 @@ public abstract class RemoteFileObjectBase extends FileObject {
     
     @Override
     public FileObject getParent() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
     public long getSize() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -168,7 +168,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public boolean isValid() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public boolean isVirtual() {
@@ -177,12 +177,12 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Date lastModified() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
     public FileLock lock() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -197,7 +197,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -207,7 +207,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     private static class ReadOnlyException extends IOException {
         public ReadOnlyException() {
-            super("The remote file system is read-only"); //NOI18B
+            super("The remote file system is read-only"); //NOI18N
         }
     }
 

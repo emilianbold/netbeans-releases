@@ -90,6 +90,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }
