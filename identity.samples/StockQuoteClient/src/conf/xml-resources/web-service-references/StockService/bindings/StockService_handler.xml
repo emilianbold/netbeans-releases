@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<bindings 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://java.sun.com/xml/ns/jaxws" wsdlLocation="../wsdl/localhost_8080/StockQuoteService/StockService.wsdl">
+
+    <bindings node="wsdl:definitions" xmlns:jws="http://java.sun.com/xml/ns/javaee">
+        <jws:handler-chains>
+            <jws:handler-chain>
+                <jws:handler>
+                    <jws:handler-name>netbeans.identity.samples.LogClientHandler</jws:handler-name>
+                    <jws:handler-class>org.netbeans.identity.samples.LogClientHandler</jws:handler-class>
+                </jws:handler>
+            </jws:handler-chain>
+        </jws:handler-chains>
+    </bindings>
+</bindings>
+
+
+
+

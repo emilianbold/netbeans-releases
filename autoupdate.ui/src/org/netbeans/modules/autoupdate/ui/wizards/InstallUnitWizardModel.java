@@ -93,23 +93,25 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         switch (getOperation ()) {
         case INSTALL :
             c = Containers.forAvailable ();
-            support = Containers.forAvailable ().getSupport ();
+            support = c.getSupport ();
             break;
         case UPDATE :
             c = Containers.forUpdate ();
-            support = Containers.forUpdate ().getSupport ();
+            support = c.getSupport ();
             break;
         case LOCAL_DOWNLOAD :
-            if (Containers.forUpdateNbms ().listAll ().isEmpty ()) {
-                c = Containers.forAvailableNbms ();
+            OperationContainer<InstallSupport> forUpdateNbms    = Containers.forUpdateNbms ();
+            OperationContainer<InstallSupport> forAvailableNbms = Containers.forAvailableNbms();
+            if (forUpdateNbms.listAll ().isEmpty ()) {
+                c = forAvailableNbms;
             } else {
-                c = Containers.forUpdateNbms ();
-                for (OperationInfo i : Containers.forAvailableNbms ().listAll ()) {
+                c = forUpdateNbms;
+                for (OperationInfo i : forAvailableNbms.listAll ()) {
                     c.add (i.getUpdateElement ());
                 }
-                assert Containers.forAvailableNbms ().listInvalid ().isEmpty () :
-                    "Containers.forAvailableNbms().listInvalid() should be empty but " + Containers.forAvailableNbms ().listInvalid ();
-                Containers.forAvailableNbms ().removeAll ();
+                assert forAvailableNbms.listInvalid ().isEmpty () :
+                    "Containers.forAvailableNbms().listInvalid() should be empty but " + forAvailableNbms.listInvalid ();
+                forAvailableNbms.removeAll ();
             }
             support = c.getSupport ();
             updateContainer = c;

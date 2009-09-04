@@ -47,10 +47,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
@@ -60,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
@@ -77,7 +82,9 @@ import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -88,12 +95,18 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -113,10 +126,12 @@ import org.w3c.dom.Text;
     sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public class PhpProject implements Project {
+public class PhpProject implements Project, AntProjectListener {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
+
+    static final Logger LOGGER = Logger.getLogger(PhpProject.class.getName());
 
     final AntProjectHelper helper;
     final UpdateHelper updateHelper;
@@ -135,12 +150,21 @@ public class PhpProject implements Project {
     volatile FileObject testsDirectory;
     // @GuardedBy(ProjectManager.mutex())
     volatile FileObject seleniumDirectory;
+    // @GuardedBy(ProjectManager.mutex())
+    volatile String name;
 
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
     final Object ignoredFoldersLock = new Object();
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
     private final PropertyChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
+
+    // frameworks
+    final Object frameworksLock = new Object();
+    // @GuardedBy(frameworksLock)
+    volatile List<PhpFrameworkProvider> frameworks;
+    private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
+    private final LookupListener frameworksListener = new FrameworksListener();
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -156,6 +180,7 @@ public class PhpProject implements Project {
         lookup = createLookup(configuration);
 
         addWeakPropertyEvaluatorListener(ignoredFoldersListener);
+        helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, helper));
     }
 
     public Lookup getLookup() {
@@ -221,6 +246,7 @@ public class PhpProject implements Project {
                     synchronized (PhpProject.this) {
                         if (sourcesDirectory == null) {
                             sourcesDirectory = resolveSourcesDirectory();
+                            sourcesDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, sourcesDirectory));
                         }
                     }
                     return null;
@@ -401,11 +427,9 @@ public class PhpProject implements Project {
         }
     }
 
-    // XXX should somehow listen on newly added frameworks to project
-    // add set of _classes_ of framework providers and check them every time while calling ProjectPropertiesSupport.getFrameworks()
     private void putIgnoredFrameworkFiles(Set<File> ignored) {
         PhpModule phpModule = getPhpModule();
-        for (PhpFrameworkProvider provider : ProjectPropertiesSupport.getFrameworks(this)) {
+        for (PhpFrameworkProvider provider : getFrameworks()) {
             PhpModuleIgnoredFilesExtender ignoredFilesExtender = provider.getIgnoredFilesExtender(phpModule);
             if (ignoredFilesExtender == null) {
                 continue;
@@ -430,29 +454,55 @@ public class PhpProject implements Project {
         return ignored;
     }
 
-    /*
-     * Copied from MakeProject.
-     */
-    public String getName() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-            public String run() {
-                Element data = getHelper().getPrimaryConfigurationData(true);
-                NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1
-                            && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
+    public List<PhpFrameworkProvider> getFrameworks() {
+        if (frameworks == null) {
+            synchronized (frameworksLock) {
+                if (frameworks == null) {
+                    frameworks = new LinkedList<PhpFrameworkProvider>();
+                    PhpModule phpModule = getPhpModule();
+                    for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
+                        if (frameworkProvider.isInPhpModule(phpModule)) {
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getName(), getSourcesDirectory()));
+                            }
+                            frameworks.add(frameworkProvider);
+                        }
                     }
                 }
-                return "???"; // NOI18N
             }
-        });
+        }
+        assert frameworks != null;
+        return new ArrayList<PhpFrameworkProvider>(frameworks);
     }
 
-    /*
-     * Copied from MakeProject.
-     */
+    public String getName() {
+        if (name == null) {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                public Void run() {
+                    synchronized (this) {
+                        if (name == null) {
+                            Element data = getHelper().getPrimaryConfigurationData(true);
+                            NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                            if (nl.getLength() == 1) {
+                                nl = nl.item(0).getChildNodes();
+                                if (nl.getLength() == 1
+                                        && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                                    name = ((Text) nl.item(0)).getNodeValue();
+                                }
+                            }
+                        }
+                        if (name == null) {
+                            name = "???"; // NOI18N
+                        }
+                    }
+                    return null;
+                }
+            });
+        }
+        assert name != null;
+        return name;
+    }
+
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
@@ -510,6 +560,7 @@ public class PhpProject implements Project {
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
                 new PhpModuleImpl(this),
+                new PhpEditorExtender(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(this, getSourceRoots(), getTestRoots(), getSeleniumRoots()),
@@ -529,6 +580,13 @@ public class PhpProject implements Project {
 
     public ReferenceHelper getRefHelper() {
         return refHelper;
+    }
+
+    public void configurationXmlChanged(AntProjectEvent ev) {
+        name = null;
+    }
+
+    public void propertiesChanged(AntProjectEvent ev) {
     }
 
     private final class Info implements ProjectInformation {
@@ -571,11 +629,16 @@ public class PhpProject implements Project {
             testsDirectory = null;
             seleniumDirectory = null;
             ignoredFolders = null;
+            frameworks = null;
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
+            LOGGER.fine("Adding frameworks listener for " + sourcesDirectory);
+            PhpFrameworks.addFrameworksListener(frameworksListener);
             // do it in a background thread
             getIgnoredFiles();
+            getFrameworks();
+            getName();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
@@ -604,6 +667,11 @@ public class PhpProject implements Project {
         }
 
         protected void projectClosed() {
+            assert sourcesDirectory != null;
+            sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
+            LOGGER.fine("Removing frameworks listener for " + sourcesDirectory);
+            PhpFrameworks.removeFrameworksListener(frameworksListener);
+
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
@@ -672,6 +740,46 @@ public class PhpProject implements Project {
                 ignoredFolders = null;
                 ignoredFoldersChangeSupport.fireChange();
             }
+        }
+    }
+
+    // if source folder changes, reset frameworks (new framework can be found in project)
+    private final class SourceDirectoryFileChangeListener implements FileChangeListener {
+
+        public void fileFolderCreated(FileEvent fe) {
+            processFileChange();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            processFileChange();
+        }
+
+        public void fileChanged(FileEvent fe) {
+            // probably not interesting for us
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            processFileChange();
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            processFileChange();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // probably not interesting for us
+        }
+
+        void processFileChange() {
+            LOGGER.fine("file change, frameworks back to null");
+            frameworks = null;
+        }
+    }
+
+    private final class FrameworksListener implements LookupListener {
+        public void resultChanged(LookupEvent ev) {
+            LOGGER.fine("frameworks change, frameworks back to null");
+            frameworks = null;
         }
     }
 }

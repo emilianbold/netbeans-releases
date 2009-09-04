@@ -238,9 +238,6 @@ class J2SEActionProvider implements ActionProvider {
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
-            COMMAND_DEBUG,            //debuger blocks during backgroun scan, todo fix debuger
-            COMMAND_DEBUG_SINGLE,     //debuger blocks during backgroun scan, todo fix debuger
-            COMMAND_DEBUG_STEP_INTO,  //debuger blocks during backgroun scan, todo fix debuger
             JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
 
@@ -313,9 +310,9 @@ class J2SEActionProvider implements ActionProvider {
         if (!allowsFileChangesTracking()) {
             return;
         }
-        final Iterable <? extends FileObject> roots = getRoots();
-        assert roots != null;
-        for (FileObject root : roots) {
+        final Iterable <? extends FileObject> _roots = getRoots();
+        assert _roots != null;
+        for (FileObject root : _roots) {
             String path = FileUtil.getRelativePath(root, f);
             if (path != null) {
                 synchronized (this) {
@@ -511,7 +508,7 @@ class J2SEActionProvider implements ActionProvider {
                     ErrorManager.getDefault().notify(e);
                 }
             }
-        };
+        }
         final Action action = new Action();
 
         if (this.needJavaModelActions.contains(command) || (isCompileOnSaveEnabled && this.bkgScanSensitiveActions.contains(command))) {

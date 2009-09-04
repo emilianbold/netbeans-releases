@@ -41,6 +41,7 @@ package org.netbeans.modules.web.jsf.editor.tld;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +49,8 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -55,8 +58,10 @@ import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -77,6 +82,9 @@ public class TldLibrary {
 
     static TldLibrary create(InputStream content) throws TldLibraryException {
         return new TldLibrary(content);
+    }
+
+    protected TldLibrary() {
     }
 
     private TldLibrary(FileObject definitionFile) throws TldLibraryException {
@@ -133,6 +141,66 @@ public class TldLibrary {
             Exceptions.printStackTrace(ex);
         }
     }
+
+    private static final String STOP_PARSING_MGS = "regularly_stopped"; //NOI18N
+
+    public static  String parseNamespace(InputStream content) {
+        final String[] ns = new String[1];
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setValidating(false);
+            SAXParser parser = factory.newSAXParser();
+
+            class Handler extends DefaultHandler {
+
+                private boolean inTaglib = false;
+                private boolean inURI = false;
+
+                @Override
+                public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
+                    String tagName = qname.toLowerCase();
+                    if ("taglib".equals(tagName)) { //NOI18N
+                        inTaglib = true;
+                    }
+                    if (inTaglib) {
+                        if ("uri".equals(tagName)) { //NOI18N
+                            inURI = true;
+                        }
+
+                    }
+                }
+
+                @Override
+                public void characters(char[] ch, int start, int length) throws SAXException {
+                    if(inURI) {
+                        ns[0] = new String(ch, start, length).trim();
+                        //stop parsing
+                        throw new SAXException(STOP_PARSING_MGS);
+                    }
+                }
+
+                @Override
+                public InputSource resolveEntity(String publicId, String systemId) {
+                    return new InputSource(new StringReader("")); //prevent the parser to use catalog entity resolver // NOI18N
+                }
+            }
+            
+            
+            parser.parse(content, new Handler());
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXException ex) {
+            if(!STOP_PARSING_MGS.equals(ex.getMessage())) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return ns[0];
+    }
+
     private void parseLibrary(InputStream content) throws TldLibraryException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -174,14 +242,14 @@ public class TldLibrary {
                     String tagName = getTextContent(tag, "name"); //NOI18N
                     String tagDescription = getTextContent(tag, "description"); //NOI18N
 
-                    Collection<Attribute> attrs = new ArrayList<Attribute>();
+                    Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                     //find attributes
                     for(Node attrNode : getNodesByName(tag, "attribute")) { //NOI18N
                         String aName = getTextContent(attrNode, "name"); //NOI18N
                         String aDescription = getTextContent(attrNode, "description"); //NOI18N
                         boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
 
-                        attrs.add(new Attribute(aName, aDescription, aRequired));
+                        attrs.put(aName, new Attribute(aName, aDescription, aRequired));
                     }
 
                     tags.put(tagName, new Tag(tagName, tagDescription, attrs));
@@ -226,16 +294,23 @@ public class TldLibrary {
         return nodes;
     }
 
-    public static class Tag {
+    public class Tag {
+
+        private static final String ID_ATTR_NAME = "id"; //NOI18N
 
         private String name;
         private String description;
-        private Collection<Attribute> attrs;
+        private Map<String, Attribute> attrs;
 
-        Tag(String name, String description, Collection<Attribute> attrs) {
+        public Tag(String name, String description, Map<String, Attribute> attrs) {
             this.name = name;
             this.description = description;
             this.attrs = attrs;
+
+            //add the default ID attribute
+            if(getAttribute(ID_ATTR_NAME) == null) {
+                attrs.put(ID_ATTR_NAME, new Attribute(ID_ATTR_NAME, "", false));
+            }
         }
 
         public String getName() {
@@ -247,7 +322,11 @@ public class TldLibrary {
         }
 
         public Collection<Attribute> getAttributes() {
-            return attrs;
+            return attrs.values();
+        }
+
+        public Attribute getAttribute(String name) {
+            return attrs.get(name);
         }
 
         @Override
@@ -263,13 +342,13 @@ public class TldLibrary {
 
     }
 
-    public static class Attribute {
+    public class Attribute {
         
         private String name;
         private String description;
         private boolean required;
 
-        Attribute(String name, String description, boolean required) {
+        public Attribute(String name, String description, boolean required) {
             this.name = name;
             this.description = description;
             this.required = required;

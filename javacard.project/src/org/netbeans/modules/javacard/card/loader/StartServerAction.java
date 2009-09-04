@@ -41,7 +41,7 @@
 package org.netbeans.modules.javacard.card.loader;
 
 import org.netbeans.modules.javacard.api.Card;
-import org.netbeans.modules.javacard.card.loader.CardDataObject.ServerDataNode;
+import org.netbeans.modules.javacard.card.loader.CardDataObject.CardDataNode;
 import org.netbeans.spi.actions.Single;
 import org.openide.util.NbBundle;
 
@@ -50,20 +50,21 @@ import org.openide.util.NbBundle;
  * @author Tim Boudreau
  */
 public class StartServerAction extends Single<Card> {
-    private final ServerDataNode nd;
-    StartServerAction(ServerDataNode nd) {
-        super (Card.class, NbBundle.getMessage(StartServerAction.class, "ACTION_START_SERVER"), null);
+    private final CardDataNode nd;
+    StartServerAction(CardDataNode nd) {
+        super (Card.class, NbBundle.getMessage(StartServerAction.class, 
+                "ACTION_START_SERVER"), null); //NOI18N
         this.nd = nd;
     }
 
     @Override
     protected boolean isEnabled(Card target) {
-        return !target.isRunning();
+        return !target.isRunning() && !target.isRemote();
     }
 
     @Override
     protected void actionPerformed(Card server) {
         server.startServer(false);
-        nd.checkForRunningStateChange();
+        nd.updateChildren();
     }
 }

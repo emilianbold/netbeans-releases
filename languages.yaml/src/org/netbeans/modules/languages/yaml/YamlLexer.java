@@ -70,6 +70,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
     private static final int ISI_EXPR_SCRIPTLET_PC    = 8; // just after % in an expression scriptlet
     private static final int ISI_RUBY_LINE            = 9; // just after % in an %-line
     private static final int ISI_NONWHITESPACE        = 10; // after seeing non space characters on a line
+    private static final int ISI_PHP                  = 11; // after <?
 
     /**
      * A Lexer for ruby strings
@@ -190,6 +191,13 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                     switch (actChar) {
                         case '%':
                             state = ISA_LT_PC;
+                            break;
+                        case '?':
+                            state = ISI_PHP;
+                            if (input.readLength() > 2) {
+                                input.backup(2);
+                                return token(YamlTokenId.TEXT);
+                            }
                             break;
                         default:
                             state = ISI_WHITESPACE; //just content
@@ -377,6 +385,12 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                             break;
                     }
                     break;
+                case ISI_PHP:
+                    if (actChar == '>' && input.readText().charAt(input.readLength()-2) == '?') {
+                        state = ISI_WHITESPACE;
+                        return token(YamlTokenId.PHP);
+                    }
+                    break;
             }
         }
 
@@ -416,8 +430,9 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
             case ISI_COMMENT_SCRIPTLET:
                 state = ISI_WHITESPACE;
                 return token(YamlTokenId.RUBYCOMMENT);
-
-
+            case ISI_PHP:
+                state = ISI_WHITESPACE;
+                return token(YamlTokenId.PHP);
             default:
                 System.out.println("RhtmlLexer - unhandled state : " + state);   // NOI18N
         }

@@ -85,6 +85,10 @@ public final class PerfanDataStorage implements DataStorage {
         return true;
     }
 
+    public void setFilter(String filter) {
+        er_print.setFilter(filter);
+    }
+
     public void init(ExecutionEnvironment execEnv, String sproHome,
             String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
         synchronized (this) {
@@ -178,7 +182,7 @@ public final class PerfanDataStorage implements DataStorage {
             log.log(Level.INFO, null, ex);
         }
 
-        return result == null? Collections.<DataraceImpl>emptyList() : result;
+        return result == null ? Collections.<DataraceImpl>emptyList() : result;
     }
 
     public List<? extends Deadlock> getDeadlocks() {
@@ -192,7 +196,7 @@ public final class PerfanDataStorage implements DataStorage {
             log.log(Level.INFO, null, ex);
         }
 
-        return result == null? Collections.<DeadlockImpl>emptyList() : result;
+        return result == null ? Collections.<DeadlockImpl>emptyList() : result;
     }
 
     public ExperimentStatistics fetchSummaryData() {

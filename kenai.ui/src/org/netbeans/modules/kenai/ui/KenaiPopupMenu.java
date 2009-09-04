@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,6 +61,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
@@ -87,12 +89,11 @@ import org.openide.util.actions.SystemAction;
  */
 public class KenaiPopupMenu extends CookieAction {
 
-    //XXX this has to be done better for other domains than (test)kenai
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
+    private static HashMap<VersioningSystem, JComponent[]> versioningItemMap = new HashMap<VersioningSystem, JComponent[]>();
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-    }
+    //XXX this has to be done better for other domains than (test)kenai
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(hg\\.|svn\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)"); //NOI18N
+    private static int patternGroup = 5;
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -115,7 +116,7 @@ public class KenaiPopupMenu extends CookieAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP");
+        return NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP"); //NOI18N
     }
 
     @Override
@@ -126,7 +127,7 @@ public class KenaiPopupMenu extends CookieAction {
     private final class KenaiPopupMenuPresenter extends AbstractAction implements Presenter.Popup {
 
         private final Project proj;
-        private ProjectHandle kenaiProj = null;
+        private final int MAX_VERSIONING_ITEMS = 2;
 
         private KenaiPopupMenuPresenter(Lookup actionContext) {
             proj = actionContext.lookup(Project.class);
@@ -139,13 +140,17 @@ public class KenaiPopupMenu extends CookieAction {
         }
 
         private JComponent[] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
+            JComponent[] items = versioningItemMap.get(owner);
+            if (items != null) {
+                return items;
+            }
             VCSAnnotator an = owner.getVCSAnnotator();
             if (an == null) {
                 return null;
             }
             VCSContext ctx = VCSContext.forNodes(nodes);
             Action[] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
-            JComponent[] items = new JComponent[actions.length];
+            items = new JComponent[MAX_VERSIONING_ITEMS];
             int i = 0;
             for (Action action : actions) {
                 if (action != null) {
@@ -154,8 +159,12 @@ public class KenaiPopupMenu extends CookieAction {
                     }
                     JMenuItem item = createmenuItem(action);
                     items[i++] = item;
+                    if (i == MAX_VERSIONING_ITEMS) {
+                        break;
+                    }
                 }
             }
+            versioningItemMap.put(owner, items);
             return items;
         }
 
@@ -194,21 +203,21 @@ public class KenaiPopupMenu extends CookieAction {
                         }
                     }
                     kenaiPopup.add(new JSeparator());
-                    /* Show actions related to issue tracker */
-                    if (kenaiProj != null) {
-                        issueTrackers = Kenai.getDefault().getProject(kenaiProj.getId()).getFeatures(Type.ISSUES);
-                        if (issueTrackers != null && issueTrackers.length > 0) {
-                            kenaiPopup.add(new LazyFindIssuesAction(kenaiProj));
-                            kenaiPopup.add(new LazyNewIssuesAction(kenaiProj));
-                            kenaiPopup.add(new JSeparator());
-                        }
-                    }
                     /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
                     String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
                     final Matcher m = repositoryPattern.matcher(projRepo);
-                    // isKenaiProject assures that m.group(4) exists, still the check is better
+                    // isKenaiProject assures that m.group(patternGroup) exists, still the check is better
                     if (m.matches()) {
-                        kenaiPopup.add(new LazyOpenKenaiProjectAction(m.group(4)));
+                        String kpName = m.group(patternGroup);
+                        if (inDashboard(kpName)) {
+                            issueTrackers = Kenai.getDefault().getProject(kpName).getFeatures(Type.ISSUES);
+                            if (issueTrackers != null && issueTrackers.length > 0) {
+                                kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
+                                kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
+                                kenaiPopup.add(new JSeparator());
+                            }
+                        }
+                        kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
                     }
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
@@ -217,29 +226,8 @@ public class KenaiPopupMenu extends CookieAction {
             return kenaiPopup;
         }
 
-        private synchronized boolean isKenaiProject(Project proj) {
+        private boolean isKenaiProject(Project proj) {
             assert proj != null;
-
-            ProjectHandle[] openProjects = DashboardImpl.getInstance().getOpenProjects();
-            for (int i = 0; i < openProjects.length; i++) {
-                ProjectHandle projectHandle = openProjects[i];
-                if (projectHandle == null) {
-                    continue;
-                }
-                List<SourceHandle> sources = SourceAccessorImpl.getDefault().getSources(projectHandle);
-                for (SourceHandle sourceHandle : sources) {
-                    if (sourceHandle == null) {
-                        continue;
-                    }
-                    for (NbProjectHandle nbProjectHandle : sourceHandle.getRecentProjects()) {
-                        if (((NbProjectHandleImpl)nbProjectHandle).getProject().equals(proj)) {
-                            kenaiProj = projectHandle;
-                            return true;
-                        }
-                    }
-                }
-            }
-
             String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
             if (projRepo != null) {
                 final Matcher m = repositoryPattern.matcher(projRepo);
@@ -253,16 +241,24 @@ public class KenaiPopupMenu extends CookieAction {
         public void actionPerformed(ActionEvent e) {
         }
 
+        private boolean inDashboard(String projID) {
+            ProjectHandle[] prj = Dashboard.getDefault().getOpenProjects();
+            for (int i = 0; i < prj.length; i++) {
+                ProjectHandle ph = prj[i];
+                if (ph.getId().equals(projID)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 }
 
 class LazyFindIssuesAction extends JMenuItem {
 
-    final ProjectHandle kph;
-
-    public LazyFindIssuesAction(ProjectHandle kenaiProj) {
+    public LazyFindIssuesAction(final Project proj, final String kenaiProjectUniqueName) {
         super(NbBundle.getMessage(KenaiPopupMenu.class, "FIND_ISSUE")); //NOI18N
-        kph = kenaiProj;
         this.addActionListener(new ActionListener() {
 
             public void actionPerformed(final ActionEvent e) {
@@ -271,8 +267,21 @@ class LazyFindIssuesAction extends JMenuItem {
                     public void run() {
                         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));  //NOI18N
                         handle.start();
-                        QueryAccessor.getDefault().getFindIssueAction(kph).actionPerformed(e);
-                        handle.finish();
+                        KenaiProject kp = null;
+                        try {
+                            kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                            if (kp != null) {
+                                final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                DashboardImpl.getInstance().addProject(pHandle, false);
+                                DashboardImpl.getInstance().selectAndExpand(kp);
+                                QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
+                                return;
+                            }
+                        } catch (KenaiException e) {
+                            e.printStackTrace();
+                        } finally {
+                            handle.finish();
+                        }
                     }
                 });
             }
@@ -282,11 +291,8 @@ class LazyFindIssuesAction extends JMenuItem {
 
 class LazyNewIssuesAction extends JMenuItem {
 
-    final ProjectHandle kph;
-
-    public LazyNewIssuesAction(ProjectHandle kenaiProj) {
+    public LazyNewIssuesAction(final Project proj, final String kenaiProjectUniqueName) {
         super(NbBundle.getMessage(KenaiPopupMenu.class, "NEW_ISSUE")); //NOI18N
-        kph = kenaiProj;
         this.addActionListener(new ActionListener() {
 
             public void actionPerformed(final ActionEvent e) {
@@ -295,8 +301,20 @@ class LazyNewIssuesAction extends JMenuItem {
                     public void run() {
                         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER")); //NOI18N
                         handle.start();
-                        QueryAccessor.getDefault().getCreateIssueAction(kph).actionPerformed(e);
-                        handle.finish();
+                        KenaiProject kp = null;
+                        try {
+                            kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                            if (kp != null) {
+                                final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                DashboardImpl.getInstance().addProject(pHandle, false);
+                                DashboardImpl.getInstance().selectAndExpand(kp);
+                                QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
+                            }
+                        } catch (KenaiException e) {
+                            e.printStackTrace();
+                        } finally {
+                            handle.finish();
+                        }
                     }
                 });
             }
@@ -335,6 +353,7 @@ class LazyOpenKenaiProjectAction extends JMenuItem {
                                 } finally {
                                     if (handle != null) {
                                         handle.finish();
+                                        return;
                                     }
                                 }
                             }

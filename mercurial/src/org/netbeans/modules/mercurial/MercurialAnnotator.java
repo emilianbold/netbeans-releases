@@ -340,32 +340,12 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (!isVersioned) {
             return null;
         }
-        int mostImportantCounter = -1;
-        if ("true".equals(System.getProperty("mercurial.newGenerationCache", "false"))) { //NOI18N
-            HgModuleConfig config = HgModuleConfig.getDefault();
-            for (File file : context.getRootFiles()) {
-                if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
-                    FileInformation info = cache.getCachedStatus(file);
-                    Set<FileInformation> exclusions = new HashSet<FileInformation>();
-                    boolean flat = VersioningSupport.isFlat(file);
-                    for (String s : config.getCommitExclusions()) {
-                        File f = new File(s);
-                        if ((!flat && Utils.isAncestorOrEqual(file, f))
-                                || (flat && file.equals(f.getParentFile()))) {
-                            FileInformation exclusionInfo = cache.getCachedStatus(f);
-                            if ((exclusionInfo.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                                exclusions.add(exclusionInfo);
-                            }
-                        }
-                    }
-                    mostImportantCounter = info.getMoreImportantCounter(mostImportantCounter, flat, exclusions);
-                }
-            }
+        if (!"false".equals(System.getProperty("mercurial.newGenerationCache", "true"))) { //NOI18N
             Image badge = null;
-            if (mostImportantCounter == FileInformation.COUNTER_CONFLICTED_FILES) {
+            if (cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true, true)) {
                 badge = ImageUtilities.assignToolTipToImage(
                         ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
-            } else if (mostImportantCounter == FileInformation.COUNTER_MODIFIED_FILES) {
+            } else if (cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE, true, true)) {
                 badge = ImageUtilities.assignToolTipToImage(
                         ImageUtilities.loadImage(badgeModified, true), toolTipModified);
             }

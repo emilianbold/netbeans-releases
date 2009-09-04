@@ -53,6 +53,7 @@ import org.netbeans.api.autoupdate.OperationSupport;
  */
 public class Containers {
     private static Reference<OperationContainer<InstallSupport>> INSTALL;
+    private static Reference<OperationContainer<InstallSupport>> INTERNAL_UPDATE;
     private static Reference<OperationContainer<InstallSupport>> UPDATE;
     private static Reference<OperationContainer<InstallSupport>> INSTALL_FOR_NBMS;   
     private static Reference<OperationContainer<InstallSupport>> UPDATE_FOR_NBMS;
@@ -74,6 +75,7 @@ public class Containers {
             forDisable().removeAll();
             forCustomInstall().removeAll();
             forCustomUninstall().removeAll();
+            forInternalUpdate().removeAll();
         } catch (NullPointerException npe) {
             // doesn't matter, can ignore that
         }
@@ -196,5 +198,18 @@ public class Containers {
             }
             return container;
         }        
+    }
+    public static OperationContainer<InstallSupport> forInternalUpdate () {
+        synchronized (Containers.class) {
+            OperationContainer<InstallSupport> container = null;
+            if (INTERNAL_UPDATE != null) {
+                container = INTERNAL_UPDATE.get ();
+            }
+            if(container == null) {
+                container = OperationContainer.createForInternalUpdate();
+                INTERNAL_UPDATE = new WeakReference<OperationContainer<InstallSupport>> (container);
+            }
+            return container;
+        }
     }
 }

@@ -47,6 +47,7 @@ import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.windows.InputOutput;
 
 /**
  * D-Light Target.Target to be d-lighted, it can be anything: starting from shell script to
@@ -217,10 +218,11 @@ public abstract class DLightTarget {
 
         /**
          * Start target
-         * @param target targe to start
+         * @param target target to start
          * @param executionEnvProvider  execution enviroment provider
+         * @return return I/O tab or <code>null</code> which will be used for the inout/output
          */
-        public void start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
+        public InputOutput  start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
 
         /**
          * Terminate target

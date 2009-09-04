@@ -67,7 +67,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.proxy.Base64Encoder;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -115,8 +114,7 @@ public class ExportDiffAction extends ContextAction {
     
     public boolean enable(Node[] nodes) {
         Context ctx = getCachedContext(nodes);
-        File[] files = getModifiedFiles(ctx, enabledForStatus);         
-        if(files.length < 1) {
+        if(!Subversion.getInstance().getStatusCache().containsFiles(ctx, enabledForStatus, true)) {
             return false;
         }  
         TopComponent activated = TopComponent.getRegistry().getActivated();
@@ -140,8 +138,7 @@ public class ExportDiffAction extends ContextAction {
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
-            noop = files.length == 0;
+            noop = Subversion.getInstance().getStatusCache().containsFiles(context, FileInformation.STATUS_LOCAL_CHANGE, true);
         }
         if (noop) {
             NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(ExportDiffAction.class, "BK3001"), NotifyDescriptor.INFORMATION_MESSAGE);
@@ -339,34 +336,6 @@ public class ExportDiffAction extends ContextAction {
             if (r1 != null) try { r1.close(); } catch (Exception e) {}
             if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
-    }
-
-    /**
-     * Utility method that returns all non-excluded modified files that are
-     * under given roots (folders) and have one of specified statuses.
-     *
-     * @param context context to search
-     * @param includeStatus bit mask of file statuses to include in result
-     * @return File [] array of Files having specified status
-     */
-    public static File [] getModifiedFiles(Context context, int includeStatus) {
-        File[] all = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
-        List<File> files = new ArrayList<File>();
-        for (int i = 0; i < all.length; i++) {
-            File file = all[i];            
-            files.add(file);            
-        }
-        
-        // ensure that command roots (files that were explicitly selected by user) are included in Diff
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File [] rootFiles = context.getRootFiles();
-        for (int i = 0; i < rootFiles.length; i++) {
-            File file = rootFiles[i];
-            if (file.isFile() && (cache.getStatus(file).getStatus() & includeStatus) != 0 && !files.contains(file)) {
-                files.add(file);
-            }
-        }
-        return files.toArray(new File[files.size()]);
     }
         
     private String exportBinaryFile(File file) throws IOException {

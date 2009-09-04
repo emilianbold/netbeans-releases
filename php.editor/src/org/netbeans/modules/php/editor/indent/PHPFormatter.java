@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,7 +64,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -95,7 +96,7 @@ public class PHPFormatter implements Formatter {
         // hotfix for for broken new line indentation after merging with dkonecny's changes
         String mimeType = getMimeTypeAtOffset(context.document(), context.startOffset());
 
-        if (!PHPLanguage.PHP_MIME_TYPE.equals(mimeType)){
+        if (!FileUtils.PHP_MIME_TYPE.equals(mimeType)){
             return;
         }
         // end of hotfix
@@ -241,18 +242,24 @@ public class PHPFormatter implements Formatter {
                 final WSTransformer wsTransformer = new WSTransformer(context);
                 PHPParseResult result = (PHPParseResult) info;
                 result.getProgram().accept(wsTransformer);
-               
-                for (WSTransformer.Replacement replacement : wsTransformer.getReplacements()){
-                    if (replacement.offset() < context.startOffset()
-                            || replacement.offset() > context.endOffset()){
+
+                List<WSTransformer.Replacement> replacements = wsTransformer.getReplacements();
+                Collections.sort(replacements);
+                Collections.reverse(replacements);
+
+                for (WSTransformer.Replacement replacement : replacements){
+                    int offset = replacement.offset();
+
+                    if (offset < context.startOffset()
+                            || offset > context.endOffset()){
                         continue;
                     }
 
                     try {
-                        doc.insertString(replacement.offset(), replacement.newString(), null);
+                        doc.insertString(offset, replacement.newString(), null);
 
                         if (replacement.length() > 0){
-                            doc.remove(replacement.offset() - replacement.length(), replacement.length());
+                            doc.remove(offset - replacement.length(), replacement.length());
                         }
 
                     } catch (BadLocationException ex) {

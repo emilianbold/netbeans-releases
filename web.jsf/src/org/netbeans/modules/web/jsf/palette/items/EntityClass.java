@@ -110,9 +110,6 @@ public abstract class EntityClass {
     }
    
     public boolean handleTransfer(JTextComponent targetComponent) {
-        EntityClassCustomizer entityClassCustomizer = new EntityClassCustomizer(this, targetComponent);
-        boolean accept = entityClassCustomizer.showDialog();
-        if (accept) {
             try {
 
                 //marek: not necessary since the default prefixes are hardcoded in the palette item impls
@@ -129,14 +126,13 @@ public abstract class EntityClass {
                 JSFPaletteUtilities.insert(body, targetComponent);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
-                accept = false;
+                return false;
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
-                accept = false;
+                return false;
             }
-        }
         
-        return accept;
+        return true;
     }
     
     protected abstract String createBody(JTextComponent target, boolean surroundWithFView) throws IOException;

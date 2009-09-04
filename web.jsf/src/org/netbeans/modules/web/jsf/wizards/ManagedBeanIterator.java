@@ -42,10 +42,8 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -68,14 +66,17 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 /** A template wizard iterator for new struts action
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Alexey BUtenko
  * 
  */
 
@@ -162,19 +163,25 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         dir = wm.getDocumentBase();
-        FileObject fo = dir.getFileObject(configFile); //NOI18N
-        FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
-
-        String beanName = getUniqueName((String) wizard.getProperty(WizardProperties.NAME), facesConfig);
+        if (configFile == null) {
+            if (!JSFConfigUtilities.hasJsfFramework(dir)) {
+                JSFConfigUtilities.extendJsfFramework(dir, false);
+            }
+        }
+        String beanName = getUniqueName((String) wizard.getProperty(WizardProperties.NAME), wm);
         Scope scope = (ManagedBean.Scope) wizard.getProperty(WizardProperties.SCOPE);
         boolean isAnnotate = !managedBeanPanel.isAddBeanToConfig();
         DataObject dobj = null;
+
         if (isAnnotate && Utilities.isJavaEE6(wizard)) {
             HashMap<String, String> templateProperties = new HashMap<String, String>();
             templateProperties.put("classAnnotation", "@ManagedBean(name=\""+beanName+"\")");   //NOI18N
             templateProperties.put("scopeAnnotation", SCOPES.get(scope).toString());    //NOI18N
             dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ),templateProperties  );
         } else {
+            FileObject fo = dir.getFileObject(configFile); //NOI18N
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
+            JSFBeanCache.getBeans(wm);
             dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ));
 
             ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
@@ -279,11 +286,11 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             }
         } catch (javax.swing.text.BadLocationException ex){}
     }
-    
-    private String getUniqueName(String original, FacesConfig facesConfig){
+
+    private String getUniqueName(String original, WebModule wm) {
         String value = original;
-        int count = 0;
-        for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
+        int count=0;
+        for (FacesManagedBean managedBean: JSFBeanCache.getBeans(wm)) {
             if (value.equals(managedBean.getManagedBeanName())) {
                 count++;
                 value = original+count;
@@ -291,6 +298,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         }
         return value;
     }
+
     private final static Map<ManagedBean.Scope, String> SCOPES
                 = new HashMap<Scope, String>();
     static {

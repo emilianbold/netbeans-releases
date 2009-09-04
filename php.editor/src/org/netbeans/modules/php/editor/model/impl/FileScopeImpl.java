@@ -126,7 +126,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
     }
 
     public Collection<? extends NamespaceScope> getDeclaredNamespaces() {
-        return filter(getElements(), new ElementFilter<ModelElement>() {
+        return filter(getElements(), new ElementFilter<NamespaceScope>() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.NAMESPACE_DECLARATION);
             }

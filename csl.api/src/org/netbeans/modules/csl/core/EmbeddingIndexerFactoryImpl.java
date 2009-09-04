@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.csl.core;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -47,7 +48,9 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -56,6 +59,19 @@ import org.openide.filesystems.FileObject;
 public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
 
     // EmbeddingIndexerFactory implementation
+
+    @Override
+    public boolean scanStarted(final Context context) {
+        if (!getFactory().scanStarted(context)) {
+            return false;
+        }
+        return verifyIndex(context);
+    }
+
+    @Override
+    public void scanFinished(final Context context) {
+        getFactory().scanFinished(context);
+    }
     
     @Override
     public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
@@ -96,6 +112,15 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
     }
 
     // private implementation
+
+    private static boolean verifyIndex(final Context context) {
+        try {
+            return IndexingSupport.getInstance(context).isValid();
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return false;
+        }
+    }
 
     private static final Logger LOG = Logger.getLogger(EmbeddingIndexerFactoryImpl.class.getName());
     

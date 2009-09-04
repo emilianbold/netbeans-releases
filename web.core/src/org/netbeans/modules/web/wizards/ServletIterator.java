@@ -258,6 +258,11 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
             ((ServletData)deployData).createDDServletMapping(servletName);
         } 
         deployData.createDDEntries();
+        
+        if (fileType == FileType.SERVLET && dobj.getPrimaryFile()!=null) {
+            dobj.getPrimaryFile().setAttribute("org.netbeans.modules.web.IsServletFile", 
+                    Boolean.TRUE);                      // NOI18N
+        }
 
         return Collections.singleton(dobj);
     } 

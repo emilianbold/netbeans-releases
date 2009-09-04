@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.tha.THAConfigurationOptions;
 import org.netbeans.modules.cnd.tha.THAServiceInfo;
 import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
@@ -70,6 +71,7 @@ import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfigurati
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -135,6 +137,14 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
+        THAConfiguration thaConf = pae.getContext().lookup(THAConfiguration.class);
+        if ( thaConf!= null){
+            targetConf.putInfo(THAConfiguration.THA_DATA_FILTER_NAME,!thaConf.collectDataRaces() ? THAConfiguration.DEADLOCK_ONLY_FILTER_VALUE : THAConfiguration.DEADLOCK_AND_RACES_FILTER_VALUE); //, "with-source-code-only")); // NOI18N
+            if (thaConf.collectFromBeginning()){
+                targetConf.putInfo(THAConfiguration.THA_STARTUP_FILTER_NAME, THAConfiguration.START_AT_STARTUP);
+            }
+        }
+        
 
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
@@ -167,8 +177,15 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
 
         DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("THA");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
+        if (options instanceof THAConfigurationOptions) {
+            ((THAConfigurationOptions) options).configure(pae.getContext().lookup(THAConfiguration.class));
+        }        
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
+        DLightTargetListener listener = pae.getContext().lookup(DLightTargetListener.class);
+        if (listener != null){
+            target.addTargetListener(listener);
+        }
 
 
         //WE are here only when Profile On RUn 
@@ -248,12 +265,6 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
 
     private void targetStarted(int pid) {
         startTimeMillis = System.currentTimeMillis();
-        //send a signal if needed
-        if (pae.getContext().lookup(THAConfigurationImpl.class) != null && pae.getContext().lookup(THAConfigurationImpl.class).collectFromBeginning()) {
-            MakeConfiguration conf = pae.getConfiguration();
-            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
-            CommonTasksSupport.sendSignal(execEnv, pid, "USR1", null); // NOI18N
-        }
         for (ExecutionListener l : listeners) {
             l.executionStarted(pid);
         }

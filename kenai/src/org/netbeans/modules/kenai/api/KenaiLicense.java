@@ -43,6 +43,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.LicensesListData.LicensesListItem;
 
 /**
@@ -60,6 +61,16 @@ public final class KenaiLicense {
         this.displayName=lli.display_name;
         try {
             this.uri = new URI(lli.license_uri);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(KenaiLicense.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    KenaiLicense(LicenceData ld) {
+        this.name = ld.name;
+        this.displayName = ld.display_name;
+        try {
+            this.uri = new URI(ld.license_uri);
         } catch (URISyntaxException ex) {
             Logger.getLogger(KenaiLicense.class.getName()).log(Level.SEVERE, null, ex);
         }

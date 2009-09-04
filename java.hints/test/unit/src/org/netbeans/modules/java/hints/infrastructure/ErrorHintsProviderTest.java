@@ -64,6 +64,7 @@ import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -155,7 +156,7 @@ public class ErrorHintsProviderTest extends NbTestCase {
         assertNotNull(info);
     }
     
-    private void performTest(String name) throws Exception {
+    private void performTest(String name, boolean specialMacTreatment) throws Exception {
         prepareTest(name);
         
         DataObject testData = DataObject.find(testSource);
@@ -166,60 +167,68 @@ public class ErrorHintsProviderTest extends NbTestCase {
         
         for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc))
             ref(ed.toString().replaceAll("\\p{Space}*:\\p{Space}*", ":"));
-        
-        compareReferenceFiles();
+
+        if (!Utilities.isMac() && specialMacTreatment) {
+            compareReferenceFiles(this.getName()+".ref",this.getName()+"-nonmac.pass",this.getName()+".diff");
+        } else {
+            compareReferenceFiles();
+        }
     }
     
     public void testShortErrors1() throws Exception {
-        performTest("TestShortErrors1");
+        performTest("TestShortErrors1", false);
     }
     
     public void testShortErrors2() throws Exception {
-        performTest("TestShortErrors2");
+        performTest("TestShortErrors2", false);
     }
     
     public void testShortErrors3() throws Exception {
-        performTest("TestShortErrors3");
+        performTest("TestShortErrors3", false);
     }
 
     public void testShortErrors4() throws Exception {
-        performTest("TestShortErrors4");
+        performTest("TestShortErrors4", false);
     }
     
     public void testShortErrors5() throws Exception {
-        performTest("TestShortErrors5");
+        performTest("TestShortErrors5", true);
     }
     
     public void testShortErrors6() throws Exception {
-        performTest("TestShortErrors6");
+        performTest("TestShortErrors6", false);
     }
     
     public void testShortErrors7() throws Exception {
-        performTest("TestShortErrors7");
+        performTest("TestShortErrors7", false);
     }
     
     public void testShortErrors8() throws Exception {
-        performTest("TestShortErrors8");
+        performTest("TestShortErrors8", false);
     }
     
     public void testShortErrors9() throws Exception {
-        performTest("TestShortErrors9");
+        performTest("TestShortErrors9", false);
+    }
+
+    public void testShortErrors10() throws Exception {
+        performTest("TestShortErrors10", false);
     }
     
     public void testTestShortErrorsMethodInvocation1() throws Exception {
-        performTest("TestShortErrorsMethodInvocation1");
+        performTest("TestShortErrorsMethodInvocation1", true);
     }
     
     public void testTestShortErrorsMethodInvocation2() throws Exception {
-        performTest("TestShortErrorsMethodInvocation2");
+        performTest("TestShortErrorsMethodInvocation2", true);
     }
     
     public void testTestShortErrorsNewClass() throws Exception {
-        performTest("TestShortErrorsNewClass");
+        performTest("TestShortErrorsNewClass", true);
     }
     
     public void XtestTestShortErrorsNewClass2() throws Exception {
-        performTest("TestShortErrorsNewClass2");
+        performTest("TestShortErrorsNewClass2", true);
     }
 
     //TODO: fix

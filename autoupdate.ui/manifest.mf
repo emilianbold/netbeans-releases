@@ -3,6 +3,6 @@ OpenIDE-Module: org.netbeans.modules.autoupdate.ui
 OpenIDE-Module-Install: org/netbeans/modules/autoupdate/ui/actions/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/autoupdate/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/autoupdate/ui/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.8
+OpenIDE-Module-Specification-Version: 1.11
 AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: true

@@ -3,16 +3,17 @@
 <#assign licenseLast = " */">
 <#include "../Licenses/license-${project.license}.txt">
 
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 <#if classAnnotation??>
 import javax.faces.bean.ManagedBean;
 </#if>
 <#if scopeAnnotation??>
 import javax.faces.bean.${scopeAnnotation};
 </#if>
-<#if package?? && package != "">
-package ${package};
 
-</#if>
 /**
  *
  * @author ${user}

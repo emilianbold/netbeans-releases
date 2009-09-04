@@ -43,6 +43,7 @@ package org.netbeans.spi.options;
 
 import org.netbeans.modules.options.AdvancedOptionImpl;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * This class represents one category (like "Ant"
@@ -66,8 +67,9 @@ import java.util.Map;
  *
  * where:
  * <br/><b>controller</b> should be an instance of <code>OptionsPanelController</code>
- * <br/><b>displayName</b> should be a pointer to Bundle where your tab displayname is stored
- * <br/><b>toolTip</b> should be a pointer to Bundle where your tab toolTip is stored
+ * <br/><b>displayName</b> should be a localized string for your tab display name
+ * <br/><b>toolTip</b> should be a localized string for your tab tool tip
+ * <span class="nonnormative"><strong>Currently unused.</strong></span>
  * <br/><b>keywords</b> should be localized keywords list, separated by comma in Bundle, for quickserach purposes
  * <br/><b>keywordsCategory</b> should be relative path to your panel inside Options dialog
  * <br/><br/>
@@ -103,7 +105,7 @@ public abstract class AdvancedOption {
     
     /**
      * Returns tooltip to be used on category name.
-     *
+     * <p class="nonnormative"><strong>Currently unused.</strong></p>
      * @return tooltip for this category
      */
     public abstract String getTooltip ();
@@ -124,13 +126,22 @@ public abstract class AdvancedOption {
      * @param attrs attributes defined in layer
      * @return instance of <code>AdvancedOption</code>
      */
-    static AdvancedOption createSubCategory(Map attrs) {
-        String displayName = (String) attrs.get(DISPLAYNAME);
+    static AdvancedOption createSubCategory(final Map attrs) {
+        final String displayName = (String) attrs.get(DISPLAYNAME);
         String tooltip = (String) attrs.get(TOOLTIP);
         String keywords = (String) attrs.get(KEYWORDS);
-        OptionsPanelController controller = (OptionsPanelController) attrs.get(CONTROLLER);
         String keywordsCategory = (String) attrs.get(KEYWORDS_CATEGORY);
-
-        return new AdvancedOptionImpl(controller, displayName, tooltip, keywords, keywordsCategory);
+//        new Exception("preloading advanced options panel " + displayName).printStackTrace();
+        return new AdvancedOptionImpl(new Callable<OptionsPanelController>() {
+            public OptionsPanelController call() throws Exception {
+                Object o = attrs.get(CONTROLLER);
+//                new Exception("loading advanced options panel " + displayName + ": " + o).printStackTrace();
+                if (o instanceof OptionsPanelController) {
+                    return (OptionsPanelController) o;
+                } else {
+                    throw new Exception("got no controller from " + displayName + ": " + o);
+                }
+            }
+        }, displayName, tooltip, keywords, keywordsCategory);
     }
 }

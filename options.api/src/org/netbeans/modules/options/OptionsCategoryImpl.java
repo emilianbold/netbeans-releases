@@ -40,18 +40,18 @@
 package org.netbeans.modules.options;
 
 import java.awt.Image;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * OptionsCategory implementation class. Used by factory method from
@@ -66,23 +66,17 @@ public class OptionsCategoryImpl extends OptionsCategory {
     private String categoryName;
     private String iconBase;
     private ImageIcon icon;
-    private OptionsPanelController controller;
-    private String description;
+    private Callable<OptionsPanelController> controller;
     private String keywords;
     private String keywordsCategory;
     private String advancedOptionsFolder; //folder for lookup
 
-    public OptionsCategoryImpl(String title, String categoryName, String iconBase, OptionsPanelController controller, String description, String keywords, String keywordsCategory, String advancedOptionsFolder) {
-        //either controller or folder where instances od AdvancedOptionControllers are lookedup
-        //have to be specified
-        assert !(controller == null && advancedOptionsFolder == null);
-
+    public OptionsCategoryImpl(String title, String categoryName, String iconBase, Callable<OptionsPanelController> controller, String keywords, String keywordsCategory, String advancedOptionsFolder) {
         this.title = title;
         this.categoryName = categoryName;
         this.iconBase = iconBase;
         this.controller = controller;
         this.advancedOptionsFolder = advancedOptionsFolder;
-        this.description = description;
         this.keywords = keywords;
         this.keywordsCategory = keywordsCategory;
     }
@@ -117,24 +111,25 @@ public class OptionsCategoryImpl extends OptionsCategory {
         return title;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     @Override
     public OptionsPanelController create() {
-        if(controller != null) {
-            return controller;
-        }
-        else {
+        if (advancedOptionsFolder != null) {
             return new TabbedController(advancedOptionsFolder);
+        } else {
+            try {
+                return controller.call();
+            } catch (Exception x) {
+                Exceptions.printStackTrace(x);
+                return new TabbedController("<error>"); // NOI18N
+            }
         }
     }
 
     final Map<String, Set<String>> getKeywordsByCategory() {
-        HashMap<String, Set<String>> result = new HashMap<String, Set<String>>();
-        if(keywordsCategory != null && keywords != null)
-            result.put(keywordsCategory, new HashSet(Collections.list(new StringTokenizer(keywords, ",")))); //NOI18N
-        return result;
+        if (keywordsCategory != null && keywords != null) {
+            return Collections.<String,Set<String>>singletonMap(keywordsCategory, new HashSet<String>(Arrays.asList(keywords.split(",")))); // NOI18N
+        } else {
+            return Collections.emptyMap();
+        }
     }
 }

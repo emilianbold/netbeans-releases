@@ -43,7 +43,6 @@ import java.net.URI;
 import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.test.TestBase;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 
 /**
  *
@@ -55,11 +54,6 @@ public class SyntaxParserResultTest extends TestBase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
-    }
     
     public void testBasic() {
         String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";

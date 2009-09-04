@@ -61,10 +61,12 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -165,7 +167,7 @@ public final class CreateTestsAction extends NodeAction {
 
             // only php files or folders allowed
             if (fileObj.isData()
-                    && !CommandUtils.isPhpFile(fileObj)) {
+                    && !FileUtils.isPhpFile(fileObj)) {
                 return false;
             }
 
@@ -258,7 +260,7 @@ public final class CreateTestsAction extends NodeAction {
     private void generateTest(PhpUnit phpUnit, PhpProject phpProject, FileObject sourceFo,
             Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
-                || !CommandUtils.isPhpFile(sourceFo)
+                || !FileUtils.isPhpFile(sourceFo)
                 || proceeded.contains(sourceFo)
                 || CommandUtils.isUnderTests(phpProject, sourceFo, false)
                 || CommandUtils.isUnderSelenium(phpProject, sourceFo, false)) {
@@ -273,16 +275,17 @@ public final class CreateTestsAction extends NodeAction {
         final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
 
         // find out the name of a class(es)
-        PhpUnitSupport phpUnitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
-        assert phpUnitSupport != null : "PHP unit support must exist";
-        Collection<? extends String> classNames = phpUnitSupport.getClassNames(sourceFo);
-        if (classNames.size() == 0) {
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        assert editorSupport != null : "Editor support must exist";
+        Collection<PhpClass> classes = editorSupport.getClasses(sourceFo);
+        if (classes.size() == 0) {
             // run phpunit in order to have some output
             generateSkeleton(phpUnit, configFiles, sourceFo.getName(), sourceFo, workingDirectory, paramSkeleton);
             failed.add(sourceFo);
             return;
         }
-        for (String className : classNames) {
+        for (PhpClass phpClass : classes) {
+            final String className = phpClass.getName();
             final File testFile = getTestFile(phpProject, sourceFo, className);
             if (testFile.isFile()) {
                 // already exists

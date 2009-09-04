@@ -76,7 +76,7 @@ public class SyntaxTree {
     }
 
     private static AstNode makeUncheckedTree(List<SyntaxElement> elements) {
-        assert elements != null;
+        assert elements != null : "passed elements list cannot but null"; //NOI18N
 
         SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
         int lastEndOffset = last == null ? 0 : last.offset() + last.length();
@@ -630,7 +630,10 @@ public class SyntaxTree {
     private static void setTagAttributes(AstNode node, SyntaxElement.Tag tag) {
         for (TagAttribute ta : tag.getAttributes()) {
             if (ta != null) {
-                node.setAttribute(ta.getName(), dequote(ta.getValue()));
+                AstNode.Attribute nodeAttribute = new AstNode.Attribute(ta.getName(),
+                        ta.getValue(), ta.getNameOffset(), ta.getValueOffset());
+
+                node.setAttribute(nodeAttribute);
             }
 
         }
@@ -674,16 +677,5 @@ public class SyntaxTree {
         return null;
     }
 
-    private static String dequote(String text) {
-        if (text.length() < 2) {
-            return text;
-        } else {
-            if ((text.charAt(0) == '\'' || text.charAt(0) == '"') &&
-                    (text.charAt(text.length() - 1) == '\'' || text.charAt(text.length() - 1) == '"')) {
-                return text.substring(1, text.length() - 1);
-            }
-
-        }
-        return text;
-    }
+    
 }

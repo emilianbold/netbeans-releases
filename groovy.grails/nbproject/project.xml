@@ -153,9 +153,6 @@
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>

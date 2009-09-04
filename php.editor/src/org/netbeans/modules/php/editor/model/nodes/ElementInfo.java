@@ -88,20 +88,15 @@ public class ElementInfo  {
     public NamespaceScope getNamespaceScope() {
         return ModelUtils.getNamespaceScope(scope);
     }
-    public QualifiedName getFullyQualifiedName() {
+    public QualifiedName getQualifiedName() {
         ASTNodeInfo nodeInfo = getNodeInfo();
         QualifiedName qualifiedName = null;
         if (nodeInfo != null) {
             qualifiedName = nodeInfo.getQualifiedName();
-            if (qualifiedName != null) {
-                final NamespaceScope namespaceScope = getNamespaceScope();
-                assert namespaceScope != null;
-                qualifiedName = qualifiedName.toFullyQualified(namespaceScope);
-            }
         } else {
             ModelElement modelElemnt = getModelElemnt();
             final QualifiedName namespaceName = modelElemnt.getNamespaceName();
-            qualifiedName = QualifiedName.createUnqualifiedName(modelElemnt.getName()).toFullyQualified(namespaceName);
+            qualifiedName = namespaceName.append(modelElemnt.getName());
         }
         return qualifiedName;
     }

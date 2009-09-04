@@ -50,6 +50,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.CreateAddSchemaElementActionVisitor;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.SchemaElementMinMaxOccursFinderVisitor;
 import org.netbeans.modules.xml.xam.Nameable;
@@ -96,7 +97,8 @@ public class ExtensibilityElementChildNewTypesFactory implements NewTypesFactory
                     
                     if (element instanceof Nameable) {
                         Nameable nameable = (Nameable) element;
-                        QName elementQName = new QName(element.getModel().getSchema().getTargetNamespace(), nameable.getName());
+                        String ns = Utility.getTargetNamespace(element.getModel());
+                        QName elementQName = new QName(ns, nameable.getName());
                         if (!qnameMap.containsKey(elementQName) || maxOccurs > qnameMap.get(elementQName).intValue()) {
                             eeNewTypeList.add(new ExtensibilityElementChildNewType(component, element));
                         }

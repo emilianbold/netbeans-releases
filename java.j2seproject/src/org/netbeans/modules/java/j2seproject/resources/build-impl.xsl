@@ -208,12 +208,39 @@ is divided into following sections:
                         </not>
                     </and>
                 </condition>
+                <condition property="do.mkdist">
+                    <and>
+                        <isset property="libs.CopyLibs.classpath"/>
+                        <not>
+                            <istrue value="${{mkdist.disabled}}"/>
+                        </not>
+                    </and>
+                </condition>
                 <condition property="manifest.available+main.class+mkdist.available">
                     <and>
                         <istrue value="${{manifest.available+main.class}}"/>
-                        <isset property="libs.CopyLibs.classpath"/>
+                        <isset property="do.mkdist"/>
                     </and>
                 </condition>
+                <condition property="manifest.available+mkdist.available">
+                    <and>
+                        <istrue value="${{manifest.available}}"/>
+                        <isset property="do.mkdist"/>
+                    </and>
+                </condition>
+                <condition property="manifest.available-mkdist.available">
+                    <or>
+                        <istrue value="${{manifest.available}}"/>
+                        <isset property="do.mkdist"/>
+                    </or>
+                </condition>
+                <condition property="manifest.available+main.class-mkdist.available">
+                    <or>
+                        <istrue value="${{manifest.available+main.class}}"/>
+                        <isset property="do.mkdist"/>
+                    </or>
+                </condition>
+
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
@@ -879,14 +906,14 @@ is divided into following sections:
             
             <target name="-do-jar-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available-mkdist.available</xsl:attribute>
                 <j2seproject1:jar/>
             </target>
             
             <target name="-do-jar-with-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available+main.class-mkdist.available</xsl:attribute>
                 <j2seproject1:jar manifest="${{manifest.file}}"/>
             </target>
             
@@ -943,10 +970,38 @@ is divided into following sections:
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -jar "${dist.jar.resolved}"</echo>                
             </target>
+
+            <target name="-do-jar-with-libraries-without-mainclass">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="if">manifest.available+mkdist.available</xsl:attribute>
+                <xsl:attribute name="unless">main.class</xsl:attribute>
+                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${{run.classpath}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to=""/>
+                </pathconvert>
+                <pathconvert property="jar.classpath" pathsep=" ">
+                    <path path="${{run.classpath.without.build.classes.dir}}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <globmapper from="*" to="lib/*"/>
+                    </chainedmapper>
+                </pathconvert>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
+                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.classes.dir}}"/>
+                    <manifest>
+                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
+                    </manifest>
+                </copylibs>
+            </target>
+            
+
+
             <target name="-do-jar-with-libraries-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">libs.CopyLibs.classpath</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
+                <xsl:attribute name="if">do.mkdist</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available</xsl:attribute>
                   <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
                 <pathconvert property="run.classpath.without.build.classes.dir">
                     <path path="${{run.classpath}}"/>
@@ -962,6 +1017,9 @@ is divided into following sections:
                 <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
                 <copylibs runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
                     <fileset dir="${{build.classes.dir}}"/>
+                    <manifest>
+                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
+                    </manifest>
                 </copylibs>
             </target>
             <target name="-post-jar">
@@ -970,7 +1028,7 @@ is divided into following sections:
             </target>
             
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-do-jar-with-libraries-without-manifest,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-do-jar-with-libraries-without-mainclass,-do-jar-with-libraries-without-manifest,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
             

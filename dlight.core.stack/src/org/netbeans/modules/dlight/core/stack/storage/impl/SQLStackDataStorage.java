@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.core.stack.storage.impl;
 
+import com.sun.org.apache.bcel.internal.generic.Select;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +68,10 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery.ThreadFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery.TimeFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
@@ -88,11 +93,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;
+    private final Map<String, PreparedStatement> stmtCache;
 
     public SQLStackDataStorage() {
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
-        funcCache = new HashMap<CharSequence, Integer>();
-        nodeCache = new HashMap<NodeCacheKey, Integer>();
+        funcCache = new HashMap<CharSequence, Long>();
+        nodeCache = new HashMap<NodeCacheKey, Long>();
         funcIdSequence = 0;
         nodeIdSequence = 0;
         executor = new ExecutorThread();
@@ -104,6 +110,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         } else {
             demangler = null;
         }
+        this.stmtCache = new HashMap<String, PreparedStatement>();
     }
 
     public DataStorageType getBackendDataStorageType() {
@@ -149,39 +156,68 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         isRunning = false;
         funcCache.clear();
         nodeCache.clear();
+        for (PreparedStatement stmt : stmtCache.values()) {
+            try {
+                stmt.close();
+            } catch (SQLException ex) {
+            }
+        }
+        stmtCache.clear();
         return true;
     }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-    private final Map<CharSequence, Integer> funcCache;
-    private final Map<NodeCacheKey, Integer> nodeCache;
-    private int funcIdSequence;
-    private int nodeIdSequence;
+    private final Map<CharSequence, Long> funcCache;
+    private final Map<NodeCacheKey, Long> nodeCache;
+    private long funcIdSequence;
+    private long nodeIdSequence;
     private final ExecutorThread executor;
     private boolean isRunning = true;
     private final CppSymbolDemangler demangler;
+
+    private synchronized PreparedStatement getPreparedStatement(String sql) throws SQLException {
+        PreparedStatement stmt = stmtCache.get(sql);
+        if (stmt == null) {
+            stmt = sqlStorage.prepareStatement(sql);
+            stmtCache.put(sql, stmt);
+        }
+        return stmt;
+    }
 
     private void initTables() throws SQLException, IOException {
         InputStream is = SQLStackDataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
-            sqlStorage.execute(reader);
+            String line;
+            StringBuilder buf = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("-- ")) { //NOI18N
+                    continue;
+                }
+                buf.append(line);
+                if (line.endsWith(";")) { //NOI18N
+                    String sql = buf.toString();
+                    buf.setLength(0);
+                    String sqlToExecute = sql.substring(0, sql.length() - 1);
+                    sqlStorage.executeUpdate(sqlToExecute);
+                }
+            }
         } finally {
             reader.close();
         }
     }
 
-    public int putStack(List<CharSequence> stack, long sampleDuration) {
-        int callerId = 0;
-        Set<Integer> funcs = new HashSet<Integer>();
+    public long putStack(List<CharSequence> stack, long sampleDuration) {
+        long callerId = 0;
+        Set<Long> funcs = new HashSet<Long>();
         for (int i = 0; i < stack.size(); ++i) {
             boolean isLeaf = i + 1 == stack.size();
             CharSequence funcName = stack.get(i);
-            int funcId = generateFuncId(funcName);
+            long funcId = generateFuncId(funcName);
             updateMetrics(funcId, false, sampleDuration, !funcs.contains(funcId), isLeaf);
             funcs.add(funcId);
-            int nodeId = generateNodeId(callerId, funcId, getOffset(funcName));
+            long nodeId = generateNodeId(callerId, funcId, getOffset(funcName));
             updateMetrics(nodeId, true, sampleDuration, true, isLeaf);
             callerId = nodeId;
         }
@@ -196,31 +232,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         }
     }
 
-//  should be implemented at higher level using getThreadSnapshot()
-//    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
-//        try {
-//            List<Long> result = new ArrayList<Long>();
-//            PreparedStatement ps = sqlStorage.prepareStatement(
-//                    "SELECT time_stamp FROM CallStack " + //NOI18N
-//                    "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
-//            ps.setMaxRows(1);
-//            for (long time1 = startTime; time1 < endTime; time1 += interval) {
-//                long time2 = Math.min(time1 + interval, endTime);
-//                ps.setLong(1, time1);
-//                ps.setLong(2, time2);
-//                ResultSet rs = ps.executeQuery();
-//                if (rs.next()) {
-//                    result.add(rs.getLong(1));
-//                }
-//                rs.close();
-//            }
-//            return result;
-//        } catch (SQLException ex) {
-//            ex.printStackTrace();
-//            return Collections.emptyList();
-//        }
-//    }
-
     public List<FunctionMetric> getMetricsList() {
         return METRICS;
     }
@@ -228,19 +239,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
     public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
         try {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-            PreparedStatement select = prepareCallersSelect(path);
-            ResultSet rs = select.executeQuery();
+            ResultSet rs = sqlStorage.select(null, null, prepareCallersSelect(path));
             while (rs.next()) {
                 Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
                 String funcName = rs.getString(2);
-                if (demangler != null) {
-                    funcName = demangler.demangle(funcName);
-                }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
             }
             rs.close();
+            demangle(result);
             return result;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -251,19 +259,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
     public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
         try {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-            PreparedStatement select = prepareCalleesSelect(path);
-            ResultSet rs = select.executeQuery();
+            ResultSet rs = sqlStorage.select(null, null, prepareCalleesSelect(path));
             while (rs.next()) {
                 Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
                 String funcName = rs.getString(2);
-                if (demangler != null) {
-                    funcName = demangler.demangle(funcName);
-                }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
             }
             rs.close();
+            demangle(result);
             return result;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -273,9 +278,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
-            List<String> funcNames = new ArrayList<String>();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
-            PreparedStatement select = sqlStorage.prepareStatement(
+            PreparedStatement select = getPreparedStatement(
                     "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
                     "FROM Func ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             select.setMaxRows(limit);
@@ -285,19 +289,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
                 String name = rs.getString(2);
-                funcNames.add(name);
                 funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, rs.getString(3)), metrics));
             }
             rs.close();
 
-            if (demangler != null) {
-                funcNames = demangler.demangle(funcNames);
-                if (funcNames.size() == funcList.size()) {
-                    for (int i = 0; i < funcList.size(); ++i) {
-                        ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));
-                    }
-                }
-            }
+            demangle(funcList);
 
             return funcList;
         } catch (SQLException ex) {
@@ -316,10 +312,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             String functionColumnName = functionDescription.getNameColumn();
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
-            List<String> funcNames = new ArrayList<String>();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
-            PreparedStatement select = sqlStorage.prepareStatement(metadata.getViewStatement());
-            ResultSet rs = select.executeQuery();
+            ResultSet rs = null;
+            if (metadata.getViewStatement() != null){
+                PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
+                rs = select.executeQuery();
+            }else{
+                rs = sqlStorage.select(metadata.getName(), metricsColumn);
+            }
             while (rs.next()) {
                 Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
                 for (FunctionMetric m : metrics) {
@@ -334,19 +334,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                     }
                 }
                 String funcName = rs.getString(functionColumnName);
-                funcNames.add(funcName);
                 funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), funcName, funcName), offesetColumnName != null ? rs.getLong(offesetColumnName) : -1, metricValues));
             }
             rs.close();
 
-            if (demangler != null) {
-                funcNames = demangler.demangle(funcNames);
-                if (funcNames.size() == funcList.size()) {
-                    for (int i = 0; i < funcList.size(); ++i) {
-                        ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));
-                    }
-                }
-            }
+            demangle(funcList);
 
             return funcList;
         } catch (SQLException ex) {
@@ -355,7 +347,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    private void updateMetrics(int id, boolean funcOrNode, long sampleDuration, boolean addIncl, boolean addExcl) {
+    private void updateMetrics(long id, boolean funcOrNode, long sampleDuration, boolean addIncl, boolean addExcl) {
         if (0 < sampleDuration) {
             UpdateMetrics cmd = new UpdateMetrics();
             cmd.objId = id;
@@ -370,10 +362,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         }
     }
 
-    private int generateNodeId(int callerId, int funcId, long offset) {
+    private long generateNodeId(long callerId, long funcId, long offset) {
         synchronized (nodeCache) {
             NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId, offset);
-            Integer nodeId = nodeCache.get(cacheKey);
+            Long nodeId = nodeCache.get(cacheKey);
             if (nodeId == null) {
                 nodeId = ++nodeIdSequence;
                 AddNode cmd = new AddNode();
@@ -388,13 +380,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         }
     }
 
-    private int generateFuncId(CharSequence funcName) {
+    private long generateFuncId(CharSequence funcName) {
         int plusPos = lastIndexOf(funcName, '+'); // NOI18N
         if (0 <= plusPos) {
             funcName = funcName.subSequence(0, plusPos);
         }
         synchronized (funcCache) {
-            Integer funcId = funcCache.get(funcName);
+            Long funcId = funcCache.get(funcName);
             if (funcId == null) {
                 funcId = ++funcIdSequence;
                 AddFunction cmd = new AddFunction();
@@ -429,7 +421,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         return -1;
     }
 
-    private PreparedStatement prepareCallersSelect(FunctionCallWithMetric[] path) throws SQLException {
+    private String prepareCallersSelect(FunctionCallWithMetric[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
         buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
@@ -439,21 +431,18 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
         }
         buf.append(" WHERE "); //NOI18N
-        for (int i = 1; i <= path.length; ++i) {
-            if (1 < i) {
+        for (int i = 0; i < path.length; ++i) {
+            if (0 < i) {
                 buf.append("AND "); //NOI18N
             }
-            buf.append("N").append(i).append(".func_id = ? "); //NOI18N
+            buf.append("N").append(i + 1).append(".func_id = "); //NOI18N
+            buf.append(((FunctionImpl) path[i].getFunction()).getId());
         }
         buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
-        PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
-        for (int i = 0; i < path.length; ++i) {
-            select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
-        }
-        return select;
+        return buf.toString();
     }
 
-    private PreparedStatement prepareCalleesSelect(FunctionCallWithMetric[] path) throws SQLException {
+    private String prepareCalleesSelect(FunctionCallWithMetric[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
         buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 "); //NOI18N
         for (int i = 1; i < path.length; ++i) {
@@ -462,18 +451,127 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         }
         buf.append(" INNER JOIN Node N ON N").append(path.length).append(".node_id = N.caller_id "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id WHERE "); //NOI18N
-        for (int i = 1; i <= path.length; ++i) {
-            if (1 < i) {
+        for (int i = 0; i < path.length; ++i) {
+            if (0 < i) {
                 buf.append(" AND "); //NOI18N
             }
-            buf.append(" N").append(i).append(".func_id = ? "); //NOI18N
+            buf.append(" N").append(i + 1).append(".func_id = "); //NOI18N
+            buf.append(((FunctionImpl) path[i].getFunction()).getId());
         }
         buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
-        PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
-        for (int i = 0; i < path.length; ++i) {
-            select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
+        return buf.toString();
+    }
+
+    private static <T> T findInstanceOf(Collection<? super T> objects, Class<T> clazz) {
+        for (Object obj : objects) {
+            if (clazz.isAssignableFrom(obj.getClass())) {
+                return clazz.cast(obj);
+            }
         }
-        return select;
+        return null;
+    }
+
+    private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
+        PreparedStatement s = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
+        try {
+            s.setInt(1, threadId);
+            s.setLong(2, timestamp);
+            ResultSet rs = s.executeQuery();
+            try {
+                if (rs.next()) {
+                    return new SnapshotImpl(this, timestamp, threadId, rs.getInt(1), MSAState.fromCode(rs.getInt(2), fullMsa));
+                } else {
+                    return null;
+                }
+            } finally {
+                rs.close();
+            }
+        } finally {
+            //s.close(); // do not close! SQLStorage caches these prepared statements
+        }
+    }
+
+    public List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
+        List<String> conditions = new ArrayList<String>(3);
+
+        ThreadFilter threadFilter = findInstanceOf(query.getFilters(), ThreadFilter.class);
+        if (threadFilter != null) {
+            StringBuilder where = new StringBuilder("thread_id IN ("); // NOI18N
+            boolean first = true;
+            for (int threadId : threadFilter.getThreadIds()) {
+                if (first) {
+                    first = false;
+                } else {
+                    where.append(','); // NOI18N
+                }
+                where.append(threadId);
+            }
+            where.append(')'); // NOI18N
+            conditions.add(where.toString());
+        }
+
+        TimeFilter timeFilter = findInstanceOf(query.getFilters(), TimeFilter.class);
+        if (timeFilter != null) {
+            if (0 <= timeFilter.getStartTime()) {
+                conditions.add(timeFilter.getStartTime() + " <= time_stamp"); // NOI18N
+            }
+            if (0 <= timeFilter.getEndTime()) {
+                conditions.add("time_stamp <= " + timeFilter.getEndTime()); // NOI18N
+            }
+        }
+
+        StringBuilder select = new StringBuilder("SELECT thread_id, "); // NOI18N
+        if (timeFilter != null) {
+            switch (timeFilter.getMode()) {
+                case FIRST:
+                    select.append("MIN(time_stamp) "); // NOI18N
+                    break;
+                case LAST:
+                    select.append("MAX(time_stamp) "); // NOI18N
+                    break;
+                default:
+                    select.append("time_stamp "); // NOI18N
+            }
+        } else {
+            select.append("time_stamp "); // NOI18N
+        }
+
+        select.append("FROM CallStack "); // NOI18N
+
+        if (!conditions.isEmpty()) {
+            select.append("WHERE "); // NOI18N
+            boolean first = true;
+            for (String condition : conditions) {
+                if (first) {
+                    first = false;
+                } else {
+                    select.append("AND "); // NOI18N
+                }
+                select.append(condition).append(' '); // NOI18N
+            }
+        }
+
+        if (timeFilter != null && timeFilter.getMode() != TimeFilter.Mode.ALL) {
+            select.append("GROUP BY thread_id"); // NOI18N
+        }
+
+        try {
+            List<ThreadSnapshot> snapshots = new ArrayList<ThreadSnapshot>();
+            ResultSet rs = sqlStorage.select(null, null, select.toString());
+            try {
+                while (rs.next()) {
+                    ThreadSnapshot snapshot = fetchSnapshot(rs.getInt(1), rs.getLong(2), query.isFullMSA());
+                    if (snapshot != null) {
+                        snapshots.add(snapshot);
+                    }
+                }
+            } finally {
+                rs.close();
+            }
+            return snapshots;
+        } catch (SQLException ex) {
+            return Collections.emptyList();
+        }
     }
 
     public ThreadDump getThreadDump(ThreadDumpQuery query) {
@@ -481,7 +579,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
         try {
 
-            PreparedStatement statement = sqlStorage.prepareStatement(
+            PreparedStatement statement = getPreparedStatement(
                     "SELECT mstate, MAX(time_stamp) FROM CallStack WHERE thread_id = ? and time_stamp <= ? GROUP BY mstate"); // NOI18N
             statement.setLong(1, query.getThreadID());
             statement.setLong(2, query.getThreadState().getTimeStamp());
@@ -513,7 +611,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             // Next, get all times for all threads for alligned stacks (time <= ts)
             // select threadid, max(ts) from test where ts <= 6 group by threadid;
 
-            statement = sqlStorage.prepareStatement(
+            statement = getPreparedStatement(
                     "SELECT thread_id, MAX(time_stamp) FROM CallStack WHERE " + // NOI18N
                     "time_stamp <= ? GROUP BY thread_id"); // NOI18N
             statement.setLong(1, bestTimestamp);
@@ -534,14 +632,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             for (Map.Entry<Integer, Long> entry : idToTime.entrySet()){
                 int thread_id = entry.getKey();
                 long t = entry.getValue();
-                statement = sqlStorage.prepareStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
+                statement = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
                 statement.setInt(1, thread_id);
                 statement.setLong(2, t);
                 ResultSet stackAndStateResult = statement.executeQuery();
                 if (stackAndStateResult.next()) {
                     int stackID = stackAndStateResult.getInt(1);
                     int mstate = stackAndStateResult.getInt(2);
-                    result.addStack(new SnapshotImpl(this, thread_id, stackID, MSAState.fromCode(mstate, query.isFullMode())));
+                    result.addStack(new SnapshotImpl(this, t, thread_id, stackID, MSAState.fromCode(mstate, query.isFullMode())));
                 }
                 stackAndStateResult.close();
             }
@@ -553,28 +651,24 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         return result;
     }
 
-    public List<FunctionCall> getCallStack(final int stackId) {
+    public List<FunctionCall> getCallStack(final long stackId) {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         try {
-            int nodeID = stackId;
+            long nodeID = stackId;
             while (0 < nodeID) {
-                PreparedStatement ps = sqlStorage.prepareStatement(
+                PreparedStatement ps = getPreparedStatement(
                         "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name " + // NOI18N
                         "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id " + // NOI18N
                         "WHERE node_id = ?"); // NOI18N
-                ps.setInt(1, nodeID);
+                ps.setLong(1, nodeID);
 
                 ResultSet rs = ps.executeQuery();
                 try {
-                    while (rs.next()) {
+                    if (rs.next()) {
                         String funcName = rs.getString(5);
-                        if (demangler != null) {
-                            funcName = demangler.demangle(funcName);
-                        }
                         FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, funcName);
                         result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
-                        break;
                     }
                 } finally {
                     rs.close();
@@ -582,18 +676,32 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             }
         } catch (SQLException ex) {
         }
+        demangle(result);
         Collections.reverse(result);
         return result;
+    }
+
+    private void demangle(List<? extends FunctionCall> calls) {
+        if (demangler != null) {
+            List<String> mangled = new ArrayList<String>(calls.size());
+            for (FunctionCall call : calls) {
+                mangled.add(call.getFunction().getName());
+            }
+            List<String> demangled = demangler.demangle(mangled);
+            for (int i = 0; i < calls.size(); ++i) {
+                ((FunctionImpl) calls.get(i).getFunction()).setName(demangled.get(i));
+            }
+        }
     }
 
 ////////////////////////////////////////////////////////////////////////////////
     private static class NodeCacheKey {
 
-        private final int callerId;
-        private final int funcId;
-        private long offset;
+        private final long callerId;
+        private final long funcId;
+        private final long offset;
 
-        public NodeCacheKey(int callerId, int funcId, long offset) {
+        public NodeCacheKey(long callerId, long funcId, long offset) {
             this.callerId = callerId;
             this.funcId = funcId;
             this.offset = offset;
@@ -610,23 +718,25 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
         @Override
         public int hashCode() {
-            return 13 * callerId + 17 * funcId + ((int) (offset >> 32) | (int) offset);
+            return 13 * ((int) (callerId >> 32) | (int) callerId)
+                    + 17 * ((int) (funcId >> 32) | (int) funcId)
+                    + ((int) (offset >> 32) | (int) offset);
         }
     }
 
     protected static class FunctionImpl implements Function {
 
-        private final int id;
+        private final long id;
         private String name;
         private final String quilifiedName;
 
-        public FunctionImpl(int id, String name, String qualifiedName) {
+        public FunctionImpl(long id, String name, String qualifiedName) {
             this.id = id;
             this.name = name;
             this.quilifiedName = qualifiedName;
         }
 
-        public int getId() {
+        public long getId() {
             return id;
         }
 
@@ -663,7 +773,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
         @Override
         public String getDisplayedName() {
-            return getFunction().getName() + (hasOffset() ? ("+0x" + getOffset()) : ""); //NOI18N
+            return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
         }
 
         @Override
@@ -703,22 +813,22 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
     private static class AddFunction {
 
-        public int id;
+        public long id;
         public CharSequence name;
 //        public CharSequence full_name;
     }
 
     private static class AddNode {
 
-        public int id;
-        public int callerId;
-        public int funcId;
+        public long id;
+        public long callerId;
+        public long funcId;
         public long offset;
     }
 
     private static class UpdateMetrics {
 
-        public int objId;
+        public long objId;
         public boolean funcOrNode; // false => func, true => node
         public long cpuTimeInclusive;
         public long cpuTimeExclusive;
@@ -766,8 +876,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         @Override
         public void run() {
             try {
-                Map<Integer, UpdateMetrics> funcMetrics = new HashMap<Integer, UpdateMetrics>();
-                Map<Integer, UpdateMetrics> nodeMetrics = new HashMap<Integer, UpdateMetrics>();
+                Map<Long, UpdateMetrics> funcMetrics = new HashMap<Long, UpdateMetrics>();
+                Map<Long, UpdateMetrics> nodeMetrics = new HashMap<Long, UpdateMetrics>();
                 List<Object> cmds = new LinkedList<Object>();
                 while (isRunning) {
                     // Taking commands from queue and executing them should be one atomic action.
@@ -783,7 +893,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                             Object cmd = cmdIterator.next();
                             if (cmd instanceof UpdateMetrics) {
                                 UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
-                                Map<Integer, UpdateMetrics> map = updateMetricsCmd.funcOrNode ? nodeMetrics : funcMetrics;
+                                Map<Long, UpdateMetrics> map = updateMetricsCmd.funcOrNode ? nodeMetrics : funcMetrics;
                                 UpdateMetrics original = map.get(updateMetricsCmd.objId);
                                 if (original == null) {
                                     map.put(updateMetricsCmd.objId, updateMetricsCmd);
@@ -805,8 +915,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                                 if (cmd instanceof AddFunction) {
                                     AddFunction addFunctionCmd = (AddFunction) cmd;
                                     //demagle here
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)"); //NOI18N
-                                    stmt.setInt(1, addFunctionCmd.id);
+                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)"); //NOI18N
+                                    stmt.setLong(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
 //                                    if (demanglingService == null) {
                                     stmt.setString(3, addFunctionCmd.name.toString());
@@ -829,10 +939,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
                                     AddNode addNodeCmd = (AddNode) cmd;
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, time_incl, time_excl) VALUES (?, ?, ?, ?, ?, ?)"); //NOI18N
-                                    stmt.setInt(1, addNodeCmd.id);
-                                    stmt.setInt(2, addNodeCmd.callerId);
-                                    stmt.setInt(3, addNodeCmd.funcId);
+                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, time_incl, time_excl) VALUES (?, ?, ?, ?, ?, ?)"); //NOI18N
+                                    stmt.setLong(1, addNodeCmd.id);
+                                    stmt.setLong(2, addNodeCmd.callerId);
+                                    stmt.setLong(3, addNodeCmd.funcId);
                                     stmt.setLong(4, addNodeCmd.offset);
                                     UpdateMetrics metrics = nodeMetrics.remove(addNodeCmd.id);
                                     if (metrics == null) {
@@ -853,10 +963,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                         // third pass: execute updates
                         for (UpdateMetrics cmd : funcMetrics.values()) {
                             try {
-                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?"); //NOI18N
+                                PreparedStatement stmt = getPreparedStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?"); //NOI18N
                                 stmt.setLong(1, cmd.cpuTimeInclusive);
                                 stmt.setLong(2, cmd.cpuTimeExclusive);
-                                stmt.setInt(3, cmd.objId);
+                                stmt.setLong(3, cmd.objId);
                                 stmt.executeUpdate();
                             } catch (SQLException ex) {
                                 ex.printStackTrace();
@@ -866,10 +976,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
                         for (UpdateMetrics cmd : nodeMetrics.values()) {
                             try {
-                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Node SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE node_id = ?"); //NOI18N
+                                PreparedStatement stmt = getPreparedStatement("UPDATE Node SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE node_id = ?"); //NOI18N
                                 stmt.setLong(1, cmd.cpuTimeInclusive);
                                 stmt.setLong(2, cmd.cpuTimeExclusive);
-                                stmt.setInt(3, cmd.objId);
+                                stmt.setLong(3, cmd.objId);
                                 stmt.executeUpdate();
                             } catch (SQLException ex) {
                                 ex.printStackTrace();

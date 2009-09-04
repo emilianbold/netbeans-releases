@@ -45,4 +45,6 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 interface ProcessLineCallback {
 
     void processLine(String line);
+
+    void processClose();
 }

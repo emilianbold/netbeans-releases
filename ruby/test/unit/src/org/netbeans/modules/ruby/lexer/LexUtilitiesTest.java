@@ -327,4 +327,19 @@ public class LexUtilitiesTest extends RubyTestBase {
             LexUtilities.getRegexpOffset(i, th);
         }
     }
+
+    public void testGetClassNameAt() throws Exception {
+        BaseDocument doc = getDocument(getTestFile("testfiles/ar-associations/user.rb"));
+        String text = doc.getText(0, doc.getLength());
+        int lineOffset = text.indexOf("class_name => \"UserDetail\"");
+        assertTrue(lineOffset != -1);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        assertNotNull(th);
+        int caretOffset = text.indexOf("rDetail", lineOffset);
+        String stringAt = LexUtilities.getStringAt(caretOffset, th);
+        assertEquals("UserDetail", stringAt);
+        int offset = LexUtilities.getClassNameStringOffset(caretOffset, th);
+        assertEquals(lineOffset + "class_name => \"".length(), offset);
+    }
+
 }

@@ -126,7 +126,7 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
             // look for tags first
             jdocSeq.move(caretOffset);
             if (jdocSeq.moveNext()) {
-                if (isTag(jdocSeq.token())) {
+                if (isTag(jdocSeq.token()) && !isTypeParameterTag(jdocSeq) && !isUninterpretedTag(jdocSeq)) {
                     if (jdocSeq.offset() < caretOffset || !backward) {
                         return prepareOffsets(jdocSeq, true);
                     }
@@ -134,6 +134,10 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
 
                 while(moveTheSequence(jdocSeq, backward, context.getLimitOffset())) {
                     if (isTag(jdocSeq.token())) {
+                        if (isTypeParameterTag(jdocSeq) || isUninterpretedTag(jdocSeq)) {
+                            // do not treat type parameter and {@code} and {@literal} content as HTML tag
+                            break;
+                        }
                         return prepareOffsets(jdocSeq, true);
                     }
                 }
@@ -241,7 +245,59 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
     private static boolean isOpeningTag(Token<? extends TokenId> tag) {
         return !TokenUtilities.startsWith(tag.text(), "</"); //NOI18N
     }
-    
+
+    /**
+     * simple check whether selected token is type parameter {@code @param <T>}
+     * @param seq token sequence with selected token
+     * @return {@code true} when the token should not be interpreted.
+     */
+    private static boolean isTypeParameterTag(TokenSequence<? extends TokenId> seq) {
+        int index = seq.index();
+        try {
+            if (!seq.movePrevious() || seq.token().id() != JavadocTokenId.OTHER_TEXT) {
+                return false;
+            }
+
+            return seq.movePrevious() && seq.token().id() == JavadocTokenId.TAG
+                    && "@param".contentEquals(seq.token().text()); // NOI18N
+        } finally {
+            seq.moveIndex(index);
+            seq.moveNext();
+        }
+    }
+
+    /**
+     * simple check whether selected token is part of {@code {@code} or {@literal}}
+     * @param seq token sequence with selected token
+     * @return {@code true} when the token should not be interpreted.
+     */
+    private static boolean isUninterpretedTag(TokenSequence<? extends TokenId> seq) {
+        int index = seq.index();
+        try {
+            boolean lastCheck = false;
+            while (seq.movePrevious()) {
+                Token<? extends TokenId> token = seq.token();
+                if (token.id() == JavadocTokenId.OTHER_TEXT) {
+                    if (lastCheck) {
+                        return token.text().charAt(token.length() - 1) == '{';
+                    } else if (TokenUtilities.indexOf(token.text(), '}') >= 0) {
+                        return false;
+                    }
+                }
+
+                if (token.id() == JavadocTokenId.TAG) {
+                    CharSequence text = token.text();
+                    lastCheck = "@literal".contentEquals(text) || "@code".contentEquals(text); // NOI18N
+                    continue;
+                }
+            }
+            return false;
+        } finally {
+            seq.moveIndex(index);
+            seq.moveNext();
+        }
+    }
+
     private static boolean matchTags(Token<? extends TokenId> t1, Token<? extends TokenId> t2) {
         assert t1.length() >= 2 && t1.text().charAt(0) == '<' : t1 + " is not a tag."; //NOI18N
         assert t2.length() >= 2 && t2.text().charAt(0) == '<' : t2 + " is not a tag."; //NOI18N

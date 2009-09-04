@@ -42,6 +42,7 @@
 package org.openide.text;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
@@ -1046,28 +1047,31 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (redirect != null) {
             return redirect.getOpenedPanes();
         }
-
+        
         LinkedList<JEditorPane> ll = new LinkedList<JEditorPane>();
         Enumeration en = allEditors.getComponents();
-
+        
+        Pane last = getLastSelected();
         while (en.hasMoreElements()) {
             CloneableTopComponent ctc = (CloneableTopComponent) en.nextElement();
             Pane ed = (Pane) ctc.getClientProperty(PROP_PANE);
-
+            
             if ((ed == null) && ctc instanceof Pane) {
                 ed = (Pane) ctc;
             }
-
+            
             if (ed != null) {
                 // #23491: pane could be still null, not yet shown component.
                 // [PENDING] Right solution? TopComponent opened, but pane not.
                 JEditorPane p = ed.getEditorPane();
-
+                
                 if (p == null) {
                     continue;
                 }
-
-                if (getLastSelected() == ed) {
+                
+                if ((last == ed) ||
+                    ((last != null) && (last instanceof Component) && (ed instanceof Container)
+                    && ((Container) ed).isAncestorOf((Component) last))) {
                     ll.addFirst(p);
                 } else {
                     ll.add(p);
@@ -1099,17 +1103,20 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         
         Enumeration en = allEditors.getComponents();
         
+        Pane last = getLastSelected();
         while (en.hasMoreElements()) {
             CloneableTopComponent ctc = (CloneableTopComponent) en.nextElement();
             Pane ed = (Pane) ctc.getClientProperty(PROP_PANE);
-
+            
             if ((ed == null) && ctc instanceof Pane) {
                 ed = (Pane) ctc;
             }
-
+            
             if (ed != null) {
                 JEditorPane p = null;
-                if (getLastSelected() == ed) {
+                if ((last == ed) ||
+                    ((last != null) && (last instanceof Component) && (ed instanceof Container)
+                    && ((Container) ed).isAncestorOf((Component) last))) {
                     if (ed instanceof CloneableEditor) {
                         if (((CloneableEditor) ed).isEditorPaneReady()) {
                             p = ed.getEditorPane();

@@ -191,8 +191,8 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HtmlKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.HtmlKit"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.api.HtmlKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.api.HtmlKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
 
@@ -295,8 +295,8 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HtmlKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.HtmlKit"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.api.HtmlKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.api.HtmlKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 

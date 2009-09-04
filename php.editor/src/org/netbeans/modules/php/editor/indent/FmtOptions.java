@@ -67,6 +67,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -245,7 +246,7 @@ public class FmtOptions {
                 previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FmtOptions.class, "AN_Preview")); //NOI18N
                 previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FmtOptions.class, "AD_Preview")); //NOI18N
                 //previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-php5"));
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(FileUtils.PHP_MIME_TYPE));
                 previewPane.setEditable(false);
             }
             return previewPane;

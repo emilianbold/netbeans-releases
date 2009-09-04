@@ -157,7 +157,7 @@ public class WrappedTextViewTest extends TestCase {
                 float x = charWidth * 50;
                 float y = charHeight * 1 + fontDescent;
                 charPos = pane.getTextView().getUI().getRootView(null).viewToModel(x, y, new Rectangle(), new Position.Bias[]{});
-                expCharPos = Utilities.isWindows() ? 45 : 43;
+                expCharPos = 43;
             }
         }
         R r = new R();

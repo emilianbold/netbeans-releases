@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
-import org.netbeans.modules.cnd.gizmo.GizmoToolsController;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -287,12 +286,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             l.executionFinished(exitCode);
         }
 
-        // TODO: hack!!! fix me!
-        // see THAActionProvider .... we need a way to diable THA tool...
-        // Should we do this after run???
-        // Need to think-over
-
-        GizmoToolsController.getDefault().disableTool(pae.getProject(), "dlight.tool.tha"); // NOI18N
     }
 
     private static String formatTime(long millis) {

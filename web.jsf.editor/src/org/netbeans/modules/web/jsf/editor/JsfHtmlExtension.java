@@ -44,31 +44,52 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
+import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation.
@@ -249,8 +270,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         //filter the items according to the prefix
         Iterator<CompletionItem> itr = items.iterator();
         while (itr.hasNext()) {
-            HtmlCompletionItem hci = (HtmlCompletionItem) itr.next();
-            if (!hci.getItemText().startsWith(context.getPrefix())) {
+            if (!CharSequenceUtilities.startsWith(itr.next().getInsertPrefix(), context.getPrefix())) {
                 itr.remove();
             }
         }
@@ -298,7 +318,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
         FaceletsLibrary flib = libs.get(namespace);
         TldLibrary lib = flib.getAssociatedTLDLibrary();
-        
+
         if (lib != null) {
             TldLibrary.Tag tag = lib.getTags().get(tagName);
             if (tag != null) {
@@ -324,8 +344,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             //filter the items according to the prefix
             Iterator<CompletionItem> itr = items.iterator();
             while (itr.hasNext()) {
-                HtmlCompletionItem hci = (HtmlCompletionItem) itr.next();
-                if (!hci.getItemText().startsWith(context.getPrefix())) {
+                if (!CharSequenceUtilities.startsWith(itr.next().getInsertPrefix(), context.getPrefix())) {
                     itr.remove();
                 }
             }
@@ -336,6 +355,163 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
-        return Collections.EMPTY_LIST;
+        List<CompletionItem> items = new ArrayList<CompletionItem>();
+
+        if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) {
+            //xml namespace completion for facelets namespaces
+            HtmlParserResult result = context.getResult();
+            Source source = result.getSnapshot().getSource();
+            JsfSupport jsfs = JsfSupport.findFor(source);
+            if (jsfs == null) {
+                return Collections.emptyList();
+            }
+
+            Collection<String> nss = new ArrayList<String>(jsfs.getFaceletsLibraries().keySet());
+            //add also xhtml ns to the completion
+            nss.add(JsfUtils.XHTML_NS);
+            for(String namespace : nss) {
+                if(namespace.startsWith(context.getPrefix())) {
+                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
+                }
+            }
+        }
+
+        return items;
+    }
+
+    @Override
+    public DeclarationLocation findDeclaration(ParserResult result, final int caretOffset) {
+        assert result instanceof HtmlParserResult;
+
+        HtmlParserResult htmlresult = (HtmlParserResult) result;
+        Snapshot snapshot = result.getSnapshot();
+        AstNode leaf = htmlresult.findLeaf(caretOffset);
+        if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
+            String namespace = leaf.getNamespace();
+            FaceletsLibrary lib = JsfSupport.findFor(result.getSnapshot().getSource()).getFaceletsLibraries().get(namespace);
+            if (lib != null) {
+                if (lib instanceof CompositeComponentLibrary) {
+                    String tagName = leaf.getNameWithoutPrefix();
+                    CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
+                    if (component == null) {
+                        return DeclarationLocation.NONE;
+                    }
+                    FileObject file = component.getComponentModel().getSourceFile();
+
+                    //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
+                    int astOffset = snapshot.getEmbeddedOffset(caretOffset);
+
+                    int jumpOffset = 0;
+                    TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
+                    htmlTs.move(astOffset);
+                    if (htmlTs.moveNext() || htmlTs.movePrevious()) {
+                        if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
+                            //jumpOffset = 0;
+                        } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
+                            final String attributeName = htmlTs.token().text().toString();
+                            //find the attribute in the interface
+
+                            Source source = Source.create(file);
+                            final int[] attrOffset = new int[1];
+                            try {
+                                ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                                    @Override
+                                    public void run(ResultIterator resultIterator) throws Exception {
+                                        Result result = resultIterator.getParserResult(caretOffset);
+                                        if (result instanceof HtmlParserResult) {
+                                            HtmlParserResult hresult = (HtmlParserResult) result;
+                                            AstNode root = hresult.root(JsfUtils.COMPOSITE_LIBRARY_NS);
+                                            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+
+                                                public void visit(AstNode node) {
+                                                    if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
+                                                        for (AstNode child : node.children()) {
+                                                            if (child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
+                                                                String nameAttrvalue = child.getUnqotedAttributeValue("name");
+                                                                if (nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
+                                                                    //we found it
+                                                                    attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            } catch (ParseException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            jumpOffset = attrOffset[0];
+
+                        }
+                    }
+
+
+                    if (file != null) {
+                        return new DeclarationLocation(file, jumpOffset);
+                    }
+
+                } else {
+                    //TODO - normal components hyperlinking - mostly nav. to java classes
+                    }
+            }
+
+        }
+
+
+        return DeclarationLocation.NONE;
+
+    }
+
+    @Override
+    public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        List<TokenSequence> seqs = th.embeddedTokenSequences(caretOffset, false);
+        TokenSequence ts = null;
+        for (TokenSequence _ts : seqs) {
+            if (_ts.language() == HTMLTokenId.language()) {
+                ts = _ts;
+                break;
+            }
+        }
+
+        if (ts == null) {
+            return OffsetRange.NONE;
+        }
+
+        ts.move(caretOffset);
+        if (ts.moveNext() || ts.movePrevious()) {
+            Token t = ts.token();
+            if (t.id() == HTMLTokenId.TAG_OPEN) {
+                if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
+                    return new OffsetRange(ts.offset(), ts.offset() + t.length());
+                }
+            } else if (t.id() == HTMLTokenId.ARGUMENT) {
+                int from = ts.offset();
+                int to = from + t.text().length();
+                //try to find the tag and check if there is a prefix
+                while (ts.movePrevious()) {
+                    if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                        if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
+                            return new OffsetRange(from, to);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return OffsetRange.NONE;
+
+    }
+
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        //just delegate to the hints registry and add all gathered results
+        hints.addAll(HintsRegistry.getDefault().gatherHints(context));
     }
 }
