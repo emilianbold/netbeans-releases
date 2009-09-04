@@ -116,7 +116,8 @@ void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) 
             for (int i = j - 1; i < n; i = i + e) {
                 o = i + f;
                 p = x[i] + x[o];
-                q = y[i] + y[o];                r = x[i] - x[o];
+                q = y[i] + y[o];
+                r = x[i] - x[o];
                 t = y[i] - y[o];
                 x[o] = r * u - t*v;
                 y[o] = t * u + r*v;
