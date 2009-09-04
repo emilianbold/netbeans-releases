@@ -65,10 +65,10 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     private static final boolean TRACE = false;
-    private WeakHashMap<String, Map<String, FunctionToLine>> cache;
+    private WeakHashMap<String, Map<String, AbstractFunctionToLine>> cache;
 
     public DwarfSourceInfoProvider() {
-        cache = new WeakHashMap<String, Map<String, FunctionToLine>>();
+        cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
 
     public SourceFileInfo fileName(String functionSignature, int lineNumber, long offset, Map<String, String> serviceInfo) {
@@ -82,11 +82,15 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             if (0 <= parenIdx) {
                 functionName = functionSignature.substring(0, parenIdx);
             }
-            Map<String, FunctionToLine> sourceInfoMap = getSourceInfo(executable);
+            int space = functionSignature.indexOf(' ');
+            Map<String, AbstractFunctionToLine> sourceInfoMap = getSourceInfo(executable);
             if (TRACE) {
                 System.err.println("Search for:"+functionName+"+"+offset); // NOI18N
             }
-            FunctionToLine fl = sourceInfoMap.get(functionName);
+            AbstractFunctionToLine fl = sourceInfoMap.get(functionName);
+            if (fl == null && space > 0) {
+                fl = sourceInfoMap.get(functionName.substring(space+1));
+            }
             if (fl != null) {
                 if (TRACE) {
                     System.err.println("Found:"+fl); // NOI18N
@@ -104,28 +108,17 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return null;
     }
 
-    private synchronized Map<String, FunctionToLine> getSourceInfo(String executable) {
-        Map<String, FunctionToLine> sourceInfoMap = cache.get(executable);
+    private synchronized Map<String, AbstractFunctionToLine> getSourceInfo(String executable) {
+        Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executable);
         if (sourceInfoMap == null) {
-            sourceInfoMap = new HashMap<String, FunctionToLine>();
+            sourceInfoMap = new HashMap<String, AbstractFunctionToLine>();
             try {
                 Dwarf dwarf = new Dwarf(executable);
                 try {
                     for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {
                         TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);
                         String filePath = compilationUnit.getSourceFileAbsolutePath();
-                        for (DwarfEntry entry : compilationUnit.getDeclarations(false)) {
-                            if (entry.getKind().equals(TAG.DW_TAG_subprogram)) {
-                                if (entry.getLowAddress() == 0 || entry.getDeclarationFilePath() == null) {
-                                    continue;
-                                }
-                                FunctionToLine functionToLine = new FunctionToLine(filePath, entry, lineNumbers);
-                                sourceInfoMap.put(entry.getQualifiedName(),functionToLine);
-                                if (TRACE) {
-                                    //System.err.println(functionToLine);
-                                }
-                            }
-                        }
+                        processEntries(compilationUnit.getDeclarations(false), filePath, lineNumbers, sourceInfoMap);
                     }
                 } finally {
                     dwarf.dispose();
@@ -136,9 +129,37 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 DLightLogger.instance.log(Level.INFO, ex.getMessage(), ex);
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
-                Collections.<String, FunctionToLine>emptyMap() : sourceInfoMap);
+                Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
         }
         return sourceInfoMap;
+    }
+
+    private void processEntries(List<DwarfEntry> declarations, String filePath, TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap) throws IOException {
+        for (DwarfEntry entry : declarations) {
+            prosessEntry(entry, filePath, lineNumbers, sourceInfoMap);
+        }
+    }
+
+    private void prosessEntry(DwarfEntry entry, String filePath, TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap) throws IOException {
+        if (entry.getKind().equals(TAG.DW_TAG_subprogram)) {
+            if (entry.getLowAddress() == 0 || entry.getDeclarationFilePath() == null) {
+                if (entry.getLine() > 0) {
+                    DeclarationToLine functionToLine = new DeclarationToLine(entry);
+                    sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
+                    if (TRACE) {
+                        System.err.println(functionToLine);
+                    }
+                }
+                return;
+            }
+            FunctionToLine functionToLine = new FunctionToLine(filePath, entry, lineNumbers);
+            sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
+            if (TRACE) {
+                System.err.println(functionToLine);
+            }
+        } else if (entry.getKind().equals(TAG.DW_TAG_class_type)){
+            processEntries(entry.getChildren(), filePath, lineNumbers, sourceInfoMap);
+        }
     }
 
     private static String toAbsolutePath(Map<String, String> serviceInfo, String path) {
@@ -154,7 +175,37 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return new TreeSet<LineNumber>(numbers);
     }
 
-    private static final class FunctionToLine {
+    private static interface AbstractFunctionToLine {
+        SourceFileInfo getLine(int offset, Map<String, String> serviceInfo);
+    }
+
+    private static final class DeclarationToLine implements AbstractFunctionToLine {
+        private final String functionName;
+        private final int baseLine;
+        private final String filePath;
+
+        public DeclarationToLine(DwarfEntry entry) throws IOException {
+            assert entry.getKind() == TAG.DW_TAG_subprogram;
+            functionName = entry.getQualifiedName();
+            baseLine = entry.getLine();
+            this.filePath = entry.getDeclarationFilePath();
+        }
+
+        public SourceFileInfo getLine(int offset, Map<String, String> serviceInfo){
+            //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), baseLine, 0);
+            return new SourceFileInfo(filePath, baseLine, 0);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder("File: "+filePath); // NOI18N
+            buf.append("\n\tFunction:   "+functionName); // NOI18N
+            buf.append("\n\tBase Line:  "+baseLine); // NOI18N
+            return buf.toString();
+        }
+    }
+
+    private static final class FunctionToLine implements AbstractFunctionToLine {
         private final String functionName;
         private final int[] lineStorage;
         private final int[] offsetStorage;
@@ -218,4 +269,5 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             return buf.toString();
         }
     }
+
 }
