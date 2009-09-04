@@ -276,14 +276,14 @@ class GraphPainter {
 
     private void dimInactiveRegions(Graphics g, int viewportStart, int viewportEnd, int filterStart, int filterEnd, int x, int y, int w, int h) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(new Color(0xee, 0xee, 0xee, 0xa0));
+        g2.setColor(GraphConfig.DIM_COLOR);
         if (viewportStart <= filterStart ) {
             int xx = DLightMath.map(filterStart, viewportStart, viewportEnd, 0, w);
-            g2.fillRect(0, 0, xx, h);
+            g2.fillRect(x, y, xx, h);
         }
         if (filterEnd <= viewportEnd) {
             int xx = DLightMath.map(filterEnd, viewportStart, viewportEnd, 0, w);
-            g2.fillRect(xx, 0, w - xx, h);
+            g2.fillRect(x + xx, y, w - xx, h);
         }
     }
 

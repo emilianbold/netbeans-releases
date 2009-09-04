@@ -38,48 +38,39 @@
  */
 package org.netbeans.modules.dlight.util;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 /**
- * Range of numeric values.
- *
- * @param <T> number class
- *
  * @author Alexey Vladykin
  */
-public final class Range<T extends Number & Comparable<? super T>> {
+public class DLightMathTest {
 
-    public static final String STRING_DELIMITER = ".."; // NOI18N
-
-    private final T start;
-    private final T end;
-
-    public Range(T start, T end) {
-        if (start != null && end != null && 0 < start.compareTo(end)) {
-            throw new IllegalArgumentException(start + " > " + end); // NOI18N
-        }
-        this.start = start;
-        this.end = end;
+    @Test
+    public void testMaxInteger() {
+        Integer a = new Integer(1);
+        Integer b = new Integer(2);
+        assertSame(b, DLightMath.max(a, b));
     }
 
-    public T getStart() {
-        return start;
+    @Test
+    public void testMaxString() {
+        String a = "a";
+        String b = "b";
+        assertSame(b, DLightMath.max(a, b));
     }
 
-    public T getEnd() {
-        return end;
+    @Test
+    public void testMinInteger() {
+        Integer a = new Integer(1);
+        Integer b = new Integer(2);
+        assertSame(a, DLightMath.min(a, b));
     }
 
-    /**
-     * Extend current range to cover given range.
-     *
-     * @param range  range to cover
-     * @return extended range
-     */
-    public Range<T> extend(Range<T> range) {
-        return new Range<T>(DLightMath.min(start, range.getStart()), DLightMath.max(end, range.getEnd()));
-    }
-
-    @Override
-    public String toString() {
-        return String.valueOf(start) + STRING_DELIMITER + String.valueOf(end); // NOI18N
+    @Test
+    public void testMinString() {
+        String a = "a";
+        String b = "b";
+        assertSame(a, DLightMath.min(a, b));
     }
 }

@@ -73,6 +73,7 @@ public final class GraphConfig {
     public static final Color GRID_COLOR = new Color(0xD7, 0xE0, 0xE3);
     public static final Color LEGEND_COLOR = Color.WHITE;
     public static final Color TEXT_COLOR = new Color(0x31, 0x4E, 0x72);
+    public static final Color DIM_COLOR = new Color(0xEE, 0xEE, 0xEE, 0xA0);
 
     private GraphConfig() {}
 }
