@@ -433,8 +433,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private String USER;
     
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
-    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER; // NOI18N
+    private static final String CHAT_ROOM = "@muc." + Kenai.getDefault().getName(); // NOI18N
 
     /**
      * TODO: should return kenai account name

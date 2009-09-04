@@ -162,6 +162,7 @@ public final class KenaiProject {
     /**
      * Description of this project
      * @return project description
+     * @throws KenaiException 
      */
     public synchronized String getDescription() throws KenaiException {
         fetchDetailsIfNotAvailable();
@@ -171,6 +172,7 @@ public final class KenaiProject {
     /**
      * Url of the image of this project
      * @return project picture
+     * @throws KenaiException
      */
     public synchronized String getImageUrl() throws KenaiException {
         fetchDetailsIfNotAvailable();
@@ -214,6 +216,7 @@ public final class KenaiProject {
     /**
      * get my role. User must be logged in.
      * @return Role or null if logged user does not have any role in this projects
+     * @throws KenaiException
      */
     public KenaiUser.Role getMyRole() throws KenaiException {
         PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
@@ -257,6 +260,11 @@ public final class KenaiProject {
         return data.tags;
     }
 
+    /**
+     * true if this project is private
+     * @return
+     * @throws KenaiException
+     */
     public synchronized boolean isPrivate() throws KenaiException {
         fetchDetailsIfNotAvailable();
         return data.private_hidden;
@@ -284,6 +292,7 @@ public final class KenaiProject {
 
     /**
      * @return features of given project
+     * @throws KenaiException
      * @see KenaiFeature
      */
     public synchronized KenaiFeature[] getFeatures() throws KenaiException {
@@ -298,6 +307,12 @@ public final class KenaiProject {
         return features;
     }
 
+    /**
+     * returns members of this project
+     * @see KenaiUser
+     * @return
+     * @throws KenaiException
+     */
     public synchronized KenaiUser[] getMembers() throws KenaiException {
         if (members==null) {
             Collection<KenaiUser> projectMembers = Kenai.getDefault().getProjectMembers(getName());
@@ -324,6 +339,7 @@ public final class KenaiProject {
 
     /**
      * @return licenses of given project
+     * @throws KenaiException 
      * @see KenaiLicense
      */
     public synchronized KenaiLicense[] getLicenses() throws KenaiException {
