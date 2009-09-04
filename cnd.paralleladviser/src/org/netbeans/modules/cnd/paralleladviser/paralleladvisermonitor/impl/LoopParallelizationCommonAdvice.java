@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.windows.OutputWriter;
 
 /**
  * Loop parallelization advice.
@@ -78,5 +79,8 @@ public class LoopParallelizationCommonAdvice implements Advice {
                 "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>."; // NOI18N
         return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Parallel computing", // NOI18N
                 html, 800); // NOI18N
+    }
+
+    public void addNotification(OutputWriter writer) {
     }
 }
