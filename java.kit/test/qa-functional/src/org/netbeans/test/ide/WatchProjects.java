@@ -184,7 +184,11 @@ public final class WatchProjects {
         OpenProjects.getDefault().setMainProject(p);
 
         cleanWellKnownStaticFields();
-        removeTreeView(Frame.getFrames());
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            // remove the if we don't care about random failures
+            // reported as #
+            removeTreeView(Frame.getFrames());
+        }
 
         System.setProperty("assertgc.paths", "5");
         Log.assertInstances("Checking if all projects are really garbage collected", "Project");
