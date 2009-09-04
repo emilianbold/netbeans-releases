@@ -36,44 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.procfs.impl;
 
-package org.netbeans.modules.dlight.visualizers.api.impl;
+import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+@ServiceProviders({
+    @ServiceProvider(service = DataCollectorFactory.class),
+    @ServiceProvider(service = IndicatorDataProviderFactory.class)
+})
+public class ProcFSDataCollectorFactory implements DataCollectorFactory<ProcFSDCConfiguration>,
+        IndicatorDataProviderFactory<ProcFSDCConfiguration> {
 
-/**
- *
- * @author Alexander Simon
- */
-public abstract class ThreadMapVisualizerConfigurationAccessor {
-    private static volatile ThreadMapVisualizerConfigurationAccessor DEFAULT;
-
-    public static ThreadMapVisualizerConfigurationAccessor getDefault() {
-        ThreadMapVisualizerConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-        try {
-            Class.forName(ThreadMapVisualizerConfigurationAccessor.class.getName(), true,
-                ThreadMapVisualizerConfigurationAccessor.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    public ProcFSDataCollector create(ProcFSDCConfiguration configuration) {
+        return new ProcFSDataCollector(configuration);
     }
 
-    public static void setDefault(ThreadMapVisualizerConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
+    public String getID() {
+        return ProcFSDCConfiguration.ID;
     }
 
-    public ThreadMapVisualizerConfigurationAccessor() {
+    public void reset() {
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
-
-    public abstract List<Column> getTableColumns(ThreadMapVisualizerConfiguration configuration);
-
-//    public abstract ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration);
 }

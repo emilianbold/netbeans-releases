@@ -69,6 +69,7 @@ import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
@@ -119,7 +120,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         CLOSED
     }
 
-    public final long getStartTime(){
+    public final long getStartTime() {
         return startTimestamp;
     }
 
@@ -396,11 +397,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     }
 
 
-    public final void addIndicatorNotificationListener(IndicatorNotificationsListener l){
-        if (l == null){
+    public final void addIndicatorNotificationListener(IndicatorNotificationsListener l) {
+        if (l == null) {
             return;
         }
-        if (!indicatorNotificationListeners.contains(l)){
+        if (!indicatorNotificationListeners.contains(l)) {
             indicatorNotificationListeners.add(l);
         }
     }
@@ -411,8 +412,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
      * @param l
      * @return
      */
-    public final boolean removeIndicatorNotificationListener(IndicatorNotificationsListener l){
-        if (l == null){
+    public final boolean removeIndicatorNotificationListener(IndicatorNotificationsListener l) {
+        if (l == null) {
             return false;
         }
         //it is still not enouph, if user just want to stop getting notification
@@ -490,7 +491,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                             idproviders.add(idp);
                         }
                         //now subscribe listeners
-                        for (IndicatorNotificationsListener l : indicatorNotificationListeners){
+                        for (IndicatorNotificationsListener l : indicatorNotificationListeners) {
                             IndicatorDataProviderAccessor.getDefault().addIndicatorDataProviderListener(idp, l);
                         }
                         idpsNames.append(idp.getName() + ServiceInfoDataStorage.DELIMITER);
@@ -631,22 +632,71 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
      * @param metadata
      * @return
      */
-    public DataProvider createDataProvider(DataModelScheme dataModelScheme, DataTableMetadata metadata) {
-        for (DataStorage storage : getStorages()) {
-            if (metadata != null && !storage.hasData(metadata)) {
-                continue;
-            }
-            for (DataStorageType dss : storage.getStorageTypes()) {
-                DataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dss, dataModelScheme);
-                if (dataProvider != null) {
-                    dataProvider.attachTo(serviceInfoDataStorage);
-                    dataProvider.attachTo(storage);
-                    addDataFilterListener(dataProvider);
-                    return dataProvider;
+    public DataProvider createDataProvider(DataModelScheme dataModelScheme, DataTableMetadata dataMetadata) {
+
+        // Get a list of all provider factories that can create providers
+        // for required dataModelScheme.
+        Collection<DataProviderFactory> providerFactories = DataProvidersManager.getInstance().getDataProviderFactories(dataModelScheme);
+
+        // If not found - just return null
+        if (providerFactories.size() == 0) {
+            return null;
+        }
+
+        // Now, when we found all providerFactories that can create provider
+        // to serve requested dataModel, search for
+        // suitable storage to attach provider to...
+        //
+        // Will return the first one on success.
+        //
+        // TODO: should priorities be setuped in case when several providerFactories/storages pairs found?
+        //
+
+        final List<DataStorage> availableStorages = getStorages();
+
+        for (DataProviderFactory providerFactory : providerFactories) {
+            for (DataStorage storage : availableStorages) {
+                // Check that in case this dataProvider requires some Tables to be
+                // provided by storage, the storage has this data
+
+                if (!providerFactory.validate(storage)) {
+                    continue;
                 }
+
+                // Now check that this storage has required table ...
+
+                if (dataMetadata != null && !storage.hasData(dataMetadata)) {
+                    continue;
+                }
+
+                // Now when we know that this providerFactory creates provider
+                // that can be attached to this storage, do attachment and return it
+
+                DataProvider provider = DataProvidersManager.getInstance().createProvider(providerFactory);
+                provider.attachTo(storage);
+                provider.attachTo(serviceInfoDataStorage);
+                addDataFilterListener(provider);
+                return provider;
             }
         }
+
         return null;
+//
+//        for (DataStorage storage : getStorages()) {
+//            if (visDataMetadata != null && !storage.hasData(visDataMetadata)) {
+//                continue;
+//            }
+//
+//            for (DataStorageType dss : storage.getStorageTypes()) {
+//                DataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dss, visDataModelScheme);
+//                if (dataProvider != null) {
+//                    dataProvider.attachTo(serviceInfoDataStorage);
+//                    dataProvider.attachTo(storage);
+//                    addDataFilterListener(dataProvider);
+//                    return dataProvider;
+//                }
+//            }
+//        }
     }
 
     /**

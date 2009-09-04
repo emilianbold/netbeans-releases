@@ -315,6 +315,10 @@ public class ThreadsDataManager {
             public int getSamplingStateIndex(boolean full) {
                 return 0;
             }
+
+            public long getMSASamplePeriod() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
         });
     }
 

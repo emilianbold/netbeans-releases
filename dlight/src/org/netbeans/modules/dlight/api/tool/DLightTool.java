@@ -274,7 +274,9 @@ public final class DLightTool implements Validateable<DLightTarget> {
     void registerCollector(DataCollector collector) {
         if (collector == null) {
             log.info("Cannot register collector"); //NOI18N
+            return;
         }
+
         if (!dataCollectors.contains(collector)) {
             dataCollectors.add(collector);
         }
@@ -342,7 +344,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
 
     private final void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
-        if (oldStatus.equals(newStatus)) {
+        if (oldStatus != null && oldStatus.equals(newStatus)) {
             return;
         }
         for (ValidationListener validationListener : validationListeners) {

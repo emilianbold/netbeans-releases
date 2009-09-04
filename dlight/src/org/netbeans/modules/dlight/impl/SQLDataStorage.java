@@ -70,10 +70,15 @@ import org.openide.util.Exceptions;
 public abstract class SQLDataStorage implements DataStorage {
 
     public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
+    private final static DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE);
 
     private interface Request {
 
         void execute() throws SQLException;
+    }
+
+    public final static DataStorageType getStorageType() {
+        return storageType;
     }
 
     private static abstract class BaseRequest implements Request {
@@ -295,7 +300,7 @@ public abstract class SQLDataStorage implements DataStorage {
                 synchronized (insertPreparedStatments) {
                     insertPreparedStatments.put(tableName, connection.prepareStatement(query.toString()));
                 }
-            //insert(tableName, row);
+                //insert(tableName, row);
             } catch (SQLException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -421,7 +426,7 @@ public abstract class SQLDataStorage implements DataStorage {
             logger.fine("SQL: prepare statement " + sql); //NOI18N
         }
         PreparedStatement stmt;
-        if (sql.startsWith("INSERT INTO ")) { //NOI18N
+        if (sql.toUpperCase().startsWith("INSERT INTO ")) { //NOI18N
             stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         } else {
             stmt = connection.prepareStatement(sql);

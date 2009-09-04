@@ -41,12 +41,13 @@ package org.netbeans.modules.dlight.management.api.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -125,15 +126,22 @@ public final class DataProvidersManager {
         return null;
     }
 
-    public DataProvider getDataProviderFor(DataStorageType dst, DataModelScheme dataModel) {
+    public Collection<DataProviderFactory> getDataProviderFactories(final DataModelScheme visDataModelScheme) {
         Collection<? extends DataProviderFactory> factories = Lookup.getDefault().lookupAll(DataProviderFactory.class);
-        for (DataProviderFactory providerFactory : factories) {
-            if (providerFactory.provides(dataModel) && providerFactory.getSupportedDataStorageTypes().contains(dst)) {
-                DataProvider newProvider = providerFactory.create();
-                activeVisualizerDataProviders.add(newProvider);
-                return newProvider;
+        List<DataProviderFactory> result = new ArrayList<DataProviderFactory>();
+
+        for (DataProviderFactory factory : factories) {
+            if (factory.getProvidedDataModelScheme().contains(visDataModelScheme)) {
+                result.add(factory);
             }
         }
-        return null;
+
+        return Collections.unmodifiableCollection(result);
+    }
+
+    public DataProvider createProvider(DataProviderFactory providerFactory) {
+        DataProvider newProvider = providerFactory.create();
+        activeVisualizerDataProviders.add(newProvider);
+        return newProvider;
     }
 }

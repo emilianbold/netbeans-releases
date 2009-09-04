@@ -83,7 +83,6 @@ import org.netbeans.modules.dlight.perfan.spi.datafilter.THAStartupFilter;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -104,7 +103,6 @@ public class SunStudioDataCollector
         extends IndicatorDataProvider<SunStudioDCConfiguration>
         implements DataCollector<SunStudioDCConfiguration>, SunStudioFiltersProvider {
 
-    private static final String ID = "PerfanDataStorage"; // NOI18N
     private static final String COLLECTOR_NAME = "SunStudio"; // NOI18N
     private static final DataStorageType supportedStorageType;
     private static final AtomicInteger uid = new AtomicInteger(0);
@@ -138,7 +136,7 @@ public class SunStudioDataCollector
     static {
         SunStudioDCConfigurationAccessor dcAccess = SunStudioDCConfigurationAccessor.getDefault();
 
-        supportedStorageType = DataStorageTypeFactory.getInstance().getDataStorageType(ID);
+        supportedStorageType = PerfanDataStorage.storageType;
 
         cpuInfoTable = new DataTableMetadata(
                 dcAccess.getCPUTableName(),
