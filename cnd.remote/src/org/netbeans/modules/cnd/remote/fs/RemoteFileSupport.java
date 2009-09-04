@@ -39,87 +39,55 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
+import java.io.BufferedReader;
 import java.io.File;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 /**
- * Remote file system:
- * gets files on demand from a remote host.
- * It is read-only
- * 
+ * Reponsible for copying files from remote host
  * @author Vladimir Kvashin
  */
-public class RemoteFileSystem extends FileSystem {
-
-    private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[] {};
+public class RemoteFileSupport {
 
     private final ExecutionEnvironment execEnv;
-    private final String filePrefix;
-    private final RemoteFileObjectBase root;
-    private final RemoteFileSupport remoteFileSupport;
-    private final File cache;
 
-    public RemoteFileSystem(ExecutionEnvironment execEnv) {
-        assert execEnv.isRemote();
+    public RemoteFileSupport(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
-        this.remoteFileSupport = new RemoteFileSupport(execEnv);
-        // FIXUP: it's better than asking a compiler instance... but still a fixup.
-        // Should be moved to a proper place
-        this.filePrefix = BasicCompiler.getIncludeFilePrefix(execEnv);
-        cache = new File(filePrefix);
-        cache.mkdirs(); // TODO: error processing
-        this.root = new RootFileObject(this, execEnv, cache); // NOI18N
     }
 
-
-    /*package-local, for testing*/
-    File getCache() {
-        return cache;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(), "RFS_DISPLAY_NAME", execEnv.getDisplayName());
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return true;
-    }
-    
-    @Override
-    public FileObject getRoot() {
-        return root;
-    }
-
-    @Override
-    public FileObject findResource(String name) {
-        return getRoot().getFileObject(name);
-    }
-
-    @Override
-    public SystemAction[] getActions() {
-        return NO_SYSTEM_ACTIONS;
-    }
-
-    public RemoteFileSupport getRemoteFileSupport() {
-        return remoteFileSupport;
-    }
-
-    private static class RootFileObject extends RemoteDirectory {
-
-        public RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
-            super(fileSystem, execEnv, "", cache);
+    public void syncDirStruct(File dir, String remotePath) throws IOException {
+        if (dir.exists()) {
+            assert dir.isDirectory();
+        } else {
+            if( !dir.mkdirs()) {
+                throw new IOException("Can not create directory " + dir.getAbsolutePath()); //NOI18N
+            }
         }
-
-        @Override
-        public boolean isRoot() {
-            return false;
+        NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
+        // TODO: error processing
+        processBuilder.setWorkingDirectory(remotePath);
+        processBuilder.setCommandLine("ls -1F");
+        processBuilder.redirectError();
+        NativeProcess process = processBuilder.call();
+        final InputStream is = process.getInputStream();
+        final BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
+        String fileName;
+        while ((fileName = rdr.readLine()) != null) {
+            boolean directory = fileName.endsWith("/");
+            File file = new File(dir, fileName);
+            boolean result = directory ? file.mkdirs() : file.createNewFile();
+            // TODO: error processing
+            RemoteUtil.LOGGER.finest("\t" + fileName);
+            file.createNewFile(); // TODO: error processing
         }
+        rdr.close();
+        is.close();
     }
 }
