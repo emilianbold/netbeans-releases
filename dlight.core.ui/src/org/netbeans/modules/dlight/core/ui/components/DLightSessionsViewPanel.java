@@ -86,16 +86,20 @@ public class DLightSessionsViewPanel extends JPanel
     private DLightSession currentSession = null;
     private Models.CompoundModel model;
     private Vector<ModelListener> listeners = new Vector<ModelListener>();
-    private static Comparator<DLightTool> toolsComparator = null;
+    private final static Comparator<DLightTool> toolsComparator;
     private boolean isEmpty = true;
     private JComponent treeTableView = null;
 
-    public DLightSessionsViewPanel() {
+    static {
         toolsComparator = new Comparator<DLightTool>() {
+
             public int compare(DLightTool o1, DLightTool o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         };
+    }
+
+    public DLightSessionsViewPanel() {
     }
 
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
@@ -164,7 +168,7 @@ public class DLightSessionsViewPanel extends JPanel
                     add(treeTableView, BorderLayout.CENTER);
                     isEmpty = false;
                 }
-                
+
                 revalidate();
                 repaint();
             }
@@ -190,6 +194,7 @@ public class DLightSessionsViewPanel extends JPanel
     }
 
     class TreeModelImpl implements TreeModel {
+
         public Object getRoot() {
             return ROOT;
         }
@@ -443,12 +448,11 @@ public class DLightSessionsViewPanel extends JPanel
             ValidationStatus status = null;
 
             if (node instanceof Validateable) {
-                status = ((Validateable)node).getValidationStatus();
+                status = ((Validateable) node).getValidationStatus();
             }
 
             if (node instanceof DLightTool) {
-                return status == null ? new Action[0] : 
-                    status.getRequiredActions().toArray(new Action[0]);
+                return status == null ? new Action[0] : status.getRequiredActions().toArray(new Action[0]);
             }
 
             return new Action[]{};
