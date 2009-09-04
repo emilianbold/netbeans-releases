@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.Presenter;
 import org.openide.util.NbBundle;
 
@@ -61,7 +63,7 @@ import java.awt.event.ActionEvent;
 public class NumericDisplayFilter implements TableModelFilter, 
 NodeActionsProviderFilter, Constants {
 
-    private final Map   variableToDisplaySettings = new HashMap ();
+    private final Map<Variable, NumericDisplaySettings>   variableToDisplaySettings = new HashMap<Variable, NumericDisplaySettings>();
     private HashSet     listeners;
 
     
@@ -80,10 +82,23 @@ NodeActionsProviderFilter, Constants {
             isIntegralType ((Variable) node)
         ) {
             Variable var = (Variable) node;
-            return getValue (
-                var, 
-                (NumericDisplaySettings) variableToDisplaySettings.get (var)
-            );
+            NumericDisplaySettings nds = variableToDisplaySettings.get (var);
+            if (nds == null && var instanceof Field) {
+                Variable parent = null;
+                try {
+                    java.lang.reflect.Method pvm = var.getClass().getMethod("getParentVariable");
+                    pvm.setAccessible(true);
+                    parent = (Variable) pvm.invoke(var);
+                } catch (IllegalAccessException ex) {
+                } catch (IllegalArgumentException ex) {
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (NoSuchMethodException ex) {
+                } catch (SecurityException ex) {
+                }
+                nds = variableToDisplaySettings.get(parent);
+            }
+            return getValue(var, nds);
         }
         return original.getValueAt (node, columnID);
     }
@@ -158,7 +173,7 @@ NodeActionsProviderFilter, Constants {
         List myActions = new ArrayList();
         if (node instanceof Variable) {
             Variable var = (Variable) node;
-            if (isIntegralType(var)) {
+            if (isIntegralTypeOrArray(var)) {
                 myActions.add(new DisplayAsAction((Variable) node));
             }
         }
@@ -303,6 +318,27 @@ NodeActionsProviderFilter, Constants {
             "short".equals (type);
     }
 
+    private boolean isIntegralTypeOrArray(Variable v) {
+        if (!VariablesTreeModelFilter.isEvaluated(v)) {
+            return false;
+        }
+
+        String type = removeArray(v.getType());
+        return "int".equals (type) ||
+            "char".equals (type) ||
+            "byte".equals (type) ||
+            "long".equals (type) ||
+            "short".equals (type);
+    }
+
+    private static String removeArray(String type) {
+        if (type.length() > 0 && type.endsWith("[]")) { // NOI18N
+            return type.substring(0, type.length() - 2);
+        } else {
+            return type;
+        }
+    }
+
     private String localize(String s) {
         return NbBundle.getBundle(NumericDisplayFilter.class).getString(s);
     }
@@ -315,7 +351,7 @@ NodeActionsProviderFilter, Constants {
 
         public DisplayAsAction(Variable variable) {
             this.variable = variable;
-            this.type = variable.getType();
+            this.type = removeArray(variable.getType());
         }
 
         public void actionPerformed(ActionEvent e) {
