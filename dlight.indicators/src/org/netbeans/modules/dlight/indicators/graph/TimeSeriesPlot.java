@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.FontMetrics;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.indicators.ValueFormatter;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.Graphics;
@@ -47,17 +48,21 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
+import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.util.Util;
 
 /**
  * Displays a graph
  * @author Vladimir Kvashin
  * @author Alexey Vladykin
  */
-public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener {
+public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
 
     private static final long EXTENT = 20000; // 20 seconds
 
@@ -68,6 +73,8 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     private Axis vAxis;
     private AxisMarksProvider timeMarksProvider;
     private AxisMarksProvider valueMarksProvider;
+    private final Object timeFilterLock = new Object();
+    private volatile TimeIntervalDataFilter timeFilter;
 
     public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series) {
         upperLimit = scale;
@@ -130,7 +137,17 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         int viewportEnd = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd());
         List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), fm);
         List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - fm.getAscent() / 2, fm);
-        graph.paint(g, upperLimit, valueMarks, viewportStart, viewportEnd, timeMarks, 0, 0, getWidth(), getHeight(), isEnabled());
+        int filterStart, filterEnd;
+        TimeIntervalDataFilter tmpTimeFilter = timeFilter;
+        if (tmpTimeFilter != null) {
+            Range<Long> filterInterval = tmpTimeFilter.getInterval();
+            filterStart = (int)TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
+            filterEnd = (int)TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
+        } else {
+            filterStart = Integer.MIN_VALUE;
+            filterEnd = Integer.MAX_VALUE;
+        }
+        graph.paint(g, upperLimit, valueMarks, viewportStart, viewportEnd, timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
     public void addData(float... newData) {
@@ -155,6 +172,26 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == viewportModel) {
             repaintAll();
+        }
+    }
+
+    public void setSession(DLightSession session) {
+        if (session != null) {
+            session.addDataFilterListener(this);
+        } else {
+            synchronized (timeFilterLock) {
+                timeFilter = null;
+            }
+        }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+        TimeIntervalDataFilter newTimeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, newSet);
+        synchronized (timeFilterLock) {
+            if (newTimeFilter != timeFilter) {
+                timeFilter = newTimeFilter;
+                repaintAll();
+            }
         }
     }
 

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.dlight.core.stack.storage.impl;
 
-import com.sun.org.apache.bcel.internal.generic.Select;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,6 +83,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.Util;
 import org.openide.util.Lookup;
 
 /**
@@ -463,15 +463,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return buf.toString();
     }
 
-    private static <T> T findInstanceOf(Collection<? super T> objects, Class<T> clazz) {
-        for (Object obj : objects) {
-            if (clazz.isAssignableFrom(obj.getClass())) {
-                return clazz.cast(obj);
-            }
-        }
-        return null;
-    }
-
     private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
         PreparedStatement s = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
         try {
@@ -495,7 +486,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     public List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
         List<String> conditions = new ArrayList<String>(3);
 
-        ThreadFilter threadFilter = findInstanceOf(query.getFilters(), ThreadFilter.class);
+        ThreadFilter threadFilter = Util.firstInstanceOf(ThreadFilter.class, query.getFilters());
         if (threadFilter != null) {
             StringBuilder where = new StringBuilder("thread_id IN ("); // NOI18N
             boolean first = true;
@@ -511,7 +502,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             conditions.add(where.toString());
         }
 
-        TimeFilter timeFilter = findInstanceOf(query.getFilters(), TimeFilter.class);
+        TimeFilter timeFilter = Util.firstInstanceOf(TimeFilter.class, query.getFilters());
         if (timeFilter != null) {
             if (0 <= timeFilter.getStartTime()) {
                 conditions.add(timeFilter.getStartTime() + " <= time_stamp"); // NOI18N

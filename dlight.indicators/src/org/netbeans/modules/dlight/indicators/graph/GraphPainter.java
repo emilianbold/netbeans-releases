@@ -159,12 +159,13 @@ class GraphPainter {
      * @param h  height of drawing area
      * @param ticks  whether to draw ticks on graph
      */
-    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int x, int y, int w, int h, boolean ticks) {
+    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
             if (GraphConfig.GRID_SIZE < w && GraphConfig.GRID_SIZE < h) {
                 paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
                 paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
+                dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
             }
         }
     }
@@ -184,7 +185,7 @@ class GraphPainter {
     /**
      * Paints background grid.
      */
-    private void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
+    private static void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
         // vertical lines
         for (AxisMark xMark : xMarks) {
             g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, xMark.getOpacity()));
@@ -271,6 +272,19 @@ class GraphPainter {
             }
         }
         g2.setStroke(oldStroke);
+    }
+
+    private void dimInactiveRegions(Graphics g, int viewportStart, int viewportEnd, int filterStart, int filterEnd, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(new Color(0xee, 0xee, 0xee, 0xa0));
+        if (viewportStart <= filterStart ) {
+            int xx = DLightMath.map(filterStart, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(0, 0, xx, h);
+        }
+        if (filterEnd <= viewportEnd) {
+            int xx = DLightMath.map(filterEnd, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(xx, 0, w - xx, h);
+        }
     }
 
 // axes painting ///////////////////////////////////////////////////////////////

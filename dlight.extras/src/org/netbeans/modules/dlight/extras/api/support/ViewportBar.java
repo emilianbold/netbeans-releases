@@ -64,8 +64,8 @@ import org.netbeans.modules.dlight.util.DLightMath;
     //private final int margin;
 
     public ViewportBar(final ViewportModel viewportModel, int margin) {
-        setMinimumSize(new Dimension(200, 40));
-        setPreferredSize(new Dimension(500, 50));
+        setMinimumSize(new Dimension(200, 30));
+        setPreferredSize(new Dimension(200, 30));
         setOpaque(true);
 
         viewportStartMark = new AbstractMark() {
