@@ -76,10 +76,36 @@ public final class CommonTasksSupport {
     }
 
     /**
+     * Starts <tt>srcFileName</tt> file download from the host,
+     * specified by the <tt>srcExecEnv</tt> saving it in the
+     * <tt>dstFileName</tt> file. <p>
+     * In the case of some error, message with a reason is written to the supplied
+     * <tt>error</tt> (is not <tt>NULL</tt>).
+     *
+     * @param srcFileName full path to the source file with file name
+     * @param srcExecEnv execution environment that describes the host to copy file from
+     * @param dstFileName destination filename on the local host
+     * @param error if not <tt>NULL</tt> and some error occurs during download,
+     *        an error message will be written to this <tt>Writer</tt>.
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
+     *         of the download task. The result of this Future is the exit
+     *         code of the copying routine. 0 indicates that the file was
+     *         successfully downlodaded. Result other than 0 indicates an error.
+     */
+    public static Future<Integer> downloadFile(
+            final String srcFileName,
+            final ExecutionEnvironment srcExecEnv,
+            final String dstFileName,
+            final Writer error) {
+
+        return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFileName, error);
+    }
+
+    /**
      * Starts <tt>srcFileName</tt> file upload from the localhost to the host,
      * specified by the <tt>dstExecEnv</tt> saving it in the
      * <tt>dstFileName</tt> file with the given file mode creation mask. <p>
-     * In case of some error, message with a reason is written to the supplied
+     * In the case of some error, message with a reason is written to the supplied
      * <tt>error</tt> (is not <tt>NULL</tt>).
      *
      * @param srcFileName full path to the source file with file name
