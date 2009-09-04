@@ -50,11 +50,8 @@ import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.DataShadow;
 import org.openide.util.Exceptions;
 
 /**
@@ -90,23 +87,21 @@ final class ToolsConfiguration {
         return cachedList;
     }
 
-
-    FileObject getFileObject(String toolID){
-        if (toolsProviders.isEmpty()){
+    FileObject getFileObject(String toolID) {
+        if (toolsProviders.isEmpty()) {
             //tru to read
             getToolsSet();
         }
         return toolsProviders.get(toolID);
     }
 
-
-    boolean remove(String toolID){
-        if (toolsProviders.isEmpty()){
+    boolean remove(String toolID) {
+        if (toolsProviders.isEmpty()) {
             //tru to read
             getToolsSet();
         }
         FileObject fo = toolsProviders.get(toolID);
-        if (fo == null){
+        if (fo == null) {
             return false;
         }
         try {
@@ -116,32 +111,35 @@ final class ToolsConfiguration {
         }
         return true;
     }
-    
+
     boolean register(FileObject fileObject, boolean isEnabled) {
         FileObject configurationsFolder = useRootFolder ? rootFolder : rootFolder.getFileObject(KNOWN_TOOLS_SET);
+
         if (configurationsFolder == null) {
             return false;
         }
-        
-        if (configurationsFolder.getFileObject(fileObject.getName(), "shadow") == null){//NOI18N
+
+        final String fname = fileObject.getName();
+        final String shadowExt = "shadow"; // NOI18N
+
+        if (configurationsFolder.getFileObject(fname, shadowExt) == null) {
             try {
-                //NOI18N
-                FileObject fo = configurationsFolder.createData(fileObject.getName(), "shadow"); //NOI18N
-                fo.setAttribute("originalFile", fileObject.getPath());
+                FileObject fo = configurationsFolder.createData(fname, shadowExt);
+                fo.setAttribute("originalFile", fileObject.getPath()); // NOI18N
                 fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
             } catch (IOException ex) {
                 return false;
             }
 
-        }else{
-            FileObject fo  = configurationsFolder.getFileObject(fileObject.getName(), "shadow");
+        } else {
+            FileObject fo = configurationsFolder.getFileObject(fname, shadowExt);
             try {
                 fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
             } catch (IOException ex) {
                 return false;
             }
         }
-       // try {            
+        // try {
 //            DataObject dobj = DataObject.find(fileObject);
 //            DataFolder configurationDataObject  = DataFolder.findFolder(configurationsFolder);
 //            try {
@@ -154,7 +152,6 @@ final class ToolsConfiguration {
 //            return false;
 //        }
         return true;
-
     }
 
     /**
