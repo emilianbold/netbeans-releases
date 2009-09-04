@@ -341,10 +341,6 @@ NodeActionsProviderFilter, Constants {
         }
     }
 
-    private String localize(String s) {
-        return NbBundle.getBundle(NumericDisplayFilter.class).getString(s);
-    }
-
     private class DisplayAsAction extends AbstractAction 
     implements Presenter.Popup {
 
@@ -361,52 +357,27 @@ NodeActionsProviderFilter, Constants {
 
         public JMenuItem getPopupPresenter() {
             JMenu displayAsPopup = new JMenu 
-                (localize ("CTL_Variable_DisplayAs_Popup"));
+                (NbBundle.getMessage(NumericDisplayFilter.class, "CTL_Variable_DisplayAs_Popup"));
 
-            JRadioButtonMenuItem decimalItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Decimal")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.DECIMAL);
-                    }
-                }
+            JRadioButtonMenuItem decimalItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Decimal",       // NOI18N
+                    NumericDisplaySettings.DECIMAL
             );
-            JRadioButtonMenuItem hexadecimalItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Hexadecimal")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.HEXADECIMAL);
-                    }
-                }
+            JRadioButtonMenuItem hexadecimalItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Hexadecimal",   // NOI18N
+                    NumericDisplaySettings.HEXADECIMAL
             );
-            JRadioButtonMenuItem octalItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Octal")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.OCTAL);
-                    }
-                }
+            JRadioButtonMenuItem octalItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Octal",         // NOI18N
+                    NumericDisplaySettings.OCTAL
             );
-            JRadioButtonMenuItem binaryItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Binary")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.BINARY);
-                    }
-                }
+            JRadioButtonMenuItem binaryItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Binary",        // NOI18N
+                    NumericDisplaySettings.BINARY
             );
-            JRadioButtonMenuItem charItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Character")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.CHAR);
-                    }
-                }
+            JRadioButtonMenuItem charItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Character",     // NOI18N
+                    NumericDisplaySettings.CHAR
             );
 
             NumericDisplaySettings lds = (NumericDisplaySettings) 
@@ -468,6 +439,19 @@ NodeActionsProviderFilter, Constants {
                 listener.modelChanged (evt);
             }
         }
+
+        private class DisplayAsMenuItem extends JRadioButtonMenuItem {
+
+            public DisplayAsMenuItem(final String message, final NumericDisplaySettings as) {
+                super(new AbstractAction(NbBundle.getMessage(NumericDisplayFilter.class, message)) {
+                        public void actionPerformed (ActionEvent e) {
+                            onDisplayAs (as);
+                        }
+                    });
+            }
+
+        }
+
     }
 
     
