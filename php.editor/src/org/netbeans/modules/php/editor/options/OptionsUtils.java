@@ -37,23 +37,48 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor;
+package org.netbeans.modules.php.editor.options;
 
-import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.openide.util.WeakListeners;
 
 /**
- *
- * @author marekfukala
+ * @author Tomas Mysik
  */
-public class JsfUtils {
+public final class OptionsUtils {
 
-    public  static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
+    private static final AtomicBoolean INITED = new AtomicBoolean(false);
 
-    public static final String XHTML_NS = "http://www.w3.org/1999/xhtml"; //NOI18N
+    private static final PreferenceChangeListener PREFERENCES_TRACKER = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String settingName = evt == null ? null : evt.getKey();
+            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE.equals(settingName)) {
+                codeCompletionType = CodeCompletionPanel.CodeCompletionType.resolve(preferences.get(CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE, null));
+            }
+        }
+    };
 
-    public static boolean isCompositeComponentLibrary(FaceletsLibrary library) {
-        return library instanceof CompositeComponentLibrary;
+    private static Preferences preferences;
+    private static CodeCompletionPanel.CodeCompletionType codeCompletionType;
+
+    private OptionsUtils() {
     }
-    
+
+    public static CodeCompletionPanel.CodeCompletionType getCodeCompletionType() {
+        lazyInit();
+        return codeCompletionType;
+    }
+
+    private static void lazyInit() {
+        if (INITED.compareAndSet(false, true)) {
+            preferences = MimeLookup.getLookup(FileUtils.PHP_MIME_TYPE).lookup(Preferences.class);
+            preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, PREFERENCES_TRACKER, preferences));
+            PREFERENCES_TRACKER.preferenceChange(null);
+        }
+    }
 }
