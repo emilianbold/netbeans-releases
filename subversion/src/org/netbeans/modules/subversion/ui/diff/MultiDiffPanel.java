@@ -678,7 +678,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 }
             }
         } catch (IOException e) {
-            Subversion.LOG.log(Level.INFO, null, e);
+            // no need to litter log with expected exceptions:
+            // when parent is not versioned, the exception will allways be thrown
+            FileInformation parentInfo = Subversion.getInstance().getStatusCache().getCachedStatus(base.getParentFile());
+            Level logLevel = parentInfo != null && (parentInfo.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0
+                    ? Level.FINE : Level.INFO;
+            Subversion.LOG.log(logLevel, null, e);
         }
     }
 

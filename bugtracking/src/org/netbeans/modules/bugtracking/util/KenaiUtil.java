@@ -154,19 +154,14 @@ public class KenaiUtil {
         return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
     }
 
+    /**
+     * Returns a URL of web location of a kenai project associated with given repository url
+     * @param sourcesUrl url of a kenai vcs repository
+     * @return web location of associated kenai project or null if no such project exists
+     */
     public static String getProjectUrl (String sourcesUrl) {
         KenaiProject kp = getKenaiProject(sourcesUrl);
         return kp == null ? null : kp.getWebLocation().toString();
-    }
-
-    private static KenaiProject getKenaiProject(String url) {
-        KenaiProject kp;
-        try {
-            kp = KenaiProject.forRepository(url);
-        } catch (KenaiException ex) {
-            return null;
-        }
-        return kp;
     }
 
     public static Collection<RepositoryUser> getProjectMembers(String projectName) {
@@ -185,6 +180,16 @@ public class KenaiUtil {
             members = Collections.emptyList();
         }
         return members;
+    }
+
+    private static KenaiProject getKenaiProject(String url) {
+        KenaiProject kp;
+        try {
+            kp = KenaiProject.forRepository(url);
+        } catch (KenaiException ex) {
+            return null;
+        }
+        return kp;
     }
 
 }
