@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.dlight.procfs
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/procfs/resources/Bundle.properties
+
