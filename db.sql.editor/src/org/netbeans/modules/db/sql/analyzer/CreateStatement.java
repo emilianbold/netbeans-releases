@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,53 +36,38 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.sql.analyzer;
 
-package org.netbeans.core.browser.xulrunner;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
-import org.netbeans.core.browser.api.WebBrowser;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.SortedMap;
 
 /**
- * Embedded browser factory.
- * 
- * @author S. Aubrecht
+ *
+ * @author Jiri Skrivanek
  */
-@ServiceProvider(service=EmbeddedBrowserFactory.class)
-public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
+public class CreateStatement extends SQLStatement {
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
-    public EmbeddedBrowserFactoryImpl() {
-        BrowserManager.getDefault().addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                propSupport.firePropertyChange(PROP_ENABLED, null, this);
-            }
-        });
+    private int bodyStartOffset;
+    private int bodyEndOffset;
+
+    CreateStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, int bodyStartOffset, int bodyEndOffset) {
+        super(startOffset, endOffset, offset2Context);
+        this.bodyStartOffset = bodyStartOffset;
+        this.bodyEndOffset = bodyEndOffset;
+        this.kind = SQLStatementKind.CREATE;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return BrowserManager.isSupportedPlatform() && BrowserManager.getDefault().isEnabled();
+    /** Returns true if statement has some body after BEGIN. */
+    public boolean hasBody() {
+        return this.bodyEndOffset > this.bodyStartOffset;
     }
 
-    @Override
-    public WebBrowser createEmbeddedBrowser() {
-        if( !isEnabled() )
-            throw new IllegalStateException();
-        return new WebBrowserImpl();
+    /** Returns start offset of script after BEGIN. */
+    public int getBodyStartOffset() {
+        return this.bodyStartOffset;
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /** Returns end offset of script after BEGIN. */
+    public int getBodyEndOffset() {
+        return this.bodyEndOffset;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,53 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.sql.editor.completion;
 
-package org.netbeans.core.browser.xulrunner;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
-import org.netbeans.core.browser.api.WebBrowser;
-import org.openide.util.lookup.ServiceProvider;
-
-/**
- * Embedded browser factory.
- * 
- * @author S. Aubrecht
+/** Tests completion of SQL CREATE statement.
+ *
+ * @author Jiri Skrivanek
  */
-@ServiceProvider(service=EmbeddedBrowserFactory.class)
-public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
+public class CreateCompletionQueryTest extends CompletionQueryTestCase {
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
-    public EmbeddedBrowserFactoryImpl() {
-        BrowserManager.getDefault().addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                propSupport.firePropertyChange(PROP_ENABLED, null, this);
-            }
-        });
+    public CreateCompletionQueryTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public boolean isEnabled() {
-        return BrowserManager.isSupportedPlatform() && BrowserManager.getDefault().isEnabled();
-    }
-
-    @Override
-    public WebBrowser createEmbeddedBrowser() {
-        if( !isEnabled() )
-            throw new IllegalStateException();
-        return new WebBrowserImpl();
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void testCreate() {
+        String sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "|";
+        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT |";
+        assertItems(doQuery(sql), "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * |";
+        assertItems(doQuery(sql), "FROM");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM |";
+        assertItems(doQuery(sql), "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM tab_customer;\n" +
+            "|";
+        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM tab_customer;\n" +
+            "  SELECT |";
+        assertItems(doQuery(sql), "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
+        sql =
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "  SELECT * FROM tab_customer;\n" +
+            "  SELECT | FROM tab_customer;\n" +
+            "END";
+        assertItems(doQuery(sql), "col_customer_id", "tab_customer");
     }
 }

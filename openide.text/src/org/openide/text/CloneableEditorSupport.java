@@ -191,11 +191,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** position manager */
     private PositionRef.Manager positionManager;
 
-    /** The string which will be appended to the name of top component
-    * when top component becomes modified */
-
-    //    protected String modifiedAppendix = " *"; // NOI18N
-
     /** Listeners for the changing of the state - document in memory X closed. */
     private Set<ChangeListener> listeners;
 

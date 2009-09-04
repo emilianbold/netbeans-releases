@@ -57,7 +57,6 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
 import org.openide.util.Task;
 import org.openide.util.RequestProcessor;
@@ -92,6 +91,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Enumeration;
+import org.openide.util.Utilities;
 
 /**
  * An implementation of <code>DataEditorSupport</code> that is
@@ -483,7 +483,12 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                     if (!displayName.equals(mvtc.getDisplayName())) {
                         mvtc.setDisplayName(displayName);
                     }
-                    mvtc.setToolTipText(FileUtil.getFileDisplayName(dObj.getPrimaryFile()));
+                    String htmlDisplayName = messageHtmlName();
+                    if (!Utilities.compareObjects(htmlDisplayName, mvtc.getHtmlDisplayName())) {
+                        mvtc.setHtmlDisplayName(htmlDisplayName);
+                    }
+                    mvtc.setToolTipText(DataEditorSupport.toolTip(
+                            dObj.getPrimaryFile(), getDataObject().isModified(), !getDataObject().getPrimaryFile().canWrite()));
                 }
             });
         }
@@ -758,6 +763,12 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     // Accessibility for ToolBarMultiViewElement:
     protected String messageName() {
         return super.messageName();
+    }
+    protected String messageHtmlName() {
+        return super.messageHtmlName();
+    }
+    protected String messageToolTip() {
+        return super.messageToolTip();
     }
     
     private class TopComponentsListener implements PropertyChangeListener {
