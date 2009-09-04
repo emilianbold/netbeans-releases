@@ -628,13 +628,28 @@ public class JiraRepository extends Repository {
             org.netbeans.modules.jira.issue.JiraIssueProvider.getInstance().notifyIssueCreated(issue);
             return issue;
         }
-        protected void setTaskData(Issue issue, TaskData taskData) {
+        protected void setIssueData(Issue issue, TaskData taskData) {
+            assert issue != null && taskData != null;
             ((NbJiraIssue)issue).setTaskData(taskData);
         }
         @Override
         protected String getRecentChanges(Issue issue) {
+            assert issue != null;
             return ((NbJiraIssue)issue).getRecentChanges();
         }
+
+        @Override
+        protected long getLastModified(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getLastModify();
+        }
+
+        @Override
+        protected long getCreated(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getCreated();
+        }
+
     }
 
     public JiraExecutor getExecutor() {
