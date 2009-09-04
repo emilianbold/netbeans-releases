@@ -96,7 +96,7 @@ public class NotificationsManager {
     private NotificationsManager () {
         files = new HashSet<File>();
         rp = new RequestProcessor("SubversionNotifications", 1, true);  //NOI18N
-        notificationTask = rp.create(new NotoficationTask());
+        notificationTask = rp.create(new NotificationTask());
         cache = Subversion.getInstance().getStatusCache();
         supp = SvnKenaiSupport.getInstance();
     }
@@ -158,7 +158,7 @@ public class NotificationsManager {
         return upToDate;
     }
 
-    private class NotoficationTask implements Runnable {
+    private class NotificationTask implements Runnable {
 
         public void run() {
             HashSet<File> filesToScan;
