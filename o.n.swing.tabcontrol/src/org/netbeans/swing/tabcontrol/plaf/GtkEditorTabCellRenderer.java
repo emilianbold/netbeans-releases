@@ -45,6 +45,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.plaf.synth.Region;
 import javax.swing.plaf.synth.SynthConstants;
 import javax.swing.plaf.synth.SynthContext;
@@ -67,7 +69,10 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static JTabbedPane dummyTab;
 
     static final Color ATTENTION_COLOR = new Color(255, 238, 120);
-    
+
+    private static final Logger LOG =
+        Logger.getLogger("org.netbeans.swing.tabcontrol.plaf.GtkEditorTabCellRenderer"); // NOI18N
+
     /**
      * Creates a new instance of GtkEditorTabCellRenderer
      */
@@ -116,14 +121,29 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
             new SynthContext(dummyTab, region, style, 
                 state == SynthConstants.FOCUSED ? SynthConstants.SELECTED : state);
         SynthPainter painter = style.getPainter(context);
+        long t1, t2;
         if (state == SynthConstants.DEFAULT) {
+            t1 = System.currentTimeMillis();
             painter.paintTabbedPaneTabBackground(context, g, x, y, w, h, index);
+            t2 = System.currentTimeMillis();
+            if ((t2 - t1) > 200) {
+                LOG.log(Level.WARNING, "painter.paintTabbedPaneTabBackground1 takes too long"
+                + " x=" + x + " y=" + y + " w=" + w + " h=" + h + " index:" + index
+                + " Time=" + (t2 - t1));
+            }
         } else {
             BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
             Graphics2D g2d = bufIm.createGraphics();
             g2d.setBackground(UIManager.getColor("Panel.background"));
             g2d.clearRect(0, 0, w, h);
+            t1 = System.currentTimeMillis();
             painter.paintTabbedPaneTabBackground(context, g2d, 0, 0, w, h, index);
+            t2 = System.currentTimeMillis();
+            if ((t2 - t1) > 200) {
+                LOG.log(Level.WARNING, "painter.paintTabbedPaneTabBackground1 takes too long"
+                + " x=0" + " y=0" + " w=" + w + " h=" + h + " index:" + index
+                + " Time=" + (t2 - t1));
+            }
             // differentiate active and selected tabs, active tab made brighter,
             // selected tab darker
             RescaleOp op = state == SynthConstants.FOCUSED 

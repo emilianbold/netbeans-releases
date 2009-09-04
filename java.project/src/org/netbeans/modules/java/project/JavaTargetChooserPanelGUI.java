@@ -94,6 +94,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         this.type = type;
         this.project = p;
         this.groups = groups;
+        for (SourceGroup sourceGroup : groups)
+            if (sourceGroup == null)
+                throw new NullPointerException ();
         
         initComponents();        
                 
@@ -137,6 +140,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         setName( NbBundle.getBundle (JavaTargetChooserPanelGUI.class).getString ("LBL_JavaTargetChooserPanelGUI_Name") ); // NOI18N
     }
             
+    @Override
     public void addNotify () {
         Dimension panel2Size = this.jPanel2.getPreferredSize();
         Dimension bottomPanelSize = this.bottomPanelContainer.getPreferredSize ();
@@ -593,6 +597,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
         public GroupListCellRenderer() {}
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             SourceGroup g = (SourceGroup) value;
             super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);

@@ -50,6 +50,7 @@ import java.lang.ref.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.RandomlyFails;
 
@@ -92,6 +93,8 @@ public class FileObjectTestHid extends TestBaseHid {
         /**Should be deleted and testedFS renamed to fs*/
         fs = this.testedFS;
         root = fs.findResource(getResourcePrefix());
+
+        StreamPool.LOG.setLevel(Level.WARNING); // do not print InterruptedException's at INFO
     }
 
     @Override
@@ -183,22 +186,34 @@ public class FileObjectTestHid extends TestBaseHid {
                 fail();
             }
         };
+        class Once implements Runnable {
+            int once;
+
+            public void run() {
+                assertEquals("No calls yet", 0, once);
+                once++;
+            }
+        }
+        final Once post = new Once();
         final FileChangeListener listener1 = new FileChangeAdapter(){
             @Override
             public void fileDataCreated(FileEvent fe) {
                 fold.removeFileChangeListener(noFileDataCreatedListener);
                 fold.addFileChangeListener(noFileDataCreatedListener);
+                fe.runWhenDeliveryOver(post);
             }
         };
-        
+        assertEquals("Not called yet", 0, post.once);
         try {
             fold.getFileSystem().addFileChangeListener(listener1);
             fold.getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
                 public void run() throws java.io.IOException {
                     fold.createData("file1");
                     fold.createData("file2");
+                    assertEquals("Called not", 0, post.once);
                 }
             });
+            assertEquals("Called once", 1, post.once);
         } finally {
             fold.getFileSystem().removeFileChangeListener(listener1);
             fold.removeFileChangeListener(noFileDataCreatedListener);
@@ -989,21 +1004,51 @@ public class FileObjectTestHid extends TestBaseHid {
     /** Test of fireFileRenamedEvent method, of class org.openide.filesystems.FileObject. */
     public void  testFireFileRenamedEvent_FS() {
         checkSetUp();
-        FileObject fo = getTestFile1(root);
+        final FileObject fo = getTestFile1(root);
         registerDefaultListener(testedFS);
-        FileLock lock = null;
         
+        class Immediate extends FileChangeAdapter implements Runnable {
+            int cnt;
+            FileRenameEvent fe;
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                int prev = cnt;
+                fe.runWhenDeliveryOver(this);
+                assertEquals("run() not called immediately", prev, cnt);
+                this.fe = fe;
+            }
+            public void run() {
+                cnt++;
+            }
+
+            void testCallOutsideOfDeliverySystem() {
+                assertNotNull("There shall be an event", fe);
+                int prev = cnt;
+                fe.runWhenDeliveryOver(this);
+                assertEquals("run() called immediately", prev + 1, cnt);
+            }
+        }
+        Immediate immediately = new Immediate();
+        fo.addFileChangeListener(immediately);
+
+        final FileLock[] lock = new FileLock[1];
         try {
-            lock = fo.lock();
-            fo.rename(lock,fo.getName()+"X",fo.getExt()+"X");
+            lock[0] = fo.lock();
+            FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    fo.rename(lock[0],fo.getName()+"X",fo.getExt()+"X");
+                }
+            });
         } catch (IOException iex) {
             fsAssert("FileObject could not be renamed. So there was expected fs or fo are read-only",
             fs.isReadOnly() || root.isReadOnly());
             fileRenamedAssert("fs or fo is read-only. So no event should be fired",0);
             return;
         } finally {
-            if (lock != null) lock.releaseLock();
+            if (lock[0] != null) lock[0].releaseLock();
         }
+        assertEquals("One call", 1, immediately.cnt);
+        immediately.testCallOutsideOfDeliverySystem();
         
         fileRenamedAssert("",1);        
         fileDataCreatedAssert("fireFileDataCreatedEvent should not be fired ",0);

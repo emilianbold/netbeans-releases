@@ -45,6 +45,7 @@ import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 
@@ -53,6 +54,14 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
  * @author mt154047
  */
 public final class THAConfigurationOptions implements DLightConfigurationOptions {
+
+    
+
+    public void configure(THAConfiguration configuration){
+        //collector configurations should be sorted out here
+        
+        
+    }
 
     public boolean profileOnRun() {
         return false;

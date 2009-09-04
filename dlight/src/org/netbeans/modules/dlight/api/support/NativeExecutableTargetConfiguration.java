@@ -120,7 +120,7 @@ public final class NativeExecutableTargetConfiguration {
         this.outConvertorFactory = lineConvertorFactory;
     }
 
-    public LineConvertorFactory getOutConvertorFactory() {
+    LineConvertorFactory getOutConvertorFactory() {
         return outConvertorFactory;
     }
 
@@ -132,7 +132,7 @@ public final class NativeExecutableTargetConfiguration {
         this.errConvertorFactory = lineConvertorFactory;
     }
 
-    public LineConvertorFactory getErrConvertorFactory() {
+    LineConvertorFactory getErrConvertorFactory() {
         return errConvertorFactory;
     }
 
@@ -149,7 +149,7 @@ public final class NativeExecutableTargetConfiguration {
         this.io = io;
     }
 
-    public InputOutput getIO() {
+    InputOutput getIO() {
         return io;
     }
 

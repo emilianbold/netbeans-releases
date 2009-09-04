@@ -95,8 +95,8 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
     @Override
     public KenaiUser forName(String user) {
-        org.netbeans.modules.kenai.ui.spi.KenaiUser kenaiUser =
-                org.netbeans.modules.kenai.ui.spi.KenaiUser.forName(user);
+        org.netbeans.modules.kenai.ui.spi.KenaiUserUI kenaiUser =
+                org.netbeans.modules.kenai.ui.spi.KenaiUserUI.forName(user);
         if(kenaiUser == null) {
             return null;
         } else {
@@ -106,13 +106,13 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
     @Override
     public boolean isUserOnline(String user) {
-        return org.netbeans.modules.kenai.ui.spi.KenaiUser.isOnline(user);
+        return org.netbeans.modules.kenai.ui.spi.KenaiUserUI.isOnline(user);
     }
 
     private class KenaiUserImpl extends KenaiUser {
-        org.netbeans.modules.kenai.ui.spi.KenaiUser delegate;
+        org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate;
 
-        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUser delegate) {
+        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate) {
             this.delegate = delegate;
         }
 

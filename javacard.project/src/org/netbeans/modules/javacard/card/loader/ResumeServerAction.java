@@ -41,7 +41,7 @@
 package org.netbeans.modules.javacard.card.loader;
 
 import org.netbeans.modules.javacard.api.Card;
-import org.netbeans.modules.javacard.card.loader.CardDataObject.ServerDataNode;
+import org.netbeans.modules.javacard.card.loader.CardDataObject.CardDataNode;
 import org.netbeans.spi.actions.Single;
 import org.openide.util.NbBundle;
 
@@ -50,9 +50,9 @@ import org.openide.util.NbBundle;
  * @author Tim Boudreau
  */
 public class ResumeServerAction extends Single<Card> {
-    private ServerDataNode nd;
+    private CardDataNode nd;
 
-    ResumeServerAction(ServerDataNode nd) {
+    ResumeServerAction(CardDataNode nd) {
         super (Card.class, NbBundle.getMessage(
                 StartServerAction.class, "ACTION_RESUME_SERVER"), null); //NOI18N
         this.nd = nd;
@@ -62,6 +62,6 @@ public class ResumeServerAction extends Single<Card> {
     protected void actionPerformed(Card server) {
         server.stopServer();
         server.resumeServer();
-        nd.checkForRunningStateChange();
+        nd.updateChildren();
     }
 }

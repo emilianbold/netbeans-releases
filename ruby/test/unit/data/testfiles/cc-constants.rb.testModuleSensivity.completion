@@ -1,0 +1,4 @@
+Code completion result for source line:
+puts Shapes::|CIRCLE
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CONSTANT   CIRCLE                                     null

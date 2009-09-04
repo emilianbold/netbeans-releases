@@ -62,10 +62,12 @@ import org.netbeans.modules.dlight.management.api.impl.SessionDataFiltersSupport
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
+import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
@@ -80,13 +82,14 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.windows.InputOutput;
 
 /**
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference {
-
+public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference, DataFilterManager, DLightSessionIOProvider {
+    private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
@@ -104,6 +107,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private final String name;
     private boolean closeOnExit = false;
     private final SessionDataFiltersSupport dataFiltersSupport;
+    private InputOutput io;
 
     public static enum SessionState {
 
@@ -115,9 +119,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         CLOSED
     }
 
+    public final long getStartTime(){
+        return startTimestamp;
+    }
+
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
+                startTimestamp = System.nanoTime();
                 targetStarted(event.target);
                 break;
             case FAILED:
@@ -339,7 +348,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     DLightTarget.ExecutionEnvVariablesProvider envProvider =
                             context.getDLightTargetExecutionEnvProvider();
 
-                    targetAccess.getDLightTargetExecution(target).start(target, envProvider);
+                    DLightSession.this.io = targetAccess.getDLightTargetExecution(target).start(target, envProvider);
                 }
             }
         };
@@ -347,9 +356,45 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         DLightExecutorService.submit(sessionRunnable, "DLight session"); // NOI18N
     }
 
-    void addDataFilterListener(DataFilterListener listener) {
+    public void addDataFilterListener(DataFilterListener listener) {
         dataFiltersSupport.addDataFilterListener(listener);
     }
+
+    public DLightSessionIOProvider getDLigthSessionIOProvider(){
+        return this;
+    }
+    
+    public InputOutput getInputOutput(){
+        if (this.state == SessionState.CONFIGURATION){
+            return null;//nothing to return, we are in configuration state
+        }
+        return io;
+    }
+    
+    public void addDataFilter(DataFilter filter) {
+        //if the filter is TimeIntervalFilter: remove first
+        if (filter instanceof TimeIntervalDataFilter){
+            dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class);
+        }
+        dataFiltersSupport.addFilter(filter);
+    }
+    
+    public void cleanAllDataFilter() {
+        dataFiltersSupport.cleanAll();
+    }
+
+    public void cleanAllDataFilter(Class clazz) {
+        dataFiltersSupport.cleanAll(clazz);
+    }
+
+    public Collection<? extends DataFilter> getDataFilter(Class<? extends DataFilter> clazz) {
+        return dataFiltersSupport.getDataFilter(clazz);
+    }
+
+    public boolean removeDataFilter(DataFilter filter) {
+        return dataFiltersSupport.removeFilter(filter);
+    }
+
 
     public final void addIndicatorNotificationListener(IndicatorNotificationsListener l){
         if (l == null){
@@ -532,13 +577,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             addDataFilterListener(idp);
         }
 
-        //and now if we have collectors which cannot be attached let's substitute target
-        //the question is is it possible in case target is the whole system: WebTierTarget
-        //or SystemTarget
-        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
-            ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
-        }
-
         // at the end, initialize data filters (_temporarily_ here, as info
         // about filters is stored in target's info...
 
@@ -550,7 +588,13 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 dataFiltersSupport.addFilter(filter);
             }
         }
-
+        //Do it at the very end to apply filters
+        //and now if we have collectors which cannot be attached let's substitute target
+        //the question is is it possible in case target is the whole system: WebTierTarget
+        //or SystemTarget
+        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
+            ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
+        }
         return true;
 
 //    activeTasks = new ArrayList<DLightExecutorTask>();
@@ -723,8 +767,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return null;
     }
 
-    public List<Indicator> getIndicators() {
-        List<Indicator> result = new ArrayList<Indicator>();
+    public List<Indicator<?>> getIndicators() {
+        List<Indicator<?>> result = new ArrayList<Indicator<?>>();
 
         for (ExecutionContext c : contexts) {
             result.addAll(c.getIndicators());

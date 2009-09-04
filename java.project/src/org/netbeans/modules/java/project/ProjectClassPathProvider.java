@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.java.project;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -54,16 +56,22 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=100)
 public class ProjectClassPathProvider implements ClassPathProvider {
 
+    private static final Logger LOG = Logger.getLogger(ProjectClassPathProvider.class.getName());
+
     /** Default constructor for lookup. */
     public ProjectClassPathProvider() {}
     
     public ClassPath findClassPath(FileObject file, String type) {
         Project p = FileOwnerQuery.getOwner(file);
+        LOG.log(Level.FINE, "findClassPath({0}, {1}) on project {2}", new Object[] {file, type, p});
         if (p != null) {
             ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
             if (cpp != null) {
-                return cpp.findClassPath(file, type);
+                final ClassPath result = cpp.findClassPath(file, type);
+                LOG.log(Level.FINE, "findClassPath({0}, {1}) -> {2} from {3}", new Object[] {file, type, result, cpp});
+                return result;
             } else {
+                LOG.log(Level.FINE, "cpp.findClassPath({0}, {1}) -> null", new Object[] {file, type});
                 return null;
             }
         } else {

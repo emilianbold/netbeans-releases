@@ -48,7 +48,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -292,7 +292,7 @@ public enum PHPTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return PHPLanguage.PHP_MIME_TYPE;
+            return FileUtils.PHP_MIME_TYPE;
         }
 
         @Override

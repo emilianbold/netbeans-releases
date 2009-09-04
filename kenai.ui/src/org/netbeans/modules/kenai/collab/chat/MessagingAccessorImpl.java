@@ -46,6 +46,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.Kenai.Status;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
@@ -68,7 +69,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
         synchronized (kc) {
             try {
                 final KenaiProject prj = k.getProject(project.getId());
-                if (k.getMyProjects().contains(prj)) {
+                if (prj.isMyProject() && k.getStatus()==Status.ONLINE) {
                     MultiUserChat chat = kc.getChat(project.getId());
                     if (chat == null) {
                         KenaiFeature[] f;
@@ -87,11 +88,11 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
-                m.setMessageCount(-1);
-                m.setOnlineCount(-3);
-                return m;
-            }
+                    MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
+                    m.setMessageCount(-1);
+                    m.setOnlineCount(-3);
+                    return m;
+                }
 
             return ChatNotifications.getDefault().getMessagingHandle(project.getId());
         }

@@ -99,8 +99,8 @@ class WSTransformer extends DefaultTreePathVisitor {
         return LexUtilities.getPHPTokenSequence(context.document(), offset);
     }
 
-    static class Replacement{
-        private int offset;
+    static class Replacement implements Comparable<Replacement>{
+        private Integer offset;
         private int length;
         private String newString;
 
@@ -120,6 +120,10 @@ class WSTransformer extends DefaultTreePathVisitor {
 
         public int offset() {
             return offset;
+        }
+
+        public int compareTo(Replacement r) {
+            return offset.compareTo(r.offset);
         }
     }
 }

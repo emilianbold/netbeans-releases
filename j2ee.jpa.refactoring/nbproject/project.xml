@@ -258,9 +258,6 @@
                         <test/>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <public-packages/>
         </data>

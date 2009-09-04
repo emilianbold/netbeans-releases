@@ -82,6 +82,6 @@ public class PHPDocTag extends ASTNode {
 
     @Override
     public void accept(Visitor visitor) {
-        visitor.visit(this);
+            visitor.visit(this);
     }
 }

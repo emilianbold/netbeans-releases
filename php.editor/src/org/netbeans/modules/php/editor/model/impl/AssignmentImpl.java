@@ -76,6 +76,14 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         return typeName;
     }
 
+    boolean canBeProcessed(String tName) {
+        return canBeProcessed(tName, getName()) && canBeProcessed(tName, getName().substring(1));
+    }
+
+    static boolean canBeProcessed(String tName, String name) {
+        return tName.indexOf(name) == -1;
+    }
+
     @CheckForNull
     private List<? extends TypeScope> typesFromUnion() {
         Union2<String, List<? extends TypeScope>> typeUnion = getTypeUnion();
@@ -103,13 +111,12 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getContainer().getName());
+        sb.append(getName());
         sb.append(" == ").append(getTypeUnion());
         return sb.toString();
     }
 
     public Collection<? extends TypeScope> getTypes() {
-        String name = container.getName();
         List<? extends TypeScope> empty = Collections.emptyList();
         FileScope topScope = ModelUtils.getFileScope(this);
         //TODO: cache the value
@@ -120,8 +127,8 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         String tName = typeNameFromUnion();
         if (tName != null) {
             //StackOverflow prevention
-            if (tName.indexOf(name) == -1) {
-                types = VariousUtils.getType(topScope, (VariableScope) getInScope(),
+            if (canBeProcessed(tName)) {
+                types = VariousUtils.getType( (VariableScope) getInScope(),
                         tName, getOffset(), false);
             }
         }
@@ -141,5 +148,10 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     @Override
     public OffsetRange getBlockRange() {
         return scopeRange;
+    }
+
+    @Override
+    public String getNormalizedName() {
+        return getClass().getName()+":"+ toString() + ":" + String.valueOf(getOffset());//NOI18N
     }
 }

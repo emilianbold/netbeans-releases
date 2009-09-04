@@ -58,6 +58,8 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.PathMatcher;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**
@@ -72,16 +74,25 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private final PhpProject project;
     private final PropertyEvaluator evaluator;
     private List<PathResourceImplementation> resources;
-    private final SourceRoots src;
+    private final SourceRoots sources;
+    private SourceRoots tests;
+    private SourceRoots selenium;
 
     public SourcePathImplementation(PhpProject project, SourceRoots sources) {
+        this(project, sources, null, null);
+    }
+
+    public SourcePathImplementation(PhpProject project, SourceRoots sources, SourceRoots tests, SourceRoots selenium) {
         assert project != null;
         assert sources != null;
 
         this.project = project;
         evaluator = ProjectPropertiesSupport.getPropertyEvaluator(project);
-        src = sources;
-        src.addPropertyChangeListener(WeakListeners.propertyChange(this, src));
+        this.sources = sources;
+        sources.addPropertyChangeListener(WeakListeners.propertyChange(this, sources));
+
+        this.tests = tests;
+        this.selenium = selenium;
     }
 
     public List<PathResourceImplementation> getResources() {
@@ -90,7 +101,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 return resources;
             }
         }
-        final URL[] urls = src.getRootURLs();
+        final URL[] urls = sources.getRootURLs();
         synchronized (this) {
             if (resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(urls.length);
@@ -129,26 +140,52 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     // compute ant pattern
     String computeExcludes(File root) {
         StringBuilder buffer = new StringBuilder(100);
-        boolean first = true;
         for (File file : project.getIgnoredFiles()) {
             String relPath = PropertyUtils.relativizeFile(root, file);
-            if (relPath != null
-                    && !relPath.equals(".") // NOI18N
-                    && !relPath.startsWith("../")) { // NOI18N
+            if (isUnderneath(relPath)) {
                 String pattern = relPath;
                 if (file.isDirectory()) {
                     pattern += "/**"; // NOI18N
                 }
-                if (first) {
-                    first = false;
-                } else {
+                if (buffer.length() > 0) {
                     buffer.append(","); // NOI18N
                 }
                 buffer.append(pattern);
             }
         }
 
+        ignoreTests(buffer, root, tests);
+        ignoreTests(buffer, root, selenium);
+
         return buffer.toString();
+    }
+
+    private void ignoreTests(StringBuilder buffer, File root, SourceRoots tests) {
+        if (tests == null) {
+            return;
+        }
+        assert tests.isTest() : "Not test source roots provided";
+
+        for (FileObject fo : tests.getRoots()) {
+            File test = FileUtil.toFile(fo);
+            if (test != null) {
+                assert test.isDirectory();
+                String relPath = PropertyUtils.relativizeFile(root, test);
+                if (isUnderneath(relPath)) {
+                    String pattern = relPath + "/**"; // NOI18N
+                    if (buffer.length() > 0) {
+                        buffer.append(","); // NOI18N
+                    }
+                    buffer.append(pattern);
+                }
+            }
+        }
+    }
+
+    private boolean isUnderneath(String relativePath) {
+        return relativePath != null
+                    && !relativePath.equals(".") // NOI18N
+                    && !relativePath.startsWith("../"); // NOI18N
     }
 
     private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener {
@@ -195,7 +232,10 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
             // listen only on IGNORE_PATH, VisibilityQuery changes should be checked by parsing & indexing automatically
-            if (prop == null || prop.equals(PhpProjectProperties.IGNORE_PATH)) {
+            if (prop == null
+                    || prop.equals(PhpProjectProperties.IGNORE_PATH)
+                    || prop.equals(PhpProjectProperties.TEST_SRC_DIR)
+                    || prop.equals(PhpProjectProperties.SELENIUM_SRC_DIR)) {
                 matcher = null;
                 PropertyChangeEvent ev2 = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
                 ev2.setPropagationId(ev);

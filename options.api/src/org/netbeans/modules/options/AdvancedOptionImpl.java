@@ -39,13 +39,14 @@
 
 package org.netbeans.modules.options;
 
+import java.util.Arrays;
 import org.netbeans.spi.options.*;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import org.openide.util.Exceptions;
 
 /**
  * Advanced Option implementation class. Used by factory method from
@@ -58,10 +59,10 @@ public class AdvancedOptionImpl extends AdvancedOption {
     private String displayName;
     private String tooltip;
     private String keywords;
-    private OptionsPanelController controller;
+    private Callable<OptionsPanelController> controller;
     private String keywordsCategory;
 
-    public AdvancedOptionImpl(OptionsPanelController controller, String displayName, String tooltip, String keywords, String keywordsCategory) {
+    public AdvancedOptionImpl(Callable<OptionsPanelController> controller, String displayName, String tooltip, String keywords, String keywordsCategory) {
         this.controller = controller;
         this.displayName = displayName;
         this.tooltip = tooltip;
@@ -84,15 +85,21 @@ public class AdvancedOptionImpl extends AdvancedOption {
      * @return map of path and keywords for each optioncategory sub-panel
      */
     public Map<String, Set<String>> getKeywordsByCategory() {
-        HashMap<String, Set<String>> result = new HashMap<String, Set<String>>();
-        if(keywordsCategory != null && keywords != null)
-            result.put(keywordsCategory, new HashSet(Collections.list(new StringTokenizer(keywords, ",")))); //NOI18N
-        return result;
+        if (keywordsCategory != null && keywords != null) {
+            return Collections.<String,Set<String>>singletonMap(keywordsCategory, new HashSet<String>(Arrays.asList(keywords.split(",")))); // NOI18N
+        } else {
+            return Collections.emptyMap();
+        }
     }
 
     @Override
     public OptionsPanelController create() {
-        return controller;
+        try {
+            return controller.call();
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+            return new TabbedController("<error>"); // NOI18N
+        }
     }
 
 }

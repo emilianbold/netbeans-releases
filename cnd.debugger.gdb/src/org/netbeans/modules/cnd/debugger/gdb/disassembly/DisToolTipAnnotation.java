@@ -45,6 +45,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;

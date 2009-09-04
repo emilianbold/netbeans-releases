@@ -46,14 +46,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -78,15 +77,10 @@ public final class CommandUtils {
     private CommandUtils() {
     }
 
-    public static boolean isPhpFile(FileObject file) {
-        assert file != null;
-        return PhpSourcePath.MIME_TYPE.equals(FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE));
-    }
-
     public static boolean isPhpOrHtmlFile(FileObject file) {
         assert file != null;
-        String mimeType = FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE, HTML_MIME_TYPE);
-        return PhpSourcePath.MIME_TYPE.equals(mimeType) || HTML_MIME_TYPE.equals(mimeType);
+        String mimeType = FileUtil.getMIMEType(file, FileUtils.PHP_MIME_TYPE, HTML_MIME_TYPE);
+        return FileUtils.PHP_MIME_TYPE.equals(mimeType) || HTML_MIME_TYPE.equals(mimeType);
     }
 
     /** Return <code>true</code> if user wants to restart the current debug session. */
@@ -106,7 +100,7 @@ public final class CommandUtils {
             return PhpUnit.getDefault();
         } catch (InvalidPhpProgramException ex) {
             if (showCustomizer) {
-                OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH);
+                Utils.showGeneralOptionsPanel();
             }
         }
         return null;

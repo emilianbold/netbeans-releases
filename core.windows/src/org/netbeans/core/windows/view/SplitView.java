@@ -169,6 +169,10 @@ public class SplitView extends ViewElement {
                     }
                 }
             }
+            Integer override = Integer.getInteger("Nb.SplitPane.dividerSize"); //NOI18N
+            if( null != override ) {
+                dividerSize = override.intValue();
+            }
             splitPane.setDividerSize(dividerSize);
             
             splitPane.setBorder(BorderFactory.createEmptyBorder());

@@ -48,6 +48,7 @@ import javax.lang.model.element.Element;
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /** Utility class for opening elements in editor.
  *
@@ -160,7 +161,7 @@ public final class ElementOpen {
                         Line l = lc.getLineSet().getCurrent(line);
                         
                         if (l != null) {
-                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                            doShow(l, column);
                             return true;
                         }
                     }
@@ -180,6 +181,18 @@ public final class ElementOpen {
         return false;
     }
     
+    private static void doShow(final Line l, final int column) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                }
+            });
+        }
+    }
+
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         if (IndexingManager.getDefault().isIndexing()) {
             log.info("Skipping location of element offset within file, Scannig in progress");

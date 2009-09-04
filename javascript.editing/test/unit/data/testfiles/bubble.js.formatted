@@ -114,23 +114,23 @@ webui.suntheme4_2.widget.bubble.prototype.getProps = function() {
     var props = this.inherited("getProps", arguments);
 
     // Set properties.
-    if (this.title != null) { 
-        props.title = this.title; 
+    if (this.title != null) {
+        props.title = this.title;
     }
-    if (this.contents != null) { 
-        props.contents = this.contents; 
+    if (this.contents != null) {
+        props.contents = this.contents;
     }
-    if (this.height != null) { 
-        props.height = this.height; 
+    if (this.height != null) {
+        props.height = this.height;
     }
-    if (this.width != null) { 
-        props.width = this.width; 
+    if (this.width != null) {
+        props.width = this.width;
     }
-    if (this.autoClose != null) { 
-        props.autoClose = this.autoClose; 
+    if (this.autoClose != null) {
+        props.autoClose = this.autoClose;
     }
-    if (this.duration != null) { 
-        props.duration = this.duration; 
+    if (this.duration != null) {
+        props.duration = this.duration;
     }
     if (this.closeButton != null) {
         props.closeButton = this.closeButton;
@@ -369,11 +369,11 @@ webui.suntheme4_2.widget.bubble.prototype.postCreate = function () {
     }
 
     // Set public functions.
-    this.domNode.close = function() { 
-        return webui.suntheme4_2.dijit.byId(this.id).close(); 
+    this.domNode.close = function() {
+        return webui.suntheme4_2.dijit.byId(this.id).close();
     };
-    this.domNode.open = function(event) { 
-        return webui.suntheme4_2.dijit.byId(this.id).open(event); 
+    this.domNode.open = function(event) {
+        return webui.suntheme4_2.dijit.byId(this.id).open(event);
     };
 
     // Set events.

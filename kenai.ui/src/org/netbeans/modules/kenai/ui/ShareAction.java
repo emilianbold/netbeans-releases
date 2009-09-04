@@ -51,9 +51,6 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -72,7 +69,7 @@ import org.openide.util.actions.Presenter;
 public final class ShareAction extends CookieAction {
 
     //XXX this has to be done better for other domains than (test)kenai
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(hg\\.|svn\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     protected void performAction(Node[] activatedNodes) {
         assert activatedNodes.length == 1;
@@ -152,26 +149,8 @@ public final class ShareAction extends CookieAction {
             proj = actionContext.lookup(Project.class);
         }
 
-        private synchronized boolean isKenaiProject(Project proj) {
+        private boolean isKenaiProject(Project proj) {
             assert proj != null;
-            ProjectHandle[] openProjects = DashboardImpl.getInstance().getOpenProjects();
-            for (int i = 0; i < openProjects.length; i++) {
-                ProjectHandle projectHandle = openProjects[i];
-                if (projectHandle == null) {
-                    continue;
-                }
-                List<SourceHandle> sources = SourceAccessorImpl.getDefault().getSources(projectHandle);
-                for (SourceHandle sourceHandle : sources) {
-                    if (sourceHandle == null) {
-                        continue;
-                    }
-                    for (NbProjectHandle nbProjectHandle : sourceHandle.getRecentProjects()) {
-                        if (((NbProjectHandleImpl) nbProjectHandle).getProject().equals(proj)) {
-                            return true;
-                        }
-                    }
-                }
-            }
             String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation");
             if (projRepo != null) {
                 final Matcher m = repositoryPattern.matcher(projRepo);

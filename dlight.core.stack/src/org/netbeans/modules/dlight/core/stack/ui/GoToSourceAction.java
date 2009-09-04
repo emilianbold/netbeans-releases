@@ -62,10 +62,12 @@ class GoToSourceAction extends AbstractAction {
     private final Future<SourceFileInfo> sourceFileInfoTask;
     private boolean isEnabled = true;
     private boolean gotTheInfo = false;
+    private final GoToSourceActionReadnessListener listener;
 
-     GoToSourceAction(final SourceFileInfoDataProvider dataProvider, FunctionCall funcCall) {
+     GoToSourceAction(final SourceFileInfoDataProvider dataProvider, FunctionCall funcCall, GoToSourceActionReadnessListener listener) {
         super(NbBundle.getMessage(GoToSourceAction.class, "GoToSourceActionName"));//NOI18N
         this.functionCall = funcCall;
+        this.listener = listener;
         sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
 
             public SourceFileInfo call() {
@@ -94,6 +96,7 @@ class GoToSourceAction extends AbstractAction {
                         gotTheInfo = true;
                     }
                     setEnabled(isEnabled);
+                    listener.ready();
 
                 }
 
@@ -127,4 +130,8 @@ class GoToSourceAction extends AbstractAction {
             }
         }, "GoToSource from Call Stack UI"); // NOI18N
         }
+
+    interface GoToSourceActionReadnessListener{
+        void ready();
+    }
 }

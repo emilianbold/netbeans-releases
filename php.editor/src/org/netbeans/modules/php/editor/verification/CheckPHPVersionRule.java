@@ -42,6 +42,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -51,6 +52,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,13 +64,6 @@ import org.openide.util.NbBundle;
 public class CheckPHPVersionRule extends PHPRule {
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.ERROR;
-    }
-
-    @Override
-    public boolean getDefaultEnabled() {
-        // temporary solution until there is an UI for setting the src lvl
-        // in project settings
-        return false;
     }
 
     public String getId() {
@@ -83,8 +80,17 @@ public class CheckPHPVersionRule extends PHPRule {
 
     @Override
     public boolean appliesTo(RuleContext context) {
-        //TODO: read source level property from the project
-        return true;
+        FileObject fobj = NbEditorUtilities.getFileObject(context.doc);
+
+        if (fobj != null){
+            Properties props = PhpLanguageOptions.getDefault().getProperties(fobj);
+
+            if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_5) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override

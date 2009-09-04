@@ -66,7 +66,7 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
 
         FileObject fileObject = (FileObject)info.getAttributeValue(FileObject.class);
         if (fileObject != null) {
-            PhpLanguageOptions.Properties languageProperties = PhpLanguageOptions.getProperties(fileObject);
+            PhpLanguageOptions.Properties languageProperties = PhpLanguageOptions.getDefault().getProperties(fileObject);
             asp_tag = languageProperties.areAspTagsEnabled();
             short_tag = languageProperties.areShortTagsEnabled();
         }

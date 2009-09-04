@@ -41,8 +41,8 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
-import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode.SeenProperty;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.nodes.Node.Property;

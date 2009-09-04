@@ -378,9 +378,6 @@
                         <test/>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.editor</friend>

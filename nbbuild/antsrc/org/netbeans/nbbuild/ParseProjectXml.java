@@ -1409,6 +1409,18 @@ public final class ParseProjectXml extends Task {
                 }
             }
         }
+        for (TestDeps testDeps : testDepsList) {
+            File testSrcDir = new File(moduleProject, "test/" + testDeps.testtype + "/src");
+            if (!testSrcDir.isDirectory()) {
+                String error = "No such dir " + testSrcDir + "; should not define test deps";
+                if (getModuleType(pDoc) == TYPE_NB_ORG) {
+                    throw new BuildException(error, getLocation());
+                } else {
+                    // For compatibility reasons probably cannot make this fatal.
+                    log(error, Project.MSG_WARN);
+                }
+            }
+        }
         // #82204 intialize default testtypes when are not  in project.xml
         if (!existsUnitTests) {
             log("Default TestDeps for unit", Project.MSG_VERBOSE);
@@ -1435,7 +1447,7 @@ public final class ParseProjectXml extends Task {
                 // Need to include transitive deps of j2seproject in CP:
                 testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, true, false, false, testDeps));
                 // Common GUI testing tools:
-                for (String library : new String[]{"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
+                for (String library : new String[]{"org.netbeans.modules.jemmy"/* XXX now split up anyway: "org.netbeans.modules.jellytools"*/}) {
                     testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
                 }
                 // For NbModuleSuite, which needs to find the platform:

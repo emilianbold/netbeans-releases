@@ -41,6 +41,7 @@
 
 package org.openide.filesystems;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.EventObject;
 
@@ -66,6 +67,7 @@ public class FileEvent extends EventObject {
 
     /***/
     private EventControl.AtomicActionLink atomActionID;
+    private transient Collection<Runnable> postNotify;
 
     /** Creates new <code>FileEvent</code>. The <code>FileObject</code> where the action occurred
     * is assumed to be the same as the source object.
@@ -135,6 +137,33 @@ public class FileEvent extends EventObject {
         return expected;
     }
 
+    /** Support for <em>batch</em> processing of events. In some situations
+     * you may want to delay processing of received events until the last
+     * known one is delivered. For example if there is a lot of operations
+     * done inside {@link FileUtil#runAtomicAction(java.lang.Runnable)}
+     * action, there can be valid reason to do the processing only after
+     * all of them are delivered. In such situation attach your {@link Runnable}
+     * to provided event. Such {@link  Runnable} is then guaranteed to be called once.
+     * Either immediately (if there is no batch delivery in progress)
+     * or some time later (if there is a batch delivery). You can attach
+     * single runnable multiple times, even to different events in the
+     * same batch section and its {@link  Runnable#run()} method will still be
+     * called just once. {@link Object#equals(java.lang.Object)} is used
+     * to check equality of two {@link Runnable}s.
+     *
+     * @since 7.24
+     * @param r the runnable to execute when batch event deliver is over
+     *   (can be even executed immediately)
+     */
+    public final void runWhenDeliveryOver(Runnable r) {
+        Collection<Runnable> to = postNotify;
+        if (to != null) {
+            to.add(r);
+        } else {
+            r.run();
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -197,6 +226,12 @@ public class FileEvent extends EventObject {
         }
 
         return false;
+    }
+
+    void setPostNotify(Collection<Runnable> runs) {
+        // cannot try to set the postNotify field twiced
+        assert postNotify == null || runs == null;
+        this.postNotify = runs;
     }
     
 }

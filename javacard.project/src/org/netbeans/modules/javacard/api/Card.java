@@ -275,4 +275,17 @@ public abstract class Card {
     public final String getId() {
         return id;
     }
+
+    /**
+     * Determine if this card is remote or not.  This is relevant in the
+     * case of emulators which may be on the local machine (actions should
+     * check for and possibly start an instance) vs. remote (actions should
+     * assume the remote card manager is running and fail gracefully if the
+     * remote host is not accessible).
+     * @return The default implementation returns false;  other implementations
+     * can override as appropriate.
+     */
+    public boolean isRemote() {
+        return false;
+    }
 }

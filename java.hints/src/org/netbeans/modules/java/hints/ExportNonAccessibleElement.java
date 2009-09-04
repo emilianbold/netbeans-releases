@@ -59,6 +59,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
@@ -206,7 +207,15 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
                 }
             }
         }
-        return arg0.getSuperclass().accept(this, arg1);
+
+        TypeMirror superclass = arg0.getSuperclass();
+        if (superclass.getKind() == TypeKind.DECLARED) {
+            if (!((DeclaredType) superclass).asElement().getKind().isInterface()) {
+                return false;
+            }
+        }
+
+        return superclass.accept(this, arg1);
     }
 
     public Boolean visitVariable(VariableElement field, Void arg1) {

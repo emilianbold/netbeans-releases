@@ -36,29 +36,34 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.core.syntax.formatting;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
-import org.netbeans.modules.csl.core.GsfParserFactory;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
-import org.netbeans.modules.html.editor.HtmlKit;
-import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
@@ -66,12 +71,16 @@ import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
+import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
 import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -90,12 +99,18 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
+    public static Test xsuite() throws IOException, BadLocationException {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JspIndenterTest("testFormattingCase005"));
+        return suite;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setInstances(new TestClassPathProvider(createClassPaths()), testLanguageProvider);
         initParserJARs();
-        NbReaderProvider.setupReaders();
+        
         AbstractIndenter.inUnitTestRun = true;
 
         // init TestLanguageProvider
@@ -135,15 +150,14 @@ public class JspIndenterTest extends TestBase2 {
         // which means that for example Java formatter which does call EditorCookie to retrieve
         // document will get difference instance of BaseDocument for indentation
         try {
-             DataObject dobj = DataObject.find(fo);
-             assertNotNull(dobj);
+            DataObject dobj = DataObject.find(fo);
+            assertNotNull(dobj);
 
-             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-             assertNotNull(ec);
+            EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+            assertNotNull(ec);
 
-             return (BaseDocument)ec.openDocument();
-        }
-        catch (Exception ex){
+            return (BaseDocument) ec.openDocument();
+        } catch (Exception ex) {
             fail(ex.toString());
             return null;
         }
@@ -162,7 +176,9 @@ public class JspIndenterTest extends TestBase2 {
     }
 
     private class TestClassPathProvider implements ClassPathProvider {
+
         private Map<String, ClassPath> map;
+
         public TestClassPathProvider(Map<String, ClassPath> map) {
             this.map = map;
         }
@@ -176,81 +192,108 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
-
     public void testFormattingCase001() throws Exception {
-        reformatFileContents("testfilesformatting/case001.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case001.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase002() throws Exception {
-        reformatFileContents("testfilesformatting/case002.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case002.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase003() throws Exception {
-        reformatFileContents("testfilesformatting/case003.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case003.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase004() throws Exception {
-        reformatFileContents("testfilesformatting/case004.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case004.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase005() throws Exception {
-        reformatFileContents("testfilesformatting/case005.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case005.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase006() throws Exception {
-        reformatFileContents("testfilesformatting/case006.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case006.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase007() throws Exception {
-        reformatFileContents("testfilesformatting/case007.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case007.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase008() throws Exception {
-        reformatFileContents("testfilesformatting/case008.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case008.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase009() throws Exception {
-        reformatFileContents("testfilesformatting/case009.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case009.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase010() throws Exception {
-        reformatFileContents("testfilesformatting/case010.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case010.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase011() throws Exception {
-        reformatFileContents("testfilesformatting/case011.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case011.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase012() throws Exception {
-        reformatFileContents("testfilesformatting/case012.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case012.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingIssue121102() throws Exception {
-        reformatFileContents("testfilesformatting/issue121102.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue121102.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingIssue129778() throws Exception {
-        reformatFileContents("testfilesformatting/issue129778.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue129778.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingIssue89174() throws Exception {
-        reformatFileContents("testfilesformatting/issue89174.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue89174.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingIssue160098() throws Exception {
-        reformatFileContents("testfilesformatting/issue160098.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue160098.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingIssue160103() throws Exception {
-        reformatFileContents("testfilesformatting/issue160103.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue160103.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingIssue160527() throws Exception {
-        reformatFileContents("testfilesformatting/issue160527.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue160527.jsp", new IndentPrefs(4, 4));
     }
 
     public void testFormattingIssue162017() throws Exception {
-        reformatFileContents("testfilesformatting/issue162017.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue162017.jsp", new IndentPrefs(4, 4));
+    }
+
+    @Override
+    protected BaseDocument getDocument(FileObject fo) {
+        try {
+            //this create an instance of JspKit which initializes the coloring data but lazily, not parsed yet here
+            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fo, EditorCookie.class);
+            BaseDocument bdoc = (BaseDocument) ec.openDocument();
+
+            //force parse and wait
+            TagLibParseSupport pc = (TagLibParseSupport) DataLoadersBridge.getDefault().getCookie(fo, TagLibParseCookie.class);
+            pc.getCachedParseResult(false, false, true);
+            //get the parser coloring data
+            JspColoringData data = pc.getJSPColoringData();
+
+            //set correct values to the document's input attributes
+            InputAttributes inputAttributes = (InputAttributes) bdoc.getProperty(InputAttributes.class);
+            JspParseData jspParseData = (JspParseData) inputAttributes.getValue(LanguagePath.get(JspTokenId.language()), JspParseData.class);
+            jspParseData.updateParseData(data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax());
+            //mark as initialized
+            jspParseData.initialized();
+
+            //any token hierarchy taken from this document should see the correct lexing - based on parsing results
+            return bdoc;
+        } catch (IOException ex) {
+            fail(ex.toString());
+            return null;
+        }
     }
 
     public void testIndentation() throws Exception {
@@ -277,34 +320,34 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n        ^</jsp:useBean>", null);
 
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^",
-                      "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
+                "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^</html>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    ^</html>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^<table>", null);
 
         insertNewline("<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\"\n        prefix=\"c\" %>^",
-                      "<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\"\n        prefix=\"c\" %>\n^",null);
+                "<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\"\n        prefix=\"c\" %>\n^", null);
 
         // TODO: impl matching of INDENT/RETURN and use it to properly match incorrect document:
         //insertNewline("<jsp:body>\n    <html>^</jsp:body>", "<jsp:body>\n    <html>\n^</jsp:body>", null);
 
         insertNewline("<!--\n   comment\n^-->\n", "<!--\n   comment\n\n^-->\n", null);
         insertNewline(
-            "<html> <!--^comment",
-            "<html> <!--\n       ^comment", null);
+                "<html> <!--^comment",
+                "<html> <!--\n       ^comment", null);
         insertNewline(
-            "<html> <!--\n             ^comment",
-            "<html> <!--\n             \n       ^comment", null);
+                "<html> <!--\n             ^comment",
+                "<html> <!--\n             \n       ^comment", null);
 
         // expression indentation:
         insertNewline(
-            "<html>\n    ${\"expression+\n           exp2\"}^",
-            "<html>\n    ${\"expression+\n           exp2\"}\n    ^", null);
+                "<html>\n    ${\"expression+\n           exp2\"}^",
+                "<html>\n    ${\"expression+\n           exp2\"}\n    ^", null);
         insertNewline(
-            "<html>\n    some text ${\"expression+\n                         exp2\"^}",
-            "<html>\n    some text ${\"expression+\n                         exp2\"\n    ^}", null);
+                "<html>\n    some text ${\"expression+\n                         exp2\"^}",
+                "<html>\n    some text ${\"expression+\n                         exp2\"\n    ^}", null);
         insertNewline(
-            "<html>\n    ${\"expression+\n           exp2\"\n                }^",
-            "<html>\n    ${\"expression+\n           exp2\"\n                }\n                ^", null);
+                "<html>\n    ${\"expression+\n           exp2\"\n                }^",
+                "<html>\n    ${\"expression+\n           exp2\"\n                }\n                ^", null);
 
 // #128034
 //        insertNewline(
@@ -315,6 +358,5 @@ public class JspIndenterTest extends TestBase2 {
 //         is then used to calcualte line-adjustment causing wrong indentation:
 //        insertNewline("<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>^",
 //                      "<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>\n        ^", null);
-   }
-
+    }
 }

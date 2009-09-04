@@ -134,7 +134,7 @@ public class WagService implements Comparable<WagService> {
                 paramStr += ", ";
             }
 
-            paramStr += p.toString();
+            paramStr += p.getName();
         }
 
         return paramStr;

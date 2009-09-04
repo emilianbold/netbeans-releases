@@ -46,12 +46,10 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.editor.ext.html.parser.AstNode.NodeType;
 import org.netbeans.editor.ext.html.test.TestBase;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 
 /**
  *
@@ -67,14 +65,6 @@ public class AstNodeUtilsTest extends TestBase {
     public AstNodeUtilsTest(String testName) {
         super(testName);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
-    }
-
-
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
@@ -136,6 +126,35 @@ public class AstNodeUtilsTest extends TestBase {
         assertEquals("td", node.name());
     }
 
+     public void testNodeVisitors() throws Exception {
+        String code = "<html><body><table><tr></tr><tr><td></tr></body></html>";
+        //             0123456789012345678
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+
+        final int nodes[] = new int[1];
+        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            public void visit(AstNode node) {
+                nodes[0]++;
+            }
+        });
+
+        assertEquals(10, nodes[0]);
+
+        nodes[0] = 0;
+        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            public void visit(AstNode node) {
+                nodes[0]++;
+            }
+        }, AstNode.NodeType.OPEN_TAG);
+
+        assertEquals(6, nodes[0]);
+
+    }
+
     public void testGetPossibleOpenTagElements() throws BadLocationException {
         String code = "<html><head><title></title></head><body>...<p>...</body></html>";
         //             0123456789012345678901234567890123456789012345678901234
@@ -144,7 +163,7 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         //root node allows all dtd elements
         assertPossibleElements(root, 0, arr("a", "abbr", "html"), Match.CONTAINS);

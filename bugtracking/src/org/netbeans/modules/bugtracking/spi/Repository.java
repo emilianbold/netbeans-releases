@@ -42,16 +42,18 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * 
  * Represents a bug tracking repository (server)
  * 
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
-public abstract class Repository {
+public abstract class Repository implements Lookup.Provider {
 
     private RepositoryNode node;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -60,6 +62,13 @@ public abstract class Repository {
      * a query from this repository was saved or removed
      */
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
+
+    /**
+     * Repository's attributes have changed, e.g. name, url, etc.
+     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
+     * Old value can be null in case the repository is created.
+     */
+    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
 
     /**
      * Returns the icon for this repository
@@ -78,6 +87,13 @@ public abstract class Repository {
      * @return
      */
     public abstract String getTooltip();
+
+    /**
+     * Returns a unique ID for this repository
+     * 
+     * @return
+     */
+    public abstract String getID();
 
     /**
      * Returns a Node representing this repository
@@ -141,19 +157,19 @@ public abstract class Repository {
     public abstract Query[] getQueries();
 
     /**
+     * Returns all known repository users.
+     *
+     * @return all known repository users.
+     */
+    public abstract Collection<RepositoryUser> getUsers();
+
+    /**
      * Runs a query against the bugtracking repository to get all issues
      * which applies that their ID or summary contains the given criteria string
      *
      * @param criteria
      */
     public abstract Issue[] simpleSearch(String criteria);
-
-    /**
-     * Returns the {@link IssueCache} for the repository
-     * @return
-     */
-    protected abstract IssueCache getIssueCache();
-
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
@@ -171,8 +187,13 @@ public abstract class Repository {
         support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
     }
 
-    IssueCache getCache() {
-        return getIssueCache();
+    /**
+     * Notify listeners on this repository that some of repository's attributes have changed.
+     * @param oldValue map of old attributes
+     * @param newValue map of new attributes
+     */
+    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
+        support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
     }
 
 }

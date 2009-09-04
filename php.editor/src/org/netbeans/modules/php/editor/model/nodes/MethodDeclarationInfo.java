@@ -87,7 +87,7 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
 
     @Override
     public QualifiedName getQualifiedName() {
-        return QualifiedName.create(getOriginalNode().getFunction().getFunctionName());
+        return QualifiedName.createUnqualifiedName(getName());
     }
 
     @Override

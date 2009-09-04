@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Editors">
         <folder name="text">
-            <folder name="xhtml">
+            <folder name="x-jsf+xml">
                 <folder name="Popup">
                     <file name="org-netbeans-modules-web-jsf-editor-JsfPopupAction.instance">
                         <attr name="position" intvalue="3500"/>
@@ -112,6 +112,56 @@ made subject to such option by the copyright holder.
         <folder name="JSF">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
             <attr name="position" intvalue="700"/>
+            <!-- JSF From Entity Templates -->
+            <folder name="JSF_From_Entity_Wizard">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="position" intvalue="93"/>
+                <file name="PaginationHelper.ftl" url="templates/PaginationHelper.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="JsfUtil.ftl" url="templates/JsfUtil.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="controller.ftl" url="templates/controller.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="create.ftl" url="templates/create.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="edit.ftl" url="templates/edit.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="list.ftl" url="templates/list.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="view.ftl" url="templates/view.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+            <!-- JSF From Entity Snippets -->
+            <folder name="JSF_From_Entity_Snippets">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="position" intvalue="97"/>
+                <file name="table.ftl" url="../palette/items/resources/table.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="view.ftl" url="../palette/items/resources/view.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="edit.ftl" url="../palette/items/resources/edit.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
             <!-- JSP Page --> 
             <file name="JSP.jsp" url="templates/JSP.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
@@ -153,6 +203,16 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>
             </file>
+            <file name="faces-config.xml" url="templates/dummy.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="position" intvalue="70"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/FacesConfig.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.FacesConfigIterator"/>
+            </file>
         </folder>
         <folder name="Persistence">
             <file name="JsfFromDB" url="templates/dummy.template">
@@ -173,9 +233,21 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="400"/>
             <file name="JsfForm.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfForm.xml"/>
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
+            <file name="JsfFormFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfFormFromEntity.xml"/>
+            <file name="JsfTableFromEntity.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTableFromEntity.xml"/>
+            <file name="JSFMetadata.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JSFMetadata.xml"/>
         </folder>
     </folder>
-   
+
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="web-faces-mime-resolver.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+            <attr name="position" intvalue="405"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsf+xml">

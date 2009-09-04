@@ -394,7 +394,7 @@ public final class SettingsType {
                         Object [] oo = new Object [] { profileHome, f , true, linkTarget, false };
                         infos.add(oo);
                     }
-                } else if (f.getMIMEType().equals(mimeType)) {
+                } else if (mimeType.equals(FileUtil.getMIMEType(f, mimeType))) {
                     Object targetOs = f.getAttribute(FA_TARGET_OS);
                     if (targetOs != null) {
                         try {
@@ -435,7 +435,9 @@ public final class SettingsType {
                         break;
                     }
                 } else {
-                    LOG.fine("Ignoring file: '" + f.getPath() + "' of type " + f.getMIMEType()); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Ignoring file: '" + f.getPath() + "' of type " + f.getMIMEType()); //NOI18N
+                    }
                 }
             }
 
