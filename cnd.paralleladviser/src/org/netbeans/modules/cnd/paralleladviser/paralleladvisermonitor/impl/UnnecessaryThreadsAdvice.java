@@ -82,5 +82,6 @@ public class UnnecessaryThreadsAdvice implements Advice {
     }
 
     public void addNotification(OutputWriter writer) {
+        writer.println("It seems that program uses too many threads.");
     }
 }

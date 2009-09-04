@@ -81,7 +81,6 @@ import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
@@ -113,7 +112,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     private static final ParallelAdviserMonitor instance = new ParallelAdviserMonitor();
     private CpuHighLoadIntervalFinder highLoadFinder;
     private UnnecessaryThreadsIntervalFinder unnecessaryThreadsFinder;
-    Collection<LoopParallelizationAdvice> notificationTips;
+    Collection<Advice> notificationTips;
 
     public static ParallelAdviserMonitor getInstance() {
         return instance;
@@ -137,7 +136,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     public void sessionAdded(DLightSession newSession) {
         highLoadFinder = new CpuHighLoadIntervalFinder();
         unnecessaryThreadsFinder = new UnnecessaryThreadsIntervalFinder();
-        notificationTips = new ArrayList<LoopParallelizationAdvice>();
+        notificationTips = new ArrayList<Advice>();
         newSession.addIndicatorNotificationListener(this);
         newSession.addSessionStateListener(this);
     }
@@ -274,9 +273,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             unnecessaryThreadsFinder.update(dataRow);
             if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
                 UnnecessaryThreadsTipsProvider.clearTips();
-                UnnecessaryThreadsTipsProvider.addTip(new UnnecessaryThreadsAdvice());
-                //panel.notifyUser();
-                System.out.println("Parallel Adviser notification!!!"); // NOI18N
+                UnnecessaryThreadsAdvice tip = new UnnecessaryThreadsAdvice();
+                UnnecessaryThreadsTipsProvider.addTip(tip);
+                addNotificationTip(tip);
                 Runnable updateView = new Runnable() {
 
                     public void run() {
@@ -387,11 +386,23 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         return processorsNumber;
     }
 
-    private void addNotificationTip(LoopParallelizationAdvice tip) {
-        for (LoopParallelizationAdvice advice : notificationTips) {
-            if(advice.getLoop().equals(tip.getLoop())) {
-                notificationTips.remove(advice);
-                break;
+    private void addNotificationTip(Advice tip) {
+        if (tip instanceof LoopParallelizationAdvice) {
+            for (Advice advice : notificationTips) {
+                if (advice instanceof LoopParallelizationAdvice) {
+                    if (((LoopParallelizationAdvice) advice).getLoop().equals(((LoopParallelizationAdvice) tip).getLoop())) {
+                        notificationTips.remove(advice);
+                        break;
+                    }
+                }
+            }
+        }
+        if (tip instanceof UnnecessaryThreadsAdvice) {
+            for (Advice advice : notificationTips) {
+                if (advice instanceof UnnecessaryThreadsAdvice) {
+                    notificationTips.remove(advice);
+                    break;
+                }
             }
         }
         notificationTips.add(tip);
@@ -455,19 +466,15 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
 
         public boolean isUnnecessaryThreadsInterval() {
-            boolean result = (interval > 0);//&& (interval % INTERVAL_BOUND == 0);
+            boolean result = (interval > 0) && (interval % INTERVAL_BOUND == 0);
             return result;
         }
 
         public void update(DataRow dataRow) {
             Column threadsCol = new Column("threads", Integer.class); // NOI18N
-            Column latTimeCol = new Column(MSAState.WaitingCPU.toString(), Integer.class);
-            Column runTimeCol = new Column(MSAState.Running.toString(), Integer.class);
             Object threadsObj = dataRow.getData(threadsCol.getColumnName());
-            Object latTimeObj = dataRow.getData(latTimeCol.getColumnName());
-            Object runTimeObj = dataRow.getData(runTimeCol.getColumnName());
-            if (latTimeObj != null && runTimeObj != null && threadsObj != null) {
-                if (areUnnecessaryThreadsUsed((Integer) threadsObj, (Integer) latTimeObj, (Integer) runTimeObj)) {
+            if (threadsObj != null) {
+                if (areUnnecessaryThreadsUsed((Integer) threadsObj)) {
                     interval++;
                 } else {
                     interval = 0;
@@ -475,8 +482,8 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             }
         }
 
-        private boolean areUnnecessaryThreadsUsed(int threads, int latTime, int runTime) {
-            if (((double) runTime / (double) threads) > 0.9 && ((double) latTime / (double) threads) > 1) {
+        private boolean areUnnecessaryThreadsUsed(int threads) {
+            if (getProcessorsNumber() + 2 < threads) {
                 return true;
             }
             return false;
