@@ -104,63 +104,6 @@ public class NbPresenterLeakTest extends NbTestCase {
         
         assertGC ("Dialog disappears.", w);
     }
-
-    /** Preventing following memory leak by making sure dispose() clear all
-     * references to DialogDescriptor.
-     *
-     * <pre>
-private static java.awt.Component java.awt.KeyboardFocusManager.focusOwner->
-javax.swing.JFrame@1e89fdb-focusTraversalPolicy->
-javax.swing.LegacyGlueFocusTraversalPolicy@5cc8e7-delegateManager->
-javax.swing.DelegatingDefaultFocusManager@1bf5121-delegate->
-java.awt.DefaultKeyboardFocusManager@ee3f7c-realOppositeWindow->
-org.netbeans.core.windows.services.NbDialog@b6e92f-descriptor->
-org.openide.DialogDescriptor@53e657-message->
-org.netbeans.modules.refactoring.spi.impl.ParametersPanel@13f1403-rui->
-org.netbeans.modules.refactoring.java.ui.SafeDeleteUI@1aa6496-refactoring->
-org.netbeans.modules.refactoring.api.SafeDeleteRefactoring@509746-scope->
-org.netbeans.modules.refactoring.api.Context@164bd30-delegate->
-org.openide.util.lookup.AbstractLookup@a39c01-tree->
-org.openide.util.lookup.ArrayStorage@a56580-content->
-[Ljava.lang.Object;@153cc48-[0]->
-org.openide.util.lookup.InstanceContent$SimpleItem@af4bd9-obj->
-org.netbeans.api.java.source.ClasspathInfo@110bab1-bootClassPath->
-org.netbeans.api.java.classpath.ClassPath@142871f-impl->
-org.netbeans.spi.java.project.support.ClassPathProviderMerger$ProxyClassPathImplementation@1ff103e-mainProvider->
-org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl@1a405d9-helper->
-org.netbeans.spi.project.support.ant.AntProjectHelper@1ec9e59-state->
-org.netbeans.api.project.ProjectManager$ProjectStateImpl@593990-p->
-org.netbeans.modules.java.j2seproject.J2SEProject@161761f
- </pre>
-     */
-    public void testDisposeClearsDescriptor () throws Exception {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels(), null);
-        wizardDescriptor.setModal (false);
-        Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
-        dialog.setVisible(true);
-        while (!dialog.isShowing()) {
-            waitAWT();
-        }
-        dialog.setVisible(false);
-        while (dialog.isShowing()) {
-            waitAWT();
-        }
-        WeakReference<WizardDescriptor> w = new WeakReference<WizardDescriptor> (wizardDescriptor);
-        WeakReference<Object> m = new WeakReference<Object> (wizardDescriptor.getMessage());
-        wizardDescriptor = null;
-        dialog.dispose();
-
-        assertGC("After dispose the descriptor can disappear", w);
-        assertGC("After dispose the message can disappear", m);
-    }
-
-    private static void waitAWT() throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-            }
-        });
-    }
-
     
     private static class EDTJob implements Runnable {
         private Dialog d;
