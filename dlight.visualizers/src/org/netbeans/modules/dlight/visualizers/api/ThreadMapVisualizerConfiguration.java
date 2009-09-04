@@ -38,58 +38,25 @@
  */
 package org.netbeans.modules.dlight.visualizers.api;
 
-import java.util.List;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.impl.ThreadMapVisualizerConfigurationAccessor;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataScheme;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ThreadMapVisualizerConfiguration implements VisualizerConfiguration {
-
-//    private ThreadMapMetadata threadMapMetadata;
-    static {
-        ThreadMapVisualizerConfigurationAccessor.setDefault(new ThreadMapVisualizerConfigurationAccessorImpl());
-    }
+public final class ThreadMapVisualizerConfiguration implements VisualizerConfiguration {
 
     public ThreadMapVisualizerConfiguration() {
-//        this.threadMapMetadata = threadMapMetadata;
-//        List<Column> list = ThreadTableMetrics.getThredMapColumn();
-//        threadTable = new DataTableMetadata("threadmap", list, null); //NOI18N
     }
 
     public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:threadmap"); //NOI18N
-    }
-
-    public DataTableMetadata getMetadata() {
-        return null;
-//        return threadMapMetadata.getDataTableMetadata();
+        return ThreadMapDataScheme.getScheme();
     }
 
     public String getID() {
         return VisualizerConfigurationIDsProvider.THREAD_MAP_VISUALIZER;
-    }
-
-//    public ThreadMapMetadata getThreadMapMetadata() {
-//        return threadMapMetadata;
-//    }
-    private static final class ThreadMapVisualizerConfigurationAccessorImpl extends ThreadMapVisualizerConfigurationAccessor {
-
-        @Override
-        public List<Column> getTableColumns(ThreadMapVisualizerConfiguration configuration) {
-            return configuration.getMetadata().getColumns();
-        }
-
-//        @Override
-//        public ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration) {
-//            return configuration.getThreadMapMetadata();
-//        }
     }
 }

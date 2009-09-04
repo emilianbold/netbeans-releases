@@ -36,31 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
 
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 
-/**
- * @author Alexey Vladykin
- */
-public final class DeadlockVisualizerConfiguration implements TableBasedVisualizerConfiguration {
+public final class ThreadMapDataScheme {
 
-    /*package*/ static final String ID = "deadlockVisualizer"; // NOI18N
+    private final static DataModelScheme scheme = DataModelSchemeProvider.getInstance().getScheme("model:threadmap"); // NOI18N
 
-    public String getID() {
-        return ID;
+    private ThreadMapDataScheme() {
     }
 
-    public DataTableMetadata getMetadata() {
-        return SunStudioDCConfiguration.getDeadlockTableMetadata(
-                SunStudioDCConfiguration.c_Deadlocks);
-    }
-
-    public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:deadlocks"); //NOI18N
+    public static DataModelScheme getScheme() {
+        return scheme;
     }
 }

@@ -55,12 +55,15 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
 public final class PerfanDataStorage implements DataStorage {
 
+    public static final String ID = "PerfanDataStorage"; //NOI18N
+    public static final DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(ID);
     private final static Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
     private ErprintSession er_print;
     private String experimentDirectory = null;

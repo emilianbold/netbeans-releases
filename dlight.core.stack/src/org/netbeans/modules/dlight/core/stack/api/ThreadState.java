@@ -76,7 +76,6 @@ public interface ThreadState {
         ThreadStopped(9), // stopped (/proc, jobcontrol, lwp_suspend)
         END_LONG_LIST,
         ThreadFinished; // Thread is gone
-
         private final int[] codes;
 
         private MSAState(int... codes) {
@@ -93,8 +92,8 @@ public interface ThreadState {
         }
 
         public static MSAState fromCode(int code, boolean full) {
-            int start = full? START_LONG_LIST.ordinal() : START_SHORT_LIST.ordinal();
-            int end = full? END_LONG_LIST.ordinal() : END_SHORT_LIST.ordinal();
+            int start = full ? START_LONG_LIST.ordinal() : START_SHORT_LIST.ordinal();
+            int end = full ? END_LONG_LIST.ordinal() : END_SHORT_LIST.ordinal();
             for (int i = start; i < end; ++i) {
                 MSAState state = MSAState.values()[i];
                 if (state.matches(code)) {
@@ -137,6 +136,8 @@ public interface ThreadState {
      * @return beginning time in natural unit of state.
      */
     long getTimeStamp();
+
+    long getMSASamplePeriod();
 
     /**
      * returns index of state that represents "sampling" one.

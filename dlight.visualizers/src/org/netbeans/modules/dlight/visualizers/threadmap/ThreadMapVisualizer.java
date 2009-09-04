@@ -203,7 +203,7 @@ public class ThreadMapVisualizer extends JPanel implements
     }
 
     private void syncFillModel() {
-        final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(startTimeStamp, false, false));
+        final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(startTimeStamp, true, false));
         final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
         UIThread.invoke(new Runnable() {
 

@@ -353,7 +353,7 @@ import org.openide.util.NbBundle;
                     // As DataStorage is already specialized, there is always only one
                     // returned DataSchema
                     for (DataProviderFactory providerFactory : factories) {
-                        if (providerFactory.provides(dataModel) && providerFactory.getSupportedDataStorageTypes().contains(dss)) {
+                        if (providerFactory.provides(dataModel) && providerFactory.validate(storage)) {
                             dataProvider = providerFactory.create();
                             break;
                         }

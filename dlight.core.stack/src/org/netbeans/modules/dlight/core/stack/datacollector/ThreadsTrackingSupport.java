@@ -36,31 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+package org.netbeans.modules.dlight.core.stack.datacollector;
 
-import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import java.net.URL;
+import java.util.Arrays;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.openide.util.NbBundle;
 
-/**
- * @author Alexey Vladykin
- */
-public final class DeadlockVisualizerConfiguration implements TableBasedVisualizerConfiguration {
+public final class ThreadsTrackingSupport {
 
-    /*package*/ static final String ID = "deadlockVisualizer"; // NOI18N
-
-    public String getID() {
-        return ID;
+    private ThreadsTrackingSupport() {
     }
+    public static final URL LPWS_TRACKING_SCRIPT_URL =
+            ThreadsTrackingSupport.class.getResource("/org/netbeans/modules/dlight/core/stack/resources/lwps.d"); // NOI18N
+    public static final Column LWP_ID =
+            new Column("thr_id", Integer.class, getMessage("ThreadsTracking.Column.thr_id"), null); // NOI18N
+    public static final Column LWPS_START =
+            new Column("startts", Long.class, getMessage("ThreadsTracking.Column.startts"), null); // NOI18N
+    public static final Column LWPS_END =
+            new Column("endts", Long.class, getMessage("ThreadsTracking.Column.endts"), null); // NOI18N
 
-    public DataTableMetadata getMetadata() {
-        return SunStudioDCConfiguration.getDeadlockTableMetadata(
-                SunStudioDCConfiguration.c_Deadlocks);
-    }
+    public final DataTableMetadata lwpsTable = new DataTableMetadata("lwps", // NOI18N
+            Arrays.asList(LWP_ID, LWPS_START, LWPS_END), null);
 
-    public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:deadlocks"); //NOI18N
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(ThreadsTrackingSupport.class, key);
     }
 }

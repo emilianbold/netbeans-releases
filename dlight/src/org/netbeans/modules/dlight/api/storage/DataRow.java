@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.storage;
 
 import java.util.List;
@@ -46,92 +45,119 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  * Represents one row of data along with column names
  */
 public final class DataRow {
-  private List<String> colnames;
-  private List<? extends Object> data;
 
-  /**
-   * Created new DataRow instance with the <code>colnames</code> column names
-   * and <code>data</code>
-   * @param colnames column names
-   * @param data data 
-   */
-  public DataRow(List<String> colnames, List<? extends Object> data) {
-    this.colnames = colnames;
-    DLightLogger.assertTrue(data != null, "data parameter should not be null"); //NOI18N
-    this.data = data;
-  }
+    private List<String> colnames;
+    private List<? extends Object> data;
 
-  /**
-   * Returns value of the row as Long for column with the name <code>columnName</code>
-   * @param columnName column name to get Long value for
-   * @return value of row for the column as Long
-   */
-  public Long getLongValue(String columnName) {
-    Long result = null;
-    int idx = colnames.indexOf(columnName);
-    if (idx >= 0) {
-      result = (Long)data.get(idx);
-    }
-    return result;
-  }
-
- /**
-   * Returns value of the row as String for column with the name <code>columnName</code>
-   * @param columnName column name to get String value for
-   * @return value of row for the column as String
-   */
-  public String getStringValue(String columnName) {
-    String result = null;
-    int idx = colnames.indexOf(columnName);
-    if (idx >= 0) {
-      result = String.valueOf(data.get(idx));
-    }
-    return result;
-  }
-
-  /**
-   * Return this row column names
-   * @return column names
-   */
-  public List<String> getColumnNames() {
-    return colnames;
-  }
-
-  /**
-   * Returns data this row contains as Object
-   * @return data
-   */
-  public List<? extends Object> getData() {
-    return data;
-  }
-
-  /**
-   * Returns data for column with the name <code>columnName</code>
-   * @param columnName column name
-   * @return return value for the column with <code>columnName</code>
-   */
-  public Object getData(String columnName){
-    int idx = colnames.indexOf(columnName);
-    if (idx >= 0) {
-      return data.get(idx);
-    }
-    return null;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(" *"); //NOI18N
-    for (String n : colnames) {
-      sb.append(n).append("* | *"); //NOI18N
+    /**
+     * Created new DataRow instance with the <code>colnames</code> column names
+     * and <code>data</code>
+     * @param colnames column names
+     * @param data data
+     */
+    public DataRow(List<String> colnames, List<? extends Object> data) {
+        this.colnames = colnames;
+        DLightLogger.assertTrue(data != null, "data parameter should not be null"); //NOI18N
+        this.data = data;
     }
 
-    sb.append("\n"); //NOI18N
-
-    for (Object v : data) {
-      sb.append(v.toString()).append(" | "); //NOI18N
+    /**
+     * Returns value of the row as Long for column with the name <code>columnName</code>
+     * @param columnName column name to get Long value for
+     * @return value of row for the column as Long
+     */
+    public Long getLongValue(String columnName) {
+        Long result = null;
+        int idx = colnames.indexOf(columnName);
+        if (idx >= 0) {
+            result = (Long) data.get(idx);
+        }
+        return result;
     }
 
-    return sb.toString();
-  }
-  
+    /**
+     * Returns value of the row as String for column with the name <code>columnName</code>
+     * @param columnName column name to get String value for
+     * @return value of row for the column as String
+     */
+    public String getStringValue(String columnName) {
+        return getStringValue(colnames.indexOf(columnName));
+    }
+
+    public String getStringValue(int idx) {
+        String result = null;
+        if (idx >= 0) {
+            result = String.valueOf(data.get(idx));
+        }
+        return result;
+    }
+
+    public Double getDoubleValue(String columnName) {
+        return getDoubleValue(colnames.indexOf(columnName));
+    }
+
+    public Double getDoubleValue(int idx) {
+        Double result = null;
+        if (idx >= 0) {
+            result = (Double) data.get(idx);
+        }
+        return result;
+    }
+
+    public Float getFloatValue(String columnName) {
+        return getFloatValue(colnames.indexOf(columnName));
+    }
+
+    public Float getFloatValue(int idx) {
+        Float result = null;
+        if (idx >= 0) {
+            result = (Float) data.get(idx);
+        }
+        return result;
+    }
+
+    /**
+     * Return this row column names
+     * @return column names
+     */
+    public List<String> getColumnNames() {
+        return colnames;
+    }
+
+    /**
+     * Returns data this row contains as Object
+     * @return data
+     */
+    public List<? extends Object> getData() {
+        return data;
+    }
+
+    /**
+     * Returns data for column with the name <code>columnName</code>
+     * @param columnName column name
+     * @return return value for the column with <code>columnName</code>
+     */
+    public Object getData(String columnName) {
+        int idx = colnames.indexOf(columnName);
+        if (idx >= 0) {
+            return data.get(idx);
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(" *"); //NOI18N
+        for (String n : colnames) {
+            sb.append(n).append("* | *"); //NOI18N
+        }
+
+        sb.append("\n"); //NOI18N
+
+        for (Object v : data) {
+            sb.append(v.toString()).append(" | "); //NOI18N
+        }
+
+        return sb.toString();
+    }
 }

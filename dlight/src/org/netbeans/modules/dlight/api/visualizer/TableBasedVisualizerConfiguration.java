@@ -36,31 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+package org.netbeans.modules.dlight.api.visualizer;
 
-import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 
-/**
- * @author Alexey Vladykin
- */
-public final class DeadlockVisualizerConfiguration implements TableBasedVisualizerConfiguration {
+public interface TableBasedVisualizerConfiguration extends VisualizerConfiguration {
 
-    /*package*/ static final String ID = "deadlockVisualizer"; // NOI18N
-
-    public String getID() {
-        return ID;
-    }
-
-    public DataTableMetadata getMetadata() {
-        return SunStudioDCConfiguration.getDeadlockTableMetadata(
-                SunStudioDCConfiguration.c_Deadlocks);
-    }
-
-    public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:deadlocks"); //NOI18N
-    }
+    /**
+     * Returns {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata} which is
+     * used to create Visualizer on the base of
+     * @return table description
+     */
+    DataTableMetadata getMetadata();
 }

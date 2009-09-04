@@ -64,7 +64,7 @@ public final class ThreadMapDataQuery {
         this.isSampling = isSampling;
     }
 
-    public ThreadMapDataQuery(long timeFrom,boolean isSampling, boolean fullState) {
+    public ThreadMapDataQuery(long timeFrom, boolean isSampling, boolean fullState) {
         this(timeFrom, Long.MAX_VALUE, isSampling, fullState);
     }
 
@@ -89,7 +89,12 @@ public final class ThreadMapDataQuery {
         return fullState;
     }
 
-    public boolean isSampling(){
+    public boolean isSampling() {
         return isSampling;
     }
+//
+//    @Override
+//    public String toString() {
+//        return String.format("DQ[from: %d; to: %d; fullState: %d]", timeFrom, timeTo, fullState ? 1 : 0);
+//    }
 }

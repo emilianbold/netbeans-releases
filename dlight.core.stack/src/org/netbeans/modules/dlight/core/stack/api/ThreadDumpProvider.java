@@ -36,44 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.api;
 
-package org.netbeans.modules.dlight.visualizers.api.impl;
+import java.util.Collection;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+public interface ThreadDumpProvider {
 
-/**
- *
- * @author Alexander Simon
- */
-public abstract class ThreadMapVisualizerConfigurationAccessor {
-    private static volatile ThreadMapVisualizerConfigurationAccessor DEFAULT;
+    Collection<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query);
 
-    public static ThreadMapVisualizerConfigurationAccessor getDefault() {
-        ThreadMapVisualizerConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-        try {
-            Class.forName(ThreadMapVisualizerConfigurationAccessor.class.getName(), true,
-                ThreadMapVisualizerConfigurationAccessor.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
-    }
+    /**
+     * Returns stack trace on the base of the query
 
-    public static void setDefault(ThreadMapVisualizerConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public ThreadMapVisualizerConfigurationAccessor() {
-    }
-
-    public abstract List<Column> getTableColumns(ThreadMapVisualizerConfiguration configuration);
-
-//    public abstract ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration);
+     */
+    ThreadDump getThreadDump(ThreadDumpQuery query);
 }
