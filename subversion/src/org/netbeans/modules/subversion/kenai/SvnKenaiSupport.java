@@ -96,12 +96,16 @@ public class SvnKenaiSupport {
 
     public boolean isLogged () {
         return kenaiSupport != null && kenaiSupport.isLogged();
-    public void removeVCSNoficationListener(PropertyChangeListener l) {
-        kenaiSupport.removeVCSNoficationListener(l);
     }
 
     public String getRevisionUrl(String repositoryUrl, String revision) {
         return kenaiSupport == null ? null : kenaiSupport.getRevisionUrl(repositoryUrl, revision);
+    }
+
+    public void removeVCSNoficationListener(PropertyChangeListener l) {
+        kenaiSupport.removeVCSNoficationListener(l);
+    }
+
     public void addVCSNoficationListener(PropertyChangeListener l) {
         kenaiSupport.addVCSNoficationListener(l);
     }

@@ -115,14 +115,15 @@ public abstract class VCSKenaiSupport {
 
     public abstract boolean isUserOnline(String user);
 
-    /**
-     * Returns a path to a web page showing information about a revision in the repository.
-     * @param sourcesUrl repository url
     public abstract void addVCSNoficationListener(PropertyChangeListener l);
 
     public abstract void removeVCSNoficationListener(PropertyChangeListener l);
+
+    /**
+     * Returns a path to a web page showing information about a revision in the repository.
+     * @param sourcesUrl repository url
      * @param revision required revision
-     * @return 
+     * @return
      */
     public abstract String getRevisionUrl (String sourcesUrl, String revision);
 
