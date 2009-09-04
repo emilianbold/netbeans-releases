@@ -42,10 +42,12 @@ package org.netbeans.test.ide;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.lang.reflect.Field;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -62,6 +64,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.cookies.EditorCookie;
+import org.openide.explorer.view.TreeView;
 
 /**
  *
@@ -149,6 +153,12 @@ public final class WatchProjects {
     
 
     public static void assertTextDocuments() throws Exception {
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            final EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                ec.close();
+            }
+        }
         cleanWellKnownStaticFields();
         System.setProperty("assertgc.paths", "5");
         Log.assertInstances("Are all documents GCed?", "TextDocument");
@@ -174,11 +184,25 @@ public final class WatchProjects {
         OpenProjects.getDefault().setMainProject(p);
 
         cleanWellKnownStaticFields();
+        removeTreeView(Frame.getFrames());
 
         System.setProperty("assertgc.paths", "5");
         Log.assertInstances("Checking if all projects are really garbage collected", "Project");
     }
     
+    private static void removeTreeView(Component[] arr) throws Exception {
+        for (Component c : arr) {
+            if (c instanceof TreeView) {
+                Set<?> set = (Set<?>) getField(TreeView.class, "visHolder").get(c);
+                set.clear();
+                continue;
+            }
+            if (c instanceof Container) {
+                Container o = (Container)c;
+                removeTreeView(o.getComponents());
+            }
+        }
+    }
     private static void resetJTreeUIs(Component[] arr) {
         for (Component c : arr) {
             if (c instanceof JTree) {
