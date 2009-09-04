@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.perfan.dataprovider;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
 import org.netbeans.modules.dlight.perfan.util.Computable;
 import java.util.ArrayList;
@@ -150,6 +151,10 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         if (hasTimeIntervalFilter && timeIntervalDataFilter != null){
             storage.setFilter(timeIntervalDataFilter.getInterval() == null ? "\"\"" : "TSTAMP>" + timeIntervalDataFilter.getInterval().getStart() + "&&TSTAMP<"  + timeIntervalDataFilter.getInterval().getEnd());//NOI18N
         }
+    }
+
+    public ThreadDumpProvider getThreadDumpProvider() {
+        return null;
     }
 
     private static enum CC_MODE {

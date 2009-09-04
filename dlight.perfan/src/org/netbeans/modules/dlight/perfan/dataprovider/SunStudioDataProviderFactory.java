@@ -43,10 +43,11 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -57,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class SunStudioDataProviderFactory implements DataProviderFactory {
 
     private static final Collection<DataModelScheme> providedSchemas;
-    private static final Collection<DataStorageType> supportedTypes;
+    private static final DataStorageType supportedStorageType = PerfanDataStorage.storageType;
 
     static {
         DataModelSchemeProvider dmsp = DataModelSchemeProvider.getInstance();
@@ -67,10 +68,6 @@ public final class SunStudioDataProviderFactory implements DataProviderFactory {
                 dmsp.getScheme("model:stack"), // NOI18N
                 dmsp.getScheme("model:dataraces"), // NOI18N
                 dmsp.getScheme("model:deadlocks"))); // NOI18N
-        
-        DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
-        supportedTypes = Collections.unmodifiableList(Arrays.asList(
-                dstf.getDataStorageType("PerfanDataStorage"))); // NOI18N
     }
 
     public DataProvider create() {
@@ -82,12 +79,12 @@ public final class SunStudioDataProviderFactory implements DataProviderFactory {
         return providedSchemas;
     }
 
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
-        return supportedTypes;
-    }
-
     @Override
     public boolean provides(DataModelScheme dataModel) {
         return getProvidedDataModelScheme().contains(dataModel);
+    }
+
+    public boolean validate(DataStorage storage) {
+        return storage.supportsType(supportedStorageType);
     }
 }

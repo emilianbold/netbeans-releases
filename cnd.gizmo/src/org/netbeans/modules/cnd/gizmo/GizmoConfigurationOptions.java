@@ -203,6 +203,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             for (String idpStringName : DLightIndicatorDPStrings) {
                 if (idp.getName().equals(idpStringName)) {
                     result.add(idp);
+                    break;
                 }
             }
         }
