@@ -5,13 +5,13 @@
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
             <name>PetCatalog</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
-            <web-module-libraries>
+            <web-module-libraries/>
+            <web-module-additional-libraries>
                 <library>
-                    <file>${file.reference.mysql-connector-java-5.1.7-bin.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
+                    <file>${libs.MySQLDriver.classpath}</file>
+                    <path-in-war>/WEB-INF/lib</path-in-war>
                 </library>
-            </web-module-libraries>
-            <web-module-additional-libraries/>
+            </web-module-additional-libraries>
             <source-roots>
                 <root id="src.dir"/>
             </source-roots>
