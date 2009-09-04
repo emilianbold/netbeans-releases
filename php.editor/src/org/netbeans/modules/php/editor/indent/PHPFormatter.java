@@ -242,6 +242,7 @@ public class PHPFormatter implements Formatter {
                 final WSTransformer wsTransformer = new WSTransformer(context);
                 PHPParseResult result = (PHPParseResult) info;
                 result.getProgram().accept(wsTransformer);
+                wsTransformer.tokenScan();
 
                 List<WSTransformer.Replacement> replacements = wsTransformer.getReplacements();
                 Collections.sort(replacements);
