@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,58 +51,42 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
-import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
+import java.net.URL;
+import javax.swing.JComponent;
+import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.windows.OutputWriter;
 
 /**
- * Service that provides tips for Parallel Adviser.
+ * Sun Studio Compiler advice.
  *
  * @author Nick Krasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
-public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvider {
+public class SunStudioCompilerXautoparAdvice implements Advice {
 
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS = 0;
-    private final static int REPRESENTATION_TYPE_ALL_TIPS_IN_ONE = 1;
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE = 2;
-    private final static int representationType = REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE;
+    public JComponent getComponent() {
 
-    private final static List<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
+        URL iconUrl = SunStudioCompilerXautoparAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
 
-    public static void addTip(LoopParallelizationAdvice tip) {
-        for (LoopParallelizationAdvice advice : tips) {
-            if(advice.getLoop().equals(tip.getLoop())) {
-                tips.remove(advice);
-                break;
-            }
-        }
-        tips.add(tip);
+        return ParallelAdviserAdviceUtils.createAdviceComponent(
+                ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Automatic parallelization with Sun Studio compilers", // NOI18N
+                "<b>-xautopar</b> turns on automatic parallelization for multiple processors. " + // NOI18N
+                "Does dependence analysis (analyze loops for inter-iteration data dependence) and loop restructuring. " + // NOI18N
+                "If optimization is not at-xO3 or higher, optimization is raised to-xO3 and a warning is emitted." + // NOI18N
+                "<br>" + // NOI18N
+                "<br>" + // NOI18N
+                "To achieve faster execution, this option requires a multiple processor system. " + // NOI18N
+                "On a single-processor system, the resulting binary usually runs slower." + // NOI18N
+                "<br>" + // NOI18N
+                "<br>" + // NOI18N
+                "If you use <b>-xautopar</b> and compile and link in one step, " + // NOI18N
+                "then linking automatically includes the microtasking library and the threads-safe C runtime library. " + // NOI18N
+                "If you use <b>-xautopar</b> and compile and link in separate steps, then you must also link with <b>-xautopar</b>." + // NOI18N
+                "<br>" + // NOI18N
+                "<br>" + // NOI18N
+                "<a href=\"http://developers.sun.com/sunstudio/downloads/\">Download Sun Studio</a>.", 800), null); // NOI18N
     }
 
-    public static void clearTips() {
-        tips.clear();
+    public void addNotification(OutputWriter writer) {
     }
-
-    public Collection<Advice> getTips() {
-        if(representationType == REPRESENTATION_TYPE_SEPARATE_TIPS) {
-            return new ArrayList<Advice>(tips);
-        } else if (representationType == REPRESENTATION_TYPE_ALL_TIPS_IN_ONE) {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>();
-            if(!tips.isEmpty()) {
-                arrayList.add(new LoopsParallelizationAdvice(tips));
-            }
-            return arrayList;
-        } else {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
-            if(!arrayList.isEmpty()) {
-                arrayList.add(new LoopParallelizationCommonAdvice());
-                arrayList.add(new SunStudioCompilerXautoparAdvice());
-            }
-            return arrayList;
-        }
-    }
-
 }
