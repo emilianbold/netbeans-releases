@@ -101,10 +101,10 @@ void FastFourierTransform::Transform(Bitmap& bmp) {
 
 void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) {
     int d = (direction == DIRECT) ? -1 : 1;
-    int i1, j1, i, l, j, n, k, e, o, f;
+    int i1, j1, n, e, o, f;
     double r, u, t, v, q, p, c, s, z, w, a;
     n = (int) (pow(2.0, transformationSizeLog2));
-    for (l = 1; l <= transformationSizeLog2; l++) {
+    for (int l = 1; l <= transformationSizeLog2; l++) {
         e = (int) (pow(2.0, transformationSizeLog2 + 1 - l));
         f = e / 2;
         u = 1;
@@ -112,25 +112,24 @@ void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) 
         z = 3.14 / f;
         c = cos(z);
         s = d * sin(z);
-        for (j = 1; j <= f; j++) {
-            for (i = j; i <= n; i = i + e) {
-                o = i + f - 1;
-                p = x[i - 1] + x[o];
-                q = y[i - 1] + y[o];
-                r = x[i - 1] - x[o];
-                t = y[i - 1] - y[o];
+        for (int j = 1; j <= f; j++) {
+            for (int i = j - 1; i < n; i = i + e) {
+                o = i + f;
+                p = x[i] + x[o];
+                q = y[i] + y[o];                r = x[i] - x[o];
+                t = y[i] - y[o];
                 x[o] = r * u - t*v;
                 y[o] = t * u + r*v;
-                x[i - 1] = p;
-                y[i - 1] = q;
+                x[i] = p;
+                y[i] = q;
             }
             w = u * c - v*s;
             v = v * c + u*s;
             u = w;
         }
     }
-    j = 1;
-    for (i = 1; i <= n - 1; i++) {
+    int j = 1;
+    for (int i = 1; i <= n - 1; i++) {
         if (i < j) {
             j1 = j - 1;
             i1 = i - 1;
@@ -141,7 +140,7 @@ void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) 
             x[i1] = p;
             y[i1] = q;
         }
-        k = n / 2;
+        int k = n / 2;
         while (k < j) {
             j = j - k;
             k = k / 2;
@@ -149,13 +148,12 @@ void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) 
         j = j + k;
     }
     if (d != -1) {
-        for (k = 0; k <= n - 1; k++) {
-
+        for (int k = 0; k <= n - 1; k++) {
             x[k] = x[k] / n;
             y[k] = y[k] / n;
         }
     } else {
-        for (k = 0; k <= n - 1; k++) {
+        for (int k = 0; k <= n - 1; k++) {
             a = sqrt(x[k] * x[k] + y[k] * y[k]);
             q = 0;
             if (a != 0) {
