@@ -424,7 +424,8 @@ public final class ClassPath {
         assert partName != null;
         if (!includeExt) {
             int index = partName.lastIndexOf('.');
-            if (index >= 0 && index > partName.lastIndexOf('/')) {
+            //Dot at the beginning is not handled as an extension (hidden file)
+            if (index > 0 && index > partName.lastIndexOf('/')+1) {
                 partName = partName.substring (0, index);
             }
         }
@@ -787,6 +788,9 @@ public final class ClassPath {
         Entry(URL url, FilteringPathResourceImplementation filter) {
             if (url == null)
                 throw new IllegalArgumentException ();
+            if ("jar".equals (url.getProtocol ()) && //NOI18N
+                FileUtil.getArchiveFile (url) == null
+            ) throw new IllegalArgumentException ("Invalid URL: " + url);
             this.url = url;
             this.filter = filter;
         }

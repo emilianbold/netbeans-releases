@@ -453,6 +453,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                         if (origF.startsWith("Actions/")) {
                             continue;
                         }
+                        if (origF.startsWith("Editors/")) {
+                            continue;
+                        }
                     }
                 }
                 errors.add("File " + fo.getPath() + " represents an action which is not in Actions/ subfolder. Provided by " + Arrays.toString((Object[])fo.getAttribute("layers")));
@@ -938,7 +941,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             DataObject d = DataObject.find(shortcut);
             if (d instanceof DataShadow) {
                 String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
-                if (Integer.valueOf(keymaps.length).equals(definitionCountById.get(id))) {
+                if (!org.openide.util.Utilities.isMac() && // Would fail on Mac due to applemenu module
+                        Integer.valueOf(keymaps.length).equals(definitionCountById.get(id)))
+                {
                     String layers = Arrays.toString((URL[]) d.getPrimaryFile().getAttribute("layers"));
                     warnings.add(d.getPrimaryFile().getPath() + " " + layers + " useless since " + id + " is bound (somehow) in all keymaps");
                 }
