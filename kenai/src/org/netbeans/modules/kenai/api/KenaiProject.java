@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -196,6 +197,36 @@ public final class KenaiProject {
                 // load failed
             }
         }
+    }
+
+    /**
+     * is this project bookmarked?
+     * @return true if bookmarked and logged in<br>
+     *         false otherwise
+     */
+    public boolean isMyProject() {
+        Collection<KenaiProject> my = Kenai.getDefault().myProjects;
+        if (my==null)
+            return false;
+        return my.contains(this);
+    }
+
+    /**
+     * get my role. User must be logged in.
+     * @return Role or null if logged user does not have any role in this projects
+     */
+    public KenaiUser.Role getMyRole() throws KenaiException {
+        PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
+        if (passwordAuthentication==null) {
+            return null;
+        }
+        String myName = passwordAuthentication.getUserName();
+        for (KenaiUser user:getMembers()) {
+            if (myName.equals(user.getUserName())) {
+                return user.getRole();
+            }
+        }
+        return null;
     }
 
     /**

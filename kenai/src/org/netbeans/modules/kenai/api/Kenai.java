@@ -425,7 +425,7 @@ public final class Kenai {
         return auth;
     }
 
-    private Collection<KenaiProject> myProjects = null;
+    Collection<KenaiProject> myProjects = null;
     /**
      * get my projects of logged user
      * @return collection of projects
