@@ -264,7 +264,9 @@ public class Action {
         boolean compareExactly = !Operator.getDefaultStringComparator().equals("abc", "a"); // NOI18N
         defaultComparator = new DefaultStringComparator(compareExactly, true);
     }
-    
+
+    //This is to suppress the FindBugs warning that all targets throw UnsupportedOperationException
+    @org.netbeans.api.annotations.common.SuppressWarnings("DMI_UNSUPPORTED_METHOD")
     private void perform(int mode) {
         switch (mode) {
             case POPUP_MODE: performPopup(); break;

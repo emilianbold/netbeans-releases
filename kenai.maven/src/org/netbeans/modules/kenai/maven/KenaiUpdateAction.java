@@ -53,7 +53,10 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Contributor;
+import org.netbeans.modules.maven.model.pom.Developer;
 import org.netbeans.modules.maven.model.pom.IssueManagement;
 import org.netbeans.modules.maven.model.pom.License;
 import org.netbeans.modules.maven.model.pom.MailingList;
@@ -215,6 +218,11 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
                 updateLicense(mProj, kLicenses[i], factory);
             }
 
+            KenaiUser[] kMembers = kProj.getMembers();
+            for (int i = 0; i < kMembers.length; i++) {
+                updateMember(mProj, kMembers[i], factory);
+            }
+
             KenaiFeature[] kfs = kProj.getFeatures();
 
             for (int i = 0; i < kfs.length; i++) {
@@ -355,6 +363,46 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
         mLicense.setName(kLicense.getName());
         mLicense.setUrl(kLicense.getUri().toString());
         mLicense.setComments(kLicense.getDisplayName());
+    }
+
+    private static void updateMember(Project mProj, KenaiUser kUser, POMComponentFactory factory) {
+        final String kName = kUser.getFirstName() + " " + kUser.getLastName();
+        if (KenaiUser.Role.OBSERVER.equals(kUser.getRole())) {
+            // contributors
+            List<Contributor> contrs = mProj.getContributors();
+            Contributor contributor = null;
+            if (contrs != null) {
+                for (Contributor con : contrs) {
+                    if (kName.equalsIgnoreCase(con.getName())) {
+                        contributor = con;
+                        break;
+                    }
+                }
+            }
+            if (contributor == null) {
+                contributor = factory.createContributor();
+                mProj.addContributor(contributor);
+            }
+            contributor.setName(kName);
+        } else {
+            // developers
+            List<Developer> devels = mProj.getDevelopers();
+            Developer developer = null;
+            if (devels != null) {
+                for (Developer dev : devels) {
+                    if (dev.getId().equalsIgnoreCase(kUser.getUserName())) {
+                        developer = dev;
+                        break;
+                    }
+                }
+            }
+            if (developer == null) {
+                developer = factory.createDeveloper();
+                mProj.addDeveloper(developer);
+            }
+            developer.setId(kUser.getUserName());
+            developer.setName(kName);
+        }
     }
 
     /**
