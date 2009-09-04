@@ -30,12 +30,12 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lblServer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="comServer" pref="323" max="32767" attributes="0"/>
+                      <Component id="comServer" pref="363" max="32767" attributes="0"/>
                   </Group>
                   <Component id="rbSession" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="rbPermanent" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="128" max="32767" attributes="0"/>
+                      <EmptySpace pref="168" max="32767" attributes="0"/>
                       <Component id="btChange" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="rbIgnore" alignment="0" min="-2" max="-2" attributes="0"/>

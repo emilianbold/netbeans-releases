@@ -39,56 +39,33 @@
 
 package org.netbeans.modules.maven.j2ee;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.ListView;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkleint
  */
-public class SelectAppServerPanel extends javax.swing.JPanel implements PropertyChangeListener {
+public class SelectAppServerPanel extends javax.swing.JPanel {
     private NotificationLineSupport nls;
-    private FileObject projDir;
+    private Project project;
 
     /** Creates new form SelectAppServerPanel */
-    public SelectAppServerPanel(boolean showIgnore, FileObject projDir) {
-        this.projDir = projDir;
+    public SelectAppServerPanel(boolean showIgnore, Project project) {
+        this.project = project;
         initComponents();
         buttonGroup1.add(rbSession);
         buttonGroup1.add(rbPermanent);
@@ -132,8 +109,8 @@ public class SelectAppServerPanel extends javax.swing.JPanel implements Property
         return rbIgnore.isSelected();
     }
 
-    FileObject getPermanentFolder() {
-        return projDir;
+    Project getChosenProject() {
+        return project;
     }
 
     private void loadComboModel() {
@@ -212,11 +189,11 @@ public class SelectAppServerPanel extends javax.swing.JPanel implements Property
                     .add(layout.createSequentialGroup()
                         .add(lblServer)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(comServer, 0, 323, Short.MAX_VALUE))
+                        .add(comServer, 0, 363, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, rbSession)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(rbPermanent)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 128, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 168, Short.MAX_VALUE)
                         .add(btChange))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, rbIgnore))
                 .addContainerGap())
@@ -247,17 +224,25 @@ public class SelectAppServerPanel extends javax.swing.JPanel implements Property
         boolean isSel = rbPermanent.isSelected();
         btChange.setEnabled(isSel);
         lblProject.setEnabled(isSel);
+        if (nls != null) {
+            if (isSel) {
+                nls.setInformationMessage(NbBundle.getMessage(
+                        SelectAppServerPanel.class, "MSG_ParentHint"));
+            } else {
+                nls.clearMessages();
+            }
+        }
     }//GEN-LAST:event_rbPermanentStateChanged
 
     private void btChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btChangeActionPerformed
-        JFileChooser fc = new JFileChooser(FileUtil.toFile(projDir));
+        /*JFileChooser fc = new JFileChooser(FileUtil.toFile(projDir));
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fc.setControlButtonsAreShown(false);
-        final DialogDescriptor dd = new DialogDescriptor(fc,
+        fc.setControlButtonsAreShown(false);*/
+        SelectProjectPanel spp = new SelectProjectPanel(project);
+        final DialogDescriptor dd = new DialogDescriptor(spp,
                 NbBundle.getMessage(SelectAppServerPanel.class, "TIT_ChooseParent"));
-        final NotificationLineSupport fcNls = dd.createNotificationLineSupport();
-
-        fc.addPropertyChangeListener(new PropertyChangeListener() {
+        spp.attachDD(dd);
+        /*fc.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(propName) ||
@@ -278,23 +263,15 @@ public class SelectAppServerPanel extends javax.swing.JPanel implements Property
                     dd.setValid(false);
                 }
             }
-        });
+        });*/
 
         Object obj = DialogDisplayer.getDefault().notify(dd);
         if (obj == NotifyDescriptor.OK_OPTION) {
-            File f = fc.getSelectedFile();
-            if (f != null) {
-                System.err.println("file: " + fc.getSelectedFile());
-                projDir = FileUtil.toFileObject(f);
-                updateProjectLbl();
-            }
+            project = spp.getSelectedProject();
+            updateProjectLbl();
         }
 
     }//GEN-LAST:event_btChangeActionPerformed
-
-    public void propertyChange(PropertyChangeEvent arg0) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -333,82 +310,11 @@ public class SelectAppServerPanel extends javax.swing.JPanel implements Property
     }
 
     private void updateProjectLbl () {
-        FileObject pomFO = projDir.getFileObject("pom.xml"); //NOI18N
-        if (pomFO != null) {
-            ModelSource ms = Utilities.createModelSource(pomFO);
-            POMModel model = POMModelFactory.getDefault().getModel(ms);
-            String name = model.getProject().getName();
-            lblProject.setText("(in " + name + ")");
+        ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
+        if (pi != null) {
+            lblProject.setText(NbBundle.getMessage(SelectAppServerPanel.class,
+                    "MSG_InProject", pi.getDisplayName()));
         }
-    }
-
-    private static class OpenListPanel extends JPanel implements ExplorerManager.Provider,
-            PropertyChangeListener, Runnable, ActionListener {
-
-        private ListView lv;
-        private ExplorerManager manager;
-        private Project project;
-        private SelectAppServerPanel panel;
-
-        public OpenListPanel(SelectAppServerPanel panel, Project project) {
-            this.panel = panel;
-            this.project = project;
-            lv = new ListView();
-            lv.setDefaultProcessor(this);
-            lv.setPopupAllowed(false);
-            lv.setTraversalAllowed(false);
-            manager = new ExplorerManager();
-            manager.addPropertyChangeListener(this);
-            setLayout(new BorderLayout());
-            add(lv, BorderLayout.CENTER);
-
-            RequestProcessor.getDefault().post(this);
-        }
-
-        public ExplorerManager getExplorerManager() {
-            return manager;
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            Node[] selNodes = manager.getSelectedNodes();
-            if (selNodes.length == 1) {
-                Project prj = selNodes[0].getLookup().lookup(Project.class);
-                NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
-                MavenProject m = mav.getMavenProject();
-            }
-        }
-
-        /** Loads dependencies outside EQ thread, updates tab state in EQ */
-        public void run() {
-            Project[] prjs = OpenProjects.getDefault().getOpenProjects();
-            final List<Node> toRet = new ArrayList<Node>();
-            for (Project p : prjs) {
-                if (p == project) {
-                    continue;
-                }
-                NbMavenProject mav = p.getLookup().lookup(NbMavenProject.class);
-                if (mav != null) {
-                    LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
-                    toRet.add(lvp.createLogicalView());
-                }
-            }
-            Children.Array ch = new Children.Array();
-            ch.add(toRet.toArray(new Node[0]));
-            Node root = new AbstractNode(ch);
-            getExplorerManager().setRootContext(root);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    boolean opEmpty = toRet.isEmpty();
-                    if (opEmpty) {
-                    }
-                }
-            });
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // empty impl, disables default action
-        }
-
     }
 
 }
