@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
@@ -66,10 +68,12 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
 
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
+    private final static Logger log = DLightLogger.getLogger(ThreadMapDataProviderImpl.class);
     private SQLDataStorage sqlStorage;
     private PreparedStatement stmt;
     private final HashMap<Integer, ThreadInfo> ti = new HashMap<Integer, ThreadInfo>();
@@ -80,14 +84,16 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         StackDataProvider sdp = (StackDataProvider) session.createDataProvider(
                 DataModelSchemeProvider.getInstance().getScheme("model:threaddump"), null); // NOI18N ?????
-        
+
         if (sdp != null) {
             threadDumpProvider = sdp.getThreadDumpProvider();
         }
     }
 
     public synchronized ThreadMapData queryData(final ThreadMapDataQuery query) {
-        System.out.println("Quering data: " + query.toString());
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest(String.format("DataQuery: [%d, %d], fullstate: %s", query.getTimeFrom(), query.getTimeTo(), query.isFullState() ? "yes" : "no")); // NOI18N
+        }
 
         if (sqlStorage == null) {
             throw new NullPointerException("No STORAGE"); // NOI18N

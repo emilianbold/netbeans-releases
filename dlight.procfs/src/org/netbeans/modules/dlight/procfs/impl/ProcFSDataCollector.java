@@ -109,11 +109,9 @@ public class ProcFSDataCollector
         providedDataTables = Collections.unmodifiableList(tables);
     }
 
-    // TODO: this name is just because it is known name for gizmo dataproviders
-    // Need to add "real" name to GizmoConfigurationOptions
     @Override
     public String getName() {
-        return "ProcReader";
+        return "ProcFSReader"; // NOI18N
     }
 
     public void targetStateChanged(DLightTargetChangeEvent event) {
