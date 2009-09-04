@@ -25,6 +25,18 @@ pack_all_components()
 {
     DIST_DIR=${1}
     NAME=${2}
+
+    if [ $RUNJAVAFX == 1 ]; then
+	cd $NB_ALL/nbbuild
+
+        #Pack all the NetBeans with javafx
+	ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST_DIR/zip/$NAME-javafx-full.zip || exit 1
+
+        cd $NB_ALL/nbbuild/netbeans
+	pack_component $DIST_DIR/zip/moduleclusters $NAME javafx "javafx*"
+	rm -rf javafx*
+    fi
+
     cd $NB_ALL/nbbuild
 
     #Pack the distributions
@@ -69,17 +81,6 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME javacard "javacard*"
     rm -rf javacard*
-
-    if [ $RUNJAVAFX == 1 ]; then
-	cd $NB_ALL/nbbuild
-
-        #Pack all the NetBeans with javafx
-	pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one-w-javafx netbeans
-
-        cd $NB_ALL/nbbuild/netbeans
-	pack_component $DIST_DIR/zip/moduleclusters $NAME javafx "javafx*"
-	rm -rf javafx*
-    fi
 
     cd $NB_ALL/nbbuild
 
