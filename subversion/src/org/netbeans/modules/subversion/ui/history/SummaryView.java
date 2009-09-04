@@ -72,7 +72,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;

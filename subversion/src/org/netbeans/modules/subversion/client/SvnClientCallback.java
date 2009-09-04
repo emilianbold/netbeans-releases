@@ -43,7 +43,7 @@ package org.netbeans.modules.subversion.client;
 import java.awt.Dialog;
 import java.net.PasswordAuthentication;
 import javax.swing.JButton;
-import org.netbeans.modules.subversion.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
