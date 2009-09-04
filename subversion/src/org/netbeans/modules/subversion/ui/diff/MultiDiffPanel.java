@@ -84,6 +84,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -105,6 +106,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      * Context in which to DIFF.
      */
     private final Context context;
+    private final File diffedFile;
 
     private int displayStatuses;
 
@@ -140,6 +142,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     public MultiDiffPanel(Context context, int initialType, String contextName) {
         assert EventQueue.isDispatchThread();
         this.context = context;
+        this.diffedFile = null;
         this.contextName = contextName;
         currentType = initialType;
         initComponents();
@@ -156,6 +159,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     public MultiDiffPanel(File file, String rev1, String rev2) {
         assert EventQueue.isDispatchThread();
         context = null;
+        diffedFile = file;
         contextName = file.getName();
         initComponents();
         setupComponents();
@@ -168,6 +172,35 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         // mimics refreshSetups()
         setups = new Setup[] {
             new Setup(file, rev1, rev2)
+        };
+        setDiffIndex(0, 0);
+        dpt = new DiffPrepareTask(setups);
+        prepareTask = RequestProcessor.getDefault().post(dpt);
+    }
+
+    /**
+     * Diff component with a differences between local and remote changes in a single file
+     * Commit and refresh buttons are hidden, update button enabled and visible.
+     * @param file diffed file
+     * @param status remote status of the file
+     */
+    public MultiDiffPanel(File file, ISVNStatus status) {
+        assert EventQueue.isDispatchThread();
+        context = null;
+        diffedFile = file;
+        contextName = file.getName();
+        initComponents();
+        setupComponents();
+        localToggle.setVisible(false);
+        remoteToggle.setVisible(false);
+        allToggle.setVisible(false);
+        fileTable.getComponent().setVisible(false);
+        commitButton.setVisible(false);
+        refreshButton.setVisible(false);
+
+        // mimics refreshSetups()
+        setups = new Setup[] {
+            new Setup(file, status)
         };
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
@@ -385,9 +418,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         delegatingUndoRedo.setDiffView(diffView);
 
         refreshComponents();
-//        if (focus) {
-//            diffView.requestFocusInWindow();
-//        }
     }
 
     private boolean showingFileTable() {
@@ -440,7 +470,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }                    
 
     private void onUpdateButton() {
-        UpdateAction.performUpdate(context, contextName);
+        if (context != null) {
+            UpdateAction.performUpdate(context, contextName);
+        } else if (diffedFile != null) {
+            UpdateAction.performUpdate(diffedFile);
+        }
     }
     
     private void onCommitButton() {

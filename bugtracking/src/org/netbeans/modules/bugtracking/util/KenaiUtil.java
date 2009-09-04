@@ -134,13 +134,23 @@ public class KenaiUtil {
      * @return
      */
     public static Repository getKenaiRepository(String url) {
+        KenaiProject kp = getKenaiProject(url);
+        return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
+    }
+
+    public static String getProjectUrl (String sourcesUrl) {
+        KenaiProject kp = getKenaiProject(sourcesUrl);
+        return kp == null ? null : kp.getWebLocation().toString();
+    }
+
+    private static KenaiProject getKenaiProject(String url) {
         KenaiProject kp;
         try {
             kp = KenaiProject.forRepository(url);
         } catch (KenaiException ex) {
             return null;
         }
-        return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
+        return kp;
     }
 
 }

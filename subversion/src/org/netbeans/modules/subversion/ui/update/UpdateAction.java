@@ -62,6 +62,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
@@ -136,10 +138,13 @@ public class UpdateAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }        
-        
-        
+
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
+        update(roots, progress, contextDisplayName, repositoryUrl);
+    }
+
+    private static void update(File[] roots, SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl) {
         File[][] split = Utils.splitFlatOthers(roots);
         final List<File> recursiveFiles = new ArrayList<File>();
         final List<File> flatFiles = new ArrayList<File>();
@@ -193,7 +198,7 @@ public class UpdateAction extends ContextAction {
                 });
             } else {
                 StatusDisplayer.getDefault().setStatusText(org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Completed")); // NOI18N
-            }                  
+            }
         } catch (SVNClientException e1) {
             progress.annotate(e1);
         } finally {            
@@ -271,22 +276,22 @@ public class UpdateAction extends ContextAction {
         });
     }
     
-    public static void performUpdate(final Context context, final String contextDisplayName) {                
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+    public static void performUpdate(final Context context, final String contextDisplayName) {
+        if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
         if (context == null || context.getRoots().size() == 0) {
             return;
-        }        
-        
+        }
+
         SVNUrl repository;
         try {
-            repository = getSvnUrl(context);   
+            repository = getSvnUrl(context);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }   
-        
+        }
+
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
@@ -294,6 +299,47 @@ public class UpdateAction extends ContextAction {
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
+    }
+
+    /**
+     * Run update on a single file
+     * @param file
+     */
+    public static void performUpdate(final File file) {
+        if(!Subversion.getInstance().checkClientAvailable()) {
+            return;
+        }
+        if (file == null) {
+            return;
+        }
+
+        SVNUrl repository;
+        try {
+            repository = SvnUtils.getRepositoryRootUrl(file);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }
+        final SVNUrl repositoryUrl = repository;
+
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() {
+//                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+//                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                update(new File[] {file}, this, file.getAbsolutePath(), repositoryUrl);
+                // give FS some time to recognize the change - e.g. MS Win system takes some time to recognize changes on net drives
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        FileObject fo = FileUtil.toFileObject(file);
+                        if (fo != null) {
+                            fo.refresh(true);
+                        }
+                    }
+                }, 100);
+            }
+        };
+        support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
     
     private static class UpdateOutputListener implements ISVNNotifyListener {
