@@ -47,18 +47,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -66,8 +62,6 @@ import org.openide.windows.InputOutput;
  * for common tasks like files copying.
  */
 public final class CommonTasksSupport {
-
-    private static final boolean USE_SFTP = getBoolean("cnd.sftp", true);
 
     private CommonTasksSupport() {
     }
@@ -106,79 +100,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error) {
 
-        if  (USE_SFTP) {
-            return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error);
-        }
-
-        Callable<Integer> uploadTask = new Callable<Integer>() {
-
-            public Integer call() throws Exception {
-                Integer result = new Integer(-1);
-
-                final File localFile = new File(srcFileName);
-
-                if (!localFile.exists()) {
-                    if (error != null) {
-                        try {
-                            error.append("File " + srcFileName + " not found!"); // NOI18N
-                        } catch (IOException ex) {
-                        }
-                    }
-                    return result;
-                }
-
-                if (!localFile.canRead()) {
-                    if (error != null) {
-                        try {
-                            error.append("File " + srcFileName + " is not readable!"); // NOI18N
-                        } catch (IOException ex) {
-                        }
-                    }
-                    return result;
-                }
-
-                String trgFileName;
-
-                if (dstExecEnv.isLocal() && Utilities.isWindows()) {
-                    trgFileName = WindowsSupport.getInstance().convertToShellPath(dstFileName);
-                } else {
-                    trgFileName = dstFileName;
-                }
-
-                try {
-                    NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("cat >\"%s\"", trgFileName)); // NOI18N
-                    NativeProcess np = npb.call();
-
-                    OutputStream os = np.getOutputStream();
-
-                    result = transferFileContent(localFile, os);
-
-                    if (error != null) {
-                        error.append(ProcessUtils.readProcessErrorLine(np));
-                    }
-                    result += np.waitFor();
-                } catch (IOException ex) {
-                    if (error != null) {
-                        error.append(ex.getMessage() == null ? ex.toString() : ex.getMessage()); // NOI18N
-                    }
-                }
-
-                if (result == 0) {
-                    NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("chmod 0%03o \"%s\"", mask, trgFileName)); // NOI18N
-                    NativeProcess np = npb.call();
-                    result += np.waitFor();
-                }
-
-                return result;
-            }
-        };
-
-        Future<Integer> result = NativeTaskExecutorService.submit(uploadTask, "Upload file " + srcFileName + // NOI18N
-                " to " + dstExecEnv.toString() + ":" + dstFileName); // NOI18N
-
-        return result;
+        return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error);
     }
 
     /**
