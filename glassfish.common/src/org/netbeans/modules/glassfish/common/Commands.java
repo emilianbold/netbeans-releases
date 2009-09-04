@@ -399,6 +399,10 @@ public class Commands {
                 if(resourceAttr != null) {
                     String name = resourceAttr.getValue("message"); // NOI18N
 
+                    if (null == name || name.length() < 1)  {
+                        name = r.trim();
+                    }
+
                     if(name != null && name.length() > 0) {
                         if(resList == null) {
                             resList = new ArrayList<ResourceDesc>();
