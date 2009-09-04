@@ -97,10 +97,12 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+                    commChannelsDisplayer.setToolTipText(e.getDescription());
                     commChannelsDisplayer.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
+                    commChannelsDisplayer.setToolTipText(""); //NOI18N
                     commChannelsDisplayer.setCursor(Cursor.getDefaultCursor());
                     return;
                 }

@@ -97,10 +97,12 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+                    issuesInfoPane.setToolTipText(e.getDescription());
                     issuesInfoPane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
+                    issuesInfoPane.setToolTipText(""); //NOI18N
                     issuesInfoPane.setCursor(Cursor.getDefaultCursor());
                     return;
                 }

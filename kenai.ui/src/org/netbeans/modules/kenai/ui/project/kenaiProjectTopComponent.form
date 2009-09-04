@@ -120,14 +120,14 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="jLabel1" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel2" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel3" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel1" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel2" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel3" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="wwwLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="wikiLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="wwwLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="downloadsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace pref="340" max="32767" attributes="0"/>
