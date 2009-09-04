@@ -40,8 +40,8 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -54,7 +54,6 @@ public class SharabilityFilter implements FileFilter {
         void onAccept(File file, boolean accepted);
     }
 
-    private Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final boolean TRACE_SHARABILITY = Boolean.getBoolean("cnd.remote.trace.sharability"); //NOI18N
     private StatisticsCallback statisticsCallback;
 
@@ -73,7 +72,7 @@ public class SharabilityFilter implements FileFilter {
     protected boolean acceptImpl(File file) {
         final int sharability = SharabilityQuery.getSharability(file);
         if(TRACE_SHARABILITY) {
-            logger.info(file.getAbsolutePath() + " sharability is " + sharabilityToString(sharability));
+            RemoteUtil.LOGGER.info(file.getAbsolutePath() + " sharability is " + sharabilityToString(sharability));
         }
         switch (sharability) {
             case SharabilityQuery.NOT_SHARABLE:

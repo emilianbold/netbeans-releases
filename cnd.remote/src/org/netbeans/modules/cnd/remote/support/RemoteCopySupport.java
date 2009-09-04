@@ -46,7 +46,6 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -58,8 +57,6 @@ import org.openide.util.Exceptions;
  */
 public class RemoteCopySupport extends RemoteConnectionSupport {
 
-    private static final Logger LOG = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    
     public RemoteCopySupport(ExecutionEnvironment execEnv) {
         super(execEnv);
     }
@@ -167,7 +164,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 out.write(buf, 0, 1);
                 out.flush();
 
-                LOG.finest("Copying: filesize=" + filesize + "b, file=" + file + " took " + (System.currentTimeMillis() - start) + " ms");
+                RemoteUtil.LOGGER.finest("Copying: filesize=" + filesize + "b, file=" + file + " took " + (System.currentTimeMillis() - start) + " ms");
             }
             setExitStatus(process.waitFor());
 
@@ -230,11 +227,11 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 sb.append((char) c);
             } while (c != '\n');
             if (b == 1) { // error
-                LOG.warning("Error: Invalid value during reading remote string: " + sb.toString());
+                RemoteUtil.LOGGER.warning("Error: Invalid value during reading remote string: " + sb.toString());
             }
 
             if (b == 2) { // fatal error
-                LOG.warning("Fatal error: Invalid value during reading remote string: " + sb.toString());
+                RemoteUtil.LOGGER.warning("Fatal error: Invalid value during reading remote string: " + sb.toString());
             }
 
         }

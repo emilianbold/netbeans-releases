@@ -41,10 +41,10 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -53,8 +53,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {
-
-    private static final Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private static final String CONTROLLER_LINUX_X86 = "rfs_controller-Linux-x86"; // NOI18N
     private static final String CONTROLLER_SUNOS_X86 = "rfs_controller-SunOS-x86"; // NOI18N
@@ -91,7 +89,7 @@ public class RfsSetupProvider implements SetupProvider {
             case PlatformTypes.PLATFORM_SOLARIS_SPARC : return libDir + PRELOAD_SUNOS_SPARC;
             case PlatformTypes.PLATFORM_SOLARIS_INTEL : return libDir + PRELOAD_SUNOS_X86;
             default:
-                logger.warning("RFS binary search: unexpected platform number " + platform);
+                RemoteUtil.LOGGER.warning("RFS binary search: unexpected platform number " + platform);
                 return null;
         }
     }
@@ -104,7 +102,7 @@ public class RfsSetupProvider implements SetupProvider {
             case PlatformTypes.PLATFORM_SOLARIS_SPARC : return libDir + CONTROLLER_SUNOS_SPARC;
             case PlatformTypes.PLATFORM_SOLARIS_INTEL : return libDir + CONTROLLER_SUNOS_X86;
             default:
-                logger.warning("RFS binary search: unexpected platform number " + platform);
+                RemoteUtil.LOGGER.warning("RFS binary search: unexpected platform number " + platform);
                 return null;
         }
     }
