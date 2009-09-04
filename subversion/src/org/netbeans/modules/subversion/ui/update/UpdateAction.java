@@ -81,10 +81,12 @@ public class UpdateAction extends ContextAction {
         return "CTL_MenuItem_Update";    // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_IN_REPOSITORY;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
@@ -264,7 +266,7 @@ public class UpdateAction extends ContextAction {
                 // unfortunatelly, we have to call the refresh explicitly for each file from this place
                 // as the revision label was changed even if the files status wasn't
                 Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels(fileArray);
-                Subversion.getInstance().refreshAnnotations(fileArray);
+                Subversion.getInstance().refreshAnnotationsAndSidebars(fileArray);
             }
         });
     }
