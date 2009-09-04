@@ -44,6 +44,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.awt.Image;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,7 +74,9 @@ import org.openide.util.lookup.Lookups;
  * @author Kirill Sorokin
  */
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(WLJ2eePlatformFactory.class.getName());
+
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert WLBaseDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
@@ -189,7 +194,12 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             try {
                 List list = new ArrayList();
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar")));    // NOI18N
-                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/api.jar")));         // NOI18N
+                File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
+                if (apiFile.exists()) {
+                    list.add(fileToUrl(apiFile));
+                    list.addAll(getJarClassPath(apiFile));
+                }
+
                 // file needed for jsp parsing WL9 and WL10
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar")));         // NOI18N
 
@@ -245,6 +255,46 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return url;
         }
 
+        private List<URL> getJarClassPath(File apiFile) {
+            List<URL> urls = new ArrayList<URL>();
+
+            try {
+                JarFile file = new JarFile(apiFile);
+                try {
+                    Manifest manifest = file.getManifest();
+                    Attributes attrs = manifest.getMainAttributes();
+                    String value = attrs.getValue("Class-Path"); //NOI18N
+                    if (value != null) {
+                        String[] values = value.split("\\s+"); // NOI18N
+                        FileObject baseDir = FileUtil.toFileObject(
+                                FileUtil.normalizeFile(new File(new File(getPlatformRoot(), "server"), "lib"))); // NOI18N
+                        if (baseDir != null) {
+                            for (String cpElement : values) {
+                                if (!"".equals(cpElement.trim())) { // NOI18N
+                                    FileObject fo = baseDir.getFileObject(cpElement);
+                                    if (fo == null) {
+                                        continue;
+                                    }
+                                    File fileElem = FileUtil.normalizeFile(FileUtil.toFile(fo));
+                                    if (fileElem != null) {
+                                        urls.add(fileToUrl(fileElem));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "Could not read Weblogic api.jar", ex);
+                } finally {
+                    file.close();
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Could not open Weblogic api.jar", ex);
+            }
+
+            return urls;
+        }
+        
         private String getPlatformRoot() {
             if (platformRoot == null)
                 platformRoot = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
@@ -254,8 +304,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-        Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()));
-        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
+            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()));
+            return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
 
 
