@@ -63,7 +63,7 @@ import java.awt.event.ActionEvent;
 public class NumericDisplayFilter implements TableModelFilter, 
 NodeActionsProviderFilter, Constants {
 
-    enum NumericDisplaySettings { DECIMAL, HEXADECIMAL, OCTAL, BINARY, CHAR }
+    enum NumericDisplaySettings { DECIMAL, HEXADECIMAL, OCTAL, BINARY, CHAR, TIME }
 
     private final Map<Variable, NumericDisplaySettings>   variableToDisplaySettings = new HashMap<Variable, NumericDisplaySettings>();
     private HashSet     listeners;
@@ -274,6 +274,10 @@ NodeActionsProviderFilter, Constants {
                 return "'" + new Character (
                     (char) Integer.parseInt (var.getValue ())
                 ) + "'";
+            case TIME:
+                if ("long".equals(type)) {
+                    return new Date(Long.parseLong(var.getValue ())).toString();
+                }
             default:
                 return var.getValue ();
             }
@@ -379,6 +383,10 @@ NodeActionsProviderFilter, Constants {
                     "CTL_Variable_DisplayAs_Character",     // NOI18N
                     NumericDisplaySettings.CHAR
             );
+            JRadioButtonMenuItem timeItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Time",          // NOI18N
+                    NumericDisplaySettings.TIME
+            );
 
             NumericDisplaySettings lds = (NumericDisplaySettings) 
                 variableToDisplaySettings.get (variable);
@@ -399,6 +407,9 @@ NodeActionsProviderFilter, Constants {
                 case CHAR:
                     charItem.setSelected (true);
                     break;
+                case TIME:
+                    timeItem.setSelected (true);
+                    break;
                 }
             } else {
                 if ("char".equals(type)) {
@@ -413,6 +424,9 @@ NodeActionsProviderFilter, Constants {
             displayAsPopup.add (octalItem);
             displayAsPopup.add (binaryItem);
             displayAsPopup.add (charItem);
+            if ("long".equals(type)) {
+                displayAsPopup.add (timeItem);
+            }
             return displayAsPopup;
         }
 
