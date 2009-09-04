@@ -471,21 +471,40 @@ public class BugzillaRepository extends Repository {
     }
 
     private class Cache extends IssueCache<TaskData> {
+
         Cache() {
             super(BugzillaRepository.this.getUrl());
         }
+
         protected Issue createIssue(TaskData taskData) {
             BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
             org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider.getInstance().notifyIssueCreated(issue);
             return issue;
         }
-        protected void setTaskData(Issue issue, TaskData taskData) {
-            ((BugzillaIssue)issue).setTaskData(taskData); 
+
+        protected void setIssueData(Issue issue, TaskData taskData) {
+            assert issue != null && taskData != null;
+            ((BugzillaIssue)issue).setTaskData(taskData);
         }
+
         @Override
         protected String getRecentChanges(Issue issue) {
+            assert issue != null;
             return ((BugzillaIssue)issue).getRecentChanges();
         }
+
+        @Override
+        protected long getLastModified(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getLastModify();
+        }
+
+        @Override
+        protected long getCreated(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getCreated();
+        }
+        
     }
 
     /**
