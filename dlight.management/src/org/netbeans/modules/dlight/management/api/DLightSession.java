@@ -388,7 +388,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         dataFiltersSupport.cleanAll(clazz);
     }
 
-    public Collection<? extends DataFilter> getDataFilter(Class<? extends DataFilter> clazz) {
+    public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
         return dataFiltersSupport.getDataFilter(clazz);
     }
 

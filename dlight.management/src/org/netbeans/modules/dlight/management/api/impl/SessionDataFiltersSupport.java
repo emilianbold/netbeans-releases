@@ -68,12 +68,12 @@ public class SessionDataFiltersSupport {
         }
     }
 
-    public Collection<? extends DataFilter> getDataFilter(Class<? extends DataFilter> clazz){
-           synchronized (lock) {
-            Collection<DataFilter> result = new ArrayList<DataFilter>();
-            for (DataFilter f : filters){
-                if (f.getClass() == clazz){
-                    result.add(f);
+    public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz){
+        synchronized (lock) {
+            Collection<T> result = new ArrayList<T>();
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
+                    result.add(clazz.cast(f));
                 }
             }
             return result;
