@@ -25,7 +25,7 @@
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
+ * single choicge of license, a recipient has the option to distribute
  * your version of this file aunder either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
@@ -44,6 +44,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -335,10 +337,9 @@ public class NbJiraIssue extends Issue {
     public long getLastModify() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            Date d = CC_DATE_FORMAT.parse(value);
-            return d.getTime();
-        } catch (ParseException ex) {
-            Jira.LOG.log(Level.WARNING, null, ex);
+            return  Long.parseLong(value);
+        } catch (NumberFormatException nfex) {
+            Jira.LOG.log(Level.WARNING, null, nfex);
         }
         return -1;
     }
@@ -346,12 +347,24 @@ public class NbJiraIssue extends Issue {
     public long getCreated() {
         String value = getFieldValue(IssueField.CREATION);
         try {
-            Date d = CC_DATE_FORMAT.parse(value);
-            return d.getTime();
-        } catch (ParseException ex) {
-            Jira.LOG.log(Level.WARNING, null, ex);
+            return  Long.parseLong(value);
+        } catch (NumberFormatException nfex) {
+            Jira.LOG.log(Level.WARNING, null, nfex);
         }
         return -1;
+    }
+
+    private String dateByMillis(String text, boolean includeTime) {
+        if (text.trim().length() > 0) {
+            try {
+                long millis = Long.parseLong(text);
+                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
+                return format.format(new Date(millis));
+            } catch (NumberFormatException nfex) {
+                nfex.printStackTrace();
+            }
+        }
+        return ""; // NOI18N
     }
 
     Comment[] getComments() {

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
@@ -141,8 +142,17 @@ public class Subversion {
         SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
+
+        asyncInit();
     }
 
+    private void asyncInit() {
+        getRequestProcessor().post(new Runnable() {
+            public void run() {
+                SvnKenaiSupport.getInstance().register();
+            }
+        }, 500);
+    }
     private void prepareCache() {
         getRequestProcessor().post(new Runnable() {
             public void run() {
