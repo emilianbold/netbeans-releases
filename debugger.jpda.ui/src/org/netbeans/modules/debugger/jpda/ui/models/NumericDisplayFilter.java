@@ -58,10 +58,12 @@ import java.awt.event.ActionEvent;
  * option for numeric variables.
  * Provides the popup action and filters displayed values.
  *
- * @author Maros Sandor, Jan Jancura
+ * @author Maros Sandor, Jan Jancura, Martin Entlicher
  */
 public class NumericDisplayFilter implements TableModelFilter, 
 NodeActionsProviderFilter, Constants {
+
+    enum NumericDisplaySettings { DECIMAL, HEXADECIMAL, OCTAL, BINARY, CHAR }
 
     private final Map<Variable, NumericDisplaySettings>   variableToDisplaySettings = new HashMap<Variable, NumericDisplaySettings>();
     private HashSet     listeners;
@@ -195,15 +197,15 @@ NodeActionsProviderFilter, Constants {
         if (settings == null) return var.getValue ();
         String type = var.getType ();
         try {
-            switch (settings.getDisplayAs ()) {
-            case NumericDisplaySettings.DECIMAL:
+            switch (settings) {
+            case DECIMAL:
                 if ("char".equals(type)) {
                     int c = getChar(var.getValue());
                     return Integer.toString(c);
                 } else {
                     return var.getValue ();
                 }
-            case NumericDisplaySettings.HEXADECIMAL:
+            case HEXADECIMAL:
                 if ("int".equals (type))
                     return "0x" + Integer.toHexString (
                         Integer.parseInt (var.getValue ())
@@ -225,7 +227,7 @@ NodeActionsProviderFilter, Constants {
                         Long.parseLong (var.getValue ())
                     );
                 }
-            case NumericDisplaySettings.OCTAL:
+            case OCTAL:
                 if ("int".equals (type))
                     return "0" + Integer.toOctalString (
                         Integer.parseInt (var.getValue ())
@@ -248,7 +250,7 @@ NodeActionsProviderFilter, Constants {
                         Long.parseLong (var.getValue ())
                     );
                 }
-            case NumericDisplaySettings.BINARY:
+            case BINARY:
                 if ("int".equals(type))
                     return Integer.toBinaryString(Integer.parseInt(var.getValue()));
                 else if ("short".equals(type)) {
@@ -265,7 +267,7 @@ NodeActionsProviderFilter, Constants {
                 } else {//if ("long".equals(type)) {
                     return Long.toBinaryString (Long.parseLong (var.getValue ()));
                 }
-            case NumericDisplaySettings.CHAR:
+            case CHAR:
                 if ("char".equals(type)) {
                     return var.getValue ();
                 }
@@ -284,8 +286,8 @@ NodeActionsProviderFilter, Constants {
         if (settings == null) return origValue;
         String type = var.getType ();
         try {
-            switch (settings.getDisplayAs ()) {
-            case NumericDisplaySettings.BINARY:
+            switch (settings) {
+            case BINARY:
                 if ("int".equals(type))
                     return Integer.toString(Integer.parseInt(origValue, 2));
                 else if ("short".equals(type)) {
@@ -410,20 +412,20 @@ NodeActionsProviderFilter, Constants {
             NumericDisplaySettings lds = (NumericDisplaySettings) 
                 variableToDisplaySettings.get (variable);
             if (lds != null) {
-                switch (lds.getDisplayAs ()) {
-                case NumericDisplaySettings.DECIMAL:
+                switch (lds) {
+                case DECIMAL:
                     decimalItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.HEXADECIMAL:
+                case HEXADECIMAL:
                     hexadecimalItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.OCTAL:
+                case OCTAL:
                     octalItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.BINARY:
+                case BINARY:
                     binaryItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.CHAR:
+                case CHAR:
                     charItem.setSelected (true);
                     break;
                 }
@@ -443,21 +445,18 @@ NodeActionsProviderFilter, Constants {
             return displayAsPopup;
         }
 
-        private void onDisplayAs (int how) {
+        private void onDisplayAs (NumericDisplaySettings how) {
             NumericDisplaySettings lds = (NumericDisplaySettings) 
                 variableToDisplaySettings.get (variable);
             if (lds == null) {
                 if ("char".equals(type)) {
-                    lds = new NumericDisplaySettings 
-                        (NumericDisplaySettings.CHAR);
+                    lds = NumericDisplaySettings.CHAR;
                 } else {
-                    lds = new NumericDisplaySettings 
-                        (NumericDisplaySettings.DECIMAL);
+                    lds = NumericDisplaySettings.DECIMAL;
                 }
             }
-            if (lds.getDisplayAs () == how) return;
-            variableToDisplaySettings.put 
-                (variable, new NumericDisplaySettings (how));
+            if (lds == how) return;
+            variableToDisplaySettings.put (variable, how);
             fireModelChanged ();
         }
         
@@ -472,23 +471,4 @@ NodeActionsProviderFilter, Constants {
     }
 
     
-    private static class NumericDisplaySettings {
-
-        public static final int DECIMAL        = 0;
-        public static final int HEXADECIMAL    = 1;
-        public static final int OCTAL          = 2;
-        public static final int BINARY         = 3;
-        public static final int CHAR           = 4;
-
-        private int displayAs;
-
-        public NumericDisplaySettings (int displayAs) {
-            this.displayAs = displayAs;
-        }
-
-        public int getDisplayAs () {
-            return displayAs;
-        }
-    }
-
 }
