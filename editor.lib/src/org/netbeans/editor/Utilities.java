@@ -62,7 +62,7 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.openide.util.NbBundle;
 
 /**

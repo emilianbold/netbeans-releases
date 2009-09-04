@@ -199,13 +199,18 @@ is divided into following sections:
   </fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
-                <condition property="manifest.available+main.class">
+                <condition property="main.class.available">
                     <and>
-                        <isset property="manifest.available"/>
                         <isset property="main.class"/>
                         <not>
                             <equals arg1="${{main.class}}" arg2="" trim="true"/>
                         </not>
+                    </and>
+                </condition>
+                <condition property="manifest.available+main.class">
+                    <and>
+                        <isset property="manifest.available"/>
+                        <isset property="main.class.available"/>
                     </and>
                 </condition>
                 <condition property="do.mkdist">
@@ -974,7 +979,7 @@ is divided into following sections:
             <target name="-do-jar-with-libraries-without-mainclass">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+mkdist.available</xsl:attribute>
-                <xsl:attribute name="unless">main.class</xsl:attribute>
+                <xsl:attribute name="unless">main.class.available</xsl:attribute>
                 <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
                 <pathconvert property="run.classpath.without.build.classes.dir">
                     <path path="${{run.classpath}}"/>

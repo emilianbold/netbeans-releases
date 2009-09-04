@@ -74,9 +74,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.util.RequestProcessor;
 
 /**
  * This actions shows the hierarchy of the type of the element under the caret
@@ -113,84 +115,127 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
         }
         return OpenProjects.getDefault().getOpenProjects().length > 0;        
     }
-    
+
+    private RequestProcessor requestProcessor;
+
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
         if (target == null) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
 
-        JavaSource javaSource = JavaSource.forDocument(target.getDocument());
+        final JavaSource javaSource = JavaSource.forDocument(target.getDocument());
 
         if (javaSource == null) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
 
-        try {
-            javaSource.runUserActionTask(new Task<CompilationController>() {
+        if (requestProcessor == null)
+            requestProcessor = new RequestProcessor ("SelectedNodesScheduler");
+        requestProcessor.post (new Runnable () {
+            public void run () {
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        public void run (
+                            final CompilationController compilationController
+                        ) throws IOException {
+                            // Move to resolved phase
+                            compilationController.toPhase (Phase.ELEMENTS_RESOLVED);
 
-                    public void run(
-                        CompilationController compilationController)
-                        throws IOException {
-                        // Move to resolved phase
-                        compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                            // Get document if open
+                            Document document = compilationController.getDocument ();
+                            if (document != null) {
+                                // Get Caret position
+                                int dot = target.getCaret().getDot();
 
-                        // Get document if open
-                        Document document = compilationController.getDocument();
+                                // Find the TreePath for the caret position
+                                final TreePath tp = compilationController.
+                                    getTreeUtilities ().pathFor(dot);
 
-                        if (document != null) {
-                            // Get Caret position
-                            int dot = target.getCaret().getDot();
+                                // Get Element
+                                Element element = compilationController.getTrees().getElement(tp);
 
-                            // Find the TreePath for the caret position
-                            TreePath tp = compilationController.getTreeUtilities()
-                                                               .pathFor(dot);
+                                final FileObject elementFileObject = NbEditorUtilities.
+                                    getFileObject(document);
+                                if (elementFileObject != null) {
+                                    if (element instanceof TypeElement) {
+                                        final Element _element = element;
+                                        SwingUtilities.invokeLater (new Runnable () {
+                                            public void run () {
+                                                JavaHierarchy.show (
+                                                    elementFileObject,
+                                                    new Element[] {_element},
+                                                    compilationController
+                                                );
+                                            }
+                                        });
+                                    } else if (element instanceof VariableElement) {
+                                        TypeMirror typeMirror = ((VariableElement) element).asType();
 
-                            // Get Element
-                            Element element = compilationController.getTrees()
-                                                                   .getElement(tp);
-
-                            FileObject elementFileObject = NbEditorUtilities.getFileObject(document);
-                            if (elementFileObject != null) {
-                                if (element instanceof TypeElement) {
-                                    JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
-                                } else if (element instanceof VariableElement) {
-                                    TypeMirror typeMirror = ((VariableElement) element).asType();
-                                    
-                                    if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                        element = ((DeclaredType) typeMirror).asElement();
-                                        
-                                        if (element != null) {
-                                            JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
-                                        }
-                                    }
-                                } else if (element instanceof ExecutableElement) {
-                                    // Method
-                                    if (element.getKind() == ElementKind.METHOD) {
-                                        TypeMirror typeMirror = ((ExecutableElement) element).getReturnType();
-                                        
                                         if (typeMirror.getKind() == TypeKind.DECLARED) {
                                             element = ((DeclaredType) typeMirror).asElement();
-                                            
+
                                             if (element != null) {
-                                                JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
+                                                final Element _element = element;
+                                                SwingUtilities.invokeLater (new Runnable () {
+                                                    public void run () {
+                                                        JavaHierarchy.show (
+                                                            elementFileObject,
+                                                            new Element[] {_element},
+                                                            compilationController
+                                                        );
+                                                    }
+                                                });
                                             }
                                         }
-                                    } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                                        element = element.getEnclosingElement();
-                                        
-                                        if (element != null) {
-                                            JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
+                                    } else if (element instanceof ExecutableElement) {
+                                        // Method
+                                        if (element.getKind() == ElementKind.METHOD) {
+                                            TypeMirror typeMirror = ((ExecutableElement) element).
+                                                getReturnType();
+
+                                            if (typeMirror.getKind() == TypeKind.DECLARED) {
+                                                element = ((DeclaredType) typeMirror).asElement();
+
+                                                if (element != null) {
+                                                    final Element _element = element;
+                                                    SwingUtilities.invokeLater (new Runnable () {
+                                                        public void run () {
+                                                            JavaHierarchy.show (
+                                                                elementFileObject,
+                                                                new Element[] {_element},
+                                                                compilationController
+                                                            );
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                                            element = element.getEnclosingElement();
+
+                                            if (element != null) {
+                                                final Element _element = element;
+                                                SwingUtilities.invokeLater (new Runnable () {
+                                                    public void run () {
+                                                        JavaHierarchy.show (
+                                                            elementFileObject,
+                                                            new Element[] {_element},
+                                                            compilationController
+                                                        );
+                                                    }
+                                                });
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                }, true);
-        } catch (IOException e) {
-            Logger.getLogger(InspectHierarchyAtCaretAction.class.getName()).log(Level.WARNING, e.getMessage(), e);
-        }
+                    }, true);
+                } catch (IOException e) {
+                    Logger.getLogger(InspectHierarchyAtCaretAction.class.getName()).log(Level.WARNING, e.getMessage(), e);
+                }
+            }
+        });
     }
 }
