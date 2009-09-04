@@ -61,23 +61,30 @@ import org.openide.util.Exceptions;
 public class JsfBinaryIndexer extends BinaryIndexer {
 
     static final String INDEXER_NAME = "jsfBinary"; //NOI18N
-    static final int INDEX_VERSION = 1;
-
+    static final int INDEX_VERSION = 3;
     static final String LIB_NAMESPACE_KEY = "namespace"; //NOI18N
+    static final String LIB_FACELETS_KEY = "faceletsLibrary"; //NOI18N
+    private static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
+    private static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
 
     @Override
     protected void index(Context context) {
-        if(context.getRoot() == null) {
-            return ;
+        if (context.getRoot() == null) {
+            return;
         }
 
         processTlds(context);
+
+        processFaceletsLibraryDescriptors(context);
+
+        processFaceletsCompositeLibraries(context);
+
     }
 
     private void processTlds(Context context) {
         FileObject root = context.getRoot();
         //find all TLDs in the jar file
-        for (FileObject file : findLibraryDescriptors(root)) {
+        for (FileObject file : findLibraryDescriptors(root, TLD_LIB_SUFFIX)) {
             try {
                 String namespace = TldLibrary.parseNamespace(file.getInputStream());
                 if (namespace != null) {
@@ -95,16 +102,39 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
     }
 
+    //just store a marker "faceletsLibrary=true" if facelets library descriptor
+    private void processFaceletsLibraryDescriptors(Context context) {
+        FileObject root = context.getRoot();
+        for (FileObject file : findLibraryDescriptors(root, FACELETS_LIB_SUFFIX)) {
+            try {
+                IndexingSupport sup = IndexingSupport.getInstance(context);
+                IndexDocument doc = sup.createDocument(file);
+                doc.addPair(LIB_FACELETS_KEY, Boolean.TRUE.toString(), true, true);
+                sup.addDocument(doc);
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
-    private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot) {
+    }
+
+    private void processFaceletsCompositeLibraries(Context context) {
+        //look for /META-INF/resources/<folder>/*.xhtml
+        //...and index as normal composite library
+    }
+
+    private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
         Collection<FileObject> files = new ArrayList<FileObject>();
         Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
         while (fos.hasMoreElements()) {
             FileObject fo = fos.nextElement();
             if ("META-INF".equals(fo.getName())) { //NOI18N
-                //look for tag library definition files (.taglib.xml)
-                for (FileObject file : fo.getChildren()) {
-                    if (file.getNameExt().toLowerCase(Locale.US).endsWith(".tld")) { //NOI18N
+                Enumeration<? extends FileObject> children = fo.getChildren(true); //get children recursively
+                while(children.hasMoreElements()) {
+                    FileObject file = children.nextElement();
+                    if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
                         //found library, create a new instance and cache it
                         files.add(file);
                     }

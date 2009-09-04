@@ -98,7 +98,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             faceletsLibraries = findLibraries();
 //            debugLibraries();
         }
-        
+
         updateUndeclaredCompositeLibraries(faceletsLibraries);
 
         return faceletsLibraries;
@@ -108,15 +108,15 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //process default undeclared composite libraries
         List<String> libraryNames = new ArrayList<String>(jsfSupport.getIndex().getAllCompositeLibraryNames());
         //check if the libraries have been declared
-        for(FaceletsLibrary lib : faceletsLibraries.values()) {
-            if(lib instanceof CompositeComponentLibrary) {
-                String libraryName = ((CompositeComponentLibrary)lib).getLibraryName();
+        for (FaceletsLibrary lib : faceletsLibraries.values()) {
+            if (lib instanceof CompositeComponentLibrary) {
+                String libraryName = ((CompositeComponentLibrary) lib).getLibraryName();
                 libraryNames.remove(libraryName);
             }
         }
 
         //create libraries for the rest of undeclared libs
-        for(String libraryName : libraryNames) {
+        for (String libraryName : libraryNames) {
             CompositeComponentLibrary ccl = new CompositeComponentLibrary(this, libraryName);
             faceletsLibraries.put(ccl.getNamespace(), ccl);
         }
@@ -151,7 +151,20 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         List<ConfigurationResourceProvider> faceletTaglibProviders =
                 new ArrayList<ConfigurationResourceProvider>();
         //searches in classpath jars for .taglib.xml files
-        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
+
+        //we already identified the library descriptors during indexing, no need
+        //to scan again, just use the files from index
+//        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
+        final Collection<URL> urls = new ArrayList<URL>();
+        for (FileObject file : getJsfSupport().getBinariesIndex().getAllFaceletsLibraryDescriptors()) {
+            urls.add(URLMapper.findURL(file, URLMapper.EXTERNAL));
+        }
+        faceletTaglibProviders.add(new ConfigurationResourceProvider() {
+            public Collection<URL> getResources(ServletContext sc) {
+                return urls;
+            }
+        });
+
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
         faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
 
@@ -310,6 +323,5 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         public void addTagLibrary(FaceletsLibrary lib) {
             libraries.add(lib);
         }
-
     }
 }
