@@ -76,7 +76,6 @@ public class ChatTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/chat.png"; // NOI18N
     static final String PLUS = "org/netbeans/modules/kenai/collab/resources/plus.png"; // NOI18N
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
 
     private static final String PREFERRED_ID = "ChatTopComponent"; // NOI18N
 
@@ -310,7 +309,7 @@ public class ChatTopComponent extends TopComponent {
         ChatNotifications.getDefault().removePrivate(name);
         int indexOfTab = getTab(createPrivateName(name));
         if (indexOfTab < 0) {
-            ChatPanel chatPanel = new ChatPanel(name + '@' + XMPP_SERVER);
+            ChatPanel chatPanel = new ChatPanel(name + '@' + Kenai.getDefault().getName());
             addChat(chatPanel);
             indexOfTab = chats.getTabCount() - 1;
             chats.setSelectedComponent(chatPanel);

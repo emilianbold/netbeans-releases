@@ -42,7 +42,7 @@ package org.netbeans.modules.kenai.api;
 import org.netbeans.modules.kenai.UserData;
 
 /**
- *
+ * Class representing user on Kenai
  * @author Jan Becicka
  */
 public final class KenaiUser {
@@ -53,18 +53,34 @@ public final class KenaiUser {
         this.data = data;
     }
     
+    /**
+     * getter for username
+     * @return
+     */
     public String getUserName() {
         return data.user_name;
     }
     
+    /**
+     * getter for first name
+     * @return
+     */
     public String getFirstName() {
         return data.first_name;
     }
     
+    /**
+     * getter for last name
+     * @return
+     */
     public String getLastName() {
         return data.last_name;
     }
     
+    /**
+     * getter for role
+     * @return
+     */
     public Role getRole() {
         if ("registered".equals(data.role)) {
             return Role.OBSERVER;
@@ -107,6 +123,9 @@ public final class KenaiUser {
 //        UNKNOWN
 //    }
     
+    /**
+     * user role in projects
+     */
     public static enum Role {
         ADMIN,
         OBSERVER,

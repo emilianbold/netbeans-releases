@@ -181,7 +181,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         showIssuesOnKenaiGUI();
         createChatRoom.setVisible(false);
         chatSeparator.setVisible(false);
-        if (!System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
+        if (!Kenai.getDefault().getName().equals(("testkenai.com"))) {
             createChatRoom.setSelected(false);
         }
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));

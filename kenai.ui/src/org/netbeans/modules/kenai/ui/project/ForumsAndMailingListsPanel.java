@@ -115,7 +115,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
     public String getChatRoomHTML(final KenaiProject instProj) {
         String innerStr = ""; //NOI18N
         try {
-            if (Kenai.getDefault().getPasswordAuthentication() != null && Kenai.getDefault().getMyProjects().contains(instProj)) {
+            if (instProj.isMyProject()) {
                 KenaiFeature[] chats = instProj.getFeatures(Type.CHAT);
                 innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_CHATROOM")); //NOI18N
                 if (chats.length > 0) {
