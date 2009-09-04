@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Build">
+            <file name="org-netbeans-modules-web-jsf-JsfCompositeComponentAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="html">
@@ -12,13 +17,23 @@
                 </file>
             </folder>
             <folder name="xhtml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-web-jsf-JsfCompositeComponentAction-separatorBefore.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4250"/>
+                    </file>
+                    <file name="org-netbeans-modules-web-jsf-JsfCompositeComponentAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-web-jsf-JsfCompositeComponentAction.instance"/>
+                        <attr name="position" intvalue="4300"/>
+                    </file>
+                </folder>
                 <folder name="text">
-                        <folder name="html">
-                            <folder name="CodeGenerators">
-                                <file name="org-netbeans-modules-web-jsf-editor-JsfCodeGenerator$Factory.instance"/>
-                            </folder>
+                    <folder name="html">
+                        <folder name="CodeGenerators">
+                            <file name="org-netbeans-modules-web-jsf-editor-JsfCodeGenerator$Factory.instance"/>
                         </folder>
                     </folder>
+                </folder>
                 <file name="org-netbeans-modules-web-jsf-editor-JsfHtmlPaletteFolderProvider.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider"/>
                 </file>
