@@ -54,6 +54,7 @@ package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
 import java.net.URL;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.windows.OutputWriter;
 
 /**
  * Sun Studio Compiler advice.
@@ -83,5 +84,8 @@ public class SunStudioCompilerXautoparAdvice implements Advice {
                 "<br>" + // NOI18N
                 "<br>" + // NOI18N
                 "<a href=\"http://developers.sun.com/sunstudio/downloads/\">Download Sun Studio</a>.", 800), null); // NOI18N
+    }
+
+    public void addNotification(OutputWriter writer) {
     }
 }

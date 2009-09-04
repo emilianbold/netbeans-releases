@@ -36,31 +36,28 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author masha
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
-public final class PerfanDataStorageFactory implements DataStorageFactory<PerfanDataStorage>{
-  static final String ID = "PerfanDataStorage"; //NOI18N
-  static final Collection<DataStorageType> supportedTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
+public final class PerfanDataStorageFactory implements DataStorageFactory<PerfanDataStorage> {
 
-  public Collection<DataStorageType> getStorageTypes() {
-    return supportedTypes;
-  }
+    static final Collection<DataStorageType> supportedTypes = Collections.singletonList(PerfanDataStorage.storageType);
 
-  public PerfanDataStorage createStorage() {
-    return new PerfanDataStorage();
-  }
+    public Collection<DataStorageType> getStorageTypes() {
+        return supportedTypes;
+    }
 
+    public PerfanDataStorage createStorage() {
+        return new PerfanDataStorage();
+    }
 }

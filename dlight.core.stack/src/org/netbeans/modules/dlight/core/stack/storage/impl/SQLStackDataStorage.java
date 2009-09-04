@@ -67,6 +67,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
@@ -89,7 +90,7 @@ import org.openide.util.Lookup;
  *
  * @author Alexey Vladykin
  */
-public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
+public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider {
 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;

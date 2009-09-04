@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.windows.OutputWriter;
 
 /**
  * Loop parallelization advice.
@@ -78,5 +79,8 @@ public class UnnecessaryThreadsAdvice implements Advice {
         String html = "It seems that program uses too many threads."; // NOI18N
         return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Too many threads", // NOI18N
                 html, 800); // NOI18N
+    }
+
+    public void addNotification(OutputWriter writer) {
     }
 }

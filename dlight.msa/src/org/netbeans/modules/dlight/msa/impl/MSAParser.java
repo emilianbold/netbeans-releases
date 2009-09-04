@@ -175,7 +175,7 @@ public final class MSAParser extends DtraceParser {
         int[] aggregatedStates = new int[10];
         for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
             int[] states = entry.getValue();
-            ThreadStateImpl state = new ThreadStateImpl(periodFirstTimestamp, states);
+            ThreadStateImpl state = new ThreadStateImpl(periodFirstTimestamp, deltaTime, states);
             //System.err.println(state);
             storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);
             for (int i = 3; i < 13; ++i) {
@@ -266,6 +266,10 @@ public final class MSAParser extends DtraceParser {
 
         public int getSamplingStateIndex(boolean full) {
             return 0;
+        }
+
+        public long getMSASamplePeriod() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
 

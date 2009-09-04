@@ -150,7 +150,9 @@
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.management</friend>
+                <friend>org.netbeans.modules.dlight.msa</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.procfs</friend>
                 <friend>org.netbeans.modules.dlight.spi</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>

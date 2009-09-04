@@ -51,9 +51,13 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
+import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -83,6 +87,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProv
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
+import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
@@ -95,17 +100,20 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * Parallel Adviser monitor.
  *
  * @author Nick Krasilnikov
  */
-public class ParallelAdviserMonitor implements IndicatorNotificationsListener, DLightSessionListener {
+public class ParallelAdviserMonitor implements IndicatorNotificationsListener, DLightSessionListener, SessionStateListener {
 
     private static final ParallelAdviserMonitor instance = new ParallelAdviserMonitor();
     private CpuHighLoadIntervalFinder highLoadFinder;
     private UnnecessaryThreadsIntervalFinder unnecessaryThreadsFinder;
+    Collection<LoopParallelizationAdvice> notificationTips;
 
     public static ParallelAdviserMonitor getInstance() {
         return instance;
@@ -129,10 +137,42 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     public void sessionAdded(DLightSession newSession) {
         highLoadFinder = new CpuHighLoadIntervalFinder();
         unnecessaryThreadsFinder = new UnnecessaryThreadsIntervalFinder();
+        notificationTips = new ArrayList<LoopParallelizationAdvice>();
         newSession.addIndicatorNotificationListener(this);
+        newSession.addSessionStateListener(this);
     }
 
     public void sessionRemoved(DLightSession removedSession) {
+    }
+
+    public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
+        InputOutput io = session.getInputOutput();
+        if (!notificationTips.isEmpty() && newState == SessionState.ANALYZE && io != null) {
+            try {
+                io.getErr().println("Parallel Adviser: ", // NOI18N
+                        new OutputListener() {
+
+                    public void outputLineSelected(OutputEvent ev) {
+                    }
+
+                    public void outputLineAction(OutputEvent ev) {
+                        ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
+                        if (!view.isOpened()) {
+                            view.open();
+                        }
+                        view.requestActive();
+                    }
+
+                    public void outputLineCleared(OutputEvent ev) {
+                    }
+                });
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            for (Advice advice : notificationTips) {
+                advice.addNotification(io.getErr());
+            }
+        }
     }
 
     public void reset() {
@@ -156,8 +196,11 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                 SunStudioDataCollector collector = new SunStudioDataCollector();
 
                 for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
-                    if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < highLoadFinder.ticks / 2) {
+                    if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
                         break;
+                    }
+                    if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_eUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
+                        continue;
                     }
                     String functionName = functionCall.getFunction().getQuilifiedName();
                     functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
@@ -167,10 +210,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                         if (CodeModelUtils.canParallelize(loop)) {
                             LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
                             LoopParallelizationTipsProvider.addTip(tip);
-                            tip.setNotification(io.getErr());
-                            //panel.notifyUser();
-                            System.out.println("Parallel Adviser notification!!!"); // NOI18N
-
+                            addNotificationTip(tip);
                             Runnable updateView = new Runnable() {
 
                                 public void run() {
@@ -194,8 +234,15 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                             FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
                             FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
                             FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
-                    if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos() / 1000000000 < highLoadFinder.ticks / 2) {
+                    final Column c_eUser = new Column(
+                            FunctionMetric.CpuTimeExclusiveMetric.getMetricID(),
+                            FunctionMetric.CpuTimeExclusiveMetric.getMetricValueClass(),
+                            FunctionMetric.CpuTimeExclusiveMetric.getMetricDisplayedName(), null);
+                    if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos() / 1000000000 < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
                         break;
+                    }
+                    if (((Time) functionCall.getMetricValue(c_eUser.getColumnName())).getNanos() / 1000000000 < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
+                        continue;
                     }
                     String functionName = functionCall.getFunction().getQuilifiedName();
                     functionName = functionName.replaceAll(".*\\`", ""); // NOI18N
@@ -206,9 +253,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                         if (CodeModelUtils.canParallelize(loop)) {
                             LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
                             LoopParallelizationTipsProvider.addTip(tip);
-                            tip.setNotification(io.getErr());
-                            //panel.notifyUser();
-                            System.out.println("Parallel Adviser notification!!!"); // NOI18N
+                            addNotificationTip(tip);
                             Runnable updateView = new Runnable() {
 
                                 public void run() {
@@ -245,23 +290,12 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                     SwingUtilities.invokeLater(updateView);
                 }
             }
-
-
-//        DLightTarget target = getTarget();
-//        if(target instanceof NativeExecutableTarget) {
-//            NativeExecutableTarget nativeTarget = (NativeExecutableTarget) target;
-//
-//            InputOutput io = nativeTarget.getInputOutput();
-//            io.getErr().println("1010:111 sdlfk");
-//        }
-
         }
     }
 
     private static String getMessage(String name) {
         return NbBundle.getMessage(ParallelAdviserMonitor.class, name);
     }
-
     public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
 
     private static CsmProject getProject() {
@@ -327,7 +361,6 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             }
         }
     }
-    
     private int processorsNumber = 0;
 
     private int getProcessorsNumber() {
@@ -352,6 +385,16 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             }
         }
         return processorsNumber;
+    }
+
+    private void addNotificationTip(LoopParallelizationAdvice tip) {
+        for (LoopParallelizationAdvice advice : notificationTips) {
+            if(advice.getLoop().equals(tip.getLoop())) {
+                notificationTips.remove(advice);
+                break;
+            }
+        }
+        notificationTips.add(tip);
     }
 
     private static class DTraceDataCollector {
@@ -412,7 +455,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
 
         public boolean isUnnecessaryThreadsInterval() {
-            boolean result = (interval > 0) ;//&& (interval % INTERVAL_BOUND == 0);
+            boolean result = (interval > 0);//&& (interval % INTERVAL_BOUND == 0);
             return result;
         }
 

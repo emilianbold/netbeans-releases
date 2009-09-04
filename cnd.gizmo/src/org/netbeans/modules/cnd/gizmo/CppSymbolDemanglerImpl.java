@@ -80,6 +80,12 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     /*package*/ CppSymbolDemanglerImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
+        if (project == null) {
+             Project[] projects = org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
+             if (projects.length == 1) {
+                 project = projects[0];
+             }
+        }
         NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
         if (nPrj == null || conf == null) {
