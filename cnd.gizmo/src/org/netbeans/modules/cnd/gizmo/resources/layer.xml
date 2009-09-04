@@ -4,6 +4,7 @@
     <folder name="DLight">
         <folder name="Configurations">
             <folder name="Gizmo">
+                <attr name="displayedName" stringvalue="C/C++ Observability"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightCPUToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>

@@ -48,15 +48,17 @@ import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAcces
  * @author thp
  */
 public class DLightConfigurationUIWrapper {
-    private DLightConfiguration dLightConfiguration;
+    private DLightConfiguration dlightConfiguration;
     private boolean custom;
     private String name;
+    private  String displayedName;
     private List<DLightToolUIWrapper> tools;
     private boolean isModified;
 
-    public DLightConfigurationUIWrapper(DLightConfiguration dLightConfiguration, List<DLightTool> allDLightTools) {
-        this.dLightConfiguration = dLightConfiguration;
-        this.name = dLightConfiguration.getConfigurationName();
+    public DLightConfigurationUIWrapper(DLightConfiguration dlightConfiguration, List<DLightTool> allDLightTools) {
+        this.dlightConfiguration = dlightConfiguration;
+        this.name = dlightConfiguration.getConfigurationName();
+        this.displayedName = dlightConfiguration.getDisplayedName();
         this.custom = false;
         initWrapper(allDLightTools);
     }
@@ -65,15 +67,16 @@ public class DLightConfigurationUIWrapper {
     public DLightConfigurationUIWrapper(String name, List<DLightTool> allDLightTools) {
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
-        this.dLightConfiguration = accessor.getDefaultConfiguration(manager);
+        this.dlightConfiguration = accessor.getDefaultConfiguration(manager);
         this.name = name;
+        this.displayedName = displayedName;
         this.custom = true;
         initWrapper(allDLightTools);
     }
 
     private void initWrapper(List<DLightTool> allDLightTools) {
         tools = new ArrayList<DLightToolUIWrapper>();
-        List<DLightTool> confDlightTools = dLightConfiguration.getToolsSet();
+        List<DLightTool> confDlightTools = dlightConfiguration.getToolsSet();
         int i = 0;
         for (DLightTool dlightTool : allDLightTools) {
             DLightTool toolToAdd = findTool(confDlightTools, dlightTool.getID());
@@ -101,7 +104,7 @@ public class DLightConfigurationUIWrapper {
 
     @Override
     public String toString() {
-        return getName();
+        return displayedName;
     }
 
     /**
@@ -136,14 +139,14 @@ public class DLightConfigurationUIWrapper {
      * @return the dLightConfiguration
      */
     public DLightConfiguration getDLightConfiguration() {
-        return dLightConfiguration;
+        return dlightConfiguration;
     }
 
     /**
      * @param dLightConfiguration the dLightConfiguration to set
      */
     public void setDLightConfiguration(DLightConfiguration dLightConfiguration) {
-        this.dLightConfiguration = dLightConfiguration;
+        this.dlightConfiguration = dLightConfiguration;
     }
 
     /**
