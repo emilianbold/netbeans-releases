@@ -36,79 +36,45 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.tool;
+package org.netbeans.modules.dlight.api.tool.impl;
+
+import java.util.List;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 
 /**
- *
- * @author thp
+ * This class for internal use only:
+ * Use it to
  */
-public class DLightToolUIWrapper {
+public final class DLightConfigurationSupport {
 
-    private DLightTool dLightTool;
-    private boolean enabled;
-    private boolean onByDefault;
-    private boolean visible;
+    private final static DLightConfigurationSupport instance = new DLightConfigurationSupport();
 
-    public DLightToolUIWrapper(DLightTool dLightTool, boolean enabled) {
-        this.dLightTool = dLightTool;
-        this.enabled = enabled;
-        this.onByDefault = true;
-        this.visible = dLightTool.isVisible();
+    private DLightConfigurationSupport() {
+    }
+
+    public static synchronized DLightConfigurationSupport getInstance() {
+        return instance;
     }
 
     /**
-     * @return the dLightTool
+     * Sets default tool set for the
+     * @param configurationName
+     * @param tools
      */
-    public DLightTool getdLightTool() {
-        return dLightTool;
+    public final void setDefaultToolSet(String configurationName, List<DLightTool> tools) {
+        //create XML layer
     }
 
-    /**
-     * @param dLightTool the dLightTool to set
-     */
-    public void setdLightTool(DLightTool dLightTool) {
-        this.dLightTool = dLightTool;
+    public boolean registerTool(String configurationName, DLightTool dlightTool) {
+        DLightConfiguration configuration = DLightConfigurationManagerAccessor.getDefault().getDefaultConfiguration(DLightConfigurationManager.getInstance());
+        return DLightConfigurationManagerAccessor.getDefault().registerTool(DLightConfigurationManager.getInstance(), configurationName, dlightTool);
     }
 
-    /**
-     * @return the enabled
-     */
-    public boolean isEnabled() {
-        return enabled;
-    }
+    public boolean deleteTool(String configurationName, DLightTool dlightTool) {
+        DLightConfiguration configuration = DLightConfigurationManagerAccessor.getDefault().getDefaultConfiguration(DLightConfigurationManager.getInstance());
+        return DLightConfigurationManagerAccessor.getDefault().deleteTool(DLightConfigurationManager.getInstance(), configurationName, dlightTool);
 
-    /**
-     * @param enabled the enabled to set
-     */
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    /**
-     * @return the onByDefault
-     */
-    public boolean isOnByDefault() {
-        return onByDefault;
-    }
-
-    /**
-     * @param onByDefault the onByDefault to set
-     */
-    public void setOnByDefault(boolean onByDefault) {
-        this.onByDefault = onByDefault;
-    }
-
-    /**
-     * @return the visible
-     */
-    public boolean isVisible() {
-        return visible;
-    }
-
-    /**
-     * @param visible the visible to set
-     */
-    public void setVisible(boolean visible) {
-        this.visible = visible;
     }
 }

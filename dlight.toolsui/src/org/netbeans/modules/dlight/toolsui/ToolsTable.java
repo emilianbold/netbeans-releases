@@ -51,7 +51,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.dlight.api.tool.DLightToolUIWrapper;
+import org.netbeans.modules.dlight.toolsui.api.DLightConfigurationUIWrapper;
+import org.netbeans.modules.dlight.toolsui.api.DLightToolUIWrapper;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -60,11 +61,12 @@ import org.openide.util.ImageUtilities;
  */
 public class ToolsTable extends JTable {
 
-    private List<DLightToolUIWrapper> allDLightTools = null;
+    private final List<DLightToolUIWrapper> allDLightTools;
+    private final DLightConfigurationUIWrapper dlightConfigurationUIWrapper;
 
-    public ToolsTable(List<DLightToolUIWrapper> allDLightTools, ListSelectionListener listSelectionListener) {
+    public ToolsTable(DLightConfigurationUIWrapper dlightConfigurationUIWrapper, List<DLightToolUIWrapper> allDLightTools, ListSelectionListener listSelectionListener) {
         this.allDLightTools = allDLightTools;
-
+        this.dlightConfigurationUIWrapper = dlightConfigurationUIWrapper;
         if (getRowHeight() < 20) {
             setRowHeight(20);
         }
@@ -135,10 +137,10 @@ public class ToolsTable extends JTable {
                 checkBox.setBackground(label.getBackground());
                 return checkBox;
             } else {
-                label.setText(dlightTool.getdLightTool().getName()); // NOI18N
+                label.setText(dlightTool.getDLightTool().getName()); // NOI18N
                 Image image = null;
-                if (dlightTool.getdLightTool().hasIcon()) {
-                    image = ImageUtilities.loadImage(dlightTool.getdLightTool().getIconPath());
+                if (dlightTool.getDLightTool().hasIcon()) {
+                    image = ImageUtilities.loadImage(dlightTool.getDLightTool().getIconPath());
                 }
                 if (image == null) {
                     image = emptyImage;
@@ -180,7 +182,7 @@ public class ToolsTable extends JTable {
         public void setValueAt(Object value, int row, int col) {
             if (col == 0) {
                 DLightToolUIWrapper dlightTool = allDLightTools.get(row);
-                dlightTool.setEnabled(!dlightTool.isEnabled());
+                ToolsTable.this.dlightConfigurationUIWrapper.setToolEnabled(dlightTool, !dlightTool.isEnabled());
             }
         }
     }

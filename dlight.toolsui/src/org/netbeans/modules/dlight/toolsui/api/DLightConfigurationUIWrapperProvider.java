@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,43 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.impl;
+package org.netbeans.modules.dlight.toolsui.api;
 
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 
 /**
  *
- * @author masha
+ * @author mt154047
  */
-public abstract class DLightTargetAccessor {
+public final class DLightConfigurationUIWrapperProvider {
 
-    private static volatile DLightTargetAccessor DEFAULT;
+    private final List<DLightConfigurationUIWrapper> dLightConfigurations = new ArrayList<DLightConfigurationUIWrapper>();
+    private static final DLightConfigurationUIWrapperProvider instance = new DLightConfigurationUIWrapperProvider();
 
-    public static DLightTargetAccessor getDefault() {
-        DLightTargetAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(DLightTarget.class.getName(), true,
-                    DLightTarget.class.getClassLoader());
-        } catch (Exception e) {
-        }
-
-        return DEFAULT;
+    private DLightConfigurationUIWrapperProvider() {
     }
 
-    public static void setDefault(DLightTargetAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        
-        DEFAULT = accessor;
+    public static DLightConfigurationUIWrapperProvider getInstance() {
+        return instance;
     }
+    /*
+     * Return list of all configurations with all tools. For UI manipulation.
+     */
 
-    public abstract DLightTarget.DLightTargetExecutionService getDLightTargetExecution(DLightTarget target);
-    public abstract DLightTarget.Info getDLightTargetInfo(DLightTarget target);
+    public List<DLightConfigurationUIWrapper> getDLightConfigurationUIWrappers() {
+        synchronized (this) {
+            if (dLightConfigurations.isEmpty()) {
+                DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
+                DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
+                List<DLightTool> allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
+                for (DLightConfiguration dLightConfiguration : accessor.getDLightConfigurations(manager)) {
+                    dLightConfigurations.add(new DLightConfigurationUIWrapper(dLightConfiguration, allDLightTools));
+                }
+            }
+        }
+        return dLightConfigurations;
+    }
 }

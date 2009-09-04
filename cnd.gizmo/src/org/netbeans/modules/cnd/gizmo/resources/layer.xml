@@ -4,6 +4,7 @@
     <folder name="DLight">
         <folder name="Configurations">
             <folder name="Gizmo">
+                <attr name="displayedName" stringvalue="C/C++ Observability"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightCPUToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
@@ -16,9 +17,11 @@
                     </file>
                     <file name="ThreadMapToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/ThreadMapToolConfigurationProvider.instance"/>
+                        <attr name="enabledByDefault" boolvalue="false"/>
                     </file>
                     <file name="FopsToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
+                        <attr name="enabledByDefault" boolvalue="false"/>
                     </file>
                 </folder>
                 <folder name="ConfigurationOptions">
