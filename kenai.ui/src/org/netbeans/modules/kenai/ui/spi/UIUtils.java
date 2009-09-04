@@ -76,13 +76,11 @@ import org.openide.util.RequestProcessor;
  */
 public final class UIUtils {
     static {
-        String url = System.getProperty("kenai.com.url", "https://kenai.com"); //NOI18N
-        String s = url.substring(url.lastIndexOf("/")+1); //NOI18N
-        KENAI_USERNAME_PREF= s + ".username"; //NOI18N
-        KENAI_PASSWORD_PREF= s + ".password"; //NOI18N
-        ONLINE_STATUS_PREF = s + ".online"; // NOI18N
-        LOGIN_STATUS_PREF = s + ".login";// NOI18N
-
+        String name = Kenai.getDefault().getName();
+        KENAI_USERNAME_PREF= name + ".username"; //NOI18N
+        KENAI_PASSWORD_PREF= name + ".password"; //NOI18N
+        ONLINE_STATUS_PREF = name + ".online"; // NOI18N
+        LOGIN_STATUS_PREF = name + ".login";// NOI18N
     }
     
     private final static String KENAI_PASSWORD_PREF;

@@ -43,9 +43,11 @@ import java.awt.Image;
 import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -57,7 +59,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class KenaiRepository extends BugzillaRepository {
 
@@ -224,4 +226,14 @@ public class KenaiRepository extends BugzillaRepository {
                     new String[] { product } )
         };
     }
+
+    @Override
+    public Collection<RepositoryUser> getUsers() {
+        return KenaiUtil.getProjectMembers(product.toLowerCase());
+    }
+
+    public String getHost() {
+        return host;
+    }
+
 }

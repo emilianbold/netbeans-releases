@@ -42,6 +42,7 @@ package org.netbeans.modules.jira.kenai;
 import java.awt.Image;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
@@ -52,6 +53,7 @@ import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -61,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class KenaiRepository extends JiraRepository {
 
@@ -278,4 +280,15 @@ public class KenaiRepository extends JiraRepository {
         }
         return pf;
     }
+
+    @Override
+    public Collection<RepositoryUser> getUsers() {
+         Collection<RepositoryUser> users = KenaiUtil.getProjectMembers(projectName.toLowerCase());
+         if (users.isEmpty()) {
+             // fallback - try cache
+             users = super.getUsers();
+         }
+         return users;
+    }
+
 }

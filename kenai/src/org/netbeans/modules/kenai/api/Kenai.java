@@ -101,7 +101,11 @@ public final class Kenai {
 
     private static Kenai instance;
     private PasswordAuthentication auth = null;
-    private static URL url;
+    private URL url;
+    private String name;
+    private final KenaiImpl impl;
+    private XMPPConnection xmppConnection;
+
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
 
@@ -114,9 +118,14 @@ public final class Kenai {
      public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
-                Kenai.url = new URL(System.getProperty("kenai.com.url", "https://kenai.com"));
-                KenaiImpl impl = new KenaiREST(Kenai.url);
-                instance = new Kenai(impl);
+                String urlString = System.getProperty("kenai.com.url", "https://kenai.com/");
+                assert urlString.startsWith("https://"):"the only supported protocol is https";
+                if (urlString.endsWith("/")) {
+                    urlString = urlString.substring(0, urlString.length()-1);
+                }
+                URL url = new URL(urlString);
+                KenaiImpl impl = new KenaiREST(url);
+                instance = new Kenai(impl, url);
             } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
             }
@@ -125,30 +134,37 @@ public final class Kenai {
     }
 
     /**
-    * Helper method that fixed slash on the Kenai.com url
-    * @param urlStr String with URL as it was passed
-    * @return Fixed URL string
-    */
-    public static String normalizeUrl(String urlStr) {
-        if (urlStr.endsWith("/")) {
-            return urlStr.substring(0, urlStr.length() - 1);
-        } else {
-            return urlStr;
+     * url of kenai.com instance
+     * @return
+     */
+    public URL getUrl() {
+        return url;
+    }
+
+    /**
+     * name of this kenai instance
+     * @return e.g. kenai.com, testkenai.com, odftoolkit.org, netbeans.org
+     */
+    public String getName() {
+        if (name==null) {
+            String urlString = getUrl().toString();
+            name = urlString.substring("https://".length()); //NOI18N
         }
+        return name;
     }
 
-    private final KenaiImpl     impl;
-    private XMPPConnection xmppConnection;
-
-    Kenai(KenaiImpl impl) {
+    Kenai(KenaiImpl impl, URL url) {
         this.impl = impl;
+        this.url = url;
     }
 
+    /**
+     * getter for xmpp connection. returns null, if user is not Status.ONLINE
+     * @return instance of XMPP connection
+     */
     public synchronized XMPPConnection getXMPPConnection() {
         return xmppConnection;
     }
-
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
 
     /**
      * Logs an existing user into Kenai. Login session persists until the login method
@@ -157,6 +173,7 @@ public final class Kenai {
      *
      * @param username
      * @param password
+     * @param xmppLogin should log into xmpp server?
      * @throws KenaiException
      */
     public void login(final String username, final char [] password, boolean xmppLogin) throws KenaiException {
@@ -195,10 +212,18 @@ public final class Kenai {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
 
+    /**
+     * Logs an existing user into Kenai. Login session persists until the login method
+     * is called again or logout is called. If the login fails then the current session
+     * resumes (if any).
+     *
+     * @param username
+     * @param password
+     * @throws KenaiException
+     */
     public void login(final String username, final char [] password) throws KenaiException {
         login(username, password, true);
     }
-
 
     /**
      * Logs out current session
@@ -430,7 +455,7 @@ public final class Kenai {
         return auth;
     }
 
-    private Collection<KenaiProject> myProjects = null;
+    Collection<KenaiProject> myProjects = null;
     /**
      * get my projects of logged user
      * @return collection of projects
@@ -444,6 +469,11 @@ public final class Kenai {
         return getMyProjects(true);
     }
 
+    /**
+     * status of user
+     * @see Status
+     * @return
+     */
     public Status getStatus() {
         if (auth==null) {
             return Status.OFFLINE;
@@ -521,7 +551,7 @@ public final class Kenai {
     private void xmppConnect() throws KenaiException {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_STARTED, null, null));
         synchronized (this) {
-            xmppConnection = new XMPPConnection(XMPP_SERVER);
+            xmppConnection = new XMPPConnection(getName());
             try {
                 xmppConnection.connect();
                 xmppConnection.login(auth.getUserName(), new String(auth.getPassword()), "NetBeans"); //NOI18N
@@ -542,9 +572,21 @@ public final class Kenai {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, temp, null));
     }
 
+    /**
+     * user status on kenai
+     */
     public static enum Status {
+        /**
+         * user is logged in, online on chat
+         */
         ONLINE,
+        /**
+         * user is logged in, offline on chat
+         */
         LOGGED_IN,
+        /**
+         * user is not logged in
+         */
         OFFLINE
     }
 }

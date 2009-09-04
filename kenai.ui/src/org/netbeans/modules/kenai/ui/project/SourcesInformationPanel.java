@@ -161,14 +161,22 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
     private String addRepoHeaderWithButton(final KenaiFeature repo, String htmlID, int order) {
         String _appString = ""; //NOI18N
         if (repo.getService().equals(KenaiService.Names.SUBVERSION) || repo.getService().equals(KenaiService.Names.MERCURIAL)) {
+            String repotype = "MSG_MERCURIAL";
+            if (repo.getService().equals(KenaiService.Names.SUBVERSION)) {
+                repotype = "MSG_SUBVERSION";
+            }
             _appString += String.format("<a name=\"repo%d\"></a><table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td><h3>%s (%s)</h3></td><td width=\"200\" align=\"right\"><input type=\"reset\" id=\"%s\" value=\"%s\"></td></tr></table>", //NOI18N
                     order,
                     repo.getDisplayName(),
-                    repo.getService(),
+                    NbBundle.getMessage(SourcesInformationPanel.class, repotype),
                     htmlID,
                     NbBundle.getMessage(SourcesInformationPanel.class, "MSG_GET_THIS_REPO")); //NOI18N
         } else {
-            _appString += String.format("<a name=\"repo%d\"></a><h3>%s (%s)</h3>", order, repo.getDisplayName(), repo.getService()); //NOI18N
+            String repotype = "MSG_UNKNOWN_SCM";
+            if (repo.getService().equals(KenaiService.Names.GIT)) {
+                repotype = "MSG_GIT";
+            }
+            _appString += String.format("<a name=\"repo%d\"></a><h3>%s (%s)</h3>", order, repo.getDisplayName(), NbBundle.getMessage(SourcesInformationPanel.class, repotype)); //NOI18N
         }
         return _appString;
     }
@@ -218,8 +226,16 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     return WAIT_STRING;
                 }
                 final KenaiFeature repo = repos[k];
+                String repotype = "MSG_UNKNOWN_SCM";
+                if (repo.getService().equals(KenaiService.Names.SUBVERSION)) {
+                    repotype = "MSG_SUBVERSION";
+                } else if (repo.getService().equals(KenaiService.Names.GIT)) {
+                    repotype = "MSG_GIT";
+                } else if (repo.getService().equals(KenaiService.Names.MERCURIAL)) {
+                    repotype = "MSG_MERCURIAL";
+                }
                 _appString += String.format("<div class=\"item\"><a href=\"#repo%d\">%s</a> <i>(%s)</i></div>", //NOI18N
-                        k, repo.getDisplayName(), repo.getService());
+                        k, repo.getDisplayName(), NbBundle.getMessage(SourcesInformationPanel.class, repotype));
             }
             for (int k = 0; k < repos.length; k++) {
                 if (Thread.interrupted()) {
@@ -228,7 +244,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 final KenaiFeature repo = repos[k];
 
                 DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://"); //NOI18N
+                String base = Kenai.getDefault().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
                 String urlStr = base + repo.getWebLocation().getPath().replaceAll("/show$", "/history.atom"); //NOI18N
                 int entriesCount = 0;
                 NodeList entries = null;

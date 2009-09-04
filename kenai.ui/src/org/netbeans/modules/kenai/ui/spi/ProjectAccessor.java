@@ -47,6 +47,8 @@ public abstract class ProjectAccessor {
      */
     public abstract Action getOpenNonMemberProjectAction();
 
+    public abstract Action getNewKenaiProjectAction();
+
     /**
      * @param project
      * @return Show details of given project

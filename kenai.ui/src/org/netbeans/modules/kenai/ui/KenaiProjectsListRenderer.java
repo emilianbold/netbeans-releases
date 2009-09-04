@@ -50,6 +50,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.net.URL;
@@ -65,6 +66,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,7 +97,9 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
             description = description.replaceAll("\n+", " "); // NOI18N
             description = description.replaceAll("\t+", " "); // NOI18N
             Icon icon = searchInfo.kenaiProject.getProjectIcon(false);
-            iconLabel.setIcon(icon);
+            Image im = ImageUtilities.icon2Image(icon);
+            im = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            iconLabel.setIcon(ImageUtilities.image2Icon(im));
             projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
             String tags = searchInfo.kenaiProject.getTags();
@@ -167,10 +171,10 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
         iconLabel.setBackground(new Color(255, 255, 255));
         iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         iconLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-        iconLabel.setMaximumSize(new Dimension(150, 150));
+        iconLabel.setMaximumSize(new Dimension(100, 100));
         iconLabel.setMinimumSize(new Dimension(100, 100));
         iconLabel.setOpaque(true);
-        iconLabel.setPreferredSize(new Dimension(150, 150));
+        iconLabel.setPreferredSize(new Dimension(100, 100));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.anchor = GridBagConstraints.NORTH;

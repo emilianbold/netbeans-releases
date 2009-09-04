@@ -37,98 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.kenai.UserData;
+import java.awt.Component;
+import java.text.MessageFormat;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.openide.util.NbBundle;
 
 /**
- * Class representing user on Kenai
- * @author Jan Becicka
+ * Renderer of <code>RepositoryUser</code>.
+ *
+ * @author Jan Stola
  */
-public final class KenaiUser {
-
-    UserData data;
-
-    KenaiUser(UserData data) {
-        this.data = data;
-    }
+public class RepositoryUserRenderer extends DefaultListCellRenderer {
+    private String pattern;
     
-    /**
-     * getter for username
-     * @return
-     */
-    public String getUserName() {
-        return data.user_name;
-    }
-    
-    /**
-     * getter for first name
-     * @return
-     */
-    public String getFirstName() {
-        return data.first_name;
-    }
-    
-    /**
-     * getter for last name
-     * @return
-     */
-    public String getLastName() {
-        return data.last_name;
-    }
-    
-    /**
-     * getter for role
-     * @return
-     */
-    public Role getRole() {
-        if ("registered".equals(data.role)) {
-            return Role.OBSERVER;
-        }
-        return Role.valueOf(data.role.toUpperCase());
-    }
-//    public Status getStatus() {
-//        return Status.UNKNOWN;
-//    }
-
-    @Override
-    public String toString() {
-        return getUserName() + " (" + getRole() + ")";
+    public RepositoryUserRenderer() {
+        pattern = NbBundle.getMessage(RepositoryUserRenderer.class, "RepositoryUserRenderer.format"); // NOI18N
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        if (value instanceof RepositoryUser) {
+            RepositoryUser user = (RepositoryUser)value;
+            value = MessageFormat.format(pattern, user.getFullName(), user.getUserName());
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final KenaiUser other = (KenaiUser) obj;
-        if (this.data != other.data && (this.data == null || !this.data.user_name.equals(other.data.user_name))) {
-            return false;
-        }
-        return true;
+        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
     }
 
-    @Override
-    public int hashCode() {
-        return data.user_name.hashCode();
-    }
-
-//    public static enum Status {
-//        ONLINE,
-//        OFFLINE,
-//        DND,
-//        UNKNOWN
-//    }
-    
-    /**
-     * user role in projects
-     */
-    public static enum Role {
-        ADMIN,
-        OBSERVER,
-        DEVELOPER
-    }
 }

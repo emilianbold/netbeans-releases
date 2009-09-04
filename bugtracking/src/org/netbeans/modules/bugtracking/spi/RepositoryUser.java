@@ -37,98 +37,46 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
-
-import org.netbeans.modules.kenai.UserData;
+package org.netbeans.modules.bugtracking.spi;
 
 /**
- * Class representing user on Kenai
- * @author Jan Becicka
+ * Repository user.
+ *
+ * @author Jan Stola
  */
-public final class KenaiUser {
+public class RepositoryUser {
+    /** User name (login) of the user. */
+    private String userName;
+    /** Full name of the user. */
+    private String fullName;
 
-    UserData data;
-
-    KenaiUser(UserData data) {
-        this.data = data;
-    }
-    
     /**
-     * getter for username
-     * @return
+     * Creates new <code>RepositoryUser</code>.
+     *
+     * @param userName user name.
+     * @param fullName full name.
+     */
+    public RepositoryUser(String userName, String fullName) {
+        this.userName = userName;
+        this.fullName = fullName;
+    }
+
+    /**
+     * Returns user name.
+     *
+     * @return user name.
      */
     public String getUserName() {
-        return data.user_name;
-    }
-    
-    /**
-     * getter for first name
-     * @return
-     */
-    public String getFirstName() {
-        return data.first_name;
-    }
-    
-    /**
-     * getter for last name
-     * @return
-     */
-    public String getLastName() {
-        return data.last_name;
-    }
-    
-    /**
-     * getter for role
-     * @return
-     */
-    public Role getRole() {
-        if ("registered".equals(data.role)) {
-            return Role.OBSERVER;
-        }
-        return Role.valueOf(data.role.toUpperCase());
-    }
-//    public Status getStatus() {
-//        return Status.UNKNOWN;
-//    }
-
-    @Override
-    public String toString() {
-        return getUserName() + " (" + getRole() + ")";
+        return userName;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final KenaiUser other = (KenaiUser) obj;
-        if (this.data != other.data && (this.data == null || !this.data.user_name.equals(other.data.user_name))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return data.user_name.hashCode();
-    }
-
-//    public static enum Status {
-//        ONLINE,
-//        OFFLINE,
-//        DND,
-//        UNKNOWN
-//    }
-    
     /**
-     * user role in projects
+     * Returns full name.
+     *
+     * @return full name.
      */
-    public static enum Role {
-        ADMIN,
-        OBSERVER,
-        DEVELOPER
+    public String getFullName() {
+        return fullName;
     }
+
 }
