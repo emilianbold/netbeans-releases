@@ -108,6 +108,10 @@ public final class DLightConfiguration {
 
     }
 
+    final ToolsConfiguration getToolsConfiguration(){
+        return toolsConfiguration;
+    }
+
     /**
      * This method returns the list of tools for the current configuration
      * @return list of tools used in the current configuration
@@ -273,4 +277,6 @@ public final class DLightConfiguration {
             return null;
         }
     }
+
+   
 }

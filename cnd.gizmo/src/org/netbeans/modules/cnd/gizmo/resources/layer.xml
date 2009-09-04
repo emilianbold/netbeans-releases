@@ -16,9 +16,11 @@
                     </file>
                     <file name="ThreadMapToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/ThreadMapToolConfigurationProvider.instance"/>
+                        <attr name="enabledByDefault" boolvalue="false"/>
                     </file>
                     <file name="FopsToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
+                        <attr name="enabledByDefault" boolvalue="false"/>
                     </file>
                 </folder>
                 <folder name="ConfigurationOptions">

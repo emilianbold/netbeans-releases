@@ -36,10 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.tool;
+package org.netbeans.modules.dlight.toolsui.api;
 
+import org.netbeans.modules.dlight.api.tool.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 
 /**
  *
@@ -50,6 +52,7 @@ public class DLightConfigurationUIWrapper {
     private boolean custom;
     private String name;
     private List<DLightToolUIWrapper> tools;
+    private boolean isModified;
 
     public DLightConfigurationUIWrapper(DLightConfiguration dLightConfiguration, List<DLightTool> allDLightTools) {
         this.dLightConfiguration = dLightConfiguration;
@@ -58,8 +61,11 @@ public class DLightConfigurationUIWrapper {
         initWrapper(allDLightTools);
     }
 
+
     public DLightConfigurationUIWrapper(String name, List<DLightTool> allDLightTools) {
-        this.dLightConfiguration = DLightConfigurationManager.getInstance().getDefaultConfiguration();
+        DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
+        DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
+        this.dLightConfiguration = accessor.getDefaultConfiguration(manager);
         this.name = name;
         this.custom = true;
         initWrapper(allDLightTools);
@@ -70,8 +76,18 @@ public class DLightConfigurationUIWrapper {
         List<DLightTool> confDlightTools = dLightConfiguration.getToolsSet();
         int i = 0;
         for (DLightTool dlightTool : allDLightTools) {
-            tools.add(new DLightToolUIWrapper(dlightTool, inList(dlightTool, confDlightTools)));
+            DLightTool toolToAdd = findTool(confDlightTools, dlightTool.getID());
+            tools.add(new DLightToolUIWrapper(toolToAdd == null ? dlightTool : toolToAdd,  inList(dlightTool, confDlightTools)));
         }
+    }
+
+    private static  DLightTool findTool(List<DLightTool> tools, String id){
+        for (DLightTool tool : tools){
+            if (tool.getID().equals(id)){
+                return tool;
+            }
+        }
+        return null;
     }
     
     private static boolean inList(DLightTool dlightTool, List<DLightTool> list) {
@@ -119,14 +135,14 @@ public class DLightConfigurationUIWrapper {
     /**
      * @return the dLightConfiguration
      */
-    public DLightConfiguration getdLightConfiguration() {
+    public DLightConfiguration getDLightConfiguration() {
         return dLightConfiguration;
     }
 
     /**
      * @param dLightConfiguration the dLightConfiguration to set
      */
-    public void setdLightConfiguration(DLightConfiguration dLightConfiguration) {
+    public void setDLightConfiguration(DLightConfiguration dLightConfiguration) {
         this.dLightConfiguration = dLightConfiguration;
     }
 
@@ -139,7 +155,7 @@ public class DLightConfigurationUIWrapper {
 
     public DLightToolUIWrapper getToolUIWrapper(DLightTool dlightTool) {
         for (DLightToolUIWrapper dt : getTools()) {
-            if (dt.getdLightTool().getID().equals(dlightTool.getID())) {
+            if (dt.getDLightTool().getID().equals(dlightTool.getID())) {
                 return dt;
             }
         }
@@ -151,5 +167,14 @@ public class DLightConfigurationUIWrapper {
      */
     public void setTools(List<DLightToolUIWrapper> tools) {
         this.tools = tools;
+    }
+
+
+    public boolean isModified(){
+        return isModified;
+    }
+
+    public void setToolEnabled(DLightToolUIWrapper toolWrapper, boolean isEnabled){
+        toolWrapper.setEnabled(isEnabled);
     }
 }
