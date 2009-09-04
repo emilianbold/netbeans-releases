@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.subversion.kenai;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -46,14 +47,23 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.notifications.NotificationsManager;
+import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -106,16 +116,12 @@ public class KenaiNotificationListener implements PropertyChangeListener {
                         for (File file : files) {
                             for (VCSKenaiModification modification : modifications) {
                                 String resource = modification.getResource();
-                                String id = modification.getId();
                                 if(file.equals(new File(root, resource))) {
-                                    notifyChange(file, notification);
+                                    notifyChange(file, notification, modification);
                                 }
                             }
-
                         }
                     }
-
-
                 }
             }
 
@@ -123,7 +129,55 @@ public class KenaiNotificationListener implements PropertyChangeListener {
 
     }
     
-    private void notifyChange(File file, VCSKenaiNotification notification) {
+    private void notifyChange(File file, VCSKenaiNotification notification, VCSKenaiModification modification) {
+        try {
+            notifyFileChange(file, new SVNUrl(notification.getUri().toString()), Long.parseLong(modification.getId()));
+        } catch (MalformedURLException ex) {
+            Subversion.LOG.log(Level.WARNING, null, ex);
+        }
+    }
+
+    private static final String NOTIFICATION_ICON_PATH = "org/netbeans/modules/subversion/resources/icons/info.png"; //NOI18N    
+    private static final String NOTIFICATION_REVISION_LINK = "<a href=\"{0}\">{1}</a>"; //NOI18N    
+    
+    private void notifyFileChange(File file, SVNUrl url, long revision) {
+        NotificationDisplayer.getDefault().notify(
+                NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_Title"), //NOI18N
+                ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
+                getSimplePane(file), getDetailsPane(file, url, revision), NotificationDisplayer.Priority.NORMAL);
+    }
+
+    private JTextPane getSimplePane (File file) {
+        JTextPane bubble = new JTextPane();
+        String text = NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Description", file.getName()); //NOI18N
+        bubble.setText(text);
+        bubble.setOpaque(false);
+        bubble.setEditable(false);
+
+        if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {  //NOI18N
+            //#134837
+            //http://forums.java.net/jive/thread.jspa?messageID=283882
+            bubble.setBackground(new Color(0, 0, 0, 0));
+        }
+        return bubble;
+    }
+
+    private JTextPane getDetailsPane (final File file, final SVNUrl svnUrl, final long revision) {
+        JTextPane bubble = getSimplePane(file);
+        bubble.setContentType("text/html");                        //NOI18N
+        String url = svnUrl.toString();
+        String text = java.text.MessageFormat.format(NOTIFICATION_REVISION_LINK, url,
+                    NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_DescriptionRevision"));
+        bubble.setText(text);
+
+        bubble.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                    SearchHistoryAction.openSearch(svnUrl, file, revision);
+                }
+            }
+        });
+        return bubble;
     }
 
 }
