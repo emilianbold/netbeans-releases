@@ -80,7 +80,7 @@ public final class DLightCPUToolConfigurationProvider
     public static final String ID = "dlight.tool.cpu"; // NOI18N
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
-    private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
+    private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "true"));
     private static final String TIME_DETAIL_ID = "elapsed-time"; // NOI18N
     private static final int SECONDS_PER_MINUTE = 60;
 

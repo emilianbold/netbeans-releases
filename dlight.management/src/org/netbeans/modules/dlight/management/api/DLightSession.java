@@ -388,7 +388,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         dataFiltersSupport.cleanAll(clazz);
     }
 
-    public Collection<? extends DataFilter> getDataFilter(Class<? extends DataFilter> clazz) {
+    public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
         return dataFiltersSupport.getDataFilter(clazz);
     }
 
@@ -508,6 +508,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                 if (log.isLoggable(Level.FINE)) {
                                     log.fine("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
                                 }
+                            }
+                            if (i instanceof DataFilterListener) {
+                                addDataFilterListener((DataFilterListener)i);
                             }
                         }
                     }

@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.netbeans.api.progress.ProgressHandle;
@@ -70,8 +69,6 @@ import org.openide.util.NbBundle;
  * @author Sergey Grinev
  */
 public class SystemIncludesUtils {
-
-    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private static final Map<ExecutionEnvironment, Collection<WeakReference<Loader>>> loaders =
             new LinkedHashMap<ExecutionEnvironment, Collection<WeakReference<Loader>>>();
@@ -118,7 +115,7 @@ public class SystemIncludesUtils {
         private void load() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + execEnv.getHost()); //NOI18N
             handle.start();
-            log.fine("SystemIncludesUtils.load for " + execEnv); // NOI18N
+            RemoteUtil.LOGGER.fine("SystemIncludesUtils.load for " + execEnv); // NOI18N
             String storagePrefix = null;
             try {
                 Set<String> paths = new HashSet<String>();
@@ -130,7 +127,7 @@ public class SystemIncludesUtils {
                             for (Object obj : bc.getSystemIncludeDirectories()) {
                                 String localPath = (String) obj;
                                 if (localPath.length() < storagePrefix.length()) {
-                                    log.warning("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
+                                    RemoteUtil.LOGGER.warning("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
                                 } else {
                                     paths.add(localPath.substring(storagePrefix.length()));
                                 }
@@ -171,7 +168,7 @@ public class SystemIncludesUtils {
     }
 
     public static void cancel(ExecutionEnvironment execEnv) {
-        log.fine("Cancelling loaders for " + execEnv);
+        RemoteUtil.LOGGER.fine("Cancelling loaders for " + execEnv);
         Collection<WeakReference<Loader>> envLoaders;
         synchronized (loadersLock) {
             envLoaders = loaders.get(execEnv);
@@ -181,7 +178,7 @@ public class SystemIncludesUtils {
             for (WeakReference<Loader> ref : envLoaders) {
                 Loader loader = ref.get();
                 if (loader != null) {
-                    log.fine("Cancelling loader " + loader + " for " + execEnv);
+                    RemoteUtil.LOGGER.fine("Cancelling loader " + loader + " for " + execEnv);
                     loader.cancel();
                 }
             }
@@ -210,14 +207,14 @@ public class SystemIncludesUtils {
         boolean success = false;
         try {
             success = load(tempIncludesStorageFolder.getAbsolutePath(), execEnv, paths, handle, cancelled);
-            log.fine("SystemIncludesUtils.doLoad for " + tempIncludesStorageFolder + " finished " + success); // NOI18N
+            RemoteUtil.LOGGER.fine("SystemIncludesUtils.doLoad for " + tempIncludesStorageFolder + " finished " + success); // NOI18N
             if (success) {
-                log.fine("SystemIncludesUtils.doLoad renaming " + tempIncludesStorageFolder + " to " + includesStorageFolder); // NOI18N
+                RemoteUtil.LOGGER.fine("SystemIncludesUtils.doLoad renaming " + tempIncludesStorageFolder + " to " + includesStorageFolder); // NOI18N
                 tempIncludesStorageFolder.renameTo(includesStorageFolder);
             }
         } finally {
             if (!success && includesStorageFolder.exists()) {
-                log.fine("SystemIncludesUtils.doLoad removing " + includesStorageFolder + " due to faile"); // NOI18N
+                RemoteUtil.LOGGER.fine("SystemIncludesUtils.doLoad removing " + includesStorageFolder + " due to faile"); // NOI18N
                 includesStorageFolder.delete();
             }
         }
@@ -236,7 +233,7 @@ public class SystemIncludesUtils {
                 success = false;
                 break;
             }
-            log.fine("SystemIncludesUtils.load loading " + path); // NOI18N            
+            RemoteUtil.LOGGER.fine("SystemIncludesUtils.load loading " + path); // NOI18N
             //TODO: check file existence (or make shell script to rule them all ?)
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
             String zipRemotePath = "/tmp/" + execEnv.getUser() + '-' + zipRemote; // NOI18N
@@ -271,7 +268,7 @@ public class SystemIncludesUtils {
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
             cleanupList.add(zipLocalPath);
-            log.fine("SystemIncludesUtils.load loading done for " + path); // NOI18N            
+            RemoteUtil.LOGGER.fine("SystemIncludesUtils.load loading done for " + path); // NOI18N
         }
 //        copySupport.disconnect();
         for (String toDelete : cleanupList) {
@@ -310,11 +307,11 @@ public class SystemIncludesUtils {
 
             zipFile.close();
         } catch (IOException ioe) {
-            log.warning("unzipping " + fileName + " to " + path + " failed");
-            log.warning(ioe.getMessage());
+            RemoteUtil.LOGGER.warning("unzipping " + fileName + " to " + path + " failed");
+            RemoteUtil.LOGGER.warning(ioe.getMessage());
             return;
         }
-        log.fine("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
+        RemoteUtil.LOGGER.fine("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
     }
 
     private static final void copyInputStream(InputStream in, OutputStream out)

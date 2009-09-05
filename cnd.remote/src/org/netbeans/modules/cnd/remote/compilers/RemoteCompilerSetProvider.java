@@ -40,11 +40,11 @@
 package org.netbeans.modules.cnd.remote.compilers;
 
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
-    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private final ExecutionEnvironment env;
 
     /*package-local*/ RemoteCompilerSetProvider(ExecutionEnvironment env) {
@@ -73,7 +72,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
-            log.warning("RCSP.getPlatform: Got null response on platform"); //NOI18N
+            RemoteUtil.LOGGER.warning("RCSP.getPlatform: Got null response on platform"); //NOI18N
             platform = ""; //NOI18N
         }
         if (platform.startsWith("Windows")) { // NOI18N

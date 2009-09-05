@@ -63,9 +63,9 @@ import org.netbeans.modules.dlight.util.DLightMath;
     private final Mark viewportEndMark;
     //private final int margin;
 
-    public ViewportBar(final ViewportModel viewportModel, int margin) {
-        setMinimumSize(new Dimension(200, 40));
-        setPreferredSize(new Dimension(500, 50));
+    public ViewportBar(final ViewportModel viewportModel/*, int margin*/) {
+        setMinimumSize(new Dimension(200, 30));
+        setPreferredSize(new Dimension(200, 30));
         setOpaque(true);
 
         viewportStartMark = new AbstractMark() {
@@ -73,11 +73,14 @@ import org.netbeans.modules.dlight.util.DLightMath;
             public int getPosition() {
                 Range<Long> limits = viewportModel.getLimits();
                 Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
                 return (int) DLightMath.map(viewport.getStart(), limits.getStart(), limits.getEnd(), 0, getWidth() - 2);
             }
             @Override
             protected void setPosition(int pos) {
                 Range<Long> limits = viewportModel.getLimits();
+                Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
                 viewportModel.setViewport(new Range<Long>(DLightMath.map(pos, 0, getWidth() - 2, limits.getStart(), limits.getEnd()), null));
             }
             @Override
@@ -90,11 +93,14 @@ import org.netbeans.modules.dlight.util.DLightMath;
             public int getPosition() {
                 Range<Long> limits = viewportModel.getLimits();
                 Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
                 return (int) DLightMath.map(viewport.getEnd(), limits.getStart(), limits.getEnd(), 0, getWidth() - 2);
             }
             @Override
             protected void setPosition(int pos) {
                 Range<Long> limits = viewportModel.getLimits();
+                Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
                 viewportModel.setViewport(new Range<Long>(null, DLightMath.map(pos, 0, getWidth() - 2, limits.getStart(), limits.getEnd())));
             }
             @Override

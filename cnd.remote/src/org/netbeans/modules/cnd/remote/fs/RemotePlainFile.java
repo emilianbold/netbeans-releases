@@ -36,79 +36,53 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.tool;
+
+package org.netbeans.modules.cnd.remote.fs;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author thp
+ * @author Vladimir Kvashin
  */
-public class DLightToolUIWrapper {
+public class RemotePlainFile extends RemoteFileObjectBase {
 
-    private DLightTool dLightTool;
-    private boolean enabled;
-    private boolean onByDefault;
-    private boolean visible;
-
-    public DLightToolUIWrapper(DLightTool dLightTool, boolean enabled) {
-        this.dLightTool = dLightTool;
-        this.enabled = enabled;
-        this.onByDefault = true;
-        this.visible = dLightTool.isVisible();
+    public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, String remotePath, File cache) {
+        super(fileSystem, execEnv, remotePath, cache);
     }
 
-    /**
-     * @return the dLightTool
-     */
-    public DLightTool getdLightTool() {
-        return dLightTool;
+    @Override
+    public final FileObject[] getChildren() {
+        return new FileObject[0];
     }
 
-    /**
-     * @param dLightTool the dLightTool to set
-     */
-    public void setdLightTool(DLightTool dLightTool) {
-        this.dLightTool = dLightTool;
+    @Override
+    public final boolean isFolder() {
+        return false;
     }
 
-    /**
-     * @return the enabled
-     */
-    public boolean isEnabled() {
-        return enabled;
+    @Override
+    public boolean isData() {
+        return true;
     }
 
-    /**
-     * @param enabled the enabled to set
-     */
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    @Override
+    public final FileObject getFileObject(String name, String ext) {
+        return null;
     }
 
-    /**
-     * @return the onByDefault
-     */
-    public boolean isOnByDefault() {
-        return onByDefault;
+    @Override
+    public FileObject getFileObject(String relativePath) {
+        return null;
     }
 
-    /**
-     * @param onByDefault the onByDefault to set
-     */
-    public void setOnByDefault(boolean onByDefault) {
-        this.onByDefault = onByDefault;
-    }
-
-    /**
-     * @return the visible
-     */
-    public boolean isVisible() {
-        return visible;
-    }
-
-    /**
-     * @param visible the visible to set
-     */
-    public void setVisible(boolean visible) {
-        this.visible = visible;
+    @Override
+    public InputStream getInputStream() throws FileNotFoundException {
+        return new FileInputStream(cache);
     }
 }

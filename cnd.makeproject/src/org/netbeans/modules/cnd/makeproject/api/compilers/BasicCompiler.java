@@ -55,12 +55,17 @@ public abstract class BasicCompiler extends Tool {
     protected BasicCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
         if (!env.isLocal()) {
-            includeFilePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + getExecutionEnvironment().getHost() + "/"; //NOI18N
+            includeFilePrefix = getIncludeFilePrefix(env);
         } else {
             includeFilePrefix = null;
         }
     }
     private String includeFilePrefix;
+
+    // FIXUP: still a fixup. Think over, who is responsible for this
+    public static String getIncludeFilePrefix(ExecutionEnvironment env) {
+        return System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + env.getHost() + "/"; //NOI18N
+    }
 
     @Override
     public String getIncludeFilePathPrefix() {
