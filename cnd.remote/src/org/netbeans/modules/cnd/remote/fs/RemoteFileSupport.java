@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
@@ -68,6 +70,9 @@ public class RemoteFileSupport {
     /** Directory synchronization statistics */
     private int dirSyncCount;
 
+    private final Object mainLock = new Object();
+    private Map<File, Object> locks = new HashMap<File, Object>();
+
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
@@ -76,24 +81,52 @@ public class RemoteFileSupport {
     }
 
 
+    private Object getLock(File file) {
+        synchronized(mainLock) {
+            Object lock = locks.get(file);
+            if (lock == null) {
+                lock = new Object();
+                locks.put(file, lock);
+            }
+            return lock;
+        }
+    }
+
+    private void removeLock(File file) {
+        synchronized(mainLock) {
+            locks.remove(file);
+        }
+    }
+
+
     public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
         if (!file.exists() || file.length() == 0) {
-            Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
-            try {
-                int rc = task.get().intValue();
-                if (rc == 0) {
-                    fileCopyCount++;
-                } else {
-                    throw new IOException("Can't copy file " + file.getAbsolutePath() + // NOI18N
-                            " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
+            synchronized (getLock(file)) {
+                // dbl check is ok here since it's file-based
+                if (!file.exists() || file.length() == 0) {
+                    syncFile(file, remotePath);
+                    removeLock(file);
                 }
-            } catch (InterruptedException ex) {
-                truncate(file);
-                throw ex;
-            } catch (ExecutionException ex) {
-                truncate(file);
-                throw ex;
             }
+        }
+    }
+
+    public void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
+        Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
+        try {
+            int rc = task.get().intValue();
+            if (rc == 0) {
+                fileCopyCount++;
+            } else {
+                throw new IOException("Can't copy file " + file.getAbsolutePath() + // NOI18N
+                        " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
+            }
+        } catch (InterruptedException ex) {
+            truncate(file);
+            throw ex;
+        } catch (ExecutionException ex) {
+            truncate(file);
+            throw ex;
         }
     }
 
@@ -106,7 +139,13 @@ public class RemoteFileSupport {
     public void ensureDirSync(File dir, String remotePath) throws IOException {
         // TODO: synchronization
         if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
-            syncDirStruct(dir, remotePath);
+            synchronized (getLock(dir)) {
+                // dbl check is ok here since it's file-based
+                if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
+                    syncDirStruct(dir, remotePath);
+                    removeLock(dir);
+                }
+            }
         }
     }
 
