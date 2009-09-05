@@ -42,7 +42,9 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
@@ -83,6 +85,22 @@ public class RemotePlainFile extends RemoteFileObjectBase {
 
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
+        // TODO: check error processing
+        try {
+            getRemoteFileSupport().ensureFileSync(cache, remotePath);
+        } catch (IOException ex) {             
+            throw new FileNotFoundException(cache.getAbsolutePath());
+        } catch (InterruptedException ex) {
+            throwFileNotFoundException(ex);
+        } catch (ExecutionException ex) {
+            throwFileNotFoundException(ex);
+        }
         return new FileInputStream(cache);
+    }
+
+    private void throwFileNotFoundException(Exception cause) throws FileNotFoundException {
+        FileNotFoundException ex = new FileNotFoundException(cache.getAbsolutePath());
+        ex.initCause(cause);
+        throw ex;
     }
 }

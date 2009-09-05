@@ -41,14 +41,18 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.OutputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
 /**
  * Reponsible for copying files from remote host
@@ -57,12 +61,47 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 public class RemoteFileSupport {
 
     private final ExecutionEnvironment execEnv;
+    public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
     }
 
-    public void syncDirStruct(File dir, String remotePath) throws IOException {
+
+    public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
+        if (!file.exists() || file.length() == 0) {
+            Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
+            try {
+                int rc = task.get().intValue();
+                if (rc != 0) {
+                    throw new IOException("Can't copy file " + file.getAbsolutePath() + // NOI18N
+                            " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
+                }
+            } catch (InterruptedException ex) {
+                truncate(file);
+                throw ex;
+            } catch (ExecutionException ex) {
+                truncate(file);
+                throw ex;
+            }
+        }
+    }
+
+    private void truncate(File file) throws IOException {
+        OutputStream os = new FileOutputStream(file);
+        os.close();
+
+    }
+
+    public void ensureDirSync(File dir, String remotePath) throws IOException {
+        // TODO: synchronization
+        if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
+            syncDirStruct(dir, remotePath);
+        }
+    }
+
+    /*package-local for test purposes*/
+    void syncDirStruct(File dir, String remotePath) throws IOException {
         if (dir.exists()) {
             assert dir.isDirectory();
         } else {
@@ -84,10 +123,12 @@ public class RemoteFileSupport {
             File file = new File(dir, fileName);
             boolean result = directory ? file.mkdirs() : file.createNewFile();
             // TODO: error processing
-            RemoteUtil.LOGGER.finest("\t" + fileName);
+                RemoteUtil.LOGGER.finest("\t" + fileName);
             file.createNewFile(); // TODO: error processing
         }
         rdr.close();
         is.close();
+        File flag = new File(dir, FLAG_FILE_NAME);
+        flag.createNewFile(); // TODO: error processing
     }
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -68,17 +69,40 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public FileObject getFileObject(String name, String ext) {
-         return getFileObject(name + '/' + ext); // NOI18N
+         return getFileObject(name + '.' + ext); // NOI18N
     }
 
     @Override
     public FileObject getFileObject(String relativePath) {
-        File file = new File(cache, relativePath);
-        String fileRemotePath = remotePath + '/' + relativePath;
-        if (file.isDirectory()) {
-            return new RemoteDirectory(fileSystem, execEnv, fileRemotePath, file);
-        } else {
-            return new RemotePlainFile(fileSystem, execEnv, fileRemotePath, file);
+        if (relativePath.charAt(0) == '/') { //NOI18N
+            relativePath = relativePath.substring(1);
+        }
+        String remoteAbsPath = remotePath + '/' + relativePath;
+        try {
+            File file = new File(cache, relativePath);
+            if (!file.exists()) {
+                File parentFile;
+                String parentRemotePath;
+                int slashPos = relativePath.lastIndexOf('/');
+                if (slashPos == -1) {
+                    parentRemotePath = remotePath;
+                    parentFile = cache;
+                } else {
+                    parentFile = file.getParentFile();
+                    parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
+                }
+                getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath);
+            }
+            if (! file.exists()) {
+                return null;
+            } else if (file.isDirectory()) {
+                return new RemoteDirectory(fileSystem, execEnv, remoteAbsPath, file);
+            } else {
+                return new RemotePlainFile(fileSystem, execEnv, remoteAbsPath, file);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
         }
     }
 

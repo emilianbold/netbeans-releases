@@ -68,6 +68,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             String remotePath, File cache) {
         assert execEnv.isRemote();
+        assert cache.exists();
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
         this.remotePath = remotePath;

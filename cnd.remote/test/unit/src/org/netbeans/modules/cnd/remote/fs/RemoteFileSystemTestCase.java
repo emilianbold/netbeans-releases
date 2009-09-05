@@ -78,11 +78,11 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         assertNotNull("Null root file object", rootFO);
     }
 
-    private void checkFileExistance(String absPath) throws Exception {
-        FileObject fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
-    }
+//    private void checkFileExistance(String absPath) throws Exception {
+//        FileObject fo = rootFO.getFileObject(absPath);
+//        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+//        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+//    }
 
     private CharSequence readFile(String absPath) throws Exception {
         FileObject fo = rootFO.getFileObject(absPath);
@@ -107,7 +107,6 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
     public void testSyncDirStruct() throws Exception {
 
         String dirName = "/usr/include";
-
         // set up local test directory
         File rfsCache = fs.getCache();
         File localDir = File.createTempFile("usr-include", null, rfsCache);
@@ -124,20 +123,61 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         if (stdioFile.exists()) {
             assertTrue("Can't delete file " + stdioFile, stdioFile.delete());
         }
+
+        long time;
         
         RemoteFileSupport remoteFileSupport = fs.getRemoteFileSupport();
+        time = System.currentTimeMillis();
         remoteFileSupport.syncDirStruct(localDir, dirName);
+        time = System.currentTimeMillis() - time;
         assertTrue("File " + stdioFile + " should exist", stdioFile.exists());
+        System.err.printf("Synchronizing %s took %d ms\n", dirName, time);
+
+        // check that ensureDirSync does not take too long
+        long maxTime = time / 10;
+        time = System.currentTimeMillis();
+        remoteFileSupport.ensureDirSync(localDir, dirName);
+        time = System.currentTimeMillis() - time;
+        System.err.printf("Checking sync for %s took %d ms\n", dirName, time);
+        assertTrue("ensureDirSync worked too long", time < maxTime);
+
+        removeDirectory(localDir);
     }
 
     @ForAllEnvironments
     public void testRemoteStdioH() throws Exception {
-        String fileName = "/usr/include/stdio.h";
-        checkFileExistance(fileName);
-        CharSequence content = readFile(fileName);
+        String absPath = "/usr/include/stdio.h";
+        FileObject fo = rootFO.getFileObject(absPath);
+        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+        CharSequence content = readFile(absPath);
         CharSequence text2search = "printf";
-        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, fileName), 
+        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 CharSequenceUtils.indexOf(content, text2search) >= 0);
+    }
+
+    @ForAllEnvironments
+    public void testMultipleRead() throws Exception {
+        removeDirectory(fs.getCache());
+        final String absPath = "/usr/include/errno.h";
+        long firstTime = -1;
+        for (int i = 0; i < 5; i++) {
+            long time = System.currentTimeMillis();
+            FileObject fo = rootFO.getFileObject(absPath);
+            assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+            assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+            InputStream is = fo.getInputStream();
+            assertNotNull("Got null input stream for " + getFileName(execEnv, absPath), is);
+            is.close();
+            time = System.currentTimeMillis() - time;
+            System.err.printf("Pass %d; getting input stream for %s took %d ms\n", i, getFileName(execEnv, absPath), time);
+            if (i == 0) {
+                firstTime = time;
+            } else if (time > 0) {
+                assertTrue("Getting input stream for "+ getFileName(execEnv, absPath) + " took to long (" + time + ") ms",
+                        time < firstTime / 10);
+            }
+        }
     }
 
     @ForAllEnvironments
