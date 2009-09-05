@@ -237,7 +237,7 @@ public class JsfElExpression extends ELExpression {
                         Exceptions.printStackTrace(ex);
                     }
 
-                    value = _value[0];
+                    value = _value[0] == 0 ? EL_UNKNOWN :  _value[0];
 
                 } else {
                     //try if in a JSP...
@@ -301,6 +301,14 @@ public class JsfElExpression extends ELExpression {
         }
         
         return null;
+    }
+    
+    public String getBeanName(){
+        String beanName = extractBeanName();
+        if (bundleName !=null && bundleName.startsWith("#{")) {//NOI18N
+            beanName = bundleName.substring(2,bundleName.length()-1);
+        }
+        return beanName;
     }
 
     public String getBundleName() {
@@ -422,7 +430,7 @@ public class JsfElExpression extends ELExpression {
         return task.getCompletionItems();
     }
     
-    private boolean checkMethod( ExecutableElement method , 
+    public boolean checkMethod( ExecutableElement method , 
             CompilationController controller )
     {
         TypeMirror returnType = method.getReturnType();
@@ -545,7 +553,7 @@ public class JsfElExpression extends ELExpression {
         runTask(task);
         return task.wasSuccessful();
     }
-
+    
     /**
      * Go to the java source code of expression
      * - a getter in case of

@@ -118,17 +118,25 @@ public class ELExpression {
     private String myAttributeValue;
 
     private int contextOffset = -1;
+    private int myStartOffset = -1;
 
     public ELExpression(Document doc) {
         this.doc = doc;
         this.replace = "";
     }
-
-    private void setContextOffset(int offset) {
-        this.contextOffset = offset;
+    
+    /**
+     * Expression could contain operations, keywords, ...
+     * In this case context expression divided to several parts by such operations, ...
+     * In this case start offset is the beginning of such part EL which 
+     * includes context offset.   
+     * @return start index of context expression
+     */
+    public int getStartOffset(){
+        return myStartOffset;
     }
-
-    protected int getContextOffset() {
+    
+    public int getContextOffset() {
         return contextOffset;
     }
 
@@ -174,7 +182,6 @@ public class ELExpression {
                         ts = ts.embedded();
                     } else {
                         //no token, cannot embed
-                        return NOT_EL;
                     }
                 }
             }
@@ -228,6 +235,7 @@ public class ELExpression {
                     }
                 }
                 token = ts.token();
+                myStartOffset = ts.offset();
                 if (!ts.movePrevious()) {
                     //we are on the beginning of the EL token sequence
                     break;
@@ -281,6 +289,10 @@ public class ELExpression {
         }
 
         return null;
+    }
+    
+    public String getBeanName(){
+        return extractBeanName();
     }
     
     protected CompletionInfo getPropertyCompletionInfo(String beanType, int anchor) {
@@ -341,7 +353,7 @@ public class ELExpression {
         return isDefferedExecution;
     }
 
-    protected String getPropertyBeingTypedName() {
+    public String getPropertyBeingTypedName() {
         String elExp = getExpression();
         int dotPos = elExp.lastIndexOf('.');            // NOI18N
         int bracketIndex = elExp.lastIndexOf('[');          // NOI18N
@@ -394,46 +406,65 @@ public class ELExpression {
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
     
-    private String[] getParts() {
+    private void setContextOffset(int offset) {
+        this.contextOffset = offset;
+    }
+    
+    private Part[] getParts() {
+        List<Part> result = new LinkedList<Part>();
         if ( getExpression().indexOf('[') == -1 ){
-            return getExpression().split("\\.");            // NOI18N
+            String[] parts = getExpression().split( "\\." );     // NOI18N
+            int offset = 0;
+            for (int i=0; i<parts.length; i++ ) {
+                result.add( new Part( offset, parts[i] ));
+                offset = offset + parts[i].length() +1;
+            }
+            return result.toArray(new Part[result.size()] );
         }
-        List<String> result = new LinkedList<String>();
         boolean previousDot = false;
         boolean previousLeftBracket = false;
         String expression = getExpression();
         int i=0;
-        while( expression.length() > 0 ){
+        int offset = 0;
+        while( expression.length() > 0 && i < expression.length()){
             char ch = expression.charAt( i );
             if ( ch == '.'){
                 if ( previousLeftBracket ){
-                    addPart(result, expression.substring(i+1));
+                    addPart(result, expression.substring(i+1), i+offset +1);
                     break;
                 }
                 previousDot = true;
-                addPart(result,  expression.substring( 0 , i ));
+                String part = expression.substring( 0 , i );
+                addPart(result, part  , offset);
+                offset = offset+part.length()+1;
                 expression = expression.substring( i+1);
                 i=0;
                 continue;
             }
             if ( ch == '['){
                 if ( previousLeftBracket ){
-                    addPart(result,  expression.substring(i+1) );
+                    addPart(result,  expression.substring(i+1) , i+offset+1);
                     break;
                 }
                 if ( previousDot ){
                     previousDot = false;
                 }
                 previousLeftBracket = true;
-                addPart(result,  expression.substring( 0 , i ));
+                String part =  expression.substring( 0 , i );
+                addPart(result,  part , offset );
+                offset = offset + part.length()+1;
                 int index = expression.indexOf(']');
                 if ( index == -1 ){
-                    addPart(result,  expression.substring(i+1) );
+                    addPart(result,  expression.substring(i+1) , offset );
                     break;
                 }
                 else {
-                    addPart(result, removeQuotes( expression.substring(i+1, index )));
+                    part = expression.substring(i+1, index );
+                    String unquoted = removeQuotes( part );
+                    int prefixLength = part.indexOf( unquoted );
+                    addPart(result, unquoted , offset + prefixLength );
                     expression = expression.substring( index +1);
+                    offset = offset + part.length() + 1;
                     previousLeftBracket = false;
                     i=0;
                     continue;
@@ -441,13 +472,85 @@ public class ELExpression {
             }
             i++;
         }
-        return result.toArray(new String[result.size()] );
+        return result.toArray(new Part[result.size()] );
     }
     
-    private void addPart(List<String> parts, String part ){
+    private void addPart(List<Part> parts, String part , int offset){
         if ( part != null && part.length() != 0 ){
-            parts.add(part);
+            parts.add(new Part( offset, part));
         }
+    }
+    
+    public static class Part {
+
+        Part( int index , String part ){
+            myIndex = index;
+            myPart = part;
+        }
+        
+        public String getPart(){
+            return myPart;
+        }
+        
+        public int getIndex(){
+            return myIndex;
+        }
+        private int myIndex;
+        private String myPart;
+    }
+    
+    public abstract class InspectPropertiesTask extends BaseELTaskClass implements
+            CancellableTask<CompilationController>
+    {
+
+        public InspectPropertiesTask() {
+            super(getObjectClass());
+        }
+
+        public void execute() {
+            runTask(this);
+        }
+
+        public TypeElement getTypePreceedingCaret( CompilationController controller ) throws Exception {
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            return getTypePreceedingCaret(controller, new FailHandler() {
+
+                public void typeNotFound( int index, String propertyName ) {
+                    myOffset = index;
+                    myProperty = propertyName;
+                }
+            });
+        }
+
+        public String getProperty() {
+            return myProperty;
+        }
+
+        public int getOffset() {
+            return myOffset;
+        }
+        
+        public boolean lastProperty(){
+            return isLast;
+        }
+        
+        protected void setOffset(int offset){
+            myOffset = offset;
+        }
+        
+        protected void setProperty( String property){
+            myProperty = property;
+        }
+        
+        protected void setLast(){
+            isLast = true;
+        }
+
+        private int myOffset = -1;
+
+        private String myProperty;
+        
+        private boolean isLast;
     }
     
     protected abstract class BaseELTaskClass {
@@ -457,20 +560,39 @@ public class ELExpression {
         public BaseELTaskClass(String beanType) {
             this.beanType = beanType;
         }
-
+        
+        public void cancel() {
+        }
+        
+        protected String removeQuotes(String propertyName){
+            return ELExpression.this.removeQuotes(propertyName);
+            
+        }
+        
         /**
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
         protected TypeElement getTypePreceedingCaret(CompilationInfo controller) {
+            return getTypePreceedingCaret(controller, null );
+        }
+
+        /**
+         * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
+         */
+        protected TypeElement getTypePreceedingCaret(CompilationInfo controller,
+                FailHandler handler )
+        {
             if (beanType == null) {
+                if ( handler != null ){
+                    handler.typeNotFound(0, beanType);
+                }
                 return null;
             }
-
             TypeElement lastKnownType = controller.getElements().
                 getTypeElement(beanType);
             TypeMirror lastReturnType = null;
 
-            String parts[] = getParts();
+            Part parts[] = getParts();
             // part[0] - the bean
             // part[parts.length - 1] - the property being typed (if not empty)
 
@@ -480,16 +602,20 @@ public class ELExpression {
                 limit += 1;
             }
 
+            int i=1;
             parts:
-            for (int i = 1; i < limit; i++) {
+            for ( ; i < limit; i++) {
                 if (lastKnownType == null && lastReturnType == null) {
                     logger.fine("EL CC: Could not resolve type for property " //NOI18N
                             + parts[i] + " in " + getExpression()); //NOI18N
+                    if ( handler != null ){
+                        handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
+                    }
 
                     return null;
                 }
                 if (lastKnownType != null) {
-                    String accessorName = getAccessorName(parts[i]);
+                    String accessorName = getAccessorName(parts[i].getPart());
                     List<ExecutableElement> allMethods = ElementFilter
                             .methodsIn(lastKnownType.getEnclosedElements());
                     
@@ -582,6 +708,9 @@ public class ELExpression {
                 }
             }
 
+            if ( lastKnownType == null && handler!= null){
+                handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
+            }
             return lastKnownType;
         }
 
@@ -634,9 +763,10 @@ public class ELExpression {
             return String.class.getCanonicalName().equals( 
                     method.getReturnType().toString());
         }
-
-        public void cancel() {
-        }
+    }
+    
+    public interface FailHandler {
+        void typeNotFound( int expressionIndex , String propertyName );
     }
 
     /**
