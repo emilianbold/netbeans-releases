@@ -73,14 +73,14 @@ public class RemoteFileSupport {
         NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
         // TODO: error processing
         processBuilder.setWorkingDirectory(remotePath);
-        processBuilder.setCommandLine("ls -1F");
+        processBuilder.setCommandLine("ls -1F"); // NOI18N
         processBuilder.redirectError();
         NativeProcess process = processBuilder.call();
         final InputStream is = process.getInputStream();
         final BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
         String fileName;
         while ((fileName = rdr.readLine()) != null) {
-            boolean directory = fileName.endsWith("/");
+            boolean directory = fileName.endsWith("/"); // NOI18N
             File file = new File(dir, fileName);
             boolean result = directory ? file.mkdirs() : file.createNewFile();
             // TODO: error processing
