@@ -194,7 +194,7 @@ class SftpSupport {
 
         @Override
         protected String getTraceName() {
-            return "Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName;
+            return "Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName; // NOI18N
         }
     }
 
@@ -212,7 +212,7 @@ class SftpSupport {
 
         @Override
         protected String getTraceName() {
-            return "Downloading " + execEnv + ":" + srcFileName + " to " + dstFileName;
+            return "Downloading " + execEnv + ":" + srcFileName + " to " + dstFileName; // NOI18N
         }
     }
 
