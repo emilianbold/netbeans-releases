@@ -90,8 +90,12 @@ public class HtmlCompletionItem implements CompletionItem {
         return new Attribute(name, substitutionOffset, required, helpId);
     }
 
+    public static HtmlCompletionItem createAttributeValue(String name, int substitutionOffset, boolean addQuotation) {
+        return new AttributeValue(name, substitutionOffset, addQuotation);
+    }
+
     public static HtmlCompletionItem createAttributeValue(String name, int substitutionOffset) {
-        return new AttributeValue(name, substitutionOffset);
+        return createAttributeValue(name, substitutionOffset, false);
     }
 
     public static HtmlCompletionItem createCharacterReference(String name, char value, int substitutionOffset, String helpId) {
@@ -474,9 +478,19 @@ public class HtmlCompletionItem implements CompletionItem {
     /** Item representing a JSP attribute value. */
     public static class AttributeValue extends HtmlCompletionItem {
 
-        public AttributeValue(String value, int offset) {
+        private boolean addQuotation;
+
+        public AttributeValue(String value, int offset, boolean addQuotation) {
             super(value, offset);
+            this.addQuotation = addQuotation;
         }
+
+        @Override
+        protected String getSubstituteText() {
+            return addQuotation ? "\"" + super.getSubstituteText() + "\"" : super.getSubstituteText();
+        }
+
+
     }
 
     public static class Attribute extends HtmlCompletionItem {

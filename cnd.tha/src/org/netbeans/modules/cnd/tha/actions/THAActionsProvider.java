@@ -68,9 +68,10 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public final class THAActionsProvider implements DLightTargetListener {
+public final class THAActionsProvider {
     public static final String SUSPEND_COMMAND = "THAProfileSuspend";//NOI18N
     public static final String RESUME_COMMAND = "THAProfileResume";//NOI18N
+    public static final String STOP_COMMAND = "THAProfileStop";//NOI18N
     private Action suspendDataCollection;
     private Action resumeDataCollection;
     private Action stop;
@@ -104,10 +105,11 @@ public final class THAActionsProvider implements DLightTargetListener {
                 }
 
                 THAConfiguration thaConfiguration = configurationPanel.getTHAConfiguration();
-                if (!start(project, thaConfiguration)){
+                THAActionsProvider provider = new THAActionsProvider(project, thaConfiguration);
+                if (!start(provider.dlightTargetListener, project, thaConfiguration)){
                     return;
                 }
-                THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(project, thaConfiguration);
+                THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(provider, project, thaConfiguration);
                 topComponent.open();
                 topComponent.requestActive();
             }
@@ -121,12 +123,14 @@ public final class THAActionsProvider implements DLightTargetListener {
     private RemoveInstrumentationAction removeInstrumentation;
     private final Project project;
     private final THAConfiguration thaConfiguration;
+    private final DLightTargetListener dlightTargetListener;
     //private final static Map<Project, THAActionsProvider> cache = new HashMap<Project, THAActionsProvider>();
 
     private THAActionsProvider(Project project, THAConfiguration thaConfiguration) {
         this.project = project;
         this.thaConfiguration = thaConfiguration;
-        THAProjectSupport.getSupportFor(project).addDLightTargetListener(this);
+        this.dlightTargetListener = new DLightTargetListenerImpl();
+//        THAProjectSupport.getSupportFor(project).addDLightTargetListener(this);
         initActions();
     }
 
@@ -238,7 +242,7 @@ public final class THAActionsProvider implements DLightTargetListener {
             }
         };
         suspendDataCollection.putValue("command", SUSPEND_COMMAND); // NOI18N
-        suspendDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        suspendDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THASuspendDataCollection")); // NOI18N
         suspendDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Pause24.gif"); // NOI18N
         suspendDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Pause24.gif", false),
                 ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment.png", false), 10, 10)); // NOI18N
@@ -255,7 +259,7 @@ public final class THAActionsProvider implements DLightTargetListener {
             }
         };
         resumeDataCollection.putValue("command",RESUME_COMMAND); // NOI18N
-        resumeDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        resumeDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAResumeDataCollection")); // NOI18N
         resumeDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Continue24.gif"); // NOI18N
         resumeDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Continue24.gif", false),
                 ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment.png", false), 10, 10)); // NOI18N
@@ -276,8 +280,8 @@ public final class THAActionsProvider implements DLightTargetListener {
             }
         };
         stop.setEnabled(false);
-        stop.putValue("command", "THAProfileStop"); // NOI18N
-        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        stop.putValue("command", STOP_COMMAND); // NOI18N
+        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMStopDataCollection")); // NOI18N
         stop.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Kill24.gif"); // NOI18N
         stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/Kill24.gif", false)); // NOI18N       
     }
@@ -394,7 +398,7 @@ public final class THAActionsProvider implements DLightTargetListener {
         }
     }
 
-    static private boolean start(Project project, THAConfiguration thaConfiguration) {
+    static private boolean start(DLightTargetListener listener, Project project, THAConfiguration thaConfiguration) {
         THAProjectSupport support = THAProjectSupport.getSupportFor(project);
 
         if (support == null) {
@@ -412,7 +416,7 @@ public final class THAActionsProvider implements DLightTargetListener {
 
         if (ap != null) {
             if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
-                ap.invokeAction("custom.action", Lookups.fixed(thaConfiguration)); // NOI18N
+                ap.invokeAction("custom.action", Lookups.fixed(thaConfiguration, listener)); // NOI18N
             }
         }
         return true;
@@ -438,11 +442,21 @@ public final class THAActionsProvider implements DLightTargetListener {
         suspendDataCollection.setEnabled(false);
         resumeDataCollection.setEnabled(false);
         stop.setEnabled(false);
+        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, STOP_COMMAND));
     }
 
     private void targetFinished(Integer status) {
         suspendDataCollection.setEnabled(false);
         resumeDataCollection.setEnabled(false);
         stop.setEnabled(false);
+        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, STOP_COMMAND));
+    }
+    
+    private final class DLightTargetListenerImpl implements DLightTargetListener{
+
+        public void targetStateChanged(DLightTargetChangeEvent event) {
+            THAActionsProvider.this.targetStateChanged(event);
+        }
+        
     }
 }

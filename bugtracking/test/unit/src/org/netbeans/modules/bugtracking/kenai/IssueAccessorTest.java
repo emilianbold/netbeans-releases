@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JComponent;
@@ -59,6 +60,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -287,6 +289,11 @@ public class IssueAccessorTest extends NbTestCase {
         public Issue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public Query[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public Issue[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public Collection<RepositoryUser> getUsers() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
     }
 

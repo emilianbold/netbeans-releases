@@ -51,6 +51,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
@@ -90,11 +91,19 @@ public class InsertLinkAction extends AbstractAction {
         if (insertLineNumber)
             outText += ":" + line; //NOI18N
         this.out = out;
+        outText =  "FILE:" + outText;
+    }
+
+    public InsertLinkAction(IssueHandle issueHandle, JTextPane outbox) {
+        putValue(NAME, issueHandle.getShortDisplayName());
+        this.out=outbox;
+        outText = "ISSUE:" + issueHandle.getID();
     }
 
     public void actionPerformed(ActionEvent e) {
         try {
-            out.getDocument().insertString(out.getCaretPosition(), "FILE:"+outText, null);
+            out.getDocument().insertString(out.getCaretPosition(),outText, null);
+            out.requestFocus();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -199,37 +199,50 @@ is divided into following sections:
   </fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
-                <condition property="manifest.available+main.class">
+                <condition property="main.class.available">
                     <and>
-                        <isset property="manifest.available"/>
                         <isset property="main.class"/>
                         <not>
                             <equals arg1="${{main.class}}" arg2="" trim="true"/>
                         </not>
                     </and>
                 </condition>
+                <condition property="manifest.available+main.class">
+                    <and>
+                        <isset property="manifest.available"/>
+                        <isset property="main.class.available"/>
+                    </and>
+                </condition>
+                <condition property="do.mkdist">
+                    <and>
+                        <isset property="libs.CopyLibs.classpath"/>
+                        <not>
+                            <istrue value="${{mkdist.disabled}}"/>
+                        </not>
+                    </and>
+                </condition>
                 <condition property="manifest.available+main.class+mkdist.available">
                     <and>
                         <istrue value="${{manifest.available+main.class}}"/>
-                        <isset property="libs.CopyLibs.classpath"/>
+                        <isset property="do.mkdist"/>
                     </and>
                 </condition>
                 <condition property="manifest.available+mkdist.available">
                     <and>
                         <istrue value="${{manifest.available}}"/>
-                        <isset property="libs.CopyLibs.classpath"/>
+                        <isset property="do.mkdist"/>
                     </and>
                 </condition>
                 <condition property="manifest.available-mkdist.available">
                     <or>
                         <istrue value="${{manifest.available}}"/>
-                        <isset property="libs.CopyLibs.classpath"/>
+                        <isset property="do.mkdist"/>
                     </or>
                 </condition>
                 <condition property="manifest.available+main.class-mkdist.available">
                     <or>
                         <istrue value="${{manifest.available+main.class}}"/>
-                        <isset property="libs.CopyLibs.classpath"/>
+                        <isset property="do.mkdist"/>
                     </or>
                 </condition>
 
@@ -966,7 +979,7 @@ is divided into following sections:
             <target name="-do-jar-with-libraries-without-mainclass">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+mkdist.available</xsl:attribute>
-                <xsl:attribute name="unless">main.class</xsl:attribute>
+                <xsl:attribute name="unless">main.class.available</xsl:attribute>
                 <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
                 <pathconvert property="run.classpath.without.build.classes.dir">
                     <path path="${{run.classpath}}"/>
@@ -992,7 +1005,7 @@ is divided into following sections:
 
             <target name="-do-jar-with-libraries-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">libs.CopyLibs.classpath</xsl:attribute>
+                <xsl:attribute name="if">do.mkdist</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
                   <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
                 <pathconvert property="run.classpath.without.build.classes.dir">

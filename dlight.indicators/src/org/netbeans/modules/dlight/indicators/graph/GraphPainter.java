@@ -51,6 +51,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.dlight.util.DLightMath;
 
 /**
  * A delegate that is responsible for painting,
@@ -243,7 +244,7 @@ class GraphPainter {
                             }
                         }
                     }
-                    xx[i] = lastx = map(viewportStart + i, viewportStart, viewportEnd, x, x + w);
+                    xx[i] = lastx = DLightMath.map(viewportStart + i, viewportStart, viewportEnd, x, x + w);
                     yy[i] = lasty = (int)(y + h - 2 - value * effectiveHeight / scale) - bonus;
                 }
                 g2.setColor(descriptors.get(ser).getColor());
@@ -321,28 +322,6 @@ class GraphPainter {
     }
 
 // common math /////////////////////////////////////////////////////////////////
-
-    /**
-     * Maps <code>value</code> from range <code>a..b</code> into <code>x..y</code>.
-     * Values less than <code>a</code> are mapped to <code>x</code>.
-     * Values greater than <code>b</code> are mapped to <code>y</code>.
-     *
-     * @param value  value to be mapped
-     * @param a  source range lower bound
-     * @param b  source range upper bound
-     * @param x  destination range lower bound
-     * @param y  destination range upper bound
-     * @return value mapped from range <code>a..b</code> into <code>x..y</code>
-     */
-    private static int map(int value, int a, int b, int x, int y) {
-        if (value <= a) {
-            return x;
-        } else if (value < b) {
-            return x + (value - a) * (y - x) / (b - a);
-        } else {
-            return y;
-        }
-    }
 
     /**
      * Returns a copy of passed color with adjusted alpha value.

@@ -39,11 +39,13 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.IScopingNode;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -143,15 +145,20 @@ final class RubyMethodTypeInferencer {
     private RubyType inferType() {
         String name = AstUtilities.getName(callNodeToInfer);
         Node receiver = null;
+        RubyType receiverType = null;
         switch (callNodeToInfer.getNodeType()) {
             case CALLNODE:
                 receiver = ((CallNode) callNodeToInfer).getReceiverNode();
                 break;
             case FCALLNODE:
-                // TODO: receiver is self;
-                break;
             case VCALLNODE:
-                receiver = null;
+                Node root = knowledge.getRoot();
+                AstPath path = new AstPath(root, callNodeToInfer);
+                IScopingNode clazz = AstUtilities.findClassOrModule(path);
+                if (clazz == null) {
+                    break;
+                }
+                receiverType = RubyType.create(AstUtilities.getClassOrModuleName(clazz));
                 break;
             default:
                 throw new IllegalArgumentException("Illegal node passed: " + callNodeToInfer);
@@ -162,10 +169,15 @@ final class RubyMethodTypeInferencer {
         if (fastResult != null) {
             return fastResult;
         }
-        if (receiver == null) {
+
+        if (receiverType == null && receiver != null) {
+            receiverType = getReceiverType(receiver);
+        }
+
+        if (receiverType == null) {
             return RubyType.createUnknown();
         }
-        RubyType receiverType = getReceiverType(receiver);
+
         if (returnsReceiver(name)) {
             return receiverType;
         }
@@ -195,14 +207,25 @@ final class RubyMethodTypeInferencer {
 
         RubyType resultType = new RubyType();
         RubyIndex index = getIndex();
-        if (index != null) {
-            Set<IndexedMethod> methods = index.getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
-            for (IndexedMethod indexedMethod : methods) {
-                RubyType type = indexedMethod.getType();
-                resultType.append(type);
-            }
-            index.logMostTimeConsuming();
+        if (index == null) {
+            return resultType;
         }
+
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        // first methods from the class itself
+        for (String type : receiverType.getRealTypes()) {
+            methods = index.getMethods(name, type, QuerySupport.Kind.EXACT);
+        }
+        if (methods.isEmpty()) {
+            // inherited methods
+            // TODO: should consider only the return type of the first inherited method in the hiearchy
+            methods = index.getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
+        }
+        for (IndexedMethod indexedMethod : methods) {
+            RubyType type = indexedMethod.getType();
+            resultType.append(type);
+        }
+        index.logMostTimeConsuming();
         return resultType;
     }
 

@@ -50,9 +50,9 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.ReconfigureProvider;
 public class ReconfigureProviderImpl extends ReconfigureProvider {
 
     @Override
-    public void reconfigure(Project makeProject, String cFlags, String cxxFlags) {
+    public void reconfigure(Project makeProject, String cFlags, String cxxFlags, String linkerFlags) {
         ReconfigureProject reconfigurator = new ReconfigureProject(makeProject);
-        reconfigurator.reconfigure(cFlags, cxxFlags);
+        reconfigurator.reconfigure(cFlags, cxxFlags, linkerFlags);
     }
 
     @Override

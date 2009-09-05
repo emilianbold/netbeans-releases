@@ -115,7 +115,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
     public String getChatRoomHTML(final KenaiProject instProj) {
         String innerStr = ""; //NOI18N
         try {
-            if (Kenai.getDefault().getPasswordAuthentication() != null && Kenai.getDefault().getMyProjects().contains(instProj)) {
+            if (instProj.isMyProject()) {
                 KenaiFeature[] chats = instProj.getFeatures(Type.CHAT);
                 innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_CHATROOM")); //NOI18N
                 if (chats.length > 0) {
@@ -181,7 +181,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         
         try {
             DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            String base = Kenai.normalizeUrl(System.getProperty("kenai.com.url", "https://kenai.com")).replaceFirst("https://", "http://"); //NOI18N
+            String base = Kenai.getDefault().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
             String urlStr = base + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
             int entriesCount = 0;
             NodeList entries = null;

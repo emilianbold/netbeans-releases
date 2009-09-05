@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.core.stack.storage.impl;
 
+import com.sun.org.apache.bcel.internal.generic.Select;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,6 +67,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
@@ -88,7 +90,7 @@ import org.openide.util.Lookup;
  *
  * @author Alexey Vladykin
  */
-public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
+public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider {
 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;
@@ -312,8 +314,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
-            PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
-            ResultSet rs = select.executeQuery();
+            ResultSet rs = null;
+            if (metadata.getViewStatement() != null){
+                PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
+                rs = select.executeQuery();
+            }else{
+                rs = sqlStorage.select(metadata.getName(), metricsColumn);
+            }
             while (rs.next()) {
                 Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
                 for (FunctionMetric m : metrics) {

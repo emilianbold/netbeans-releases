@@ -111,6 +111,61 @@ public class DataraceImplTest {
     }
 
     @Test
+    public void testFromErprintOpenmp() {
+        List<DataraceImpl> dataraces = DataraceImpl.fromErprint(new String[]{
+        "",
+        "Total Races:  1 Experiment:  /var/tmp/dlight_mt154047/experiment_4.er",
+        "",
+        "Race #1, Vaddr: 0x8047818",
+        "      Access 1: Write, main, ",
+        "                       line 57 in \"pi_omp.c\"",
+        "      Access 2: Write, main, ",
+        "                       line 57 in \"pi_omp.c\"",
+        "  Total Traces: 2",
+        "  Trace 1",
+        "      Access 1: Write",
+        "                main, line 57 in \"pi_omp.c\"",
+        "                main, line 52 in \"pi_omp.c\"",
+        "                _start + 0x00000078",
+        "      Access 2: Write",
+        "                main, line 57 in \"pi_omp.c\"",
+        "                main, line 52 in \"pi_omp.c\"",
+        "                _start + 0x00000078",
+        "  Trace 2",
+        "      Access 1: Read ",
+        "                main, line 53 in \"pi_omp.c\"",
+        "                main, line 52 in \"pi_omp.c\"",
+        "                _start + 0x00000078",
+        "      Access 2: Write",
+        "                main, line 57 in \"pi_omp.c\"",
+        "                main, line 52 in \"pi_omp.c\"",
+        "                _start + 0x00000078",
+        ""});
+
+        assertEquals(1, dataraces.size());
+
+        DataraceImpl r1 = dataraces.get(0);
+        assertEquals(0x8047818, r1.getAddress());
+        assertEquals(2, r1.getThreadDumps().size());
+
+        ThreadDump td1 = r1.getThreadDumps().get(0);
+        assertEquals(2, td1.getThreadStates().size());
+        assertEquals(MemoryAccessType.WRITE, td1.getThreadStates().get(0).getMemoryAccessType());
+        assertEquals(3, td1.getThreadStates().get(0).getStack().size());
+        assertEquals("_start", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
+        assertEquals("main", td1.getThreadStates().get(0).getStack().get(2).getFunction().getName());
+        assertEquals(57, td1.getThreadStates().get(0).getStack().get(2).getOffset());
+        assertEquals("pi_omp.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(2)).getFileName());
+        assertEquals(3, td1.getThreadStates().get(1).getStack().size());
+
+        ThreadDump td2 = r1.getThreadDumps().get(1);
+        assertEquals(2, td2.getThreadStates().size());
+        assertEquals(MemoryAccessType.READ, td2.getThreadStates().get(0).getMemoryAccessType());
+        assertEquals(3, td2.getThreadStates().get(0).getStack().size());
+        assertEquals(3, td2.getThreadStates().get(1).getStack().size());
+    }
+
+    @Test
     public void testFromErprintFortranOpenmp() {
         List<DataraceImpl> dataraces = DataraceImpl.fromErprint(new String[]{
         "",

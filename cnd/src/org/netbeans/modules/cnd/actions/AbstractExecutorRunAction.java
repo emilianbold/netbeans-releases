@@ -460,6 +460,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             for (Map.Entry<String, String> v : envMap.entrySet()) {
                 buf.append("\n\t\t" + v.getKey() + "=" + v.getValue()); // NOI18N
             }
+             buf.append("\n"); // NOI18N
             logger.log(Level.INFO, buf.toString());
         }
     }

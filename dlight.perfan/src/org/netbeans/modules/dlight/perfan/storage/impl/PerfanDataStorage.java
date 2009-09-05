@@ -55,12 +55,15 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
 public final class PerfanDataStorage implements DataStorage {
 
+    public static final String ID = "PerfanDataStorage"; //NOI18N
+    public static final DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(ID);
     private final static Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
     private ErprintSession er_print;
     private String experimentDirectory = null;
@@ -83,6 +86,10 @@ public final class PerfanDataStorage implements DataStorage {
             return writer.toString().trim().equals("");
         }
         return true;
+    }
+
+    public void setFilter(String filter) {
+        er_print.setFilter(filter);
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome,
@@ -178,7 +185,7 @@ public final class PerfanDataStorage implements DataStorage {
             log.log(Level.INFO, null, ex);
         }
 
-        return result == null? Collections.<DataraceImpl>emptyList() : result;
+        return result == null ? Collections.<DataraceImpl>emptyList() : result;
     }
 
     public List<? extends Deadlock> getDeadlocks() {
@@ -192,7 +199,7 @@ public final class PerfanDataStorage implements DataStorage {
             log.log(Level.INFO, null, ex);
         }
 
-        return result == null? Collections.<DeadlockImpl>emptyList() : result;
+        return result == null ? Collections.<DeadlockImpl>emptyList() : result;
     }
 
     public ExperimentStatistics fetchSummaryData() {

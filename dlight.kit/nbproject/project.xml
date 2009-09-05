@@ -96,6 +96,10 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.msa.support</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -103,6 +107,12 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.perfan</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.procfs</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>

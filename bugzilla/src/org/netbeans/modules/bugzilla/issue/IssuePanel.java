@@ -51,6 +51,7 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,6 +89,9 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
@@ -296,6 +300,7 @@ public class IssuePanel extends javax.swing.JPanel {
         separatorLabel.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
         assignedField.setEditable(issue.isNew() || issue.canReassign());
+        assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
@@ -377,7 +382,8 @@ public class IssuePanel extends javax.swing.JPanel {
             }
 
             String assignee = issue.getFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO);
-            if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !assignedField.getText().equals(assignee))) {
+            String selectedAssignee = (assignedField.getParent() == null) ? assignedCombo.getSelectedItem().toString() : assignedField.getText();
+            if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
                 JLabel label = KenaiUserUI.forName(userName).createUserWidget();
@@ -388,7 +394,11 @@ public class IssuePanel extends javax.swing.JPanel {
             if (force) {
                 assignedToStatusLabel.setVisible(assignee.trim().length() > 0);
             }
-            reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+            if (assignedField.getParent() == null) {
+                reloadField(force, assignedCombo, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+            } else {
+                reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+            }
             reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
             reloadField(force, ccField, BugzillaIssue.IssueField.CC, ccWarning, ccLabel);
             reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON, dependsOnWarning, dependsLabel);
@@ -527,6 +537,19 @@ public class IssuePanel extends javax.swing.JPanel {
         priorityCombo.setModel(toComboModel(bc.getPriorities()));
         priorityCombo.setRenderer(new PriorityRenderer());
         severityCombo.setModel(toComboModel(bc.getSeverities()));
+
+        Collection<RepositoryUser> users =  repository.getUsers();
+        DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
+        for (RepositoryUser user: users) {
+            assignedModel.addElement(user);
+        }
+        assignedCombo.setModel(assignedModel);
+        assignedCombo.setRenderer(new RepositoryUserRenderer());
+        GroupLayout layout = (GroupLayout)getLayout();
+        if ((assignedCombo.getParent()==null) != users.isEmpty()) {
+            layout.replace(users.isEmpty() ? assignedCombo : assignedField, users.isEmpty() ? assignedField : assignedCombo);
+            assignedLabel.setLabelFor(users.isEmpty() ? assignedField : assignedCombo);
+        }
         // stausCombo and resolution fields are filled in reloadForm
     }
 
@@ -886,6 +909,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         productField = new javax.swing.JTextField();
         resolutionCombo = new javax.swing.JComboBox();
+        assignedCombo = new javax.swing.JComboBox();
         reportedField = new javax.swing.JTextField();
         dependsOnWarning = new javax.swing.JLabel();
         osWarning = new javax.swing.JLabel();
@@ -995,6 +1019,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
         resolutionCombo.addActionListener(formListener);
         resolutionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionCombo.AccessibleContext.accessibleDescription")); // NOI18N
+
+        assignedCombo.setEditable(true);
+        assignedCombo.addActionListener(formListener);
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -1531,6 +1558,9 @@ public class IssuePanel extends javax.swing.JPanel {
             else if (evt.getSource() == resolutionCombo) {
                 IssuePanel.this.resolutionComboActionPerformed(evt);
             }
+            else if (evt.getSource() == assignedCombo) {
+                IssuePanel.this.assignedComboActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1644,7 +1674,11 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         storeFieldValue(BugzillaIssue.IssueField.URL, urlField);
         storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
-        storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
+        if (assignedField.getParent() == null) {
+            storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedCombo);
+        } else {
+            storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
+        }
         storeFieldValue(BugzillaIssue.IssueField.QA_CONTACT, qaContactField);
         storeCCValue();
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
@@ -1854,6 +1888,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             Object priority = priorityCombo.getSelectedItem();
                             Object severity = severityCombo.getSelectedItem();
                             Object resolution = resolutionCombo.getSelectedItem();
+                            Object assignee = assignedCombo.getSelectedItem();
                             initCombos();
                             selectInCombo(productCombo, product, false);
                             selectInCombo(platformCombo, platform, false);
@@ -1862,6 +1897,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             selectInCombo(severityCombo, severity, false);
                             initStatusCombo(statusCombo.getSelectedItem().toString());
                             selectInCombo(resolutionCombo, resolution, false);
+                            assignedCombo.setSelectedItem(assignee);
                         } finally {
                             reloading = false;
                             enableComponents(true);
@@ -1893,9 +1929,26 @@ public class IssuePanel extends javax.swing.JPanel {
         updateTasklistButton();
     }//GEN-LAST:event_tasklistButtonActionPerformed
 
+    private void assignedComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assignedComboActionPerformed
+        cancelHighlight(assignedLabel);
+        if (!reloading) {
+            assignedToStatusLabel.setVisible(false);
+        }
+        Object value = assignedCombo.getSelectedItem();
+        if (value instanceof RepositoryUser) {
+            String assignee = ((RepositoryUser)value).getUserName();
+            Repository repository = issue.getRepository();
+            if (repository instanceof KenaiRepository) {
+                assignee += '@' + ((KenaiRepository)repository).getHost();
+            }
+            assignedCombo.setSelectedItem(assignee);
+        }
+    }//GEN-LAST:event_assignedComboActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
+    private javax.swing.JComboBox assignedCombo;
     private javax.swing.JTextField assignedField;
     private javax.swing.JLabel assignedLabel;
     private javax.swing.JLabel assignedToStatusLabel;

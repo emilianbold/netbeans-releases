@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -328,6 +329,29 @@ public class NbJiraIssue extends Issue {
 
     public List<String> getSubtaskID() {
         return getFieldValues(IssueField.SUBTASK_IDS);
+    }
+
+    // XXX unify with issuepanel
+    public long getLastModify() {
+        String value = getFieldValue(IssueField.MODIFICATION);
+        try {
+            Date d = CC_DATE_FORMAT.parse(value);
+            return d.getTime();
+        } catch (ParseException ex) {
+            Jira.LOG.log(Level.WARNING, null, ex);
+        }
+        return -1;
+    }
+
+    public long getCreated() {
+        String value = getFieldValue(IssueField.CREATION);
+        try {
+            Date d = CC_DATE_FORMAT.parse(value);
+            return d.getTime();
+        } catch (ParseException ex) {
+            Jira.LOG.log(Level.WARNING, null, ex);
+        }
+        return -1;
     }
 
     Comment[] getComments() {

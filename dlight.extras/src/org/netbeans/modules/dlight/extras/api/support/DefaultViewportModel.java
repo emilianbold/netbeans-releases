@@ -1,7 +1,7 @@
 package org.netbeans.modules.dlight.extras.api.support;
 
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.dlight.extras.api.Range;
+import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.openide.util.ChangeSupport;
 

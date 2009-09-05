@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.openide.util.NbBundle;
 
 /**
  * Issue cache utility methods
@@ -97,7 +98,16 @@ public class IssueCacheUtils {
      * @return
      */
     public static String getRecentChanges(Issue issue) {
-        return getCache(issue).getRecentChanges(issue);
+        String changes = getCache(issue).getRecentChanges(issue);
+        if(changes == null) {
+            changes = "";
+        } else {
+            changes = changes.trim();
+    }
+        if(changes.equals("") && getCache(issue).getStatus(issue.getID()) == IssueCache.ISSUE_STATUS_MODIFIED) {
+            changes = NbBundle.getMessage(IssueCacheUtils.class, "LBL_IssueModified");
+        }
+        return changes;
     }
 
     /**

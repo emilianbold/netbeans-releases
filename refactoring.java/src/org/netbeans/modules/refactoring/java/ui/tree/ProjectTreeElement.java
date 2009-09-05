@@ -65,7 +65,7 @@ public class ProjectTreeElement implements TreeElement {
         ProjectInformation pi = ProjectUtils.getInformation(prj);
         name = pi.getDisplayName();
         icon = pi.getIcon();
-        this.prj = new WeakReference(prj);
+        this.prj = new WeakReference<Project>(prj);
         prjDir = prj.getProjectDirectory();
     }
 
