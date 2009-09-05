@@ -43,6 +43,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSystem;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemManager;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemsProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
@@ -97,7 +100,15 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     }
 
     public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
-        return SystemIncludesUtils.createLoader(env, sets);
+        if (RemoteFileSystemsProvider.USE_REMOTE_FS) {
+            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
+            return new Runnable() {
+                public void run() {
+                }
+            };
+        } else {
+            return SystemIncludesUtils.createLoader(env, sets);
+        }
     }
 
     public String[] getCompilerSetData(String path) {
