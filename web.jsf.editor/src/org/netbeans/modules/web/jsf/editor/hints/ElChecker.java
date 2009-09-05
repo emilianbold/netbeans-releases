@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.syntax.checker.JspElChecker;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.openide.filesystems.FileObject;
@@ -66,6 +67,10 @@ import org.openide.filesystems.FileObject;
  *
  */
 public class ElChecker extends HintsProvider {
+    
+    ElChecker(){
+        myJspChecker = new JspElChecker();
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.editor.hints.HintsProvider#compute(org.netbeans.modules.web.jsf.editor.hints.RuleContext)
@@ -109,7 +114,7 @@ public class ElChecker extends HintsProvider {
             TokenSequence<ELTokenId> tokenSequence, FileObject fileObject,
             List<Hint> hints ) 
     {
-        JsfElExpression elExpr = new JsfElExpression (webModule, doc);
+        JsfElExpression elExpr = new JsfElExpression( webModule , doc );
         int parseType = elExpr.parse(offset);
         int startOffset = elExpr.getStartOffset();
         if ( startOffset == -1){
@@ -121,32 +126,44 @@ public class ElChecker extends HintsProvider {
                     fileObject, hints);
         }
         else {
-            checkElContext( parseType, elExpr , hints , doc , fileObject );
+            checkElContext( parseType, elExpr , hints , doc , webModule, fileObject );
             checkEl(webModule, doc, startOffset, tokenSequence, fileObject, hints);
         }
     }
-
+    
     private void checkElContext( int parseType,  JsfElExpression expression, 
-            List<Hint> hints , Document document, FileObject fileObject) 
+            List<Hint> hints, Document document, WebModule webModule,
+            FileObject fileObject) 
     {
-        ElContextChecker checker = CHECKERS.get( parseType);
+        JsfElContextChecker checker = JSF_CHECKERS.get( parseType);
         if ( checker != null ){
-             checker.check(expression, document, fileObject, hints);
+             if ( checker.check(expression, document, fileObject, hints) ){
+                 return;
+             }
+        }
+        if ( parseType == ELExpression.EL_UNKNOWN || parseType == ELExpression.EL_START){
+            checkJspElContext( hints, document, fileObject, 
+                    expression.getContextOffset());
         }
     }
     
-    private static final Map<Integer, ElContextChecker> CHECKERS = new HashMap<Integer, 
-        ElContextChecker>();
+    private void checkJspElContext( List<Hint> hints, Document document,
+            FileObject fileObject, int contextOffset )
+    {
+        myJspChecker.check( hints , document, fileObject, contextOffset);
+    }
+
+    private static final Map<Integer, JsfElContextChecker> JSF_CHECKERS = new HashMap<Integer, 
+        JsfElContextChecker>();
 
     static {
-        CHECKERS.put( ELExpression.EL_START,  new ElStartContextChecker());
-        CHECKERS.put( ELExpression.EL_BEAN, new ElBeanContextChecker());
-        CHECKERS.put( ELExpression.EL_IMPLICIT,  CHECKERS.get( ELExpression.EL_BEAN));
-        
-        CHECKERS.put( JsfElExpression.EL_JSF_BEAN, new JsfElBeanContextChecker());
-        CHECKERS.put( JsfElExpression.EL_JSF_BEAN_REFERENCE, 
-                CHECKERS.get(JsfElExpression.EL_JSF_BEAN));
-        CHECKERS.put( JsfElExpression.EL_JSF_RESOURCE_BUNDLE, 
+        JSF_CHECKERS.put( ELExpression.EL_START, new JsfElStartContextChecker());
+        JSF_CHECKERS.put( JsfElExpression.EL_JSF_BEAN, new JsfElBeanContextChecker());
+        JSF_CHECKERS.put( JsfElExpression.EL_JSF_BEAN_REFERENCE, 
+                JSF_CHECKERS.get(JsfElExpression.EL_JSF_BEAN));
+        JSF_CHECKERS.put( JsfElExpression.EL_JSF_RESOURCE_BUNDLE, 
                 new JsfElResourceBundleContextChecker());
     }
+    
+    private JspElChecker myJspChecker;
 }

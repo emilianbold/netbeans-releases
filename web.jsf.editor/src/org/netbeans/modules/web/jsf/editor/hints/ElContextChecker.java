@@ -43,16 +43,24 @@ package org.netbeans.modules.web.jsf.editor.hints;
 import java.util.Collections;
 import java.util.List;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression.InspectPropertiesTask;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -61,106 +69,161 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-interface ElContextChecker {
+interface JsfElContextChecker {
 
-    void check( JsfElExpression expression , Document document, 
+    boolean check( JsfElExpression expression , Document document, 
             FileObject fileObject, List<Hint> hints );
 }
 
-class ElStartContextChecker extends 
-    org.netbeans.modules.web.core.syntax.checker.ElStartContextChecker 
-    implements ElContextChecker
-{
+class JsfElStartContextChecker implements JsfElContextChecker{
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.jsf.editor.el.JsfElExpression, java.util.List)
+     * @see org.netbeans.modules.web.jsf.editor.hints.JsfElContextChecker#check(org.netbeans.modules.web.jsf.editor.el.JsfElExpression, javax.swing.text.Document, org.openide.filesystems.FileObject, java.util.List)
      */
-    public void check( JsfElExpression expression, Document document, 
-            FileObject fileObject, List<Hint> hints ) 
+    public boolean check( JsfElExpression expression, Document document,
+            FileObject fileObject, List<Hint> hints )
     {
-        if ( checkElStart( expression , document ) ){
-            return;
-        }
-        if ( checkJsfElStart( expression , fileObject ) ){
-            return;
-        }
-        Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
-                NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_EL_START_CONTEXT", 
-                        expression.getReplace()),
-                fileObject,
-                new OffsetRange(expression.getStartOffset(), expression.getContextOffset()),
-                Collections.<HintFix>emptyList(), HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
-        hints.add( hint );
-    }
-
-    private boolean checkJsfElStart( JsfElExpression expression , 
-            FileObject fileObject ) 
-    {
-        String replace = expression.getReplace();
-
         // check managed beans
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(
-                WebModule.getWebModule( fileObject));
+        List<FacesManagedBean> beans = JSFBeanCache.getBeans(WebModule
+                .getWebModule(fileObject));
         for (FacesManagedBean bean : beans) {
             String beanName = bean.getManagedBeanName();
-            if ( replace.equals(beanName)){
+            if (expression.getExpression().equals(beanName)) {
                 // found managed bean via JSF model. All is OK.
                 return true;
             }
         }
         // check bundles properties
-        List<ResourceBundle> bundles = expression.getJSFResourceBundles(
-                WebModule.getWebModule( fileObject));
+        List<ResourceBundle> bundles = expression
+                .getJSFResourceBundles(WebModule.getWebModule(fileObject));
         for (ResourceBundle bundle : bundles) {
             String var = bundle.getVar();
-            if (replace.equals( var )){
+            if (expression.getExpression().equals(var)) {
                 // found resource bundle . All is OK.
                 return true;
             }
-        }     
+        }
         return false;
     }
 
 }
 
-class ElBeanContextChecker implements ElContextChecker{
+class JsfElBeanContextChecker implements JsfElContextChecker{
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.jsf.editor.el.JsfElExpression, java.util.List)
+     * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.core.syntax.completion.JspELExpression, javax.swing.text.Document, org.openide.filesystems.FileObject, java.util.List)
      */
-    public void check( JsfElExpression expression, Document document,
-            FileObject fileObject, List<Hint> hints ) 
+    public boolean check( final JsfElExpression expression, Document document,
+            FileObject fileObject, List<Hint> hints )
     {
-        // TODO Auto-generated method stub
-        
+        InspectPropertiesTask inspectPropertiesTask = expression.new InspectPropertiesTask(){
+
+            public void run( CompilationController controller ) throws Exception {
+                TypeElement lastType = getTypePreceedingCaret(controller);
+                if (lastType != null){
+                    String property = expression.getPropertyBeingTypedName();
+                    if ( property.charAt(property.length()-1) == ']'){
+                        property = property.substring( 0, property.length()-1);
+                    }
+                    String suffix = removeQuotes(property);
+
+                    for (ExecutableElement method : ElementFilter.methodsIn(lastType.
+                            getEnclosedElements()))
+                    {
+                        String propertyName = getExpressionSuffix(method, controller);
+
+                        if (propertyName != null && propertyName.equals(suffix)){
+                            return;
+                        }
+                    }
+                    setOffset( expression.getExpression().lastIndexOf( suffix));
+                    setProperty( suffix );
+                    setLast();
+                }
+            }
+            
+            @Override
+            protected boolean checkMethodParameters( ExecutableElement method ,
+                    CompilationController controller )
+            {
+                return true;
+            }
+            
+            @Override
+            protected boolean checkMethod( ExecutableElement method, 
+                    CompilationController controller)
+            {
+                return expression.checkMethod(method, controller);
+            }
+            
+        };
+        inspectPropertiesTask.execute();
+        int offset = inspectPropertiesTask.getOffset();
+        String property = inspectPropertiesTask.getProperty();
+        if ( offset == 0 && property != null ) {
+            Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
+                    NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_BEAN_CONTEXT", //NOI18N
+                            property),
+                    fileObject,
+                    new OffsetRange(expression.getStartOffset()+offset, 
+                            expression.getStartOffset()+offset +property.length()),
+                    Collections.<HintFix>emptyList(), 
+                    HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
+            hints.add( hint );
+        }
+        else if ( offset > 0 && property != null ){
+            String msg;
+            if ( inspectPropertiesTask.lastProperty()){
+                msg = "MSG_UNKNOWN_PROPERTY_METHOD_CONTEXT"; //NOI18N
+            }
+            else {
+                msg = "MSG_UNKNOWN_PROPERTY_CONTEXT"; //NOI18N
+            }
+            Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
+                    NbBundle.getMessage(HintsProvider.class, msg, 
+                            property),
+                    fileObject,
+                    new OffsetRange(expression.getStartOffset()+offset, 
+                            expression.getStartOffset()+offset +property.length()),
+                    Collections.<HintFix>emptyList(), 
+                    HintsProvider.DEFAULT_ERROR_HINT_PRIORITY); 
+            hints.add(hint);
+        }
+        return true;
     }
-    
+
 }
 
-class JsfElBeanContextChecker implements ElContextChecker{
+class JsfElResourceBundleContextChecker implements JsfElContextChecker {
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.jsf.editor.el.JsfElExpression, java.util.List)
      */
-    public void check( JsfElExpression expression, Document document,
+    public boolean check( JsfElExpression expression, Document document,
             FileObject fileObject, List<Hint> hints ) 
     {
-        // TODO Auto-generated method stub
-        
-    }
-    
-}
-
-class JsfElResourceBundleContextChecker implements ElContextChecker {
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.jsf.editor.el.JsfElExpression, java.util.List)
-     */
-    public void check( JsfElExpression expression, Document document,
-            FileObject fileObject, List<Hint> hints ) 
-    {
-        // TODO Auto-generated method stub
-        
+        List<CompletionItem> propertyKeys = expression.getPropertyKeys(
+                expression.getBundleName(), 0, 
+                expression.getReplace());
+        for (CompletionItem completionItem : propertyKeys) {
+            String key = ((JspCompletionItem)completionItem).getItemText();
+            if ( key!= null && key.equals(expression.getReplace())){
+                return true;
+            }
+        }
+        int offset = expression.getExpression().lastIndexOf( 
+                expression.getReplace());
+        Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
+                NbBundle.getMessage(HintsProvider.class, 
+                        "MSG_UNKNOWN_RESOURCE_BUNDLE_CONTEXT", 
+                        expression.getReplace()),fileObject,
+                new OffsetRange(expression.getStartOffset()+offset, 
+                        expression.getStartOffset()+offset +
+                        expression.getReplace().length()),
+                Collections.<HintFix>emptyList(), 
+                HintsProvider.DEFAULT_ERROR_HINT_PRIORITY); 
+        hints.add(hint);
+        return true;
     }
     
 }
