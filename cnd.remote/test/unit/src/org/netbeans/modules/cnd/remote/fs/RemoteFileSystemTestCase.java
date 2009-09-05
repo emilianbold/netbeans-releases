@@ -44,6 +44,12 @@ import java.io.File;
 import java.io.InputStream;
 import org.netbeans.modules.cnd.remote.support.*;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
@@ -74,6 +80,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         this.execEnv = execEnv;
         fs = RemoteFileSystemManager.getInstance().get(execEnv);
         assertNotNull("Null remote file system", fs);
+        removeDirectoryContent(fs.getCache());
         rootFO = fs.getRoot();
         assertNotNull("Null root file object", rootFO);
     }
@@ -177,6 +184,84 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
                 assertTrue("Getting input stream for "+ getFileName(execEnv, absPath) + " took to long (" + time + ") ms",
                         time < firstTime / 10);
             }
+        }
+    }
+
+    private abstract class ThreadWorker implements Runnable {
+        private final String name;
+        private final CyclicBarrier barrier;
+        final List<Exception> exceptions;
+        ThreadWorker(String name, CyclicBarrier barrier, List<Exception> exceptions) {
+            this.name = name;
+            this.barrier = barrier;
+            this.exceptions = exceptions;
+        }
+        public void run() {
+            Thread.currentThread().setName(name);
+            try {
+                System.err.printf("%s waiting on barriar\n", name);
+                barrier.await();
+                System.err.printf("%s working\n", name);
+                work();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+                exceptions.add(ex);
+            } catch (BrokenBarrierException ex) {
+                ex.printStackTrace();
+                exceptions.add(ex);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                exceptions.add(ex);
+            } finally {
+                System.err.printf("%s done\n", name);
+            }
+        }
+        protected abstract void work() throws Exception;
+    }
+
+
+    @ForAllEnvironments
+    public void testParallelRead() throws Exception {
+
+        removeDirectory(fs.getCache());
+        final String absPath = "/usr/include/stdio.h";
+
+        int threadCount = 10;
+        final CyclicBarrier barrier = new CyclicBarrier(threadCount);
+        final List<Exception> exceptions = Collections.synchronizedList(new ArrayList<Exception>());
+        final AtomicLong size = new AtomicLong(-1);
+
+        class Worker extends ThreadWorker {
+            public Worker(String name, CyclicBarrier barrier, List<Exception> exceptions) {
+                super(name, barrier, exceptions);
+            }
+            protected void work() throws Exception {
+                long time = System.currentTimeMillis();
+                CharSequence content = readFile(absPath);
+                int currSize = content.length();
+                size.compareAndSet(-1, currSize);
+                CharSequence text2search = "printf";
+                assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
+                        CharSequenceUtils.indexOf(content, text2search) >= 0);
+                assertEquals("File size for " + absPath + " differ", size.get(), currSize);
+            }
+        }
+
+        fs.getRemoteFileSupport().resetStatistic();
+        Thread[] threads = new Thread[threadCount];
+        for (int i = 0; i < threadCount; i++) {
+            threads[i] = new Thread(new Worker(absPath, barrier, exceptions));
+            threads[i].start();
+        }
+        System.err.printf("Waiting for threads to finish\n");
+        for (int i = 0; i < threadCount; i++) {
+            threads[i].join();
+        }
+        assertEquals("Dir. sync count differs", 1, fs.getRemoteFileSupport().getDirSyncCount());
+        assertEquals("File transfer count differs", 1, fs.getRemoteFileSupport().getFileCopyCount());
+        if (!exceptions.isEmpty()) {
+            System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());
+            throw exceptions.iterator().next();
         }
     }
 

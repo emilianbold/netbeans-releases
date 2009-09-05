@@ -61,10 +61,18 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 public class RemoteFileSupport {
 
     private final ExecutionEnvironment execEnv;
+
+    /** File transfer statistics */
+    private int fileCopyCount;
+
+    /** Directory synchronization statistics */
+    private int dirSyncCount;
+
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
+        resetStatistic();
     }
 
 
@@ -73,7 +81,9 @@ public class RemoteFileSupport {
             Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
             try {
                 int rc = task.get().intValue();
-                if (rc != 0) {
+                if (rc == 0) {
+                    fileCopyCount++;
+                } else {
                     throw new IOException("Can't copy file " + file.getAbsolutePath() + // NOI18N
                             " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
                 }
@@ -130,5 +140,19 @@ public class RemoteFileSupport {
         is.close();
         File flag = new File(dir, FLAG_FILE_NAME);
         flag.createNewFile(); // TODO: error processing
+        dirSyncCount++;
+    }
+
+    /*package-local test method*/ void resetStatistic() {
+        this.dirSyncCount = 0;
+        this.fileCopyCount = 0;
+    }
+
+    /*package-local test method*/ int getDirSyncCount() {
+        return dirSyncCount;
+    }
+
+    /*package-local test method*/ int getFileCopyCount() {
+        return fileCopyCount;
     }
 }
