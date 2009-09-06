@@ -56,7 +56,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=FileSystemsProvider.class)
 public class RemoteFileSystemsProvider extends FileSystemsProvider {
 
-    public static final boolean USE_REMOTE_FS = CndUtils.getBoolean("cnd.remote.fs", false);
+    public static final boolean USE_REMOTE_FS = CndUtils.getBoolean("cnd.remote.fs", true);
 
     @Override
     protected Data getImpl(File file) {
