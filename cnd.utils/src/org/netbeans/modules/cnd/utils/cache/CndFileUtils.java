@@ -341,7 +341,7 @@ public final class CndFileUtils {
            FileObject fo = data.fileSystem.getRoot().getFileObject(data.path);
            //FileObject[] children = fo.getChildren();
            // FIXUP: a very very dirty hack, just to make sure it will fly
-           fo.getFileObject("dummy");
+           fo.getFileObject("dummy"); // NOI18N
            return file.listFiles();
        }
     }

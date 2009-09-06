@@ -64,7 +64,7 @@ public abstract class BasicCompiler extends Tool {
 
     // FIXUP: still a fixup. Think over, who is responsible for this
     public static String getIncludeFilePrefix(ExecutionEnvironment env) {
-        String hostid = env.getHost() + (env.getSSHPort() == 22 ? "" : "-"+env.getSSHPort());
+        String hostid = env.getHost() + (env.getSSHPort() == 22 ? "" : "-"+env.getSSHPort()); // NOI18N
         return getIncludeFileBase() + hostid + "/"; //NOI18N
     }
 

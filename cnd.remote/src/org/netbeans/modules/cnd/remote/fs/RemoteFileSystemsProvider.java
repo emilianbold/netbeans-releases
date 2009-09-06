@@ -72,7 +72,7 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
             String prefix = BasicCompiler.getIncludeFileBase();
             if (CharSequenceUtils.startsWith(path, prefix)) {
                 CharSequence rest = path.subSequence(prefix.length(), path.length());
-                int slashPos = CharSequenceUtils.indexOf(rest, "/");
+                int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
                 if (slashPos >= 0) {
                     String hostName = rest.subSequence(0, slashPos).toString();
                     CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
