@@ -40,11 +40,13 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,18 +56,21 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.swing.JDialog;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -83,12 +88,13 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.beans.navigation.AmbiguousInjectablesModel;
-import org.netbeans.modules.web.beans.navigation.AmbiguousInjectablesPanel;
-import org.netbeans.modules.web.beans.navigation.ResizablePopup;
+import org.netbeans.modules.web.beans.navigation.InjectablesPopup;
+import org.netbeans.modules.web.beans.navigation.PopupUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import com.sun.source.util.TreePath;
@@ -98,25 +104,25 @@ import com.sun.source.util.TreePath;
  * @author ads
  *
  */
-public final class InspectInjectablesAtCaretAction extends BaseAction {
+public final class GoToInjectableAtCaretAction extends BaseAction {
 
     private static final long serialVersionUID = 1857528107859448216L;
     
-    private static final String INSPECT_INJACTABLES_AT_CARET =
-        "LBL_InspectInjactablesAtCaret";                     // NOI18N
+    private static final String GOTO_INJACTABLE_AT_CARET =
+        "LBL_GoToInjactableAtCaret";                     // NOI18N
     
-    private static final String INSPECT_INJACTABLES_AT_CARET_POPUP =
-        "LBL_PopupInspectInjactablesAtCaret";                // NOI18N
+    private static final String GOTO_INJACTABLE_AT_CARET_POPUP =
+        "LBL_PopupGoToInjactableAtCaret";                // NOI18N
 
-    public InspectInjectablesAtCaretAction() {
-        super(NbBundle.getMessage(InspectInjectablesAtCaretAction.class, 
-                INSPECT_INJACTABLES_AT_CARET), 0);
+    public GoToInjectableAtCaretAction() {
+        super(NbBundle.getMessage(GoToInjectableAtCaretAction.class, 
+                GOTO_INJACTABLE_AT_CARET), 0);
         
         putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
         putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
-                InspectInjectablesAtCaretAction.class,
-                INSPECT_INJACTABLES_AT_CARET_POPUP));
+                GoToInjectableAtCaretAction.class,
+                GOTO_INJACTABLE_AT_CARET_POPUP));
 
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N*/
     }
@@ -173,11 +179,11 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
             });
         }
         catch (MetadataModelException e) {
-            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
+            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
         catch (IOException e) {
-            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
+            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
     }
@@ -245,47 +251,37 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                     Element injectable = model.getInjectable(var);
                     if ( injectable == null ){
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                                InspectInjectablesAtCaretAction.class, 
+                                GoToInjectableAtCaretAction.class, 
                                 "LBL_InjectableNotFound"), 
                                 StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                        return;
                     }
-                    final CompilationController controller = model.getCompilationController();
-                    final List<AnnotationMirror> bindings = model.getBindings(var );
-                    Collection<Element> elements ;
-                    final VariableElement varElement = var;
-                    if ( injectable == null){
-                        elements = Collections.emptyList();
-                    }
-                    else {
-                        elements = Collections.singletonList( injectable );
-                    }
-                    if ( SwingUtilities.isEventDispatchThread()){
-                        showDialog( elements, varElement, bindings, controller, 
-                                metaModel);
-                    }
-                    else {
-                        final Collection<Element> els = elements; 
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                showDialog( els, varElement, bindings, controller,
-                                        metaModel);
-                            }
-                        });
-                    }
+                    final ElementHandle<Element> handle = ElementHandle
+                            .create(injectable);
+                    final ClasspathInfo classpathInfo = model.getCompilationController().
+                    getClasspathInfo();
+                    SwingUtilities.invokeLater( new Runnable() {
+                        
+                        public void run() {
+                            ElementOpen.open( classpathInfo, handle);
+                        }
+                    });
                 }
                 catch (final AmbiguousDependencyException adExcpeption) {
                     final List<AnnotationMirror> bindings = model.getBindings(var );
                     final VariableElement varElement = var;
                     final CompilationController controller = model.getCompilationController();
                     if ( SwingUtilities.isEventDispatchThread()){
-                        showDialog( adExcpeption , varElement, bindings, 
-                                controller , metaModel );
+                        showPopup( adExcpeption , varElement, bindings, 
+                                controller , metaModel , 
+                                component);
                     }
                     else {
                         SwingUtilities.invokeLater( new Runnable() {
                             public void run() {
-                                showDialog(adExcpeption, varElement, bindings, 
-                                        controller, metaModel);
+                                showPopup(adExcpeption, varElement, bindings, 
+                                        controller, metaModel, 
+                                        component);
                             }
                         });
                     }
@@ -300,12 +296,13 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         }
     }
 
+
     private VariableElement findVariable( final WebBeansModel model,
             final Object[] variablePath )
     {
         if ( variablePath[0] == null ){
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, 
+                    GoToInjectableAtCaretAction.class, 
                     "LBL_VariableNotFound", variablePath[1]));
             return null ;
         }
@@ -313,7 +310,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                 model.getCompilationController());
         if ( element == null ){
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, 
+                    GoToInjectableAtCaretAction.class, 
                     "LBL_VariableNotFound", variablePath[1]));
             return null ;
         }
@@ -336,7 +333,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         
         if (var == null) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, 
+                    GoToInjectableAtCaretAction.class, 
                     "LBL_VariableNotFound", variablePath[1]));
         }
         return var;
@@ -372,14 +369,14 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                     if ( element == null ){
                         StatusDisplayer.getDefault().setStatusText(
                                 NbBundle.getMessage(
-                                InspectInjectablesAtCaretAction.class, 
+                                GoToInjectableAtCaretAction.class, 
                                 "LBL_ElementNotFound"));
                         return;
                     }
                     if ( !( element instanceof VariableElement) ){
                         StatusDisplayer.getDefault().setStatusText(
                                 NbBundle.getMessage(
-                                InspectInjectablesAtCaretAction.class, 
+                                GoToInjectableAtCaretAction.class, 
                                 "LBL_NotVariableElement"));
                         return;
                     }
@@ -398,32 +395,39 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
             }, true );
         }
         catch(IOException e ){
-            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
+            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
         return variable[1] !=null ;
     }
     
-    private void showDialog( AmbiguousDependencyException adExcpeption , 
+    private void showPopup( AmbiguousDependencyException adExcpeption , 
             VariableElement var , List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model ) 
+            CompilationController controller, MetadataModel<WebBeansModel> model ,
+            JTextComponent target ) 
     {
-        showDialog( adExcpeption.getElements(), var, bindings, controller, model);
-    }
-    
-    private void showDialog( Collection<Element> elements , 
-            VariableElement var , List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model ) 
-    {
+        Collection<Element> elements = adExcpeption.getElements();
+        List<ElementHandle<Element>> handles  = new ArrayList<ElementHandle<Element>>(
+                elements.size()); 
+        for (Element element : elements) {
+            handles.add( ElementHandle.create( element ));
+        }
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 AmbiguousInjectablesModel.class, "LBL_WaitNode"));
-        JDialog dialog = ResizablePopup.getDialog();
-        String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
-                "TITLE_Injectables" , var.getSimpleName().toString() );
-        dialog.setTitle( title );
-        dialog.setContentPane( new AmbiguousInjectablesPanel(elements, var, 
-                bindings, controller , model));
-        dialog.setVisible( true );
+        try {
+            Rectangle rectangle = target.modelToView(target.getCaret().getDot());
+            Point point = new Point(rectangle.x, rectangle.y + rectangle.height);
+            SwingUtilities.convertPointToScreen(point, target);
+
+            String title = NbBundle.getMessage(
+                    GoToInjectableAtCaretAction.class, "LBL_ChooseInjectable");
+            PopupUtil.showPopup(new InjectablesPopup(title, handles, controller), title,
+                    point.x, point.y);
+
+        }
+        catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
 
