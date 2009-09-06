@@ -100,15 +100,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     }
 
     public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
-        if (RemoteFileSystemsProvider.USE_REMOTE_FS) {
-            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
-            return new Runnable() {
-                public void run() {
-                }
-            };
-        } else {
             return SystemIncludesUtils.createLoader(env, sets);
-        }
     }
 
     public String[] getCompilerSetData(String path) {

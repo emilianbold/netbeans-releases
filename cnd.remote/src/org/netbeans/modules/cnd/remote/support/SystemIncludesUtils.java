@@ -61,6 +61,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSupport;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemsProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -247,8 +249,27 @@ public class SystemIncludesUtils {
             }
 
             handle.progress(getMessage("SIU_Archiving") + " " + path, workunit++); // NOI18N
-            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv,
-                    "zip -r -q " + zipRemotePath + " " + path); //NOI18N
+            List <String> appendix = new ArrayList<String>();
+            String options = "-r -q"; //NOI18N
+            if (RemoteFileSystemsProvider.USE_REMOTE_FS) {
+                appendix.add(path);
+                appendix.add(path + "/bits"); //NOI18N
+                appendix.add(path + "/sys"); //NOI18N
+                appendix.add(path + "/gnu"); //NOI18N
+                options = "-q"; //NOI18N
+            }
+            StringBuilder cmdLine = new StringBuilder("zip "); //NOI18N
+            cmdLine.append(options);
+            cmdLine.append(' '); //NOI18N
+            cmdLine.append(zipRemotePath);
+            cmdLine.append(' '); //NOI18N
+            cmdLine.append(path);
+            for( String apx : appendix) {
+                cmdLine.append(' '); //NOI18N
+                cmdLine.append(apx);
+                cmdLine.append("/*");
+            }
+            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, cmdLine.toString());
             rcs.run();
 
             if (!cancelled.get()) {
@@ -266,7 +287,7 @@ public class SystemIncludesUtils {
             }
 
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
-            unzip(storageFolder, zipLocalPath);
+            unzip(storageFolder, zipLocalPath, appendix);
             cleanupList.add(zipLocalPath);
             RemoteUtil.LOGGER.fine("SystemIncludesUtils.load loading done for " + path); // NOI18N
         }
@@ -277,7 +298,7 @@ public class SystemIncludesUtils {
         return success;
     }
 
-    private static void unzip(String path, String fileName) {
+    private static void unzip(String path, String fileName, List <String> appendix) {
         long start = System.currentTimeMillis();
         Enumeration entries;
         ZipFile zipFile;
@@ -304,8 +325,16 @@ public class SystemIncludesUtils {
                             new BufferedOutputStream(new FileOutputStream(file.getAbsolutePath())));
                 }
             }
-
             zipFile.close();
+            if (RemoteFileSystemsProvider.USE_REMOTE_FS) {
+                new File(parent, RemoteFileSupport.FLAG_FILE_NAME).createNewFile();
+                for (String apx : appendix) {
+                    File dir = new File(parent, apx);
+                    if (dir.exists()) {
+                        new File(dir, RemoteFileSupport.FLAG_FILE_NAME).createNewFile();
+                    }
+                }
+            }
         } catch (IOException ioe) {
             RemoteUtil.LOGGER.warning("unzipping " + fileName + " to " + path + " failed");
             RemoteUtil.LOGGER.warning(ioe.getMessage());
