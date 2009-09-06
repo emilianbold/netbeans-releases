@@ -287,6 +287,7 @@ public class IssuePanel extends javax.swing.JPanel {
             layout.replace(users.isEmpty() ? assigneeCombo : assigneeField, users.isEmpty() ? assigneeField : assigneeCombo);
             assigneeLabel.setLabelFor(users.isEmpty() ? assigneeField : assigneeCombo);
         }
+        assigneeCombo.setSelectedItem(""); // NOI18N
     }
 
     private void initHeaderLabel() {
