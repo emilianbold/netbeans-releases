@@ -243,7 +243,11 @@ public class BugtrackingOwnerSupport {
         }
 
         File context = BugtrackingUtil.getLargerContext(project);
-        return getRepositoryForContext(context, null, askIfUnknown);
+        if (context != null) {
+            return getRepositoryForContext(context, null, askIfUnknown);
+        } else {
+            return askUserToSpecifyRepository(null, null);
+        }
     }
 
     public Repository getRepository(File file, boolean askIfUnknown) {
