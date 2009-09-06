@@ -64,7 +64,8 @@ public abstract class BasicCompiler extends Tool {
 
     // FIXUP: still a fixup. Think over, who is responsible for this
     public static String getIncludeFilePrefix(ExecutionEnvironment env) {
-        return System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + env.getHost() + "/"; //NOI18N
+        String hostid = env.getHost() + (env.getSSHPort() == 22 ? "" : "-"+env.getSSHPort());
+        return getIncludeFileBase() + hostid + "/"; //NOI18N
     }
 
     // FIXUP: still a fixup. Think over, who is responsible for this
