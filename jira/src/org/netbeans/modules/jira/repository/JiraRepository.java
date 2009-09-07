@@ -522,7 +522,11 @@ public class JiraRepository extends Repository {
                     for (String id : ids) {
                         try {
                             TaskData data = JiraUtils.getTaskDataById(JiraRepository.this, id, false);
-                            getIssueCache().setIssueData(id, data);
+                            if(data == null) {
+                                Jira.LOG.warning("No task data available for issue with id " + id);
+                            } else {
+                                getIssueCache().setIssueData(id, data);
+                            }
                         } catch (IOException ex) {
                             Jira.LOG.log(Level.SEVERE, null, ex); // NOI18N
                         }
