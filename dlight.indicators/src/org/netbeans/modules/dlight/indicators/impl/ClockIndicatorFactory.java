@@ -36,14 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.support;
+package org.netbeans.modules.dlight.indicators.impl;
+
+import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
 
 /**
  *
  * @author mt154047
  */
-public interface IndicatorConfigurationIDs {
-    static final String CLOCK_ID = "DLightClockIndicatorConfiguration"; //NOI18N
-    static final String BAR_ID = "DLightBarIndicatorConfigurationID"; //NOI18N
-    static final String TIMESERIES_ID = "DLightTimeSeriesIndicatorConfigurationID"; //NOI18N
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
+public class ClockIndicatorFactory implements IndicatorFactory<ClockIndicatorConfiguration> {
+
+    @Override
+    public Indicator<ClockIndicatorConfiguration> create(ClockIndicatorConfiguration configuration) {
+        return new ClockIndicator(configuration);
+    }
+
+    @Override
+    public String getID() {
+        return IndicatorConfigurationIDs.CLOCK_ID;
+    }
 }

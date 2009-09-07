@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,71 +34,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators.support;
 
-import java.awt.BorderLayout;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 
-public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
-  private static final int SECOND_IN_MILLISECONDS = 1000;
-  private ClockPanel panel;
-  private long currentTime;
+/**
+ * Default {@link DataRowToTimeSeries} implementation, suitable for simple cases.
+ *
+ * @author Alexey Vladykin
+ */
+public final class DefaultDataRowToTimeSeries implements DataRowToTimeSeries {
 
-  public ClockIndicator(ClockIndicatorConfiguration configuration) {
-    super(configuration);
-    panel = new ClockPanel();
-  }
-  
-  @Override
-  public JComponent getComponent() {
-    return panel;
-  }
+    private final float[] data;
+    private final Map<String, Integer> columnToIndex;
 
-  public void updated(List<DataRow> data) {
-    if (data.isEmpty()) {
-      return;
+    public DefaultDataRowToTimeSeries(Column[][] columns) {
+        this.data = new float[columns.length];
+        this.columnToIndex = Collections.unmodifiableMap(buildColumnToIndexMap(columns));
     }
 
-    DataRow lastRow = data.get(data.size() - 1);
-    currentTime = lastRow.getLongValue(getMetadataColumnName(0));
-    panel.update();
-  }
-
-  protected void tick() {}
-
-  @Override
-  protected void repairNeeded(boolean needed) {}
-
-  public void reset() {
-    //throw new UnsupportedOperationException("Not supported yet.");
-  }
-  
-  private class ClockPanel extends JPanel {
-    private JLabel timeLabel = new JLabel("00:00:00"); //NOI18N
-
-    public ClockPanel() {
-      setLayout(new BorderLayout(10, 10));
-      add(timeLabel, BorderLayout.CENTER);
+    public synchronized void addDataRow(DataRow row) {
+        for (String columnName : row.getColumnNames()) {
+            Integer index = columnToIndex.get(columnName);
+            if (index != null) {
+                data[index] = DataUtil.toFloat(row.getData(columnName));
+            }
+        }
     }
-    
-    private void update() {
-      int seconds = (int) currentTime / SECOND_IN_MILLISECONDS;
-      int hours = seconds / (60 * 60);
-      int minutes = (seconds - hours * 60 * 60) / 60;
-      int real_seconds = (seconds - hours * 60 * 60 - minutes * 60);
-      String timerStr = (hours < 10 ? "0" : "") + hours + //NOI18N
-          ":" + (minutes < 10 ? "0" : "") + minutes + //NOI18N
-          ":" + (real_seconds < 10 ? "0" : "") + real_seconds; //NOI18N
-      timeLabel.setText(timerStr);
+
+    public synchronized void tick(float[] data, Map<String, String> details) {
+        System.arraycopy(this.data, 0, data, 0, Math.min(this.data.length, data.length));
     }
-  }
+
+    private static Map<String, Integer> buildColumnToIndexMap(Column[][] columns) {
+        Map<String, Integer> result = new HashMap<String, Integer>();
+        for (int i = 0; i < columns.length; ++i) {
+            for (Column column : columns[i]) {
+                result.put(column.getColumnName(), Integer.valueOf(i));
+            }
+        }
+        return result;
+    }
 }

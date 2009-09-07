@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -82,11 +83,16 @@ import org.openide.util.Exceptions;
  */
 public final class DLightConfiguration {
 
+    static{
+        DLightConfigurationAccessor.setDefault(new DLightConfigurationAccessorImpl());
+    }
+
     private static final String CONFIGURATION_OPTIONS = "ConfigurationOptions";//NOI18N
     private final FileObject rootFolder;
     private final ToolsConfiguration toolsConfiguration;
     private final DLightConfigurationOptions configurationOptions;
     private final String displayedName;
+    private final DLightConfigurationOptionsListener listener = new DLightConfigurationOptionsListenerImpl();
 
     static DLightConfiguration create(FileObject configurationRoot) {
         return new DLightConfiguration(configurationRoot);
@@ -137,6 +143,17 @@ public final class DLightConfiguration {
         return result;
     }
 
+    private final List<Indicator<?>> getEnabledIndicators() {
+        List<Indicator<?>> result = new ArrayList<Indicator<?>>();
+        List<DLightTool> tools = getToolsSet();
+        for (DLightTool tool : tools) {
+            if (tool.isEnabled()){
+                result.addAll(tool.getIndicators());
+            }
+        }
+        return result;
+    }
+
     public DLightTool getToolByID(String id) {
         if (id == null) {
             return null;
@@ -180,7 +197,7 @@ public final class DLightConfiguration {
     public DLightConfigurationOptions getConfigurationOptions(boolean template) {
         if (template) {
             getConfigurationOptions();
-        }
+        }   
         return configurationOptions;
     }
 
@@ -216,6 +233,7 @@ public final class DLightConfiguration {
                 @SuppressWarnings("unchecked")
                 Class<? extends DLightConfigurationOptions> clazz = (Class<? extends DLightConfigurationOptions>) ic.instanceClass();
                 DLightConfigurationOptions configurationProvider = clazz.getConstructor().newInstance();
+                configurationProvider.addListener(listener);
                 return configurationProvider;
 //                result.add(DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create()));
 //        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
@@ -282,7 +300,39 @@ public final class DLightConfiguration {
         public Collection<String> getActiveToolNames() {
             return null;
         }
+
+        public void addListener(DLightConfigurationOptionsListener listener) {
+       //     throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeListener(DLightConfigurationOptionsListener listener) {
+       //     throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
+    private final class DLightConfigurationOptionsListenerImpl implements DLightConfigurationOptionsListener{
+
+        public boolean dlightToolEnabling(String toolName, boolean isEnabled) {
+            if (getToolByName(toolName) == null){
+                return false;
+            }
+            if (isEnabled){
+                getToolByName(toolName).enable();
+            }else{
+                getToolByName(toolName).disable();
+            }
+            return true;
+        }
+        
+    }
+
+    private static final class DLightConfigurationAccessorImpl extends DLightConfigurationAccessor{
+
+        @Override
+        public List<Indicator<?>> getEnabledIndicators(DLightConfiguration configuration) {
+            return configuration.getEnabledIndicators();
+        }
+        
+    }
    
 }

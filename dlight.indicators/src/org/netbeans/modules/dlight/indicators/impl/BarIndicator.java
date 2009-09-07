@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.support;
+package org.netbeans.modules.dlight.indicators.impl;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
