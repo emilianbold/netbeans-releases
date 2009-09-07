@@ -62,7 +62,7 @@ public final class ThreadStateMapper {
         translationTable.put(MSAState.WaitingCPU, MSAState.Waiting);
         // Stopped
         // map stop on sleep tp avoid new (5) state
-        translationTable.put(MSAState.Stopped, MSAState.Sleeping);
+        translationTable.put(MSAState.ThreadStopped, MSAState.Sleeping);
     }
 
     private ThreadStateMapper() {

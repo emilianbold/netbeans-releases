@@ -64,7 +64,7 @@ public final class ThreadStateImpl implements ThreadState {
         MSAState.SleepingUserDataPageFault,
         MSAState.SleepingKernelPageFault,
         MSAState.WaitingCPU,
-        MSAState.Stopped,
+        MSAState.ThreadStopped,
         MSAState.SleepingUserLock,
         MSAState.SleepingOther,
         null,
@@ -112,9 +112,6 @@ public final class ThreadStateImpl implements ThreadState {
         assert stateIdx > 2;
 
         final MSAState fullState = collectedStates[stateIdx];
-        if (fullState == MSAState.Stopped && full) {
-            return MSAState.SleepingOther;
-        }
         return (full) ? fullState : ThreadStateMapper.toSimpleState(fullState);
     }
 
