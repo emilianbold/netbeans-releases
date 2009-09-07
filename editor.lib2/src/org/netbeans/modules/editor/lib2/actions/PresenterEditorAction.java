@@ -137,7 +137,7 @@ public final class PresenterEditorAction extends TextAction
                     TextUI ui = (focusedTextComponent != null) ? focusedTextComponent.getUI() : null;
                     EditorKit kit = (ui != null)
                             ? ui.getEditorKit(focusedTextComponent)
-                            : EditorActionUtilities.getGlobalKit();
+                            : EditorActionUtilities.getGlobalActionsKit();
                     if (kit != null) {
                         SearchableEditorKit searchableKit = EditorActionUtilities.getSearchableKit(kit);
                         updateActions(searchableKit);
@@ -323,7 +323,7 @@ public final class PresenterEditorAction extends TextAction
                     actionName = actionName();
                 }
                 if (searchableKit == null) {
-                    EditorKit globalKit = EditorActionUtilities.getGlobalKit();
+                    EditorKit globalKit = EditorActionUtilities.getGlobalActionsKit();
                     searchableKit = (globalKit != null) ? EditorActionUtilities.getSearchableKit(globalKit) : null;
                     if (searchableKit == null) {
                         return null;

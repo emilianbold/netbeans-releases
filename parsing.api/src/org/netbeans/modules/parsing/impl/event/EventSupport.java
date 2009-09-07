@@ -373,7 +373,10 @@ public final class EventSupport {
                 final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
                 final Document doc = lastEditor == null ? null : lastEditor.getDocument();
                 if (doc != null) {
-                    source = Source.create(doc);
+                    String mimeType = NbEditorUtilities.getMimeType (doc);
+                    if (mimeType != null) {
+                        source = Source.create(doc);
+                    }
                 }
                 if (source != null) {
                     Object rawValue = evt.getNewValue();
