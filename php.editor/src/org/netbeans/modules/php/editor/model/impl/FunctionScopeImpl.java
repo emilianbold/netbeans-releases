@@ -125,6 +125,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.returnType =  element.getReturnType();
     }
 
+
     //old contructors
     
 
@@ -148,16 +149,16 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                         } finally {
                             recursionDetection.remove(typeName);
                         }
-                    } else {
+                    } else {                        
                         retval.addAll(CachingSupport.getTypes(typeName, this));
                     }
             }
             returnType = null;//NOI18N
             for (TypeScope typeScope : retval) {
                 if (returnType == null) {
-                    returnType = typeScope.getName();
+                    returnType = typeScope.getNamespaceName().append(typeScope.getName()).toString();
                 } else {
-                    returnType += "|"+typeScope.getName();//NOI18N
+                    returnType += "|"+typeScope.getNamespaceName().append(typeScope.getName()).toString();//NOI18N
                 }
             }
         }

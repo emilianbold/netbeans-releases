@@ -42,12 +42,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.subversion.api.Subversion;
@@ -66,9 +65,6 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.Presenter;
 
 public final class ShareAction extends CookieAction {
-
-    //XXX this has to be done better for other domains than (test)kenai
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(hg\\.|svn\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     protected void performAction(Node[] activatedNodes) {
         actionPerformed(activatedNodes);
@@ -151,10 +147,7 @@ public final class ShareAction extends CookieAction {
             assert proj != null;
             String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation");
             if (projRepo != null) {
-                final Matcher m = repositoryPattern.matcher(projRepo);
-                if (m.matches()) {
-                    return true;
-                }
+                return KenaiProject.getNameForRepository(projRepo)!=null;
             }
             return false;
         }
