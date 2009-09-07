@@ -214,12 +214,12 @@ final class RubyMethodTypeInferencer {
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
         // first methods from the class itself
         for (String type : receiverType.getRealTypes()) {
-            methods = index.getMethods(name, type, QuerySupport.Kind.EXACT);
+            methods.addAll(index.getMethods(name, type, QuerySupport.Kind.EXACT));
         }
         if (methods.isEmpty()) {
             // inherited methods
             // TODO: should consider only the return type of the first inherited method in the hiearchy
-            methods = index.getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
+            methods.addAll(index.getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT));
         }
         for (IndexedMethod indexedMethod : methods) {
             RubyType type = indexedMethod.getType();
