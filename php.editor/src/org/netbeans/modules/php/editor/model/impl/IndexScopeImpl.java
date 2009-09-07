@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -121,11 +122,14 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         List<TypeScope> retval = new ArrayList<TypeScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
-            Collection<IndexedClass> classes = getIndex().getClasses(null, name, nameKind);
+            NamespaceIndexFilter indexFilter = new NamespaceIndexFilter(name);
+            Collection<IndexedClass> classes = getIndex().getClasses(null, indexFilter.getName(), nameKind);
+            classes = indexFilter.filter(classes, true);
             for (IndexedClass indexedClass : classes) {
                 retval.add(new ClassScopeImpl(this, indexedClass));
             }
-            Collection<IndexedInterface> interfaces = getIndex().getInterfaces(null, name, nameKind);
+            Collection<IndexedInterface> interfaces = getIndex().getInterfaces(null, indexFilter.getName(), nameKind);
+            interfaces = indexFilter.filter(interfaces, true);
             for (IndexedInterface indexedInterface : interfaces) {
                 retval.add(new InterfaceScopeImpl(this, indexedInterface));
             }

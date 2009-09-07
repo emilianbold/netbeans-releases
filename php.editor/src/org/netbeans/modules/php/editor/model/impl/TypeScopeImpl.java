@@ -169,7 +169,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     public Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.findMethods(this, queryName, modifiers);
+            QualifiedName qn = getNamespaceName().append(getName());
+            NamespaceIndexFilter filter = new NamespaceIndexFilter(qn.toString());
+            List<? extends MethodScope> methods = indexScopeImpl.findMethods(this, queryName, modifiers);
+            return filter.filterModelElements(methods, true);
         }
 
         return filter(getElements(), new ElementFilter() {

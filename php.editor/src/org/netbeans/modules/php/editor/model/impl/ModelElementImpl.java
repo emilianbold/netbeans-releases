@@ -129,7 +129,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public String getNormalizedName() {
-        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase();
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart())+getFileObject().getPath();
     }
 
     static boolean nameKindMatch(Pattern p, String text) {

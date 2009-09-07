@@ -349,6 +349,9 @@ public class VariousUtils {
                         QualifiedNameKind kind = filter.getKind();
                         String query = kind.isUnqualified() ? frag : filter.getName();
                         recentTypes = CachingSupport.getClasses(query,varScope);
+                        if (recentTypes.isEmpty()) {
+                            recentTypes = CachingSupport.getInterfaces(query,varScope);
+                        }
                         if (!kind.isUnqualified()) {
                             recentTypes = filter.filterModelElements(recentTypes, true);
                         }

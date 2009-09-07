@@ -50,7 +50,6 @@ import java.util.List;
 
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -126,6 +125,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.returnType =  element.getReturnType();
     }
 
+
     //old contructors
     
 
@@ -156,9 +156,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             returnType = null;//NOI18N
             for (TypeScope typeScope : retval) {
                 if (returnType == null) {
-                    returnType = typeScope.getName();
+                    returnType = typeScope.getNamespaceName().append(typeScope.getName()).toString();
                 } else {
-                    returnType += "|"+typeScope.getName();//NOI18N
+                    returnType += "|"+typeScope.getNamespaceName().append(typeScope.getName()).toString();//NOI18N
                 }
             }
         }
