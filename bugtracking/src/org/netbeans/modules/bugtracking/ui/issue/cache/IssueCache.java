@@ -170,10 +170,12 @@ public abstract class IssueCache<T> {
     protected abstract long getCreated(Issue issue);
 
     public Issue setIssueData(String id, T issueData) throws IOException {
+        assert issueData != null;
         return setIssueData(id, issueData, null);
     }
 
     public Issue setIssueData(String id, T issueData, Issue issue) throws IOException {
+        assert issueData != null;
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
 
