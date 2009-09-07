@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.AdvancedSecurityFeature
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ValidatorsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
@@ -62,6 +63,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelp
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -75,7 +77,7 @@ import org.openide.DialogDisplayer;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
 public class STSIssuedProfile extends ProfileBase 
-        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature,AdvancedSecurityFeature {
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature,AdvancedSecurityFeature, ValidatorsFeature {
     
     public int getId() {
         return 90;
@@ -167,4 +169,7 @@ public class STSIssuedProfile extends ProfileBase
         ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).setSecureConversation(component, enable);
     }
     
+    public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
+        return ConfigVersion.CONFIG_1_0 != cfgVersion;
+    }
 }
