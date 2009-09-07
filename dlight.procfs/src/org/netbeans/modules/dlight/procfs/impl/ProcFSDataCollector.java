@@ -236,7 +236,7 @@ public class ProcFSDataCollector
                     DataReader.switchEndian();
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                //Exceptions.printStackTrace(ex);
             }
 
             PreparedStatement _stmt = null;
