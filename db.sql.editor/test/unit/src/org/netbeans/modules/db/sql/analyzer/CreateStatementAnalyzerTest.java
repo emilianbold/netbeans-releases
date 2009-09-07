@@ -41,7 +41,6 @@ package org.netbeans.modules.db.sql.analyzer;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
@@ -61,12 +60,6 @@ public class CreateStatementAnalyzerTest extends NbTestCase {
 
     public CreateStatementAnalyzerTest(String testName) {
         super(testName);
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateStatementAnalyzerTest("testBody"));
-        return suite;
     }
 
     private static CreateStatement doAnalyze(String sql) {
