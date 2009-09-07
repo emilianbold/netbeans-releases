@@ -100,7 +100,7 @@ public class AddOverrideAnnotation extends AbstractHint {
                                       TreePath treePath) {
         TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Override"); //NOI18N
 
-        if (el == null || !GeneratorUtils.supportsOverride(compilationInfo.getFileObject()))
+        if (el == null || !GeneratorUtils.supportsOverride(compilationInfo))
             return null;
 
         Element e = compilationInfo.getTrees().getElement(treePath);
