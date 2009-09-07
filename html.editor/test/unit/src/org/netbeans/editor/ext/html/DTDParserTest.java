@@ -45,7 +45,6 @@ import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.test.TestBase;
 import static org.junit.Assert.*;
 
@@ -61,12 +60,6 @@ public class DTDParserTest extends TestBase {
 
     public DTDParserTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
     }
 
     public static Test xsuite() throws IOException {

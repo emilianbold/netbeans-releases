@@ -26,9 +26,11 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -69,7 +72,9 @@ import org.openide.util.NbBundle;
  * @see <a href="http://kenai.com/projects/nb-svuid-generator/sources/mercurial/show/src/eu/easyedu/netbeans/svuid">Original Implementation Source Code</a>
  */
 public class SerialVersionUID extends AbstractHint {
+    private static final String SIMPLE_SERIALIZABLE = "Serializable";
 
+    private static final Set<Tree.Kind> TREE_KINDS = EnumSet.<Tree.Kind>of(Tree.Kind.CLASS);
     private static final String SERIAL = "serial"; //NOI18N
     private static final String SVUID = "serialVersionUID"; //NOI18N
     private static final String SERIALIZABLE = "java.io.Serializable"; //NOI18N
@@ -85,7 +90,7 @@ public class SerialVersionUID extends AbstractHint {
     }
 
     public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.CLASS);
+        return TREE_KINDS;
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
@@ -94,7 +99,8 @@ public class SerialVersionUID extends AbstractHint {
         }
         cancel.set(false);
         TypeElement type = (TypeElement) info.getTrees().getElement(treePath);
-        if (type == null || type.getKind() == ElementKind.INTERFACE || !isSerializable(type) || hasSerialVersionUID(type) || hasSuppressWarning(type, SERIAL)) {
+        if (type == null || type.getKind() == ElementKind.INTERFACE || type.getKind() == ElementKind.ENUM ||
+                !isSerializable(type) || hasSerialVersionUID(type) || hasSuppressWarning(type, SERIAL)) {
             return null;
         }
         // Contrary to popular belief, abstract classes *should* define serialVersionUID,
@@ -102,14 +108,33 @@ public class SerialVersionUID extends AbstractHint {
         List<Fix> fixes = new ArrayList<Fix>();
         fixes.add(new FixImpl(TreePathHandle.create(treePath, info), false));
         // fixes.add(new FixImpl(TreePathHandle.create(treePath, info), true));
-        fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SERIAL));
-
-        int[] span = info.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf());
-        if (span == null) { //span cannot be found, do not show anything
-            return null;
-        }
+        ErrorDescription ed = null;
         String desc = NbBundle.getMessage(getClass(), "ERR_SerialVersionUID"); //NOI18N
-        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), span[0], span[1]);
+        if (type.getNestingKind().equals(NestingKind.ANONYMOUS)) {
+            SourcePositions pos = info.getTrees().getSourcePositions();
+            Tree clazzTree = null;
+            for (Tree tree : treePath) {
+                if (tree.getKind().equals(Tree.Kind.NEW_CLASS)) {
+                    clazzTree = ((NewClassTree) tree).getIdentifier();
+                    break;
+                }
+            }
+            // clazzTree = treePath.getParentPath().getLeaf() to mark all implementation!
+            if (clazzTree == null) {
+                return null; // return nothing
+            }
+            long start = pos.getStartPosition(info.getCompilationUnit(), clazzTree);
+            long end = pos.getEndPosition(info.getCompilationUnit(), clazzTree);
+            ed = ErrorDescriptionFactory.createErrorDescription(
+                    getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), (int) start, (int) end);
+        } else {
+            // add SuppressWarning only to non-anonymous class
+            fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SERIAL));
+            int[] span = info.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf());
+            ed = ErrorDescriptionFactory.createErrorDescription(
+                    getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), span[0], span[1]);
+        }
+
         if (cancel.get()) {
             return null;
         }
@@ -174,30 +199,7 @@ public class SerialVersionUID extends AbstractHint {
             Set<Modifier> modifiers = EnumSet.of(PRIVATE, STATIC, FINAL);
             VariableTree svuid = make.Variable(make.Modifiers(modifiers), SVUID, make.Identifier("long"), make.Literal(1L)); //NO18N
 
-            ClassTree decl;
-            if (copy.getTreeUtilities().isEnum(classTree)) {
-                List<? extends Tree> members = classTree.getMembers();
-                ArrayList<Tree> newMembers = new ArrayList<Tree>(members);
-
-                int lastEnumConstantPosition = 0;
-                for (Tree t : members) {
-                    if (t.getKind() == Kind.VARIABLE && copy.getTreeUtilities().isEnumConstant((VariableTree) t)) {
-                        lastEnumConstantPosition = members.indexOf(t);
-                    }
-                }
-                if (lastEnumConstantPosition > 0) {
-                    VariableTree lastMember = (VariableTree) members.get(lastEnumConstantPosition);
-                    ModifiersTree modds = make.Modifiers(ENUM_FLAG, Collections.<AnnotationTree>emptyList());
-                    VariableTree var = make.Variable(modds, lastMember.getName().toString(), lastMember.getType(), lastMember.getInitializer());
-                    newMembers.set(lastEnumConstantPosition, var);
-                }
-
-                newMembers.add(svuid);
-
-                decl = make.Enum(classTree.getModifiers(), classTree.getSimpleName(), classTree.getImplementsClause(), newMembers);
-            } else {
-                decl = GeneratorUtilities.get(copy).insertClassMember(classTree, svuid);
-            }
+            ClassTree decl = GeneratorUtilities.get(copy).insertClassMember(classTree, svuid);
             copy.rewrite(classTree, decl);
         }
 
@@ -229,6 +231,12 @@ public class SerialVersionUID extends AbstractHint {
     }
 
     private boolean isSerializable(TypeElement type) {
+        if (type.getNestingKind().equals(NestingKind.ANONYMOUS)) {
+            if (type.getSuperclass().toString().equals(SIMPLE_SERIALIZABLE)) {
+                return true;
+            }
+        }
+
         for (TypeElement t : GeneratorUtils.getAllParents(type)) {
             if (t.getKind() == ElementKind.INTERFACE && t.getQualifiedName().contentEquals(SERIALIZABLE)) {
                 return true;

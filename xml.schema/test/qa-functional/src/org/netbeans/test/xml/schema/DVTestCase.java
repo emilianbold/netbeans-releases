@@ -50,7 +50,7 @@ import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
+//import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
@@ -113,9 +113,9 @@ public class DVTestCase extends JellyTestCase {
         opNewFileWizard.selectFileType("Loan Application Sample Schema");
         opNewFileWizard.next();
         
-        NewJavaFileNameLocationStepOperator opNewFileNameLocationStep = new NewJavaFileNameLocationStepOperator();
-        opNewFileNameLocationStep.setObjectName(TEST_SCHEMA_NAME);
-        opNewFileWizard.finish();
+        //NewJavaFileNameLocationStepOperator opNewFileNameLocationStep = new NewJavaFileNameLocationStepOperator();
+        //opNewFileNameLocationStep.setObjectName(TEST_SCHEMA_NAME);
+        //opNewFileWizard.finish();
         
         endTest();
     }

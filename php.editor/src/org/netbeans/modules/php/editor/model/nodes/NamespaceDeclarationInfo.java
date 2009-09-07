@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -86,6 +87,11 @@ public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> 
             sb.append(DEFAULT_NAMESPACE_NAME);//NOI18N
         }
         return sb.toString();
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.create(getName());
     }
 
     @Override

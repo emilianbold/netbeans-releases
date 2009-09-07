@@ -38,17 +38,17 @@
  */
 package org.netbeans.modules.bugtracking.kenai;
 
-import java.awt.Image;
-import java.io.IOException;
-import java.util.logging.Level;
-import javax.swing.SwingUtilities;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.BugtrackingManager.RecentIssue;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
-import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author joshis
+ * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.class)
 public class IssueAccessorImpl extends KenaiIssueAccessor {
@@ -83,5 +84,126 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
                 }
             }
         });
+    }
+
+    @Override
+    public IssueHandle[] getRecentIssues() {
+        Map<String, List<RecentIssue>> recentIssues = BugtrackingManager.getInstance().getAllRecentIssues();
+        Repository[] knownRepos = BugtrackingManager.getInstance().getKnownRepositories();
+        Map<String, Repository> repoMap = new HashMap<String, Repository>(knownRepos.length);
+        for (Repository repository : knownRepos) {
+            repoMap.put(repository.getID(), repository);
+        }
+
+        Map<String, KenaiProject> issueToKenaiProject = new HashMap<String, KenaiProject>();
+        List<RecentIssue> retIssues = new ArrayList<RecentIssue>(5);
+        for(Map.Entry<String, List<RecentIssue>> entry : recentIssues.entrySet()) {
+            Repository repo = repoMap.get(entry.getKey());
+            if(repo == null) {
+                BugtrackingManager.LOG.warning("No repository available with ID " + entry.getKey());
+                continue;
+            }
+            KenaiProject kenaiProject = repo.getLookup().lookup(KenaiProject.class);
+            if(kenaiProject == null) {
+                continue;
+            }
+
+            for(RecentIssue ri : entry.getValue()) {
+                if(retIssues.size() > 5) {
+                    retIssues.remove(5);
+                }
+                if(retIssues.size() == 0) {
+                    retIssues.add(ri);
+                    issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
+                } else {
+                    for (int i = 0; i < retIssues.size(); i++) {
+                        if(ri.getTimestamp() > retIssues.get(i).getTimestamp()) {
+                            retIssues.add(i, ri);
+                            issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
+                            break;
+                        } else if (retIssues.size() < 5) {
+                            retIssues.add(retIssues.size(), ri);
+                            issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        List<IssueHandle> ret = new ArrayList<IssueHandle>(retIssues.size());
+        for (RecentIssue recentIssue : retIssues) {
+            KenaiProject kenaiProject = issueToKenaiProject.get(recentIssue.getIssue().getID());
+            assert kenaiProject != null;
+            ret.add(new IssueHandleImpl(recentIssue.getIssue(), kenaiProject));
+        }
+        return ret.toArray(new IssueHandle[ret.size()]);
+    }
+
+    @Override
+    public IssueHandle[] getRecentIssues(KenaiProject project) {
+        assert project != null;
+        if(project == null) {
+            return null;
+        }
+        Repository repo = KenaiRepositories.getInstance().getRepository(project);
+        if(repo == null) {
+            BugtrackingManager.LOG.warning("No issue tracker available for the given kanei project [" + project.getName() + "," + project.getDisplayName() + "]");
+            return null;
+        }
+        Collection<Issue> issues = BugtrackingManager.getInstance().getRecentIssues(repo);
+        if(issues == null) {
+            return null;
+        }
+
+        List<IssueHandle> ret = new ArrayList<IssueHandle>(issues.size());
+        for (Issue issue : issues) {
+            IssueHandleImpl ih = new IssueHandleImpl(issue, project);
+            ret.add(ih);
+        }
+        return ret.toArray(new IssueHandle[ret.size()]);
+    }
+
+    private class IssueHandleImpl extends IssueHandle {
+        private final Issue issue;
+        private final KenaiProject project;
+
+        public IssueHandleImpl(Issue issue, KenaiProject project) {
+            this.issue = issue;
+            this.project = project;
+        }
+
+        @Override
+        public String getID() {
+            return issue.getID();
+        }
+
+        @Override
+        public KenaiProject getProject() {
+            return project;
+        }
+
+        @Override
+        public String getShortDisplayName() {
+            return issue.getShortenedDisplayName();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return issue.getDisplayName();
+        }
+
+        @Override
+        public boolean isOpened() {
+            IssueTopComponent tc = IssueTopComponent.find(issue, false);
+            return tc != null ? tc.isOpened() : false;
+        }
+
+        @Override
+        public boolean isShowing() {
+            IssueTopComponent tc = IssueTopComponent.find(issue, false);
+            return tc != null ? tc.isShowing() : false;
+        }
+
     }
 }

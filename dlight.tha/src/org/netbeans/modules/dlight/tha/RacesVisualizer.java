@@ -114,47 +114,36 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         }
     }
 
-    private  class RacesRenderer implements Renderer {
+    private class RacesRenderer implements Renderer {
 
         private List<ThreadDump> threadDumps;
+        private final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(RacesVisualizer.this.dataProvider);
 
         public void setValue(Object aValue, boolean isSelected) {
             if (aValue instanceof Datarace) {
                 Datarace d = (Datarace) aValue;
                 this.threadDumps = d.getThreadDumps();
-            }else if (aValue instanceof ThreadDump){
-                this.threadDumps = Arrays.asList((ThreadDump)aValue);
+            } else if (aValue instanceof ThreadDump) {
+                this.threadDumps = Arrays.asList((ThreadDump) aValue);
             }
         }
 
         public Component getComponent() {
-            final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(RacesVisualizer.this.dataProvider);
-//            JPanel result = new JPanel();
-//            result.setLayout(new BorderLayout());
-//            result.add(new JButton(new AbstractAction("ExpandAll") {
-//
-//                public void actionPerformed(ActionEvent e) {
-//                    stackPanel.expandAll();
-//                }
-//            }), BorderLayout.NORTH);
-////
-//            stackPanel.clean();
+            stackPanel.clean();
             for (ThreadDump threadDump : threadDumps) {
                 List<ThreadSnapshot> threads = threadDump.getThreadStates();
                 for (ThreadSnapshot snap : threads) {
-                    stackPanel.add("Access  ", new StackIcon(10, 10), snap.getStack());//NOI18N
+                    stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.image2Icon(CallStackUISupport.downBadge), snap.getStack());//NOI18N
                 }
             }
-            //stackPanel.update();
-            //stackPanel.setRootVisible("Races:");
-           // result.add(stackPanel, BorderLayout.CENTER);
-         //   return result;
+            stackPanel.expandAll();
             return stackPanel;
-      }
+        }
     }
 
     private final class DataraceNode extends THANode<Datarace> {
-        public  final Image icon = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/races_active16.png"); // NOI18N
+
+        public final Image icon = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/races_active16.png"); // NOI18N
         private final Datarace race;
 
         DataraceNode(Datarace race) {
@@ -165,7 +154,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         @Override
         public String getDisplayName() {
-            return race.getAddress() + ": " + race.getThreadDumps().size() + " concurrent accesses";//NOI18N
+            return "Address " + race.getAddress() + ": " + race.getThreadDumps().size() + " concurrent accesses";//NOI18N
         }
 
         @Override
@@ -177,12 +166,9 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
-
-
-
     }
 
-     private final class RaceNode extends THANode<ThreadDump> {
+    private final class RaceNode extends THANode<ThreadDump> {
 
         private final ThreadDump threadDump;
         private String displayName;
@@ -194,7 +180,10 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
             displayName = "";
             for (ThreadSnapshot s : snapshots) {
                 List<FunctionCall> stack = s.getStack();
-                displayName += stack.get(stack.size() - 1).getFunction().getName() + " / "; // NOI18N
+                displayName += stack.get(stack.size() - 1).getFunction().getName() + (s.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]") + " | "; // NOI18N
+            }
+            if (displayName.length() > 1) {
+                displayName = displayName.substring(0, displayName.length() - 2);
             }
         }
 
@@ -233,11 +222,10 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
             return new Node[]{new RaceNode(key)};
         }
     }
-    
 
     private final class DataraceTHANodeFactory implements THANodeFactory<Datarace> {
 
-        public THANode create(Datarace object) {
+        public THANode<Datarace> create(Datarace object) {
             return new DataraceNode(object);
         }
     }

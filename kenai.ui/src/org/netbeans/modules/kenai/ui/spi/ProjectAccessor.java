@@ -47,6 +47,8 @@ public abstract class ProjectAccessor {
      */
     public abstract Action getOpenNonMemberProjectAction();
 
+    public abstract Action getNewKenaiProjectAction();
+
     /**
      * @param project
      * @return Show details of given project
@@ -70,4 +72,6 @@ public abstract class ProjectAccessor {
     public abstract Action getOpenWikiAction( ProjectHandle project );
 
     public abstract Action getOpenDownloadsAction( ProjectHandle project );
+
+    public abstract Action getBookmarkAction(ProjectHandle project);
 }

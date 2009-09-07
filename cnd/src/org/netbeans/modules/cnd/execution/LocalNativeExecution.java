@@ -289,32 +289,6 @@ class LocalNativeExecution extends NativeExecution {
         }
     }
 
-
-    /**
-     * Find the script stdouterr.sh somewhere in the installation tree. It is needed to merge stdout and stderr
-     * for for instance makefile execution.
-     */
-    /*private static File getStdOutErrFile() {
-        if (stdOutErrFile == null) {
-            String stderrCmd;
-
-            if( Utilities.isUnix()) {
-                stderrCmd = "bin/stdouterr.sh"; // NOI18N
-            } else {
-                stderrCmd = "bin\\stdouterr.bat";   // NOI18N
-            }
-
-            stdOutErrFile = InstalledFileLocator.getDefault().locate(stderrCmd, null, false);
-            if (stdOutErrFile == null && !hasWarned) {
-                String msg = MessageFormat.format(getString("CANNOT_FIND_SCRIPT"), new Object[] {stderrCmd});
-                NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(notifyDescriptor);
-                hasWarned = true;
-            }
-        }
-        return stdOutErrFile;
-    }*/
-
     private static String getString(String prop) {
         return bundle.getString(prop);
     }

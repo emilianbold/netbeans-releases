@@ -141,6 +141,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 public void run() {
                     ensureEclipseLinkSupport(glassfishRoot);
                     ensureCometSupport(glassfishRoot);
+                    ensureRestLibSupport(glassfishRoot);
                     // lookup the javadb register service here and use it.
                     RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
                     if (null != db) {
@@ -242,6 +243,31 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
 
+        return addLibrary(name, libraryList, null);
+    }
+
+    private static final String[] JAXRS_LIBRARIES =
+             {"asm-all-repackaged", "jackson-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "jsr311-api"}; //NOI18N
+    private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
+    private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
+
+    private static synchronized boolean ensureRestLibSupport(String installRoot) {
+        List<URL> libraryList = new ArrayList<URL>();
+        String name = PRELUDE_RESTLIB;
+        for (String entry : JAXRS_LIBRARIES) {
+            File f = ServerUtilities.getJarName(installRoot, entry + ServerUtilities.GFV3_VERSION_MATCHER);
+            if ((f != null) && (f.exists())) {
+                try {
+                    libraryList.add(f.toURI().toURL());
+                } catch (MalformedURLException ex) {
+                }
+            }
+        }
+
+        File f = ServerUtilities.getJarName(installRoot, "gmbal" + ServerUtilities.GFV3_VERSION_MATCHER);
+        if (f != null && f.exists()) {
+            name = V3_RESTLIB;
+        }
         return addLibrary(name, libraryList, null);
     }
 

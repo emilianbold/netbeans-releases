@@ -46,6 +46,10 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <file name="org-netbeans-modules-editor-lib2-highlighting-Factory.instance" />
+        <file name="EditorKit.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.lib2.actions.SearchableEditorKitImpl.createGlobalKit"/>
+        </file>
+
         <folder name="text">
             <folder name="x-dialog-binding">
                 <file name="language.instance">

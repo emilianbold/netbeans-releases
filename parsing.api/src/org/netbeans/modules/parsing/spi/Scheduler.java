@@ -137,10 +137,13 @@ public abstract class Scheduler {
         final SchedulerEvent
                             event
     ) {
-        assert source != null;
         if (task != null)
             task.cancel ();
         task = null;
+        if (source == null) {
+            this.source = null;
+            return ;
+        }
         this.source = source;
         //if (task == null) {
             if (requestProcessor == null)

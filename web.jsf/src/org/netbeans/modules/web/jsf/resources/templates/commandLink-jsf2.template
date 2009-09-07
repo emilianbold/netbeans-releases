@@ -1,0 +1,3 @@
+                <h:form>
+                    <h:commandLink action="__PAGE_LINK__" value="Show All __ENTITY_NAME__ Items"/>
+                </h:form>

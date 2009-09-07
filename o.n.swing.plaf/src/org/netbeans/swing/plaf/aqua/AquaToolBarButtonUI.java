@@ -184,16 +184,6 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
                 Math.max(c.getRed()-factor, 0));
     }
     
-    private static boolean isFirst (AbstractButton b) {
-        if (b.getParent() != null && b.getParent().getComponentCount() > 1) {
-            //The grip is always component 0, so see if the button
-            //is component 1
-            return b == b.getParent().getComponent(1);
-        } else {
-            return false;
-        }
-    }
-    
     private void paintIcon (Graphics g, AbstractButton b, Rectangle r) {
         Icon ic = getIconForState (b);
         boolean noText = b.getText() == null || b.getText().length() == 0;
@@ -264,7 +254,7 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
             b.getText().length() == 0;
             
         Icon ic = getIconForState((AbstractButton) c);
-        int w = isFirst(b) ? 0 : minButtonSize;
+        int w = minButtonSize;
         Dimension result = ic == null ? new Dimension (noText ? 32 : 0, minButtonSize) :
                 new Dimension(Math.max(w, ic.getIconWidth()+1), 
                 Math.max(minButtonSize,ic.getIconHeight() + 1));

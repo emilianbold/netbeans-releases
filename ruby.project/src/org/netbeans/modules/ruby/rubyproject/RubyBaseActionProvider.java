@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -169,8 +170,13 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
             File file = FileUtil.toFile(fileObject);
             RunFileActionProvider.RunFileArgs args = RunFileActionProvider.getRunArgs(file);
             if (args == null) {
+                String workDir = desc.getPwd() != null ? desc.getPwd().getAbsolutePath() : "";
                 args = new RunFileActionProvider.RunFileArgs(getPlatform(),
-                        asString(desc.getAdditionalArgs()), asString(desc.getJVMArguments()), true);
+                        asString(desc.getAdditionalArgs()),
+                        asString(desc.getJVMArguments()),
+                        desc.getInitialArgsPlain(),
+                        workDir,
+                        true);
             }
             if (args != null && args.displayDialog()) {
                 args = RunFileActionProvider.showDialog(args, file, debug, false);
@@ -183,6 +189,8 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
                 desc.additionalArgs(Utilities.parseParameters(args.getRunArgs()));
             }
             desc.jvmArguments(args.getJvmArgs());
+            desc.initialArgs(args.getRubyOpts());
+            desc.setPwd(new File(args.getWorkDir()));
         }
 
         RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());

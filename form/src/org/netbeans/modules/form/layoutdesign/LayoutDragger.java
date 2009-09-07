@@ -127,8 +127,8 @@ class LayoutDragger implements LayoutConstants {
     // last found positions for the moving/resizing component
     private PositionDef[] bestPositions = new PositionDef[DIM_COUNT];
     
-    // determines whether the dragged component can snap to baseline
-    private boolean canSnapToBaseline; // used only for multiselection
+    // determines whether the dragged components can snap to baseline
+    private boolean canSnapToBaseline;
 
     // the following fields hold various parameters used during the procedure
     // of finding a suitable position for the moving/resizing components 
@@ -191,16 +191,20 @@ class LayoutDragger implements LayoutConstants {
             movingBounds[i] = new LayoutRegion();
             movingSpace.expand(compBounds[i]);
         }
-        
-        // set canSnapToBaseline field - check that we are moving baseline group
-        LayoutInterval parent = comps[0].getLayoutInterval(VERTICAL).getParent();
-        for (int i=0; i < comps.length; i++) {
-            if (comps[i].getLayoutInterval(VERTICAL).getParent() != parent) {
-                parent = null;
-                break;
+
+        // set canSnapToBaseline field
+        if (comps.length == 1) {
+            canSnapToBaseline = true; // real baseline position will be checked on the first move
+        } else {
+            LayoutInterval parent = comps[0].getLayoutInterval(VERTICAL).getParent();
+            for (int i=1; i < comps.length; i++) {
+                if (comps[i].getLayoutInterval(VERTICAL).getParent() != parent) {
+                    parent = null;
+                    break;
+                }
             }
+            canSnapToBaseline = (parent != null) && (parent.getGroupAlignment() == BASELINE);
         }
-        canSnapToBaseline = (comps.length == 1) || ((parent != null) && (parent.getGroupAlignment() == BASELINE));
 
         findingsNextTo = new PositionDef[DIM_COUNT][];
         findingsAligned = new PositionDef[DIM_COUNT][];
@@ -405,7 +409,12 @@ class LayoutDragger implements LayoutConstants {
             movingSpace.expand(movingBounds[i]);
         }
         if (canSnapToBaseline) { // awfull, but working
-            movingSpace.positions[VERTICAL][BASELINE] = movingBounds[0].positions[VERTICAL][BASELINE];
+            int baselinePos = movingBounds[0].positions[VERTICAL][BASELINE];
+            if (baselinePos > 0) {
+                movingSpace.positions[VERTICAL][BASELINE] = baselinePos;
+            } else {
+                canSnapToBaseline = false;
+            }
         }
 
         // reset finding results
@@ -1089,8 +1098,11 @@ class LayoutDragger implements LayoutConstants {
             if (sub.isEmptySpace())
                 continue;
 
-            if (sub.isComponent()
-                && isValidInterval(sub)
+            // can align with component, or with baseline group if moving comp has no baseline
+            boolean alignableClosedGroup = sub.isGroup() && sub.getGroupAlignment() == BASELINE
+                                           && !canSnapToBaseline && isValidInterval(sub);
+
+            if (((sub.isComponent() && isValidInterval(sub)) || alignableClosedGroup)
                 && (operation != RESIZING || isValidAlignedResizing(sub, alignment)))
             {   // check distance of all alignment points of the moving
                 // component to the examined interval space
@@ -1116,7 +1128,7 @@ class LayoutDragger implements LayoutConstants {
                 }
             }
 
-            if (sub.getSubIntervalCount() > 0
+            if (sub.getSubIntervalCount() > 0 && !alignableClosedGroup
                 && LayoutRegion.overlap(sub.getCurrentSpace(), movingSpace, dimension, SNAP_DISTANCE/2))
             {   // the group overlaps with the moving space so it makes sense to dive into it
                 scanLayoutForAligned(sub, alignment);

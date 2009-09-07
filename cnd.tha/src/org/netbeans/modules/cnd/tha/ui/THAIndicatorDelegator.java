@@ -11,9 +11,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.tha.THAServiceInfo;
+import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.lookup.ServiceProvider;
@@ -71,8 +73,9 @@ public final class THAIndicatorDelegator implements IndicatorComponentDelegator,
         return serviceInfoStorage.getValue(GizmoServiceInfo.PLATFORM);
     }
 
-    public THAIndicatorsTopComponent getProjectComponent(Project project) {
+    public THAIndicatorsTopComponent getProjectComponent(THAActionsProvider provider, Project project, THAConfiguration thaConfiguration) {
         THAIndicatorsTopComponent tc = getComponent(project,null);
+        tc.setConfiguration(provider, thaConfiguration);
         tc.setProject(project);
         return tc;
     }

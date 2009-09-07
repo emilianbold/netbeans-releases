@@ -51,9 +51,22 @@ class VarAssignmentImpl extends AssignmentImpl<VariableNameImpl> {
     VarAssignmentImpl(VariableNameImpl var, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
         super(var, scope, scopeRange, nameRange, assignment, allAssignments);
+        var.addElement(this);
     }
 
     VarAssignmentImpl(VariableNameImpl var, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
         super(var, scope, scopeRange, nameRange, typeName);
+        var.addElement(this);
+    }
+
+    @Override
+    public String getNormalizedName() {
+        return toString();
+    }
+
+    @Override
+    boolean canBeProcessed(String tName) {
+        final String name = getName();
+        return canBeProcessed(tName,VariousUtils.VAR_TYPE_PREFIX+name) && canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX+name.substring(1));
     }
 }

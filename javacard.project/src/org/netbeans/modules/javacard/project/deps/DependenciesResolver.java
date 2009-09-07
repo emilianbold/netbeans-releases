@@ -269,7 +269,6 @@ public final class DependenciesResolver {
         boolean pubChanged = false;
         FileObject root = project.getProjectDirectory();
         List<? extends ResolvedDependency> l = dependencies.all();
-        System.err.println("Saving " + l.size() + " dependencies");
         for (ResolvedDependency d : l) {
             Dependency dep = d.getDependency();
             for (ArtifactKind kind : d.getModifiedArtifactKinds()) {

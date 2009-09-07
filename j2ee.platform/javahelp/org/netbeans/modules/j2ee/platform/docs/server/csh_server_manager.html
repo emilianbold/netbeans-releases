@@ -13,7 +13,7 @@
 <body>
 <h2>Servers Dialog Box</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>Before you can deploy an enterprise application, web application, JSP file, servlet, or EJB module, the server 
+<p>Before you can deploy an enterprise application, web application, JSP file, servlet, or EJB module, an instance of the server
 to which you are going to deploy needs to be registered with the IDE.</p>
 
 <p>You open the Servers dialog box by choosing Tools &gt; Servers from the main menu.</p>
@@ -24,7 +24,7 @@ to which you are going to deploy needs to be registered with the IDE.</p>
 	  <li>View registered servers' classpaths.</li>
 	  <li>Register source code for a server in the Sources tab.</li>
 	  <li>Register Javadoc documentation for a server in the Javadoc tab.</li>
-          <li>Specify deployment options (Sun Java System Application Server/GlassFish only)</li>
+          <li>Specify deployment options (Sun Java System Application Server/GlassFish v2 only)</li>
   </ul>
   <p><b>Note:</b></p>
   <ul class="note"><li>Any web servers that you chose to install when you installed the IDE 
@@ -46,7 +46,7 @@ are automatically registered in the IDE. You must register all other servers man
     debugger transport options.</li>
 </ul>
   
-<p><b>Sun Java System Application Server/GlassFish</b><br>
+<p><b>GlassFish v2</b><br>
 <ul>
     <li><b>Options.</b> The Options tab enables you to specify the following deployment options:
         <ul>
@@ -64,6 +64,37 @@ are automatically registered in the IDE. You must register all other servers man
         <p>Changes in the Options tab take effect immediately.</p>
     </li>
 </ul>  
+
+<p><b>GlassFish v3</b><br>
+<ul>
+    <li><b>Common.</b> The Common tab enables you to enable and disable the following options:
+        <ul>
+            <li><b>Enable Comet Support.</b> When selected, Commet support is enabled to allow
+            a persistent connection between the server and the client and enable the server to push data when available.
+            This option is disabled by default.</li>
+            <li><b>Enable HTTP Monitor.</b> When selected, HTTP server-side monitoring is started when an application is deployed to the server.
+            The HTTP Server-Side Monitor gathers data about HTTP requests that are processed by the servlet engine.
+            For each HTTP request that is processed, the monitor records data about the incoming request
+            and the data states maintained on the server.
+            This option is disabled by default.</li>
+            <li><b>JDBC Driver Deployment Enabled.</b> When selected, JDBC drivers are deployed to the server if required.
+            This option is disabled by default.</li>
+            <li><b>Preserve Sessions Across Redeployment.</b> When selected, the server preserves active HTTP sessions
+            when an application is redeployed. This option is enabled by default.</li>
+            <li><b>Start Registered Derby Server.</b> When selected, the Derby database server is started when the
+            application server is started. This option is enabled by default.</li>
+        </ul>
+    </li>
+    <li><b>Java.</b> The Java tab enables you to specify the following options:
+        <ul>
+            <li><b>Java Executable.</b> Enables you to specify the Java Platform the server will use.
+            If no Java executable is specified, the server will use the same Java Platform as is used by the IDE.</li>
+            <li><b>Debug Settings.</b> Enables you to select either shared memory or socket based transport for debugging.
+            You can also select Address to use to specify a transport address or JPDA port according to the specified debugging transport.
+            </li>
+        </ul>
+    </li>
+</ul>
 
 
 <dl> 

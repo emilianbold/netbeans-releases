@@ -151,6 +151,9 @@ public final class OperationSupport {
             case CUSTOM_UNINSTALL:
                 impl = OperationSupportImpl.forCustomUninstall ();
                 break;
+            case INTERNAL_UPDATE:
+                impl = OperationSupportImpl.forInternalUpdate ();
+                break;
             default:
                 assert false : "Unknown OperationSupport for type " + type;
         }

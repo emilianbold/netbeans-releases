@@ -212,7 +212,7 @@ public class RetoucheUtils {
             return null;
         }
         String fqn = AstUtilities.getFqnName(element.getPath());
-        return index.getOverridingMethod(fqn, element.getName());
+        return index.getSuperMethod(fqn, element.getName());
     }
 
 

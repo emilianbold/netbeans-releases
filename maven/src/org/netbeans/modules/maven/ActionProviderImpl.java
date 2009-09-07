@@ -71,10 +71,10 @@ import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenExecutor;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -433,8 +433,8 @@ public class ActionProviderImpl implements ActionProvider {
                 ActionToGoalUtils.writeMappingsToFileAttributes(project.getProjectDirectory(), maps);
                 if (pnl.isRememberedAs() != null) {
                     try {
-                        UserActionGoalProvider usr = project.getLookup().lookup(UserActionGoalProvider.class);
-                        ActionToGoalMapping mappings = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getRawMappingsAsString()));
+                        M2ConfigProvider conf = project.getLookup().lookup(M2ConfigProvider.class);
+                        ActionToGoalMapping mappings = new NetbeansBuildActionXpp3Reader().read(new StringReader(conf.getDefaultConfig().getRawMappingsAsString()));
                         String tit = "CUSTOM-" + pnl.isRememberedAs(); //NOI18N
 
                         mapping.setActionName(tit);

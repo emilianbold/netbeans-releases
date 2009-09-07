@@ -71,6 +71,7 @@ public final class NativeProcessInfo {
     private boolean unbuffer;
     private boolean redirectError;
     private boolean x11forwarding;
+    private boolean suspend;
     private Collection<ChangeListener> listeners = null;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
@@ -129,6 +130,14 @@ public final class NativeProcessInfo {
 
     public boolean getX11Forwarding() {
         return x11forwarding;
+    }
+
+    public void setInitialSuspend(boolean suspend) {
+        this.suspend = suspend;
+    }
+
+    public boolean getInitialSuspend() {
+        return suspend;
     }
 
     /**

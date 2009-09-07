@@ -104,6 +104,9 @@ public final class SetExecutionUriAction extends NodeAction {
                 if (data != null) {
                     FileObject javaClass = data.getPrimaryFile();
                     String mimetype = javaClass.getMIMEType();
+                    if ( !"text/x-java".equals(mimetype) ){     // NOI18N
+                        return false;
+                    }
                     final String servletFileKey = "org.netbeans.modules.web.IsServletFile"; //NOI18N
                     Boolean servletAttr = (Boolean)javaClass.getAttribute(servletFileKey);
                     if (!Boolean.TRUE.equals(servletAttr)) {
@@ -118,7 +121,7 @@ public final class SetExecutionUriAction extends NodeAction {
                         }
                         servletAttr = Boolean.valueOf(isServletFile);
                     }
-                    return "text/x-java".equals(mimetype) && Boolean.TRUE.equals(servletAttr); //NOI18N
+                    return Boolean.TRUE.equals(servletAttr);
                 }
             }
         }

@@ -211,7 +211,8 @@ public final class TreePathHandle {
             file = URLMapper.findFileObject(url);
             if (file == null) {
                 //#155161:
-                throw new IllegalStateException("Cannot find FileObject for: " + url);
+                log.log(Level.INFO, "There is no fileobject for source: " + url + ". Was this file removed?");
+                return new TreePathHandle(new EmptyDelegate(url, treePath.getLeaf().getKind()));
             }
         } catch (MalformedURLException e) {
             throw (RuntimeException) new RuntimeException().initCause(e);
@@ -668,5 +669,36 @@ public final class TreePathHandle {
             return this.getClass().getSimpleName()+"[elementHandle:"+el+", url:"+source+"]";
         }
     }
-    
+
+    private static final class EmptyDelegate implements Delegate {
+
+        private final URL source;
+        private final Tree.Kind kind;
+
+        public EmptyDelegate(URL source, Kind kind) {
+            this.source = source;
+            this.kind = kind;
+        }
+
+        public FileObject getFileObject() {
+            return URLMapper.findFileObject(source);
+        }
+
+        public TreePath resolve(CompilationInfo compilationInfo) throws IllegalArgumentException {
+            return null;
+        }
+
+        public boolean equalsHandle(Delegate obj) {
+            return this == obj;
+        }
+
+        public Element resolveElement(CompilationInfo info) {
+            return null;
+        }
+
+        public Kind getKind() {
+            return kind;
+        }
+        
+    }
 }                                                                                                                                                                                                                              

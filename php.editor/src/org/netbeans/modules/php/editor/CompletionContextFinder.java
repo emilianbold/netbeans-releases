@@ -760,7 +760,11 @@ class CompletionContextFinder {
     }
 
     static int lexerToASTOffset(ParserResult info, int lexerOffset) {
-        PHPParseResult result = (PHPParseResult) info;
-        return lexerToASTOffset(result, lexerOffset);
+        int value = 0;
+        if (info instanceof PHPParseResult) {
+            PHPParseResult result = (PHPParseResult) info;
+            value = lexerToASTOffset(result, lexerOffset);
+        }
+        return value;
     }
 }

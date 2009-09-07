@@ -57,6 +57,7 @@ import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
 public class VCSKenaiSupportImpl extends VCSKenaiSupport {
     private Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.kenai.VCSKenaiSupport");  // NOI18N
+    private static final String KENAI_WEB_SOURCES_REVISION_PATH = "{0}/sources/{1}/revision/{2}"; //NOI18N
     @Override
     public boolean isKenai(String url) {
         return KenaiUtil.isKenai(url);
@@ -95,8 +96,8 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
     @Override
     public KenaiUser forName(String user) {
-        org.netbeans.modules.kenai.ui.spi.KenaiUser kenaiUser =
-                org.netbeans.modules.kenai.ui.spi.KenaiUser.forName(user);
+        org.netbeans.modules.kenai.ui.spi.KenaiUserUI kenaiUser =
+                org.netbeans.modules.kenai.ui.spi.KenaiUserUI.forName(user);
         if(kenaiUser == null) {
             return null;
         } else {
@@ -106,13 +107,43 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
     @Override
     public boolean isUserOnline(String user) {
-        return org.netbeans.modules.kenai.ui.spi.KenaiUser.isOnline(user);
+        return org.netbeans.modules.kenai.ui.spi.KenaiUserUI.isOnline(user);
+    }
+
+    @Override
+    public String getRevisionUrl(String sourcesUrl, String revision) {
+        if (revision == null || sourcesUrl == null) {
+            throw new NullPointerException("Null parameter");           //NOI18N
+        }
+        String revisionUrl = null;
+        String projectUrl = KenaiUtil.getProjectUrl(sourcesUrl);
+        String repositoryName = getRepositoryName(sourcesUrl);
+        if (projectUrl != null && repositoryName != null) {
+            // XXX unofficial API
+            revisionUrl = KENAI_WEB_SOURCES_REVISION_PATH;               //NOI18N
+            revisionUrl = java.text.MessageFormat.format(revisionUrl, projectUrl, repositoryName, revision);
+        }
+        return revisionUrl;
+    }
+
+    private String getRepositoryName (String sourcesUrl) {
+        String repositoryName = null;
+        // XXX unofficial API
+        // repository url looks like https://..../mercurial|svn/PROJECT_NAME~REPOSITORY_NAME
+        int pos = sourcesUrl.lastIndexOf('~') + 1;
+        if (pos > 0 && sourcesUrl.length() > pos) {
+            String repositoryNameCandidate = sourcesUrl.substring(pos);
+            if (repositoryNameCandidate.indexOf('/') == -1) {
+                repositoryName = repositoryNameCandidate;
+            }
+        }
+        return repositoryName;
     }
 
     private class KenaiUserImpl extends KenaiUser {
-        org.netbeans.modules.kenai.ui.spi.KenaiUser delegate;
+        org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate;
 
-        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUser delegate) {
+        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate) {
             this.delegate = delegate;
         }
 

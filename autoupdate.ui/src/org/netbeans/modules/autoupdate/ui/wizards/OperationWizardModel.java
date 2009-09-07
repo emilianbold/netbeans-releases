@@ -56,12 +56,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.WizardDescriptor;
@@ -256,15 +258,88 @@ public abstract class OperationWizardModel {
         }
         return allElements;
     }
-    
-    public static Set<UpdateElement> getVisibleUpdateElements (Set<UpdateElement> all, boolean canBeEmpty, OperationType operationType) {
+
+
+    public Set<UpdateElement> getAllVisibleUpdateElements () {
+        Set <UpdateElement> visible = new HashSet <UpdateElement> ();
+        visible.addAll(getPrimaryVisibleUpdateElements());
+        visible.addAll(getRequiredVisibleUpdateElements());
+        return visible;
+    }
+    public Set<UpdateElement> getPrimaryVisibleUpdateElements () {
+        Set <UpdateElement> primary = getPrimaryUpdateElements();
+        Set <UpdateElement> visible = getVisibleUpdateElements(primary, false, getOperation(), true);
+        return visible;
+    }
+    public Set<UpdateElement> getRequiredVisibleUpdateElements () {
+        Set <UpdateElement> required = getRequiredUpdateElements();
+        Set <UpdateElement> visible = getVisibleUpdateElements(required, true, getOperation(), false);
+        return visible;
+    }
+
+    private static Set<UpdateElement> getVisibleUpdateElements (Set<UpdateElement> all, boolean canBeEmpty, OperationType operationType, boolean checkInternalUpdates) {
         if (Utilities.modulesOnly () || OperationType.LOCAL_DOWNLOAD == operationType) {
             return all;
         } else {
             Set<UpdateElement> visible = new HashSet<UpdateElement> ();
+            Set<UpdateUnit> visibleUnits = new HashSet<UpdateUnit> ();
+            Set<UpdateElement> invisible = new HashSet<UpdateElement> ();
             for (UpdateElement el : all) {
-                if (UpdateManager.TYPE.KIT_MODULE == el.getUpdateUnit ().getType ()) {
+                if (UpdateManager.TYPE.KIT_MODULE == el.getUpdateUnit ().getType () ||
+                        (OperationType.UPDATE == operationType &&
+                        Utilities.getFirstClassModules().contains(el.getCodeName()))) {
                     visible.add (el);
+                    visibleUnits.add(el.getUpdateUnit());
+                } else {
+                    invisible.add(el);
+                }
+            }
+            if (OperationType.UPDATE == operationType) {
+                //filter out eager invisible modules, which are covered by visible
+                List<UpdateElement> realInvisible = new ArrayList<UpdateElement>(invisible);
+                for (UpdateElement v : visible) {
+                    OperationContainer<InstallSupport> container = null;
+                    if (v.getUpdateUnit().getInstalled() == null) {
+                        container = OperationContainer.createForInstall();
+                    } else if(!v.getUpdateUnit().getAvailableUpdates().isEmpty()) {
+                        container = OperationContainer.createForUpdate();
+                    } else {
+                        //already installed, end of operation sequence
+                    }
+                    if(container!=null) {
+                        container.add(v);
+                        for (OperationInfo<InstallSupport> info : container.listAll()) {
+                            realInvisible.remove(info.getUpdateElement());
+                        }
+                    }
+                }
+                //filter out eager invisible modules, which are covered by other invisible
+                for (UpdateElement v : invisible) {
+                    OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
+                    if (v.getUpdateUnit().getInstalled() != null) {
+                        container.add(v);
+                        for (OperationInfo<InstallSupport> info : container.listAll()) {
+                            if (info.getUpdateElement() != v) {
+                                realInvisible.remove(info.getUpdateElement());
+                            }
+                        }
+                    }
+                }
+
+
+                if (!realInvisible.isEmpty() && checkInternalUpdates) {
+                    HashMap<UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
+                    //HashMap <UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(visibleUnits);
+                    for (UpdateElement el : realInvisible) {
+                        if (el.getUpdateUnit().getInstalled() != null) {
+                            UpdateUnit visibleUU = Utilities.getVisibleUnitForInvisibleModule(el.getUpdateUnit(), map);
+                            if (visibleUU != null && !Utilities.getFirstClassModules().contains(el.getCodeName())) {
+                                visible.add(visibleUU.getInstalled());
+                            } else {
+                                visible.add(el);
+                            }
+                        }                    
+                    }
                 }
             }
             if (visible.isEmpty () && ! canBeEmpty) {

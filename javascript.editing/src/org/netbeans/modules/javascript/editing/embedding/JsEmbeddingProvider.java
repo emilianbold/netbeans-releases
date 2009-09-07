@@ -109,8 +109,11 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             //filter out transitive embedding creations like JSP -> HTML -> JavaScript
             //we have a direct translator for them JSP -> JavaScript
-            if(snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
-                return null;
+            //but not in case of xhtml as source mimetype :-( grrr, this is hacking!!!
+            if (!snapshot.getSource().getMimeType().equals("text/xhtml")) {
+                if (snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
+                    return null;
+                }
             }
 
             Translator t = translators.get(snapshot.getMimeType());
@@ -176,7 +179,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
          */
         public List<Embedding> translate(Snapshot snapshot) {
             TokenHierarchy th = snapshot.getTokenHierarchy();
-            if(th == null) {
+            if (th == null) {
                 //the token hierarchy may be null if the language is not initialized yet
                 //for example if ergonomics is used and j2ee cluster not activated
                 return Collections.emptyList();
@@ -255,7 +258,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         wasInPhp = true;
                     }
 
-                    if(hasNext) { //do not move back if we are at the end of the sequence = cycle!
+                    if (hasNext) { //do not move back if we are at the end of the sequence = cycle!
                         //we are out of php code, lets move back to the previous token
                         tokenSequence.movePrevious();
                     }
@@ -275,7 +278,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         public List<Embedding> translate(Snapshot snapshot) {
             List<Embedding> embeddings = new ArrayList<Embedding>();
             TokenHierarchy th = snapshot.getTokenHierarchy();
-            if(th == null) {
+            if (th == null) {
                 //likely a rhtml language couldn't be found
                 LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot);
                 return embeddings;
@@ -576,7 +579,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
                             //if there is only one inlined javascript piece, and starting quotation has been stripped,
                             //we need to do that again in the reentered embedding
-                            if(state.inlined_javascript_pieces == 1) {
+                            if (state.inlined_javascript_pieces == 1) {
                                 sourceStart++;
                                 sourceLength--;
                             }
@@ -615,11 +618,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final class JsAnalyzerState {
 
         int inlined_javascript_pieces = 0;
-
         boolean in_javascript = false;
         boolean in_inlined_javascript = false;
         boolean opening_quotation_stripped = false;
-
         Token lastInlinedJavascriptToken = null;
         Embedding lastInlinedJavscriptEmbedding = null;
     }

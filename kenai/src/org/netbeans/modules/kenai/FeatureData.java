@@ -49,6 +49,7 @@ public class FeatureData {
     public String name;
     public String display_name;
     public String type;
+    public String repository_type;
     public String service;
     public String url;
     public String web_url;

@@ -47,16 +47,25 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
+import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -82,12 +91,12 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         myListenerCounter = 0;
         MyAction.last = null;
     }
-    
+
     @Override
     protected boolean runInEQ() {
         return true;
     }
-    
+
     public void testIconIsCorrect() throws Exception {
         myListenerCounter = 0;
         myIconResourceCounter = 0;
@@ -332,6 +341,44 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("MyNamedAction", MyAction.last.getValue(Action.NAME));
     }
 
+    public void testPreferencesAction() throws Exception {
+        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
+        checkPreferencesAction("testUserPreferences.instance", Preferences.userRoot());
+        checkPreferencesAction("testNbPreferences.instance", NbPreferences.root());
+        checkPreferencesAction("testCustomPreferences.instance", Preferences.userRoot()); // customPreferences() uses "myNode" subnode
+    }
+
+    private void checkPreferencesAction(String actionFileName, Preferences prefsRoot) throws Exception {
+        final int[] changeCount = new int[] { 0 };
+        Action a = readAction(actionFileName);
+        Preferences prefsNode = prefsRoot.node("myNode");
+        prefsNode.putBoolean("myKey", true);
+        prefsRoot.sync();
+        int delay = 1;
+        Thread.sleep(delay);
+        // Verify value
+        assertTrue("Expected true as preference value", prefsNode.getBoolean("myKey", false));
+
+//        prefsNode.addPreferenceChangeListener(new PreferenceChangeListener() {
+//            public void preferenceChange(PreferenceChangeEvent pce) {
+//                changeCount[0]++;
+//            }
+//        });
+        TestCase.assertTrue("Expected to be instance of Presenter.Menu", a instanceof Presenter.Menu);
+        JMenuItem item = ((Presenter.Menu) a).getMenuPresenter();
+        TestCase.assertTrue("Expected to be selected", item.isSelected());
+        prefsNode.putBoolean("myKey", false);
+        prefsRoot.sync();
+        Thread.sleep(delay);
+        TestCase.assertFalse("Expected to not be selected", item.isSelected());
+        a.actionPerformed(null); // new ActionEvent(null, 0, ""));
+        Thread.sleep(delay);
+        TestCase.assertTrue("Expected to be selected", item.isSelected());
+        prefsNode.putBoolean("myKey", false);
+        prefsNode.sync();
+        Thread.sleep(delay);
+    }
+
     private static void assertPropertyPropagated(String propertyName, Object value, Action a, Action delegate) {
         assertEquals("Action's property \"" + propertyName + "\"", value, a.getValue(propertyName));
         assertEquals("Delegate's property \"" + propertyName + "\"", value, delegate.getValue(propertyName));
@@ -415,6 +462,37 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
             lkp = actionContext;
             return new MyContextAction();
         }
+    }
+
+    private static final class PreferencesAction extends AbstractAction {
+        static PreferencesAction last;
+        int performedCount;
+
+        PreferencesAction() {
+            last = this;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            performedCount++;
+        }
+    }
+    static Action preferencesAction() {
+        return new PreferencesAction();
+    }
+
+    private static final Preferences customPrefs;
+    
+    static {
+        customPrefs = Preferences.userRoot().node("/myNode");
+        try {
+            customPrefs.sync();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public static Preferences customPreferences() {
+        return customPrefs;
     }
 
 }

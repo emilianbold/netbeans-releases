@@ -202,6 +202,17 @@
                     </folder>
                 </folder>
             </folder>
+            <folder name="CodeCompletion">
+                <folder name="text">
+                    <folder name="x-php5">
+                        <file name="PhpCodeCompletion.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.options.CodeCompletionPanel.getCustomizerFactory"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
     

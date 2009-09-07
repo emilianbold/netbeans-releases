@@ -50,18 +50,22 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.glassfish.javaee.JavaEEServerModule;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager.AddResourcesCommand;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -121,6 +125,45 @@ public class ResourcesHelper {
         return dm;
     }
 
+    static private DeploymentManager getDeploymentManager(J2eeModule module){
+        DeploymentManager dm =  null;
+        File f = module.getResourceDirectory();
+        if(null != f && f.exists()){
+            f = f.getParentFile();
+        }
+        if (null != f) {
+            Project p = FileOwnerQuery.getOwner(f.toURI());
+            if (null != p) {
+                J2eeModuleProvider jmp = getProvider(p);
+                if (null != jmp) {
+                    dm = getDeploymentManager(jmp);
+                }
+            } else {
+                Logger.getLogger("glassfish-javaee").finer("Could not find project for J2eeModule");   // NOI18N
+            }
+        } else {
+            Logger.getLogger("glassfish-javaee").finer("Could not find project root directory for J2eeModule");   // NOI18N
+        }
+        return dm;
+    }
+
+    static public boolean isEE6(J2eeModule module){
+        boolean isee6 = false;
+        DeploymentManager dm = getDeploymentManager(module);
+        if (dm instanceof Hk2DeploymentManager) {
+            Hk2DeploymentManager hk2 = (Hk2DeploymentManager) dm;
+            ServerInstance si = hk2.getServerInstance();
+            Lookup lookup = ServerUtilities.getEe6Utilities().getLookupFor(si);
+            if (lookup != null) {
+                JavaEEServerModule servermod = lookup.lookup(JavaEEServerModule.class);
+                if (servermod != null) {
+                    isee6 = true;
+                }
+            }
+        }
+        return isee6;
+    }
+    
     static private void registerSampleResource(GlassfishModule commonSupport) {
         String sample_poolname = "SamplePool"; //NOI18N
         String sample_jdbc = "jdbc/sample"; //NOI18N

@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.api.Constants;
@@ -320,24 +321,15 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
-    //this megod is called after the model was saved.
-    void applyChanges() {
-        //#109507 workaround
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        sc.setServerInstanceId(null);
-        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-        //any save of teh project shall effectively caus ethe module server change..
-        POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.setContextPath(txtContextPath.getText().trim());
-        poh.hackModuleServerChange();
-        moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+    String applyChangesInAWT() {
+        assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
         try {
             project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, bool ? null : Boolean.FALSE.toString());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
+        
         // USG logging
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
@@ -346,6 +338,23 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             record.setParameters(new Object[] { obj.toString() });
             POHImpl.USG_LOGGER.log(record);
         }
+        return txtContextPath.getText().trim();
+    }
+
+    //this megod is called after the model was saved.
+    void applyChanges(String contextPath) {
+        assert !SwingUtilities.isEventDispatchThread();
+
+        //#109507 workaround
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        sc.setServerInstanceId(null);
+        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
+        //any save of teh project shall effectively caus ethe module server change..
+        POHImpl poh = project.getLookup().lookup(POHImpl.class);
+        poh.setContextPath(contextPath);
+        poh.hackModuleServerChange();
+        moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        
     }
     
     

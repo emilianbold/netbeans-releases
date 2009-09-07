@@ -44,6 +44,7 @@ package org.netbeans.modules.form;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -93,6 +94,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
@@ -101,7 +103,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -113,13 +114,13 @@ import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
 import org.openide.util.ImageUtilities;
 import org.openide.util.UserQuestionException;
-import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -644,7 +645,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                                                 ev.getPropertyName()))
                 {   // set of opened TopComponents has changed - hasn't some
                     // of our views been closed?
-                    CloneableTopComponent closedTC = null;
                     Set oldSet = (Set) ev.getOldValue();
                     Set newSet = (Set) ev.getNewValue();
                     if (newSet.size() < oldSet.size()) {
@@ -652,16 +652,17 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                         while (it.hasNext()) {
                             Object o = it.next();
                             if (!newSet.contains(o)) {
-                                if (o instanceof CloneableTopComponent)
-                                    closedTC = (CloneableTopComponent) o;
-                                break;
+                                if (o instanceof CloneableTopComponent) {
+                                    CloneableTopComponent closedTC = (CloneableTopComponent) o;
+                                    if (getSelectedElementType(closedTC) != -1) { // it is our multiview
+                                        FormEditorSupport fes = getFormEditor(closedTC);
+                                        if (fes != null) {
+                                            fes.multiViewClosed(closedTC);
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
-                    if (getSelectedElementType(closedTC) != -1) { // it is our multiview
-                        FormEditorSupport fes = getFormEditor(closedTC);
-                        if (fes != null)
-                            fes.multiViewClosed(closedTC);
                     }
                     TopComponent active = TopComponent.getRegistry().getActivated();
                     if (active!=null && getSelectedElementType(active) != -1) { // it is our multiview
@@ -719,13 +720,26 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
         return (CloneableEditorSupport.Pane)mvtc;
     }
+
+    private static boolean readOnly(FormDataObject formDataObject) {
+        if (!formDataObject.getPrimaryFile().canWrite()) {
+            return true;
+        }
+        TopComponent active = TopComponent.getRegistry().getActivated();
+        if (active != null && getSelectedElementType(active) == FORM_ELEMENT_INDEX) {
+            FormEditorSupport fes = formDataObject.getFormEditor();
+            if (fes != null) {
+                FormModel fm = fes.getFormModel();
+                if (fm != null) {
+                    return fm.isReadOnly();
+                }
+            }
+        }
+        return false;
+    }
     
     private static String getMVTCToolTipText(FormDataObject formDataObject) {
-        String name = FileUtil.getFileDisplayName(formDataObject.getFormFile());
-        if (name.endsWith(".form")) { // NOI18N
-            name = name.substring(0, name.length()-5);
-        }
-        return name;
+        return DataEditorSupport.toolTip(formDataObject.getPrimaryFile(), formDataObject.isModified(), readOnly(formDataObject));
     }
     
     /**
@@ -737,51 +751,38 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
      * @return display names of the MVTC. The second item can be <code>null</code>.
      */
     private static String[] getMVTCDisplayName(FormDataObject formDataObject) {
-        
-        boolean readonly = !formDataObject.getPrimaryFile().canWrite();
-        
-        TopComponent active = TopComponent.getRegistry().getActivated();
-        FormEditorSupport fes = formDataObject.getFormEditor();
-        FormModel fm = null;
-        if(fes!=null) {
-            fm = fes.getFormModel();
-        }
-        if( active!=null && getSelectedElementType(active) == FORM_ELEMENT_INDEX ) {
-            if(fm!=null) {
-                readonly = readonly || fm.isReadOnly();
+        Node node = formDataObject.getNodeDelegate();
+        String title = node.getDisplayName();
+        String htmlTitle = node.getHtmlDisplayName();
+        if (htmlTitle == null) {
+            try {
+                htmlTitle = XMLUtil.toElementContent(title);
+            } catch (CharConversionException x) {
+                htmlTitle = "???";
             }
         }
-        
-        int version;
-        if (formDataObject.isModified()) {
-            version = readonly ? 2 : 1;
-        } else {
-            version = readonly ? 0 : 3;
-        }
-        
-        Node node = formDataObject.getNodeDelegate();
-        String htmlTitle = node.getHtmlDisplayName();
-        String title = node.getDisplayName();
-        if(fm!=null) {
-            FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
-            if(fd!=null && fd.getFormModel() != null) {
-                if( fd.isShowing() && !fd.isTopRADComponent() && fd.getTopDesignComponent() != null ) {
-                    title = FormUtils.getFormattedBundleString(
-                            "FMT_FormTitleWithContainerName",          // NOI18N
-                            new Object[] {title, fd.getTopDesignComponent().getName()});
+        FormEditorSupport fes = formDataObject.getFormEditor();
+        if (fes != null) {
+            FormModel fm = fes.getFormModel();
+            if (fm != null) {
+                FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
+                if (fd != null && fd.getFormModel() != null) {
+                    if (fd.isShowing() && !fd.isTopRADComponent() && fd.getTopDesignComponent() != null) {
+                        title = FormUtils.getFormattedBundleString(
+                                "FMT_FormTitleWithContainerName", // NOI18N
+                                new Object[] {title, fd.getTopDesignComponent().getName()});
+                        htmlTitle = FormUtils.getFormattedBundleString(
+                                "FMT_FormTitleWithContainerName", // NOI18N
+                                new Object[] {htmlTitle, fd.getTopDesignComponent().getName()});
+                    }
                 }
             }
         }
-        if (htmlTitle != null) {
-            if (!htmlTitle.trim().startsWith("<html>")) { // NOI18N
-                htmlTitle = "<html>" + htmlTitle; // NOI18N
-            }
-        }
+        boolean modified = formDataObject.isModified();
+        boolean readOnly = readOnly(formDataObject);
         return new String[] {
-            FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", new Object[] {new Integer(version), title}), // NOI18N
-            (htmlTitle == null) ?
-                null :
-                FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", new Object[] {new Integer(version), htmlTitle}) // NOI18N
+            DataEditorSupport.annotateName(title, false, modified, readOnly),
+            DataEditorSupport.annotateName(htmlTitle, true, modified, readOnly)
         };
     }
     

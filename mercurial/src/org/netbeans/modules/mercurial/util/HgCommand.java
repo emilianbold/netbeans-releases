@@ -70,6 +70,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
@@ -2672,8 +2673,9 @@ public class HgCommand {
         if(logUsage) {
             Utils.logVCSClientEvent("HG", "CLI");
         }
-        List<String> list = new ArrayList<String>();
+        final List<String> list = Collections.synchronizedList(new ArrayList<String>());
         BufferedReader input = null;
+        BufferedReader error = null;
         Process proc = null;
         File outputStyleFile = null;
         try{
@@ -2705,18 +2707,34 @@ public class HgCommand {
             proc = pb.start();
 
             input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
+            error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            final BufferedReader errorReader = error;
+            Thread errorThread = new Thread(new Runnable () {
+                public void run() {
+                    try {
+                        String line;
+                        while ((line = errorReader.readLine()) != null) {
+                            list.add(line);
+                        }
+                    } catch (IOException ex) {
+                        // not interested
+                    }
+                }
+            });
+            errorThread.start();
             String line;
             while ((line = input.readLine()) != null){
                 list.add(line);
             }
             input.close();
-            input = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-            while ((line = input.readLine()) != null){
-                list.add(line);
-            }
-            input.close();
             input = null;
+            try {
+                errorThread.join();
+            } catch (InterruptedException ex) {
+                // not interested
+            }
+            error.close();
+            error = null;
             try {
                 proc.waitFor();
                 // By convention we assume that 255 (or -1) is a serious error.
@@ -2750,7 +2768,8 @@ public class HgCommand {
             // even when it fails when for instance adding an already tracked file to
             // the repository - we will have to examine the output in the context of the
             // calling func and raise exceptions there if needed
-            Mercurial.LOG.log(Level.SEVERE, "execEnv():  execEnv(): IOException " + e); // NOI18N
+            Mercurial.LOG.log(command.contains(HG_VERSION_CMD) ? Level.INFO : Level.SEVERE,
+                    "execEnv():  execEnv(): IOException " + e); // NOI18N
 
             // Handle low level Mercurial failures
             if (isErrorArgsTooLong(e.getMessage())){
@@ -2770,6 +2789,13 @@ public class HgCommand {
                 //Just ignore. Closing streams.
                 }
                 input = null;
+            }
+            if (error != null) {
+                try {
+                    error.close();
+                } catch (IOException ioex) {
+                //Just ignore. Closing streams.
+                }
             }
             if (outputStyleFile != null) {
                 outputStyleFile.delete();

@@ -39,6 +39,10 @@
 
 package org.netbeans.core.browser.xulrunner;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.openide.util.lookup.ServiceProvider;
@@ -51,7 +55,13 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=EmbeddedBrowserFactory.class)
 public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
 
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     public EmbeddedBrowserFactoryImpl() {
+        BrowserManager.getDefault().addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                propSupport.firePropertyChange(PROP_ENABLED, null, this);
+            }
+        });
     }
 
     @Override
@@ -64,5 +74,15 @@ public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
         if( !isEnabled() )
             throw new IllegalStateException();
         return new WebBrowserImpl();
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

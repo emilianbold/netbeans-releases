@@ -47,6 +47,32 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="AlwaysEnabledAction.CheckBox">
+        <api name="awt"/>
+        <summary>AwlaysEnabledAction can represent a boolean key in Preferences.</summary>
+        <version major="7" minor="15"/>
+        <date day="24" month="8" year="2009"/>
+        <author login="mmetelka"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <a href="@TOP@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">
+                alwaysEnabledAction</a>
+            was enhanced to understand
+            <code>&lt;attr name="PreferencesKey" stringvalue="boolean-key-name"/&gt;</code>
+            together with <code>&lt;attr name="PreferencesNode" stringvalue="prefstype:/nodepath"/&gt;</code>
+            where <code>prefstype</code> can be
+            <ul>
+                <li>"system" for <code>Preferences.systemRoot()</code></li>
+                <li>"user" for <code>Preferences.userRoot()</code></li>
+                <li>"nb" for <code>NbPreferences.root()</code></li>
+            </ul>
+            or the property value can be <code>Preferences</code> instance or there can be lookup
+            with the <code>Preferences</code> instance in it.
+            The action will be represented by check box menu item in both menu and popup menu automatically.
+        </description>
+        <class package="org.openide.awt" name="HtmlBrowser"/>
+        <issue number="169240"/>
+    </change>
     <change id="ExternalURLDisplayer">
         <api name="awt"/>
         <summary>URLDisplayer can show URLs in an external browser even

@@ -42,14 +42,14 @@ package org.netbeans.modules.dlight.tha;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 
 /**
  *
  * @author mt154047
  */
-public class RacesVisualizerConfiguration implements VisualizerConfiguration {
+public class RacesVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
     /*package*/ static final String ID = "dataracesVisualizer"; // NOI18N
 

@@ -45,6 +45,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.net.PasswordAuthentication;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +76,6 @@ public class ChatTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/chat.png"; // NOI18N
     static final String PLUS = "org/netbeans/modules/kenai/collab/resources/plus.png"; // NOI18N
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
 
     private static final String PREFERRED_ID = "ChatTopComponent"; // NOI18N
 
@@ -309,7 +309,7 @@ public class ChatTopComponent extends TopComponent {
         ChatNotifications.getDefault().removePrivate(name);
         int indexOfTab = getTab(createPrivateName(name));
         if (indexOfTab < 0) {
-            ChatPanel chatPanel = new ChatPanel(name + '@' + XMPP_SERVER);
+            ChatPanel chatPanel = new ChatPanel(name + '@' + Kenai.getDefault().getName());
             addChat(chatPanel);
             indexOfTab = chats.getTabCount() - 1;
             chats.setSelectedComponent(chatPanel);
@@ -603,7 +603,22 @@ public class ChatTopComponent extends TopComponent {
 }//GEN-LAST:event_loginLinkMouseEntered
 
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
-        UIUtils.showLogin();
+        final Kenai kenai = Kenai.getDefault();
+        if (kenai.getStatus() == Kenai.Status.OFFLINE) {
+            UIUtils.showLogin();
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    try {
+                        PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
+                        kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), true);
+                    } catch (KenaiException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
 }//GEN-LAST:event_loginLinkMouseClicked
 
     private void chatsMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chatsMousePressed
@@ -726,6 +741,12 @@ public class ChatTopComponent extends TopComponent {
 
         public void propertyChange(final PropertyChangeEvent e) {
             if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        loginLink.setText(NbBundle.getMessage(ChatTopComponent.class, e.getNewValue()==null?"ChatTopComponent.loginLink.text":"ChatTopComponent.loginLink.startChat"));
+                    }
+                });
+            } else if (Kenai.PROP_XMPP_LOGIN.equals(e.getPropertyName())) {
                 if (e.getNewValue() == null) {
                     putLoginScreen();
                 } else {
@@ -740,9 +761,9 @@ public class ChatTopComponent extends TopComponent {
                         }
                     });
                 }
-            } else if (Kenai.PROP_LOGIN_STARTED.equals(e.getPropertyName())) {
+            } else if (Kenai.PROP_XMPP_LOGIN_STARTED.equals(e.getPropertyName())) {
                 putConnectingScreen();
-            } else if (Kenai.PROP_LOGIN_FAILED.equals(e.getPropertyName())) {
+            } else if (Kenai.PROP_XMPP_LOGIN_FAILED.equals(e.getPropertyName())) {
                 putLoginScreen();
             }
         }

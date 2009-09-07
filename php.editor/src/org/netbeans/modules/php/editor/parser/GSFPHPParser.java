@@ -105,7 +105,7 @@ public class GSFPHPParser extends Parser {
         
 //        ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
 //        request.listener.started(beginEvent);
-        Properties languageProperties = PhpLanguageOptions.getProperties(file);
+        Properties languageProperties = PhpLanguageOptions.getDefault().getProperties(file);
         shortTags = languageProperties.areShortTagsEnabled();
         aspTags = languageProperties.areAspTagsEnabled();
         int end = 0;

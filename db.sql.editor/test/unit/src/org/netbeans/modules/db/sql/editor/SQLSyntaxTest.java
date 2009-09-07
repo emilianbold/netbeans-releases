@@ -49,7 +49,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Andrei Badea
+ * @author Andrei Badea, Jiri Skrivanek
  */
 public class SQLSyntaxTest extends NbTestCase {
 
@@ -82,12 +82,20 @@ public class SQLSyntaxTest extends NbTestCase {
         assertEquals(SQLTokenContext.KEYWORD, s.nextToken());
     }
 
-    private void assertTokens(String m, TokenID[] tokens) {
+    public void testEscapeSingleQuote() {
+        assertTokens("'Frank\\'s Book'", SQLTokenContext.STRING);
+        assertTokens("'Frank''s Book'", SQLTokenContext.STRING, SQLTokenContext.STRING);
+        assertTokens("'Frank\\s Book'", SQLTokenContext.STRING);
+        assertTokens("'Frank\\", SQLTokenContext.INCOMPLETE_STRING);
+        assertTokens("'Frank\\'", SQLTokenContext.INCOMPLETE_STRING);
+    }
+
+    private void assertTokens(String m, TokenID... tokens) {
         Syntax s = new SQLSyntax();
         s.load(null, m.toCharArray(), 0, m.length(), true, m.length());
         
         TokenID token = null;
-        Iterator i = Arrays.asList(tokens).iterator();
+        Iterator<TokenID> i = Arrays.asList(tokens).iterator();
         do {
             token = s.nextToken();
             if (token != null) {

@@ -300,6 +300,8 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             return null;
         if( rows.size() > 0 && rows.get(rows.size()-1).isEmpty() )
             return null;
+        if( !toolbarPanel.isShowing() )
+            return null;
         int rowHeight = rows.get(0).getHeight();
         int bottom = toolbarPanel.getLocationOnScreen().y + toolbarPanel.getHeight();
         if( screenLocation.y >= bottom && screenLocation.y <= bottom + rowHeight ) {

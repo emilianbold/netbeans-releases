@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.AbstractCollection;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,6 +62,7 @@ import org.netbeans.modules.kenai.KenaiImpl;
 import org.netbeans.modules.kenai.LicensesListData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
+import org.netbeans.modules.kenai.UserData;
 
 /**
  * Main entry point to Kenai integration.
@@ -77,10 +79,17 @@ public final class Kenai {
      */
     public static final String PROP_LOGIN = "login";
 
+    public static final String PROP_XMPP_LOGIN = "xmpp_login";
+
     /**
      * fired when user login started
      */
     public static final String PROP_LOGIN_STARTED = "login_started";
+
+    /**
+     * fired when user login started
+     */
+    public static final String PROP_XMPP_LOGIN_STARTED = "xmpp_login_started";
 
 
     /**
@@ -88,9 +97,15 @@ public final class Kenai {
      */
     public static final String PROP_LOGIN_FAILED = "login_failed";
 
+    public static final String PROP_XMPP_LOGIN_FAILED = "xmpp_login_failed";
+
     private static Kenai instance;
     private PasswordAuthentication auth = null;
-    private static URL url;
+    private URL url;
+    private String name;
+    private final KenaiImpl impl;
+    private XMPPConnection xmppConnection;
+
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
 
@@ -103,9 +118,14 @@ public final class Kenai {
      public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
-                Kenai.url = new URL(System.getProperty("kenai.com.url", "https://kenai.com"));
-                KenaiImpl impl = new KenaiREST(Kenai.url);
-                instance = new Kenai(impl);
+                String urlString = System.getProperty("kenai.com.url", "https://kenai.com/");
+                assert urlString.startsWith("https://"):"the only supported protocol is https";
+                if (urlString.endsWith("/")) {
+                    urlString = urlString.substring(0, urlString.length()-1);
+                }
+                URL url = new URL(urlString);
+                KenaiImpl impl = new KenaiREST(url);
+                instance = new Kenai(impl, url);
             } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
             }
@@ -114,30 +134,83 @@ public final class Kenai {
     }
 
     /**
-    * Helper method that fixed slash on the Kenai.com url
-    * @param urlStr String with URL as it was passed
-    * @return Fixed URL string
-    */
-    public static String normalizeUrl(String urlStr) {
-        if (urlStr.endsWith("/")) {
-            return urlStr.substring(0, urlStr.length() - 1);
-        } else {
-            return urlStr;
+     * url of kenai.com instance
+     * @return
+     */
+    public URL getUrl() {
+        return url;
+    }
+
+    /**
+     * name of this kenai instance
+     * @return e.g. kenai.com, testkenai.com, odftoolkit.org, netbeans.org
+     */
+    public String getName() {
+        if (name==null) {
+            String urlString = getUrl().toString();
+            name = urlString.substring("https://".length()); //NOI18N
         }
+        return name;
     }
 
-    private final KenaiImpl     impl;
-    private XMPPConnection xmppConnection;
-
-    Kenai(KenaiImpl impl) {
+    Kenai(KenaiImpl impl, URL url) {
         this.impl = impl;
+        this.url = url;
     }
 
+    /**
+     * getter for xmpp connection. returns null, if user is not Status.ONLINE
+     * @return instance of XMPP connection
+     */
     public synchronized XMPPConnection getXMPPConnection() {
         return xmppConnection;
     }
 
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
+    /**
+     * Logs an existing user into Kenai. Login session persists until the login method
+     * is called again or logout is called. If the login fails then the current session
+     * resumes (if any).
+     *
+     * @param username
+     * @param password
+     * @param xmppLogin should log into xmpp server?
+     * @throws KenaiException
+     */
+    public void login(final String username, final char [] password, boolean xmppLogin) throws KenaiException {
+        if (this.auth!=null) {
+            if (Arrays.equals(password, auth.getPassword()) && username.equals(auth.getUserName())) {
+                if (xmppLogin && xmppConnection!=null && xmppConnection.isConnected()) {
+                    //already connected;
+                    return;
+                } else if (xmppLogin) {
+                    xmppConnect();
+                    return;
+                }
+                if (!xmppLogin && xmppConnection==null) {
+                    //already connected without xmpp
+                    return;
+                } else {
+                    xmppDisconnect();
+                    return;
+                }
+            }
+        }
+        PasswordAuthentication old = auth;
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
+        try {
+            synchronized (this) {
+                String shortName = impl.verify(username, password);
+                auth = new PasswordAuthentication(shortName, password);
+                myProjects=null;
+                if (xmppLogin)
+                    xmppConnect();
+            }
+        } catch (KenaiException ke) {
+            propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_FAILED, null, null));
+            throw ke;
+        }
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+    }
 
     /**
      * Logs an existing user into Kenai. Login session persists until the login method
@@ -149,35 +222,8 @@ public final class Kenai {
      * @throws KenaiException
      */
     public void login(final String username, final char [] password) throws KenaiException {
-        PasswordAuthentication old = auth;
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
-        try {
-            synchronized (this) {
-                String shortName = impl.verify(username, password);
-                auth = new PasswordAuthentication(shortName, password);
-                myProjects=null;
-                xmppConnection = new XMPPConnection(XMPP_SERVER);
-                try {
-                    xmppConnection.connect();
-                    xmppConnection.login(shortName, new String(password), "NetBeans"); //NOI18N
-                } catch (XMPPException xMPPException) {
-                    throw new KenaiException(xMPPException);
-                }
-//        Authenticator.setDefault(new Authenticator() {
-//            @Override
-//            protected PasswordAuthentication getPasswordAuthentication() {
-//                return auth;
-//            }
-//        });
-            }
-        } catch (KenaiException ke) {
-            propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
-            throw ke;
-        }
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+        login(username, password, true);
     }
-
-
 
     /**
      * Logs out current session
@@ -187,9 +233,7 @@ public final class Kenai {
         auth = null;
         synchronized(this) {
             myProjects=null;
-            if (xmppConnection!=null)
-                xmppConnection.disconnect();
-            xmppConnection=null;
+            xmppDisconnect();
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
@@ -251,6 +295,12 @@ public final class Kenai {
         Collection<ProjectData> prjs = impl.searchProjects(pattern);
         return new LazyCollection(prjs);
     }
+
+    Collection<KenaiUser> getProjectMembers(String name) throws KenaiException {
+        Collection<UserData> usrs = impl.getProjectMembers(name);
+        return new LazyCollection(usrs);
+    }
+
 
     /**
      * Getter for collection of available licences
@@ -405,7 +455,7 @@ public final class Kenai {
         return auth;
     }
 
-    private Collection<KenaiProject> myProjects = null;
+    Collection<KenaiProject> myProjects = null;
     /**
      * get my projects of logged user
      * @return collection of projects
@@ -417,6 +467,21 @@ public final class Kenai {
         if (myProjects!=null)
             return myProjects;
         return getMyProjects(true);
+    }
+
+    /**
+     * status of user
+     * @see Status
+     * @return
+     */
+    public Status getStatus() {
+        if (auth==null) {
+            return Status.OFFLINE;
+        }
+        if (xmppConnection==null) {
+            return Status.LOGGED_IN;
+        }
+        return Status.ONLINE;
     }
 
     /**
@@ -468,6 +533,8 @@ public final class Kenai {
                         return (O) new KenaiLicense((LicensesListData.LicensesListItem) param);
                     } else if (param instanceof ServicesListItem) {
                         return (O) new KenaiService((ServicesListItem) param);
+                    } else if (param instanceof UserData) {
+                        return (O) new KenaiUser((UserData) param);
                     }
                     throw new IllegalStateException();
                 }
@@ -479,5 +546,47 @@ public final class Kenai {
             return delegate.size();
         }
         
+    }
+
+    private void xmppConnect() throws KenaiException {
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_STARTED, null, null));
+        synchronized (this) {
+            xmppConnection = new XMPPConnection(getName());
+            try {
+                xmppConnection.connect();
+                xmppConnection.login(auth.getUserName(), new String(auth.getPassword()), "NetBeans"); //NOI18N
+            } catch (XMPPException xMPPException) {
+                propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
+                throw new KenaiException(xMPPException);
+            }
+        }
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, null, xmppConnection));
+    }
+
+    private void xmppDisconnect() {
+        if (xmppConnection != null) {
+            xmppConnection.disconnect();
+        }
+        XMPPConnection temp = xmppConnection;
+        xmppConnection = null;
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, temp, null));
+    }
+
+    /**
+     * user status on kenai
+     */
+    public static enum Status {
+        /**
+         * user is logged in, online on chat
+         */
+        ONLINE,
+        /**
+         * user is logged in, offline on chat
+         */
+        LOGGED_IN,
+        /**
+         * user is not logged in
+         */
+        OFFLINE
     }
 }

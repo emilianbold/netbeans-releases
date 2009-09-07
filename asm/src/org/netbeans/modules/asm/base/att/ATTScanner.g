@@ -215,7 +215,7 @@ RSPAREN     options { constText=true; }  : ']' ;
 Mark        : RSPAREN | LSPAREN | RPAREN | LPAREN | MINUS | PLUS |
               AT  | STAR | COMMA | EQ | LESS | UPPER | DOLLAR |
               BITWISEOR | AMPERSAND | QUESTIONMARK | PERCENT |
-              FRSQUARE | FLSQUARE | OR | COLON
+              FRSQUARE | FLSQUARE | OR | COLON | TILDE
             ;
 
 

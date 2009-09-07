@@ -399,10 +399,10 @@ public class ImportAnalysis2 {
             }
         }
 
-        if (e == null) {
+        if (e == null || (!e.getKind().isClass() && !e.getKind().isInterface())) {
             return;
         }
-        visible.addAll(e.getEnclosedElements());
+        visible.addAll(elements.getAllMembers((TypeElement) e));
     }
     
     private Set<String> getUsedClassesFromJavaLang() {
