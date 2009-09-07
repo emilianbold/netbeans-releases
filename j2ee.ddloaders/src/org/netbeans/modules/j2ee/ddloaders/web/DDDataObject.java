@@ -135,27 +135,27 @@ public class DDDataObject extends  DDMultiViewDataObject
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
             sources.addChangeListener (this);
+            refreshSourceFolders ( sources );
         }
-        refreshSourceFolders ();
         addPropertyChangeListener(this);
     }
 
-    private void refreshSourceFolders () {
-        ArrayList srcRootList = new ArrayList ();
+    private void refreshSourceFolders( Sources sources ) {
+        ArrayList srcRootList = new ArrayList();
 
-        Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
-        if (project != null) {
-            Sources sources = ProjectUtils.getSources(project);
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (int i = 0; i < groups.length; i++) {
-                if (WebModule.getWebModule (groups [i].getRootFolder ()) != null) {
-                    srcRootList.add (groups [i].getRootFolder ());
-                    DataLoaderPool.getDefault().removeOperationListener(operationListener); //avoid being added multiple times
-                    DataLoaderPool.getDefault().addOperationListener(operationListener);
-                }
+        SourceGroup[] groups = sources
+                .getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (int i = 0; i < groups.length; i++) {
+            if (WebModule.getWebModule(groups[i].getRootFolder()) != null) {
+                srcRootList.add(groups[i].getRootFolder());
+                DataLoaderPool.getDefault().removeOperationListener(
+                        operationListener); // avoid being added multiple times
+                DataLoaderPool.getDefault().addOperationListener(
+                        operationListener);
             }
         }
-        srcRoots = (FileObject []) srcRootList.toArray (new FileObject [srcRootList.size ()]);
+        srcRoots = (FileObject[]) srcRootList
+                .toArray(new FileObject[srcRootList.size()]);
     }
 
     private String getPackageName (FileObject clazz) {
@@ -667,7 +667,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     };
 
     public void stateChanged (javax.swing.event.ChangeEvent e) {
-        refreshSourceFolders ();
+        refreshSourceFolders ((Sources)e.getSource());
     }
 
     @Override
