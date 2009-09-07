@@ -36,24 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators;
 
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-import org.netbeans.modules.dlight.indicators.impl.IndicatorConfigurationIDs;
+package org.netbeans.modules.dlight.api.tool;
 
 /**
- *
- * @author mt154047
+ *  This interface is responsible to notify about changes in DLightConfigurationOptions
  */
-public final class BarIndicatorConfiguration extends IndicatorConfiguration {
-
-    public BarIndicatorConfiguration(IndicatorMetadata metadata) {
-        super(metadata);
-    }
-
-    @Override
-    public String getID() {
-        return IndicatorConfigurationIDs.BAR_ID;
-    }
+public interface DLightConfigurationOptionsListener {
+    boolean dlightToolEnabling(String toolName,  boolean isEnabled);
 }

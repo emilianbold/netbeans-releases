@@ -36,25 +36,14 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.support;
-
-import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
+package org.netbeans.modules.dlight.indicators.impl;
 
 /**
- * Factory for {@link TimeSeriesIndicator}s.
  *
- * @author Alexey Vladykin
+ * @author mt154047
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
-public final class TimeSeriesIndicatorFactory implements IndicatorFactory<TimeSeriesIndicatorConfiguration> {
-
-    public String getID() {
-        return IndicatorConfigurationIDs.TIMESERIES_ID;
-    }
-
-    public Indicator<TimeSeriesIndicatorConfiguration> create(TimeSeriesIndicatorConfiguration configuration) {
-        return new TimeSeriesIndicator(configuration);
-    }
+public interface IndicatorConfigurationIDs {
+    static final String CLOCK_ID = "DLightClockIndicatorConfiguration"; //NOI18N
+    static final String BAR_ID = "DLightBarIndicatorConfigurationID"; //NOI18N
+    static final String TIMESERIES_ID = "DLightTimeSeriesIndicatorConfigurationID"; //NOI18N
 }

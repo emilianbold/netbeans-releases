@@ -36,24 +36,43 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators;
+package org.netbeans.modules.dlight.api.tool.impl;
 
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-import org.netbeans.modules.dlight.indicators.impl.IndicatorConfigurationIDs;
+import java.util.List;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 /**
  *
  * @author mt154047
  */
-public final class BarIndicatorConfiguration extends IndicatorConfiguration {
+public abstract class DLightConfigurationAccessor {
 
-    public BarIndicatorConfiguration(IndicatorMetadata metadata) {
-        super(metadata);
+    private static volatile DLightConfigurationAccessor DEFAULT;
+
+    public static DLightConfigurationAccessor getDefault() {
+        DLightConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(DLightConfiguration.class.getName(), true,
+                    DLightConfiguration.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
-    @Override
-    public String getID() {
-        return IndicatorConfigurationIDs.BAR_ID;
+    public static void setDefault(DLightConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
+
+    public DLightConfigurationAccessor() {
+    }
+
+    public abstract List<Indicator<?>> getEnabledIndicators(DLightConfiguration configuration) ;
 }

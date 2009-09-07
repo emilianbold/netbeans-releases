@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 /**
@@ -60,13 +61,13 @@ public final class DefaultIndicatorComponentEmptyContentProvider {
     }
 
     public List<Indicator<?>> getEmptyContent(String configurationName) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
+        DLightConfiguration dligthConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
 
-        if (gizmoConfiguration == null) {
+        if (dligthConfiguration == null) {
             return null;
         }
 
-        List<Indicator<?>> indicators = gizmoConfiguration.getIndicators();
+        List<Indicator<?>> indicators = DLightConfigurationAccessor.getDefault().getEnabledIndicators(dligthConfiguration);
 
         Iterator<Indicator<?>> it = indicators.iterator();
 

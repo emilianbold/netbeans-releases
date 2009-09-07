@@ -77,6 +77,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -474,7 +475,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             Column threadsCol = new Column("threads", Integer.class); // NOI18N
             Object threadsObj = dataRow.getData(threadsCol.getColumnName());
             if (threadsObj != null) {
-                if (areUnnecessaryThreadsUsed((Integer) threadsObj)) {
+                if (areUnnecessaryThreadsUsed(DataUtil.toInt(threadsObj))) {
                     interval++;
                 } else {
                     interval = 0;
@@ -531,8 +532,8 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             Object usrTimeObj = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
             Object threadsObj = dataRow.getData(ProcDataProviderConfiguration.THREADS.getColumnName());
             if (usrTimeObj != null && threadsObj != null) {
-                double utime = (Float) usrTimeObj;
-                int threads = (Integer) threadsObj;
+                float utime = DataUtil.toFloat(usrTimeObj);
+                int threads = DataUtil.toInt(threadsObj);
                 if (threads == 1 && 90 < utime * getProcessorsNumber()) {
                     return true;
                 }

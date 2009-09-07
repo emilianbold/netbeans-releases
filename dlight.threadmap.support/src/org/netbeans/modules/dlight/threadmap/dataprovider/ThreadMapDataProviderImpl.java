@@ -109,6 +109,9 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
             while (!rs.isLast()) {
                 rs.next();
+                if (rs.getRow() == 0){
+                    break;
+                }
 
                 int threadID = rs.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
 

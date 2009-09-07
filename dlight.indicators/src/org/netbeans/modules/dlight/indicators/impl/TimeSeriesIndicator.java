@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.support;
+package org.netbeans.modules.dlight.indicators.impl;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

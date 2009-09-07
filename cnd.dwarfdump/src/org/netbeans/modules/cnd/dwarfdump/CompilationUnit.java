@@ -179,7 +179,15 @@ public class CompilationUnit {
         }
         return null;
     }
-    
+
+    public DwarfEntry getReferencedType(DwarfEntry entry) throws IOException{
+        Integer typeRef = (Integer)entry.getAttributeValue(ATTR.DW_AT_type);
+        if (typeRef == null) {
+            return null;
+        }
+        return getEntry(typeRef);
+    }
+
     public String getType(DwarfEntry entry) throws IOException {
         TAG entryKind = entry.getKind();
         

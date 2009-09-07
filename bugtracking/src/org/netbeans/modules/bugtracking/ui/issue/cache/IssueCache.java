@@ -263,6 +263,9 @@ public abstract class IssueCache<T> {
                 entry.seenAttributes = getLastSeenAttributes().get(id);
                 if(entry.lastUnseenStatus != ISSUE_STATUS_UNKNOWN) {
                     entry.status = entry.lastUnseenStatus;
+                    if(entry.seenAttributes == null) {
+                        entry.seenAttributes = entry.issue.getAttributes();
+                    }
                 }
             }
             entry.seen = seen;
