@@ -81,7 +81,6 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,8 +91,9 @@ import org.openide.util.NbBundle;
 public class BugzillaIssue extends Issue {
 
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
-    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
+    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
+    private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
+    private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private TaskData data;
@@ -344,27 +344,41 @@ public class BugzillaIssue extends Issue {
         return IssueCacheUtils.wasSeen(this);
     }
 
-    // XXX unify with issuepanel
-    public long getLastModify() {
+    public Date getLastModifyDate() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            Date d = CC_DATE_FORMAT.parse(value);
-            return d.getTime();
+            return MODIFIED_DATE_FORMAT.parse(value);
         } catch (ParseException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
         }
-        return -1;
+        return null;
     }
 
-    public long getCreated() {
+    public long getLastModify() {
+        Date lastModifyDate = getLastModifyDate();
+        if(lastModifyDate != null) {
+            return lastModifyDate.getTime();
+        } else {
+            return -1;
+        }
+    }
+
+    public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATION);
         try {
-            Date d = CC_DATE_FORMAT.parse(value);
-            return d.getTime();
+            return CREATED_DATE_FORMAT.parse(value);
         } catch (ParseException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
         }
-        return -1;
+        return null;
+    }
+    public long getCreated() {
+        Date createdDate = getCreatedDate();
+        if (createdDate != null) {
+            return createdDate.getTime();
+        } else {
+            return -1;
+        }
     }
 
     public String getRecentChanges() {
