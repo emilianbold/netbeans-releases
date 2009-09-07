@@ -223,7 +223,7 @@ public final class IndexingManager {
      *   indexed roots. Can be <code>null</code> in which case all indices for
      *   all roots will be refreshed.
      *
-     * @since 1.22
+     * @since 1.23
      */
     public void refreshAllIndices(boolean fullRescan, boolean wait, FileObject... folders) {
         RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, folders);
