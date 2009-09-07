@@ -54,7 +54,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.java.RunOffAWT;
