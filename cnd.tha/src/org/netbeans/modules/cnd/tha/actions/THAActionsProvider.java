@@ -43,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.MissingResourceException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
@@ -287,7 +288,12 @@ public final class THAActionsProvider {
     }
 
     private static String loc(String key, String... params) {
-        return NbBundle.getMessage(THAActionsProvider.class, key, params);
+        try{
+            return NbBundle.getMessage(THAActionsProvider.class, key, params);
+        }catch(MissingResourceException e){
+            e.printStackTrace();
+            return key;
+        }
     }
 
     private final class RemoveInstrumentationAction extends AbstractAction implements PropertyChangeListener {
