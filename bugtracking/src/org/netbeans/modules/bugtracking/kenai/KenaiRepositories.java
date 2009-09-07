@@ -48,6 +48,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -108,7 +109,7 @@ public class KenaiRepositories {
     }
 
     Repository getRepository(ProjectHandle ph) {
-        KenaiProject kp = getKenaiProject(ph);
+        KenaiProject kp = KenaiUtil.getKenaiProject(ph);
         if(kp == null) {
             BugtrackingManager.LOG.warning("No issue tracking repository available for ProjectHandle [" + ph.getId() + "," + ph.getDisplayName() + "]"); // NOI18N
             return null;
@@ -127,13 +128,4 @@ public class KenaiRepositories {
         return repository;
     }
 
-    static KenaiProject getKenaiProject(ProjectHandle ph) {
-        // XXX cache ???
-        try {
-            return Kenai.getDefault().getProject(ph.getId());
-        } catch (KenaiException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
 }

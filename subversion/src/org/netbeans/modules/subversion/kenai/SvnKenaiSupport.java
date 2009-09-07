@@ -37,8 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.kenai;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
@@ -99,6 +100,18 @@ public class SvnKenaiSupport {
 
     public String getRevisionUrl(String repositoryUrl, String revision) {
         return kenaiSupport == null ? null : kenaiSupport.getRevisionUrl(repositoryUrl, revision);
+    }
+
+    public void removeVCSNoficationListener(PropertyChangeListener l) {
+        kenaiSupport.removeVCSNoficationListener(l);
+    }
+
+    public void addVCSNoficationListener(PropertyChangeListener l) {
+        kenaiSupport.addVCSNoficationListener(l);
+    }
+
+    public void register() {
+        SvnKenaiSupport.getInstance().addVCSNoficationListener(new KenaiNotificationListener());
     }
 
 }

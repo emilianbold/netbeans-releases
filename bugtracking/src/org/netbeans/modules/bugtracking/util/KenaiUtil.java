@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
@@ -51,6 +53,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 
 /**
@@ -187,4 +190,13 @@ public class KenaiUtil {
         return members;
     }
 
+    public static KenaiProject getKenaiProject(ProjectHandle ph) {
+        // XXX cache ???
+        try {
+            return Kenai.getDefault().getProject(ph.getId());
+        } catch (KenaiException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
 }
