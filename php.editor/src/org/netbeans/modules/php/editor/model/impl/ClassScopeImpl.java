@@ -89,8 +89,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     //old contructors
 
     @NonNull
-    public List<? extends ClassScope> getSuperClasses() {
-        List<? extends ClassScope> retval = null;
+    public Collection<? extends ClassScope> getSuperClasses() {
+        Collection<? extends ClassScope> retval = null;
         retval = superClass.hasSecond() ? superClass.second() : null;
         if (retval == null) {
             assert superClass.hasFirst();
@@ -107,7 +107,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
-        List<? extends ClassScope> extendedClasses = getSuperClasses();
+        Collection<? extends ClassScope> extendedClasses = getSuperClasses();
         ClassScope extClass = ModelUtils.getFirst(extendedClasses);
         if (extClass != null) {
             sb.append(" extends ").append(extClass.getName());//NOI18N

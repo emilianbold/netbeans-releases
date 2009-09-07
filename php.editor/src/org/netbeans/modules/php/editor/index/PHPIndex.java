@@ -67,6 +67,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -636,16 +637,17 @@ public class PHPIndex {
     /** returns local constnats of a class. */
     public Collection<IndexedConstant> getTypeConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind);
+        List<Pair<String, IndexResult>> signaturesPairs = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind);
 
-        for (String signature : signaturesMap.keySet()) {
+        for (Pair<String, IndexResult> pair : signaturesPairs) {
+            String signature = pair.first;
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
             String propName = sig.string(0);
             int offset = sig.integer(1);
 
             IndexedConstant prop = new IndexedConstant(propName, typeName,
-                    this, signaturesMap.get(signature).getUrl().toString(), offset, 0, null);
+                    this, pair.second.getUrl().toString(), offset, 0, null);
 
             constants.add(prop);
 
@@ -659,9 +661,10 @@ public class PHPIndex {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         String name = typeName;//NOI18N
         int attrMask = PHPIndex.ANY_ATTR;
-        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CONSTRUCTOR, name, kind, true);
+        List<Pair<String, IndexResult>>  signaturePairs = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CONSTRUCTOR, name, kind, true);
 
-        for (String signature : signaturesMap.keySet()) {
+        for (Pair<String, IndexResult> pair : signaturePairs) {
+            String signature = pair.first;
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
             int flags = sig.integer(5);
@@ -676,7 +679,7 @@ public class PHPIndex {
                 int offset = sig.integer(2);
 
                 IndexedFunction func = new IndexedFunction(funcName, funcName,sig.string(6),
-                        this, signaturesMap.get(signature).getUrl().toString(), args, offset, flags, ElementKind.METHOD);
+                        this, pair.second.getUrl().toString(), args, offset, flags, ElementKind.METHOD);
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
                 func.setOptionalArgs(optionalArgs);
@@ -688,6 +691,23 @@ public class PHPIndex {
         }
 
         return methods;
+    }
+    public Collection<IndexedClassMember<IndexedFunction>> getConstructors(PHPParseResult result, IndexedType type) {
+        Collection<IndexedClassMember<IndexedFunction>> retval = new ArrayList<IndexedClassMember<IndexedFunction>>();
+        Collection<IndexedFunction> methods = getConstructors(result, type.getName());
+        for (IndexedFunction indexedFunction : methods) {
+            String name1 = type.getName();
+            String name2 = indexedFunction.getIn();
+            if (name1.equals(name2)) {
+                FileObject fo1 = type.getFileObject();
+                FileObject fo2 = indexedFunction.getFileObject();
+                // #147730 - prefer the current file
+                if (fo1 == null || fo2 == null || fo1 == fo2) {
+                    retval.add(new IndexedClassMember<IndexedFunction>(type, indexedFunction));
+                }
+            }
+        }
+        return retval;
     }
     public Collection<IndexedClassMember<IndexedFunction>> getMethods(PHPParseResult context, IndexedType type, String name, QuerySupport.Kind kind, int attrMask) {
         Collection<IndexedClassMember<IndexedFunction>> retval = new ArrayList<IndexedClassMember<IndexedFunction>>();
@@ -710,9 +730,10 @@ public class PHPIndex {
     /** returns methods of a class. */
     public Collection<IndexedFunction> getMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
-        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_METHOD, name, kind);
+        List<Pair<String, IndexResult>>  signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_METHOD, name, kind);
 
-        for (String signature : signaturesMap.keySet()) {
+        for (Pair<String, IndexResult> pair : signaturesMap) {
+            String signature = pair.first;
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
             int flags = sig.integer(5);
@@ -727,7 +748,7 @@ public class PHPIndex {
                 int offset = sig.integer(2);
 
                 IndexedFunction func = new IndexedFunction(funcName, typeName,
-                        this, signaturesMap.get(signature).getUrl().toString(), args, offset, flags, ElementKind.METHOD);
+                        this, pair.second.getUrl().toString(), args, offset, flags, ElementKind.METHOD);
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
                 func.setOptionalArgs(optionalArgs);
@@ -762,9 +783,10 @@ public class PHPIndex {
     /** returns fields of a class. */
     public Collection<IndexedConstant> getFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
         Collection<IndexedConstant> fields = new ArrayList<IndexedConstant>();
-        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind);
+        List<Pair<String, IndexResult>> signaturePairs = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind);
 
-        for (String signature : signaturesMap.keySet()) {
+        for (Pair<String, IndexResult> pair : signaturePairs) {
+            String signature = pair.first;
             Signature sig = Signature.get(signature);
             int flags = sig.integer(2);
 
@@ -782,7 +804,7 @@ public class PHPIndex {
                 }
 
                 IndexedConstant prop = new IndexedConstant(propName, typeName,
-                        this, signaturesMap.get(signature).getUrl().toString(), offset, flags, type,ElementKind.FIELD);
+                        this, pair.second.getUrl().toString(), offset, flags, type,ElementKind.FIELD);
 
                 fields.add(prop);
             }
@@ -791,13 +813,13 @@ public class PHPIndex {
         return fields;
     }
 
-    private Map<String, IndexResult> getTypeSpecificSignatures(String typeName, String fieldName, String name, QuerySupport.Kind kind) {
+    private List<Pair<String, IndexResult>> getTypeSpecificSignatures(String typeName, String fieldName, String name, QuerySupport.Kind kind) {
         return getTypeSpecificSignatures(typeName, fieldName, name, kind, false);
     }
 
-    private Map<String, IndexResult> getTypeSpecificSignatures(String typeName, String fieldName, String name,
+    private List<Pair<String, IndexResult>> getTypeSpecificSignatures(String typeName, String fieldName, String name,
             QuerySupport.Kind kind, boolean forConstructor) {
-        Map<String, IndexResult> signatures = new HashMap<String, IndexResult>();
+        List<Pair<String, IndexResult>> signatures = new ArrayList<Pair<String, IndexResult>>();
         String[] fields = forConstructor ? new String[]{PHPIndexer.FIELD_CLASS} :
             new String[]{PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE};
 
@@ -840,7 +862,7 @@ public class PHPIndex {
                                 && elemName.toLowerCase().startsWith(name.toLowerCase()))
                                 || (kind == QuerySupport.Kind.PREFIX && elemName.startsWith(name))
                                 || (kind == QuerySupport.Kind.EXACT && elemName.equals(name))) {
-                            signatures.put(signature, typeMap);
+                            signatures.add(Pair.of(signature, typeMap));
                         }
                     }
                 }
