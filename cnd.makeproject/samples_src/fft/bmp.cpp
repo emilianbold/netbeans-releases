@@ -40,7 +40,6 @@ Bitmap::Bitmap(const Bitmap& orig) {
 }
 
 Bitmap::~Bitmap() {
-    delete[] bitmapInfo;
     delete[] bitmap;
 }
 
