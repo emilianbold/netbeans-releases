@@ -72,7 +72,7 @@ public final class ViewportManager extends JPanel
         viewportModel.setViewport(new Range<Long>(0L, EXTENT));
         viewportModel.addChangeListener(this);
 
-        viewportBar = new ViewportBar(viewportModel, 15);
+        viewportBar = new ViewportBar(viewportModel);
 
         scrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         adjust();
@@ -89,11 +89,10 @@ public final class ViewportManager extends JPanel
     private void adjust() {
         Range<Long> limits = viewportModel.getLimits();
         Range<Long> viewport = viewportModel.getViewport();
-        long start = Math.min(limits.getStart(), viewport.getStart());
-        long end = Math.max(limits.getEnd(), viewport.getEnd());
+        limits = limits.extend(viewport);
         isAdjusting = true;
-        scrollBar.setMinimum((int)TimeUnit.MILLISECONDS.toSeconds(start));
-        scrollBar.setMaximum((int)TimeUnit.MILLISECONDS.toSeconds(end));
+        scrollBar.setMinimum((int)TimeUnit.MILLISECONDS.toSeconds(limits.getStart()));
+        scrollBar.setMaximum((int)TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()));
         scrollBar.setValue((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart()));
         scrollBar.setVisibleAmount((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd() - viewport.getStart()));
         isAdjusting = false;

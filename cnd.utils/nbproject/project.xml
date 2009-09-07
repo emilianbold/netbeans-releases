@@ -79,6 +79,7 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
+                <package>org.netbeans.modules.cnd.spi.utils</package>
                 <package>org.netbeans.modules.cnd.support</package>
                 <package>org.netbeans.modules.cnd.utils</package>
                 <package>org.netbeans.modules.cnd.utils.cache</package>
