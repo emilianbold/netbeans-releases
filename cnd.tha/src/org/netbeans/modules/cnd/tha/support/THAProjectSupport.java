@@ -374,8 +374,10 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         MakeConfiguration mc = mcd.getActiveConfiguration();
-
-        return THAServiceInfo.isPlatformSupported(mc.getDevelopmentHost().getBuildPlatformDisplayName());
+        int configurationType = mc.getConfigurationType().getValue();
+        return THAServiceInfo.isPlatformSupported(mc.getDevelopmentHost().getBuildPlatformDisplayName()) &&
+                (configurationType == MakeConfiguration.TYPE_MAKEFILE ||
+                configurationType == MakeConfiguration.TYPE_APPLICATION || configurationType == MakeConfiguration.TYPE_QT_APPLICATION);
 
     }
 
