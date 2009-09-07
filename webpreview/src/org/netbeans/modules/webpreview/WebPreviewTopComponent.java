@@ -79,6 +79,12 @@ public final class WebPreviewTopComponent extends TopComponent {
         }
     }
 
+    public void maybeInitWebBrowser() {
+        if (webBrowser == null && EmbeddedBrowserFactory.getDefault().isEnabled()) {
+            webBrowser = EmbeddedBrowserFactory.getDefault().createEmbeddedBrowser();
+        }
+    }
+
     public WebBrowser getWebBrowser() {
         return webBrowser;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.browser.xulrunner;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
-import org.netbeans.core.browser.api.WebBrowser;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
- * Embedded browser factory.
- * 
- * @author S. Aubrecht
+ *
+ * @author David Van Couvering
  */
-@ServiceProvider(service=EmbeddedBrowserFactory.class)
-public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
+public abstract class JDBCMetadataTestBase extends MetadataTestBase {
+    @Override
+    public abstract void setUp() throws Exception;
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
-    public EmbeddedBrowserFactoryImpl() {
-        BrowserManager.getDefault().addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                propSupport.firePropertyChange(PROP_ENABLED, null, this);
-            }
-        });
+    public JDBCMetadataTestBase(String name) {
+        super(name);
     }
 
-    @Override
-    public boolean isEnabled() {
-        return BrowserManager.isSupportedPlatform() && BrowserManager.getDefault().isEnabled();
-    }
-
-    @Override
-    public WebBrowser createEmbeddedBrowser() {
-        if( !isEnabled() )
-            throw new IllegalStateException();
-        return new WebBrowserImpl();
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        propSupport.addPropertyChangeListener(l);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        propSupport.removePropertyChangeListener(l);
+    protected void checkForeignKeyColumn(ForeignKey key, Table referredTable, String referringColName, String referredColName,
+            int position) throws Exception {
+        ForeignKeyColumn col = key.getColumn(referringColName);
+        assertEquals(referredTable.getColumn(referredColName), col.getReferredColumn());
+        assertEquals(key.getParent().getColumn(referringColName), col.getReferringColumn());
+        assertEquals(position, col.getPosition());
     }
 }

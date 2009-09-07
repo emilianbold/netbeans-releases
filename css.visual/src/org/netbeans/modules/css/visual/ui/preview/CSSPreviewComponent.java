@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.jdbc;
+package org.netbeans.modules.css.visual.ui.preview;
 
-import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
+import java.io.InputStream;
+import javax.swing.JComponent;
 
 /**
  *
- * @author David Van Couvering
+ * @author Milan Kubec
  */
-public abstract class JDBCMetadataTest extends MetadataTestBase {
-    @Override
-    public abstract void setUp() throws Exception;
-
-    public JDBCMetadataTest(String name) {
-        super(name);
-    }
-
-    protected void checkForeignKeyColumn(ForeignKey key, Table referredTable, String referringColName, String referredColName,
-            int position) throws Exception {
-        ForeignKeyColumn col = key.getColumn(referringColName);
-        assertEquals(referredTable.getColumn(referredColName), col.getReferredColumn());
-        assertEquals(key.getParent().getColumn(referringColName), col.getReferringColumn());
-        assertEquals(position, col.getPosition());
-    }
+interface CssPreviewComponent {
+    JComponent getComponent();
+    void setDocument(InputStream is, String url) throws Exception;
+    void dispose();
 }

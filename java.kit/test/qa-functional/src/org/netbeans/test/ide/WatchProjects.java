@@ -187,7 +187,7 @@ public final class WatchProjects {
         if (Boolean.getBoolean("ignore.random.failures")) {
             // remove the if we don't care about random failures
             // reported as #
-            removeTreeView(Frame.getFrames());
+            //removeTreeView(Frame.getFrames());
         }
 
         System.setProperty("assertgc.paths", "5");
