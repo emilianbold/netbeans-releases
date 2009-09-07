@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ReconfigureProvider;
+import org.netbeans.modules.cnd.tha.THAServiceInfo;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
@@ -371,8 +372,11 @@ public final class THAProjectSupport implements PropertyChangeListener {
         if (nativeProject == null) {
             return false;
         }
+        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        MakeConfiguration mc = mcd.getActiveConfiguration();
 
-        return true;
+        return THAServiceInfo.isPlatformSupported(mc.getDevelopmentHost().getBuildPlatformDisplayName());
+
     }
 
     public void addProjectConfigurationChangedListener(final PropertyChangeListener listener) {
