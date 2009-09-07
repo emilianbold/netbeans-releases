@@ -316,30 +316,34 @@ class LazyOpenKenaiProjectAction extends JMenuItem {
                     public void run() {
                         KenaiTopComponent.findInstance().open();
                         KenaiTopComponent.findInstance().requestActive();
-                        RequestProcessor.getDefault().post(new Runnable() {
+                    }
+                });
+                RequestProcessor.getDefault().post(new Runnable() {
 
-                            public void run() {
-                                ProgressHandle handle = null;
-                                try {
-                                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CTL_OpenKenaiProjectAction")); //NOI18N
-                                    handle.start();
-                                    KenaiProject kp = null;
-                                    kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
-                                    if (kp != null) {
-                                        final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        DashboardImpl.getInstance().addProject(pHandle, false);
+                    public void run() {
+                        ProgressHandle handle = null;
+                        try {
+                            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CTL_OpenKenaiProjectAction")); //NOI18N
+                            handle.start();
+                            final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                            if (kp != null) {
+                                final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                DashboardImpl.getInstance().addProject(pHandle, false);
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    public void run() {
                                         DashboardImpl.getInstance().selectAndExpand(kp);
                                     }
-                                } catch (KenaiException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } finally {
-                                    if (handle != null) {
-                                        handle.finish();
-                                        return;
-                                    }
-                                }
+                                });
                             }
-                        });
+                        } catch (KenaiException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            if (handle != null) {
+                                handle.finish();
+                                return;
+                            }
+                        }
                     }
                 });
             }
