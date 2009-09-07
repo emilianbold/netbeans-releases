@@ -47,7 +47,11 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
  *
  * @author mt154047
  */
-public interface DLightConfigurationOptions {
+public interface DLightConfigurationOptions   {
+
+    void addListener(DLightConfigurationOptionsListener listener);
+    
+    void removeListener(DLightConfigurationOptionsListener listener);
 
     boolean profileOnRun();
 
@@ -62,4 +66,5 @@ public interface DLightConfigurationOptions {
     boolean validateToolsRequiredUserInteraction();
 
     Collection<String> getActiveToolNames();
+    
 }
