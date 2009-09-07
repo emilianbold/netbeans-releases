@@ -722,6 +722,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N
+            "servlet-types-j2se-only",// NOI18N
             "web-service-clients",  // NOI18N
             "wsdl",                 // NOI18N
             // "web-types",         // NOI18N
