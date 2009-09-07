@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -125,7 +126,7 @@ public class ExternalTerminal implements PropertyChangeListener {
                         throw new IllegalStateException(NbBundle.getMessage(
                                 ExternalTerminal.class,
                                 "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
-                                termProfile.options,
+                                Arrays.toString(termProfile.options),
                                 rc,
                                 out));
                     } catch (IllegalThreadStateException e) {
