@@ -169,7 +169,8 @@ class IssueStorage {
                 return;
             }
             dos.writeBoolean(entry.wasSeen());
-//            dos.writeLong(entry.getLastKnownModified());
+            dos.writeLong(entry.getLastSeenModified());
+            dos.writeInt(entry.getLastUnseenStatus());
             if(entry.getSeenAttributes() != null) {
                 for(Entry<String, String> e : entry.getSeenAttributes().entrySet()) {
                     writeString(dos, e.getKey());
@@ -200,10 +201,12 @@ class IssueStorage {
             }
             Map<String, String> m = new HashMap<String, String>();
             boolean seen = is.readBoolean();
-//            long lastModified = -1;
-//            if(!STORAGE_VERSION.equals(STORAGE_VERSION_1_0)) {
-//                lastModified = is.readLong();
-//            }
+            long lastModified = -1;
+            int lastStatus = IssueCache.ISSUE_STATUS_UNKNOWN;
+            if(!STORAGE_VERSION.equals(STORAGE_VERSION_1_0)) {
+                lastModified = is.readLong();
+                lastStatus = is.readInt();
+            }
             while(true) {
                 try {
                     String key = readString(is);
@@ -215,7 +218,8 @@ class IssueStorage {
             }
             entry.setSeenAttributes(m);
             entry.setSeen(seen);
-//            entry.setLastKnownModified(lastModified);
+            entry.setLastSeenModified(lastModified);
+            entry.setLastUnseenStatus(lastStatus);
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());
