@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.rubyforge.debugcommons.model.RubyValue;
 import org.rubyforge.debugcommons.model.RubyVariable;
-import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID;
 
@@ -206,7 +205,7 @@ public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel 
             RubyVariable var = (RubyVariable) node;
             if (var.getValue() == null) {
                 return "<nil>"; // NOI18N
-            } else if (LOCALS_VALUE_COLUMN_ID.equals(columnID) || LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
+            } else if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
                 return var.getValue().getValueString();
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
                 return var.getValue().getReferenceTypeName();

@@ -49,8 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
@@ -66,7 +64,6 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -92,7 +89,6 @@ import org.xml.sax.SAXException;
 public class JWSCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
     private static final String CAT_WEBSTART = "WebStart"; // NOI18N
-    private String catName = null;
     
     private static JWSProjectProperties jwsProps = null;
     
@@ -107,37 +103,19 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
 
     private static final String PREVIOUS_JNLP_IMPL_CRC32 = "3528ef9f"; // NOI18N
 
-    public JWSCompositeCategoryProvider(String name) {
-        catName = name;
-    }
+    public JWSCompositeCategoryProvider() {}
     
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        ResourceBundle bundle = NbBundle.getBundle(JWSCompositeCategoryProvider.class);
-        ProjectCustomizer.Category category = null;
-        if (CAT_WEBSTART.equals(catName)) {
-            category = ProjectCustomizer.Category.create(CAT_WEBSTART,
-                    bundle.getString("LBL_Category_WebStart"), null, (Category[]) null);
-        }
-        return category;
+        return ProjectCustomizer.Category.create(CAT_WEBSTART,
+                    NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_WebStart"), null);
     }
     
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        String name = category.getName();
-        JComponent component = null;
-        if (CAT_WEBSTART.equals(name)) {
-            jwsProps = new JWSProjectProperties(context);
-            // use OkListener to create new configuration first
-            category.setOkButtonListener(new OkButtonListener(jwsProps, context.lookup(Project.class)));
-            category.setStoreListener(new SavePropsListener(jwsProps, context.lookup(Project.class)));
-            component = new JWSCustomizerPanel(jwsProps);
-        }
-        return component;
-    }
-    
-    // ----------
-    
-    public static JWSCompositeCategoryProvider createWebStart() {
-        return new JWSCompositeCategoryProvider(CAT_WEBSTART);
+        jwsProps = new JWSProjectProperties(context);
+        // use OkListener to create new configuration first
+        category.setOkButtonListener(new OkButtonListener(jwsProps, context.lookup(Project.class)));
+        category.setStoreListener(new SavePropsListener(jwsProps, context.lookup(Project.class)));
+        return new JWSCustomizerPanel(jwsProps);
     }
     
     // ----------
@@ -328,7 +306,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
-            final ProjectConfigurationProvider configProvider = 
+            final ProjectConfigurationProvider<?> configProvider =
                     j2seProject.getLookup().lookup(ProjectConfigurationProvider.class);
             try {
                 if (jwsProps.isJWSEnabled()) {
@@ -344,9 +322,9 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             }
         }
         
-        private void setActiveConfig(final ProjectConfigurationProvider provider, String displayName) throws IOException {
-            Collection<ProjectConfiguration> configs = (Collection<ProjectConfiguration>) provider.getConfigurations();
-            for (final ProjectConfiguration c : configs) {
+        private <C extends ProjectConfiguration> void setActiveConfig(final ProjectConfigurationProvider<C> provider, String displayName) throws IOException {
+            Collection<C> configs = provider.getConfigurations();
+            for (final C c : configs) {
                 if (displayName.equals(c.getDisplayName())) {
                     try {
                         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -369,7 +347,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             if (jnlpBuildFile != null && isJnlpImplPreviousVer(computeCrc32(jnlpBuildFile.getInputStream()))) {
                 // try to close the file just in case the file is already opened in editor
                 DataObject dobj = DataObject.find(jnlpBuildFile);
-                CloseCookie closeCookie = dobj.getCookie(CloseCookie.class);
+                CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
                 if (closeCookie != null) {
                     closeCookie.close();
                 }

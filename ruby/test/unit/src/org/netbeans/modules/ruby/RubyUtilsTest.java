@@ -223,35 +223,6 @@ public class RubyUtilsTest extends TestCase {
             "undef", "unless", "until", "when", "while", "yield",
         };
     
-    public void testPluralize() throws Exception {
-        assertEquals("posts", RubyUtils.pluralize("post"));
-        assertEquals("axes", RubyUtils.pluralize("axis"));
-        assertEquals("buffaloes", RubyUtils.pluralize("buffalo"));
-        assertEquals("sheep", RubyUtils.pluralize("sheep"));
-        assertEquals("words", RubyUtils.pluralize("words"));
-        assertEquals("people", RubyUtils.pluralize("person"));
-        assertEquals("MailPeople", RubyUtils.pluralize("MailPerson"));
-        assertEquals("MailMen", RubyUtils.pluralize("MailMan"));
-        assertEquals("the blue mailmen", RubyUtils.pluralize("the blue mailman"));
-        assertEquals("CamelOctopi", RubyUtils.pluralize("CamelOctopus"));
-        assertEquals("people", RubyUtils.pluralize("person"));
-        assertEquals("people", RubyUtils.pluralize("person"));
-        assertEquals("people", RubyUtils.pluralize("person"));
-        assertEquals("boxes", RubyUtils.pluralize("box"));
-        assertEquals("mathquizzes", RubyUtils.pluralize("mathquiz"));
-        assertEquals("Hashes", RubyUtils.pluralize("Hash"));
-        assertEquals("SimpleMatrices", RubyUtils.pluralize("SimpleMatrix"));
-        assertEquals("fastmice", RubyUtils.pluralize("fastmouse"));
-        assertEquals("tedia", RubyUtils.pluralize("tedium"));
-        assertEquals("fusses", RubyUtils.pluralize("fuss"));
-        assertEquals("Aliases", RubyUtils.pluralize("Alias"));
-        assertEquals("CurrentStatuses", RubyUtils.pluralize("CurrentStatus"));
-        assertEquals("unknowns", RubyUtils.pluralize("unknown"));
-        assertEquals("money", RubyUtils.pluralize("money"));
-        assertEquals("Rice", RubyUtils.pluralize("Rice"));
-        assertEquals("Information", RubyUtils.pluralize("Information"));
-    }
-    
     public void testTableize() throws Exception {
         assertEquals("posts", RubyUtils.tableize("Post"));
         assertEquals("raw_scaled_scorers", RubyUtils.tableize("RawScaledScorer"));

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.editor.lib;
 
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;

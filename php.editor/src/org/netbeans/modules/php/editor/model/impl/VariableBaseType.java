@@ -132,7 +132,7 @@ class VariableBaseType {
             String varName = CodeUtils.extractVariableName((Variable) varBase);
             VariableNameImpl nameImpl = allAssignments.get(varName);
             if (nameImpl != null) {
-                VarAssignmentImpl last = ModelUtils.getLast(nameImpl.getAssignments());
+                VarAssignmentImpl last = ModelUtils.getLast(nameImpl.getVarAssignments());
                 if (last != null) {
                     String semiTypeName = last.typeNameFromUnion();
                     if (semiTypeName != null) {

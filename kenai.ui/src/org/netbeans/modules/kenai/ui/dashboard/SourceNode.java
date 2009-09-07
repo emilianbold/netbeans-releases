@@ -47,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
@@ -84,6 +85,16 @@ public class SourceNode extends LeafNode {
 
             if( source.isSupported() ) {
                 btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), SourceAccessor.getDefault().getOpenSourcesAction(source)); //NOI18N
+                String featureName = source.getScmFeatureName();
+                String repotype = "MSG_UNKNOWN_SCM";
+                if (featureName.equals(KenaiService.Names.SUBVERSION)) {
+                    repotype = "MSG_SUBVERSION";
+                } else if (featureName.equals(KenaiService.Names.GIT)) {
+                    repotype = "MSG_GIT";
+                } else if (featureName.equals(KenaiService.Names.MERCURIAL)) {
+                    repotype = "MSG_MERCURIAL";
+                }
+                btn.setToolTipText(NbBundle.getMessage(SourceNode.class, repotype));
                 lbl1 = new TreeLabel("("); //NOI18N
                 lbl2 = new TreeLabel(")"); //NOI18N
                 panel.add( lbl1, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));

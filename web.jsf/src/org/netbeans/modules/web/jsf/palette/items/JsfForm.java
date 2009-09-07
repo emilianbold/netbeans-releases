@@ -59,21 +59,12 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
-import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author Pavel Buzek
- * @author Po-Ting Wu
- * @author mbohm
- */
 public final class JsfForm extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
         "<h:form>\n",
@@ -110,16 +101,6 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
         }
         stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
 
-        FileObject targetJspFO = getFO(target);
-        JavaSource javaSource = JavaSource.create(createClasspathInfo(targetJspFO));
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement(bean);
-                createForm(controller, typeElement, formType, variable, stringBuffer);
-            }
-        }, true);
-
         stringBuffer.append(END [formType]);
         if (surroundWithFView) {
             stringBuffer.append("</f:view>\n");
@@ -148,7 +129,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer) {
         createForm(controller, bean, formType, variable, stringBuffer, "", null, "", "");
     }
-    
+
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, String entityClass, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String controllerClass, String jsfUtilClass) {
         if (bean != null) {
             ExecutableElement methods [] = JpaControllerUtil.getEntityMethods(bean);
@@ -194,7 +175,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
             }
         }
     }
-    
+
     private static void createFormInternal(ExecutableElement method, TypeElement bean, boolean isId, boolean isGenerated, boolean isEmbeddedPkMethod, boolean fieldAccess, CompilationController controller, int formType, String variable, StringBuffer stringBuffer, String entityClass, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String controllerClass, String jsfUtilClass) {
         String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
@@ -205,14 +186,14 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
         TypeMirror t = method.getReturnType();
         Types types = controller.getTypes();
         TypeMirror tstripped = JpaControllerUtil.stripCollection(t, types);
-        
+
         boolean isCollection = t != tstripped;
         boolean isCollectionTypeAssignableToSet = false;
         if (isCollection) {
             TypeElement tAsElement = (TypeElement) types.asElement(t);
             isCollectionTypeAssignableToSet = isCollectionTypeAssignableToSet(tAsElement);
         }
-        
+
         String relType = tstripped.toString();
         if (relType.endsWith("[]")) {
             relType = relType.substring(0, relType.length() - 2);
@@ -221,7 +202,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
         String relatedController = JpaControllerUtil.fieldFromClassName(simpleRelType);
         boolean fieldOptionalAndNullable = JpaControllerUtil.isFieldOptionalAndNullable(controller, method, fieldAccess);
         String requiredMessage = fieldOptionalAndNullable ? null : "The " + propName + " field is required.";
-        
+
         //only applies if method/otherSide are relationship methods
         boolean isMethodRedundantWithItsPkFields = false;
         boolean isOtherSideRedundantWithItsPkFields = false;
@@ -238,12 +219,12 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                 }
             }
         }
-        
-        if ( (formType == FORM_TYPE_NEW && 
-                ( isId &&  isGenerated) ) || 
+
+        if ( (formType == FORM_TYPE_NEW &&
+                ( isId &&  isGenerated) ) ||
                 formType == FORM_TYPE_EMPTY ) {
             //skip if formType is new and field is generated (or if formType is "empty")
-        } else if (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_TO_ONE && 
+        } else if (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_TO_ONE &&
                 (entityClass.length() == 0 || controllerClass.length() == 0) ) {
             //this method was called from outside the jsfcrud generator feature
             String template = "<h:outputText value=\"{0}:\"/>\n" +
@@ -252,7 +233,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
             stringBuffer.append(MessageFormat.format(template, args));
         } else if (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_TO_ONE) {
             String template = "<h:outputText value=\"{0}:\"/>\n" +
-                "<h:panelGroup>\n" + 
+                "<h:panelGroup>\n" +
                 "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n" +
                 "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
                 "<h:outputText value=\" (\"/>\n" +
@@ -281,8 +262,8 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                 "</h:panelGroup>\n";
             Object[] args = new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), controllerClass};
             stringBuffer.append(MessageFormat.format(template, args));
-        } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_NONE) || 
-                ( formType == FORM_TYPE_EDIT && (isId || isEmbeddedPkMethod || isMethodRedundantWithItsPkFields || isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != JpaControllerUtil.REL_TO_MANY ) || 
+        } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_NONE) ||
+                ( formType == FORM_TYPE_EDIT && (isId || isEmbeddedPkMethod || isMethodRedundantWithItsPkFields || isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != JpaControllerUtil.REL_TO_MANY ) ||
                 (formType == FORM_TYPE_NEW && (isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != JpaControllerUtil.REL_TO_MANY) ) {
             //non editable
             String temporal = ( isRelationship == JpaControllerUtil.REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
@@ -326,7 +307,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
             }
         }
     }
-    
+
     private static boolean isCollectionTypeAssignableToSet(TypeElement tAsElement) {
         String collectionTypeClass = tAsElement.getQualifiedName().toString();   //java.util.Collection, java.util.List, java.util.Set
 
@@ -339,10 +320,10 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
         if (collectionTypeAsClass != null && Set.class.isAssignableFrom(collectionTypeAsClass)) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     public static String getFreeTableVarName(String name, List<String> entities) {
         //return a permutation of name that is not a managed bean name among the entities
         String newName = name;
@@ -366,8 +347,8 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
         }
         return newName;
     }
-    
-    public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable, 
+
+    public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable,
             String idProperty, boolean isInjection, StringBuffer stringBuffer, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String controllerClass, List<String> entities, String jsfUtilClass) {
         ExecutableElement methods [] = JpaControllerUtil.getEntityMethods(bean);
         String entityClass = bean.getQualifiedName().toString();
@@ -383,7 +364,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                     String name = methodName.substring(3);
                     String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
                     if (isRelationship == JpaControllerUtil.REL_TO_MANY) {
-                        Types types = controller.getTypes(); 
+                        Types types = controller.getTypes();
                         TypeMirror t = method.getReturnType();
                         TypeMirror typeArgMirror = JpaControllerUtil.stripCollection(t, types);
                         TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
@@ -399,12 +380,12 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                             String valueAttribute = isCollectionTypeAssignableToSet ? variable + ".jsfcrud_transform[jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method.setToList][jsfcrud_null]." + propName : variable + "." + propName;
                             stringBuffer.append("<h:dataTable value=\"#{" + valueAttribute + "}\" var=\"" + tableVarName + "\" \n");
                             stringBuffer.append("border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
-                            
+
                             String commands = "<h:column>\n"
                                     + "<f:facet name=\"header\">\n"
                                     + "<h:outputText escape=\"false\" value=\"&nbsp;\"/>\n"
                                     + "</f:facet>\n"
-                                    + "<h:commandLink value=\"Show\" action=\"#'{'" + relatedManagedBean + ".detailSetup'}'\">\n" 
+                                    + "<h:commandLink value=\"Show\" action=\"#'{'" + relatedManagedBean + ".detailSetup'}'\">\n"
                                     + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][" + variable + "][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + relatedManagedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
@@ -418,14 +399,14 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                                     + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
                                     + "<h:outputText value=\" \"/>\n"
-                                    + "<h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroy'}'\">\n" 
+                                    + "<h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroy'}'\">\n"
                                     + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][" + variable + "][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + relatedManagedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
                                     + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
                                     + "</h:column>\n";
-                            
+
                             JsfTable.createTable(controller, typeElement, variable + "." + propName, stringBuffer, commands, embeddedPkSupport, tableVarName);
                             stringBuffer.append("</h:dataTable>\n");
                             stringBuffer.append("</h:panelGroup>\n");

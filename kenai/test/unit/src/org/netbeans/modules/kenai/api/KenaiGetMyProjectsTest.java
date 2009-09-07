@@ -73,8 +73,8 @@ public class KenaiGetMyProjectsTest extends NbTestCase {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
             System.setProperty("kenai.com.url", "https://kenai.com/");
-            System.out.println("kurl " + System.getProperty("kenai.com.url"));
             instance = Kenai.getDefault();
+            System.out.println("kurl " + instance.getUrl());
             if (uname == null) {
                 uname = System.getProperty("kenai.user.login");
                 passw = System.getProperty("kenai.user.password");

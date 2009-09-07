@@ -63,6 +63,7 @@ public final class JavacardDeviceKeyNames {
     //Display name and device ID
     public static final String DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP = "javacard.device.nosuspend";  //NOI18N
     //If true, pass -nosuspend
+    public static final String DEVICE_IS_REMOTE = "javacard.device.is.remotehost"; //NOI18N
 
     private JavacardDeviceKeyNames(){}
 }

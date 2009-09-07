@@ -44,7 +44,9 @@ METHOD     display(port)                              Object
 METHOD     dup                                        Object
 METHOD     enum_for(method, *args)                    Object
 METHOD     eql?(other)                                Module
+METHOD     eql?(other)                                Object
 METHOD     equal?(other)                              Module
+METHOD     equal?(other)                              Object
 METHOD     eval(string, binding, filename             Kernel
 METHOD     exec(command, arg)                         Kernel
 METHOD     exit!(fixnum)                              Kernel
@@ -167,6 +169,7 @@ METHOD     throw(symbol, obj)                         Kernel
 METHOD     to_a                                       Object
 METHOD     to_enum(method, *args)                     Object
 METHOD     to_s                                       Module
+METHOD     to_s                                       Object
 METHOD     trace_var(symbol)                          Kernel
 METHOD     trace_var(symbol, cmd)                     Kernel
 METHOD     trap(signal)                               Kernel

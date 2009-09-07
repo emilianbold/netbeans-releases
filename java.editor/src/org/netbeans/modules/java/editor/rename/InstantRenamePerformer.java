@@ -94,6 +94,8 @@ import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.JavaKit.JavaDeleteCharAction;
+import org.netbeans.modules.editor.java.RunOffAWT;
+import org.netbeans.modules.editor.java.RunOffAWT.Worker;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -142,8 +144,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
         
 	for (Token h : highlights) {
-	    Position start = NbDocument.createPosition(doc, h.offset(null), Bias.Backward);
-	    Position end = NbDocument.createPosition(doc, h.offset(null) + h.length(), Bias.Forward);
+            // type parameter name is represented as html tag -> ignore surrounding <> in rename
+            int delta = h.id() == JavadocTokenId.HTML_TAG ? 1 : 0;
+	    Position start = NbDocument.createPosition(doc, h.offset(null) + delta, Bias.Backward);
+	    Position end = NbDocument.createPosition(doc, h.offset(null) + h.length() - delta, Bias.Forward);
 	    MutablePositionRegion current = new MutablePositionRegion(start, end);
 	    
 	    if (isIn(current, caretOffset)) {
@@ -195,22 +199,21 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
             
             final boolean[] wasResolved = new boolean[1];
-            @SuppressWarnings("unchecked")
-            final Set<Token>[] changePoints = new Set[1];
-            
-            js.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController controller) throws Exception {
-                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
-                        return;
-                    
-                    changePoints[0] = computeChangePoints(controller, caret, wasResolved);
+            Set<Token> changePoints = RunOffAWT.computeOffAWT(new Worker<Set<Token>>() {
+                public Set<Token> process(CompilationInfo info) {
+                    try {
+                        return computeChangePoints(info, caret, wasResolved);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                        return null;
+                    }
                 }
-            }, true);
+            }, "Instant Rename", js, Phase.RESOLVED);
             
-            if (wasResolved[0]) {
-                if (changePoints[0] != null) {
-                    doInstantRename(changePoints[0], target, caret, ident);
+            if (changePoints != null && wasResolved[0]) {
+                if (changePoints != null) {
+                    doInstantRename(changePoints, target, caret, ident);
                 } else {
                     doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
                 }
@@ -219,8 +222,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         }
     }
     private static void doFullRename(EditorCookie ec, Node n) {
@@ -261,6 +262,12 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                         if (jdts != null && JavadocImports.isInsideReference(jdts, caret)) {
                             jdts.move(caret);
                             if (jdts.moveNext() && jdts.token().id() == JavadocTokenId.IDENT) {
+                                adjustedCaret[0] = jdts.offset();
+                                insideJavadoc[0] = true;
+                            }
+                        } else if (jdts != null && JavadocImports.isInsideParamName(jdts, caret)) {
+                            jdts.move(caret);
+                            if (jdts.moveNext()) {
                                 adjustedCaret[0] = jdts.offset();
                                 insideJavadoc[0] = true;
                             }

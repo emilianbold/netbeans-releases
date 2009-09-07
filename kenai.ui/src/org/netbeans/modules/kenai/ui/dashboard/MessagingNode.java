@@ -111,21 +111,10 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
             LinkButton btn = null;
             int onlineCount = messaging.getOnlineCount();
             if( onlineCount >= 0 ) {
-                lbl = new TreeLabel(NbBundle.getMessage(MessagingNode.class, "LBL_OnlineCount", messaging.getOnlineCount())); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-
-                lbl = new TreeLabel("("); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-
-                btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_MessageCount", messaging.getMessageCount()), accessor.getOpenMessagesAction(project)); //NOI18N
+                btn = new LinkButton(messaging.getMessageCount()+"",ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), accessor.getOpenMessagesAction(project)); //NOI18N
+                btn.setHorizontalTextPosition(JLabel.LEFT);
                 buttons.add( btn );
                 panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-
-                lbl = new TreeLabel(")"); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
                 lbl = new TreeLabel("|"); //NOI18N
                 labels.add(lbl);
@@ -161,17 +150,9 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
                 panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
             }
 
-            btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_OpenWiki"), ProjectAccessor.getDefault().getOpenWikiAction(project)); //NOI18N
+            btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_ProjectDetails"), ProjectAccessor.getDefault().getDetailsAction(project)); //NOI18N
             buttons.add( btn );
             panel.add( btn, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-
-            lbl = new TreeLabel("|"); //NOI18N
-            labels.add(lbl);
-            panel.add( lbl, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-
-            btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_OpenDownloads"), ProjectAccessor.getDefault().getOpenDownloadsAction(project)); //NOI18N
-            buttons.add( btn );
-            panel.add( btn, new GridBagConstraints(7,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
             panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }

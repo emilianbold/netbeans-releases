@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
+import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesTestNode;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -76,7 +77,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=800)
+@NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=300)
 public final class LibrariesNodeFactory implements NodeFactory {
     
     /** Creates a new instance of LibrariesNodeFactory */
@@ -188,7 +189,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         },
                         null,
                         cs,
-                        null
+                        new ExtraLibrariesTestNode(project, evaluator, WebProjectProperties.J2EE_SERVER_INSTANCE, cs)
                     );
             }
             assert false: "No node for key: " + key;

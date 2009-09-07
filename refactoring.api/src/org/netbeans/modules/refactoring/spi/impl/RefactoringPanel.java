@@ -47,7 +47,6 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.Collection;
 import javax.swing.*;
-import javax.swing.ImageIcon;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.progress.ProgressHandle;
@@ -115,7 +114,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
 
     private transient JButton prevMatch = null;
     private transient JButton nextMatch = null;
-    private WeakReference refCallerTC;
+    private WeakReference<TopComponent> refCallerTC;
     private boolean inited = false;
     private Component customComponent;
 
@@ -128,7 +127,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     
     public RefactoringPanel(RefactoringUI ui, TopComponent caller) {
         if (caller!=null)
-            refCallerTC = new WeakReference(caller);
+            refCallerTC = new WeakReference<TopComponent>(caller);
         this.ui = ui;
         this.isQuery = ui.isQuery();
         refresh(true);
@@ -180,7 +179,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             c.gridy = 0;
             c.insets = new Insets(5, 5, 5, 5);
             c.weightx = 1;
-            c.fill = c.HORIZONTAL;
+            c.fill = GridBagConstraints.HORIZONTAL;
             southPanel.add(pp, c);
             
             if (!isQuery|| callback != null) {
@@ -397,16 +396,16 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         refresh(false);
     }
     
-    private CheckNode createNode(TreeElement representedObject, HashMap nodes, CheckNode root) {
+    private CheckNode createNode(TreeElement representedObject, Map<Object, CheckNode> nodes, CheckNode root) {
         //checkEventThread();
         boolean isLogical = currentView == LOGICAL;
         
         CheckNode node = null;
         if (representedObject instanceof SourceGroup) {
             //workaround for issue 52541
-            node = (CheckNode) nodes.get(((SourceGroup) representedObject).getRootFolder());
+            node = nodes.get(((SourceGroup) representedObject).getRootFolder());
         } else {
-            node = (CheckNode) nodes.get(representedObject);
+            node = nodes.get(representedObject);
         }
         if (node != null) {
             return node;
@@ -587,7 +586,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
 
         final String description = ui.getDescription();
         setToolTipText("<html>" + description + "</html>"); // NOI18N
-        final Collection elements = session.getRefactoringElements();
+        final Collection<RefactoringElement> elements = session.getRefactoringElements();
         setName(ui.getName());
         if (ui instanceof RefactoringCustomUI) {
             if (customComponent==null)
@@ -608,7 +607,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    HashSet editorSupports = new HashSet();
+                    Set<CloneableEditorSupport> editorSupports = new HashSet<CloneableEditorSupport>();
                     int errorsNum = 0;
                     if (!isQuery) {
                         for (Iterator iter = elements.iterator(); iter.hasNext(); ) {
@@ -639,7 +638,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     }
                     errorsDesc.append(']');
                     final CheckNode root = new CheckNode(null, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
-                    HashMap nodes = new HashMap();
+                    Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
                     final Cursor old = getCursor();
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -738,6 +737,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         setRefactoringEnabled(false, true);
     }
     
+    @Override
     public void requestFocus() {
         super.requestFocus();
         if (refactorButton != null) {
@@ -908,7 +908,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         if (scrollPane!=null)
             scrollPane.setViewport(null);
         if (refCallerTC != null) {
-            TopComponent tc = (TopComponent) refCallerTC.get();
+            TopComponent tc = refCallerTC.get();
             if (tc != null && tc.isShowing()) {
                 tc.requestActive();
             }

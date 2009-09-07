@@ -183,3 +183,9 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-kenai-ui" value="${javadoc.web.root}/org-netbeans-modules-kenai-ui"/>
 <property name="javadoc.docs.org-netbeans-spi-editor-hints" value="${javadoc.web.root}/org-netbeans-spi-editor-hints"/>
 <property name="javadoc.docs.org-netbeans-core-ide" value="${javadoc.web.root}/org-netbeans-core-ide"/>
+<property name="javadoc.docs.org-netbeans-modules-jellytools-cnd" value="${javadoc.web.root}/org-netbeans-modules-jellytools-cnd"/>
+<property name="javadoc.docs.org-netbeans-modules-jellytools-enterprise" value="${javadoc.web.root}/org-netbeans-modules-jellytools-enterprise"/>
+<property name="javadoc.docs.org-netbeans-modules-jellytools-ide" value="${javadoc.web.root}/org-netbeans-modules-jellytools-ide"/>
+<property name="javadoc.docs.org-netbeans-modules-jellytools-java" value="${javadoc.web.root}/org-netbeans-modules-jellytools-java"/>
+<property name="javadoc.docs.org-netbeans-modules-jellytools-platform" value="${javadoc.web.root}/org-netbeans-modules-jellytools-platform"/>
+<property name="javadoc.docs.org-netbeans-modules-jellytools-ruby" value="${javadoc.web.root}/org-netbeans-modules-jellytools-ruby"/>

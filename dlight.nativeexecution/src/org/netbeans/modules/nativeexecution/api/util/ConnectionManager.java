@@ -75,6 +75,7 @@ import org.openide.util.NbBundle;
 public final class ConnectionManager {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
+    private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib");
 
     // Instance of the ConnectionManager
     private final static ConnectionManager instance;
@@ -290,6 +291,11 @@ public final class ConnectionManager {
                         synchronized (jsch) {
                             Session session = jsch.getSession(user, host, sshPort);
                             session.setUserInfo(userInfo);
+                            if (USE_JZLIB) {
+                                session.setConfig("compression.s2c", "zlib@openssh.com,zlib,none");//NOI18N
+                                session.setConfig("compression.c2s", "zlib@openssh.com,zlib,none");//NOI18N
+                                session.setConfig("compression_level", "9");//NOI18N
+                            }
                             session.connect();
                             return session;
                         }

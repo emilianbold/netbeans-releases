@@ -43,6 +43,8 @@ package org.netbeans.modules.j2ee.common;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JLabel;
 import java.awt.Container;
 import java.io.File;
@@ -55,9 +57,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -397,4 +401,29 @@ public class Util {
             throw new IllegalArgumentException("Unknown specification version: " + specificationVersion); // NOI18N
         }
     }
+
+    public static Set<Profile> getSupportedProfiles(Project project){
+        Set<Profile> supportedProfiles = new HashSet<Profile>();
+        J2eePlatform j2eePlatform = getPlatform(project);
+        if (j2eePlatform != null){
+            supportedProfiles = j2eePlatform.getSupportedProfiles();
+        }
+        return supportedProfiles;
+    }
+
+    private static J2eePlatform getPlatform(Project project) {
+        try {
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+            if (provider != null){
+                String instance = provider.getServerInstanceID();
+                if (instance != null) {
+                    return Deployment.getDefault().getServerInstance(provider.getServerInstanceID()).getJ2eePlatform();
+                }
+            }
+        } catch (InstanceRemovedException ex) {
+            // will return null
+        }
+        return null;
+    }
+
 }

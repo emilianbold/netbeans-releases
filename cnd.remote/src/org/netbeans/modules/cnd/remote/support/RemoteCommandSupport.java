@@ -102,13 +102,13 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public int run() {
         if (!isFailedOrCancelled()) {
-            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + executionEnvironment);
+            RemoteUtil.LOGGER.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + executionEnvironment);
             if (SwingUtilities.isEventDispatchThread()) {
                 String text = "Running remote command in EDT: " + cmd; //NOI18N
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, text, new Exception(text));
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
+                    RemoteUtil.LOGGER.log(Level.FINE, text, new Exception(text));
                 } else {
-                    log.warning(text);
+                    RemoteUtil.LOGGER.warning(text);
                 }
             }
             try {
@@ -144,25 +144,25 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 //                } catch (InterruptedException e) {
 //                }
                 int rc = process.waitFor();
-                log.fine("RemoteCommandSupport: " + cmd + " on " + executionEnvironment + " finished; rc=" + rc);
-                if (rc != 0 && log.isLoggable(Level.FINEST)) {
+                RemoteUtil.LOGGER.fine("RemoteCommandSupport: " + cmd + " on " + executionEnvironment + " finished; rc=" + rc);
+                if (rc != 0 && RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                     String errMsg;
                     final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                     while ((errMsg = reader.readLine()) != null) {
-                        log.finest("RemoteCommandSupport ERROR: " + errMsg);
+                        RemoteUtil.LOGGER.finest("RemoteCommandSupport ERROR: " + errMsg);
                     }
                 }
                 setExitStatus(rc);
             } catch (InterruptedException ie) {
                 interrupted = true;
                 // log just for information, it's quite normal
-                log.log(Level.FINEST, "Interrupted", ie);
+                RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", ie);
             } catch (InterruptedIOException ie) {
                 interrupted = true;
                 // log just for information, it's quite normal
-                log.log(Level.FINEST, "Interrupted", ie);
+                RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", ie);
             } catch (IOException ex) {
-                log.warning("IO failure during running " + cmd);
+                RemoteUtil.LOGGER.warning("IO failure during running " + cmd);
 //            } finally {
 //                disconnect();
             } finally {

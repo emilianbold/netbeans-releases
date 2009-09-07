@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor;
 
 import java.util.Collection;
@@ -44,15 +43,20 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
-import org.netbeans.modules.web.jsf.editor.tld.TldClassPathSupport;
+import org.netbeans.modules.web.jsf.editor.index.JsfBinariesIndex;
+import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
+import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.netbeans.modules.web.jsf.editor.tld.TldLibraryException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * per web-module instance
@@ -67,26 +71,29 @@ public class JsfSupport {
     static {
         LOGGER.setLevel(Level.ALL);
     }
-
     private static final WeakHashMap<WebModule, JsfSupport> INSTANCIES = new WeakHashMap<WebModule, JsfSupport>();
 
     public static JsfSupport findFor(Source source) {
         FileObject fo = source.getFileObject();
-        if(fo == null) {
+        if (fo == null) {
             return null;
         } else {
             return findFor(fo);
         }
     }
 
+    public static JsfSupport findFor(Document doc) {
+        return findFor(DataLoadersBridge.getDefault().getFileObject(doc));
+    }
+
     public static JsfSupport findFor(FileObject fo) {
         WebModule wm = WebModule.getWebModule(fo);
-        if(wm == null) {
+        if (wm == null) {
             return null;
         }
         synchronized (INSTANCIES) {
             JsfSupport instance = INSTANCIES.get(wm);
-            if(instance == null) {
+            if (instance == null) {
                 instance = new JsfSupport(wm);
                 INSTANCIES.put(wm, instance);
             }
@@ -94,8 +101,7 @@ public class JsfSupport {
         }
 
     }
-
-    private TldClassPathSupport cpSupport;
+    private TldLibrariesCache tldLibrariesCache;
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private WebModule wm;
     private ClassPath classpath;
@@ -107,7 +113,7 @@ public class JsfSupport {
 
         this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
         //create classpath support
-        this.cpSupport = new TldClassPathSupport(classpath);
+        this.tldLibrariesCache = new TldLibrariesCache(this);
 
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
         //register html extension
@@ -129,9 +135,13 @@ public class JsfSupport {
         return wm.getDocumentBase().toString();
     }
 
-    /** Library's uri to library map */
-    public Map<String, TldLibrary> getTldLibraries() {
-        return cpSupport.getLibraries();
+    public TldLibrary getTldLibrary(String namespace) {
+        try {
+            return tldLibrariesCache.getLibrary(namespace);
+        } catch (TldLibraryException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
     }
 
     /** Library's uri to library map */
@@ -139,5 +149,11 @@ public class JsfSupport {
         return faceletsLibrarySupport.getLibraries();
     }
 
+    public JsfIndex getIndex() {
+        return JsfIndex.get(wm);
+    }
 
+    public JsfBinariesIndex getBinariesIndex() {
+        return JsfBinariesIndex.get(wm);
+    }
 }

@@ -14,10 +14,10 @@
 <h2>Deployment Descriptor Visual Editor: Web Services</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>The Web Services tab of the deployment descriptor visual editor lets you edit the platform-specific 
-    deployment descriptors for web services in the project if you are deploying to the Sun Java System Application Server/GlassFish.</p>
+    deployment descriptors for web services in the project if you are deploying to the GlassFish application server or Sun Java System Application Server.</p>
   
 <p>A web or enterprise application will only contain the <tt>sun-web.xml</tt>, <tt>sun-ejb-jar.xml</tt> or <tt>sun-application-client.xml</tt> 
-deployment descriptors if the target server is the Sun Java System Application Server/GlassFish.</p>
+deployment descriptors if the target server is the GlassFish application server or Sun Java System Application Server.</p>
 
 <p>You get to this pane by expanding your project's Configuration Files node in the Projects window 
 and double-clicking <tt>sun-web.xml</tt>, <tt>sun-ejb-jar.xml</tt> or <tt>sun-application-client.xml</tt> and clicking the Web Services tab.</p>
@@ -148,7 +148,7 @@ You generally should not need to edit this field if the endpoint endpoint is alr
           <li><b>No Security</b>. If selected, the application does not require any authentication. </li>
           <li><b>Message Security.</b> (see above)</li>
           <li><b>Login Configuration Realm.</b> If selected, you must specify a realm that exists on
-              the Sun Java System Application Server/GlassFish and specify one of the following authentication options:
+              the GlassFish application server and specify one of the following authentication options:
               <ul>    
               <li><b>Basic</b>. The application uses basic authentication, that is, a user ID and password.</li>
               <li><b>Client Certification</b>. The application authenticates with a client certificate.</li>

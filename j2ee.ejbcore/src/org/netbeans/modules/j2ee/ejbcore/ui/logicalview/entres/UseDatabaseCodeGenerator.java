@@ -273,7 +273,7 @@ public class UseDatabaseCodeGenerator implements CodeGenerator {
             MetadataModel<WebAppMetadata> metadataModel = WebModule.getWebModule(fileObject).getMetadataModel();
             metadataModel.runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
                 public Void run(WebAppMetadata metadata) throws Exception {
-                    ResourceRef[] refs = metadata.getRoot().getResourceRef();
+                    List<ResourceRef> refs = metadata.getResourceRefs();
                     for (ResourceRef ref : refs) {
                         String refName = ref.getResRefName();
                         Datasource ds = findDatasourceForReference(holder, j2eeModuleProvider, refName);

@@ -117,7 +117,7 @@ public abstract class RestSupport {
     public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";//NOI18N
     public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";//NOI18N
     public static final String REST_API_JAR = "jsr311-api.jar";//NOI18N
-    public static final String REST_RI_JAR = "jersey.jar";//NOI18N
+    public static final String REST_RI_JAR = "jersey";//NOI18N
     public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
     public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";//NOI18N
     public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18

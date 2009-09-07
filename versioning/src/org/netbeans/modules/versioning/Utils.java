@@ -63,6 +63,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Utilities;
 
 /**
  * Utilities for Versioning SPI classes. 
@@ -119,6 +120,29 @@ public class Utils {
         if (VersioningSupport.isFlat(ancestor)) {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
+        
+        String filePath = file.getAbsolutePath();
+        String ancestorPath = ancestor.getAbsolutePath();
+        if(Utilities.isWindows()) {
+            if(filePath.indexOf("~") < 0 && ancestorPath.indexOf("~") < 0) {
+                if(filePath.length() < ancestorPath.length()) {
+                    return false;
+                }
+            }
+        } else if (Utilities.isMac()) {
+            // Mac is not case sensitive, cannot use the else statement
+            if(filePath.length() < ancestorPath.length()) {
+                return false;
+            }
+        } else {
+            if(!filePath.startsWith(ancestorPath)) {
+                return false;
+            }
+        }
+
+        // get sure as it still could be something like:
+        // ancestor: /home/dil
+        // file:     /home/dil1/dil2
         for (; file != null; file = file.getParentFile()) {
             if (file.equals(ancestor)) return true;
         }

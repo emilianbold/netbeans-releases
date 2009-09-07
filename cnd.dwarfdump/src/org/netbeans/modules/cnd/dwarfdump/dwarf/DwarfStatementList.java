@@ -185,7 +185,12 @@ public class DwarfStatementList {
         if (fileEntry.dirIndex == 0) {
             result = "." + File.separator + fileEntry.fileName; // NOI18N
         } else {
-            result = includeDirs.get(fileEntry.dirIndex - 1) + File.separator + fileEntry.fileName;
+            String dir = includeDirs.get(fileEntry.dirIndex - 1);
+            if (dir.endsWith("\\") || dir.endsWith("/")) { // NOI18N
+                result = dir + fileEntry.fileName;
+            } else {
+                result = dir + File.separator + fileEntry.fileName;
+            }
         }        
         
         return result;

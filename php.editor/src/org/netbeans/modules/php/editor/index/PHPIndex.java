@@ -818,11 +818,13 @@ public class PHPIndex {
                 foundTypeName = (foundTypeName != null) ? foundTypeName.toLowerCase() : null;
 
                 if (forConstructor) {
-                    if (!foundTypeName.startsWith(typeName.toLowerCase())) {
+                    if (foundTypeName != null && typeName != null &&
+                            !foundTypeName.startsWith(typeName.toLowerCase())) {
                         continue;
                     }
                 } else {
-                    if (!typeName.toLowerCase().equals(foundTypeName)) {
+                    if (foundTypeName != null && typeName != null &&
+                            !typeName.toLowerCase().equals(foundTypeName)) {
                         continue;
                     }
                 }

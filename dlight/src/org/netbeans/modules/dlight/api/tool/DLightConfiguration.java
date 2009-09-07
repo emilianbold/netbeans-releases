@@ -86,6 +86,7 @@ public final class DLightConfiguration {
     private final FileObject rootFolder;
     private final ToolsConfiguration toolsConfiguration;
     private final DLightConfigurationOptions configurationOptions;
+    private final String displayedName;
 
     static DLightConfiguration create(FileObject configurationRoot) {
         return new DLightConfiguration(configurationRoot);
@@ -105,7 +106,16 @@ public final class DLightConfiguration {
         this.toolsConfiguration = toolsConfiguration;
         this.rootFolder = configurationRoot;
         this.configurationOptions = getConfigurationOptions();
+        this.displayedName = configurationRoot.getAttribute("displayedName") == null ? configurationRoot.getName() : (String)configurationRoot.getAttribute("displayedName");//NOI18N
 
+    }
+
+    public final String getDisplayedName(){
+        return displayedName;
+    }
+
+    final ToolsConfiguration getToolsConfiguration(){
+        return toolsConfiguration;
     }
 
     /**
@@ -118,8 +128,8 @@ public final class DLightConfiguration {
         }
     }
 
-    public List<Indicator> getIndicators() {
-        List<Indicator> result = new ArrayList<Indicator>();
+    public List<Indicator<?>> getIndicators() {
+        List<Indicator<?>> result = new ArrayList<Indicator<?>>();
         List<DLightTool> tools = getToolsSet();
         for (DLightTool tool : tools) {
             result.addAll(tool.getIndicators());
@@ -273,4 +283,6 @@ public final class DLightConfiguration {
             return null;
         }
     }
+
+   
 }

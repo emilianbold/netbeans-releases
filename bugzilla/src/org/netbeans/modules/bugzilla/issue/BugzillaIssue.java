@@ -66,11 +66,14 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -78,6 +81,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -190,6 +194,7 @@ public class BugzillaIssue extends Issue {
     }
 
     private Map<String, String> attributes;
+    private Map<String, TaskOperation> availableOperations;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
@@ -331,20 +336,45 @@ public class BugzillaIssue extends Issue {
         return attributes;
     }
 
-    @Override
     public void setSeen(boolean seen) throws IOException {
-        super.setSeen(seen);
+        IssueCacheUtils.setSeen(this, seen);
     }
 
-    @Override
+    private boolean wasSeen() {
+        return IssueCacheUtils.wasSeen(this);
+    }
+
+    // XXX unify with issuepanel
+    public long getLastModify() {
+        String value = getFieldValue(IssueField.MODIFICATION);
+        try {
+            Date d = CC_DATE_FORMAT.parse(value);
+            return d.getTime();
+        } catch (ParseException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return -1;
+    }
+
+    public long getCreated() {
+        String value = getFieldValue(IssueField.CREATION);
+        try {
+            Date d = CC_DATE_FORMAT.parse(value);
+            return d.getTime();
+        } catch (ParseException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return -1;
+    }
+
     public String getRecentChanges() {
         if(wasSeen()) {
             return "";                                                          // NOI18N
         }
         int status = repository.getIssueCache().getStatus(getID());
-        if(status == Issue.ISSUE_STATUS_NEW) {
+        if(status == IssueCache.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
-        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
             for (IssueField f : IssueField.values()) {
@@ -487,6 +517,7 @@ public class BugzillaIssue extends Issue {
         assert !taskData.isPartial();
         data = taskData;
         attributes = null; // reset
+        availableOperations = null;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
@@ -843,6 +874,31 @@ public class BugzillaIssue extends Issue {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    /**
+     * Returns available operations for this issue
+     * @return
+     */
+    Map<String, TaskOperation> getAvailableOperations () {
+        if (availableOperations == null) {
+            HashMap<String, TaskOperation> operations = new HashMap<String, TaskOperation>(5);
+            List<TaskAttribute> allOperations = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_OPERATION);
+            for (TaskAttribute operation : allOperations) {
+                // the test must be here, 'operation' (applying writable action) is also among allOperations
+                if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
+                    operations.put(operation.getId().substring(TaskAttribute.PREFIX_OPERATION.length()), TaskOperation.createFrom(operation));
+                }
+            }
+            availableOperations = operations;
+        }
+
+        return availableOperations;
+    }
+
+    boolean isResolveAvailable () {
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        return operations.containsKey(BugzillaOperation.resolve.name());
     }
 
     private Map<String, String> getSeenAttributes() {

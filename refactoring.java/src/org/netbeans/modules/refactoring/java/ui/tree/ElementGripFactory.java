@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
@@ -57,7 +58,7 @@ import org.openide.filesystems.FileObject;
 public class ElementGripFactory {
 
     private static ElementGripFactory instance;
-    private WeakHashMap <FileObject, Interval> map = new WeakHashMap();
+    private final Map<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
     
     /**
      * Creates a new instance of ElementGripFactory
@@ -81,7 +82,7 @@ public class ElementGripFactory {
         if (start==null)
             return null;
         try {
-            return (ElementGrip) start.get(position).item;
+            return start.get(position).item;
         } catch (RuntimeException e) {
             return start.item;
         }
@@ -89,7 +90,7 @@ public class ElementGripFactory {
     
     public ElementGrip getParent(ElementGrip el) {
         Interval start = map.get(el.getFileObject());
-        return (ElementGrip) start.getParent(el);
+        return start.getParent(el);
     }
 
     public void put(FileObject parentFile, TreePath tp, CompilationInfo info) {
@@ -102,7 +103,7 @@ public class ElementGripFactory {
     
     private static class Interval {
         long from=-1,to=-1;
-        Set<Interval> subintervals= new HashSet();
+        Set<Interval> subintervals= new HashSet<Interval>();
         ElementGrip item = null;
         
         Interval get(long position) {

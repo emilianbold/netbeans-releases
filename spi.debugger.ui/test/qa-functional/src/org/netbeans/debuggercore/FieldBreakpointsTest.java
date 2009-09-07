@@ -48,7 +48,6 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -56,13 +55,11 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 
 
@@ -70,7 +67,7 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author ehucka, Revision Petr Cyhelsky
  */
-public class FieldBreakpointsTest extends JellyTestCase {
+public class FieldBreakpointsTest extends DebuggerTestCase {
 
     private static String[] tests = new String[] {
         "testFieldBreakpointCreation",
@@ -111,24 +108,9 @@ public class FieldBreakpointsTest extends JellyTestCase {
      *
      */
     @Override
-    public void setUp() throws IOException {        
-        System.out.println("########  " + getName() + "  ####### ");
-        if (!initialized)
-        {
-            openDataProjects(Utilities.testProjectName);
-            Utilities.cleanBuildTestProject();
-            initialized = true;
-        }
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
+    public void setUp() throws IOException {
+        super.setUp();
+        System.out.println("########  " + getName() + "  ####### ");        
     }
 
     /**

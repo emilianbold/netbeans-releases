@@ -38,14 +38,14 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;

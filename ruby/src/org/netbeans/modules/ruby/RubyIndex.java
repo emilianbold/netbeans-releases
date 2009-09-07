@@ -44,11 +44,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -762,6 +764,22 @@ public final class RubyIndex {
         return fqns;
     }
 
+    /**
+     * Gets the super clases of the given class.
+     * @param fqn
+     * @return
+     */
+    public List<IndexedClass> getSuperClasses(String fqn) {
+        // todo: performance?
+        List<IndexedClass> superClasses = new ArrayList<IndexedClass>();
+        IndexedClass superClass = getSuperclass(fqn);
+        while (superClass != null) {
+            superClasses.add(superClass);
+            superClass = getSuperclass(superClass.getName());
+        }
+        return superClasses;
+    }
+
     public IndexedClass getSuperclass(String fqn) {
         final Set<IndexResult> result = new HashSet<IndexResult>();
 
@@ -879,24 +897,68 @@ public final class RubyIndex {
         return classes;
     }
     
-    /** Return the most distant method in the hierarchy that is overriding the given method, or null
-     * @todo Make this method actually compute most distant ancestor
-     * @todo Use arglist arity comparison to reject methods that are not overrides...
+    /** 
+     * Gets the most distant method in the hierarchy that the given method overrides or
+     * the method itself if it doesn't override any super methods.
+     * 
+     * @return method or <code>null</code> if the was no such method.
      */
-    public IndexedMethod getOverridingMethod(String className, String methodName) {
+    public IndexedMethod getSuperMethod(String className, String methodName) {
         Set<IndexedMethod> methods = getInheritedMethods(className, methodName, QuerySupport.Kind.EXACT);
 
-        // TODO - this is only returning ONE match, not the most distant one. I really need to
-        // produce a RubyIndex method for this which can walk in there and do a decent job!
-        
-        for (IndexedMethod method : methods) {
-            // getInheritedMethods may return methods ON fqn itself
-            if (!method.getIn().equals(className)) {
-                return method;
+        // todo: performance?
+        List<IndexedClass> superClasses = getSuperClasses(className);
+        Collections.reverse(superClasses);
+
+        for (IndexedClass superClass : superClasses) {
+            for (IndexedMethod method : methods) {
+                // getInheritedMethods may return methods ON fqn itself
+                String clz = method.getIn();
+                if (superClass.getName().equals(clz) && !clz.equals(className)) {
+                    return method;
+                }
             }
         }
-        
-        return null;
+        return !methods.isEmpty() ? methods.iterator().next() : null;
+    }
+
+    /**
+     * Gets all the methods that override the given method.
+     *
+     * @param methodName the name of the method.
+     * @param className the (fqn) class name where the method is defined.
+     * @return a set containing the overriding methods.
+     */
+    public Set<IndexedMethod> getOverridingMethods(String methodName, String className) {
+        Set<IndexedMethod> result = new HashSet<IndexedMethod>();
+        Set<IndexedMethod> methods = getMethods(methodName, className, QuerySupport.Kind.EXACT);
+        for (IndexedMethod method : methods) {
+            Set<IndexedClass> subClasses = getSubClasses(method.getIn(), null, null, false);
+            for (IndexedClass subClass : subClasses) {
+                result.addAll(getMethods(method.getName(), subClass.getName(), QuerySupport.Kind.EXACT));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Gets all the methods from the given class' hiearchy that override the 
+     * given method.
+     * 
+     * @param methodName
+     * @param className
+     * @return
+     */
+    public Set<IndexedMethod> getAllOverridingMethodsInHierachy(String methodName, String className) {
+
+        IndexedMethod superMethod = getSuperMethod(className, methodName);
+        if (superMethod == null) {
+            return Collections.emptySet();
+        }
+        Set<IndexedMethod> result = new HashSet<IndexedMethod>();
+        result.add(superMethod);
+        result.addAll(getOverridingMethods(superMethod.getName(), superMethod.getIn()));
+        return result;
     }
 
     Set<IndexedMethod> getInheritedMethods(RubyType receiverType, String prefix, QuerySupport.Kind kind) {
@@ -1055,6 +1117,10 @@ public final class RubyIndex {
             }
             
             String[] signatures = map.getValues(FIELD_METHOD_NAME);
+            String className = map.getValue(FIELD_CLASS_NAME);
+            if (className == null) {
+                className = "";
+            }
 
             if (signatures != null) {
                 for (String signature : signatures) {
@@ -1063,8 +1129,9 @@ public final class RubyIndex {
                         continue;
                     }
 
+                    String seenSignature = signature + ";" + className;
                     // Prevent duplicates when method is redefined
-                    if (!seenSignatures.contains(signature)) {
+                    if (!seenSignatures.contains(seenSignature)) {
                         if (signature.startsWith(prefix)) {
                             if (kind == QuerySupport.Kind.EXACT) {
                                 // Ensure that the method is not longer than the prefix
@@ -1079,7 +1146,7 @@ public final class RubyIndex {
                                 (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
                             }
 
-                            seenSignatures.add(signature);
+                            seenSignatures.add(seenSignature);
 
                             IndexedMethod method = createMethod(signature, map, inheriting);
                             method.setSmart(!haveRedirected);

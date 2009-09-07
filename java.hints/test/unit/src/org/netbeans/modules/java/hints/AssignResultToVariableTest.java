@@ -124,9 +124,9 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
     
     public void testCommentsCopied() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void t() {/*t*/get();\n} String get() {return null;}}",
-                       81 - 25,
-                       "0:55-0:58:hint:Assign Return Value To New Variable",
+                       "package test; public class Test {public void t() {\n/*t*/get();\n} String get() {return null;}}",
+                       82 - 25,
+                       "1:5-1:8:hint:Assign Return Value To New Variable",
                        "FixImpl",
                        "package test; public class Test {public void t() { /*t*/ String get = get(); } String get() {return null;}}");
     }

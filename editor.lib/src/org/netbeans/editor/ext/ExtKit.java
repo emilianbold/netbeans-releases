@@ -68,6 +68,7 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.EditorActionNames;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -111,7 +112,7 @@ public class ExtKit extends BaseKit {
     public static final String gotoAction = "goto"; // NOI18N
 
     /** Goto declaration depending on the context under the caret */
-    public static final String gotoDeclarationAction = "goto-declaration"; // NOI18N
+    public static final String gotoDeclarationAction = EditorActionNames.gotoDeclaration; // NOI18N
 
     /** Goto source depending on the context under the caret */
     public static final String gotoSourceAction = "goto-source"; // NOI18N
@@ -160,7 +161,7 @@ public class ExtKit extends BaseKit {
     public static final String toggleCommentAction = "toggle-comment"; // NOI18N
     
     /** Toggle the toolbar */
-    public static final String toggleToolbarAction = "toggle-toolbar"; // NOI18N
+    public static final String toggleToolbarAction = EditorActionNames.toggleToolbar;
    
     /** Trimmed text for go to submenu*/
     public static final String TRIMMED_TEXT = "trimmed-text";    //NOI18N
@@ -553,8 +554,10 @@ public class ExtKit extends BaseKit {
 
     }
 
-    /** Action to go to the declaration of the variable under the caret.
-    */
+    /**
+     * Action to go to the declaration of the variable under the caret.
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
     public static class GotoDeclarationAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =-6440495023918097760L;

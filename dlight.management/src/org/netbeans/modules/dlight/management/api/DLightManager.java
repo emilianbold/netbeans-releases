@@ -51,12 +51,15 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.management.api.impl.VisualizerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
@@ -91,7 +94,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
      *
      */
     public DLightManager() {
-        for (DLightSessionListener l : IndicatorsComponentProvider.getInstance().getIndicatorComponentListeners()){
+        for (DLightSessionListener l : IndicatorsComponentProvider.getInstance().getIndicatorComponentListeners()) {
             addDLightSessionListener(l);
         }
         //this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponentListener());
@@ -160,8 +163,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 }
             }
         }
-        List<Indicator> indicators = session.getIndicators();
-        for (Indicator ind : indicators) {
+        List<Indicator<?>> indicators = session.getIndicators();
+        for (Indicator<?> ind : indicators) {
             IndicatorAccessor.getDefault().removeIndicatorActionListener(ind, this);
         }
 
@@ -260,15 +263,15 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DLightSession session = new DLightSession(sessionName);
         session.setExecutionContext(new ExecutionContext(target, configuration));
         sessions.add(session);
-        List<Indicator> indicators = session.getIndicators();
-        for (Indicator ind : indicators) {
+        List<Indicator<?>> indicators = session.getIndicators();
+        for (Indicator<?> ind : indicators) {
             IndicatorAccessor.getDefault().addIndicatorActionListener(ind, this);
         }
         notifySessionAdded(session);
         return session;
     }
 
-    private DLightSession findIndicatorOwner(Indicator ind) {
+    private DLightSession findIndicatorOwner(Indicator<?> ind) {
         for (DLightSession session : sessions) {
             if (session.containsIndicator(ind)) {
                 return session;
@@ -277,11 +280,13 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return activeSession;
     }
 
-    private Visualizer openVisualizer(String toolName, final VisualizerConfiguration configuration, DLightSession dlightSession) {
+    private Visualizer openVisualizer(String toolName, final VisualizerConfiguration visualizerConfiguration, DLightSession dlightSession) {
         Visualizer visualizer = null;
+
         //Check if we have already instance in the session:
-        if (dlightSession.hasVisualizer(toolName, configuration.getID())) {
-            visualizer = dlightSession.getVisualizer(toolName, configuration.getID());
+
+        if (dlightSession.hasVisualizer(toolName, visualizerConfiguration.getID())) {
+            visualizer = dlightSession.getVisualizer(toolName, visualizerConfiguration.getID());
             VisualizerContainer container = visualizer.getDefaultContainer();
             DLightTool tool = dlightSession.getToolByName(toolName);
             if (tool != null) {
@@ -310,10 +315,23 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
          *
          */
 
-        DataProvider dataProvider = dlightSession.createDataProvider(configuration.getSupportedDataScheme(), configuration.getMetadata());
+        DataProvider dataProvider = null;
+
+        DataModelScheme visualizerDataScheme = visualizerConfiguration.getSupportedDataScheme();
+
+        if (visualizerConfiguration instanceof TableBasedVisualizerConfiguration) {
+            TableBasedVisualizerConfiguration vc = (TableBasedVisualizerConfiguration) visualizerConfiguration;
+            DataTableMetadata tableMetadata = vc.getMetadata();
+
+            dataProvider = dlightSession.createDataProvider(visualizerDataScheme, tableMetadata);
+        } else {
+            dataProvider = dlightSession.createDataProvider(visualizerDataScheme, null);
+        }
+
+
         if (dataProvider != null) {
             // Found! Can create visualizer with this id for this dataProvider
-            visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, dataProvider);
+            visualizer = VisualizerProvider.getInstance().createVisualizer(visualizerConfiguration, dataProvider);
             if (visualizer instanceof SessionStateListener) {
                 dlightSession.addSessionStateListener((SessionStateListener) visualizer);
                 ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
@@ -323,9 +341,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         //there is one more changes to find VisualizerDataProvider without any storage attached
 
         if (visualizer == null) {
-            VisualizerDataProvider visDataProvider = dlightSession.createVisualizerDataProvider(configuration.getSupportedDataScheme());
+            VisualizerDataProvider visDataProvider = dlightSession.createVisualizerDataProvider(visualizerConfiguration.getSupportedDataScheme());
             if (visDataProvider != null) {
-                visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, visDataProvider);
+                visualizer = VisualizerProvider.getInstance().createVisualizer(visualizerConfiguration, visDataProvider);
                 if (visualizer instanceof SessionStateListener) {
                     dlightSession.addSessionStateListener((SessionStateListener) visualizer);
                     ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
@@ -334,7 +352,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
 
         if (visualizer == null) {
-            log.fine("Unable to find factory to create Visualizer with ID == " + configuration.getID()); // NOI18N
+            log.fine("Unable to find factory to create Visualizer with ID == " + visualizerConfiguration.getID()); // NOI18N
             return null;
         }
 
@@ -346,7 +364,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             container.addVisualizer(toolName, visualizer);
         }
         container.showup();
-        dlightSession.putVisualizer(toolName, configuration.getID(), visualizer);
+        dlightSession.putVisualizer(toolName, visualizerConfiguration.getID(), visualizer);
         return visualizer;
     }
 
@@ -454,8 +472,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             openEmptyVisualizer(IndicatorAccessor.getDefault().getToolName(source), session);
         }
     }
-
-
 
     public void mouseClickedOnIndicator(Indicator source) {
         DLightSession session = findIndicatorOwner(source);

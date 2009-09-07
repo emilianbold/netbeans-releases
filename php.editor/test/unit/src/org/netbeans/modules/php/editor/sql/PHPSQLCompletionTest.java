@@ -41,7 +41,7 @@ package org.netbeans.modules.php.editor.sql;
 
 import javax.swing.text.Document;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.ParserTestBase;
 
@@ -208,7 +208,7 @@ public class PHPSQLCompletionTest extends ParserTestBase {
         int caretOffset = testString.indexOf('|');        
         testString = testString.replace("|", "");
         
-        Document document = getDocument(testString, PHPLanguage.PHP_MIME_TYPE, PHPTokenId.language());
+        Document document = getDocument(testString, FileUtils.PHP_MIME_TYPE, PHPTokenId.language());
 
         PHPSQLStatement stmt = PHPSQLStatement.computeSQLStatement(document, caretOffset);
         if (resultString == null) {

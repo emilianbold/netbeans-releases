@@ -1,9 +1,9 @@
 Code completion result for source line:
 arr.each { |_| Huh.err| }
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CALL       each { }                                   GDBM
+CALL       each { }                                   Dir
 CALL       each(*args) { }                            Zlib::GzipReader
-CALL       each(sep_string) { }                       StringIO
+CALL       each(sep_string) { }                       IO
 CALL       each(separator) { }                        String
 ------------------------------------
 METHOD     errors                          [STATIC]   OpenSSL

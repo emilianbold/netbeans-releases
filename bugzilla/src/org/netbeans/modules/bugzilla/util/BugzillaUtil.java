@@ -151,4 +151,10 @@ public class BugzillaUtil {
         }
         return keywordsString;
     }
+
+    public static boolean isAssertEnabled() {
+        boolean retval = false;
+        assert retval = true;
+        return retval;
+    }
 }

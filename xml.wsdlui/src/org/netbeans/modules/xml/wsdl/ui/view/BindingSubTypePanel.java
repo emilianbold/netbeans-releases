@@ -65,6 +65,7 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -177,6 +178,10 @@ public class BindingSubTypePanel extends javax.swing.JPanel {
             DefaultComboBoxModel defaultComboBoxModel = new DefaultComboBoxModel(templateVect);
             templateComboBox = new JComboBox(defaultComboBoxModel);
             templateComboBox.setRenderer(new MyComboBoxRenderer());
+            templateComboBox.setName("templateComboBox");
+            templateComboBox.getAccessibleContext().setAccessibleName("Available Configuration Templates");
+            templateComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BindingSubTypePanel.class, "BindingSubTypePanel.templateComboBox.accessibleDescription"));
+            templateComboBox.setToolTipText(NbBundle.getMessage(BindingSubTypePanel.class, "BindingSubTypePanel.templateComboBox.accessibleDescription"));
             if (isDefaultAvailable && firstTemplate != null) {
                 if (defaultTemplate == null) {
                     defaultTemplate = firstTemplate;

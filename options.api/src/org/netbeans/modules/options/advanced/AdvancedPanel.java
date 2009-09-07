@@ -43,7 +43,6 @@ package org.netbeans.modules.options.advanced;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -131,7 +130,7 @@ public final class AdvancedPanel extends JPanel {
         return model.getLookup ();
     }
     
-    void init (Lookup masterLookup) {
+    void init() {
         // init components
         tabbedPanel = new JTabbedPane();
         tabbedPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AdvancedPanel.class, "AdvancedPanel.tabbedPanel.AD"));
@@ -140,17 +139,15 @@ public final class AdvancedPanel extends JPanel {
         setLayout (new BorderLayout ());
         removeAll(); // #157434 - remove previous tabbedPanel
         add (tabbedPanel, BorderLayout.CENTER);
-        initTabbedPane (masterLookup);
+        initTabbedPane();
     }
 
-    private void initTabbedPane(Lookup masterLookup) {
+    private void initTabbedPane() {
         tabbedPanel.removeChangeListener(changeListener);
         tabbedPanel.removeAll();
-        List categories = model.getCategories();
+        List<String> categories = model.getCategories();
         tabbedPanel.setVisible(categories.size() > 0);
-        Iterator it = categories.iterator();
-        while (it.hasNext()) {
-            String category = (String) it.next ();
+        for (String category : categories) {
             tabbedPanel.addTab(category, new JLabel(category));
         }
         tabbedPanel.addChangeListener(changeListener);
@@ -204,14 +201,13 @@ public final class AdvancedPanel extends JPanel {
     
     private class LookupListenerImpl implements LookupListener {
         public void resultChanged(LookupEvent ev) {
-            final Lookup masterLookup = model.getLookup();
             model = new Model(subpath, listener);
             if(SwingUtilities.isEventDispatchThread()) {
-                initTabbedPane(masterLookup);
+                initTabbedPane();
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        initTabbedPane(masterLookup);
+                        initTabbedPane();
                     }
                 });
             }

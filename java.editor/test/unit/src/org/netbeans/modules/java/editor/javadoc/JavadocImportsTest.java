@@ -294,6 +294,83 @@ public class JavadocImportsTest extends JavadocTestSupport {
         exp = Arrays.<Token>asList(jdts.token());
         assertEquals(toFind.toString(), exp, tokens);
     }
+
+    public void testComputeTokensOfReferencedElementsForParams() throws Exception {
+        String code =
+                "package p;\n" +
+                "import java.util.Collections;\n" +
+                "class C {\n" +
+                "   /**\n" +
+                "    * @param <T> type parameter\n" +
+                "    * @param param2find regular parameter\n" +
+                "    * @see java.util.Collections\n" +
+                "    * @throws ThrowsUnresolved\n" +
+                "    */\n" +
+                "   public <T> void m(T param2find) throws java.io.IOException {\n" +
+                "   }\n" +
+                "}\n";
+        prepareTest(code);
+
+        Element where = findElement(code, "m(T param2find) throws");
+        assertNotNull(where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        assertNotNull(jdts);
+        List<Token> exp;
+
+        // toFind param2find of C#m
+        Element toFind = findElement(code, "param2find) throws");
+        assertNotNull(toFind);
+        List<Token> tokens = JavadocImports.computeTokensOfReferencedElements(info, where, toFind);
+        assertNotNull(toFind.toString(), tokens);
+        jdts.move(code.indexOf("param2find", code.indexOf("@param param2find")));
+        assertTrue(jdts.moveNext());
+        exp = Arrays.<Token>asList(jdts.token());
+        assertEquals(toFind.toString(), exp, tokens);
+
+        // toFind <T> of C#m
+        toFind = findElement(code, "T> void m(T");
+        assertNotNull(toFind);
+        tokens = JavadocImports.computeTokensOfReferencedElements(info, where, toFind);
+        assertNotNull(toFind.toString(), tokens);
+        jdts.move(code.indexOf("T>", code.indexOf("@param <T>")));
+        assertTrue(jdts.moveNext());
+        exp = Arrays.<Token>asList(jdts.token());
+        assertEquals(toFind.toString(), exp, tokens);
+    }
+
+    public void testFindReferencedElementForParams() throws Exception {
+        String code =
+                "package p;\n" +
+                "import java.util.Collections;\n" +
+                "class C {\n" +
+                "   /**\n" +
+                "    * @param <T> type parameter\n" +
+                "    * @param param2find regular parameter\n" +
+                "    * @see java.util.Collections\n" +
+                "    * @throws ThrowsUnresolved\n" +
+                "    */\n" +
+                "   public <T> void m(T param2find) throws java.io.IOException {\n" +
+                "   }\n" +
+                "}\n";
+        prepareTest(code);
+
+        Element where = findElement(code, "m(T param2find) throws");
+        assertNotNull(where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        assertNotNull(jdts);
+
+        // resolve @param param2find
+        Element exp = findElement(code, "param2find) throws");
+        assertNotNull(exp);
+        Element el = JavadocImports.findReferencedElement(info, code.indexOf("param2find", code.indexOf("@param param2find")));
+        assertEquals(exp, el);
+
+        // resolve @param <T>
+        exp = findElement(code, "T> void m(T");
+        assertNotNull(exp);
+        el = JavadocImports.findReferencedElement(info, code.indexOf("T>", code.indexOf("@param <T>")));
+        assertEquals(exp, el);
+    }
     
     public void testFindReferencedElement() throws Exception {
         String code = 
@@ -406,6 +483,32 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertFalse(JavadocImports.isInsideReference(jdts, code.indexOf("#", code.indexOf("link2"))));
         assertFalse(JavadocImports.isInsideReference(jdts, code.indexOf("search}\n", code.indexOf("link2"))));
         assertTrue(JavadocImports.isInsideReference(jdts, code.indexOf("util", code.indexOf("@see"))));
+    }
+
+    public void testIsInsideParamName() throws Exception {
+        String code =
+                "package p;\n" +
+                "import java.util.Collections;\n" +
+                "class C {\n" +
+                "   /**\n" +
+                "    * @param <T> type parameter\n" +
+                "    * @param param2find regular parameter\n" +
+                "    * @see java.util.Collections\n" +
+                "    * @throws ThrowsUnresolved\n" +
+                "    */\n" +
+                "   public <T> void m(T param2find) throws java.io.IOException {\n" +
+                "   }\n" +
+                "}\n";
+        prepareTest(code);
+
+        Element where = findElement(code, "m(T param2find) throws");
+        assertNotNull(where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        assertNotNull(jdts);
+
+        assertTrue(JavadocImports.isInsideParamName(jdts, code.indexOf("T> type parameter")));
+        assertTrue(JavadocImports.isInsideParamName(jdts, code.indexOf("param2find regular parameter\n")));
+        assertFalse(JavadocImports.isInsideParamName(jdts, code.indexOf("param <T>")));
     }
     
     private Element findElement(String code, String pattern) {

@@ -52,6 +52,7 @@ import org.openide.util.Lookup;
  * of the getNativeExecution() method.
  * 
  * @author gordonp
+ * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
 public abstract class NativeExecution {
 

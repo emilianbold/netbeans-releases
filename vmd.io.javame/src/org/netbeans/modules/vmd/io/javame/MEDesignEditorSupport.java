@@ -272,6 +272,8 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
                 String displayName = messageName();
                 if (! displayName.equals(tc.getDisplayName()))
                     tc.setDisplayName(displayName);
+                // XXX should probably set htmlDisplayName too, from messageHtmlName
+                // XXX should probably use messageToolTip instead
                 tc.setToolTipText(dataObject.getPrimaryFile().getPath());
             }
         });

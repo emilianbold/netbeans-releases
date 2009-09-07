@@ -47,7 +47,7 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -68,7 +68,6 @@ public abstract class PHPTestBase extends CslTestBase {
         super.setUp();
         PHPIndex.setClusterUrl("file:/bogus"); // No translation
         //getXTestJsCluster();
-        NbReaderProvider.setupReaders();
     }
     
     @Override
@@ -78,7 +77,7 @@ public abstract class PHPTestBase extends CslTestBase {
     
     @Override
     protected String getPreferredMimeType() {
-        return PHPLanguage.PHP_MIME_TYPE;
+        return FileUtils.PHP_MIME_TYPE;
     }
 
      protected @Override Map<String, ClassPath> createClassPathsForTest() {

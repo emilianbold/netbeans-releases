@@ -42,7 +42,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateMapper;
+import org.netbeans.modules.dlight.core.stack.api.support.ThreadStateMapper;
+
 
 public final class ThreadStateImpl implements ThreadState {
 
@@ -50,6 +51,8 @@ public final class ThreadStateImpl implements ThreadState {
     private final byte[] statePercentage;
     private final int size;
     private final long timestamp;
+    private final long samplePeriod;
+
     static MSAState[] collectedStates = new MSAState[]{
         null,
         null,
@@ -71,8 +74,10 @@ public final class ThreadStateImpl implements ThreadState {
         null
     };
 
-    public ThreadStateImpl(long timestamp, int[] stat) {
+    public ThreadStateImpl(long timestamp, long samplePeriod, int[] stat) {
         int count = 0;
+        this.samplePeriod = samplePeriod;
+        
         byte[] states = new byte[stat.length];
 
         for (int i = 3; i < stat.length; i++) {
@@ -169,5 +174,9 @@ public final class ThreadStateImpl implements ThreadState {
         }
 
         return 0;
+    }
+
+    public long getMSASamplePeriod() {
+        return samplePeriod;
     }
 }

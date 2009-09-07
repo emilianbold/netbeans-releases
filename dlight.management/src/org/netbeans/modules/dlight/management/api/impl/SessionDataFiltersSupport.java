@@ -58,11 +58,44 @@ public class SessionDataFiltersSupport {
         }
     }
 
-    public void removeFilter(DataFilter filter) {
+    public boolean removeFilter(DataFilter filter) {
         synchronized (lock) {
-            if (filters.remove(filter)) {
+            boolean result = filters.remove(filter);
+            if (result) {
                 notifyListeners();
             }
+            return result;
+        }
+    }
+
+    public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz){
+        synchronized (lock) {
+            Collection<T> result = new ArrayList<T>();
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
+                    result.add(clazz.cast(f));
+                }
+            }
+            return result;
+        }
+    }
+
+    public void cleanAll(){
+        synchronized (lock) {
+            filters.clear();
+            notifyListeners();
+        }
+    }
+    public void cleanAll(Class clazz){
+        synchronized (lock) {
+            Collection<DataFilter> toRemove = new ArrayList<DataFilter>();
+            for (DataFilter f : filters){
+                if (f.getClass() == clazz){
+                    toRemove.add(f);
+                }
+            }
+            filters.removeAll(toRemove);
+            notifyListeners();
         }
     }
 

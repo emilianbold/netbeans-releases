@@ -56,7 +56,7 @@ import org.openide.util.WeakListeners;
 public class WagItemsNodeChildren<T extends WagItems, C extends WagItems>
         extends Children.Keys<Object> implements PropertyChangeListener {
 
-    private static final String LOADING_KEY = "Loading...";    //NOI18N
+    private static final String LOADING_KEY = "Loading";    //NOI18N
 
     protected T wagItems;
 

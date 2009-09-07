@@ -89,7 +89,6 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -190,11 +189,11 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     /** Creates a new instance of JWSProjectProperties */
     public JWSProjectProperties(Lookup context) {
         
-        j2seProject = (Project) context.lookup(Project.class);
+        j2seProject = context.lookup(Project.class);
         
         if (j2seProject != null) {
             
-            j2sePropEval = (J2SEPropertyEvaluator) j2seProject.getLookup().lookup(J2SEPropertyEvaluator.class);
+            j2sePropEval = j2seProject.getLookup().lookup(J2SEPropertyEvaluator.class);
             
             evaluator = j2sePropEval.evaluator();
         
@@ -343,7 +342,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         // store descriptor type
         DescType descType = getSelectedDescType();
-        if (descType != null && !descType.equals("")) {
+        if (descType != null) {
             editableProps.setProperty(JNLP_DESCRIPTOR, descType.toString());
         }
         // store properties

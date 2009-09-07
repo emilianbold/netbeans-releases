@@ -58,6 +58,7 @@ import javax.swing.JComponent;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.windows.OutputWriter;
 
 /**
  * Loop parallelization advice.
@@ -125,5 +126,8 @@ public class LoopsParallelizationAdvice implements Advice {
                 }
             }
         });
+    }
+
+    public void addNotification(OutputWriter writer) {
     }
 }
