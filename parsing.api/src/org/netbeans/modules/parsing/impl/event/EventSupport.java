@@ -58,7 +58,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -321,7 +321,7 @@ public final class EventSupport {
                     final Document document = lastEditor.getDocument();
                     Source source = null;
                     if (document != null) {
-                        String mimeType = NbEditorUtilities.getMimeType (document);
+                        String mimeType = DocumentUtilities.getMimeType (document);
                         if (mimeType != null)
                             source = Source.create (document);
                     }
@@ -356,7 +356,7 @@ public final class EventSupport {
             final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != null) {
                 Document doc = lastEditor.getDocument ();
-                String mimeType = NbEditorUtilities.getMimeType (doc);
+                String mimeType = DocumentUtilities.getMimeType (doc);
                 if (doc != null && mimeType != null) {
                     Source source = Source.create(doc);
                     if (source != null) {
@@ -373,7 +373,7 @@ public final class EventSupport {
                 final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
                 final Document doc = lastEditor == null ? null : lastEditor.getDocument();
                 if (doc != null) {
-                    String mimeType = NbEditorUtilities.getMimeType (doc);
+                    String mimeType = DocumentUtilities.getMimeType (doc);
                     if (mimeType != null) {
                         source = Source.create(doc);
                     }
