@@ -156,7 +156,7 @@ public class LoopParallelizationAdvice implements Advice {
                 html, 800); // NOI18N
     }
 
-    public void setNotification(OutputWriter writer) {
+    public void addNotification(OutputWriter writer) {
         try {
             writer.println("\"" + loop.getContainingFile().getName() + "\", line " + loop.getStartPosition().getLine() + ": There is loop in function " + function.getName() + " that could be effectively parallelized.", // NOI18N
                     new OutputListener() {

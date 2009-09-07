@@ -46,13 +46,15 @@ package org.netbeans.modules.dlight.util;
  * @author Alexey Vladykin
  */
 public final class Range<T extends Number & Comparable<? super T>> {
-    public static final String STRING_DELIMITER = "..";//NOI18N
+
+    public static final String STRING_DELIMITER = ".."; // NOI18N
+
     private final T start;
     private final T end;
 
     public Range(T start, T end) {
         if (start != null && end != null && 0 < start.compareTo(end)) {
-            throw new IllegalArgumentException("Must be start <= end"); // NOI18N
+            throw new IllegalArgumentException(start + " > " + end); // NOI18N
         }
         this.start = start;
         this.end = end;
@@ -66,9 +68,18 @@ public final class Range<T extends Number & Comparable<? super T>> {
         return end;
     }
 
+    /**
+     * Extend current range to cover given range.
+     *
+     * @param range  range to cover
+     * @return extended range
+     */
+    public Range<T> extend(Range<T> range) {
+        return new Range<T>(DLightMath.min(start, range.getStart()), DLightMath.max(end, range.getEnd()));
+    }
+
     @Override
     public String toString() {
         return String.valueOf(start) + STRING_DELIMITER + String.valueOf(end); // NOI18N
     }
-
 }

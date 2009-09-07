@@ -102,8 +102,8 @@ public class StorageTest extends NbTestCase {
         storage.storeQuery(url, qName, new String[] {id1, id2});
 
         long lm = System.currentTimeMillis();
-        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr1, -1, false, lm);
-        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr2, -1, false, lm);
+        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr1, -1, -1, false, lm);
+        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr2, -1, -1, false, lm);
         
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -112,8 +112,8 @@ public class StorageTest extends NbTestCase {
         assertTrue(issues.contains(id1));
         assertTrue(issues.contains(id2));
 
-        ie1 = new IssueCache.IssueEntry(i1, null, -1, false, lm);
-        ie2 = new IssueCache.IssueEntry(i2, null, -1, false, lm);
+        ie1 = new IssueCache.IssueEntry(i1, null, -1, -1, false, lm);
+        ie2 = new IssueCache.IssueEntry(i2, null, -1, -1, false, lm);
         storage.readIssue(url, ie1);
         if(ie1.getSeenAttributes() == null) fail("missing issue id [" + id1 + "]");
         assertAttribute(ie1.getSeenAttributes(), "dummy1", "dummy3");
@@ -186,8 +186,8 @@ public class StorageTest extends NbTestCase {
         Issue i1 = new DummyIssue(id1, attr);
         Issue i2 = new DummyIssue(id2, attr);
         long lm = System.currentTimeMillis();
-        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, false, lm);
-        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, false, lm);
+        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, -1, false, lm);
+        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, -1, false, lm);
 
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);

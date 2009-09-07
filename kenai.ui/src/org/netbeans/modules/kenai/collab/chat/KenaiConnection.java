@@ -306,7 +306,7 @@ public class KenaiConnection implements PropertyChangeListener {
                     post(new Runnable() {
                         public void run() {
                             try {
-                                Kenai.getDefault().getProject(name).firePropertyChange(KenaiProject.PROP_PROJECT_NOTIFICATION, null, ne);
+                                Kenai.getDefault().getProject(name).firePropertyChange(KenaiProject.PROP_PROJECT_NOTIFICATION, null, ne.getNotification());
                             } catch (KenaiException ex) {
                                 Exceptions.printStackTrace(ex);
                             }

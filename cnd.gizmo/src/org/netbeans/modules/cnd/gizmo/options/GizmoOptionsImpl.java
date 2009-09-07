@@ -117,7 +117,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         List<DLightTool> tools = gizmoConfiguration.getToolsSet();
         for (DLightTool tool : tools) {
             String toolName = tool.getName();
-            boolean oldValue = toolConfigurations.get(toolName) == null ? true : toolConfigurations.get(toolName).getValue();
+            boolean oldValue = toolConfigurations.get(toolName) == null ? tool.isEnabled() : toolConfigurations.get(toolName).getValue();
             toolConfigurations.put(toolName, new BooleanConfiguration(null, oldValue, toolName, toolName));
             toolDescriptions.put(toolName, tool.getDetailedName());
         }

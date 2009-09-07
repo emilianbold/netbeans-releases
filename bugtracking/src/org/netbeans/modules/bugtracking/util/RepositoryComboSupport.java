@@ -464,6 +464,7 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
             System.arraycopy(repos, 0, comboData, startIndex, reposCount);
         }
         comboBox.setModel(new DefaultComboBoxModel(comboData));
+        comboBox.setSelectedItem(null);             // HACK to force itemSeleted evetn after first time selection
 
         if (comboBox.getSelectedItem() == SELECT_REPOSITORY) {
             comboBox.addItemListener(this);

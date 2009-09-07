@@ -90,4 +90,24 @@ public class DLightMath {
             return y;
         }
     }
+
+    public static<T extends Comparable> T max(T a, T b) {
+        if (a == null || b == null) {
+            return null;
+        } else if (0 < a.compareTo(b)) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
+    public static<T extends Comparable> T min(T a, T b) {
+        if (a == null || b == null) {
+            return null;
+        } else if (a.compareTo(b) <= 0) {
+            return a;
+        } else {
+            return b;
+        }
+    }
 }

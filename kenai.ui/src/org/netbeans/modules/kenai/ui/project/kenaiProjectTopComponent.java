@@ -175,13 +175,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(webLinksLayout.createSequentialGroup()
                 .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3))
+                    .add(jLabel1)
+                    .add(jLabel2)
+                    .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(wwwLabel)
                     .add(wikiLabel)
+                    .add(wwwLabel)
                     .add(downloadsLabel))
                 .addContainerGap(340, Short.MAX_VALUE))
         );
@@ -496,10 +496,18 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
         // Set default text and icon for labels with www, wiki and downloads
         wwwLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wwwLabel.text")); //NOI18N
+        wwwLabel.setToolTipText(""); //NOI18N
+        URLClickListener.deregisterAll(wwwLabel);
         wikiLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wikiLabel.text")); //NOI18N
         wikiLabel.setIcon(null);
+        wikiLabel.setToolTipText(""); //NOI18N
+        wikiLabel.setCursor(Cursor.getDefaultCursor());
+        URLClickListener.deregisterAll(wikiLabel);
         downloadsLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.downloadsLabel.text")); //NOI18N
         downloadsLabel.setIcon(null);
+        downloadsLabel.setToolTipText(""); //NOI18N
+        downloadsLabel.setCursor(Cursor.getDefaultCursor());
+        URLClickListener.deregisterAll(downloadsLabel);
 
         // Set label for www - make it link
         wwwLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + proj.getWebLocation().getPath())); //NOI18N

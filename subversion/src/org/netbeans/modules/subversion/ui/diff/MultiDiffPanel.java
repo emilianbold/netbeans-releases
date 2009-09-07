@@ -81,6 +81,7 @@ import java.util.*;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
@@ -147,9 +148,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         currentType = initialType;
         initComponents();
         setupComponents();
-        refreshSetups();
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
+        onRefreshButton();
     }
 
     /**
@@ -451,12 +452,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         executeStatusSupport = new SvnProgressSupport() {
             public void perform() {                                                
                 StatusAction.executeStatus(context, this);
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        refreshSetups();
-                    }
-                    
-                });
+                if (!isCanceled()) {
+                    refreshTask.schedule(50);
+                }
             }
         };
         SVNUrl url;
@@ -559,106 +557,130 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         return contextName;
     }
 
-
-    private void refreshSetups() {
-        assert EventQueue.isDispatchThread();
-        if (dpt != null) {
-            prepareTask.cancel();
-        }
-
-        File [] files;
-        switch (currentType) {
-        case Setup.DIFFTYPE_LOCAL:
-            displayStatuses = FileInformation.STATUS_LOCAL_CHANGE;
-            break;
-        case Setup.DIFFTYPE_REMOTE:
-            displayStatuses = FileInformation.STATUS_REMOTE_CHANGE; 
-            break;
-        case Setup.DIFFTYPE_ALL:
-            displayStatuses = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE; 
-            break;
-        default:
-            throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
-        }
-        files = SvnUtils.getModifiedFiles(context, displayStatuses);
-        
-        setups = computeSetups(files);
-        boolean propertyColumnVisible = false;
-        for (Setup setup : setups) {
-            if (setup.getPropertyName() != null) {
-                propertyColumnVisible = true;
-                break;
+    private class SetupsPrepareSupport extends SvnProgressSupport {
+        @Override
+        protected void perform() {
+            if (dpt != null) {
+                prepareTask.cancel();
             }
-        }
-        fileTable.setColumns(propertyColumnVisible ? 
-                new String[] { DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_PROPERTY, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION } :
-                new String[] { DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION }
-        );
-        fileTable.setTableModel(setupToNodes(setups));
 
-        if (setups.length == 0) {
-            String noContentLabel;
+            int status;
             switch (currentType) {
-            case Setup.DIFFTYPE_LOCAL:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoLocalChanges");
-                break;
-            case Setup.DIFFTYPE_REMOTE:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoRemoteChanges");
-                break;
-            case Setup.DIFFTYPE_ALL:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoAllChanges");
-                break;
-            default:
-                throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
+                case Setup.DIFFTYPE_LOCAL:
+                    status = FileInformation.STATUS_LOCAL_CHANGE;
+                    break;
+                case Setup.DIFFTYPE_REMOTE:
+                    status = FileInformation.STATUS_REMOTE_CHANGE;
+                    break;
+                case Setup.DIFFTYPE_ALL:
+                    status = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
             }
-            setups = null;
-            fileTable.setTableModel(new Node[0]);
-            fileTable.getComponent().setEnabled(false);
-            fileTable.getComponent().setPreferredSize(null);
-            Dimension dim = fileTable.getComponent().getPreferredSize();
-            fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-            diffView = null;
-            diffView = new NoContentPanel(noContentLabel);
-            setBottomComponent();
-            nextAction.setEnabled(false);
-            prevAction.setEnabled(false);
-            revalidate();
-            repaint();
-        } else {
-            fileTable.getComponent().setEnabled(true);
-            fileTable.getComponent().setPreferredSize(null);
-            Dimension dim = fileTable.getComponent().getPreferredSize();
-            fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-            setDiffIndex(0, 0);
-            dpt = new DiffPrepareTask(setups);
-            prepareTask = RequestProcessor.getDefault().post(dpt);
+            File[] files = SvnUtils.getModifiedFiles(context, status);
+            if (isCanceled()) {
+                return;
+            }
+            final int localDisplayStatuses = status;
+            final Setup[] localSetups = computeSetups(files, status);
+            if (localSetups == null) {
+                return;
+            }
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    displayStatuses = localDisplayStatuses;
+                    setups = localSetups;
+                    boolean propertyColumnVisible = false;
+                    for (Setup setup : setups) {
+                        if (setup.getPropertyName() != null) {
+                            propertyColumnVisible = true;
+                            break;
+                        }
+                    }
+                    fileTable.setColumns(propertyColumnVisible ? new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_PROPERTY, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION} : new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION});
+                    fileTable.setTableModel(setupToNodes(setups));
+
+                    if (setups.length == 0) {
+                        String noContentLabel;
+                        switch (currentType) {
+                            case Setup.DIFFTYPE_LOCAL:
+                                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoLocalChanges");
+                                break;
+                            case Setup.DIFFTYPE_REMOTE:
+                                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoRemoteChanges");
+                                break;
+                            case Setup.DIFFTYPE_ALL:
+                                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoAllChanges");
+                                break;
+                            default:
+                                throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
+                        }
+                        setups = null;
+                        fileTable.setTableModel(new Node[0]);
+                        fileTable.getComponent().setEnabled(false);
+                        fileTable.getComponent().setPreferredSize(null);
+                        Dimension dim = fileTable.getComponent().getPreferredSize();
+                        fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                        diffView = null;
+                        diffView = new NoContentPanel(noContentLabel);
+                        setBottomComponent();
+                        nextAction.setEnabled(false);
+                        prevAction.setEnabled(false);
+                        revalidate();
+                        repaint();
+                    } else {
+                        fileTable.getComponent().setEnabled(true);
+                        fileTable.getComponent().setPreferredSize(null);
+                        Dimension dim = fileTable.getComponent().getPreferredSize();
+                        fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                        setDiffIndex(0, 0);
+                        dpt = new DiffPrepareTask(setups);
+                        prepareTask = RequestProcessor.getDefault().post(dpt);
+                    }
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                runnable.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(runnable);
+                } catch (InterruptedException ex) {
+                    Subversion.LOG.log(Level.FINE, null, ex);
+                } catch (InvocationTargetException ex) {
+                    Subversion.LOG.log(Level.FINE, null, ex);
+                }
+            }
+        }
+
+        private Setup[] computeSetups(File[] files, int displayStatus) {
+            List<Setup> newSetups = new ArrayList<Setup>(files.length);
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                if (!file.isDirectory()) {
+                    Setup setup = new Setup(file, null, currentType);
+                    setup.setNode(new DiffNode(setup, displayStatus));
+                    newSetups.add(setup);
+                }
+                addPropertiesSetups(file, newSetups, displayStatus);
+                if (isCanceled()) {
+                    return null;
+                }
+            }
+            Collections.sort(newSetups, new SetupsComparator());
+            return newSetups.toArray(new Setup[newSetups.size()]);
         }
     }
-
-    private Setup[] computeSetups(File[] files) {
-        List<Setup> newSetups = new ArrayList<Setup>(files.length);
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (!file.isDirectory()) {
-                Setup setup = new Setup(file, null, currentType);
-                setup.setNode(new DiffNode(setup, displayStatuses));
-                newSetups.add(setup);
-            }
-            addPropertiesSetups(file, newSetups);
-        }
-        Collections.sort(newSetups, new SetupsComparator());
-        return newSetups.toArray(new Setup[newSetups.size()]);
-    }
-
-    private void addPropertiesSetups(File base, List<Setup> newSetups) {
+    
+    private void addPropertiesSetups(File base, List<Setup> newSetups, int displayStatus) {
         if (currentType == Setup.DIFFTYPE_REMOTE) return;
-        
+
         DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         PropertiesClient client = new PropertiesClient(base);
         try {
             Map<String, byte[]> baseProps = client.getBaseProperties();
             Map<String, byte[]> localProps = client.getProperties();
-            
+
             Set<String> allProps = new TreeSet<String>(localProps.keySet());
             allProps.addAll(baseProps.keySet());
             for (String key : allProps) {
@@ -669,16 +691,21 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                     Property p1 = new Property(baseProps.get(key));
                     Property p2 = new Property(localProps.get(key));
                     Difference[] diffs = diffAlgorithm.computeDiff(p1.toReader(), p2.toReader());
-                    propertiesDiffer = (diffs.length != 0); 
+                    propertiesDiffer = (diffs.length != 0);
                 }
                 if (propertiesDiffer) {
                     Setup setup = new Setup(base, key, currentType);
-                    setup.setNode(new DiffNode(setup, displayStatuses));
+                    setup.setNode(new DiffNode(setup, displayStatus));
                     newSetups.add(setup);
                 }
             }
         } catch (IOException e) {
-            Subversion.LOG.log(Level.INFO, null, e);
+            // no need to litter log with expected exceptions:
+            // when parent is not versioned, the exception will allways be thrown
+            FileInformation parentInfo = Subversion.getInstance().getStatusCache().getCachedStatus(base.getParentFile());
+            Level logLevel = parentInfo != null && (parentInfo.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0
+                    ? Level.FINE : Level.INFO;
+            Subversion.LOG.log(logLevel, null, e);
         }
     }
 
@@ -702,7 +729,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             if (currentType == Setup.DIFFTYPE_ALL) return;
             currentType = Setup.DIFFTYPE_ALL;
         }
-        refreshSetups();
+        refreshTask.schedule(0);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -782,11 +809,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
     private class RefreshViewTask implements Runnable {
         public void run() {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    refreshSetups();
-                }
-            });
+            new SetupsPrepareSupport().start(Subversion.getInstance().getRequestProcessor(), null,
+                    NbBundle.getMessage(MultiDiffPanel.class, "MSG_PrepareSetups_Progress")).waitFinished(); //NOI18N
         }
     }
     

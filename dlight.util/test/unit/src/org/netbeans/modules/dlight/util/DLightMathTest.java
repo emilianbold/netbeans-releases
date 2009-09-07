@@ -36,69 +36,41 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.util;
 
-package org.netbeans.modules.subversion;
-
-import java.io.File;
-import java.net.PasswordAuthentication;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
-import org.openide.util.Lookup;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- *
- * @author Tomas Stupka
+ * @author Alexey Vladykin
  */
-public class SvnKenaiSupport {
+public class DLightMathTest {
 
-    private static SvnKenaiSupport instance;
-    private VCSKenaiSupport kenaiSupport = null;
-
-    private SvnKenaiSupport() {
-        kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+    @Test
+    public void testMaxInteger() {
+        Integer a = new Integer(1);
+        Integer b = new Integer(2);
+        assertSame(b, DLightMath.max(a, b));
     }
 
-    public static SvnKenaiSupport getInstance() {
-        if(instance == null) {
-            instance = new SvnKenaiSupport();
-        }
-        return instance;
+    @Test
+    public void testMaxString() {
+        String a = "a";
+        String b = "b";
+        assertSame(b, DLightMath.max(a, b));
     }
 
-    public boolean isKenai(String url) {
-        return kenaiSupport != null && kenaiSupport.isKenai(url);
+    @Test
+    public void testMinInteger() {
+        Integer a = new Integer(1);
+        Integer b = new Integer(2);
+        assertSame(a, DLightMath.min(a, b));
     }
 
-    public PasswordAuthentication getPasswordAuthentication(boolean forceRelogin) {
-        return kenaiSupport.getPasswordAuthentication(forceRelogin);
+    @Test
+    public void testMinString() {
+        String a = "a";
+        String b = "b";
+        assertSame(a, DLightMath.min(a, b));
     }
-
-    public void setFirmAssociations(File[] files, String url) {
-        kenaiSupport.setFirmAssociations(files, url);
-    }
-
-    /**
-     * Shows a login dialog
-     * @return true if successfully logged in
-     */
-    public boolean showLogin () {
-        return kenaiSupport.showLogin();
-    }
-
-    public boolean isOnline(String user) {
-        return kenaiSupport.isUserOnline(user);
-    }
-
-    public KenaiUser forName(String user) {
-        return kenaiSupport.forName(user);
-    }
-
-    public boolean isLogged () {
-        return kenaiSupport != null && kenaiSupport.isLogged();
-    }
-
-    public String getRevisionUrl(String repositoryUrl, String revision) {
-        return kenaiSupport == null ? null : kenaiSupport.getRevisionUrl(repositoryUrl, revision);
-    }
-
 }

@@ -269,7 +269,7 @@ public final class MSAParser extends DtraceParser {
         }
 
         public long getMSASamplePeriod() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
 

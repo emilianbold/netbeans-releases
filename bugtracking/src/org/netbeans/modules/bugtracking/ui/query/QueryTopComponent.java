@@ -154,11 +154,6 @@ public final class QueryTopComponent extends TopComponent
                     onNewClick();
                 }
             });
-            if(defaultRepository == null) {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox, true);
-            } else {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
-            }
             repositoryComboBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -174,6 +169,11 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
+            if(defaultRepository == null) {
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, true);
+            } else {
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
+            }
             newButton.addFocusListener(this);
             repositoryComboBox.addFocusListener(this);
             queriesPanel.setVisible(false);

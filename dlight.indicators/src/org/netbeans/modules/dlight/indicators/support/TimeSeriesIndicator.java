@@ -50,6 +50,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
@@ -73,7 +75,7 @@ import org.netbeans.modules.dlight.util.UIUtilities;
  */
 public final class TimeSeriesIndicator
         extends Indicator<TimeSeriesIndicatorConfiguration>
-        implements ViewportAware {
+        implements ViewportAware, DataFilterListener {
 
     private final DataRowToTimeSeries dataRowHandler;
     private final GraphPanel<TimeSeriesPlot, Legend> panel;
@@ -194,5 +196,9 @@ public final class TimeSeriesIndicator
     @Override
     public JComponent getComponent() {
         return panel;
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+        graph.dataFiltersChanged(newSet);
     }
 }

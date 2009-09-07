@@ -454,7 +454,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    rs.refreshRepositoryModel();
+                    if(rs != null) {
+                        rs.refreshRepositoryModel();
+                    }
                 }
             });
         }

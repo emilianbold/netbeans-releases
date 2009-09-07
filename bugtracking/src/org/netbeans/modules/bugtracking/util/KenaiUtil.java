@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
@@ -51,6 +53,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 
 /**
@@ -154,19 +157,14 @@ public class KenaiUtil {
         return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
     }
 
+    /**
+     * Returns a URL of web location of a kenai project associated with given repository url
+     * @param sourcesUrl url of a kenai vcs repository
+     * @return web location of associated kenai project or null if no such project exists
+     */
     public static String getProjectUrl (String sourcesUrl) {
         KenaiProject kp = getKenaiProject(sourcesUrl);
         return kp == null ? null : kp.getWebLocation().toString();
-    }
-
-    private static KenaiProject getKenaiProject(String url) {
-        KenaiProject kp;
-        try {
-            kp = KenaiProject.forRepository(url);
-        } catch (KenaiException ex) {
-            return null;
-        }
-        return kp;
     }
 
     public static Collection<RepositoryUser> getProjectMembers(String projectName) {
@@ -187,4 +185,23 @@ public class KenaiUtil {
         return members;
     }
 
+    public static KenaiProject getKenaiProject(ProjectHandle ph) {
+        // XXX cache ???
+        try {
+            return Kenai.getDefault().getProject(ph.getId());
+        } catch (KenaiException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    private static KenaiProject getKenaiProject(String url) {
+        KenaiProject kp;
+        try {
+            kp = KenaiProject.forRepository(url);
+        } catch (KenaiException ex) {
+            return null;
+        }
+        return kp;
+    }
 }
