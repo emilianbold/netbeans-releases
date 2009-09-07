@@ -314,10 +314,14 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 return null;
             }
             int res = -1;
+            int delta = Integer.MAX_VALUE;
             for (int i = 0; i < offsetStorage.length; i++) {
                 if (offsetStorage[i] > offset) {
-                    res = i;
-                    break;
+                    int d = offsetStorage[i] - offset;
+                    if (d < delta) {
+                        res = i;
+                        delta = d;
+                    }
                 }
             }
             if (res < 0) {
