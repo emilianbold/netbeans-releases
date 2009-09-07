@@ -60,7 +60,7 @@ public final class GraphConfig {
     public static final int LEGEND_HEIGHT = 80;
 
     public static final int VERTICAL_AXIS_WIDTH = 30;
-    public static final int HORIZONTAL_AXIS_HEIGHT = 30;
+    public static final int HORIZONTAL_AXIS_HEIGHT = 20;
 
 //    public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
 //    public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
