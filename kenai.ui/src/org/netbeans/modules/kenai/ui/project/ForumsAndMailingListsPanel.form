@@ -23,6 +23,9 @@
   <SubComponents>
     <Component class="javax.swing.JEditorPane" name="commChannelsDisplayer">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/kenai/ui/project/Bundle.properties" key="ForumsAndMailingListsPanel.commChannelsDisplayer.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
