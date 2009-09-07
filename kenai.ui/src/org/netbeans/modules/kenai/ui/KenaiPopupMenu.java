@@ -249,13 +249,17 @@ class LazyFindIssuesAction extends JMenuItem {
                     public void run() {
                         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));  //NOI18N
                         handle.start();
-                        KenaiProject kp = null;
                         try {
-                            kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                            final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
                                 DashboardImpl.getInstance().addProject(pHandle, false);
-                                DashboardImpl.getInstance().selectAndExpand(kp);
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    public void run() {
+                                        DashboardImpl.getInstance().selectAndExpand(kp);
+                                    }
+                                });
                                 QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
                                 return;
                             }
@@ -283,13 +287,17 @@ class LazyNewIssuesAction extends JMenuItem {
                     public void run() {
                         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER")); //NOI18N
                         handle.start();
-                        KenaiProject kp = null;
                         try {
-                            kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                            final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
                                 DashboardImpl.getInstance().addProject(pHandle, false);
-                                DashboardImpl.getInstance().selectAndExpand(kp);
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    public void run() {
+                                        DashboardImpl.getInstance().selectAndExpand(kp);
+                                    }
+                                });
                                 QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
                             }
                         } catch (KenaiException e) {
