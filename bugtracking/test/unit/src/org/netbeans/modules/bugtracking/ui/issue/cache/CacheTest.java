@@ -158,7 +158,8 @@ public class CacheTest extends NbTestCase {
         status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
         attr = cache.getSeenAttributes(issue.getID());
-        assertNull(attr);
+        assertNotNull(attr);
+        assertAttributes(attr, "v12", "v22", "v32");
     }
 
     public void testInitialModified2Seen2Unseen() throws MalformedURLException, CoreException, IOException, InterruptedException {
@@ -254,8 +255,8 @@ public class CacheTest extends NbTestCase {
         status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
-        assertNull(attr); // we don't have them anymore
-//        assertAttributes(attr, "v11", "v21", "v31");
+        assertNotNull(attr);
+        assertAttributes(attr, "v11", "v21", "v31");
     }
 
     public void testModified2RefreshChange2Seen2RefreshChange() throws MalformedURLException, CoreException, IOException, InterruptedException {
