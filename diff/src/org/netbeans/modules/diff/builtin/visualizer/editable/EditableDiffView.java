@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -84,6 +85,7 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.DiffController;
+import org.netbeans.editor.BaseTextUI;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffControllerImpl;
 import org.netbeans.editor.EditorUI;
@@ -210,7 +212,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     jEditorPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
                     
                     jEditorPane1.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f1));
+                    repairTextUI(jEditorPane1.getEditorPane());
                     jEditorPane2.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f2));
+                    repairTextUI(jEditorPane2.getEditorPane());
                     
                     try {
                         setSource1(ss1);
@@ -1044,6 +1048,15 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
     
+    private void repairTextUI (DecoratedEditorPane pane) {
+        TextUI ui = pane.getUI();
+        if (!(ui instanceof BaseTextUI)) {
+            // use plain editor
+            pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain")); //NOI18N
+            // XXX what if it fails even now? - must solve issue #170527
+        }
+    }
+
     private void refreshDividerSize() {
         Font font = jSplitPane1.getFont();
         if (font == null) return;

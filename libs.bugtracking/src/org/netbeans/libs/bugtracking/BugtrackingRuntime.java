@@ -76,7 +76,7 @@ public class BugtrackingRuntime {
     private TaskDataManager         taskDataManager;
     private SynchronizationSession  synchronizationSession;
 
-    public static BugtrackingRuntime getInstance() {
+    public synchronized static BugtrackingRuntime getInstance() {
         if(instance == null) {
             instance = new BugtrackingRuntime();
             instance.init();
