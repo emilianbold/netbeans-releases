@@ -147,16 +147,9 @@ showJSONResponse = function(response) {
     var json = eval(resp);
 
     var table = createTable(output);
-    var length = json.order.length;
-    if (json && !length) length = 1;
-    for (var i=0; i<length; i++) {
-        var order = null;
-        if (length == 1) {
-            order = json.order;
-        } else {
-            order = json.order[i];
-        }
-        appendLine(table, order);
+
+    for (var i=0; i<json.order.length; i++) {
+        appendLine(table, json.order[i]);
     }
 }
 
