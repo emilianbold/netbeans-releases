@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -79,6 +80,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.RequestProcessor;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener {
     
@@ -136,9 +138,12 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         }
     }
         
-    private void fillSubMenu(JMenu menu) {
+    private void fillSubMenu(final JMenu menu) {
         menu.removeAll();
-        
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+
         List<UnloadedProjectInformation> projects = OpenProjectList.getDefault().getRecentProjectsInformation();
         if ( projects.isEmpty() ) {
             menu.setEnabled( false );
@@ -158,11 +163,19 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 }
                 prjDir.removeFileChangeListener(prjDirListener);            
                 prjDir.addFileChangeListener(prjDirListener);
-                JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon());
-                menu.add( jmi );            
+                final JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon());
+                EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            menu.add( jmi );
+                        }
+                    });
                 jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
                 jmi.addActionListener( jmiActionListener );
         }
+
+            }
+        });
+
     }
 
     // Implementation of change listener ---------------------------------------
