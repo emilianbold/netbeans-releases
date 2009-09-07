@@ -97,8 +97,8 @@ public enum ThreadStateResources {
             case SleepingUserDataPageFault: return THREAD_SLEEPING_USER_DATA_PAGE_FAULT;
             case SleepingUserTextPageFault: return THREAD_SLEEPING_USER_TEXT_PAGE_FAULT;
             case SleepingKernelPageFault: return THREAD_SLEEPING_KERNEL_PAGE_FAULT;
-
             case Stopped: return THREAD_SLEEPING;
+
             case ThreadStopped: return THREAD_THREAD_STOPPED;
         }
         return null;
