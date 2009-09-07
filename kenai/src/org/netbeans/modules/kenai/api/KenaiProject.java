@@ -270,8 +270,8 @@ public final class KenaiProject {
         return data.private_hidden;
     }
 
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://([a-z]+\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
-    private static final int repositoryPatternProjectGroup = 5;
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+    private static final int repositoryPatternProjectGroup = 4;
 
     /**
      * Looks up a project by repository location.
@@ -287,6 +287,21 @@ public final class KenaiProject {
             return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
 
+        return null;
+    }
+
+    /**
+     * get project uniqe name for repository
+     * The current implementation does not work for external repositories.
+     * @param uri location of repository; for example SVN HTTP URL;
+     *            typically gotten from {@code ProvidedExtensions.RemoteLocation} file attribute of project directory
+     * @return name of kenai project or null, if given uri is not from kenai
+     */
+    public static String getNameForRepository(String uri) {
+        Matcher m = repositoryPattern.matcher(uri);
+        if (m.matches()) {
+            return m.group(repositoryPatternProjectGroup);
+        }
         return null;
     }
 
