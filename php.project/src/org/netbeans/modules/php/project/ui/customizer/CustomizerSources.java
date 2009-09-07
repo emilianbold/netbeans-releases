@@ -145,10 +145,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         ChangeListener defaultChangeListener = new DefaultChangeListener();
         copyFilesVisual.addChangeListener(defaultChangeListener);
         webRootTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
-        ItemListener defaultItemListener = new DefaultItemListener();
-        phpVersionComboBox.addItemListener(defaultItemListener);
-        shortTagsCheckBox.addItemListener(defaultItemListener);
-        aspTagsCheckBox.addItemListener(defaultItemListener);
+        phpVersionComboBox.addItemListener(new DefaultComboBoxItemListener());
+        ItemListener defaultCheckBoxItemListener = new DefaultCheckBoxItemListener();
+        shortTagsCheckBox.addItemListener(defaultCheckBoxItemListener);
+        aspTagsCheckBox.addItemListener(defaultCheckBoxItemListener);
 
         // check init values
         validateFields();
@@ -585,9 +585,17 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         }
     }
 
-    private class DefaultItemListener implements ItemListener {
+    private class DefaultCheckBoxItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
             validateFields();
+        }
+    }
+
+    private class DefaultComboBoxItemListener implements ItemListener {
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                validateFields();
+            }
         }
     }
 
