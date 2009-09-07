@@ -40,7 +40,6 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.api.project.Project;
 import org.openide.nodes.Node;
 import org.openide.windows.WindowManager;
 
@@ -51,13 +50,10 @@ public final class ShareMenuAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-        if (n.length>0) {
-            if (n[0].getLookup().lookup(Project.class)!=null) {
-                ShareAction.actionPerformed(n[0]);
-                return;
-            }
+        if (n.length > 0) {
+            ShareAction.actionPerformed(n);
+        } else {
+            ShareAction.actionPerformed((Node []) null);
         }
-        
-        ShareAction.actionPerformed((Node) null);
     }
 }

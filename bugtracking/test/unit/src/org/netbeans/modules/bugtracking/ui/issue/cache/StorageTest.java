@@ -41,8 +41,6 @@ package org.netbeans.modules.bugtracking.ui.issue.cache;
 
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueStorage;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.*;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -56,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.openide.util.Exceptions;
@@ -79,13 +76,7 @@ public class StorageTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        System.setProperty("netbeans.user", System.getProperty("nbjunit.workdir", "/tmp/"));
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         emptyStorage();
     }
 
@@ -110,8 +101,9 @@ public class StorageTest extends NbTestCase {
 
         storage.storeQuery(url, qName, new String[] {id1, id2});
 
-        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr1, -1, false);
-        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr2, -1, false);
+        long lm = System.currentTimeMillis();
+        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr1, -1, -1, false, lm);
+        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr2, -1, -1, false, lm);
         
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -120,8 +112,8 @@ public class StorageTest extends NbTestCase {
         assertTrue(issues.contains(id1));
         assertTrue(issues.contains(id2));
 
-        ie1 = new IssueCache.IssueEntry(i1, null, -1, false);
-        ie2 = new IssueCache.IssueEntry(i2, null, -1, false);
+        ie1 = new IssueCache.IssueEntry(i1, null, -1, -1, false, lm);
+        ie2 = new IssueCache.IssueEntry(i2, null, -1, -1, false, lm);
         storage.readIssue(url, ie1);
         if(ie1.getSeenAttributes() == null) fail("missing issue id [" + id1 + "]");
         assertAttribute(ie1.getSeenAttributes(), "dummy1", "dummy3");
@@ -193,8 +185,9 @@ public class StorageTest extends NbTestCase {
 
         Issue i1 = new DummyIssue(id1, attr);
         Issue i2 = new DummyIssue(id2, attr);
-        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, false);
-        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, false);
+        long lm = System.currentTimeMillis();
+        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, -1, false, lm);
+        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, -1, false, lm);
 
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -229,9 +222,12 @@ public class StorageTest extends NbTestCase {
     }
 
 
-    private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
         File f = getStorageRootFile();
         BugtrackingUtil.deleteRecursively(f);
+        Field field = IssueStorage.class.getDeclaredField("storage");
+        field.setAccessible(true);
+        field.set(IssueStorage.getInstance(), f);
     }
 
     private File getStorageRootFile() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {

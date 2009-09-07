@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution.test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -133,6 +135,17 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         Writer writer = new FileWriter(file);
         writer.write(content.toString());
         writer.close();
+    }
+
+    public String readFile(File file) throws IOException {
+        BufferedReader rdr = new BufferedReader(new FileReader(file));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rdr.readLine()) != null) {
+            sb.append(line);
+        }
+        rdr.close();
+        return sb.toString();
     }
 
     /**

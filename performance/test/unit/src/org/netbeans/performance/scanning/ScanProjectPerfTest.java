@@ -95,7 +95,7 @@ public class ScanProjectPerfTest extends NbTestCase {
     }
 
     public void testScanNigelsFreeForm() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://kim-sun.czech.sun.com/~pf124312/nigel.zip",
+        scanProject("http://beetle.czech.sun.com/~pf124312/nigel.zip",
                     "Clean.zip",
                     "clean/projects/ST");
     }
@@ -114,7 +114,7 @@ public class ScanProjectPerfTest extends NbTestCase {
     }
 
     public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://kim-sun.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip", 
+        scanProject("http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
                     "openjdk.zip",
                     "openjdk/jdk/make/netbeans/world");
     }

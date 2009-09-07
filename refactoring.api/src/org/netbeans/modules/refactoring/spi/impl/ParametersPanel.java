@@ -522,7 +522,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         
         if (!(customComponent==null && !rui.hasParameters() && !APIAccessor.DEFAULT.hasPluginsWithProgress(rui.getRefactoring())))
             dialog.setVisible(true);
-        dialog.dispose(); 
+        dialog.dispose();
+        descriptor.setMessage("");
         
         if (rui != null) { 
             rui.getRefactoring().removeProgressListener(this);

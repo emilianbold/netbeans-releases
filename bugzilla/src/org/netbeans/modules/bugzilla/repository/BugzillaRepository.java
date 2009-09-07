@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -67,6 +69,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
@@ -84,7 +87,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class BugzillaRepository extends Repository {
 
@@ -108,6 +111,7 @@ public class BugzillaRepository extends Repository {
 
     public static final String ATTRIBUTE_URL = "bugzilla.repository.attribute.url"; //NOI18N
     public static final String ATTRIBUTE_DISPLAY_NAME = "bugzilla.repository.attribute.displayName"; //NOI18N
+    private Lookup lookup;
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -185,7 +189,14 @@ public class BugzillaRepository extends Repository {
     }
 
     public Lookup getLookup() {
-        return Lookups.singleton(getIssueCache());
+        if(lookup == null) {
+            lookup = Lookups.fixed(getLookupObjects());
+        }
+        return lookup;
+    }
+
+    protected Object[] getLookupObjects() {
+        return new Object[] { getIssueCache() };
     }
 
     synchronized void resetRepository() {
@@ -454,22 +465,46 @@ public class BugzillaRepository extends Repository {
         return taskRepository != null && "true".equals(taskRepository.getProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
     }
 
+    @Override
+    public Collection<RepositoryUser> getUsers() {
+        return Collections.emptyList();
+    }
+
     private class Cache extends IssueCache<TaskData> {
+
         Cache() {
             super(BugzillaRepository.this.getUrl());
         }
+
         protected Issue createIssue(TaskData taskData) {
             BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
             org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider.getInstance().notifyIssueCreated(issue);
             return issue;
         }
-        protected void setTaskData(Issue issue, TaskData taskData) {
-            ((BugzillaIssue)issue).setTaskData(taskData); 
+
+        protected void setIssueData(Issue issue, TaskData taskData) {
+            assert issue != null && taskData != null;
+            ((BugzillaIssue)issue).setTaskData(taskData);
         }
+
         @Override
         protected String getRecentChanges(Issue issue) {
+            assert issue != null;
             return ((BugzillaIssue)issue).getRecentChanges();
         }
+
+        @Override
+        protected long getLastModified(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getLastModify();
+        }
+
+        @Override
+        protected long getCreated(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getCreated();
+        }
+        
     }
 
     /**

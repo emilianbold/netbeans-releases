@@ -68,6 +68,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
@@ -105,6 +106,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     private THAIndicatorsTopComponentActionsProvider actionsProvider = null;
     private final PopupAction popupAction = new PopupAction("popupTHAIndicatorTopComponentAction");//NOI18N
     private THAConfiguration thaConfiguration = null;
+    private THAActionsProvider thaActionsProvider;
 
 
     static {
@@ -138,8 +140,9 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         installActions();
     }
 
-    void setTHAConfiguration(THAConfiguration thaConfiguration){
+    void setConfiguration(THAActionsProvider thaActionsProvider, THAConfiguration thaConfiguration){
         this.thaConfiguration = thaConfiguration;
+        this.thaActionsProvider = thaActionsProvider;
     }
 
     public ExplorerManager getExplorerManager() {
@@ -190,7 +193,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
     void setProject(Project project){
         this.project = project;
-        controlPanel = THAControlPanel.create(project, thaConfiguration);
+        controlPanel = THAControlPanel.create(thaActionsProvider, project, thaConfiguration);
         add(controlPanel, BorderLayout.NORTH);
         setSession(null);
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
@@ -203,7 +206,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator> indicators = null;
+        List<Indicator<?>> indicators = null;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
@@ -214,9 +217,9 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
             indicators = null;//Collections.emptyList();//DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("THA"); // NOI18N
         }
         if (indicators != null){
-            Collections.sort(indicators, new Comparator<Indicator>() {
+            Collections.sort(indicators, new Comparator<Indicator<?>>() {
 
-                public int compare(Indicator o1, Indicator o2) {
+                public int compare(Indicator<?> o1, Indicator<?> o2) {
                     if (o1.getPosition() < o2.getPosition()) {
                         return -1;
                     } else if (o2.getPosition() < o1.getPosition()) {
@@ -230,7 +233,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         setContent(indicators);
     }
 
-    private void setContent(List<Indicator> indicators) {
+    private void setContent(List<Indicator<?>> indicators) {
         JComponent componentToAdd;
         if (indicators != null) {
             JScrollPane scrollPane = new JScrollPane();

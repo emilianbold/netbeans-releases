@@ -86,6 +86,9 @@ abstract class EntrySupport {
      * does not exists it should return null.*/
     public abstract Node getNodeAt(int index);
 
+    /**
+     * @return currently created nodes or null if no node is created
+     */
     public abstract Node[] testNodes();
 
     public abstract boolean isInitialized();
@@ -1183,7 +1186,6 @@ abstract class EntrySupport {
                         toReturn.add(node);
                     }
                     tmpNodes = toReturn.toArray(new Node[0]);
-                    nodesCreated = true;
                     if (invalidEntries == null) {
                         return tmpNodes;
                     }
@@ -1198,10 +1200,25 @@ abstract class EntrySupport {
             }
         }
 
-        boolean nodesCreated = false;
         @Override
         public Node[] testNodes() {
-            return nodesCreated ? getNodes(false) : null;
+            if (!inited) {
+                return null;
+            }
+            List<Node> created = new ArrayList<Node>();
+            try {
+                Children.PR.enterReadAccess();
+                for (Entry entry : visibleEntries) {
+                    EntryInfo info = entryToInfo.get(entry);
+                    Node node = info.currentNode();
+                    if (node != null) {
+                        created.add(node);
+                    }
+                }
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+            return created.isEmpty() ? null : created.toArray(new Node[created.size()]);
         }
 
         @Override

@@ -42,7 +42,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -62,10 +61,8 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -92,7 +89,8 @@ public class KenaiPopupMenu extends CookieAction {
     private static HashMap<VersioningSystem, JComponent[]> versioningItemMap = new HashMap<VersioningSystem, JComponent[]>();
 
     //XXX this has to be done better for other domains than (test)kenai
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)"); //NOI18N
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(hg\\.|svn\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)"); //NOI18N
+    private static int patternGroup = 5;
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -205,17 +203,18 @@ public class KenaiPopupMenu extends CookieAction {
                     /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
                     String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
                     final Matcher m = repositoryPattern.matcher(projRepo);
-                    // isKenaiProject assures that m.group(4) exists, still the check is better
+                    // isKenaiProject assures that m.group(patternGroup) exists, still the check is better
                     if (m.matches()) {
-                        if (inDashboard(m.group(4))) {
-                            issueTrackers = Kenai.getDefault().getProject(m.group(4)).getFeatures(Type.ISSUES);
+                        String kpName = m.group(patternGroup);
+                        if (inDashboard(kpName)) {
+                            issueTrackers = Kenai.getDefault().getProject(kpName).getFeatures(Type.ISSUES);
                             if (issueTrackers != null && issueTrackers.length > 0) {
-                                kenaiPopup.add(new LazyFindIssuesAction(proj, m.group(4)));
-                                kenaiPopup.add(new LazyNewIssuesAction(proj, m.group(4)));
+                                kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
+                                kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
                                 kenaiPopup.add(new JSeparator());
                             }
                         }
-                        kenaiPopup.add(new LazyOpenKenaiProjectAction(m.group(4)));
+                        kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
                     }
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);

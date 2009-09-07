@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="XML">
+            <file name="org-netbeans-modules-kenai-maven-KenaiUpdateAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-maven-pom+xml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-kenai-maven-KenaiUpdateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-kenai-maven-KenaiUpdateAction.instance"/>
+                        <attr name="position" intvalue="163"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

@@ -254,7 +254,11 @@ public class HgHookImpl extends HgHook {
         panel.commitRadioButton.setSelected(commit);
         panel.pushRadioButton.setSelected(!commit);
         
-        RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
+        if (referenceFile != null) {
+            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
+        } else {
+            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, false);
+        }
         panel.changeFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onShowFormat();

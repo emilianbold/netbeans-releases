@@ -82,6 +82,8 @@ public class MultiTargetChooserPanelGUI extends javax.swing.JPanel implements Ac
         NbBundle.getMessage( MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultNewPackageName"  ); // NOI18N
     private static final String NEW_CLASS_PREFIX = 
         NbBundle.getMessage( MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_NewJavaClassPrefix"  ); // NOI18N
+    private static final String NEW_CLASS_SUFFIX =
+        NbBundle.getMessage( MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_NewJavaClassSuffix"  ); // NOI18N
     
     /** preferred dimension of the panel */
     private static final Dimension PREF_DIM = new Dimension(500, 340);
@@ -197,7 +199,7 @@ public class MultiTargetChooserPanelGUI extends javax.swing.JPanel implements Ac
                     }
                     else {
                         //Ordinary file
-                        documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
+                        documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName() + NEW_CLASS_SUFFIX);
                         documentNameTextField.selectAll ();
                     }
                 }

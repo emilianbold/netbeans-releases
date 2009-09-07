@@ -131,7 +131,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
 
         if (isElementQName(context.getModel().getPOMQNames().CONTRIBUTORS)) {
-            created = new DeveloperImpl.List(context.getModel(), element);
+            created = new ContributorImpl.List(context.getModel(), element);
             return;
         }
 

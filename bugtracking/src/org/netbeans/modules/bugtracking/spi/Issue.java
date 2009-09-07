@@ -205,7 +205,12 @@ public abstract class Issue {
                                     });
                                     return;
                                 }
-                                tc.setIssue(issue[0]);                                
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    public void run() {
+                                        tc.setIssue(issue[0]);
+                                    }
+                                });
                                 IssueCacheUtils.setSeen(issue[0], true);
                             }
                             BugtrackingManager.getInstance().addRecentIssue(repository, issue[0]);

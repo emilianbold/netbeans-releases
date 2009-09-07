@@ -45,8 +45,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -95,6 +98,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     private Component customComponent;
     private JToolBar customToolbar;
     private DoInitialize doInitialize;
+
+    private static Set<String> mimeTypes = new HashSet<String>();
     
     private static final Logger LOG = Logger.getLogger("org.openide.text.CloneableEditor"); // NOI18N
     
@@ -573,6 +578,18 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         if (ces != null) {
             ces.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
+            Document d = ces.getDocument();
+            if (d != null) {
+                String mimeType = (String) d.getProperty("mimeType"); //NOI18N
+                if (!mimeTypes.contains(mimeType)) {
+                    mimeTypes.add(mimeType);
+                    Logger logger = Logger.getLogger("org.netbeans.ui.metrics.editor"); //NOI18N
+                    LogRecord rec = new LogRecord(Level.INFO, "USG_EDITOR_MIME_TYPE"); //NOI18N
+                    rec.setParameters(new Object[] { mimeType });
+                    rec.setLoggerName(logger.getName());
+                    logger.log(rec);
+                }
+            }
         }
     }
 

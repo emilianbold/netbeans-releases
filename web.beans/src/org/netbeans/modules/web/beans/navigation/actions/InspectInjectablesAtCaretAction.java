@@ -44,6 +44,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,13 +61,11 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -249,18 +248,30 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                                 InspectInjectablesAtCaretAction.class, 
                                 "LBL_InjectableNotFound"), 
                                 StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                        return;
                     }
-                    final ElementHandle<Element> handle = ElementHandle
-                            .create(injectable);
-                    final ClasspathInfo classpathInfo = model.getCompilationController().
-                    getClasspathInfo();
-                    SwingUtilities.invokeLater( new Runnable() {
-                        
-                        public void run() {
-                            ElementOpen.open( classpathInfo, handle);
-                        }
-                    });
+                    final CompilationController controller = model.getCompilationController();
+                    final List<AnnotationMirror> bindings = model.getBindings(var );
+                    Collection<Element> elements ;
+                    final VariableElement varElement = var;
+                    if ( injectable == null){
+                        elements = Collections.emptyList();
+                    }
+                    else {
+                        elements = Collections.singletonList( injectable );
+                    }
+                    if ( SwingUtilities.isEventDispatchThread()){
+                        showDialog( elements, varElement, bindings, controller, 
+                                metaModel);
+                    }
+                    else {
+                        final Collection<Element> els = elements; 
+                        SwingUtilities.invokeLater( new Runnable() {
+                            public void run() {
+                                showDialog( els, varElement, bindings, controller,
+                                        metaModel);
+                            }
+                        });
+                    }
                 }
                 catch (final AmbiguousDependencyException adExcpeption) {
                     final List<AnnotationMirror> bindings = model.getBindings(var );
@@ -288,7 +299,6 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
              */
         }
     }
-
 
     private VariableElement findVariable( final WebBeansModel model,
             final Object[] variablePath )
@@ -398,7 +408,13 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
             VariableElement var , List<AnnotationMirror> bindings , 
             CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
-        Collection<Element> elements = adExcpeption.getElements();
+        showDialog( adExcpeption.getElements(), var, bindings, controller, model);
+    }
+    
+    private void showDialog( Collection<Element> elements , 
+            VariableElement var , List<AnnotationMirror> bindings , 
+            CompilationController controller, MetadataModel<WebBeansModel> model ) 
+    {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 AmbiguousInjectablesModel.class, "LBL_WaitNode"));
         JDialog dialog = ResizablePopup.getDialog();

@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -126,5 +127,13 @@ final class StackDataProviderImpl implements StackDataProvider, TreeTableDataPro
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet) {
+    }
+
+    public ThreadDumpProvider getThreadDumpProvider() {
+        if (storage instanceof ThreadDumpProvider) {
+            return (ThreadDumpProvider) storage;
+        }
+
+        return null;
     }
 }

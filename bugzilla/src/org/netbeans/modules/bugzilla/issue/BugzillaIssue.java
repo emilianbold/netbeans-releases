@@ -81,6 +81,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -341,6 +342,29 @@ public class BugzillaIssue extends Issue {
 
     private boolean wasSeen() {
         return IssueCacheUtils.wasSeen(this);
+    }
+
+    // XXX unify with issuepanel
+    public long getLastModify() {
+        String value = getFieldValue(IssueField.MODIFICATION);
+        try {
+            Date d = CC_DATE_FORMAT.parse(value);
+            return d.getTime();
+        } catch (ParseException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return -1;
+    }
+
+    public long getCreated() {
+        String value = getFieldValue(IssueField.CREATION);
+        try {
+            Date d = CC_DATE_FORMAT.parse(value);
+            return d.getTime();
+        } catch (ParseException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return -1;
     }
 
     public String getRecentChanges() {

@@ -44,14 +44,14 @@ made subject to such option by the copyright holder.
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>Viewing the Sun Java System Application Server/GlassFish in the IDE</title>
+	<title>Viewing the GlassFish Application Server in the IDE</title>
 	<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 <body>
-    <h2>Viewing the Sun Java System Application Server/GlassFish in the IDE</h2>
+    <h2>Viewing the GlassFish Application Server in the IDE</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
-    <p>In the Services window, each registered instance of the Sun Java System Application Server/GlassFish is represented by a node under
-    the Servers node in the Services window. The subnodes of the Sun Java System Application Server/GlassFish instance node 
+    <p>In the Services window, each registered instance of the GlassFish application server is represented by a node under
+    the Servers node in the Services window. The subnodes of the GlassFish instance node
     represent the resources and applications that have been deployed to the server.</p>
     <p>The following table shows you how to use the nodes in the Services window to explore and work with the server instance.
     To delete a resource, locate and right-click the resource under the appropriate node and choose Delete Resource.</p>
@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
 	</tr>     
 	<tr>
 	    <td><img src="../images/ServerInstanceIcon.png"></td>
-	    <td><b>Sun Java System Application Server/GlassFish</b><br> This node is visible under the Servers node (&nbsp;<img src="../images/runtime-window-servers.png">&nbsp;) in the <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html">Services window</a> and represents an instance of the Sun Java System Application Server/GlassFish.
+	    <td><b>GlassFish Application Server</b><br> This node is visible under the Servers node (&nbsp;<img src="../images/runtime-window-servers.png">&nbsp;) in the <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html">Services window</a> and represents an instance of the GlassFish application server.
 	    There is a corresponding server instance node for each <a href="register_appserver.html">instance registered with the IDE</a>.
 	    If the server instance is running (&nbsp;<img src="../images/ServerInstanceIcon.png"><img src="../images/main-project-badge.gif">&nbsp;), you can expand this node to see the resources for the server instance. 
 	    You can right-click the server instance node to <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html">stop, start and restart the server</a> or <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_remove.html">remove the server instance</a>.
@@ -83,36 +83,26 @@ made subject to such option by the copyright holder.
 	    <td><img src="../images/JDBC.gif"></td>
 	    <td><b>JDBC resources</b><br>Expand this node to see the <a href="def_jdbcresource.html">JDBC resources</a> and <a href="def_connpool.html">Connection Pools</a> registered with the server.</td>
 	</tr>
-	<tr>
-	    <td><img src="../images/jms.gif"></td>
-	    <td><b>JMS Resources</b><br>Expand this node to see the <a href="def_jms.html">Java Message Service (JMS) resources</a> registered with the server.</td>
-	</tr>
+	
 	<tr>
 	    <td><img src="../images/javaMailSession.gif"></td>
 	    <td><b>JavaMail Session</b><br>Expand this node to see the <a href="def_javamail.html">JavaMail Session resources</a> registered with the server.</td>
 	</tr>
-	<tr>
-	    <td><img src="../images/jndi.gif"></td>
-	    <td><b>JNDI Resources</b><br>Expand this node to see the custom and external JNDI resources.</td>
-	</tr>
+	
 	<tr>
 	    <td><img src="../images/connector.gif"></td>
 	    <td><b>Connectors</b><br>Expand this node to see the Connector resources registered with the server.
-	    For more on Connector resources, see <a href="def_jms.html">Setting up a JMS Resource on the Sun Java System Application Server</a>.</td>
+	    For more on Connector resources, see <a href="def_jms.html">Setting up a JMS Resource on the GlassFish Application Server</a>.</td>
 	</tr>
-	<tr>
-	    <td><img src="../images/JVMIcon.gif"></td>
-	    <td><b>JVMs</b><br>Right-click this node to display the properties of the JVM.
-	    For more, see <a href="JVM.html">Modifying JVM Properties of the Sun Java System Application Server</a>.</td>
-	</tr>
+	
     </table>
 <p></p>
  
     <dl>
 	<dt><a name="seealso">See Also</a></dt>
-	<dd>    <a href="sjs_quickref.html">Sun Java System Application Server Tasks: Quick Reference</a> </dd>
+	<dd>    <a href="sjs_quickref.html">GlassFish Application Server Tasks: Quick Reference</a> </dd>
 	<dd>    <a href="JVM.html">Modifying JVM Properties of the Sun Java System Application Server</a> </dd>
-	<dd>    <a href="register_resource.html">Registering a Resource with the Sun Java System Application Server</a></dd>
+	<dd>    <a href="register_resource.html">Registering a Resource with the GlassFish Application Server</a></dd>
 	<dd>    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_remove.html">Removing an Application from a Server</a></dd>
     </dl>
 

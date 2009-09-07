@@ -291,7 +291,10 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                     String notificationUrl = currentNotificationUrl.peek ();
                     if (notificationUrl != null && notificationUrl.length () > 0) {
                         notification += (notification.length () > 0 ? "<br>" : "") + // NOI18N
-                                "<a href=\"" + notificationUrl + "\">" + notificationUrl + "</a>"; // NOI18N
+                                "<a name=\"autoupdate_catalog_parser\" href=\"" + notificationUrl + "\">" + notificationUrl + "</a>"; // NOI18N
+                    } else {
+                        notification += (notification.length () > 0 ? "<br>" : "") +
+                                "<a name=\"autoupdate_catalog_parser\"/>"; // NOI18N
                     }
                     provider.setNotification (notification);
                 }

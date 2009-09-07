@@ -21,6 +21,7 @@
                 <friend>org.netbeans.modules.hudson.kenai</friend>
                 <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.kenai.collab</friend>
+                <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.wag.manager</friend>
                 <package>org.netbeans.modules.kenai.api</package>

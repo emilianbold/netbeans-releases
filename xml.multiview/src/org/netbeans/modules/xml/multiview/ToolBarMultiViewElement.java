@@ -72,6 +72,8 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
                     public void run() {
                         if (null != callback){
                             callback.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                            callback.getTopComponent().setHtmlDisplayName(dObj.getEditorSupport().messageHtmlName());
+                            callback.getTopComponent().setToolTipText(dObj.getEditorSupport().messageToolTip());
                         }
                     }
                 });

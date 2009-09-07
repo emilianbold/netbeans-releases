@@ -61,6 +61,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
+import org.eclipse.mylyn.internal.jira.core.model.User;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
@@ -70,6 +71,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
@@ -90,7 +92,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class JiraRepository extends Repository {
 
@@ -119,7 +121,8 @@ public class JiraRepository extends Repository {
 
     public static final String ATTRIBUTE_URL = "jira.repository.attribute.url"; //NOI18N
     public static final String ATTRIBUTE_DISPLAY_NAME = "jira.repository.attribute.displayName"; //NOI18N
-
+    private Lookup lookup;
+    
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
@@ -216,7 +219,14 @@ public class JiraRepository extends Repository {
     }
 
     public Lookup getLookup() {
-        return Lookups.singleton(getIssueCache());
+        if(lookup == null) {
+            lookup = Lookups.fixed(getLookupObjects());
+        }
+        return lookup;
+    }
+
+    protected Object[] getLookupObjects() {
+        return new Object[] { getIssueCache() };
     }
     
     @Override
@@ -611,6 +621,16 @@ public class JiraRepository extends Repository {
         return refreshProcessor;
     }
 
+    @Override
+    public Collection<RepositoryUser> getUsers() {
+        Collection<User> users = getConfiguration().getUsers();
+        List<RepositoryUser> members = new ArrayList<RepositoryUser>();
+        for (User user : users) {
+            members.add(new RepositoryUser(user.getName(), user.getFullName()));
+        }
+        return members;
+    }
+
     private class Cache extends IssueCache<TaskData> {
         Cache() {
             super(JiraRepository.this.getUrl());
@@ -620,13 +640,28 @@ public class JiraRepository extends Repository {
             org.netbeans.modules.jira.issue.JiraIssueProvider.getInstance().notifyIssueCreated(issue);
             return issue;
         }
-        protected void setTaskData(Issue issue, TaskData taskData) {
+        protected void setIssueData(Issue issue, TaskData taskData) {
+            assert issue != null && taskData != null;
             ((NbJiraIssue)issue).setTaskData(taskData);
         }
         @Override
         protected String getRecentChanges(Issue issue) {
+            assert issue != null;
             return ((NbJiraIssue)issue).getRecentChanges();
         }
+
+        @Override
+        protected long getLastModified(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getLastModify();
+        }
+
+        @Override
+        protected long getCreated(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getCreated();
+        }
+
     }
 
     public JiraExecutor getExecutor() {

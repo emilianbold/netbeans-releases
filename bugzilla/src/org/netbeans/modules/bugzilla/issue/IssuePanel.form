@@ -2,21 +2,6 @@
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
-    <Component class="javax.swing.JTextField" name="resolutionField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.resolutionField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
     <Component class="javax.swing.JTextField" name="productField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
@@ -32,6 +17,24 @@
         </Property>
       </AccessibilityProperties>
     </Component>
+    <Component class="javax.swing.JComboBox" name="resolutionCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.resolutionCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolutionComboActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="assignedCombo">
+      <Properties>
+        <Property name="editable" type="boolean" value="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="assignedComboActionPerformed"/>
+      </Events>
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -39,7 +42,7 @@
     </Property>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,52,0,0,3,88"/>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,70,0,0,1,-49"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -60,192 +63,179 @@
           <Component id="dummyCommentsPanel" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="headerLabel" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="separatorLabel2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="separatorLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="reloadButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="attachmentsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="productLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="componentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="versionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="platformLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="resolutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="priorityLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="severityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="targetMilestoneLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="dummyLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="urlLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="keywordsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="dummyLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="osLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="summaryLabel" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="messagePanel" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="headerLabel" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="reloadButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="urlLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="componentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="productLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="versionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="platformLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="priorityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="targetMilestoneLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="keywordsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="statusWhiteboardLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="issueTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyLabel3" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="attachmentsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="cancelButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dummyAttachmentsPanel" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="issueTypeCombo" max="32767" attributes="1"/>
+                                  <Component id="statusWhiteboardField" min="0" pref="0" max="32767" attributes="1"/>
+                                  <Component id="urlField" min="0" pref="0" max="32767" attributes="1"/>
                                   <Group type="102" attributes="0">
-                                      <Component id="osCombo" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="osWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Component id="keywordsField" max="32767" attributes="1"/>
+                                      <Component id="keywordsField" min="0" pref="0" max="32767" attributes="1"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                                       <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="keywordsWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                   </Group>
+                                  <Component id="targetMilestoneCombo" max="32767" attributes="1"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="urlField" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="urlWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="targetMilestoneCombo" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="milestoneWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="severityCombo" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="severityWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="priorityCombo" max="32767" attributes="1"/>
+                                      <Component id="priorityCombo" linkSize="9" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="priorityWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="resolutionCombo" max="32767" attributes="1"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="resolutionWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <Component id="severityCombo" linkSize="9" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="statusCombo" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="statusWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="productCombo" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="productWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="componentCombo" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="componentWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="versionCombo" max="32767" attributes="1"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="versionWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="platformCombo" max="32767" attributes="1"/>
+                                      <Component id="platformCombo" linkSize="9" max="32767" attributes="1"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="platformWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="osCombo" linkSize="9" min="-2" max="-2" attributes="0"/>
                                   </Group>
+                                  <Component id="versionCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="componentCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="productCombo" alignment="0" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="reportedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="modifiedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="blocksLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="duplicateLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Group type="102" alignment="0" attributes="1">
+                                      <Component id="productWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="reportedLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="1" attributes="1">
+                                      <Component id="keywordsWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="blocksLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="urlWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="milestoneWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="severityWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="versionWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="componentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="osWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="resolutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="duplicateLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="reportedField" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="reportedStatusLabel" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                                      <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <Component id="blocksField" min="-2" max="-2" attributes="1"/>
-                                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                                  <Component id="blocksButton" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <Component id="dependsField" min="-2" max="-2" attributes="1"/>
-                                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                                  <Component id="dependsOnButton" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <Component id="duplicateField" min="-2" max="-2" attributes="1"/>
-                                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                                  <Component id="duplicateButton" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <Component id="ccField" alignment="1" max="32767" attributes="1"/>
-                                              <Component id="qaContactField" alignment="1" max="32767" attributes="1"/>
-                                              <Component id="assignedField" alignment="1" max="32767" attributes="1"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="ccField" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="qaContactField" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="assignedField" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="statusCombo" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="resolutionField" alignment="0" max="32767" attributes="1"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="duplicateField" max="32767" attributes="1"/>
+                                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                              <Component id="duplicateButton" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Group type="102" attributes="0">
-                                                  <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                                                  <Component id="assignedToStatusLabel" min="-2" max="-2" attributes="0"/>
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="assignedToWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                              </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Group type="103" groupAlignment="0" attributes="0">
-                                                      <Component id="ccWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                                      <Component id="qaContactWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                                      <Component id="dummyWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                                      <Component id="blocksWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                                      <Component id="dependsOnWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  </Group>
-                                              </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="dependsField" max="32767" attributes="1"/>
+                                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                              <Component id="dependsOnButton" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="blocksField" max="32767" attributes="1"/>
+                                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                              <Component id="blocksButton" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="assignedToStatusLabel" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="assignedToWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="qaContactWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="ccWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="statusWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="resolutionWarning" min="-2" pref="11" max="-2" attributes="0"/>
+                                          <Component id="blocksWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="dependsOnWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="reportedField" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="reportedStatusLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                                      <Component id="modifiedLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
+                              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="summaryField" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="summaryField" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="summaryWarning" min="-2" pref="9" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="submitButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -256,158 +246,142 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="productLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="productCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="reportedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="reportedField" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="productWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="reportedStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="componentLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="componentCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="modifiedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="modifiedField" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="componentWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="versionLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="versionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="versionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                      <Component id="tasklistButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="separatorLabel2" linkSize="6" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="refreshButton" linkSize="6" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="reloadButton" linkSize="6" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="separatorLabel" linkSize="6" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="headerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="separatorLabel2" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="tasklistButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="separatorLabel" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="reloadButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="refreshButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="platformLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="platformCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="assignedLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="productCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="productWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="reportedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="reportedField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="modifiedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="modifiedField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="reportedStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="componentCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="componentWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="assignedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="assignedField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="platformWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="assignedToWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="assignedToStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="assignedToWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="qaContactLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="qaContactLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="qaContactField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="osLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="osCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="osWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="qaContactWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="ccLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusCombo" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="platformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="platformCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ccLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ccField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="platformWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="osCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ccWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="osWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="resolutionLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="resolutionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="duplicateField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="duplicateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="resolutionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="duplicateButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dummyWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="issueTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="issueTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="dummyLabel1" linkSize="8" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="dependsField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dependsLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dependsOnButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dependsOnWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="blocksLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="priorityCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="priorityLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="blocksField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="priorityCombo" linkSize="8" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="priorityWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="blocksButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="blocksWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="severityLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="severityCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="severityWarning" alignment="1" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="severityCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="severityWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="targetMilestoneLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetMilestoneLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="targetMilestoneCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="milestoneWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="resolutionField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="resolutionWarning" alignment="3" min="-2" pref="11" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="dummyLabel1" linkSize="2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="urlLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Component id="urlWarning" alignment="1" min="-2" pref="16" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="keywordsLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dummyLabel2" linkSize="8" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="duplicateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="duplicateField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="duplicateButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="dependsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dependsField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dependsOnWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="dependsOnButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="keywordsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="keywordsField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="keywordsButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="keywordsWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="blocksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="blocksField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="blocksWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="blocksButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="statusWhiteboardLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusWhiteboardField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="dummyLabel2" linkSize="2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="dummyLabel3" linkSize="8" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="dummyAttachmentsPanel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="summaryWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="summaryWarning" alignment="3" min="-2" pref="12" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="messagePanel" min="-2" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Component id="messagePanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="dummyCommentsPanel" max="32767" attributes="0"/>
@@ -416,6 +390,490 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
+    <Component class="javax.swing.JTextField" name="reportedField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reportedField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dependsOnWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="osWarning">
+    </Component>
+    <Container class="javax.swing.JPanel" name="messagePanel">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
+        <Property name="axis" type="int" value="3"/>
+      </Layout>
+    </Container>
+    <Component class="javax.swing.JLabel" name="ccWarning">
+    </Component>
+    <Container class="javax.swing.JPanel" name="dummyAttachmentsPanel">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+    <Component class="javax.swing.JLabel" name="qaContactWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="assignedToWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="reportedStatusLabel">
+    </Component>
+    <Component class="javax.swing.JButton" name="blocksButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="focusPainted" type="boolean" value="false"/>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="blocksButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="modifiedField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.modifiedField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="blocksLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="blocksField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="modifiedLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="modifiedField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.modifiedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="dependsOnButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsOnButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="focusPainted" type="boolean" value="false"/>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsOnButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dependsOnButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="dependsField">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dependsLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="dependsField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="reportedLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="reportedField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reportedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="resolutionField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.resolutionField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JButton" name="duplicateButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="focusPainted" type="boolean" value="false"/>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="duplicateButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="statusCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.statusCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="statusComboActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="duplicateField">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="statusLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="statusCombo"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.statusLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="duplicateLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="duplicateField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="osCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.osCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="osComboActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="summaryWarning">
+    </Component>
+    <Component class="javax.swing.JTextField" name="ccField">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.ccField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="ccLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="ccField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.ccLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="qaContactLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="qaContactField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.qaContactLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="blocksWarning">
+    </Component>
+    <Component class="javax.swing.JTextField" name="assignedField">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.assignedField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="resolutionWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="assignedLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="assignedField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.assignedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="statusWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="keywordsWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="milestoneWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="severityWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="platformWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="versionWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="productWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="addCommentLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="addCommentArea"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.addCommentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="attachmentsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.attachmentsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="summaryLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="summaryField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.summaryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="assignedToStatusLabel">
+    </Component>
+    <Component class="javax.swing.JButton" name="keywordsButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.keywordsButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="focusPainted" type="boolean" value="false"/>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.keywordsButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="keywordsButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dummyLabel2">
+    </Component>
+    <Component class="javax.swing.JLabel" name="keywordsLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="keywordsField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.keywordsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="targetMilestoneCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.targetMilestoneCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="targetMilestoneComboActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="blocksField">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="severityCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.severityCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="severityComboActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="priorityLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="priorityCombo"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.priorityLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dummyLabel1">
+    </Component>
+    <Component class="javax.swing.JComboBox" name="componentCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.componentCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="componentComboActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="productCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.productCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="productComboActionPerformed"/>
+      </Events>
+    </Component>
+    <Container class="javax.swing.JPanel" name="dummyCommentsPanel">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+    <Component class="javax.swing.JSeparator" name="separator">
+    </Component>
+    <Component class="javax.swing.JLabel" name="headerLabel">
+    </Component>
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.refreshButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.refreshButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="reloadButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reloadButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reloadButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="separatorLabel">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+            <LineBorder/>
+          </Border>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="resolutionLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.resolutionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="tasklistButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.tasklistButton.add" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tasklistButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="separatorLabel2">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+            <LineBorder/>
+          </Border>
+        </Property>
+      </Properties>
+    </Component>
     <Component class="javax.swing.JLabel" name="productLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -443,55 +901,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="duplicateButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="focusPainted" type="boolean" value="false"/>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="duplicateButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="platformLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="platformCombo"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.platformLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="productCombo">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.productCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="productComboActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="componentCombo">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.componentCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="componentComboActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JComboBox" name="versionCombo">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -512,50 +921,13 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="platformComboActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="statusLabel">
+    <Component class="javax.swing.JLabel" name="platformLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="statusCombo"/>
+          <ComponentRef name="platformCombo"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.statusLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="statusCombo">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.statusCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="statusComboActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="resolutionLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.resolutionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="resolutionCombo">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.resolutionCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolutionComboActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="priorityLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="priorityCombo"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.priorityLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.platformLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -569,25 +941,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="priorityComboActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="severityLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="severityCombo"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.severityLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="severityCombo">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.severityCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="severityComboActionPerformed"/>
-      </Events>
+    <Component class="javax.swing.JLabel" name="priorityWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="targetMilestoneLabel">
       <Properties>
@@ -599,15 +953,12 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="targetMilestoneCombo">
+    <Component class="javax.swing.JTextField" name="qaContactField">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.targetMilestoneCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.qaContactField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="targetMilestoneComboActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="urlLabel">
       <Properties>
@@ -616,26 +967,6 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.urlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="urlField">
-      <Properties>
-        <Property name="columns" type="int" value="15"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.urlField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="keywordsLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="keywordsField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.keywordsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -649,169 +980,42 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="reportedLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="reportedField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reportedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="reportedField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reportedField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="modifiedLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="modifiedField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.modifiedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="modifiedField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.modifiedField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="assignedLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="assignedField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.assignedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="assignedField">
+    <Component class="javax.swing.JTextField" name="urlField">
       <Properties>
         <Property name="columns" type="int" value="15"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.assignedField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.urlField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="qaContactLabel">
+    <Component class="javax.swing.JLabel" name="statusWhiteboardLabel">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="qaContactField"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.qaContactLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.statusWhiteboardLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="qaContactField">
+    <Component class="javax.swing.JTextField" name="statusWhiteboardField">
       <Properties>
         <Property name="columns" type="int" value="15"/>
       </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.qaContactField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="ccLabel">
+    <Component class="javax.swing.JLabel" name="issueTypeLabel">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="ccField"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.ccLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.issueTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="ccField">
-      <Properties>
-        <Property name="columns" type="int" value="15"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.ccField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
+    <Component class="javax.swing.JComboBox" name="issueTypeCombo">
     </Component>
-    <Component class="javax.swing.JLabel" name="dependsLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="dependsField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
+    <Component class="javax.swing.JLabel" name="dummyLabel3">
     </Component>
-    <Component class="javax.swing.JTextField" name="dependsField">
-      <Properties>
-        <Property name="columns" type="int" value="15"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
+    <Component class="javax.swing.JTextField" name="summaryField">
     </Component>
-    <Component class="javax.swing.JLabel" name="blocksLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="blocksField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="blocksField">
-      <Properties>
-        <Property name="columns" type="int" value="15"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="dummyLabel1">
-    </Component>
-    <Component class="javax.swing.JLabel" name="dummyLabel2">
-    </Component>
-    <Component class="javax.swing.JLabel" name="addCommentLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="addCommentArea"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.addCommentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
+    <Component class="javax.swing.JLabel" name="urlWarning">
     </Component>
     <Container class="javax.swing.JScrollPane" name="scrollPane1">
       <Properties>
@@ -824,6 +1028,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTextArea" name="addCommentArea">
+          <Properties>
+            <Property name="rows" type="int" value="5"/>
+          </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.addCommentArea.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -865,256 +1072,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
       </Events>
     </Component>
-    <Container class="javax.swing.JPanel" name="dummyCommentsPanel">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Component class="javax.swing.JLabel" name="attachmentsLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.attachmentsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JPanel" name="dummyAttachmentsPanel">
-
-      <Layout>
-        <DimensionLayout dim="0">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="738" max="32767" attributes="0"/>
-          </Group>
-        </DimensionLayout>
-        <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-          </Group>
-        </DimensionLayout>
-      </Layout>
-    </Container>
-    <Component class="javax.swing.JSeparator" name="separator">
-    </Component>
-    <Component class="javax.swing.JLabel" name="headerLabel">
-    </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.refreshButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.refreshButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JTextField" name="duplicateField">
-      <Properties>
-        <Property name="columns" type="int" value="15"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="duplicateLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="duplicateField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="keywordsButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.keywordsButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="focusPainted" type="boolean" value="false"/>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.keywordsButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="keywordsButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="blocksButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="focusPainted" type="boolean" value="false"/>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.blocksButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="blocksButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="dependsOnButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsOnButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="focusPainted" type="boolean" value="false"/>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.dependsOnButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dependsOnButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="osLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="osCombo"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.osLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="osCombo">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.osCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="osComboActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JTextField" name="summaryField">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.summaryField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="summaryLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="summaryField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.summaryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JPanel" name="messagePanel">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
-        <Property name="axis" type="int" value="3"/>
-      </Layout>
-    </Container>
-    <Component class="javax.swing.JLabel" name="productWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="urlWarning">
-    </Component>
     <Component class="javax.swing.JLabel" name="componentWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="versionWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="platformWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="osWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="statusWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="resolutionWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="priorityWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="severityWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="milestoneWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="keywordsWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="assignedToWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="qaContactWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="ccWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="dependsOnWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="blocksWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="dummyWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="summaryWarning">
-    </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="reloadButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reloadButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.reloadButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="separatorLabel">
-      <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-            <LineBorder/>
-          </Border>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="reportedStatusLabel">
-    </Component>
-    <Component class="javax.swing.JLabel" name="assignedToStatusLabel">
-    </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="tasklistButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.tasklistButton.add" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tasklistButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="separatorLabel2">
-      <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-            <LineBorder/>
-          </Border>
-        </Property>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

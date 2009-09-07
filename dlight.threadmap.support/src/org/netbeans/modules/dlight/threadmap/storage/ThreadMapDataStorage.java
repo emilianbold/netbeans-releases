@@ -60,12 +60,10 @@ public class ThreadMapDataStorage implements ProxyDataStorage {
     // TODO: currently only one
 
     public static final String THREAD_MAP_STORAGE_TYPE_ID = "ThreadMapDataStorage"; // NOI18N
-
     private static final List<ThreadMapDataStorage> instances = new ArrayList<ThreadMapDataStorage>();
     private final List<ThreadDataImpl> data;
     private TimeDuration frequency;
     private SQLDataStorage sqlStorage;
-
 
     static {
         instances.add(new ThreadMapDataStorage());
@@ -135,7 +133,7 @@ public class ThreadMapDataStorage implements ProxyDataStorage {
                 return Collections.unmodifiableList(threadsData);
             }
 
-            public TimeDuration getPrecision() {
+            public TimeDuration getSamplingPeriod() {
                 return frequency;
             }
 

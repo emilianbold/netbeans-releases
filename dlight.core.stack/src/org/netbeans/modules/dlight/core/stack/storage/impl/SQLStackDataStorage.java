@@ -66,6 +66,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
@@ -82,13 +83,14 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.Util;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
+public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider {
 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;
@@ -312,8 +314,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
-            PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
-            ResultSet rs = select.executeQuery();
+            ResultSet rs = null;
+            if (metadata.getViewStatement() != null){
+                PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
+                rs = select.executeQuery();
+            }else{
+                rs = sqlStorage.select(metadata.getName(), metricsColumn);
+            }
             while (rs.next()) {
                 Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
                 for (FunctionMetric m : metrics) {
@@ -456,15 +463,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         return buf.toString();
     }
 
-    private static <T> T findInstanceOf(Collection<? super T> objects, Class<T> clazz) {
-        for (Object obj : objects) {
-            if (clazz.isAssignableFrom(obj.getClass())) {
-                return clazz.cast(obj);
-            }
-        }
-        return null;
-    }
-
     private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
         PreparedStatement s = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
         try {
@@ -488,7 +486,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
     public List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
         List<String> conditions = new ArrayList<String>(3);
 
-        ThreadFilter threadFilter = findInstanceOf(query.getFilters(), ThreadFilter.class);
+        ThreadFilter threadFilter = Util.firstInstanceOf(ThreadFilter.class, query.getFilters());
         if (threadFilter != null) {
             StringBuilder where = new StringBuilder("thread_id IN ("); // NOI18N
             boolean first = true;
@@ -504,7 +502,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             conditions.add(where.toString());
         }
 
-        TimeFilter timeFilter = findInstanceOf(query.getFilters(), TimeFilter.class);
+        TimeFilter timeFilter = Util.firstInstanceOf(TimeFilter.class, query.getFilters());
         if (timeFilter != null) {
             if (0 <= timeFilter.getStartTime()) {
                 conditions.add(timeFilter.getStartTime() + " <= time_stamp"); // NOI18N

@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.webpreview/1
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Install: org/netbeans/modules/webpreview/Installer.class
+OpenIDE-Module-Layer: org/netbeans/modules/webpreview/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/webpreview/resources/Bundle.properties
+

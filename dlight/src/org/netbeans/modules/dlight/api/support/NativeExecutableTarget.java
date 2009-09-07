@@ -179,7 +179,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 case RUNNING:
                     state = State.RUNNING;
                     pid = event.pid;
-                    doResume = true;
+                    //doResume = true;
                     break;
                 case CANCELLED:
                     doNotify = false;
@@ -273,7 +273,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb.setWorkingDirectory(workingDirectory);
             pb.addEnvironmentVariables(envs);
             pb.setX11Forwarding(x11forwarding);
-            pb.setInitialSuspend(true);
+            //pb.setInitialSuspend(true);
 
             // Setup external terminal ...
             if (execEnv.isLocal() && externalTerminal != null) {
@@ -346,7 +346,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private static final class NativeExecutableTargetExecutionService
             implements DLightTargetExecutionService<NativeExecutableTarget> {
 
-        public void start(
+        public InputOutput start(
                 final NativeExecutableTarget target,
                 final ExecutionEnvVariablesProvider executionEnvProvider) {
             Runnable r = new Runnable() {
@@ -361,6 +361,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             } else {
                 r.run();
             }
+            return target.io;
         }
 
         public synchronized void terminate(NativeExecutableTarget target) {

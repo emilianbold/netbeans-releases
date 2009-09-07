@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -63,9 +64,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
@@ -89,7 +88,7 @@ public class FakeJiraSupport {
         if(support != null) {
             return support;
         }
-        KenaiProject project = KenaiRepositories.getKenaiProject(handle);
+        KenaiProject project = KenaiUtil.getKenaiProject(handle);
         if(project == null) {
             return null;
         }

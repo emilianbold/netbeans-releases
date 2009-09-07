@@ -46,7 +46,6 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ToolTipManager;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -83,13 +82,9 @@ public class LoginPanel extends javax.swing.JPanel {
         return chkRememberMe.isSelected();
     }
 
-    public void showError(KenaiException ex) {
+    public void showError(Exception ex) {
         progressBar.setVisible(false);
-        String errorMessage = ex.getMessage();
-        if (errorMessage==null || "".equals(errorMessage.trim())) {
-            errorMessage = NbBundle.getMessage(LoginPanel.class, "LBL_AuthenticationFailed");
-            Logger.getLogger(LoginPanel.class.getName()).log(Level.INFO, errorMessage, ex);
-        }
+        String errorMessage = NbBundle.getMessage(LoginPanel.class, "LBL_AuthenticationFailed");//  ex.getMessage();
         error.setText(errorMessage);
         error.setVisible(true);
         password.requestFocus();
@@ -184,13 +179,17 @@ public class LoginPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(lblZemblyLogoLeft)
                 .add(0, 0, 0)
-                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(lblZemblyLogoRight))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, error)
+                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblUserName)
@@ -205,10 +204,6 @@ public class LoginPanel extends javax.swing.JPanel {
                             .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
                             .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
                             .add(forgotPassword))))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -238,9 +233,9 @@ public class LoginPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblNoAccount)
                     .add(signUp))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(error)
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 

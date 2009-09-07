@@ -54,11 +54,12 @@ import javax.swing.text.html.HTMLEditorKit;
 public class ReconfigurePanel extends javax.swing.JPanel {
 
     /** Creates new form ReconfigurePanel */
-    public ReconfigurePanel(String cFlags, String cxxFlags, String otherOptions, String legend) {
+    public ReconfigurePanel(String cFlags, String cxxFlags, String linkerFlags, String otherOptions, String legend) {
         initComponents();
         jTextPane1.setEditorKit(new HTMLEditorKit());
         this.cFlags.setText(cFlags);
         this.cppFlags.setText(cxxFlags);
+        this.linkerFlags.setText(linkerFlags);
         this.otherOptions.setText(otherOptions);
         this.jTextPane1.setText(legend);
     }
@@ -81,9 +82,11 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         jTextPane1 = new javax.swing.JTextPane();
         jLabel3 = new javax.swing.JLabel();
         otherOptions = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        linkerFlags = new javax.swing.JTextField();
 
         setMinimumSize(new java.awt.Dimension(300, 200));
-        setPreferredSize(new java.awt.Dimension(300, 200));
+        setPreferredSize(new java.awt.Dimension(300, 220));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(cFlags);
@@ -159,6 +162,24 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(otherOptions, gridBagConstraints);
+
+        jLabel4.setLabelFor(linkerFlags);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ReconfigurePanel.class, "LDFLAGS_LABEL")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        add(jLabel4, gridBagConstraints);
+
+        linkerFlags.setText(org.openide.util.NbBundle.getMessage(ReconfigurePanel.class, "ReconfigurePanel.linkerFlags.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        add(linkerFlags, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -168,6 +189,10 @@ public class ReconfigurePanel extends javax.swing.JPanel {
 
     public String getCppFlags(){
         return cppFlags.getText().trim();
+    }
+
+    public String getLinkerFlags(){
+        return linkerFlags.getText().trim();
     }
 
     public String getOtherOptions(){
@@ -180,8 +205,10 @@ public class ReconfigurePanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JTextField linkerFlags;
     private javax.swing.JTextField otherOptions;
     // End of variables declaration//GEN-END:variables
 

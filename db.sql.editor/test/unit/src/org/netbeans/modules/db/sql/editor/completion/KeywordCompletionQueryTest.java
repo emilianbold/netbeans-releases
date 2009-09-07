@@ -38,32 +38,11 @@
  */
 package org.netbeans.modules.db.sql.editor.completion;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-
 /** Tests completion of SQL keywords.
  *
  * @author Jiri Skrivanek
  */
-public class KeywordCompletionQueryTest extends NbTestCase {
-
-    private static final String[] model = {
-        "catalog_1*",
-        "  sch_customers*",
-        "    tab_customer",
-        "      col_customer_id",
-        "  sch_accounting",
-        "    tab_invoice",
-        "      col_invoice_id",
-        "    tab_purchase_order",
-        "      col_order_id",
-        "catalog_2"
-    };
-    private static List<String> modelData = Arrays.asList(model);
-    private static Metadata metadata = TestMetadata.create(modelData);
+public class KeywordCompletionQueryTest extends CompletionQueryTestCase {
 
     public KeywordCompletionQueryTest(String testName) {
         super(testName);
@@ -71,100 +50,79 @@ public class KeywordCompletionQueryTest extends NbTestCase {
 
     public void testEmptyStatement() {
         String sql = "|";
-        assertItems(doQuery(sql, metadata), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
         sql = " |";
-        assertItems(doQuery(sql, metadata), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
         sql = "D|";
-        assertItems(doQuery(sql, metadata), "DELETE", "DROP");
+        assertItems(doQuery(sql), "DELETE", "DROP");
     }
 
     public void testSelect() {
         String sql = "SELECT|";
-        assertItems(doQuery(sql, metadata));
+        assertItems(doQuery(sql));
         sql = "SELECT * |";
-        assertItems(doQuery(sql, metadata), "FROM");
+        assertItems(doQuery(sql), "FROM");
         sql = "SELECT col_customer_id |";
-        assertItems(doQuery(sql, metadata), "FROM");
+        assertItems(doQuery(sql), "FROM");
         sql = "SELECT * FROM|";
-        assertItems(doQuery(sql, metadata));
+        assertItems(doQuery(sql));
         sql = "SELECT * FROM t |";
-        assertItems(doQuery(sql, metadata), "WHERE");
+        assertItems(doQuery(sql), "WHERE");
         sql = "SELECT * FROM t WHERE|";
-        assertItems(doQuery(sql, metadata));
+        assertItems(doQuery(sql));
         sql = "SELECT * FROM t WHERE c1 > 1 |";
-        assertItems(doQuery(sql, metadata), "GROUP", "ORDER");
+        assertItems(doQuery(sql), "GROUP", "ORDER");
         sql = "SELECT * FROM t WHERE c1 > 1 GROUP|";
-        assertItems(doQuery(sql, metadata));
+        assertItems(doQuery(sql));
         sql = "SELECT * FROM t WHERE c1 > 1 GROUP |";
-        assertItems(doQuery(sql, metadata), "BY");
+        assertItems(doQuery(sql), "BY");
         sql = "SELECT * FROM t WHERE c1 > 1 GROUP BY c3 |";
-        assertItems(doQuery(sql, metadata), "HAVING");
+        assertItems(doQuery(sql), "HAVING");
         sql = "SELECT * FROM t WHERE c1 > 1 GROUP |";
-        assertItems(doQuery(sql, metadata), "BY");
+        assertItems(doQuery(sql), "BY");
         sql = "SELECT * FROM t WHERE c1 > 1 ORDER |";
-        assertItems(doQuery(sql, metadata), "BY");
+        assertItems(doQuery(sql), "BY");
 
         sql = "SELECT * FROM inner join t1 on c1 |";
-        assertItems(doQuery(sql, metadata), "WHERE");
+        assertItems(doQuery(sql), "WHERE");
     }
 
     public void testSubqueries() {
         String sql = "SELECT * FROM t WHERE c1 > (SELECT * |";
-        assertItems(doQuery(sql, metadata), "FROM");
+        assertItems(doQuery(sql), "FROM");
         sql = "SELECT * FROM t WHERE c1 > (SELECT * FROM t2 |";
-        assertItems(doQuery(sql, metadata), "WHERE");
+        assertItems(doQuery(sql), "WHERE");
         sql = "SELECT * FROM t WHERE c1 > (SELECT * FROM t2 WHERE c2 = c3 |";
-        assertItems(doQuery(sql, metadata), "GROUP", "ORDER");
+        assertItems(doQuery(sql), "GROUP", "ORDER");
         sql = "SELECT * FROM t WHERE c1 > (SELECT * FROM t2) |";
-        assertItems(doQuery(sql, metadata), "GROUP", "ORDER");
+        assertItems(doQuery(sql), "GROUP", "ORDER");
     }
 
     public void testDelete() {
         String sql = "DELETE|";
-        assertItems(doQuery(sql, metadata));
+        assertItems(doQuery(sql));
         sql = "DELETE |"; // multiple table delete supported
-        assertItems(doQuery(sql, metadata), "FROM", "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
+        assertItems(doQuery(sql), "FROM", "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
         sql = "DELETE FROM t |";
-        assertItems(doQuery(sql, metadata), "WHERE");
+        assertItems(doQuery(sql), "WHERE");
     }
 
     public void testDrop() {
         String sql = "DROP |";
-        assertItems(doQuery(sql, metadata), "TABLE");
+        assertItems(doQuery(sql), "TABLE");
     }
 
     public void testInsert() {
         String sql = "INSERT |";
-        assertItems(doQuery(sql, metadata), "INTO");
+        assertItems(doQuery(sql), "INTO");
         sql = "INSERT INTO t |";
-        assertItems(doQuery(sql, metadata), "VALUES");
+        assertItems(doQuery(sql), "VALUES");
     }
 
     public void testUpdate() {
         String sql = "UPDATE t |";
-        assertItems(doQuery(sql, metadata), "SET");
+        assertItems(doQuery(sql), "SET");
         sql = "UPDATE t SET c1 = c2 |";
-        assertItems(doQuery(sql, metadata), "WHERE");
-    }
-
-    private static void assertItems(SQLCompletionItems items, String... expected) {
-        int index = 0;
-        for (SQLCompletionItem item : items) {
-            assertTrue("Expected<" + expected[index] + "> not found in <" + item + ">", item.toString().contains(expected[index]));
-            index++;
-        }
-        assertEquals("Wrong number of items returned.", expected.length, index);
-    }
-
-    private static SQLCompletionItems doQuery(String sql, Metadata metadata) {
-        int caretOffset = sql.indexOf('|');
-        if (caretOffset >= 0) {
-            sql = sql.replace("|", "");
-        } else {
-            throw new IllegalArgumentException("Missing | in SQL staement.");
-        }
-        SQLCompletionQuery query = new SQLCompletionQuery(null);
-        SQLCompletionEnv env = SQLCompletionEnv.forScript(sql, caretOffset);
-        return query.doQuery(env, metadata, SQLIdentifiersTestUtilities.createNonASCIIQuoter("\""));
+        assertItems(doQuery(sql), "WHERE");
     }
 }

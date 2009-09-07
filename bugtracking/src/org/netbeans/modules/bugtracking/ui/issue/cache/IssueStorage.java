@@ -52,8 +52,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,11 +81,13 @@ class IssueStorage {
 
     private static IssueStorage instance;
     private File storage;
-    private static final String STORAGE_FILE  = "storage";          // NOI18N
-    private static final String STORAGE_VERSION = "1.0";            // NOI18N
-    private String QUERY_ARCHIVED_SUFIX = ".qa";                    // NOI18N
-    private String QUERY_SUFIX = ".q";                              // NOI18N
-    private String ISSUE_SUFIX = ".i";                              // NOI18N
+    private static final String STORAGE_FILE  = "storage";              // NOI18N
+    private static final String STORAGE_VERSION_1_0 = "1.0";            // NOI18N
+    private static final String STORAGE_VERSION_1_1 = "1.1";            // NOI18N
+    private static final String STORAGE_VERSION = STORAGE_VERSION_1_1;  // NOI18N
+    private String QUERY_ARCHIVED_SUFIX = ".qa";                        // NOI18N
+    private String QUERY_SUFIX = ".q";                                  // NOI18N
+    private String ISSUE_SUFIX = ".i";                                  // NOI18N
 
     private IssueStorage() { }
 
@@ -109,6 +113,51 @@ class IssueStorage {
         t.schedule(0);
     }
 
+    long getReferenceTime(String nameSpace) throws IOException {
+        File folder = getNameSpaceFolder(nameSpace);
+        File data = new File(folder, "data");
+        long ret = -1;
+        if(data.exists()) {
+            DataInputStream is = null;
+            try {
+                is = getDataInputStream(data);
+                ret = is.readLong();
+                return ret;
+            } catch (InterruptedException ex) {
+                BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+                IOException ioe = new IOException(ex.getMessage());
+                ioe.initCause(ex);
+                throw ioe;
+            } finally {
+                if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
+                    String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N                    
+                    BugtrackingManager.LOG.log(Level.FINE, "finished reading greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                }            
+                try { if(is != null) is.close(); } catch (IOException e) {}
+            }
+        } else {
+            data.createNewFile();
+            ret = System.currentTimeMillis();
+            DataOutputStream os = null;
+            try {
+                os = getDataOutputStream(data, false);
+                os.writeLong(ret);
+                return ret;
+            } catch (InterruptedException ex) {
+                BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+                IOException ioe = new IOException(ex.getMessage());
+                ioe.initCause(ex);
+                throw ioe;
+            } finally {
+                if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
+                    String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
+                    BugtrackingManager.LOG.log(Level.FINE, "finished writing greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                }
+                try { if(os != null) os.close(); } catch (IOException e) {}
+            }
+        }
+    }
+
     public void storeIssue(String nameSpace, IssueEntry entry) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start storing issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
@@ -120,6 +169,8 @@ class IssueStorage {
                 return;
             }
             dos.writeBoolean(entry.wasSeen());
+            dos.writeLong(entry.getLastSeenModified());
+            dos.writeInt(entry.getLastUnseenStatus());
             if(entry.getSeenAttributes() != null) {
                 for(Entry<String, String> e : entry.getSeenAttributes().entrySet()) {
                     writeString(dos, e.getKey());
@@ -150,6 +201,12 @@ class IssueStorage {
             }
             Map<String, String> m = new HashMap<String, String>();
             boolean seen = is.readBoolean();
+            long lastModified = -1;
+            int lastStatus = IssueCache.ISSUE_STATUS_UNKNOWN;
+            if(!STORAGE_VERSION.equals(STORAGE_VERSION_1_0)) {
+                lastModified = is.readLong();
+                lastStatus = is.readInt();
+            }
             while(true) {
                 try {
                     String key = readString(is);
@@ -161,6 +218,8 @@ class IssueStorage {
             }
             entry.setSeenAttributes(m);
             entry.setSeen(seen);
+            entry.setLastSeenModified(lastModified);
+            entry.setLastUnseenStatus(lastStatus);
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());

@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.discovery.projectimport;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -78,6 +80,7 @@ public class ReconfigureProject {
     private DataObject make;
     private String cFlags;
     private String cxxFlags;
+    private String linkerFlags;
 
     public ReconfigureProject(Project makeProject){
         if (TRACE) {
@@ -103,29 +106,37 @@ public class ReconfigureProject {
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
                 qmake = dao;
             } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
-                make = dao;
+                if (dao.getPrimaryFile().hasExt("mk")) { // NOI18N
+                    if (make == null) {
+                        make = dao;
+                    }
+                } else {
+                    make = dao;
+                }
             }
         }
     }
 
     private String escapeFlags(String flags) {
-        if (flags.indexOf(' ') > 0 && !flags.startsWith("\"")) { // NOI18N
+        if ((flags.indexOf(' ') > 0 || flags.indexOf('=') > 0)&& !flags.startsWith("\"")) { // NOI18N
             flags = "\""+flags+"\""; // NOI18N
         }
         return flags;
     }
 
-    public void reconfigure(String cFlags, String cxxFlags){
-        reconfigure(cFlags, cxxFlags, getRestOptions());
+    public void reconfigure(String cFlags, String cxxFlags, String linkerFlags){
+        reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions());
     }
 
-    public void reconfigure(String cFlags, String cxxFlags, String otherOptions){
+    public void reconfigure(String cFlags, String cxxFlags, String linkerFlags, String otherOptions){
         cFlags = escapeFlags(cFlags);
         cxxFlags = escapeFlags(cxxFlags);
+        linkerFlags = escapeFlags(linkerFlags);
         this.cFlags = cFlags;
         this.cxxFlags = cxxFlags;
+        this.linkerFlags = linkerFlags;
         if (cmake != null && make != null) {
-            String arguments = getConfigureArguments(cmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, isSunCompiler());
+            String arguments = getConfigureArguments(cmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
             ExecutionSupport ses = cmake.getNodeDelegate().getCookie(ExecutionSupport.class);
             if (ses != null) {
                 try {
@@ -156,7 +167,7 @@ public class ReconfigureProject {
             }
             CMakeAction.performAction(cmake.getNodeDelegate(), listener, null, makeProject);
         } else if (qmake != null && make != null){
-            String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, isSunCompiler());
+            String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
             ExecutionSupport ses = qmake.getNodeDelegate().getCookie(ExecutionSupport.class);
             if (ses != null) {
                 try {
@@ -179,7 +190,7 @@ public class ReconfigureProject {
             }
             QMakeAction.performAction(qmake.getNodeDelegate(), listener, null, makeProject);
         } else if (configure != null && make != null) {
-            String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, isSunCompiler());
+            String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
             ShellExecSupport ses = configure.getNodeDelegate().getCookie(ShellExecSupport.class);
             if (ses != null) {
                 try {
@@ -225,14 +236,24 @@ public class ReconfigureProject {
     }
 
     private void postMake(){
-        String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), null, cFlags, cxxFlags,isSunCompiler());
+        String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), null, cFlags, cxxFlags, linkerFlags, isSunCompiler());
         if (TRACE) {
-            logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath() + arguments); // NOI18N
+            logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath()); // NOI18N
         }
-        MakeAction.execute(make.getNodeDelegate(), arguments, null, null, makeProject, ImportUtils.parseEnvironment(arguments)); // NOI18N
+        Node node = make.getNodeDelegate();
+        ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+        List<String> vars = ImportUtils.parseEnvironment(arguments);
+        if (ses != null) {
+            try {
+                ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        MakeAction.execute(node, "", null, null, makeProject,vars); // NOI18N
     }
 
-    private String getConfigureArguments(String configure, String otherOptions, String cCompilerFlags, String cppCompilerFlags, boolean isSunCompiler) {
+    private String getConfigureArguments(String configure, String otherOptions, String cCompilerFlags, String cppCompilerFlags, String ldFlags, boolean isSunCompiler) {
         StringBuilder buf = new StringBuilder();
         if (otherOptions != null && otherOptions.length() > 0){
             buf.append(otherOptions);
@@ -250,6 +271,7 @@ public class ReconfigureProject {
             }
             buf.append(" -DCMAKE_C_FLAGS_DEBUG="+cCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_CXX_FLAGS_DEBUG="+cppCompilerFlags); // NOI18N
+            buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG="+ldFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
             if (isSunCompiler && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                 buf.append(" -spec solaris-cc"); // NOI18N
@@ -258,9 +280,10 @@ public class ReconfigureProject {
             } else {
                 buf.append(" QMAKE_CC=gcc"); // NOI18N
                 buf.append(" QMAKE_CXX=g++"); // NOI18N
-                buf.append(" QMAKE_CFLAGS="+cCompilerFlags); // NOI18N
-                buf.append(" QMAKE_CXXFLAGS="+cppCompilerFlags); // NOI18N
             }
+            buf.append(" QMAKE_CFLAGS="+cCompilerFlags); // NOI18N
+            buf.append(" QMAKE_CXXFLAGS="+cppCompilerFlags); // NOI18N
+            buf.append(" QMAKE_LDFLAGS="+ldFlags); // NOI18N
         } else {
             if (isSunCompiler) {
                 buf.append(" CC=cc"); // NOI18N
@@ -271,6 +294,7 @@ public class ReconfigureProject {
             }
             buf.append(" CFLAGS="+cCompilerFlags); // NOI18N
             buf.append(" CXXFLAGS="+cppCompilerFlags); // NOI18N
+            buf.append(" LDFLAGS="+ldFlags); // NOI18N
         }
         return buf.toString();
     }
@@ -291,20 +315,27 @@ public class ReconfigureProject {
             options.CppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
             options.CCompiler = getFlags(lastFlags, "CC="); // NOI18N
             options.CppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
+            options.LinkerFlags = getFlags(lastFlags, "LDFLAGS="); // NOI18N
         } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
             options.CFlags = getFlags(lastFlags, "-DCMAKE_C_FLAGS_DEBUG="); // NOI18N
             options.CppFlags = getFlags(lastFlags, "-DCMAKE_CXX_FLAGS_DEBUG="); // NOI18N
             options.CCompiler = getFlags(lastFlags, "-DCMAKE_C_COMPILER="); // NOI18N
             options.CppCompiler = getFlags(lastFlags, "-DCMAKE_CXX_COMPILER="); // NOI18N
+            options.LinkerFlags = getFlags(lastFlags, "-DCMAKE_EXE_LINKER_FLAGS_DEBUG="); // NOI18N
         } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
             options.CFlags = getFlags(lastFlags, "QMAKE_CFLAGS="); // NOI18N
             options.CppFlags = getFlags(lastFlags, "QMAKE_CXXFLAGS="); // NOI18N
             options.CCompiler = getFlags(lastFlags, "QMAKE_CC="); // NOI18N
             options.CppCompiler = getFlags(lastFlags, "QMAKE_CXX="); // NOI18N
+            options.LinkerFlags = getFlags(lastFlags, "QMAKE_LDFLAGS="); // NOI18N
         } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
-            return null;
+            options.CFlags = getFlags(lastFlags, "CFLAGS="); // NOI18N
+            options.CppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
+            options.CCompiler = getFlags(lastFlags, "CC="); // NOI18N
+            options.CppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
+            options.LinkerFlags = getFlags(lastFlags, "LDFLAGS="); // NOI18N
         }
-        return null;
+        return options;
     }
 
     public String getRestOptions() {
@@ -322,22 +353,26 @@ public class ReconfigureProject {
             lastFlags = removeFlag(lastFlags, "CXXFLAGS=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "CC=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "CXX=", false); // NOI18N
+            lastFlags = removeFlag(lastFlags, "LDFLAGS=", false); // NOI18N
         } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+            lastFlags = removeFlag(lastFlags, "-DCMAKE_BUILD_TYPE=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-DCMAKE_C_FLAGS_DEBUG=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-DCMAKE_CXX_FLAGS_DEBUG=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-DCMAKE_C_COMPILER=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-DCMAKE_CXX_COMPILER=", false); // NOI18N
+            lastFlags = removeFlag(lastFlags, "-DCMAKE_EXE_LINKER_FLAGS_DEBUG=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-G", false); // NOI18N
         } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
             lastFlags = removeFlag(lastFlags, "QMAKE_CFLAGS=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "QMAKE_CXXFLAGS=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "QMAKE_CC=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "QMAKE_CXX=", false); // NOI18N
+            lastFlags = removeFlag(lastFlags, "QMAKE_LDFLAGS=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-spec solaris-cc", true); // NOI18N
         } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
             return ""; // NOI18N
         }
-        return lastFlags;
+        return lastFlags.trim();
     }
 
     private String removeFlag(String flags, String key, boolean noValue) {
@@ -475,6 +510,22 @@ public class ReconfigureProject {
                 }
             }
         } else if (make != null && make != null) {
+            ExecutionSupport ses = make.getNodeDelegate().getCookie(ExecutionSupport.class);
+            if (ses != null) {
+                String[] args = ses.getEnvironmentVariables();
+                if (args != null && args.length > 0) {
+                    List<String> list = new ArrayList<String>();
+                    for (int i = 0; i < args.length; i++) {
+                        list.add(args[i]);
+                    }
+                    list = ImportUtils.quoteList(list);
+                    StringBuilder b = new StringBuilder();
+                    for (String s : list) {
+                        b.append(s).append(' '); // NOI18N
+                    }
+                    return b.toString();
+                }
+            }
         }
         return null;
     }
@@ -484,5 +535,6 @@ public class ReconfigureProject {
         public String CppFlags;
         public String CCompiler;
         public String CppCompiler;
+        public String LinkerFlags;
     }
 }

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -82,7 +83,12 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
         public void executionStarted(int pid) {
             if (step == events.length-1 && pid != ExecutionListener.UNKNOWN_PID) {
                 this.pid = pid;
-                setEnabled(true);
+                //TODO: temporary fix until we have a valid pid on windows
+                if (Utilities.isWindows() && (events[step].getConfiguration()).getDevelopmentHost().getExecutionEnvironment().isLocal()) {
+                    setEnabled(false);
+                } else {
+                    setEnabled(true);
+                }
             }
         }
 

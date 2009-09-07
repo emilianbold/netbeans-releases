@@ -1760,8 +1760,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <property name="catalog.file" location="catalog.xml"/>
       <property name="catalog.base.url" value="http://bits.netbeans.org/"/>
       <property name="use.license.url.in.catalog" value="true"/>
+      <property name="catalog.notification.message" value=""/>
+      <property name="catalog.notification.url"     value=""/>
+
 <!--      <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}" catalogDeploymentLocation="${catalog.base.url}"/>-->
-      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
+      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}" notificationmessage="${catalog.notification.message}" notificationurl="${catalog.notification.url}">
           <fileset dir="${nbms.location}">
               <include name="**/*.nbm"/>
           </fileset>

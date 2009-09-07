@@ -48,13 +48,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -125,7 +130,7 @@ public class ExternalTerminal implements PropertyChangeListener {
                         throw new IllegalStateException(NbBundle.getMessage(
                                 ExternalTerminal.class,
                                 "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
-                                termProfile.options,
+                                Arrays.toString(termProfile.options),
                                 rc,
                                 out));
                     } catch (IllegalThreadStateException e) {
@@ -185,8 +190,11 @@ public class ExternalTerminal implements PropertyChangeListener {
             fw.close();
         } catch (IOException ioe) {
         }
-        CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
-                    gdbHelperScript.getAbsolutePath(), 0755, null);
+        try {
+            CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(), gdbHelperScript.getAbsolutePath(), 0755, null).get(30, TimeUnit.SECONDS);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     /**

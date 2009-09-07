@@ -82,7 +82,7 @@ public class MonitoredData {
     }
     
     public int getTimeStampInterval(){
-        return (int) mapData.getPrecision().getValueIn(TimeUnit.NANOSECONDS);
+        return (int) mapData.getSamplingPeriod().getValueIn(TimeUnit.NANOSECONDS);
     }
 
     public ThreadData getStackProvider(int index){

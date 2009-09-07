@@ -51,6 +51,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.dlight.util.DLightMath;
 
 /**
  * A delegate that is responsible for painting,
@@ -104,6 +105,10 @@ class GraphPainter {
         }
      }
 
+    public int getDataSize() {
+        return data.size();
+    }
+
     public int calculateUpperLimit(float... data) {
         float absLimit = 0;
         float relLimit = 0;
@@ -154,12 +159,13 @@ class GraphPainter {
      * @param h  height of drawing area
      * @param ticks  whether to draw ticks on graph
      */
-    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int x, int y, int w, int h, boolean ticks) {
+    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
             if (GraphConfig.GRID_SIZE < w && GraphConfig.GRID_SIZE < h) {
                 paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
                 paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
+                dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
             }
         }
     }
@@ -179,7 +185,7 @@ class GraphPainter {
     /**
      * Paints background grid.
      */
-    private void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
+    private static void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
         // vertical lines
         for (AxisMark xMark : xMarks) {
             g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, xMark.getOpacity()));
@@ -239,7 +245,7 @@ class GraphPainter {
                             }
                         }
                     }
-                    xx[i] = lastx = map(viewportStart + i, viewportStart, viewportEnd, x, x + w);
+                    xx[i] = lastx = DLightMath.map(viewportStart + i, viewportStart, viewportEnd, x, x + w);
                     yy[i] = lasty = (int)(y + h - 2 - value * effectiveHeight / scale) - bonus;
                 }
                 g2.setColor(descriptors.get(ser).getColor());
@@ -266,6 +272,19 @@ class GraphPainter {
             }
         }
         g2.setStroke(oldStroke);
+    }
+
+    private void dimInactiveRegions(Graphics g, int viewportStart, int viewportEnd, int filterStart, int filterEnd, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(GraphConfig.DIM_COLOR);
+        if (viewportStart <= filterStart ) {
+            int xx = DLightMath.map(filterStart, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(x, y, xx, h);
+        }
+        if (filterEnd <= viewportEnd) {
+            int xx = DLightMath.map(filterEnd, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(x + xx, y, w - xx, h);
+        }
     }
 
 // axes painting ///////////////////////////////////////////////////////////////
@@ -317,28 +336,6 @@ class GraphPainter {
     }
 
 // common math /////////////////////////////////////////////////////////////////
-
-    /**
-     * Maps <code>value</code> from range <code>a..b</code> into <code>x..y</code>.
-     * Values less than <code>a</code> are mapped to <code>x</code>.
-     * Values greater than <code>b</code> are mapped to <code>y</code>.
-     *
-     * @param value  value to be mapped
-     * @param a  source range lower bound
-     * @param b  source range upper bound
-     * @param x  destination range lower bound
-     * @param y  destination range upper bound
-     * @return value mapped from range <code>a..b</code> into <code>x..y</code>
-     */
-    private static int map(int value, int a, int b, int x, int y) {
-        if (value <= a) {
-            return x;
-        } else if (value < b) {
-            return x + (value - a) * (y - x) / (b - a);
-        } else {
-            return y;
-        }
-    }
 
     /**
      * Returns a copy of passed color with adjusted alpha value.

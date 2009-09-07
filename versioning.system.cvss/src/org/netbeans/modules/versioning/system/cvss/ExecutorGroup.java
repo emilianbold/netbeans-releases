@@ -52,6 +52,7 @@ import javax.swing.*;
 import java.util.*;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 /**
@@ -210,16 +211,20 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
             Object key = it.next();
 
             Set commands = (Set) queues.get(key);
-            commands.remove(id);
-            if (commands.isEmpty()) {
-                queues.remove(key);
-                if (executed && queues.isEmpty() && progressHandle != null) {
-                    progressHandle.finish();
-                    progressHandle = null;
+            if (commands != null) {
+                commands.remove(id);
+                if (commands.isEmpty()) {
+                    queues.remove(key);
+                    if (executed && queues.isEmpty() && progressHandle != null) {
+                        progressHandle.finish();
+                        progressHandle = null;
+                    }
+                    log("End - " + name);
                 }
-                log("End - " + name);
+                finished &= commands.isEmpty();
+            } else {
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "null commands for {0}, all commands {1}", new Object[] {key, queues}); //NOI18N
             }
-            finished &= commands.isEmpty();
         }
 
         if (finished) {

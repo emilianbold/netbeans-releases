@@ -50,9 +50,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * There hardly is a way to unit test remote operations.
- * This is just an entry point for manual validation.
- *
  * @author Sergey Grinev
  */
 public class UploadTestCase extends RemoteTestBase {

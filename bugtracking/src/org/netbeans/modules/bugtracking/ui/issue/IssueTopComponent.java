@@ -131,7 +131,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             onRepoSelected();
         } else {
             if(defaultRepository == null) {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox);
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, false);
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
             }
@@ -362,6 +362,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.getController().opened();
         }
+        BugtrackingManager.LOG.fine("IssueTopComponent Opened " + (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     @Override
@@ -374,6 +375,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(prepareTask != null) {
             prepareTask.cancel();
         }
+        BugtrackingManager.LOG.fine("IssueTopComponent Closed " + (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     /**
@@ -383,10 +385,25 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @return top-component that should display the given issue.
      */
     public static synchronized IssueTopComponent find(Issue issue) {
+        return find(issue, true);
+    }
+
+    /**
+     * Returns top-component that should display the given issue. 
+     *
+     * @param issue issue for which the top-component should be found.
+     * @param forceCreate determines wheter a TopComponent is created if none available yet
+     *
+     * @return top-component that should display the given issue.
+     */
+    public static synchronized IssueTopComponent find(Issue issue, boolean forceCreate) {
         for (IssueTopComponent tc : openIssues) {
             if (issue.equals(tc.getIssue())) {
                 return tc;
             }
+        }
+        if(!forceCreate) {
+            return null;
         }
         IssueTopComponent tc = new IssueTopComponent();
         tc.setIssue(issue);
@@ -437,7 +454,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    rs.refreshRepositoryModel();
+                    if(rs != null) {
+                        rs.refreshRepositoryModel();
+                    }
                 }
             });
         }

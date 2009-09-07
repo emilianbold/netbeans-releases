@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.kenai.collab.chat;
 
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 
 /**
  *
@@ -51,6 +51,6 @@ public abstract class SPIAccessor {
 
     public abstract void clear();
 
-    public abstract void firePropertyChange(KenaiUser forName, boolean oldOne, boolean newOne);
+    public abstract void firePropertyChange(KenaiUserUI forName, boolean oldOne, boolean newOne);
 
 }

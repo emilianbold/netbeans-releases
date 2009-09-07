@@ -74,6 +74,7 @@ public final class SunStudioDCConfiguration
     private static final String DATARACE_TABLE_NAME = "SunStudioDataRacesDetailedData"; // NOI18N
     private static final String DEADLOCKS_TABLE_NAME = "SunStudioDeadlocksDetailedData"; // NOI18N
     public static final Column c_name = new Column("name", String.class, loc("SSDataCollector.ColumnName.name"), null); // NOI18N
+    public static final Column c_address = new Column("address", String.class, loc("SSDataCollector.ColumnName.address"), null); // NOI18N
     public static final Column c_eUser =
             new Column(TimeMetric.UserFuncTimeExclusive.getMetricID(),
             TimeMetric.UserFuncTimeExclusive.getMetricValueClass(),

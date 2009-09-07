@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
 /**
@@ -105,5 +107,23 @@ public final class FileUtils {
             }
         }
         return found;
+    }
+
+    /**
+     * Get {@link FileObject} for the given {@link Lookup context}.
+     * @param context {@link Lookup context} where the {@link FileObject} is searched for
+     * @return {@link FileObject} for the given {@link Lookup context} or <code>null</code> if not found
+     * @since 1.16
+     */
+    public static FileObject getFileObject(Lookup context) {
+        FileObject fo = context.lookup(FileObject.class);
+        if (fo != null) {
+            return fo;
+        }
+        DataObject d = context.lookup(DataObject.class);
+        if (d != null) {
+            return d.getPrimaryFile();
+        }
+        return null;
     }
 }

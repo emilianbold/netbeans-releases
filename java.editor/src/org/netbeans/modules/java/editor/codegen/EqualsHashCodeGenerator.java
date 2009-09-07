@@ -520,7 +520,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
 
     private static KindOfType detectKind(CompilationInfo info, TypeMirror tm) {
-        if (tm.getKind().isPrimitive() || tm.getKind() == TypeKind.DECLARED && ((DeclaredType)tm).asElement().getKind() == ElementKind.ENUM) {
+        if (tm.getKind().isPrimitive()) {
             return KindOfType.PRIMITIVE;
         }
 
