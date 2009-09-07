@@ -331,11 +331,10 @@ public class NbJiraIssue extends Issue {
         return getFieldValues(IssueField.SUBTASK_IDS);
     }
 
-    // XXX unify with issuepanel
     public long getLastModify() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            return  Long.parseLong(value);
+            return Long.parseLong(value);
         } catch (NumberFormatException nfex) {
             Jira.LOG.log(Level.WARNING, null, nfex);
         }
@@ -345,7 +344,7 @@ public class NbJiraIssue extends Issue {
     public long getCreated() {
         String value = getFieldValue(IssueField.CREATION);
         try {
-            return  Long.parseLong(value);
+            return Long.parseLong(value);
         } catch (NumberFormatException nfex) {
             Jira.LOG.log(Level.WARNING, null, nfex);
         }
