@@ -48,11 +48,11 @@ import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
  *
  * @author David Van Couvering
  */
-public abstract class JDBCMetadataTest extends MetadataTestBase {
+public abstract class JDBCMetadataTestBase extends MetadataTestBase {
     @Override
     public abstract void setUp() throws Exception;
 
-    public JDBCMetadataTest(String name) {
+    public JDBCMetadataTestBase(String name) {
         super(name);
     }
 
