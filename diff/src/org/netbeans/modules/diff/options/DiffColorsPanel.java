@@ -75,6 +75,8 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     private static final String ATTR_NAME_MERGE_UNRESOLVED = "merge.unresolved";
     private static final String ATTR_NAME_MERGE_APPLIED = "merge.applied";
     private static final String ATTR_NAME_MERGE_NOTAPPLIED = "merge.notapplied";
+    private static final String ATTR_NAME_SIDEBAR_DELETED = "sidebar.deleted";
+    private static final String ATTR_NAME_SIDEBAR_CHANGED = "sidebar.changed";
     
     private boolean		        listen;
     private List<AttributeSet>  categories;
@@ -135,7 +137,9 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
             if (ATTR_NAME_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setDeletedColor((Color) color.getAttribute(StyleConstants.Background)); 
             if (ATTR_NAME_MERGE_APPLIED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setAppliedColor((Color) color.getAttribute(StyleConstants.Background)); 
             if (ATTR_NAME_MERGE_NOTAPPLIED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setNotAppliedColor((Color) color.getAttribute(StyleConstants.Background)); 
-            if (ATTR_NAME_MERGE_UNRESOLVED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setUnresolvedColor((Color) color.getAttribute(StyleConstants.Background)); 
+            if (ATTR_NAME_MERGE_UNRESOLVED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setUnresolvedColor((Color) color.getAttribute(StyleConstants.Background));
+            if (ATTR_NAME_SIDEBAR_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setSidebarDeletedColor((Color) color.getAttribute(StyleConstants.Background));
+            if (ATTR_NAME_SIDEBAR_CHANGED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setSidebarChangedColor((Color) color.getAttribute(StyleConstants.Background));
         }
     }
     
@@ -245,6 +249,18 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getUnresolvedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_MERGE_UNRESOLVED);
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_UnresolvedColor"));
+        attrs.add(sas);
+
+        sas = new SimpleAttributeSet();
+        StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getSidebarDeletedColor());
+        sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_SIDEBAR_DELETED);
+        sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_SidebarDeletedColor"));
+        attrs.add(sas);
+
+        sas = new SimpleAttributeSet();
+        StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getSidebarChangedColor());
+        sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_SIDEBAR_CHANGED);
+        sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_SidebarChangedColor"));
         attrs.add(sas);
 
         return attrs;

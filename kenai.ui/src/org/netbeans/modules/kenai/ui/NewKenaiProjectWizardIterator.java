@@ -399,7 +399,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         return commonParent;
     }
 
-    private boolean isCommonParent(List<SharedItem> sharedItems, String newPrjScmLocal) {
+    static boolean isCommonParent(List<SharedItem> sharedItems, String newPrjScmLocal) {
         File commonParent = new File(newPrjScmLocal);
         for (SharedItem item : sharedItems) {
             if (!commonParent.equals(item.getRoot().getParentFile())) {
