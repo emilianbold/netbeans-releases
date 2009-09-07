@@ -62,7 +62,8 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
     private final Controller controller;
 
     // TODO: preserve between sessions
-    private static String lastTargetValue = "host:port"; //NOI18N
+    private static String lastHostValue = ""; //NOI18N
+    private static String lastPortValue = ""; //NOI18N
 
     /** Creates new form GdbServerAttachPanel */
     public GdbServerAttachPanel() {
@@ -70,7 +71,8 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
         initComponents();
         // Fill the Projects combo box
         GdbAttachPanel.fillProjectsCombo(projectCB);
-        targetTF.setText(lastTargetValue);
+        hostTF.setText(lastHostValue);
+        portTF.setText(lastPortValue);
     }
 
     Controller getController() {
@@ -89,11 +91,17 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
         projectLabel = new javax.swing.JLabel();
         projectCB = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
-        targetTF = new javax.swing.JTextField();
+        hostTF = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        portTF = new javax.swing.JTextField();
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.projectLabel.text")); // NOI18N
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.jLabel1.text")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.jLabel2.text")); // NOI18N
+
+        portTF.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.portTF.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -101,19 +109,25 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectLabel)
                     .add(jLabel1)
-                    .add(projectLabel))
+                    .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectCB, 0, 329, Short.MAX_VALUE)
-                    .add(targetTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)))
+                    .add(portTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
+                    .add(hostTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
+                    .add(projectCB, 0, 335, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(targetTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(hostTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(portTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectLabel)
@@ -123,10 +137,12 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField hostTF;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JTextField portTF;
     private javax.swing.JComboBox projectCB;
     private javax.swing.JLabel projectLabel;
-    private javax.swing.JTextField targetTF;
     // End of variables declaration//GEN-END:variables
 
     private class GdbServerAttachController implements Controller {
@@ -136,18 +152,23 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
         }
 
         public boolean ok() {
-            lastTargetValue = targetTF.getText();
-            if (lastTargetValue.length() == 0) {
+            lastHostValue = hostTF.getText();
+            if (lastHostValue.length() == 0) {
+                return false;
+            }
+            lastPortValue = portTF.getText();
+            if (lastPortValue.length() == 0) {
                 return false;
             }
             ProjectCBItem pi = (ProjectCBItem) projectCB.getSelectedItem();
             if (pi != null) {
+                String target = lastHostValue + ':' + lastPortValue;
                 try {
-                    GdbDebugger.attachGdbServer(lastTargetValue, pi.getProjectInformation());
+                    GdbDebugger.attachGdbServer(target, pi.getProjectInformation());
                 } catch (DebuggerStartException dse) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             NbBundle.getMessage(GdbServerAttachPanel.class,
-                           "ERR_UnexpecedAttachGdbServerFailure", lastTargetValue))); // NOI18N
+                           "ERR_UnexpecedAttachGdbServerFailure", target))); // NOI18N
                 }
             }
             return true;

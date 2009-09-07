@@ -43,9 +43,13 @@ PRELOAD_NAME=rfs_preload
 CONTROLLER_NAME=rfs_controller
 FILEDATA_NAME=rfs_filedata
 
-CFLAGS-Linux := -c -fPIC -D_GNU_SOURCE
-CFLAGS-SunOS := -c -fPIC -D_GNU_SOURCE
-CFLAGS-Mac_OS_X := -c -fPIC -D_GNU_SOURCE
+ifdef DEBUG
+    C_DBG_FLAGS := -g
+endif
+
+CFLAGS-Linux := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
+CFLAGS-SunOS := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
+CFLAGS-Mac_OS_X := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
 
 LDFLAGS-LIB-Linux := -ldl -shared
 LDFLAGS-LIB-SunOS := -G -ldl -lsocket

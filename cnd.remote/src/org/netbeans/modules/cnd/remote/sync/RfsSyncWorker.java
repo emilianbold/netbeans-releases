@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.io.NullInputStream;
 
 /**
  *
@@ -86,7 +85,8 @@ class RfsSyncWorker extends ZipSyncWorker {
                 if (allAtOnce) {
                     return super.getFileInputStream(file);
                 } else {
-                    return new NullInputStream();
+                    // Fooling SunStudio dmake, which (in some circumstances) does not open file with zero length
+                    return new DummyInputStream("\n");
                 }
             }
 
@@ -131,5 +131,21 @@ class RfsSyncWorker extends ZipSyncWorker {
             // do nothing, since fake (empty) fies were sent!
         }
 
+    }
+
+    private static class DummyInputStream extends InputStream {
+        private final String text;
+        private int curr;
+        public DummyInputStream(String text) {
+            this.text = text;
+            this.curr = 0;
+        }
+        public int read() throws IOException {
+            if (curr < text.length()) {
+                return text.charAt(curr++);
+            } else {
+                return -1;
+            }
+        }
     }
 }
