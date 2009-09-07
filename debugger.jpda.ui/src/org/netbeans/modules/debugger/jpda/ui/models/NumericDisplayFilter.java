@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.Presenter;
 import org.openide.util.NbBundle;
 
@@ -56,12 +58,14 @@ import java.awt.event.ActionEvent;
  * option for numeric variables.
  * Provides the popup action and filters displayed values.
  *
- * @author Maros Sandor, Jan Jancura
+ * @author Maros Sandor, Jan Jancura, Martin Entlicher
  */
 public class NumericDisplayFilter implements TableModelFilter, 
 NodeActionsProviderFilter, Constants {
 
-    private final Map   variableToDisplaySettings = new HashMap ();
+    enum NumericDisplaySettings { DECIMAL, HEXADECIMAL, OCTAL, BINARY, CHAR, TIME }
+
+    private final Map<Variable, NumericDisplaySettings>   variableToDisplaySettings = new HashMap<Variable, NumericDisplaySettings>();
     private HashSet     listeners;
 
     
@@ -80,10 +84,23 @@ NodeActionsProviderFilter, Constants {
             isIntegralType ((Variable) node)
         ) {
             Variable var = (Variable) node;
-            return getValue (
-                var, 
-                (NumericDisplaySettings) variableToDisplaySettings.get (var)
-            );
+            NumericDisplaySettings nds = variableToDisplaySettings.get (var);
+            if (nds == null && var instanceof Field) {
+                Variable parent = null;
+                try {
+                    java.lang.reflect.Method pvm = var.getClass().getMethod("getParentVariable");
+                    pvm.setAccessible(true);
+                    parent = (Variable) pvm.invoke(var);
+                } catch (IllegalAccessException ex) {
+                } catch (IllegalArgumentException ex) {
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (NoSuchMethodException ex) {
+                } catch (SecurityException ex) {
+                }
+                nds = variableToDisplaySettings.get(parent);
+            }
+            return getValue(var, nds);
         }
         return original.getValueAt (node, columnID);
     }
@@ -158,7 +175,7 @@ NodeActionsProviderFilter, Constants {
         List myActions = new ArrayList();
         if (node instanceof Variable) {
             Variable var = (Variable) node;
-            if (isIntegralType(var)) {
+            if (isIntegralTypeOrArray(var)) {
                 myActions.add(new DisplayAsAction((Variable) node));
             }
         }
@@ -180,15 +197,15 @@ NodeActionsProviderFilter, Constants {
         if (settings == null) return var.getValue ();
         String type = var.getType ();
         try {
-            switch (settings.getDisplayAs ()) {
-            case NumericDisplaySettings.DECIMAL:
+            switch (settings) {
+            case DECIMAL:
                 if ("char".equals(type)) {
                     int c = getChar(var.getValue());
                     return Integer.toString(c);
                 } else {
                     return var.getValue ();
                 }
-            case NumericDisplaySettings.HEXADECIMAL:
+            case HEXADECIMAL:
                 if ("int".equals (type))
                     return "0x" + Integer.toHexString (
                         Integer.parseInt (var.getValue ())
@@ -210,7 +227,7 @@ NodeActionsProviderFilter, Constants {
                         Long.parseLong (var.getValue ())
                     );
                 }
-            case NumericDisplaySettings.OCTAL:
+            case OCTAL:
                 if ("int".equals (type))
                     return "0" + Integer.toOctalString (
                         Integer.parseInt (var.getValue ())
@@ -233,7 +250,7 @@ NodeActionsProviderFilter, Constants {
                         Long.parseLong (var.getValue ())
                     );
                 }
-            case NumericDisplaySettings.BINARY:
+            case BINARY:
                 if ("int".equals(type))
                     return Integer.toBinaryString(Integer.parseInt(var.getValue()));
                 else if ("short".equals(type)) {
@@ -250,13 +267,17 @@ NodeActionsProviderFilter, Constants {
                 } else {//if ("long".equals(type)) {
                     return Long.toBinaryString (Long.parseLong (var.getValue ()));
                 }
-            case NumericDisplaySettings.CHAR:
+            case CHAR:
                 if ("char".equals(type)) {
                     return var.getValue ();
                 }
                 return "'" + new Character (
                     (char) Integer.parseInt (var.getValue ())
                 ) + "'";
+            case TIME:
+                if ("long".equals(type)) {
+                    return new Date(Long.parseLong(var.getValue ())).toString();
+                }
             default:
                 return var.getValue ();
             }
@@ -269,8 +290,8 @@ NodeActionsProviderFilter, Constants {
         if (settings == null) return origValue;
         String type = var.getType ();
         try {
-            switch (settings.getDisplayAs ()) {
-            case NumericDisplaySettings.BINARY:
+            switch (settings) {
+            case BINARY:
                 if ("int".equals(type))
                     return Integer.toString(Integer.parseInt(origValue, 2));
                 else if ("short".equals(type)) {
@@ -303,8 +324,25 @@ NodeActionsProviderFilter, Constants {
             "short".equals (type);
     }
 
-    private String localize(String s) {
-        return NbBundle.getBundle(NumericDisplayFilter.class).getString(s);
+    private boolean isIntegralTypeOrArray(Variable v) {
+        if (!VariablesTreeModelFilter.isEvaluated(v)) {
+            return false;
+        }
+
+        String type = removeArray(v.getType());
+        return "int".equals (type) ||
+            "char".equals (type) ||
+            "byte".equals (type) ||
+            "long".equals (type) ||
+            "short".equals (type);
+    }
+
+    private static String removeArray(String type) {
+        if (type.length() > 0 && type.endsWith("[]")) { // NOI18N
+            return type.substring(0, type.length() - 2);
+        } else {
+            return type;
+        }
     }
 
     private class DisplayAsAction extends AbstractAction 
@@ -315,7 +353,7 @@ NodeActionsProviderFilter, Constants {
 
         public DisplayAsAction(Variable variable) {
             this.variable = variable;
-            this.type = variable.getType();
+            this.type = removeArray(variable.getType());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -323,72 +361,54 @@ NodeActionsProviderFilter, Constants {
 
         public JMenuItem getPopupPresenter() {
             JMenu displayAsPopup = new JMenu 
-                (localize ("CTL_Variable_DisplayAs_Popup"));
+                (NbBundle.getMessage(NumericDisplayFilter.class, "CTL_Variable_DisplayAs_Popup"));
 
-            JRadioButtonMenuItem decimalItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Decimal")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.DECIMAL);
-                    }
-                }
+            JRadioButtonMenuItem decimalItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Decimal",       // NOI18N
+                    NumericDisplaySettings.DECIMAL
             );
-            JRadioButtonMenuItem hexadecimalItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Hexadecimal")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.HEXADECIMAL);
-                    }
-                }
+            JRadioButtonMenuItem hexadecimalItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Hexadecimal",   // NOI18N
+                    NumericDisplaySettings.HEXADECIMAL
             );
-            JRadioButtonMenuItem octalItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Octal")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.OCTAL);
-                    }
-                }
+            JRadioButtonMenuItem octalItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Octal",         // NOI18N
+                    NumericDisplaySettings.OCTAL
             );
-            JRadioButtonMenuItem binaryItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Binary")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.BINARY);
-                    }
-                }
+            JRadioButtonMenuItem binaryItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Binary",        // NOI18N
+                    NumericDisplaySettings.BINARY
             );
-            JRadioButtonMenuItem charItem = new JRadioButtonMenuItem (
-                new AbstractAction (
-                    localize ("CTL_Variable_DisplayAs_Character")
-                ) {
-                    public void actionPerformed (ActionEvent e) {
-                        onDisplayAs (NumericDisplaySettings.CHAR);
-                    }
-                }
+            JRadioButtonMenuItem charItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Character",     // NOI18N
+                    NumericDisplaySettings.CHAR
+            );
+            JRadioButtonMenuItem timeItem = new DisplayAsMenuItem (
+                    "CTL_Variable_DisplayAs_Time",          // NOI18N
+                    NumericDisplaySettings.TIME
             );
 
             NumericDisplaySettings lds = (NumericDisplaySettings) 
                 variableToDisplaySettings.get (variable);
             if (lds != null) {
-                switch (lds.getDisplayAs ()) {
-                case NumericDisplaySettings.DECIMAL:
+                switch (lds) {
+                case DECIMAL:
                     decimalItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.HEXADECIMAL:
+                case HEXADECIMAL:
                     hexadecimalItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.OCTAL:
+                case OCTAL:
                     octalItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.BINARY:
+                case BINARY:
                     binaryItem.setSelected (true);
                     break;
-                case NumericDisplaySettings.CHAR:
+                case CHAR:
                     charItem.setSelected (true);
+                    break;
+                case TIME:
+                    timeItem.setSelected (true);
                     break;
                 }
             } else {
@@ -404,24 +424,24 @@ NodeActionsProviderFilter, Constants {
             displayAsPopup.add (octalItem);
             displayAsPopup.add (binaryItem);
             displayAsPopup.add (charItem);
+            if ("long".equals(type)) {
+                displayAsPopup.add (timeItem);
+            }
             return displayAsPopup;
         }
 
-        private void onDisplayAs (int how) {
+        private void onDisplayAs (NumericDisplaySettings how) {
             NumericDisplaySettings lds = (NumericDisplaySettings) 
                 variableToDisplaySettings.get (variable);
             if (lds == null) {
                 if ("char".equals(type)) {
-                    lds = new NumericDisplaySettings 
-                        (NumericDisplaySettings.CHAR);
+                    lds = NumericDisplaySettings.CHAR;
                 } else {
-                    lds = new NumericDisplaySettings 
-                        (NumericDisplaySettings.DECIMAL);
+                    lds = NumericDisplaySettings.DECIMAL;
                 }
             }
-            if (lds.getDisplayAs () == how) return;
-            variableToDisplaySettings.put 
-                (variable, new NumericDisplaySettings (how));
+            if (lds == how) return;
+            variableToDisplaySettings.put (variable, how);
             fireModelChanged ();
         }
         
@@ -433,26 +453,20 @@ NodeActionsProviderFilter, Constants {
                 listener.modelChanged (evt);
             }
         }
+
+        private class DisplayAsMenuItem extends JRadioButtonMenuItem {
+
+            public DisplayAsMenuItem(final String message, final NumericDisplaySettings as) {
+                super(new AbstractAction(NbBundle.getMessage(NumericDisplayFilter.class, message)) {
+                        public void actionPerformed (ActionEvent e) {
+                            onDisplayAs (as);
+                        }
+                    });
+            }
+
+        }
+
     }
 
     
-    private static class NumericDisplaySettings {
-
-        public static final int DECIMAL        = 0;
-        public static final int HEXADECIMAL    = 1;
-        public static final int OCTAL          = 2;
-        public static final int BINARY         = 3;
-        public static final int CHAR           = 4;
-
-        private int displayAs;
-
-        public NumericDisplaySettings (int displayAs) {
-            this.displayAs = displayAs;
-        }
-
-        public int getDisplayAs () {
-            return displayAs;
-        }
-    }
-
 }

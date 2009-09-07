@@ -84,6 +84,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -483,8 +484,16 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     // End of variables declaration//GEN-END:variables
 
     public static void openEvaluator() {
+        String selectedText = null;
+        JEditorPane editor = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        if (editor != null) {
+            selectedText = editor.getSelectedText();
+        }
         CodeEvaluator evaluator = getInstance();
         evaluator.open ();
+        if (selectedText != null) {
+            evaluator.codePane.setText(selectedText);
+        }
         evaluator.codePane.selectAll();
         evaluator.requestActive ();
     }
