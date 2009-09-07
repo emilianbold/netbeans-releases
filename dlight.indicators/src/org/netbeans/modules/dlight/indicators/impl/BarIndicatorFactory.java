@@ -36,51 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.indicators.impl;
 
-import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
 
 /**
- * Default {@link DataRowToTimeSeries} implementation, suitable for simple cases.
  *
- * @author Alexey Vladykin
+ * @author mt154047
  */
-public final class DefaultDataRowToTimeSeries implements DataRowToTimeSeries {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
+public final class BarIndicatorFactory implements IndicatorFactory<BarIndicatorConfiguration> {
 
-    private final float[] data;
-    private final Map<String, Integer> columnToIndex;
-
-    public DefaultDataRowToTimeSeries(Column[][] columns) {
-        this.data = new float[columns.length];
-        this.columnToIndex = Collections.unmodifiableMap(buildColumnToIndexMap(columns));
+    @Override
+    public Indicator<BarIndicatorConfiguration> create(BarIndicatorConfiguration configuration) {
+        return new BarIndicator(configuration);
     }
 
-    public synchronized void addDataRow(DataRow row) {
-        for (String columnName : row.getColumnNames()) {
-            Integer index = columnToIndex.get(columnName);
-            if (index != null) {
-                data[index] = DataUtil.toFloat(row.getData(columnName));
-            }
-        }
-    }
-
-    public synchronized void tick(float[] data, Map<String, String> details) {
-        System.arraycopy(this.data, 0, data, 0, Math.min(this.data.length, data.length));
-    }
-
-    private static Map<String, Integer> buildColumnToIndexMap(Column[][] columns) {
-        Map<String, Integer> result = new HashMap<String, Integer>();
-        for (int i = 0; i < columns.length; ++i) {
-            for (Column column : columns[i]) {
-                result.put(column.getColumnName(), Integer.valueOf(i));
-            }
-        }
-        return result;
+    @Override
+    public String getID() {
+        return IndicatorConfigurationIDs.BAR_ID;
     }
 }
