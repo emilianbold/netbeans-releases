@@ -42,8 +42,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -80,17 +78,9 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
-/**
- *
- * @author tester
- */
 public class KenaiPopupMenu extends CookieAction {
 
     private static HashMap<VersioningSystem, JComponent[]> versioningItemMap = new HashMap<VersioningSystem, JComponent[]>();
-
-    //XXX this has to be done better for other domains than (test)kenai
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(hg\\.|svn\\.)?(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)"); //NOI18N
-    private static int patternGroup = 5;
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -202,10 +192,8 @@ public class KenaiPopupMenu extends CookieAction {
                     kenaiPopup.add(new JSeparator());
                     /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
                     String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
-                    final Matcher m = repositoryPattern.matcher(projRepo);
-                    // isKenaiProject assures that m.group(patternGroup) exists, still the check is better
-                    if (m.matches()) {
-                        String kpName = m.group(patternGroup);
+                    String kpName = KenaiProject.getNameForRepository(projRepo);
+                    if (kpName != null) {
                         if (inDashboard(kpName)) {
                             issueTrackers = Kenai.getDefault().getProject(kpName).getFeatures(Type.ISSUES);
                             if (issueTrackers != null && issueTrackers.length > 0) {
@@ -227,10 +215,7 @@ public class KenaiPopupMenu extends CookieAction {
             assert proj != null;
             String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
             if (projRepo != null) {
-                final Matcher m = repositoryPattern.matcher(projRepo);
-                if (m.matches()) {
-                    return true;
-                }
+                return KenaiProject.getNameForRepository(projRepo) !=null;
             }
             return false;
         }
