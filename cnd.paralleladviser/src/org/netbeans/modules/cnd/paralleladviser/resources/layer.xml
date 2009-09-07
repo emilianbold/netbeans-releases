@@ -32,6 +32,7 @@
             </folder>
         </folder>
     </folder>
+<!--
   <folder name="DLight">
     <folder name="ToolConfigurationProviders">
       <file name="DLightParallelAdviserToolConfigurationProvider.instance">
@@ -39,4 +40,5 @@
       </file>
     </folder>
   </folder>
+-->
 </filesystem>

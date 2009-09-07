@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
@@ -64,7 +65,11 @@ final class StackRootNode extends AbstractNode{
     
     StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
         this(sourceFileInfoDataProvider, null, stackName, stack);
+    }
 
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[0];
     }
 
     @Override
@@ -81,12 +86,4 @@ final class StackRootNode extends AbstractNode{
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
-
-
-
-
-
-    
-
-
 }

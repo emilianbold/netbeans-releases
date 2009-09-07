@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.Acceptor;
 import org.openide.util.Lookup;
 
 /**
@@ -259,7 +260,7 @@ public final class SettingsConversions {
             }
         }
     }
-    
+
     private SettingsConversions() {
         
     }

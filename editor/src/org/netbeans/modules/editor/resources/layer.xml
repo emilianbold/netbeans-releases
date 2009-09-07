@@ -105,22 +105,12 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-editor-NbCodeFoldingAction.instance">
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance">
-                <attr name="position" intvalue="800"/>
-            </file>
-            <file name="org-netbeans-modules-editor-MainMenuAction$ShowLineNumbersAction.instance">
-                <attr name="position" intvalue="850"/>
-            </file>
             </folder>
         
         <folder name="GoTo">
             <file name="org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance">
                 <attr name="position" intvalue="800"/>
             </file>
-            
-            <file name="org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance">
-                <attr name="position" intvalue="900"/>
-            </file>                        
             
             <file name="org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance">
                 <attr name="position" intvalue="1000"/>

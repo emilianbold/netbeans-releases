@@ -110,7 +110,7 @@ public class KenaiRepositories {
     Repository getRepository(ProjectHandle ph) {
         KenaiProject kp = getKenaiProject(ph);
         if(kp == null) {
-            // XXX log!
+            BugtrackingManager.LOG.warning("No issue tracking repository available for ProjectHandle [" + ph.getId() + "," + ph.getDisplayName() + "]"); // NOI18N
             return null;
         }
 
@@ -121,7 +121,7 @@ public class KenaiRepositories {
 
         repository = getRepository(kp);
         if(repository == null) {
-            BugtrackingManager.LOG.info("No issue tracking repository available for project " + kp.getName()); // NOI18N
+            BugtrackingManager.LOG.warning("No issue tracking repository available for project " + kp.getName()); // NOI18N
             return null;
         }        
         return repository;

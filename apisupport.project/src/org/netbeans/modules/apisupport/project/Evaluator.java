@@ -693,10 +693,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         final Set<String> testRuntimeCnbs = new HashSet<String>();
 
         // #139339: optimization using processedRecursive set was too bold, removed
-        boolean fullySpecified = false;
         for (TestModuleDependency td : ttModules) {
             String cnb = td.getModule().getCodeNameBase();
-            fullySpecified |= cnb.equals("org.netbeans.libs.junit4");
 
             if (td.isRecursive()) {
                 // scan cp recursively
@@ -750,27 +748,6 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }*/
         
         StringBuilder extra = new StringBuilder();
-        if (!fullySpecified) {
-            // Old module which failed to specify all its test dependencies.
-            if (ml.getEntry("org.netbeans.libs.junit4") != null) {
-                // Basic dependencies many tests use:
-                for (String library : new String[] {"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
-                    compileCnbs.add(library);
-                    runtimeCnbs.add(library);
-                }
-                if (ttName.startsWith("qa-")) {
-                    // ProjectSupport moved from the old nbjunit.ide:
-                    testCompileCnbs.add("org.netbeans.modules.java.j2seproject");
-                    testRuntimeCnbs.add("org.netbeans.modules.java.j2seproject");
-                    // Common GUI testing tools:
-                    for (String library : new String[] {"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
-                        compileCnbs.add(library);
-                        runtimeCnbs.add(library);
-                    }
-                }
-            }
-        }
-
         TestClasspath testClasspath = new TestClasspath(
                 mergePaths(compileCnbs,false,ttName,testDistDir, ml) + extra,
                 mergePaths(runtimeCnbs,false,ttName,testDistDir,ml) + extra,

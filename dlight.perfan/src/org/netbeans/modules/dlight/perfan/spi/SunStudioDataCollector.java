@@ -78,10 +78,11 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.THAFilter;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.THAStartupFilter;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -102,7 +103,6 @@ public class SunStudioDataCollector
         extends IndicatorDataProvider<SunStudioDCConfiguration>
         implements DataCollector<SunStudioDCConfiguration>, SunStudioFiltersProvider {
 
-    private static final String ID = "PerfanDataStorage"; // NOI18N
     private static final String COLLECTOR_NAME = "SunStudio"; // NOI18N
     private static final DataStorageType supportedStorageType;
     private static final AtomicInteger uid = new AtomicInteger(0);
@@ -136,7 +136,7 @@ public class SunStudioDataCollector
     static {
         SunStudioDCConfigurationAccessor dcAccess = SunStudioDCConfigurationAccessor.getDefault();
 
-        supportedStorageType = DataStorageTypeFactory.getInstance().getDataStorageType(ID);
+        supportedStorageType = PerfanDataStorage.storageType;
 
         cpuInfoTable = new DataTableMetadata(
                 dcAccess.getCPUTableName(),
@@ -472,7 +472,17 @@ public class SunStudioDataCollector
             }
 
             final boolean deadlocks = collectedInfo.contains(CollectedInfo.DEADLOCKS);
-            final boolean dataraces = collectedInfo.contains(CollectedInfo.DATARACES);
+            //try to find THAFilter
+            THAFilter thaFilter = null;
+            THAStartupFilter thaStartupFilter = null;
+            for (DataFilter dataFilter : dataFilters){
+                if (dataFilter instanceof THAFilter){
+                    thaFilter = (THAFilter)dataFilter;
+                }else if (dataFilter instanceof THAStartupFilter){
+                    thaStartupFilter = (THAStartupFilter)dataFilter;
+                }
+            }
+            final boolean dataraces = collectedInfo.contains(CollectedInfo.DATARACES) && (thaFilter == null || thaFilter.getType().equals(THAFilter.CollectedDataType.DATARACES));
             if (deadlocks || dataraces) {
                 args.add("-r"); // NOI18N
 
@@ -485,7 +495,11 @@ public class SunStudioDataCollector
                 }
 
                 args.add("-y"); // NOI18N
-                args.add("USR1"); // NOI18N
+                if (thaStartupFilter != null && thaStartupFilter.getStartMode() == THAStartupFilter.StartMode.STARTUP){
+                    args.add("USR1,r");// NOI18N
+                }else{
+                    args.add("USR1"); // NOI18N
+                }
             } else {
 
                 if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
@@ -586,6 +600,10 @@ public class SunStudioDataCollector
 
             for (DataFilter filter : newSet) {
                 if (filter instanceof CollectedObjectsFilter) {
+                    dataFilters.add(filter);
+                }else if (filter instanceof THAFilter){
+                    dataFilters.add(filter);
+                }else if (filter instanceof THAStartupFilter){
                     dataFilters.add(filter);
                 }
             }

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.projectapi;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -53,6 +55,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.AnnotationProcessorTestUtils;
 import org.openide.util.test.MockLookup;
 
 public class LazyLookupProvidersTest extends NbTestCase {
@@ -181,6 +184,59 @@ public class LazyLookupProvidersTest extends NbTestCase {
             }
             assertEquals(Arrays.toString(names), actual.toString());
         }
+    }
+
+    public void testAnnotationAccessibility() throws Exception {
+        clearWorkDir();
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "classes");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "@org.netbeans.spi.project.ProjectServiceProvider(service=Runnable.class, projectType=\"test\")",
+                "public class C implements Runnable {",
+                " public C(org.netbeans.api.project.Project p) {}",
+                " public void run() {}",
+                "}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "@org.netbeans.spi.project.ProjectServiceProvider(service=Runnable.class, projectType=\"test\")",
+                "public class C implements Runnable {",
+                " C(org.netbeans.api.project.Project p) {}",
+                " public void run() {}",
+                "}");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("public"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "@org.netbeans.spi.project.ProjectServiceProvider(service=Runnable.class, projectType=\"test\")",
+                "class C implements Runnable {",
+                " public C(org.netbeans.api.project.Project p) {}",
+                " public void run() {}",
+                "}");
+        baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("public"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "public class C {",
+                " @org.netbeans.spi.project.ProjectServiceProvider(service=Runnable.class, projectType=\"test\")",
+                " public static Runnable m(org.netbeans.api.project.Project p) {return null;}",
+                "}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "public class C {",
+                " @org.netbeans.spi.project.ProjectServiceProvider(service=Runnable.class, projectType=\"test\")",
+                " static Runnable m(org.netbeans.api.project.Project p) {return null;}",
+                "}");
+        baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("public"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "class C {",
+                " @org.netbeans.spi.project.ProjectServiceProvider(service=Runnable.class, projectType=\"test\")",
+                " public static Runnable m(org.netbeans.api.project.Project p) {return null;}",
+                "}");
+        baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("public"));
     }
 
 }

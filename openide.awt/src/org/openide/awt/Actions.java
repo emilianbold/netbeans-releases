@@ -367,7 +367,7 @@ public class Actions extends Object {
     }
     // for use from layers
     static Action alwaysEnabled(Map map) {
-        return new AlwaysEnabledAction(map);
+        return AlwaysEnabledAction.create(map);
     }
 
     /** Creates new "callback" action. Such action has an assigned key

@@ -60,9 +60,17 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author Filip Zamboj
  */
-public class DebuggingActionsTest extends JellyTestCase{
+public class DebuggingActionsTest extends DebuggerTestCase{
 
     private static Node beanNode;
+
+    private static String[] tests = new String[]{
+            "testStartDebugging",
+            "testContinue",
+            //TODO: Where is this test???
+           // "testStepOverExpression",
+            "testPause"
+    };
 
     public DebuggingActionsTest(String name) {
         super(name);
@@ -73,34 +81,19 @@ public class DebuggingActionsTest extends JellyTestCase{
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(DebuggingActionsTest.class).addTest(
-            "testStartDebugging",
-            "testContinue",
-            //TODO: Where is this test???
-           // "testStepOverExpression",
-            "testPause").enableModules(".*").clusters(".*"));
+        return createModuleTest(DebuggingActionsTest.class, tests);
     }
 
     /** setUp method  */
-    public void setUp() throws IOException {        
+    public void setUp() throws IOException {
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");
 
         if (beanNode == null)
         {
-            openDataProjects(Utilities.testProjectName);
             beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new EventTool().waitNoEvent(1000);
-            Utilities.cleanBuildTestProject();
+            new OpenAction().performAPI(beanNode); // NOI18N          
         }
-    }
-
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
     }
 
     static int lastLineNumber = 0;

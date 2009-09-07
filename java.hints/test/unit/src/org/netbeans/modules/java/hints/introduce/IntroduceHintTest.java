@@ -699,6 +699,13 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test {public int test(int y) {while (true) {return name(y); }} private int name(int y) { if (--y <= 0) { return 1; } else { return 2; } } }",
                        new DialogDisplayerImpl3("name", null, true));
     }
+
+    public void testIntroduceMethodPosition() throws Exception {
+        performFixTest("package test; public class Test {public void foo() { int i = 1; } public void foo1() {}}", 78 - 25, 88 - 25,
+                "package test; public class Test {public void foo() {name(); } private void name() { int i = 1; } public void foo1() {}}",
+                new DialogDisplayerImpl3("name", null, true));
+    }
+
     
     //not working because of code generator bug:
     public void XtestIntroduceMethodFix13() throws Exception {
@@ -733,7 +740,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethodFix106490a() throws Exception {
         performFixTest("package test; public class Test {public int test(int y) {while (true) {if (--y <= 0) { return 1; } else { return 2; }}}}",
                        96 - 25, 142 - 25,
-                       "package test; public class Test { public int name(int y) { if (--y <= 0) { return 1; } else { return 2; } } public int test(int y) {while (true) {return name(y); }}}",
+                       "package test; public class Test {public int test(int y) {while (true) {return name(y); }} public int name(int y) { if (--y <= 0) { return 1; } else { return 2; } } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PUBLIC), true));
     }
     

@@ -279,4 +279,18 @@ public final class NativeProcessBuilder implements Callable<Process> {
         info.setX11Forwarding(x11forwarding);
         return this;
     }
+
+    /**
+     * Configure whether process starts normally or suspended.
+     * Suspended process can be resumed by sending it SIGCONT signal.
+     * Note that suspended process is also in RUNNING state.
+     *
+     * @param suspend  pass <code>true</code> to start process suspended,
+     *      or <code>false</code> to start process normally
+     * @return this
+     */
+    public NativeProcessBuilder setInitialSuspend(boolean suspend) {
+        info.setInitialSuspend(suspend);
+        return this;
+    }
 }

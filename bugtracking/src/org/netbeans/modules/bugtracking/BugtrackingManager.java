@@ -69,7 +69,7 @@ public final class BugtrackingManager implements LookupListener {
     
     private static final BugtrackingManager instance = new BugtrackingManager();
 
-    private boolean                 initialized;
+    private boolean initialized;
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager"); // NOI18N
 
@@ -85,7 +85,22 @@ public final class BugtrackingManager implements LookupListener {
      */
     private final Lookup.Result<BugtrackingConnector> connectorsLookup;
 
-    private Map<String, Queue<Issue>> recentIssues;
+    private Map<String, List<RecentIssue>> recentIssues;
+
+    public class RecentIssue {
+        private Issue issue;
+        private long ts;
+        public RecentIssue(Issue issue, long ts) {
+            this.issue = issue;
+            this.ts = ts;
+        }
+        public Issue getIssue() {
+            return issue;
+        }
+        public long getTimestamp() {
+            return ts;
+        }
+    }
 
     public static BugtrackingManager getInstance() {
         instance.init();
@@ -154,35 +169,48 @@ public final class BugtrackingManager implements LookupListener {
         refreshConnectors();
     }
 
-    public Collection<Issue> getRecentIssues(Repository repo) {
-        Queue<Issue> l = getRecentIssues().get(repo.getDisplayName());
+    public List<Issue> getRecentIssues(Repository repo) {
+        assert repo != null;
+        List<RecentIssue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
             return Collections.EMPTY_LIST;
         }
-        return l;
+        List<Issue> ret = new ArrayList<Issue>(l.size());
+        for (RecentIssue recentIssue : l) {
+            ret.add(recentIssue.getIssue());
+        }
+        return ret;
     }
 
     public void addRecentIssue(Repository repo, Issue issue) {
-        Queue<Issue> l = getRecentIssues().get(repo.getDisplayName());
+        assert repo != null && issue != null;
+        if (issue.getID() == null) {
+            return;
+        }
+        List<RecentIssue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
-            l = new LinkedList<Issue>();
-            getRecentIssues().put(repo.getDisplayName(), l);
+            l = new ArrayList<RecentIssue>();
+            getRecentIssues().put(repo.getID(), l);
         }
-        if(l.size() == 5) {
-            l.poll();
-        }
-        for (Issue i : l) {
-            if(i.getID().equals(issue.getID())) {                
+        for (RecentIssue i : l) {
+            if(i.getIssue().getID().equals(issue.getID())) {
                 l.remove(i);
                 break;
             }
         }
-        l.add(issue);
+        if(l.size() == 5) {
+            l.remove(4);
+        }
+        l.add(0, new RecentIssue(issue, System.currentTimeMillis()));
     }
 
-    private Map<String, Queue<Issue>> getRecentIssues() {
+    public Map<String, List<RecentIssue>> getAllRecentIssues() {
+        return Collections.unmodifiableMap(getRecentIssues());
+    }
+
+    private Map<String, List<RecentIssue>> getRecentIssues() {
         if(recentIssues == null) {
-            recentIssues = new HashMap<String, Queue<Issue>>();
+            recentIssues = new HashMap<String, List<RecentIssue>>();
         }
         return recentIssues;
     }

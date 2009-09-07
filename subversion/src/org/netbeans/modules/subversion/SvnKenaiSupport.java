@@ -93,6 +93,12 @@ public class SvnKenaiSupport {
         return kenaiSupport.forName(user);
     }
 
+    public boolean isLogged () {
+        return kenaiSupport != null && kenaiSupport.isLogged();
+    }
 
+    public String getRevisionUrl(String repositoryUrl, String revision) {
+        return kenaiSupport == null ? null : kenaiSupport.getRevisionUrl(repositoryUrl, revision);
+    }
 
 }

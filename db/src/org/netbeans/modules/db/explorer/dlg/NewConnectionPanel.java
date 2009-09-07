@@ -176,6 +176,25 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             }
 
         });
+        urlField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                if (urlField.hasFocus()) {
+                    updateFieldsFromUrl();
+                }
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                if (urlField.hasFocus()) {
+                    updateFieldsFromUrl();
+                }
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                if (urlField.hasFocus()) {
+                    updateFieldsFromUrl();
+                }
+            }
+        });
 
         // Set up initial defaults; user may change but that's ok
         urlField.setVisible(false);
@@ -595,7 +614,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void urlFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_urlFieldActionPerformed
-        
     }//GEN-LAST:event_urlFieldActionPerformed
 
     private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_urlFieldFocusLost
@@ -961,7 +979,7 @@ private void showUrl() {
     }
 
     private void updateUrlFromFields() {
-        
+
         JdbcUrl url = getSelectedJdbcUrl();
         if (url == null || !url.isParseUrl()) {
             return;
@@ -1039,8 +1057,7 @@ private void showUrl() {
             clearError();
         } catch ( MalformedURLException e ) {
             LOGGER.log(Level.FINE, null, e);
-            displayError(e.getMessage(), true);
-            return;
+            // just log in but don't report it to users
         }
 
         if (url.isParseUrl()) {

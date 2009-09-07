@@ -66,6 +66,7 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.api.property.CatalogHelper;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel.PartAndElementOrType;
@@ -202,7 +203,7 @@ public class SchemaImportsGenerator implements Command {
              }
              
              if (model != null) {
-                 String schemaTNS = model.getSchema().getTargetNamespace();
+                 String schemaTNS = Utility.getTargetNamespace(model);
                  if (schemaTNS != null && 
                          !schemaTNS.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
                      

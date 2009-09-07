@@ -322,13 +322,9 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
-                <package>org.netbeans.modules.html</package>
                 <package>org.netbeans.modules.html.palette.api</package>
             </friend-packages>
         </data>

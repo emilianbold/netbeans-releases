@@ -82,6 +82,11 @@ public class Subversion {
 
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged";
 
+    /**
+     * Results in refresh of annotations and diff sidebars
+     */
+    static final String PROP_BASE_FILE_CHANGED = "baseFileChanged";     //NOI18N
+
     static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
 
     private static final int STATUS_DIFFABLE =
@@ -131,24 +136,25 @@ public class Subversion {
         fileStatusProvider = new FileStatusProvider();
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
-        cleanup();
+        prepareCache();
         // this should be registered in SubversionVCS but we needed to reduce number of classes loaded
         SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
     }
 
-    private void cleanup() {
+    private void prepareCache() {
         getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
+                    fileStatusCache.computeIndex();
                     LOG.fine("Cleaning up cache"); // NOI18N
-                    fileStatusCache.cleanUp();
+                    fileStatusCache.cleanUp(); // do not call before computeIndex()
                 } finally {
                     Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
                 }
             }
-        }, 3000);
+        }, 500);
     }
 
     public void shutdown() {
@@ -470,6 +476,19 @@ public class Subversion {
             s.add(file);
         }
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, s);
+    }
+
+    /**
+     * Refreshes all textual annotations, badges and sidebars for the given files.
+     *
+     * @param files files to chage the annotations and sidebars for
+     */
+    public void refreshAnnotationsAndSidebars (File... files) {
+        Set<File> s = new HashSet<File>();
+        for (File file : files) {
+            s.add(file);
+        }
+        support.firePropertyChange(PROP_BASE_FILE_CHANGED, null, s);
     }
 
     void addPropertyChangeListener(PropertyChangeListener listener) {

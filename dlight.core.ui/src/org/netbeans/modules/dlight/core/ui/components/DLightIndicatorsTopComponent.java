@@ -116,7 +116,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator> indicators = null;
+        List<Indicator<?>> indicators = null;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             indicators = session.getIndicators();
@@ -128,9 +128,9 @@ final class DLightIndicatorsTopComponent extends TopComponent {
             }
 
         }
-        Collections.sort(indicators, new Comparator<Indicator>() {
+        Collections.sort(indicators, new Comparator<Indicator<?>>() {
 
-            public int compare(Indicator o1, Indicator o2) {
+            public int compare(Indicator<?> o1, Indicator<?> o2) {
                 if (o1.getPosition() < o2.getPosition()) {
                     return -1;
                 } else if (o2.getPosition() < o1.getPosition()) {
@@ -143,7 +143,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         setContent(indicators);
     }
 
-    private void setContent(List<Indicator> indicators) {
+    private void setContent(List<Indicator<?>> indicators) {
         JComponent componentToAdd;
         if (indicators != null) {
             JScrollPane scrollPane = new JScrollPane();

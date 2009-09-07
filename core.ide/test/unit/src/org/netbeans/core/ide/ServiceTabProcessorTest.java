@@ -42,8 +42,6 @@ package org.netbeans.core.ide;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.Collection;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.nodes.AbstractNode;
@@ -58,14 +56,6 @@ import static org.junit.Assert.*;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ServiceTabProcessorTest {
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     @Test
     public void testNodesGeneratedCorrectly() throws Exception {

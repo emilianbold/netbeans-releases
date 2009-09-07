@@ -116,7 +116,7 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
     }
 
     private void valueChanged() {
-        showDetails(manager.getSelectedNodes().length > 0 ? ((THANode<T>) manager.getSelectedNodes()[0]).getObject() : null, true);
+        showDetails(manager.getSelectedNodes().length > 0  && manager.getSelectedNodes()[0] instanceof THANode ? ((THANode<T>) manager.getSelectedNodes()[0]).getObject() : null, true);
 
     }
 

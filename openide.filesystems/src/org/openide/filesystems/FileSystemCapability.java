@@ -130,7 +130,7 @@ public class FileSystemCapability extends Object {
             }
         }
 
-        return org.openide.util.Enumerations.filter(ExternalUtil.getRepository().fileSystems(), new FFS());
+        return org.openide.util.Enumerations.filter(Repository.getDefault().fileSystems(), new FFS());
     }
 
     /** Find a resource in repository, ignoring not capable filesystems.

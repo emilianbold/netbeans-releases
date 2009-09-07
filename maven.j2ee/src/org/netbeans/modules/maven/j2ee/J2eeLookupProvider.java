@@ -41,14 +41,21 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.maven.j2ee.ejb.EjbEntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
+import org.netbeans.modules.maven.j2ee.web.WebEjbJarImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileStateInvalidException;
@@ -95,6 +102,9 @@ public class J2eeLookupProvider implements LookupProvider {
         private final JPAStuffImpl jpa;
         private final EMGSResolverImpl resolver;
         private final MavenPersistenceProviderSupplier supplier;
+        private EjbJarProvider webEjbJarProvider;
+        private EjbJarsInProject ejbJarsInProject;
+
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
             project = proj;
@@ -105,6 +115,7 @@ public class J2eeLookupProvider implements LookupProvider {
             jpa = new JPAStuffImpl(proj);
             resolver = new EMGSResolverImpl();
             supplier = new MavenPersistenceProviderSupplier(proj);
+
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
         }
@@ -150,6 +161,15 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(jpa);
                 content.add(resolver);
                 content.add(supplier);
+                //j2ee 6 stuff..
+                if (prov.getWebModuleImplementation().getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {
+                    WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(prov.getWebModuleImplementation(), project);
+                    EjbJar apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarImpl);
+                    webEjbJarProvider = EjbJarSupport.createEjbJarProvider(project, apiEjbJar);
+                    ejbJarsInProject = EjbJarSupport.createEjbJarsInProject(apiEjbJar);
+                    content.add(webEjbJarProvider);
+                    content.add(ejbJarsInProject);
+                }
                 copyOnSave = prov.getCopyOnSaveSupport();
                 try {
                     copyOnSave.initialize();
@@ -195,8 +215,14 @@ public class J2eeLookupProvider implements LookupProvider {
             content.remove(jpa);
             content.remove(resolver);
             content.remove(supplier);
-
-
+            if (webEjbJarProvider != null) {
+                content.remove(webEjbJarProvider);
+                webEjbJarProvider = null;
+            }
+            if (ejbJarsInProject != null) {
+                content.remove(ejbJarsInProject);
+                ejbJarsInProject = null;
+            }
         }
     }
 }

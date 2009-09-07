@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?><!-- Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.2-hudson-542-rc1. --><xs:schema xmlns:tns="http://sun.com/stockquote.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://sun.com/stockquote.xsd">
+
+<xs:element name="QuoteRequest" type="tns:QuoteRequestType" />
+
+<xs:element name="QuoteResponse" type="tns:QuoteResponseType" />
+
+<xs:complexType name="QuoteResponseType">
+<xs:sequence>
+<xs:element name="Message" type="xs:string" />
+<xs:element name="Company" type="xs:string" />
+<xs:element name="Symbol" type="xs:string" />
+<xs:element name="Time" type="xs:string" />
+<xs:element name="Delay" type="xs:string" />
+<xs:element name="Price" type="tns:PriceType" />
+<xs:element name="Change" type="xs:string" />
+<xs:element name="Volume" type="xs:string" />
+<xs:element name="MarketCap" type="xs:string" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="PriceType">
+<xs:sequence>
+<xs:element name="Last" type="xs:float" />
+<xs:element name="Open" type="xs:float" />
+<xs:element name="DayHigh" type="xs:float" />
+<xs:element name="DayLow" type="xs:float" />
+<xs:element name="YearRange" type="xs:string" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="QuoteRequestType">
+<xs:sequence>
+<xs:element name="Symbol" type="xs:string" />
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

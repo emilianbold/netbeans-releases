@@ -41,6 +41,7 @@ package org.netbeans.modules.bugtracking.ui.query;
 
 import java.awt.Image;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,7 +60,8 @@ import org.netbeans.modules.bugtracking.kenai.QueryAccessorImpl;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -189,6 +191,11 @@ public class KenaiTest extends NbTestCase {
         }
 
         @Override
+        public String getID() {
+            return "repoid";
+        }
+        
+        @Override
         public Image getIcon() {
             return null;
         }
@@ -243,8 +250,16 @@ public class KenaiTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         protected IssueCache getIssueCache() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Lookup getLookup() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection<RepositoryUser> getUsers() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

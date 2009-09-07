@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                                 zip-rest-customer-db,
                                 zip-rest-customer-db-spring,
                                 zip-rest-customer-db-client,
+                                zip-message-board-war,
                                 projectized-common.jar"/>
 
     <!-- initialize necessary properties for Identity sample targets-->
@@ -91,6 +92,14 @@ made subject to such option by the copyright holder.
         <zip destfile="${rest.samples.resources}/CustomerDBClient.zip"
             update="true">
         <zipfileset dir="CustomerDBClient"/>
+        </zip>
+    </target>
+
+      <!-- Target for message-board-war sample -->
+    <target name="zip-message-board-war" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/MessageBoard.zip"
+            update="true">
+        <zipfileset dir="MessageBoard"/>
         </zip>
     </target>
     

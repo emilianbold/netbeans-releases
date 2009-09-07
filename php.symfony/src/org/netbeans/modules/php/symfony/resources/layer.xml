@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="OptionsDialog">
         <folder name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory">
             <file name="Symfony.instance">
-                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.symfony.ui.options.SymfonyAdvancedOptions"/>
-                 <attr name="position" intvalue="200"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+                <attr name="controller" newvalue="org.netbeans.modules.php.symfony.ui.options.SymfonyOptionsPanelController"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.symfony.ui.options.Bundle#LBL_OptionsName"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.modules.php.symfony.ui.options.Bundle#LBL_OptionsTooltip"/>
+                <attr name="position" intvalue="200"/>
              </file>
         </folder>
     </folder>
@@ -34,6 +37,26 @@
             <file name="org-netbeans-modules-php-symfony-ui-actions-ClearCacheAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction.getInstance"/>
             </file>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-php5">
+                <folder name="Actions">
+                    <!-- do not move under Actions/PHP because it is ContextAware action! -->
+                    <file name="org-netbeans-modules-php-symfony-ui-actions-GoToActionOrViewAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.ui.actions.GoToActionOrViewAction.getInstance"/>
+                    </file>
+                </folder>
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-php-symfony-ui-actions-GoToActionOrViewAction.shadow">
+                            <attr name="originalFile" stringvalue="Editors/text/x-php5/Actions/org-netbeans-modules-php-symfony-ui-actions-GoToActionOrViewAction.instance"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

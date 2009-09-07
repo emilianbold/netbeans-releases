@@ -48,8 +48,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -194,7 +194,7 @@ public class JsfCompletionItem {
                 //there is TLD available
                 String descr = tag.getDescription();
                 if(descr == null) {
-                    NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD_ITEM_DESCR"); //NOI18N
+                    sb.append(NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD_ITEM_DESCR")); //NOI18N
                 } else {
                     sb.append(descr);
                 }

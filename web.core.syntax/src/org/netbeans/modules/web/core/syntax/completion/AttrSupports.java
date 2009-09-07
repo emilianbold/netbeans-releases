@@ -176,6 +176,7 @@ public class AttrSupports {
     /**
      * Provides code completion for a class name context
      */
+    @Deprecated
     public static class ClassNameSupport extends AttributeValueSupport.Default {
         
         public ClassNameSupport(boolean tag, String longName, String attrName) {
@@ -217,6 +218,7 @@ public class AttrSupports {
     /**
      * Provides code completion for a comma-separated list of imports context
      */
+    @Deprecated
     public static class PackageListSupport extends ClassNameSupport {
         
         public PackageListSupport(boolean tag, String longName, String attrName) {

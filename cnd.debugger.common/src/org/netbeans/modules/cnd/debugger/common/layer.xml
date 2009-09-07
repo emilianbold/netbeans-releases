@@ -14,6 +14,8 @@
             <file name="PC_ABP.xml" url="resources/PC_ABP.xml"/>
             <file name="PC_DABP.xml" url="resources/PC_DABP.xml"/>
             <file name="PC_ABP_broken.xml" url="resources/PC_ABP_broken.xml"/>
+            <file name="PC_FBP.xml" url="resources/PC_FBP.xml"/>
+            <file name="PC_DFBP.xml" url="resources/PC_DFBP.xml"/>
         </folder>
     </folder>
 </filesystem>

@@ -43,7 +43,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisualizerConfigurationAccessor;
 
@@ -51,7 +51,7 @@ import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisuali
  *
  * @author mt154047
  */
-public final class FunctionsListViewVisualizerConfiguration implements VisualizerConfiguration {
+public final class FunctionsListViewVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
     private static final String ID = "FunctionsListViewVisualizerConfiguration";//NOI18N
     private final FunctionDatatableDescription functionDatatableDescription;

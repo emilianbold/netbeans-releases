@@ -46,9 +46,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.dlight.core.stack.api.ThreadData;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.threadmap.api.ThreadData;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -190,7 +191,7 @@ public class ThreadsDataManager {
      * Convert the data received from the server on this iteration into the internal compressed format,
      * and notify listeners
      */
-    public synchronized void processData(MonitoredData monitoredData) {
+    public synchronized void processData(MonitoredData monitoredData, DLightSession session) {
         int threadSize = monitoredData.getThreadsSize();
         if (threadSize == 0) {
             return;
@@ -200,10 +201,11 @@ public class ThreadsDataManager {
         if (threadSize == 0) {
             return;
         }
-        startTime = Long.MAX_VALUE;
-        for(int i = 0; i < threadSize; i++){
-            startTime = Math.min(startTime, threadData.get(i).getThreadStartTimeStamp());
-        }
+        //startTime = Long.MAX_VALUE;
+        //for(int i = 0; i < threadSize; i++){
+        //    startTime = Math.min(startTime, threadData.get(i).getThreadStartTimeStamp());
+        //}
+        startTime = session.getStartTime();
         endTime = 0;
         if (threadsMonitoringEnabled) {
             for(int i = 0; i < threadSize; i++){
@@ -249,6 +251,7 @@ public class ThreadsDataManager {
                             //}
                         }
                         col.add(newState);
+                        //System.err.println("thread "+number+" state "+newState);
                         lastTimeStamp = newState.getTimeStamp();
                     }
                     col.updateStackProvider(monitoredData.getStackProvider(newData));
@@ -311,6 +314,10 @@ public class ThreadsDataManager {
 
             public int getSamplingStateIndex(boolean full) {
                 return 0;
+            }
+
+            public long getMSASamplePeriod() {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
         });
     }

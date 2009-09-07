@@ -129,9 +129,15 @@ public final class VirtualSourceProviderQuery {
                else {
                    l = p.second;
                }
-               final File file = new File(URI.create(indexable.getURL().toString()));
-               l.add(file);
-               file2indexables.put(file, indexable);
+               try {
+                   final File file = new File(indexable.getURL().toURI());
+                   l.add(file);
+                   file2indexables.put(file, indexable);
+               } catch (URISyntaxException use) {
+                   final IOException ioe = new IOException();
+                   ioe.initCause(use);
+                   throw ioe;
+               }
            }
         }
         

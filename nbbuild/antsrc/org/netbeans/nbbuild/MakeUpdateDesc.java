@@ -52,12 +52,12 @@ import org.apache.tools.ant.DirectoryScanner;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -65,9 +65,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -177,6 +175,17 @@ public class MakeUpdateDesc extends MatchingTask {
     public Path createUpdaterJar() {
         return updaterJar = new Path(getProject());
     }
+
+    private String notificationMessage;
+    private String notificationURL;
+
+    public void setNotificationMessage(String message) {
+        this.notificationMessage = message;
+    }
+    public void setNotificationURL(String url) {
+        this.notificationURL = url;
+    }
+
     
     // Similar to org.openide.xml.XMLUtil methods.
     private static String xmlEscape(String s) {
@@ -326,7 +335,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ("<module_updates timestamp=\"" + date + "\">"); //NOI18N
                     pw.println ();
                 }
-
+                writeNotification(pw);
                 pw.println ();
 		Map<String,Element> licenses = new HashMap<String,Element>();
                 String prefix = null;
@@ -414,6 +423,7 @@ public class MakeUpdateDesc extends MatchingTask {
                 for (Element license : licenses.values()) {
                     XMLUtil.write(license, os);
                 }
+
                 if ( entityincludes.size() <= 0 ) {
                     pw.println ("</module_updates>"); //NOI18N
                     pw.println ();
@@ -447,7 +457,30 @@ public class MakeUpdateDesc extends MatchingTask {
         public String relativePath;
         public boolean autoload, eager;
     }
-    
+
+    private void writeNotification(PrintWriter pw) {
+        // write notification message/url if defined
+        if (notificationMessage == null) {
+            notificationMessage = "";
+        }
+        if (notificationURL == null) {
+            notificationURL = "";
+        }
+        if (notificationMessage.length() > 0 || notificationURL.length() > 0) {
+            if (notificationMessage.length() == 0) {
+                pw.println("<notification url=\"" + xmlEscape(notificationURL.toString()) + "\"/>");
+            } else if (notificationURL.length() == 0) {
+                pw.println("<notification>" + xmlEscape(notificationMessage) + "</notification>");
+            } else {
+                pw.println(
+                        "<notification url=\"" + xmlEscape(notificationURL.toString()) + "\">" +
+                        xmlEscape(notificationMessage) +
+                        "</notification>");
+            }
+            pw.println();
+        }
+    }
+
     private Map<String,Collection<Module>> loadNBMs() throws BuildException {
         final Collator COLL = Collator.getInstance(/* XXX any particular locale? */);
         // like COLL but handles nulls ~ ungrouped modules (sorted to top):

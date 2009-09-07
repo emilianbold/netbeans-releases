@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor.gsf;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -102,6 +103,13 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     public StructureScanner getStructureScanner() {
         return new HtmlStructureScanner();
     }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new HtmlDeclarationFinder();
+    }
+
+
 
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
