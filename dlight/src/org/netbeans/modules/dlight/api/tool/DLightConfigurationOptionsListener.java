@@ -36,48 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.support;
 
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+package org.netbeans.modules.dlight.api.tool;
 
 /**
- *
- * @author Maria Tishkova
+ *  This interface is responsible to notify about changes in DLightConfigurationOptions
  */
-public final class DefaultIndicatorComponentEmptyContentProvider {
-
-    private static final DefaultIndicatorComponentEmptyContentProvider instance = new DefaultIndicatorComponentEmptyContentProvider();
-
-    private DefaultIndicatorComponentEmptyContentProvider() {
-    }
-
-    public static final DefaultIndicatorComponentEmptyContentProvider getInstance() {
-        return instance;
-    }
-
-    public List<Indicator<?>> getEmptyContent(String configurationName) {
-        DLightConfiguration dligthConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
-
-        if (dligthConfiguration == null) {
-            return null;
-        }
-
-        List<Indicator<?>> indicators = DLightConfigurationAccessor.getDefault().getEnabledIndicators(dligthConfiguration);
-
-        Iterator<Indicator<?>> it = indicators.iterator();
-
-        while (it.hasNext()) {
-            Indicator<?> ind = it.next();
-            if (!ind.isVisible()) {
-                it.remove();
-            }
-        }
-
-        return indicators;
-    }
+public interface DLightConfigurationOptionsListener {
+    boolean dlightToolEnabling(String toolName,  boolean isEnabled);
 }

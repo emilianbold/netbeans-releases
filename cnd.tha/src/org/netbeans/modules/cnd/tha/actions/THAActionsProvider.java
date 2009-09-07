@@ -281,7 +281,7 @@ public final class THAActionsProvider {
         };
         stop.setEnabled(false);
         stop.putValue("command", STOP_COMMAND); // NOI18N
-        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMStopDataCollection")); // NOI18N
+        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAStopDataCollection")); // NOI18N
         stop.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Kill24.gif"); // NOI18N
         stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/Kill24.gif", false)); // NOI18N       
     }

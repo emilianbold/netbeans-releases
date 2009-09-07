@@ -36,48 +36,43 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.support;
+package org.netbeans.modules.dlight.api.tool.impl;
 
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 /**
  *
- * @author Maria Tishkova
+ * @author mt154047
  */
-public final class DefaultIndicatorComponentEmptyContentProvider {
+public abstract class DLightConfigurationAccessor {
 
-    private static final DefaultIndicatorComponentEmptyContentProvider instance = new DefaultIndicatorComponentEmptyContentProvider();
+    private static volatile DLightConfigurationAccessor DEFAULT;
 
-    private DefaultIndicatorComponentEmptyContentProvider() {
-    }
-
-    public static final DefaultIndicatorComponentEmptyContentProvider getInstance() {
-        return instance;
-    }
-
-    public List<Indicator<?>> getEmptyContent(String configurationName) {
-        DLightConfiguration dligthConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
-
-        if (dligthConfiguration == null) {
-            return null;
+    public static DLightConfigurationAccessor getDefault() {
+        DLightConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
         }
 
-        List<Indicator<?>> indicators = DLightConfigurationAccessor.getDefault().getEnabledIndicators(dligthConfiguration);
-
-        Iterator<Indicator<?>> it = indicators.iterator();
-
-        while (it.hasNext()) {
-            Indicator<?> ind = it.next();
-            if (!ind.isVisible()) {
-                it.remove();
-            }
+        try {
+            Class.forName(DLightConfiguration.class.getName(), true,
+                    DLightConfiguration.class.getClassLoader());//
+        } catch (Exception e) {
         }
-
-        return indicators;
+        return DEFAULT;
     }
+
+    public static void setDefault(DLightConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
+
+    public DLightConfigurationAccessor() {
+    }
+
+    public abstract List<Indicator<?>> getEnabledIndicators(DLightConfiguration configuration) ;
 }
