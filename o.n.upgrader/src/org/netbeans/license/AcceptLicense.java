@@ -48,11 +48,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import org.netbeans.util.Util;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -119,6 +122,23 @@ public final class AcceptLicense {
         d.setSize(new Dimension(600,600));
         d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         d.setResizable(true);
+        d.getRootPane().setDefaultButton(yesButton);
+        d.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("ESCAPE"), "exit"); //NOI18N
+        d.getRootPane().getActionMap().put("exit", new AbstractAction() { //NOI18N
+            public void actionPerformed(ActionEvent e) {
+                command = "no"; //NOI18N
+                d.setVisible(false);
+            }
+        });
+
+        licensePanel.jEditorPane1.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ENTER"), "accept"); //NOI18N
+        licensePanel.jEditorPane1.getActionMap().put("accept", new AbstractAction() { //NOI18N
+            public void actionPerformed(ActionEvent e) {
+                command = "yes"; //NOI18N
+                d.setVisible(false);
+            }
+        });
+
         //Center on screen
         d.setLocationRelativeTo(null);
         d.setVisible(true);

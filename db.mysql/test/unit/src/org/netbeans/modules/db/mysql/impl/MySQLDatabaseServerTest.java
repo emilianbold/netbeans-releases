@@ -250,7 +250,7 @@ public class MySQLDatabaseServerTest extends TestBase {
     public void testGetShortDescription() {
         ResourceBundle bundle = Utils.getBundle();
         String description = bundle.getString("LBL_ServerShortDescription");
-        description = description.replace("{0}", getHost() + ":" + getPort()).replace("{1}", getUser());
+        description = description.replace("{0}", getHost() + ":" + getPort()).replace("{1}", getUser()).replace("{2}", Utils.getMessage(server.getState().name()));
         assertEquals(description, server.getShortDescription());
     }
 
