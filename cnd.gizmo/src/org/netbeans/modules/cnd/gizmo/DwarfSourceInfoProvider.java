@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,14 +83,18 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             if (0 <= parenIdx) {
                 functionName = functionSignature.substring(0, parenIdx);
             }
-            int space = functionName.indexOf(' ');
             Map<String, AbstractFunctionToLine> sourceInfoMap = getSourceInfo(executable);
             if (TRACE) {
                 System.err.println("Search for:"+functionName+"+"+offset); // NOI18N
             }
             AbstractFunctionToLine fl = sourceInfoMap.get(functionName);
+            int space = functionName.indexOf(' ');
             if (fl == null && space > 0) {
                 fl = sourceInfoMap.get(functionName.substring(space+1));
+            }
+            int star = functionName.indexOf('*');
+            if (fl == null && star > 0) {
+                fl = sourceInfoMap.get(functionName.substring(star+1));
             }
             if (fl != null) {
                 if (TRACE) {
@@ -111,6 +116,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     private synchronized Map<String, AbstractFunctionToLine> getSourceInfo(String executable) {
         onePath = new HashMap<String, String>();
         Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executable);
+        Set<Long> antiLoop = new HashSet<Long>();
         if (sourceInfoMap == null) {
             sourceInfoMap = new HashMap<String, AbstractFunctionToLine>();
             try {
@@ -120,7 +126,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                         TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);
                         String filePath = compilationUnit.getSourceFileAbsolutePath();
                         String compDir = compilationUnit.getCompilationDir();
-                        processEntries(compilationUnit.getDeclarations(false), filePath, compDir, lineNumbers, sourceInfoMap);
+                        processEntries(compilationUnit, compilationUnit.getDeclarations(false), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
                     }
                 } finally {
                     dwarf.dispose();
@@ -137,32 +143,56 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return sourceInfoMap;
     }
 
-    private void processEntries(List<DwarfEntry> declarations, String filePath, String compDir, TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap) throws IOException {
+    private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, String filePath, String compDir, 
+            TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
         for (DwarfEntry entry : declarations) {
-            prosessEntry(entry, filePath, compDir, lineNumbers, sourceInfoMap);
+            prosessEntry(compilationUnit, entry, filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
         }
     }
 
-    private void prosessEntry(DwarfEntry entry, String filePath, String compDir, TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap) throws IOException {
-        if (entry.getKind().equals(TAG.DW_TAG_subprogram)) {
-            if (entry.getLine() < 0 || entry.getDeclarationFilePath() == null) {
-                return;
-            }
-            if (entry.getLowAddress() == 0) {
-                DeclarationToLine functionToLine = new DeclarationToLine(filePath, compDir, entry, onePath);
-                sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
-                if (TRACE) {
-                    System.err.println(functionToLine);
+    private void prosessEntry(CompilationUnit compilationUnit, DwarfEntry entry, String filePath, String compDir, 
+            TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
+        if (antiLoop.contains(entry.getRefference())) {
+            return;
+        }
+        antiLoop.add(entry.getRefference());
+        switch (entry.getKind()) {
+            case DW_TAG_subprogram: 
+            {
+                if (entry.getLine() < 0 || entry.getDeclarationFilePath() == null) {
+                    return;
                 }
-            } else {
-                FunctionToLine functionToLine = new FunctionToLine(filePath, compDir, entry, lineNumbers, onePath);
-                sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
-                if (TRACE) {
-                    System.err.println(functionToLine);
+                if (entry.getLowAddress() == 0) {
+                    DeclarationToLine functionToLine = new DeclarationToLine(filePath, compDir, entry, onePath);
+                    sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
+                    if (TRACE) {
+                        System.err.println(functionToLine);
+                    }
+                } else {
+                    FunctionToLine functionToLine = new FunctionToLine(filePath, compDir, entry, lineNumbers, onePath);
+                    sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
+                    if (TRACE) {
+                        System.err.println(functionToLine);
+                    }
                 }
+                break;
             }
-        } else if (entry.getKind().equals(TAG.DW_TAG_class_type)){
-            processEntries(entry.getChildren(), filePath, compDir, lineNumbers, sourceInfoMap);
+            case DW_TAG_class_type:
+                processEntries(compilationUnit, entry.getChildren(), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
+                break;
+            case DW_TAG_typedef:
+            case DW_TAG_const_type:
+            case DW_TAG_pointer_type:
+            case DW_TAG_reference_type:
+            case DW_TAG_array_type:
+            case DW_TAG_ptr_to_member_type:
+            {
+                DwarfEntry type = compilationUnit.getReferencedType(entry);
+                if (type != null) {
+                    prosessEntry(compilationUnit, type, filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
+                }
+                break;
+            }
         }
     }
 
