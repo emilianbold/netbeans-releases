@@ -131,7 +131,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
 
     @Override
     protected void paintComponent(Graphics g) {
-        FontMetrics fm = g.getFontMetrics();
+        FontMetrics fm = g.getFontMetrics(g.getFont().deriveFont(GraphConfig.FONT_SIZE));
         Range<Long> viewport = viewportModel.getViewport();
         int viewportStart = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart());
         int viewportEnd = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd());
@@ -223,7 +223,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (isEnabled()) {
-                FontMetrics fm = g.getFontMetrics();
+                FontMetrics fm = g.getFontMetrics(g.getFont().deriveFont(GraphConfig.FONT_SIZE));
                 switch (orientation) {
                     case VERTICAL:
                         List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - fm.getAscent() / 2, fm);

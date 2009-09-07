@@ -98,18 +98,19 @@ public final class AxisMarksProviderFactory {
         }
 
         private void createMarks(int minVal, int maxVal, int minPos, int maxPos, FontMetrics axisFontMetrics, List<AxisMark> marks) {
-            if (maxPos - minPos <= 2 * axisFontMetrics.getAscent()) {
+            if (maxPos - minPos <= axisFontMetrics.getAscent()) {
                 return;
             }
             int midPos = (minPos + maxPos) / 2;
             int midVal = (minVal + maxVal) / 2;
-            if (4 * axisFontMetrics.getAscent() <= maxPos - minPos) {
+            if (axisFontMetrics.getAscent() <= midPos - minPos) {
                 createMarks(minVal, midVal, minPos, midPos, axisFontMetrics, marks);
             }
             marks.add(new AxisMark(midPos,
                     maxVal - minVal < 2? null : formatValue(midVal),
-                    DLightMath.map(maxPos - minPos, 5 * axisFontMetrics.getAscent() / 2, 3 * axisFontMetrics.getAscent(), 0, 255)));
-            if (4 * axisFontMetrics.getAscent() <= maxPos - minPos) {
+                    DLightMath.map(maxPos - minPos, 3 * axisFontMetrics.getAscent() / 2, 2 * axisFontMetrics.getAscent(), 0, 255),
+                    DLightMath.map(maxPos - minPos, 2 * axisFontMetrics.getAscent(), 3 * axisFontMetrics.getAscent(), 0, 255)));
+            if (axisFontMetrics.getAscent() <= maxPos - midPos) {
                 createMarks(midVal, maxVal, midPos, maxPos, axisFontMetrics, marks);
             }
         }

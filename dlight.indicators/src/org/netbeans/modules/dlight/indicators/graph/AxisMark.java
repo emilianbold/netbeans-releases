@@ -45,22 +45,31 @@ public final class AxisMark {
 
     private final int pos;
     private final String text;
-    private final int opacity;
+    private final int markOpacity;
+    private final int textOpacity;
 
     public AxisMark(int pos, String text) {
-        this(pos, text, 255);
+        this(pos, text, 255, 255);
     }
 
     public AxisMark(int pos, String text, int opacity) {
+        this(pos, text, opacity, opacity);
+    }
+
+    public AxisMark(int pos, String text, int markOpacity, int textOpacity) {
         if (pos < 0) {
-            throw new IllegalArgumentException("Constraint (0 <= pos) violated"); // NOI18N
+            throw new IllegalArgumentException("Must be (0 <= pos)"); // NOI18N
         }
-        if (opacity < 0 || 256 <= opacity) {
-            throw new IllegalArgumentException("Constraint (0 <= opacity < 256) violated"); // NOI18N
+        if (markOpacity < 0 || 256 <= markOpacity) {
+            throw new IllegalArgumentException("Must be (0 <= markOpacity < 256)"); // NOI18N
+        }
+        if (textOpacity < 0 || 256 <= textOpacity) {
+            throw new IllegalArgumentException("Must be (0 <= textOpacity < 256)"); // NOI18N
         }
         this.pos = pos;
         this.text = text;
-        this.opacity = opacity;
+        this.markOpacity = markOpacity;
+        this.textOpacity = textOpacity;
     }
 
     public int getPosition() {
@@ -71,7 +80,11 @@ public final class AxisMark {
         return text;
     }
 
-    public int getOpacity() {
-        return opacity;
+    public int getMarkOpacity() {
+        return markOpacity;
+    }
+
+    public int getTextOpacity() {
+        return textOpacity;
     }
 }
