@@ -91,6 +91,12 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 
+    public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
+    }
+
+    
+
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
