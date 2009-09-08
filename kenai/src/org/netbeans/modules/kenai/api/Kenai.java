@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
+import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.netbeans.modules.kenai.FeatureData;
@@ -105,6 +106,7 @@ public final class Kenai {
     private String name;
     private final KenaiImpl impl;
     private XMPPConnection xmppConnection;
+    private PacketListener packetListener;
 
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
@@ -296,7 +298,7 @@ public final class Kenai {
         return new LazyCollection(prjs);
     }
 
-    Collection<KenaiUser> getProjectMembers(String name) throws KenaiException {
+    Collection<KenaiProjectMember> getProjectMembers(String name) throws KenaiException {
         Collection<UserData> usrs = impl.getProjectMembers(name);
         return new LazyCollection(usrs);
     }
@@ -534,7 +536,7 @@ public final class Kenai {
                     } else if (param instanceof ServicesListItem) {
                         return (O) new KenaiService((ServicesListItem) param);
                     } else if (param instanceof UserData) {
-                        return (O) new KenaiUser((UserData) param);
+                        return (O) new KenaiProjectMember((UserData) param);
                     }
                     throw new IllegalStateException();
                 }
@@ -552,8 +554,11 @@ public final class Kenai {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_STARTED, null, null));
         synchronized (this) {
             xmppConnection = new XMPPConnection(getName());
+            packetListener = new KenaiUser.KenaiPacketListener();
             try {
+                xmppConnection.removePacketListener(packetListener);
                 xmppConnection.connect();
+                xmppConnection.addPacketListener(packetListener, null);
                 xmppConnection.login(auth.getUserName(), new String(auth.getPassword()), "NetBeans"); //NOI18N
             } catch (XMPPException xMPPException) {
                 propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
@@ -567,11 +572,12 @@ public final class Kenai {
         if (xmppConnection != null) {
             xmppConnection.disconnect();
         }
+        KenaiUser.clear();
         XMPPConnection temp = xmppConnection;
         xmppConnection = null;
+        temp.removePacketListener(packetListener);
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, temp, null));
     }
-
     /**
      * user status on kenai
      */

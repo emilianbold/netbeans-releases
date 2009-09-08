@@ -78,18 +78,6 @@ public class MemberNode extends LeafNode {
     public MemberNode( final MemberHandle user, TreeListNode parent ) {
         super( parent );
         this.user = user;
-        user.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        if (lbl!=null)
-                            lbl.setIcon(KenaiUserUI.forName(user.getName()).getIcon());
-                    }
-                });
-            }
-        });
     }
 
     @Override
@@ -98,7 +86,7 @@ public class MemberNode extends LeafNode {
             panel = new JPanel( new BorderLayout() );
             panel.setOpaque(false);
             lbl = new TreeLabel( user.getDisplayName() );
-            lbl.setIcon(KenaiUserUI.forName(user.getName()).getIcon());
+            lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());
             panel.add( lbl, BorderLayout.CENTER);
             if (user.hasMessages()) {
                 btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction());

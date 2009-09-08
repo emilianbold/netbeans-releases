@@ -81,12 +81,12 @@ public class UserListItem implements ContactListItem {
     }
 
     public void openChat() {
-        KenaiUserUI user = KenaiUserUI.forName(entry.getUser());
+        KenaiUserUI user = new KenaiUserUI(entry.getUser());
         user.startChat();
     }
 
     public Icon getIcon() {
-        return KenaiUserUI.forName(entry.getUser()).getIcon();
+        return new KenaiUserUI(entry.getUser()).getIcon();
     }
 
     public boolean hasMessages() {
