@@ -45,8 +45,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
@@ -77,7 +78,8 @@ public class JiraAutoupdate {
         SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("3.13.3"); // NOI18N
     }
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
-
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
+    
     private static Map<String, Long> lastChecks = null;
 
     /**
@@ -123,7 +125,14 @@ public class JiraAutoupdate {
             if(u.getCodeName().equals(JIRA_MODULE_CODE_NAME)) {
                 List<UpdateElement> elements = u.getAvailableUpdates();
                 if(elements != null) {
-                    return elements.size() > 0;
+                    for (UpdateElement updateElement : elements) {
+                        String desc = updateElement.getDescription();
+                        JiraVersion version = getVersion(desc);
+                        if(version != null && SUPPORTED_JIRA_VERSION.compareTo(version) < 0) {
+                            return true;
+                        }
+                    }
+                    return false;
                 } else {
                     return false;
                 }
@@ -182,5 +191,13 @@ public class JiraAutoupdate {
             return -1;
         }
         return l;
+    }
+
+    JiraVersion getVersion(String desc) {
+        Matcher m = VERSION_PATTERN.matcher(desc);
+        if(m.matches()) {
+            return new JiraVersion(m.group(1)) ;
+        }
+        return null;
     }
 }
