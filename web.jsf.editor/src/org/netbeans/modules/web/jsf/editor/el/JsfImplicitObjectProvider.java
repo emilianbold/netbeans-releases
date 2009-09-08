@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
@@ -59,8 +59,7 @@ public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
      * @see org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider#getImplicitObjects()
      */
     public Collection<ELImplicitObject> getImplicitObjects() {
-        return Collections.singletonList( 
-                (ELImplicitObject)new FacesContextObject());
+        return Arrays.asList(new ELImplicitObject[]{new FacesContextObject(), new CompositeComponentObject()});
     }
     
     static class FacesContextObject extends ELImplicitObject{
@@ -68,6 +67,14 @@ public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
             super("facesContext");                        //NOI18N
             setType(OBJECT_TYPE);
             setClazz("javax.faces.context.FacesContext"); //NOI18N
+        }
+    }
+
+    static class CompositeComponentObject extends ELImplicitObject{
+        public CompositeComponentObject(){
+            super("cc");                        //NOI18N
+            setType(OBJECT_TYPE);
+            setClazz(""); //no class will disable the property completion providers //NOI18N
         }
     }
 
