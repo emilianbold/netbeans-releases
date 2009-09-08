@@ -198,7 +198,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     private static RemotePathMap getRemotePathMap(ExecutionEnvironment host) {
-        return RemotePathMap.getRemotePathMapInstance(host);
+        return RemotePathMap.getPathMap(host);
     }
 
     private void addTableActions() throws MissingResourceException {
