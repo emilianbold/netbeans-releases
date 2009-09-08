@@ -401,6 +401,10 @@ public final class THAProjectSupport implements PropertyChangeListener {
         String ccPath = ccTool.getPath();
         String sunstudioBinDir = ccPath.substring(0, ccPath.length() - ccTool.getName().length());
 
+        // ensure that connection is established and ServerRecord exists for the
+        // development host....
+
+
         return THAInstrumentationSupport.getSupport(mc.getDevelopmentHost().getExecutionEnvironment(), sunstudioBinDir);
     }
 

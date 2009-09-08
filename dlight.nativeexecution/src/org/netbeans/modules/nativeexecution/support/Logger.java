@@ -44,6 +44,10 @@ import javax.swing.SwingUtilities;
 public class Logger {
 
     private static boolean assertionsEnabled = false;
+
+    static {
+        assert (assertionsEnabled = true);
+    }
     private static java.util.logging.Logger instance =
             java.util.logging.Logger.getLogger(
             "nativeexecution.support.logger"); // NOI18N
