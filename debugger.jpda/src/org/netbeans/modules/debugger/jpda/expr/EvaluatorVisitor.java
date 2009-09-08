@@ -2744,6 +2744,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
         if (expr == null) return null;
+        if (expr instanceof ObjectReference) {
+            expr = unboxIfCan(arg0, (ObjectReference) expr, evaluationContext);
+        }
         Tree.Kind kind = arg0.getKind();
         if (expr instanceof BooleanValue) {
             boolean v = ((BooleanValue) expr).value();
