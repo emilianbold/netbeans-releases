@@ -97,10 +97,12 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+                    issuesInfoPane.setToolTipText(e.getDescription());
                     issuesInfoPane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
+                    issuesInfoPane.setToolTipText(""); //NOI18N
                     issuesInfoPane.setCursor(Cursor.getDefaultCursor());
                     return;
                 }
@@ -161,7 +163,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                 return WAIT_STRING;
             }
             KenaiFeature itrac = issueTrackers[0];
-            String type = "kenai-small.png"; //NOI18N
+            String type = "external.png"; //NOI18N
             if (itrac.getService().equals(KenaiService.Names.BUGZILLA)) {
                 type = "bugzilla-logo.png"; //NOI18N
             } else if (itrac.getService().equals(KenaiService.Names.JIRA)) {
@@ -172,17 +174,19 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
             }
             _appStr += String.format("<table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td><img src=\"%s\"></td><td width=\"10px\"></td><td><h3>%s</h3></td></tr></table><br>", //NOI18N
                     IssuesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/" + type), //NOI18N
-                    itrac.getDisplayName());
+                    itrac.getDisplayName() + (type.equals("external.png")?(" <i>(" + NbBundle.getMessage(IssuesInformationPanel.class, "MSG_UNKNOWN_IT") + ")</i>"):"")); //NOI18N
             if (Thread.interrupted()) {
                 return WAIT_STRING;
             }
-            _appStr += String.format("<h4>%s</h4>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_DID_YOU_FIND_ISSUE")); //NOI18N
-            _appStr += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td>"; //NOI18N
-            _appStr += String.format("<input id=\"find\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_FIND_ISSUE")); // NOI18N
-            _appStr += "</td></tr><tr><td>"; //NOI18N
-            _appStr += String.format("<input id=\"enter\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_NEW_REPORT")); //NOI18N
-            _appStr += "</td></tr></table>";//NOI18N
-            _appStr += String.format("<br>%s:<br><p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", //NOI18N
+            if (itrac.getService().equals(KenaiService.Names.BUGZILLA) || itrac.getService().equals(KenaiService.Names.JIRA)) {
+                _appStr += String.format("<h4>%s</h4>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_DID_YOU_FIND_ISSUE")); //NOI18N
+                _appStr += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td>"; //NOI18N
+                _appStr += String.format("<input id=\"find\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_FIND_ISSUE")); // NOI18N
+                _appStr += "</td></tr><tr><td>"; //NOI18N
+                _appStr += String.format("<input id=\"enter\" type=\"reset\" value=\"%s\"><br>", NbBundle.getMessage(IssuesInformationPanel.class, "MSG_NEW_REPORT")); //NOI18N
+                _appStr += "</td></tr></table><br>";//NOI18N
+            }
+            _appStr += String.format("%s:<br><p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", //NOI18N
                     NbBundle.getMessage(IssuesInformationPanel.class, "MSG_ISSUE_TRACKER_ONLINE"), //NOI18N
                     kenaiProjectTopComponent.linkImageHTML,
                     itrac.getWebLocation(),
@@ -265,17 +269,23 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                     registerHTMLButton(doc, "find", new ActionListener() { //NOI18N
 
                         public void actionPerformed(final ActionEvent e) {
-                            final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
-                            DashboardImpl.getInstance().addProject(pHandle, false);
-                            RequestProcessor.getDefault().post(new Runnable() {
+                            try {
+                                if (instProj.getFeatures(Type.ISSUES).length > 0) {
+                                    final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
+                                    DashboardImpl.getInstance().addProject(pHandle, false);
+                                    RequestProcessor.getDefault().post(new Runnable() {
 
-                                public void run() {
-                                    ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
-                                    h.start();
-                                    QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
-                                    h.finish();
+                                        public void run() {
+                                            ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
+                                            h.start();
+                                            QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
+                                            h.finish();
+                                        }
+                                    });
                                 }
-                            });
+                            } catch (KenaiException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     });
                 }

@@ -71,6 +71,6 @@ public abstract class DLightTargetAccessor {
         DEFAULT = accessor;
     }
 
-    public abstract DLightTarget.DLightTargetExecutionService<DLightTarget> getDLightTargetExecution(DLightTarget target);
+    public abstract DLightTarget.DLightTargetExecutionService getDLightTargetExecution(DLightTarget target);
     public abstract DLightTarget.Info getDLightTargetInfo(DLightTarget target);
 }

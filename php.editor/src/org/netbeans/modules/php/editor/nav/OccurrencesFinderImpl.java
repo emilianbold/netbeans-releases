@@ -68,11 +68,9 @@ import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
  * @author Radek Matous
  */
 public class OccurrencesFinderImpl extends OccurrencesFinder {
-    private int offset;
     private Map<OffsetRange, ColoringAttributes> range2Attribs;
 
     public void setCaretPosition(int position) {
-        this.offset = position;
         this.range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
     }
 

@@ -39,16 +39,11 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 
@@ -58,8 +53,6 @@ import org.openide.util.Exceptions;
  */
 public class RemoteCopySupport extends RemoteConnectionSupport {
 
-    private static final Logger LOG = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    
     public RemoteCopySupport(ExecutionEnvironment execEnv) {
         super(execEnv);
     }
@@ -70,122 +63,20 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
     }
 
     public boolean copyFrom(String remoteName, String localName) {
-        FileOutputStream fos = null;
+        boolean result;
+        long time = System.currentTimeMillis();
+        Future<Integer> task = CommonTasksSupport.downloadFile(remoteName, executionEnvironment, localName, null);
         try {
-            String prefix = null;
-            if (new File(localName).isDirectory()) {
-                prefix = localName + File.separator;
-            }
-
-            // exec 'scp -f rfile' remotely
-            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-            pb.setExecutable("scp"); // NOI18N
-            pb.setArguments("-f", remoteName); //NOI18N
-            
-            Process process = pb.call();
-
-//            Channel channel = session.openChannel("exec");
-//            ((ChannelExec) channel).setCommand(command);
-
-            // get I/O streams for remote scp
-            OutputStream out = process.getOutputStream();
-            InputStream in = process.getInputStream();
-
-            byte[] buf = new byte[1024];
-
-            // send '\0'
-            buf[0] = 0;
-            out.write(buf, 0, 1);
-            out.flush();
-
-            while (true) {
-                long start = System.currentTimeMillis();
-
-                int c = checkAck(in);
-                if (c != 'C') {
-                    break;
-                }
-
-                // read '0644 '
-                in.read(buf, 0, 5);
-
-                long filesize = 0L;
-                while (true) {
-                    if (in.read(buf, 0, 1) < 0) {
-                        // error
-                        break;
-                    }
-                    if (buf[0] == ' ') {
-                        break;
-                    }
-                    filesize = filesize * 10L + (long) (buf[0] - '0');
-                }
-
-                String file = null;
-                for (int i = 0;; i++) {
-                    in.read(buf, i, 1);
-                    if (buf[i] == (byte) 0x0a) {
-                        file = new String(buf, 0, i);
-                        break;
-                    }
-                }
-
-                // send '\0'
-                buf[0] = 0;
-                out.write(buf, 0, 1);
-                out.flush();
-
-                // read a content of lfile
-                fos = new FileOutputStream(prefix == null ? localName : prefix + file);
-                int foo;
-                while (true) {
-                    if (buf.length < filesize) {
-                        foo = buf.length;
-                    } else {
-                        foo = (int) filesize;
-                    }
-                    foo = in.read(buf, 0, foo);
-                    if (foo < 0) {
-                        // error 
-                        break;
-                    }
-                    fos.write(buf, 0, foo);
-                    filesize -= foo;
-                    if (filesize == 0L) {
-                        break;
-                    }
-                }
-                fos.close();
-                fos = null;
-
-                if (checkAck(in) != 0) {
-                    return false;
-                }
-
-                // send '\0'
-                buf[0] = 0;
-                out.write(buf, 0, 1);
-                out.flush();
-
-                LOG.finest("Copying: filesize=" + filesize + "b, file=" + file + " took " + (System.currentTimeMillis() - start) + " ms");
-            }
-            setExitStatus(process.waitFor());
-
-        } catch (InterruptedIOException e) {
-            // don't log, this just mean that somebody has interrupted us
-            return false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (Exception ee) {
-            }
+            int rc = task.get().intValue();
+            result = (rc == 0);
+        } catch (InterruptedException ex) {
+            result = false;
+        } catch (ExecutionException ex) {
+            ex.printStackTrace();
+            result = false;
         }
-        return getExitStatus() == 0;
+        RemoteUtil.LOGGER.finest("Copying: size=" + (new File(localName).length()) + ", file=" + localName + " took " + (System.currentTimeMillis() - time) + " ms");
+        return result;
     }
 
     public static boolean copyTo(ExecutionEnvironment execEnv, String localFile, String remoteFile) {
@@ -201,7 +92,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 return i.intValue() == 0;
             }
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report InterruptedException
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -230,11 +121,11 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 sb.append((char) c);
             } while (c != '\n');
             if (b == 1) { // error
-                LOG.warning("Error: Invalid value during reading remote string: " + sb.toString());
+                RemoteUtil.LOGGER.warning("Error: Invalid value during reading remote string: " + sb.toString());
             }
 
             if (b == 2) { // fatal error
-                LOG.warning("Fatal error: Invalid value during reading remote string: " + sb.toString());
+                RemoteUtil.LOGGER.warning("Fatal error: Invalid value during reading remote string: " + sb.toString());
             }
 
         }

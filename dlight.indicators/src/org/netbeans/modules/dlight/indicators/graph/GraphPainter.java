@@ -159,12 +159,13 @@ class GraphPainter {
      * @param h  height of drawing area
      * @param ticks  whether to draw ticks on graph
      */
-    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int x, int y, int w, int h, boolean ticks) {
+    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
             if (GraphConfig.GRID_SIZE < w && GraphConfig.GRID_SIZE < h) {
                 paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
                 paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
+                dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
             }
         }
     }
@@ -184,26 +185,26 @@ class GraphPainter {
     /**
      * Paints background grid.
      */
-    private void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
+    private static void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
         // vertical lines
         for (AxisMark xMark : xMarks) {
-            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, xMark.getOpacity()));
+            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, xMark.getMarkOpacity()));
             g.drawLine(x + xMark.getPosition(), y, x + xMark.getPosition(), y + h - 1);
         }
         if (ticks) {
             for (AxisMark xMark : xMarks) {
-                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, xMark.getOpacity()));
+                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, xMark.getMarkOpacity()));
                 g.drawLine(x + xMark.getPosition(), y + h - 5, x + xMark.getPosition(), y + h - 1);
             }
         }
         // horizontal lines
         for (AxisMark yMark : yMarks) {
-            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, yMark.getOpacity()));
+            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, yMark.getMarkOpacity()));
             g.drawLine(x, y + h - 1 - yMark.getPosition(), x + w - 1, y + h - 1 - yMark.getPosition());
         }
         if (ticks) {
             for (AxisMark yMark : yMarks) {
-                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, yMark.getOpacity()));
+                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, yMark.getMarkOpacity()));
                 g.drawLine(x, y + h - 1 - yMark.getPosition(), x + 5, y + h - 1 - yMark.getPosition());
             }
         }
@@ -273,6 +274,19 @@ class GraphPainter {
         g2.setStroke(oldStroke);
     }
 
+    private void dimInactiveRegions(Graphics g, int viewportStart, int viewportEnd, int filterStart, int filterEnd, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(GraphConfig.DIM_COLOR);
+        if (viewportStart <= filterStart ) {
+            int xx = DLightMath.map(filterStart, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(x, y, xx, h);
+        }
+        if (filterEnd <= viewportEnd) {
+            int xx = DLightMath.map(filterEnd, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(x + xx, y, w - xx, h);
+        }
+    }
+
 // axes painting ///////////////////////////////////////////////////////////////
 
     public void paintHorizontalAxis(Graphics g, int x, int y, int w, int h, List<AxisMark> marks, Color bg) {
@@ -287,7 +301,7 @@ class GraphPainter {
         for (AxisMark mark : marks) {
             if (mark.getText() != null) {
                 int length = fm.stringWidth(mark.getText());
-                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getOpacity()));
+                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getTextOpacity()));
                 g.drawString(mark.getText(), x + mark.getPosition() - length / 2, y + fm.getAscent());
             }
         }
@@ -315,7 +329,7 @@ class GraphPainter {
         for (AxisMark mark : marks) {
             if (mark.getText() != null) {
                 int length = fm.stringWidth(mark.getText());
-                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getOpacity()));
+                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getTextOpacity()));
                 g.drawString(mark.getText(), x + w - length - fm.getAscent() / 2, y + h - 1 - mark.getPosition() + fm.getAscent() / 2);
             }
         }

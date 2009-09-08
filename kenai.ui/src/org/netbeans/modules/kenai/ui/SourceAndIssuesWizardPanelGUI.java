@@ -181,19 +181,22 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         repoUrlTextField.getDocument().addDocumentListener(firingDocListener);
         issuesUrlTextField.getDocument().addDocumentListener(firingDocListener);
 
-        setupServicesListModels();
+        List<SharedItem> initalItems = panel.getInitialItems();
+
+        setupServicesListModels(initalItems.size() == 0);
 
         // XXX set the defaults
         // XXX here will be some condition ???
         showRepoOnKenaiGUI();
         showIssuesOnKenaiGUI();
+        itSeparator.setVisible(false);
         createChatRoom.setVisible(false);
         if (!Kenai.getDefault().getName().equals(("testkenai.com"))) {
             createChatRoom.setSelected(false);
         }
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
 
-        itemsToShare.addAll(panel.getInitialItems());
+        itemsToShare.addAll(initalItems);
         itemsToShareModel = new SharedItemsListModel();
         foldersToShareList.setModel(itemsToShareModel);
     }
@@ -204,7 +207,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 "SourceAndIssuesWizardPanelGUI.panelName"); // NOI18N
     }
 
-    private void setupServicesListModels() {
+    private void setupServicesListModels(final boolean isEmptyKenaiProject) {
 
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -215,18 +218,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     // OK, no services
                     // XXX or show message that "Cannot connect to Kenai.com server" ???
                 }
-                boolean someServicesFound = false;
                 List<KenaiService> repoList = new ArrayList<KenaiService>();
                 final DefaultComboBoxModel repoModel = new DefaultComboBoxModel();
                 List<KenaiService> issuesList = new ArrayList<KenaiService>();
                 final DefaultComboBoxModel issuesModel = new DefaultComboBoxModel();
                 if (services != null) {
-                    someServicesFound = true;
                     Iterator<KenaiService> serviceIter = services.iterator();
                     while (serviceIter.hasNext()) {
                         KenaiService service = serviceIter.next();
                         if (service.getType() == Type.SOURCE) {
-                            repoList.add(service);
+                            if (isEmptyKenaiProject || service.getName().equals(KenaiService.Names.SUBVERSION) || service.getName().equals(KenaiService.Names.MERCURIAL)) {
+                                repoList.add(service);
+                            }
                         }
                     }
                     serviceIter = services.iterator();
@@ -238,7 +241,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                         }
                     }
                 } else { // no services available
-                    someServicesFound = false;
                     repoModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
                             "SourceAndIssuesWizardPanelGUI.noRepoAvailable")); // NOI18N
                     issuesModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
@@ -257,7 +259,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                             repoModel.addElement(new KenaiServiceItem(service, EXT_REPO_ITEM));
                         }
                     }
-                    repoModel.addElement(new KenaiServiceItem(null, NO_REPO_ITEM));
+                    if (isEmptyKenaiProject) {
+                        repoModel.addElement(new KenaiServiceItem(null, NO_REPO_ITEM));
+                    }
                     setRepositories(repoList);
                 }
                 
@@ -1115,6 +1119,14 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         localRepoFolderLabel.setVisible(show);
         localFolderTextField.setVisible(show);
         localFolderBrowseButton.setVisible(show);
+
+        addFolderButton.setVisible(show);
+        addProjectButton.setVisible(show);
+        removeButton.setVisible(show);
+        autoCommit.setVisible(show);
+        foldersToShareLabel.setVisible(show);
+        jScrollPane1.setVisible(show);
+        chatSeparator.setVisible(show);
     }
 
     private void showExtRepoGUI() {

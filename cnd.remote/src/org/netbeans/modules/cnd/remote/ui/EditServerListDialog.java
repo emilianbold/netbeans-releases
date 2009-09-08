@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -65,6 +64,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -85,7 +85,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private ProgressHandle phandle;
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
-    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private final ToolsCacheManager cacheManager;
 
     private static final String CMD_ADD = "Add"; // NOI18N
@@ -267,7 +266,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 btRetry.setEnabled(false);
             }
         } else {
-            log.warning("ESLD.valueChanged: No selection in Dev Hosts list");
+            RemoteUtil.LOGGER.warning("ESLD.valueChanged: No selection in Dev Hosts list");
         }
     }
 

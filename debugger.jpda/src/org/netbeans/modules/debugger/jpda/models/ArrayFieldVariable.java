@@ -54,7 +54,9 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -70,6 +72,7 @@ class ArrayFieldVariable extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.Field {
 
     private final ArrayReference array;
+    private final ObjectVariable parent;
     private int index;
     private int maxIndexLog;
     private String declaredType;
@@ -78,7 +81,7 @@ org.netbeans.api.debugger.jpda.Field {
         JPDADebuggerImpl debugger,
         PrimitiveValue value,
         String declaredType,
-        ArrayReference array,
+        ObjectVariable array,
         int index,
         int maxIndex,
         String parentID
@@ -92,7 +95,8 @@ org.netbeans.api.debugger.jpda.Field {
         this.index = index;
         this.maxIndexLog = log10(maxIndex);
         this.declaredType = declaredType;
-        this.array = array;
+        this.parent = array;
+        this.array = (ArrayReference) ((JDIVariable) array).getJDIValue();
     }
 
     
@@ -160,6 +164,10 @@ org.netbeans.api.debugger.jpda.Field {
         }
     }
 
+    public ObjectVariable getParentVariable() {
+        return parent;
+    }
+
     /**
      * Returns <code>true</code> for static fields.
      *
@@ -205,7 +213,7 @@ org.netbeans.api.debugger.jpda.Field {
                 getDebugger(),
                 (PrimitiveValue) getJDIValue(),
                 declaredType,
-                array,
+                parent,
                 index,
                 0,
                 getID().substring(0, getID().length() - ('.' + index + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()));

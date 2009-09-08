@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
+import java.util.Collection;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -46,7 +47,10 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.openide.util.Union2;
 
 /**
@@ -88,6 +92,28 @@ public class ElementInfo  {
     public NamespaceScope getNamespaceScope() {
         return ModelUtils.getNamespaceScope(scope);
     }
+    public QualifiedName getTypeQualifiedName() {
+        ASTNodeInfo nodeInfo = getNodeInfo();
+        QualifiedName qualifiedName = null;
+        if (nodeInfo != null) {
+            ASTNode originalNode = nodeInfo.getOriginalNode();
+            if (originalNode instanceof StaticDispatch) {                
+                qualifiedName = ASTNodeInfo.toQualifiedName(originalNode, true);
+            } else {
+                qualifiedName = nodeInfo.getQualifiedName();
+            }
+        } else {
+            ModelElement modelElemnt = getModelElemnt();
+            final QualifiedName namespaceName = modelElemnt.getNamespaceName();
+            Scope inScope = modelElemnt.getInScope();
+            if (inScope instanceof TypeScope) {
+                qualifiedName = namespaceName.append(inScope.getName());
+            } else {
+                qualifiedName = namespaceName.append(modelElemnt.getName());
+            }
+        }
+        return qualifiedName;
+    }
     public QualifiedName getQualifiedName() {
         ASTNodeInfo nodeInfo = getNodeInfo();
         QualifiedName qualifiedName = null;
@@ -96,9 +122,12 @@ public class ElementInfo  {
         } else {
             ModelElement modelElemnt = getModelElemnt();
             final QualifiedName namespaceName = modelElemnt.getNamespaceName();
-            qualifiedName = namespaceName.append(modelElemnt.getName());
-        }
+                qualifiedName = namespaceName.append(modelElemnt.getName());
+            }
         return qualifiedName;
+    }
+    public Collection<QualifiedName>  getComposedNames() {
+        return QualifiedName.getComposedNames(getQualifiedName(), getNamespaceScope());
     }
     public String getName() {
         ASTNodeInfo nodeInfo = getNodeInfo();

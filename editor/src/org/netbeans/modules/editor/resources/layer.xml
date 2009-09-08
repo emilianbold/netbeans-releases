@@ -46,7 +46,9 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Edit">
             <file name="org-netbeans-modules-editor-ExportHtmlAction.instance"/>
-
+        </folder>
+        <folder name="Source">
+            <file name="org-netbeans-modules-parsing-impl-indexing-ScanForExternalChanges.instance"/>
         </folder>
     </folder>
     <folder name="Menu">
@@ -205,6 +207,15 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="3200"/>
             </file>
                       
+            <file name="SeparatorBeforScanForExternalChanges.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="8900"/>
+            </file>
+
+            <file name="org-netbeans-modules-parsing-impl-indexing-ScanForExternalChanges.shadow">
+                <attr name="position" intvalue="9000"/>
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-parsing-impl-indexing-ScanForExternalChanges.instance"/>
+            </file>
             
         </folder>
                 

@@ -113,7 +113,10 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         if (idx != -1) {//NOI18N
             value = value.substring(0, idx);
         }
-
+        if (getKind().equals(Kind.CLASS)) {
+            QualifiedName qn = QualifiedName.create(value);
+            value = qn.toName().toString();
+        }
         return value;
     }
 
@@ -122,7 +125,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         if (Kind.VARIABLE.equals(getKind()) || Kind.FIELD.equals(getKind())) {
             QualifiedName.createUnqualifiedName(getName());
         }
-        return QualifiedName.createUnqualifiedName(getTypeName());
+        return QualifiedName.create(getTypeName());
     }
 
     @Override

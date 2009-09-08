@@ -43,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.MissingResourceException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
@@ -281,13 +282,18 @@ public final class THAActionsProvider {
         };
         stop.setEnabled(false);
         stop.putValue("command", STOP_COMMAND); // NOI18N
-        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMStopDataCollection")); // NOI18N
+        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAStopDataCollection")); // NOI18N
         stop.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Kill24.gif"); // NOI18N
         stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/Kill24.gif", false)); // NOI18N       
     }
 
     private static String loc(String key, String... params) {
-        return NbBundle.getMessage(THAActionsProvider.class, key, params);
+        try{
+            return NbBundle.getMessage(THAActionsProvider.class, key, params);
+        }catch(MissingResourceException e){
+            e.printStackTrace();
+            return key;
+        }
     }
 
     private final class RemoveInstrumentationAction extends AbstractAction implements PropertyChangeListener {

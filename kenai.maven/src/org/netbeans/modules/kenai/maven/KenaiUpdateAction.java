@@ -196,11 +196,8 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
         return new KenaiUpdateAction(actionContext);
     }
 
-
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
-
     private static boolean isKenai (String uri) {
-        return repositoryPattern.matcher(uri).matches();
+        return KenaiProject.getNameForRepository(uri)!=null;
     }
 
     static void performUpdate (POMModel model, KenaiProject kProj) throws KenaiException {

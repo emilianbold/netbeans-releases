@@ -176,6 +176,9 @@ public class WatchesModel implements TreeModel {
         if (node == ROOT) return false;
         if (node instanceof JPDAWatchEvaluating) {
             JPDAWatchEvaluating jwe = (JPDAWatchEvaluating) node;
+            if (!jwe.isCurrent()) {
+                return false; // When not yet evaluated, suppose that it's not leaf
+            }
             JPDAWatch jw = jwe.getEvaluatedWatch();
             if (jw instanceof JPDAWatchImpl) {
                 return ((JPDAWatchImpl) jw).isPrimitive ();
@@ -225,6 +228,15 @@ public class WatchesModel implements TreeModel {
         for (i = 0; i < k; i++)
             ((ModelListener) v.get (i)).modelChanged (
                 new ModelEvent.TableValueChanged (this, node, propertyName)
+            );
+    }
+
+    private void fireChildrenChanged(Object node) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.NodeChanged (this, node, ModelEvent.NodeChanged.CHILDREN_MASK)
             );
     }
     
@@ -300,6 +312,12 @@ public class WatchesModel implements TreeModel {
             } else {
                 setInnerValue(null);
             }
+            try {
+                if (model.isLeaf(this)) {
+                    // If the evaluated watch is a leaf, we need to refresh children to get rid of the expansion sign.
+                    model.fireChildrenChanged(this);
+                }
+            } catch (UnknownTypeException utex) {}
             //model.fireTableValueChangedComputed(this, null);
         }
         

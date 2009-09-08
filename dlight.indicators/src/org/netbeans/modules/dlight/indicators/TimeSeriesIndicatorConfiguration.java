@@ -45,8 +45,8 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
-import org.netbeans.modules.dlight.indicators.support.IndicatorConfigurationIDs;
-import org.netbeans.modules.dlight.indicators.support.TimeSeriesIndicator;
+import org.netbeans.modules.dlight.indicators.impl.IndicatorConfigurationIDs;
+import org.netbeans.modules.dlight.indicators.impl.TimeSeriesIndicator;
 
 /**
  * Configuration for {@link TimeSeriesIndicator}.

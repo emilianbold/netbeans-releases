@@ -49,24 +49,24 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/rest/jackson-lgpl-0.9.4.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-client.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-core.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-json.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-server.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/http.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/wadl2java.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/rome-0.9.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jettison-1.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/asm-3.1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/grizzly-servlet-webserver-1.7.3.2.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-spring.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/grizzly-servlet-webserver-1.9.9.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jackson-core-asl-1.1.1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-client-1.1.2-ea.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-core-1.1.2-ea.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-json-1.1.2-ea.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-server-1.1.2-ea.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-spring-1.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jettison-1.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/activation.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/api/jaxb-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/jaxb-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/jaxb-xjc.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/api/jsr173_api.jar!/</resource>
+        <!--<resource>jar:nbinst:///modules/ext/rest/http.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/wadl2java.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/rome-0.9.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>-->
     </volume>  
      <volume>
         <type>javadoc</type>
@@ -75,7 +75,8 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.1.1-ea/jersey-json-1.1.1-ea.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.1.1-ea/jersey-server-1.1.1-ea.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.1.2-ea/jersey-json-1.1.2-ea.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.1.2-ea/jersey-server-1.1.2-ea.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.1.2-ea/jersey-client-1.1.2-ea.pom</resource>
     </volume>
 </library>

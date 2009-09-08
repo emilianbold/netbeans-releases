@@ -101,25 +101,15 @@ public class RunOffAWT {
         });
 
         Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
-        Cursor wait = org.openide.util.Utilities.createProgressCursor(glassPane);
-        Cursor original = glassPane.getCursor();
-        boolean awaitResult;
-
-        try {
-            glassPane.setCursor(wait);
-            glassPane.setVisible(true);
-            try {
-                awaitResult = l.await(1500, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(RunOffAWT.class.getName()).log(Level.FINE, null, ex);
-                awaitResult = true;//???
-            }
-        } finally {
-            glassPane.setVisible(false);
-            glassPane.setCursor(original);
-        }
         
-        if (!awaitResult) {
+        if (waitMomentarily(glassPane, null, 50, l))
+            return ;
+
+        Cursor wait = org.openide.util.Utilities.createProgressCursor(glassPane);
+
+        if (waitMomentarily(glassPane, wait, 1450, l))
+            return ;
+
             String warning = NbBundle.getMessage(GoToSupport.class, "LBL_Long", featureName);
             String cancelButton = NbBundle.getMessage(GoToSupport.class, "BTN_Long_Cancel");
 
@@ -134,6 +124,25 @@ public class RunOffAWT {
 
             d.set(DialogDisplayer.getDefault().createDialog(nd));
             d.get().setVisible(true);
+    }
+
+    private static boolean waitMomentarily(Component glassPane, Cursor wait, int timeout, final CountDownLatch l) {
+        Cursor original = glassPane.getCursor();
+
+        try {
+            if (wait != null)
+                glassPane.setCursor(wait);
+
+            glassPane.setVisible(true);
+            try {
+                return l.await(timeout, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RunOffAWT.class.getName()).log(Level.FINE, null, ex);
+                return true;
+            }
+        } finally {
+            glassPane.setVisible(false);
+            glassPane.setCursor(original);
         }
     }
 

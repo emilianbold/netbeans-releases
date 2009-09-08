@@ -89,7 +89,7 @@ public class Bugzilla {
         }
     }
 
-    public static Bugzilla getInstance() {
+    public static synchronized Bugzilla getInstance() {
         if(instance == null) {
             instance = new Bugzilla();
         }

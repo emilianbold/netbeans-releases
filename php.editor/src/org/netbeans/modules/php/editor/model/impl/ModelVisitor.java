@@ -180,7 +180,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (expression instanceof ClassInstanceCreation) {
                 ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
                 ASTNodeInfo<ClassInstanceCreation> inf = ASTNodeInfo.create(instanceCreation);
-                typeName = inf.getName();
+                typeName = inf.getQualifiedName().toString();
             } else if (expression instanceof VariableBase) {
                 typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
                 if (typeName != null) {
@@ -208,9 +208,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     for (String tp : split) {
                         types.add(tp);
                     }
-                }
-                //TODO: qualified name is lost now
-                String tp = QualifiedName.create(typeName).toName().toString();
+                }                
+                String tp = QualifiedName.create(typeName).toString();
                 if (types.isEmpty()) {
                     functionScope.returnType = tp;
                 } else if (types.add(tp)){

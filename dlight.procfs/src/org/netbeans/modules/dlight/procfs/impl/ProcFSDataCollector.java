@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
@@ -79,7 +80,7 @@ public class ProcFSDataCollector
         implements DataCollector<ProcFSDCConfiguration> {
 
     private final static Logger log = DLightLogger.getLogger(ProcFSDataCollector.class);
-    private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
+    private final List<ValidationListener> validationListeners = new CopyOnWriteArrayList<ValidationListener>();
     private final ProcFSDCConfiguration configuration;
     private TasksCachedProcessor<DLightTarget, ValidationStatus> validator =
             new TasksCachedProcessor<DLightTarget, ValidationStatus>(new ProcFSDataCollectorValidator(), false);
@@ -235,7 +236,7 @@ public class ProcFSDataCollector
                     DataReader.switchEndian();
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                //Exceptions.printStackTrace(ex);
             }
 
             PreparedStatement _stmt = null;

@@ -209,8 +209,12 @@ public abstract class IssueCache<T> {
             if(entry.seenAttributes != null) {
                 if(entry.wasSeen()) {
                     BugtrackingManager.LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
-                    if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
+                    long lastModified = getLastModified(entry.issue);
+                    if(isChanged(entry.seenAttributes, entry.issue.getAttributes()) || entry.lastSeenModified < lastModified) {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
+                        if(entry.lastSeenModified >= lastModified) {
+                            BugtrackingManager.LOG.warning(" issue {0} changed, yet last known modify > last modify. [" + entry.lastSeenModified + "," + lastModified +"]"); // NOI18N
+                        }
                         storeIssue(entry);
                         entry.seen = false;
                         entry.status= ISSUE_STATUS_MODIFIED;
@@ -253,16 +257,19 @@ public abstract class IssueCache<T> {
             if(seen) {
                 getLastSeenAttributes().put(id, entry.seenAttributes);
                 entry.seenAttributes = entry.issue.getAttributes();
-                entry.lastKnownModified = getLastModified(entry.issue);
+                entry.lastSeenModified = getLastModified(entry.issue);
+                entry.lastUnseenStatus = entry.status;
             } else {
                 entry.seenAttributes = getLastSeenAttributes().get(id);
-//                if (entry.lastKnownModified != -1 && entry.lastKnownModified < getLastModified(entry.issue)) {
-//                    entry.status= ISSUE_STATUS_MODIFIED;
-//                }
+                if(entry.lastUnseenStatus != ISSUE_STATUS_UNKNOWN) {
+                    entry.status = entry.lastUnseenStatus;
+                    if(entry.seenAttributes == null) {
+                        entry.seenAttributes = entry.issue.getAttributes();
+                    }
+                }
             }
             entry.seen = seen;
             storeIssue(entry);
-
         }
         fireSeenChanged(entry.issue, oldValue, seen);
     }
@@ -466,16 +473,19 @@ public abstract class IssueCache<T> {
         private int status;
         private boolean seen = false;
         private String id;
-        private long lastKnownModified = -1;
+        private long lastSeenModified = -1;
+        private int lastUnseenStatus = ISSUE_STATUS_UNKNOWN;
+
         IssueEntry() { }
 
-        IssueEntry(Issue issue, Map<String, String> seenAttributes, int status, boolean seen, long lastKnownModified) {
+        IssueEntry(Issue issue, Map<String, String> seenAttributes, int status, int lastUnseenStatus, boolean seen, long lastKnownModified) {
             this.issue = issue;
             this.id = issue.getID();
             this.seenAttributes = seenAttributes;
             this.status = status;
             this.seen = seen;
-            this.lastKnownModified = lastKnownModified;
+            this.lastSeenModified = lastKnownModified;
+            this.lastUnseenStatus = lastUnseenStatus;
         }
         
         public boolean wasSeen() {
@@ -496,11 +506,17 @@ public abstract class IssueCache<T> {
         public String getId() {
             return id;
         }
-        public long getLastKnownModified() {
-            return lastKnownModified;
+        public long getLastSeenModified() {
+            return lastSeenModified;
         }
-        public void setLastKnownModified(long lastKnownModified) {
-            this.lastKnownModified = lastKnownModified;
+        public void setLastSeenModified(long lastKnownModified) {
+            this.lastSeenModified = lastKnownModified;
+        }
+        public int getLastUnseenStatus() {
+            return lastUnseenStatus;
+        }
+        public void setLastUnseenStatus(int lastUnseenStatus) {
+            this.lastUnseenStatus = lastUnseenStatus;
         }
     }
 }

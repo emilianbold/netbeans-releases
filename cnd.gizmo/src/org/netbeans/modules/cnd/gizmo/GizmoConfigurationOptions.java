@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptionsListener;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -65,6 +66,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  */
 public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
+    private final List<DLightConfigurationOptionsListener> listeners = new ArrayList<DLightConfigurationOptionsListener>();
     private static Logger log = DLightLogger.getLogger(GizmoConfigurationOptions.class);
     private String DLightCollectorString = "SunStudio";//NOI18N
     private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
@@ -100,7 +102,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         }
         return result;
     }
-    
+
     public void configure(Project project) {
         areCollectorsTurnedOn = true;
         this.currentProject = project;
@@ -145,7 +147,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             if (!hasSunStudio) {
                 //if we are on Linux set LL, I do not think it is correct if user had selected Sun Studio in Project Properties
                 String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
-                if (platform.indexOf("Linux") != -1){//NOI18N
+                if (platform.indexOf("Linux") != -1) {//NOI18N
                     setForLinux();
                 }
             }
@@ -155,21 +157,21 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
                 log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName());//NOI18N
             }
 
-        } else if (currentProvider == GizmoOptions.DataProvider.DTRACE){//DTRACE?
+        } else if (currentProvider == GizmoOptions.DataProvider.DTRACE) {//DTRACE?
             String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
-            if (platform.indexOf("Solaris") == -1){//NOI18N
+            if (platform.indexOf("Solaris") == -1) {//NOI18N
                 setForLinux();
             }
         }
     }
 
-    private boolean setForLinux() {        
+    private boolean setForLinux() {
         String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
         if (platform.indexOf("Linux") != -1 || !GizmoServiceInfo.isPlatformSupported(platform)) {//NOI18N
             areCollectorsTurnedOn = false;
-            if (platform.indexOf("Linux") != -1){//NOI18N
+            if (platform.indexOf("Linux") != -1) {//NOI18N
                 DLightCollectorString = SUNSTUDIO;
-            }else{
+            } else {
                 DLightCollectorString = "";//NOI18N
             }
 
@@ -214,5 +216,33 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
     public boolean validateToolsRequiredUserInteraction() {
         return false;
+    }
+
+    public void addListener(DLightConfigurationOptionsListener listener) {
+
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+
+    }
+
+    public void removeListener(DLightConfigurationOptionsListener listener) {
+        synchronized (this) {
+            listeners.remove(listener);
+        }
+    }
+
+    private final void notifyListeners(String toolName, boolean isEnabled) {
+        synchronized (this) {
+            for (DLightConfigurationOptionsListener l : listeners) {
+                l.dlightToolEnabling(toolName, isEnabled);
+            }
+        }
     }
 }
