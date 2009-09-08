@@ -501,6 +501,7 @@ public final class SelectConfigurationPanel extends JPanel {
         public void start(int length) {
             handle = ProgressHandleFactory.createHandle(getString("AnalyzingProjectProgress"));
             handle.start(length);
+            done = 0;
         }
 
         public void increment() {

@@ -651,7 +651,7 @@ public class DwarfSource implements SourceFileProperties{
                             String relativeDir = i.substring(0,n);
                             String dir = "/"+relativeDir; // NOI18N
                             if (!res.includes.contains(dir)){
-                                res.includes.add(dir);
+                                res.includes.add(PathCache.getString(dir));
                             }
                         }
                     }
@@ -673,10 +673,10 @@ public class DwarfSource implements SourceFileProperties{
         }
         for(String s: secondLevel){
             if (!res.includes.contains(s)){
-                res.includes.add(s);
+                res.includes.add(PathCache.getString(s));
             }
         }
-        grepBase.put(path, res);
+        grepBase.put(PathCache.getString(path), res);
         return res;
     }
     
@@ -714,12 +714,12 @@ public class DwarfSource implements SourceFileProperties{
                             char c = line.charAt(0);
                             if (c == '"') {
                                 if (line.indexOf('"',1)>0){
-                                    res.includes.add(line.substring(1,line.indexOf('"',1)));
+                                    res.includes.add(PathCache.getString(line.substring(1,line.indexOf('"',1))));
                                     if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('"',1)));} // NOI18N
                                 }
                             } else if (c == '<'){
                                 if (line.indexOf('>')>0){
-                                    res.includes.add(line.substring(1,line.indexOf('>')));
+                                    res.includes.add(PathCache.getString(line.substring(1,line.indexOf('>'))));
                                     if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('>')));} // NOI18N
                                 }
                             }
@@ -737,7 +737,7 @@ public class DwarfSource implements SourceFileProperties{
                                 StringTokenizer st = new StringTokenizer(line,"\t ("); // NOI18N
                                 while(st.hasMoreTokens()) {
                                     res.firstMacroLine = lineNo;
-                                    res.firstMacro = st.nextToken();
+                                    res.firstMacro = PathCache.getString(st.nextToken());
                                     break;
                                 }
                             }

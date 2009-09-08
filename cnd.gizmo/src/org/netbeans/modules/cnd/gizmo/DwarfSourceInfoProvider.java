@@ -99,10 +99,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         if (serviceInfo == null){
             return null;
         }
-        String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_REMOTE_EXECUTABLE);
-        if (executable == null) {
-            executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
-        }
+        String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
             String functionName = functionSignature;
             int parenIdx = functionSignature.indexOf('(');
