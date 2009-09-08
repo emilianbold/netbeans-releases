@@ -183,10 +183,10 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         String repositoryName = null;
         // XXX unofficial API
         // repository url looks like https://..../mercurial|svn/PROJECT_NAME~REPOSITORY_NAME
-        int pos = sourcesUrl.lastIndexOf('~') + 1;
+        int pos = sourcesUrl.lastIndexOf('~') + 1;                              // NOI18N
         if (pos > 0 && sourcesUrl.length() > pos) {
             String repositoryNameCandidate = sourcesUrl.substring(pos);
-            if (repositoryNameCandidate.indexOf('/') == -1) {
+            if (repositoryNameCandidate.indexOf('/') == -1) {                   // NOI18N
                 repositoryName = repositoryNameCandidate;
             }
         }
@@ -291,7 +291,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
                 case DELETE:
                     return Type.DELETE;
                 default:
-                    throw new IllegalStateException("unknown modification type" + m.getType());
+                    throw new IllegalStateException("unknown modification type" + m.getType());   // NOI18N
             }
         }
 
