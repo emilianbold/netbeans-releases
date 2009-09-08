@@ -506,7 +506,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
         List<AnnotationTree> annotations = new LinkedList<AnnotationTree>();
 
-        if (GeneratorUtils.supportsOverride(wc.getFileObject())) {
+        if (GeneratorUtils.supportsOverride(wc)) {
             TypeElement override = wc.getElements().getTypeElement("java.lang.Override");
 
             if (override != null) {

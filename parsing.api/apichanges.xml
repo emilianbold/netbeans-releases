@@ -107,6 +107,20 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexingManager.refreshAllIndices">
+      <api name="ParsingAPI"/>
+      <summary>Added IndexingManager.refreshAllIndices(boolean fullRescan, boolean wait, FileObject... folders)</summary>
+      <version major="1" minor="23"/>
+      <date day="7" month="9" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>refreshAllIndices(boolean fullRescan, boolean wait, FileObject... folders)</code>.
+          </p>
+      </description>
+      <issue number="168237"/>
+  </change>
   <change id="IndexingSupport.createDocument-IndexResult.getIndexable">
       <api name="ParsingAPI"/>
       <summary>Added IndexingSupport.createDocument(FileObject) and IndexResult.getIndexable()</summary>

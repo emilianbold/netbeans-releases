@@ -526,7 +526,9 @@ abstract class Lookup implements ContextProvider {
                     // TODO: We likely do not have the Item.getId() defined correctly.
                     // We have to check the ContextAwareService.serviceID()
                     String serviceName = getServiceName(li.getId());
-                    if (s != null && s.contains (serviceName)) continue;
+                    //System.err.println("ID = '"+li.getId()+"' => serviceName = '"+serviceName+"'");
+                    // We do not recognize method calls correctly
+                    if (s != null && (s.contains (serviceName) || s.contains (serviceName+"()"))) continue;
                     add(new LazyInstance<T>(service, li));
                 }
                 /*

@@ -76,9 +76,9 @@ public final class EditorActionUtilities {
 
     private static Map<String,Boolean> mimeType2ListenerPresent = new HashMap<String, Boolean>();
 
-    private static Reference<EditorKit> globalKitRef;
+    private static Reference<EditorKit> globalActionsKitRef;
 
-    private static LookupListener globalKitListener;
+    private static LookupListener globalActionsKitListener;
 
     private static final Map<EditorKit,SearchableEditorKit> kit2searchable = new WeakHashMap<EditorKit,SearchableEditorKit>();
 
@@ -86,25 +86,28 @@ public final class EditorActionUtilities {
         // No instances
     }
 
-    public static EditorKit getGlobalKit() {
+    public static EditorKit getGlobalActionsKit() {
         synchronized (kit2searchable) {
-            EditorKit globalKit = (globalKitRef != null) ? globalKitRef.get() : null;
+            EditorKit globalKit = (globalActionsKitRef != null) ? globalActionsKitRef.get() : null;
             if (globalKit == null) {
                 Lookup.Result<EditorKit> result = MimeLookup.getLookup("").lookupResult(EditorKit.class);
                 Iterator<? extends EditorKit> instancesIterator = result.allInstances().iterator();
                 globalKit = instancesIterator.hasNext() ? instancesIterator.next() : null;
-                if (globalKit != null) {
-                    globalKitRef = new WeakReference<EditorKit>(globalKit);
+                if (globalKit == null) {
+                    globalKit = SearchableEditorKitImpl.createGlobalKit();
                 }
-                if (globalKitListener == null) {
-                    globalKitListener = new LookupListener() {
+                if (globalKit != null) {
+                    globalActionsKitRef = new WeakReference<EditorKit>(globalKit);
+                }
+                if (globalActionsKitListener == null) {
+                    globalActionsKitListener = new LookupListener() {
                         public void resultChanged(LookupEvent evt) {
                             synchronized (kit2searchable) {
-                                globalKitRef = null;
+                                globalActionsKitRef = null;
                             }
                         }
                     };
-                    result.addLookupListener(globalKitListener);
+                    result.addLookupListener(globalActionsKitListener);
                 }
             }
             return globalKit;
@@ -118,6 +121,12 @@ public final class EditorActionUtilities {
         return kit;
     }
 
+    /**
+     * Register an instance of searchable kit explicitly for the given kit.
+     * Used by BaseKit for explicit registration.
+     * @param kit non-null kit.
+     * @param searchableKit non-null searchable kit.
+     */
     public static void registerSearchableKit(EditorKit kit, SearchableEditorKit searchableKit) {
         synchronized (kit2searchable) {
             kit2searchable.put(kit, searchableKit);

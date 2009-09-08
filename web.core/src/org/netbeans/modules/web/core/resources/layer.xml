@@ -226,7 +226,7 @@ made subject to such option by the copyright holder.
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/webFragmentXml.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebFragmentXmlWizardIterator"/>
-        <attr name="templateCategory" stringvalue="servlet-types"/>
+        <attr name="templateCategory" stringvalue="servlet-types-j2se-only"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"/>
       </file>
     </folder>

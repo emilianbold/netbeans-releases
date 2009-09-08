@@ -46,6 +46,7 @@ import org.netbeans.api.debugger.test.TestActionsManagerListener;
 import org.netbeans.api.debugger.test.TestLazyActionsManagerListener;
 
 import java.util.*;
+import org.openide.util.Task;
 
 /**
  * Tests invocations of debugger actions.
@@ -91,7 +92,7 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
         am.doAction(ActionsManager.ACTION_STEP_OUT);
         am.doAction(ActionsManager.ACTION_STEP_OVER);
         am.doAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
-        dm.getCurrentSession().kill();
+        kill(dm.getCurrentSession());
 
         am.removeActionsManagerListener(tam);
 
@@ -132,5 +133,14 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
         assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_TOGGLE_BREAKPOINT));
         assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_KILL));
         assertEquals("ActionListener notification failed", eventActions.size(), 0);
+    }
+
+    public static void kill(Session s) {
+        String[] languagesToKill = s.getSupportedLanguages();
+        for (String language : languagesToKill) {
+            Task kill = s.getEngineForLanguage(language).getActionsManager ().
+                postAction (ActionsManager.ACTION_KILL);
+            kill.waitFinished();
+        }
     }
 }

@@ -758,7 +758,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                         getDebugger(), 
                         (ObjectReference) v, 
                         componentType, 
-                        ar, 
+                        this,
                         from + i,
                         to - 1,
                         parentID
@@ -767,7 +767,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                         getDebugger(), 
                         (PrimitiveValue) v, 
                         componentType, 
-                        ar, 
+                        this,
                         from + i,
                         to - 1,
                         parentID
