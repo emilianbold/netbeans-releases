@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
@@ -171,9 +172,10 @@ public class KenaiUtil {
         List<RepositoryUser> members = null;
         try {
             KenaiProject kp = Kenai.getDefault().getProject(projectName);
-            KenaiUser[] users = kp.getMembers();
-            members = new ArrayList<RepositoryUser>(users.length);
-            for (KenaiUser user : users) {
+            KenaiProjectMember[] kenaiMembers = kp.getMembers();
+            members = new ArrayList<RepositoryUser>(kenaiMembers.length);
+            for (KenaiProjectMember member : kenaiMembers) {
+                KenaiUser user = member.getKenaiUser();
                 members.add(new RepositoryUser(user.getUserName(), user.getFirstName()+" "+user.getLastName())); // NOI18N
             }
         } catch (KenaiException kex) {
