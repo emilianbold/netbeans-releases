@@ -44,10 +44,11 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.filesystems.FileObject;
 
@@ -57,6 +58,8 @@ import org.openide.filesystems.FileObject;
  */
 public final class ElementGrip {
     private TreePathHandle delegateElementHandle;
+    /** used to speed up resolving, TreePathHandle runs lexer; see issue 171652 */
+    private ElementHandle handle;
     private String toString;
     private FileObject fileObject;
     private Icon icon;
@@ -66,7 +69,15 @@ public final class ElementGrip {
      */
     public ElementGrip(TreePath treePath, CompilationInfo info) {
         this.delegateElementHandle = TreePathHandle.create(treePath, info);
-        this.toString = ElementHeaders.getHeader(treePath, info, ElementHeaders.NAME);
+        Element elm = info.getTrees().getElement(treePath);
+        this.handle = elm == null ? null : ElementHandle.create(elm);
+        if (elm != null) {
+            // workaround for issue 171692
+            this.toString = elm.getKind() != ElementKind.CONSTRUCTOR
+                    ? elm.getSimpleName().toString()
+                    : elm.getEnclosingElement().getSimpleName().toString();
+//            this.toString = ElementHeaders.getHeader(treePath, info, ElementHeaders.NAME);
+        }
         this.fileObject = info.getFileObject();
         Element el = info.getTrees().getElement(treePath);
         if (el != null) {
@@ -90,7 +101,7 @@ public final class ElementGrip {
     } 
 
     public Element resolveElement(CompilationInfo info) {
-        return delegateElementHandle.resolveElement(info);
+        return handle == null ? null : handle.resolve(info);
     } 
 
     public Tree.Kind getKind() {
