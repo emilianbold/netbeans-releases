@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,32 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.dataprovider;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
+import org.netbeans.modules.cnd.remote.support.*;
+import java.io.File;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
-public interface StackDataProvider extends SourceFileInfoDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
+/**
+ * @author Vladimir Kvashin
+ */
+public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 
-    public List<FunctionMetric> getMetricsList();
+    static {
+//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
+//        System.setProperty("cnd.remote.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");
+    }
+    public RemoteBinaryServiceTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+    }
 
-    public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
+    @ForAllEnvironments
+    public void testBinaryService() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        String remotePath = "/bin/ls";
+        String localPath;
+        File localFile = null;
 
-    public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
-
-    public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit);
-
-    public List<FunctionCall> getCallStack(int stackId);
-
-    public ThreadDumpProvider getThreadDumpProvider();
+        for (int i = 0; i < 4; i++) {
+            boolean delete = (i == 3);
+            if (delete) {
+                localFile.delete();
+            }
+            localPath = RemoteBinaryService.getRemoteBinary(execEnv, remotePath);
+            assertNotNull(localPath);
+            localFile = new File(localPath);
+            assertTrue(localFile.exists());
+            assertTrue(localFile.length() > 0);
+            assertEquals("Download Count differs", delete ? 2 : 1, RemoteBinaryServiceImpl.getDownloadCount());
+        }
+    }
+    
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteBinaryServiceTestCase.class);
+    }
 }

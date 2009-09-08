@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.tha.actions;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -57,6 +58,14 @@ public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar
 
     public THAToolbarDropdownAction() {
         defaultAction = THAActionsProvider.getStartTHAConfigurationAction();
+        defaultAction.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("enabled".equals(evt.getPropertyName())){
+                    setEnabled(defaultAction.isEnabled());
+                }
+            }
+        });
     }
 
     public Object getValue(String key) {
@@ -103,7 +112,7 @@ public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar
 //                    dropdownPopup, defaultAction);
 
             //toolbarPresenter = button;
-            JButton button = DropDownButtonFactory.createDropDownButton(new ImageIcon(new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB)), dropdownPopup);
+            JButton button = DropDownButtonFactory.createDropDownButton(new ImageIcon(new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB)), dropdownPopup);            
             Actions.connect(button, defaultAction);
             toolbarPresenter = button;
         }

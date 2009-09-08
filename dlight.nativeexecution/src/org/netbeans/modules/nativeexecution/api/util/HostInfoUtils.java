@@ -41,7 +41,6 @@ public final class HostInfoUtils {
     private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
             new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
 
-
     static {
         NetworkInterface iface = null;
         try {
@@ -222,6 +221,8 @@ public final class HostInfoUtils {
         if (execEnv == null) {
             return null;
         }
+
+        Logger.assertNonUiThread();
 
         try {
             return hostInfoCachedProcessor.compute(execEnv);
