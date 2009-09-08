@@ -18,7 +18,7 @@
     <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
     <property name="nb.display.version.short" value="Dev"/>
 
-    <property name="servicetag.source" value="NetBeans ${nb.display.version.short} Installer"/>
+    <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="6.0.20"/>
