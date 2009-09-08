@@ -123,7 +123,7 @@ import org.openide.util.NbBundle;
                             remoteDir, ServerList.get(executionEnvironment).toString()));
                 }
                 synchronizeImpl(remoteDir);
-                RemotePathMap mapper = RemotePathMap.getRemotePathMapInstance(executionEnvironment);
+                RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
                 mapper.addMapping(localDir.getParentFile().getAbsolutePath(), remoteParent);
             }
             success = true;

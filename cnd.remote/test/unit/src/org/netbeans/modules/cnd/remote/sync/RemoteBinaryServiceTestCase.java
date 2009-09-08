@@ -36,46 +36,52 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.sync;
 
+import org.netbeans.modules.cnd.remote.support.*;
 import java.io.File;
-import java.util.concurrent.Future;
 import junit.framework.Test;
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  * @author Vladimir Kvashin
  */
-public class DownloadTestCase extends RemoteTestBase {
+public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 
     static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
 //        System.setProperty("cnd.remote.logger.level", "0");
 //        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-    public DownloadTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RemoteBinaryServiceTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @ForAllEnvironments
-    public void testCopyFrom() throws Exception {
-        File localFile = File.createTempFile("cnd", ".cnd");
+    public void testBinaryService() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String remoteFile = "/usr/include/stdio.h";
-        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
-        int rc = task.get().intValue();
-        assertEquals("Copying finished with rc != 0: ", 0, rc);
-        String content = readFile(localFile);
-        String text2search = "printf";
-        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
-                content.indexOf(text2search) >= 0);
-        localFile.delete();
+        String remotePath = "/bin/ls";
+        String localPath;
+        File localFile = null;
+
+        for (int i = 0; i < 4; i++) {
+            boolean delete = (i == 3);
+            if (delete) {
+                localFile.delete();
+            }
+            localPath = RemoteBinaryService.getRemoteBinary(execEnv, remotePath);
+            assertNotNull(localPath);
+            localFile = new File(localPath);
+            assertTrue(localFile.exists());
+            assertTrue(localFile.length() > 0);
+            assertEquals("Download Count differs", delete ? 2 : 1, RemoteBinaryServiceImpl.getDownloadCount());
+        }
     }
     
     public static Test suite() {
-        return new RemoteDevelopmentTest(DownloadTestCase.class);
+        return new RemoteDevelopmentTest(RemoteBinaryServiceTestCase.class);
     }
 }

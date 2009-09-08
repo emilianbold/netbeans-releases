@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,51 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.support;
 
-import java.io.File;
-import java.util.concurrent.Future;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+package org.netbeans.modules.cnd.api.remote;
+
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.openide.util.Lookup;
 
 /**
+ * Makes a remote binary accessible locally
  * @author Vladimir Kvashin
  */
-public class DownloadTestCase extends RemoteTestBase {
+public abstract class RemoteBinaryService {
 
-    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-    }
-    public DownloadTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    protected RemoteBinaryService() {}
+
+    /**
+     * Gets a local path to a binary built on remote machine.
+     * In the case it is shared, returns just a path to the same physical binary.
+     * In the case it is not shared, ensures that the file is copied to the local host
+     * and returns full path to the copy
+     *
+     * The method can be very slow.
+     * It should never be called from AWT thread.
+     */
+    public static String getRemoteBinary(ExecutionEnvironment execEnv, String remotePath) {
+        if (execEnv.isLocal()) {
+            return remotePath;
+        } else {
+            RemoteBinaryService rbs = Lookup.getDefault().lookup(RemoteBinaryService.class);
+            if (rbs == null) {
+                return null;
+            } else {
+                return rbs.getRemoteBinaryImpl(execEnv, remotePath);
+            }
+        }
     }
 
-    @ForAllEnvironments
-    public void testCopyFrom() throws Exception {
-        File localFile = File.createTempFile("cnd", ".cnd");
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String remoteFile = "/usr/include/stdio.h";
-        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
-        int rc = task.get().intValue();
-        assertEquals("Copying finished with rc != 0: ", 0, rc);
-        String content = readFile(localFile);
-        String text2search = "printf";
-        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
-                content.indexOf(text2search) >= 0);
-        localFile.delete();
-    }
-    
-    public static Test suite() {
-        return new RemoteDevelopmentTest(DownloadTestCase.class);
-    }
+    protected abstract String getRemoteBinaryImpl(ExecutionEnvironment execEnv, String remotePath);
 }
