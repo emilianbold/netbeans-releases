@@ -522,7 +522,11 @@ public class JiraRepository extends Repository {
                     for (String id : ids) {
                         try {
                             TaskData data = JiraUtils.getTaskDataById(JiraRepository.this, id, false);
-                            getIssueCache().setIssueData(id, data);
+                            if(data == null) {
+                                Jira.LOG.warning("No task data available for issue with id " + id);
+                            } else {
+                                getIssueCache().setIssueData(id, data);
+                            }
                         } catch (IOException ex) {
                             Jira.LOG.log(Level.SEVERE, null, ex); // NOI18N
                         }
@@ -631,39 +635,6 @@ public class JiraRepository extends Repository {
         return members;
     }
 
-    private class Cache extends IssueCache<TaskData> {
-        Cache() {
-            super(JiraRepository.this.getUrl());
-        }
-        protected Issue createIssue(TaskData taskData) {
-            NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
-            org.netbeans.modules.jira.issue.JiraIssueProvider.getInstance().notifyIssueCreated(issue);
-            return issue;
-        }
-        protected void setIssueData(Issue issue, TaskData taskData) {
-            assert issue != null && taskData != null;
-            ((NbJiraIssue)issue).setTaskData(taskData);
-        }
-        @Override
-        protected String getRecentChanges(Issue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getRecentChanges();
-        }
-
-        @Override
-        protected long getLastModified(Issue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getLastModify();
-        }
-
-        @Override
-        protected long getCreated(Issue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getCreated();
-        }
-
-    }
-
     public JiraExecutor getExecutor() {
         if(executor == null) {
             executor = new JiraExecutor(this);
@@ -704,5 +675,35 @@ public class JiraRepository extends Repository {
         attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
         attributes.put(ATTRIBUTE_URL, getUrl());
         return attributes;
+    }
+
+
+    private class Cache extends IssueCache<TaskData> {
+        Cache() {
+            super(JiraRepository.this.getUrl(), new IssueAccessorImpl());
+        }
+    }
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<TaskData> {
+        public Issue createIssue(TaskData taskData) {
+            NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
+            org.netbeans.modules.jira.issue.JiraIssueProvider.getInstance().notifyIssueCreated(issue);
+            return issue;
+        }
+        public void setIssueData(Issue issue, TaskData taskData) {
+            assert issue != null && taskData != null;
+            ((NbJiraIssue)issue).setTaskData(taskData);
+        }
+        public String getRecentChanges(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getRecentChanges();
+        }
+        public long getLastModified(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getLastModify();
+        }
+        public long getCreated(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getCreated();
+        }
     }
 }

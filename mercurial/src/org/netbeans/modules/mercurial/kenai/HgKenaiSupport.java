@@ -37,8 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial;
+package org.netbeans.modules.mercurial.kenai;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import java.util.HashSet;
@@ -101,5 +102,16 @@ public class HgKenaiSupport {
         return kenaiSupport.forName(user);
     }
 
+    public void removeVCSNoficationListener(PropertyChangeListener l) {
+        kenaiSupport.removeVCSNoficationListener(l);
+    }
+
+    public void addVCSNoficationListener(PropertyChangeListener l) {
+        kenaiSupport.addVCSNoficationListener(l);
+    }
+
+    public void register() {
+        addVCSNoficationListener(new KenaiNotificationListener());
+    }
 
 }

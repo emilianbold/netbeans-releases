@@ -37,25 +37,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.kenai;
+package org.netbeans.modules.mercurial.kenai;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
@@ -64,8 +61,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -88,28 +83,19 @@ public class KenaiNotificationListener implements PropertyChangeListener {
         rp.post(new Runnable() {
             public void run() {
                 URI uri = notification.getUri();
-                SVNUrl notificationUrl;
-                try {
-                    notificationUrl = new SVNUrl(uri.toString());
-                } catch (MalformedURLException ex) {
-                    Subversion.LOG.log(Level.WARNING, null, ex);
-                    return;
-                }
+                String notificationUrl = uri.toString();
+
                 Project projects[] = OpenProjects.getDefault().getOpenProjects();
                 for (Project project : projects) {
                     File root = FileUtil.toFile(project.getProjectDirectory());
-                    if(!SvnUtils.isManaged(root)) {
+                    if(!Mercurial.getInstance().isManaged(root)) {
                         continue;
                     }
-                    SVNUrl repositoryRoot;
-                    try {
-                        repositoryRoot = SvnUtils.getRepositoryRootUrl(root);
-                    } catch (SVNClientException ex) {
-                        Subversion.LOG.log(Level.WARNING, null, ex);
-                        continue;
-                    }
-                    if(repositoryRoot.equals(notificationUrl)) {
-                        File[] files = Subversion.getInstance().getStatusCache().listFiles(root);
+
+                    String repositoryUrl = HgUtils.getRemoteRepository(root);
+
+                    if(repositoryUrl.equals(notificationUrl)) {
+                        File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(root);
                         List<VCSKenaiModification> modifications = notification.getModifications();
 
                         for (File file : files) {
@@ -123,23 +109,18 @@ public class KenaiNotificationListener implements PropertyChangeListener {
                     }
                 }
             }
-
         });
 
     }
     
     private void notifyChange(File file, VCSKenaiNotification notification, VCSKenaiModification modification) {
-        try {
-            notifyFileChange(file, new SVNUrl(notification.getUri().toString()), Long.parseLong(modification.getId()));
-        } catch (MalformedURLException ex) {
-            Subversion.LOG.log(Level.WARNING, null, ex);
-        }
+        notifyFileChange(file, notification.getUri().toString(), modification.getId());
     }
 
     private static final String NOTIFICATION_ICON_PATH = "org/netbeans/modules/subversion/resources/icons/info.png"; //NOI18N    
     private static final String NOTIFICATION_REVISION_LINK = "<a href=\"{0}\">{1}</a>"; //NOI18N    
     
-    private void notifyFileChange(File file, SVNUrl url, long revision) {
+    private void notifyFileChange(File file, String url, String revision) {
         NotificationDisplayer.getDefault().notify(
                 NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Title"), //NOI18N
                 ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
@@ -161,10 +142,9 @@ public class KenaiNotificationListener implements PropertyChangeListener {
         return bubble;
     }
 
-    private JTextPane getDetailsPane (final File file, final SVNUrl svnUrl, final long revision) {
+    private JTextPane getDetailsPane (final File file, final String url, final String revision) {
         JTextPane bubble = getSimplePane(file);
         bubble.setContentType("text/html");                        //NOI18N
-        String url = svnUrl.toString();
         String text = java.text.MessageFormat.format(NOTIFICATION_REVISION_LINK, url,
                     NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_DescriptionRevision"));
         bubble.setText(text);
@@ -172,7 +152,7 @@ public class KenaiNotificationListener implements PropertyChangeListener {
         bubble.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-                    SearchHistoryAction.openSearch(svnUrl, file, revision);
+                    // XXX imlement me
                 }
             }
         });
