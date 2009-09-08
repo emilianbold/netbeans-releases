@@ -880,7 +880,7 @@ public class BugzillaIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            getBugzillaRepository().getIssueCache().setIssueData(id, td, this); // XXX
+            getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }

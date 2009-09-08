@@ -487,7 +487,7 @@ public class NbJiraIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            getRepository().getIssueCache().setIssueData(this, td); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }
@@ -509,8 +509,7 @@ public class NbJiraIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            String key = getID(td);
-            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            getRepository().getIssueCache().setIssueData(this, td);
             if (controller != null) {
                 controller.refreshViewData();
             }

@@ -56,7 +56,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
  *
  * @author Tomas Stupka
  */
-public abstract class IssueCache<T> {
+public class IssueCache<T> {
 
     // XXX do we need this?
     public static final String ATTR_DATE_MODIFICATION = "date.modification";    // NOI18N
@@ -91,7 +91,7 @@ public abstract class IssueCache<T> {
             ISSUE_STATUS_MODIFIED;
 
     /**
-     * an issues seen state changed
+     * issues seen state changed
      */
     public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
     
@@ -103,9 +103,63 @@ public abstract class IssueCache<T> {
 
     private final Object CACHE_LOCK = new Object();
     private long referenceTime;
+    private final IssueAccessor<T> issueAccessor;
 
-    public IssueCache(String nameSpace) {
+    /**
+     * 
+     * Provides access to the particular {@link Issue} implementations
+     * kept in {@link IssueCache}
+     *
+     * @param <T>
+     */
+    public interface IssueAccessor<T> {
+        /**
+         * Creates a new Issue for the given taskdata
+         * @param taskData
+         * @return
+         */
+        public Issue createIssue(T issueData);
+
+        /**
+         * Sets new task data in the issue. Mind synchrone reentrant calls
+         * on the cache for the given issue.
+         *
+         * @param issue
+         * @param taskData
+         */
+        public void setIssueData(Issue issue, T issueData);
+
+        /**
+         * Returns a description summarizing the changes made
+         * in the given issue since the last time it was as seen.
+         *
+         * @return
+         */
+        public String getRecentChanges(Issue issue);
+
+        /**
+         * Returns the last modification time for the given issue
+         *
+         * @issue issue
+         * @return the last modification time
+         */
+        public long getLastModified(Issue issue);
+
+        /**
+         * Returns the time the issue was created
+         *
+         * @issue issue
+         * @return the last modification time
+         */
+        public long getCreated(Issue issue);
+
+    }
+    
+    public IssueCache(String nameSpace, IssueAccessor<T> issueAccessor) {
+        assert issueAccessor != null;
         this.nameSpace = nameSpace;
+        this.issueAccessor = issueAccessor;
+        
         try {
             this.referenceTime = IssueStorage.getInstance().getReferenceTime(nameSpace);
         } catch (IOException ex) {
@@ -129,53 +183,44 @@ public abstract class IssueCache<T> {
         IssueStorage.getInstance().cleanup(IssueCache.this.nameSpace);
     }
 
-    /**
-     * Creates a new Issue for the given taskdata
-     * @param taskData
-     * @return
-     */
-    protected abstract Issue createIssue(T issueData);
-
-    /**
-     * Sets new task data in the issue. Mind synchrone reentrant calls
-     * on the cache for the given issue.
-     *
-     * @param issue
-     * @param taskData
-     */
-    protected abstract void setIssueData(Issue issue, T issueData);
-
-    /**
-     * Returns a description summarizing the changes made
-     * in the given issue since the last time it was as seen.
-     * 
-     * @return
-     */
-    protected abstract String getRecentChanges(Issue issue);
-
-    /**
-     * Returns the last modification time for the given issue
-     *
-     * @issue issue
-     * @return the last modification time
-     */
-    protected abstract long getLastModified(Issue issue);
-
-    /**
-     * Returns the time the issue was created
-     *
-     * @issue issue
-     * @return the last modification time
-     */
-    protected abstract long getCreated(Issue issue);
-
-    public Issue setIssueData(String id, T issueData) throws IOException {
-        assert issueData != null;
-        return setIssueData(id, issueData, null);
+    IssueAccessor<T> getIssueAccessor() {
+        return issueAccessor;
     }
 
-    public Issue setIssueData(String id, T issueData, Issue issue) throws IOException {
+    /**
+     * Sets new data into {@link Issue} with the given id. A new issue will be created
+     * in case it doesn't exist yet.
+     *
+     * @param issue id
+     * @param issueData data representing an issue
+     * @return the {@link Issue} with the given id
+     * @throws IOException
+     */
+    public Issue setIssueData(String id, T issueData) throws IOException {
         assert issueData != null;
+        assert id != null && !id.equals("");
+        return setIssueData(id, null, issueData);
+    }
+
+    /**
+     * Sets new data into the given issue
+     *
+     * @param issue issue
+     * @param issueData data representing an issue
+     * @throws IOException
+     */
+    public void setIssueData(Issue issue, T issueData) throws IOException {
+        assert issueData != null;
+        assert issue != null;
+
+        setIssueData(issue.getID(), issue, issueData);
+    }
+
+    private Issue setIssueData(String id, Issue issue, T issueData) throws IOException {
+        assert issueData != null;
+        assert id != null && !id.equals("");
+        assert issue == null || issue.getID().equals(id);
+        
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
 
@@ -187,17 +232,17 @@ public abstract class IssueCache<T> {
                 if(issue != null) {
                     entry.issue = issue;
                     BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
-                    setIssueData(entry.issue, issueData);
+                    issueAccessor.setIssueData(entry.issue, issueData);
                 } else {
-                    entry.issue = createIssue(issueData);
+                    entry.issue = issueAccessor.createIssue(issueData);
                     BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
                     readIssue(entry);                    
                     Map<String, String> attr = entry.getSeenAttributes();
                     if(attr == null || attr.size() == 0) {
                         // firsttimer
-                        if(referenceTime >= getLastModified(entry.issue)) {
+                        if(referenceTime >= issueAccessor.getLastModified(entry.issue)) {
                             setSeen(id, true);
-                        } else if(referenceTime >= getCreated(entry.issue)) {
+                        } else if(referenceTime >= issueAccessor.getCreated(entry.issue)) {
                             entry.seenAttributes = entry.issue.getAttributes();
                             storeIssue(entry);
                         }
@@ -205,13 +250,13 @@ public abstract class IssueCache<T> {
                 }
             } else {
                 BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
-                setIssueData(entry.issue, issueData);
+                issueAccessor.setIssueData(entry.issue, issueData);
             }
 
             if(entry.seenAttributes != null) {
                 if(entry.wasSeen()) {
                     BugtrackingManager.LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
-                    long lastModified = getLastModified(entry.issue);
+                    long lastModified = issueAccessor.getLastModified(entry.issue);
                     if(isChanged(entry.seenAttributes, entry.issue.getAttributes()) || entry.lastSeenModified < lastModified) {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         if(entry.lastSeenModified >= lastModified) {
@@ -227,7 +272,7 @@ public abstract class IssueCache<T> {
                 } else {
                     BugtrackingManager.LOG.log(Level.FINE, " issue {0} wasn't seen yet", new Object[] {id}); // NOI18N
                     if(isChanged(entry.seenAttributes, entry.issue.getAttributes()) ||
-                       referenceTime < getLastModified(entry.issue))
+                       referenceTime < issueAccessor.getLastModified(entry.issue))
                     {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         entry.seen = false;
@@ -259,7 +304,7 @@ public abstract class IssueCache<T> {
             if(seen) {
                 getLastSeenAttributes().put(id, entry.seenAttributes);
                 entry.seenAttributes = entry.issue.getAttributes();
-                entry.lastSeenModified = getLastModified(entry.issue);
+                entry.lastSeenModified = issueAccessor.getLastModified(entry.issue);
                 entry.lastUnseenStatus = entry.status;
             } else {
                 entry.seenAttributes = getLastSeenAttributes().get(id);

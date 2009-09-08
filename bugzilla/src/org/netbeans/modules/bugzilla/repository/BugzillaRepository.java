@@ -470,43 +470,6 @@ public class BugzillaRepository extends Repository {
         return Collections.emptyList();
     }
 
-    private class Cache extends IssueCache<TaskData> {
-
-        Cache() {
-            super(BugzillaRepository.this.getUrl());
-        }
-
-        protected Issue createIssue(TaskData taskData) {
-            BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
-            org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider.getInstance().notifyIssueCreated(issue);
-            return issue;
-        }
-
-        protected void setIssueData(Issue issue, TaskData taskData) {
-            assert issue != null && taskData != null;
-            ((BugzillaIssue)issue).setTaskData(taskData);
-        }
-
-        @Override
-        protected String getRecentChanges(Issue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getRecentChanges();
-        }
-
-        @Override
-        protected long getLastModified(Issue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getLastModify();
-        }
-
-        @Override
-        protected long getCreated(Issue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getCreated();
-        }
-        
-    }
-
     /**
      * Returns the bugzilla configuration or null if not available
      * 
@@ -672,4 +635,35 @@ public class BugzillaRepository extends Repository {
         attributes.put(ATTRIBUTE_URL, getUrl());
         return attributes;
     }
+
+    private class Cache extends IssueCache<TaskData> {
+        Cache() {
+            super(BugzillaRepository.this.getUrl(), new IssueAccessorImpl());
+        }
+    }
+
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<TaskData> {
+        public Issue createIssue(TaskData taskData) {
+            BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
+            org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider.getInstance().notifyIssueCreated(issue);
+            return issue;
+        }
+        public void setIssueData(Issue issue, TaskData taskData) {
+            assert issue != null && taskData != null;
+            ((BugzillaIssue)issue).setTaskData(taskData);
+        }
+        public String getRecentChanges(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getRecentChanges();
+        }
+        public long getLastModified(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getLastModify();
+        }
+        public long getCreated(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getCreated();
+        }
+    }
+
 }
