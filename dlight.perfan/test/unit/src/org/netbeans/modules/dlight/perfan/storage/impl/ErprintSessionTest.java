@@ -87,7 +87,7 @@ public class ErprintSessionTest {
      */
 //    @Test
     public void setMetricsTest() throws Exception {
-        final ErprintSession session = new ErprintSession(ExecutionEnvironmentFactory.getLocal(),
+        final ErprintSession session = ErprintSession.createNew(ExecutionEnvironmentFactory.getLocal(),
                 "/", "/var/tmp/dlightExperiment_31.er/", null);
         String[] funcs = session.getHotFunctions(null, 10, 0, false);
         for (String f : funcs) {
@@ -98,7 +98,7 @@ public class ErprintSessionTest {
 
 //    @Test
     public void testGetExperimentStatistics() throws Exception {
-        final ErprintSession session = new ErprintSession(ExecutionEnvironmentFactory.getLocal(),
+        final ErprintSession session = ErprintSession.createNew(ExecutionEnvironmentFactory.getLocal(),
                 "/", "/var/tmp/dlightExperiment_31.er/", null);
         int threadsNum = 20;
 
