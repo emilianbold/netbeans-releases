@@ -185,7 +185,10 @@ public class Generate {
 
         Map<String, Set<Class>> EventSetExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
-        EventSetExceptions.put("resume", Collections.singleton((Class) IllegalThreadStateException.class));
+        // ObjectCollectedException can be thrown when the thread is collected.
+        EventSetExceptions.put("resume", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { IllegalThreadStateException.class,
+                               com.sun.jdi.ObjectCollectedException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.event.EventSet.class.getName(), EventSetExceptions);
     }
 

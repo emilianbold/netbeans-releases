@@ -45,7 +45,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 
@@ -77,7 +77,7 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
                 currentEditor = editor;
                 if (currentEditor != null) {
                     Document document = currentEditor.getDocument ();
-                    FileObject fileObject = NbEditorUtilities.getFileObject (document);
+                    FileObject fileObject = Util.getFileObject (document);
                     if (fileObject == null) {
 //                        System.out.println("no file object for " + document);
                         return;

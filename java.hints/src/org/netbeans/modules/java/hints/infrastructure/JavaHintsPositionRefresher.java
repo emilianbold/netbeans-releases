@@ -54,9 +54,9 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -86,8 +86,8 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             }
         };
         
-        ScanDialog.runWhenScanFinished(r, NbBundle.getMessage(JavaHintsPositionRefresher.class, "Refresh_hints")); // NOI18N
-        
+        RunOffAWT.runOffAWT(r, NbBundle.getMessage(JavaHintsPositionRefresher.class, "Refresh_hints"), context.getCancel()); // NOI18N
+
         return eds;
     }
 

@@ -27,7 +27,7 @@
 
   <codetemplate abbreviation="ft" descriptionId="ct_ft" uuid="F0F6DACA-6A0B-11D9-BDC2-000D932CD5BA">
     <code>
-<![CDATA[<%= form_tag :action => "${1 default="update"}" %>]]>
+<![CDATA[<% form_tag :action => "${1 default="update"}" do %>]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="lia" descriptionId="ct_lia" uuid="9E2B42FE-7BC8-11D9-906A-000D932CD5BA">

@@ -56,6 +56,8 @@ public class TestData implements Serializable {
     private String buildNumber = null;
     private String installerURL = null;
 
+    private String sExecutableName = null;
+
     public TestData(Logger logger) {
         assert logger != null;
         this.logger = logger;
@@ -265,4 +267,16 @@ public class TestData implements Serializable {
 
         return proxy;
     }
+
+  public String GetExecutableName( )
+  {
+    return sExecutableName;
+  }
+
+  public void SetExecutableName( String s )
+  {
+    sExecutableName = s;
+    return;
+  }
+
 }

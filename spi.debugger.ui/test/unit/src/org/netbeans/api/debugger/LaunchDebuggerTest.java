@@ -91,7 +91,7 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         assertSame("Wrong debugger info in engine lookup", dic, di);
         assertTrue("Engine did not start", tdi.hasInfo(ActionsManager.ACTION_START));
 
-        dm.getCurrentSession().kill();
+        DebuggerActionsTest.kill(dm.getCurrentSession());
         assertTrue("Engine did not finish", tdi.hasInfo(ActionsManager.ACTION_KILL));
 
         testKillEvents(dml);
