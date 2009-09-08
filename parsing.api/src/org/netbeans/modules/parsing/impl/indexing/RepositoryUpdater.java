@@ -1347,6 +1347,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
                     CustomIndexerFactory factory = cifInfo.getIndexerFactory();
                     Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, null);
+                    transactionContexts.add(ctx);
                     factory.filesDeleted(ci.getIndexablesFor(null), ctx);
                 }
 
@@ -1354,6 +1355,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                     EmbeddingIndexerFactory factory = eifInfo.getIndexerFactory();
                     Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, null);
+                    transactionContexts.add(ctx);
                     factory.filesDeleted(ci.getIndexablesFor(null), ctx);
                 }
             } finally {
