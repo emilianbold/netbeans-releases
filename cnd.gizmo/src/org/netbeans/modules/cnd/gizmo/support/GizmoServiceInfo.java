@@ -52,7 +52,6 @@ public final class GizmoServiceInfo {
     }
     public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
     public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
-    public static final String GIZMO_PROJECT_REMOTE_EXECUTABLE = "GizmoProjectRemoteExecutable";//NOI18N
     public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
     public static final String PLATFORM = "gizmo.platform";//NOI18N
     static final String GIZMO_RUN = "project.gizmo.run";//NOI18N
@@ -68,5 +67,8 @@ public final class GizmoServiceInfo {
             return GIZMO_RUN;
         }
 
+    }
+
+    private GizmoServiceInfo() {
     }
 }

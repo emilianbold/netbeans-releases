@@ -74,6 +74,7 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -115,7 +116,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         String runDirectory = pae.getProfile().getRunDirectory();
         if (execEnv.isRemote()) {
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            executable = mapper.getLocalPath(executable);
+            executable = RemoteBinaryService.getRemoteBinary(execEnv, executable);
             runDirectory = mapper.getRemotePath(runDirectory, true);
         }
 
@@ -130,10 +131,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
-        if (execEnv.isRemote()) {
-            // TODO: provide executable from real remote
-            targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_REMOTE_EXECUTABLE, pae.getExecutable());
-        }
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
