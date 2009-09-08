@@ -317,8 +317,9 @@ public class DatabaseConnection implements DBConnection {
      }
 
      private OpenConnectionInterface getOpenConnection() {
-         if (openConnection != null)
-             return openConnection;
+         if (openConnection != null) {
+            return openConnection;
+        }
 
          openConnection = new OpenConnection();
          String driver = getDriver();
@@ -350,8 +351,9 @@ public class DatabaseConnection implements DBConnection {
      * @param driver DNew driver URL
      */
     public void setDriver(String driver) {
-        if (driver == null || driver.equals(drv))
+        if (driver == null || driver.equals(drv)) {
             return;
+        }
 
         String olddrv = drv;
         drv = driver;
@@ -364,19 +366,22 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public void setDriverName(String name) {
-        if (name == null || name.equals(drvname))
+        if (name == null || name.equals(drvname)) {
             return;
+        }
 
         String olddrv = drvname;
         drvname = name;
-        if(propertySupport!=null)
+        if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_DRIVERNAME, olddrv, drvname);
+        }
     }
 
     /** Returns database URL */
     public String getDatabase() {
-        if (db == null)
+        if (db == null) {
             db = "";
+        }
 
         return db;
     }
@@ -386,21 +391,24 @@ public class DatabaseConnection implements DBConnection {
      * @param database New database URL
      */
     public void setDatabase(String database) {
-        if (database == null || database.equals(db))
+        if (database == null || database.equals(db)) {
             return;
+        }
 
         String olddb = db;
         db = database;
         name = null;
         name = getName();
-        if(propertySupport!=null)
+        if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_DATABASE, olddb, db);
+        }
     }
 
     /** Returns user login name */
     public String getUser() {
-        if (usr == null)
+        if (usr == null) {
             usr = "";
+        }
 
         return usr;
     }
@@ -410,15 +418,17 @@ public class DatabaseConnection implements DBConnection {
      * @param user New login name
      */
     public void setUser(String user) {
-        if (user == null || user.equals(usr))
+        if (user == null || user.equals(usr)) {
             return;
+        }
 
         String oldusr = usr;
         usr = user;
         name = null;
         name = getName();
-        if(propertySupport!=null)
+        if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
+        }
     }
 
     /** Returns name of the connection */
@@ -439,19 +449,22 @@ public class DatabaseConnection implements DBConnection {
      * @param value New connection name
      */
     public void setName(String value) {
-        if (name == null || name.equals(value))
+        if (name == null || name.equals(value)) {
             return;
+        }
 
         String old = name;
         name = value;
-        if(propertySupport!=null)
+        if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_NAME, old, name);
+        }
     }
 
     /** Returns user schema name */
     public String getSchema() {
-        if (schema == null)
+        if (schema == null) {
             schema = "";
+        }
 
         return schema;
     }
@@ -461,15 +474,17 @@ public class DatabaseConnection implements DBConnection {
      * @param schema_name New login name
      */
     public void setSchema(String schema_name) {
-        if (schema_name == null || schema_name.equals(schema))
+        if (schema_name == null || schema_name.equals(schema)) {
             return;
+        }
 
         String oldschema = schema;
         schema = schema_name;
         name = null;
         name = getName();
-        if(propertySupport!=null)
+        if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_SCHEMA, oldschema, schema);
+        }
     }
 
     public void setDefaultCatalog(String val) throws Exception {
@@ -526,16 +541,17 @@ public class DatabaseConnection implements DBConnection {
      * @param password New password
      */
     public void setPassword(String password) {
-        if (password == null || password.equals(pwd))
+        if (password == null || password.equals(pwd)) {
             return;
-
+        }
         String oldpwd = pwd;
         if ( password.length() == 0 ) {
             password = null;
         }
         pwd = password;
-        if(propertySupport!=null)
+        if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
+        }
     }
 
     /** Creates JDBC connection
@@ -548,8 +564,9 @@ public class DatabaseConnection implements DBConnection {
             LOGGER.log(Level.FINE, "createJDBCConnection()");
         }
 
-        if (drv == null || db == null || usr == null )
-            throw new DDLException(NbBundle.getMessage (DatabaseConnection.class, "EXC_InsufficientConnInfo")); // NOI18N
+        if (drv == null || db == null || usr == null ) {
+            throw new DDLException(NbBundle.getMessage(DatabaseConnection.class, "EXC_InsufficientConnInfo")); // NOI18N
+        }
 
         Properties dbprops = new Properties();
         if ((usr != null) && (usr.length() > 0)) {
@@ -637,8 +654,9 @@ public class DatabaseConnection implements DBConnection {
         }
 
     private void doConnect() throws DDLException {
-        if (drv == null || db == null || usr == null )
-            sendException(new DDLException(NbBundle.getMessage (DatabaseConnection.class, "EXC_InsufficientConnInfo")));
+        if (drv == null || db == null || usr == null ) {
+            sendException(new DDLException(NbBundle.getMessage(DatabaseConnection.class, "EXC_InsufficientConnInfo")));
+        }
 
         Properties dbprops = new Properties();
         if ( usr.length() > 0 ) {
@@ -767,8 +785,9 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public void addExceptionListener(ExceptionListener l) {
-        if (l != null)
+        if (l != null) {
             exceptionListeners.add(l);
+        }
     }
 
     public void removeExceptionListener(ExceptionListener l) {
