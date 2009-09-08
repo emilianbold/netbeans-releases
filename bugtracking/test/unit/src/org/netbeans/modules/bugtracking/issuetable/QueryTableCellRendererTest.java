@@ -417,35 +417,26 @@ public class QueryTableCellRendererTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         public Lookup getLookup() {
-            return Lookups.singleton(new IssueCache("renderer") {
-                @Override
-                protected Issue createIssue(Object issueData) {
+            return Lookups.singleton(new IssueCache("renderer", new IssueCache.IssueAccessor() {
+                public Issue createIssue(Object issueData) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-                @Override
-                protected void setIssueData(Issue issue, Object issueData) {
+                public void setIssueData(Issue issue, Object issueData) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-                @Override
                 public boolean wasSeen(String id) {
                     return issue.wasSeen;
                 }
-
-                @Override
-                protected String getRecentChanges(Issue issue) {
+                public String getRecentChanges(Issue issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-
-                @Override
-                protected long getLastModified(Issue issue) {
+                public long getLastModified(Issue issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-
-                @Override
-                protected long getCreated(Issue issue) {
+                public long getCreated(Issue issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-            });
+            }) {});
         }
 
         @Override
