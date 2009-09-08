@@ -55,7 +55,6 @@ import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -408,7 +407,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         Runnable r = new Runnable() {
 
             public void run() {
-                final List<T> result = dataProvider.getChildren(path);
+                final List<T> result = dataProvider.getChildren(path, configuration.getMetadata().getColumns(), null);
                 UIThread.invoke(new Runnable() {
 
                     public void run() {
@@ -577,7 +576,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             synchronized (listenersLock) {
                 listeners.add(l);
             }
-        //throw new UnsupportedOperationException("Not supported yet.");
+            //throw new UnsupportedOperationException("Not supported yet.");
         }
 
         public void removeModelListener(ModelListener l) {
@@ -652,11 +651,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         public void removeModelListener(ModelListener l) {
             listeners.remove(l);
-        //throw new UnsupportedOperationException("Not supported yet.");
+            //throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
-    protected String getIcon(T node){
+    protected String getIcon(T node) {
         return null;
     }
 
@@ -712,8 +711,6 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             return "Unknown";//NOI18N
         }
 
-
-
         @SuppressWarnings("unchecked")
         public String getIconBase(Object node) {
             if (node == TreeModel.ROOT) {
@@ -725,7 +722,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                 final Object nodeObject = treeNode.getUserObject();
                 //we should check type here
                 if (nodeObject instanceof TreeTableNode) {
-                    return getIcon((T)nodeObject);
+                    return getIcon((T) nodeObject);
                 }
             }
             return null;
@@ -784,7 +781,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                 listeners.remove(l);
             }
         }
-        
+
         public boolean canRename(Object arg0) throws UnknownTypeException {
             return false;
         }

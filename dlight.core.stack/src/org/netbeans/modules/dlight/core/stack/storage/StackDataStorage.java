@@ -74,9 +74,9 @@ public interface StackDataStorage {//extends StackSupport {
 
     List<FunctionMetric> getMetricsList();
 
-    List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate);
+    List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
 
-    List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate);
+    List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
 
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 

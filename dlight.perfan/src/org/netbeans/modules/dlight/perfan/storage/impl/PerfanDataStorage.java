@@ -131,7 +131,7 @@ public final class PerfanDataStorage implements DataStorage {
         return result == null ? new String[0] : result;
     }
 
-    public String[] getTopFunctions(String command, Metrics metrics, int limit) throws InterruptedException {
+    public String[] getTopFunctions(ErprintCommand command, Metrics metrics, int limit) throws InterruptedException {
         String[] result = null;
 
         try {
