@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
 import org.eclipse.mylyn.internal.jira.core.model.ServerInfo;
@@ -55,6 +58,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -128,17 +132,21 @@ public class JiraAutoupdate {
         return false;
     }
 
-    boolean checkSupportedJiraServerVersion(JiraRepository repository) {
-        JiraConfiguration conf = repository.getConfiguration();
-        ServerInfo info = null;
-        try {
-            info = conf.getServerInfo(new NullProgressMonitor());
-        } catch (JiraException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-            return false;
+    boolean checkSupportedJiraServerVersion(final JiraRepository repository) {
+        final String[] v = new String[1];
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                JiraConfiguration conf = repository.getConfiguration();
+                ServerInfo info = conf.getServerInfo(new NullProgressMonitor());
+                v[0] = info.getVersion();
+            }
+        };
+        repository.getExecutor().execute(cmd, false, false, false);
+        if(cmd.hasFailed()) {
+            return true; // be optimistic at this point
         }
-        String v = info.getVersion();
-        JiraVersion version = new JiraVersion(v);
+        JiraVersion version = new JiraVersion(v[0]);
         boolean ret = isSupportedVersion(version);
         if(!ret) {
             Jira.LOG.log(Level.WARNING,
