@@ -97,6 +97,11 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     public synchronized Map<String, FaceletsLibrary> getLibraries() {
         if (faceletsLibraries == null) {
             faceletsLibraries = findLibraries();
+
+            if(faceletsLibraries == null) {
+                //an error when scanning libraries, return no libraries, but give it a next try
+                return Collections.emptyMap();
+            }
 //            debugLibraries();
         }
 
@@ -179,7 +184,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         ConfigManager cm = ConfigManager.getInstance();
         Document[] documents = (Document[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
         if(documents == null) {
-            return Collections.emptyMap();
+            return null; //error????
         }
 
         FaceletsTaglibConfigProcessorPatched processor = new FaceletsTaglibConfigProcessorPatched(this);
