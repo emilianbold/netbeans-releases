@@ -173,7 +173,7 @@ public class CommentsPanel extends JPanel {
         rightLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
-            stateLabel = KenaiUserUI.forName(author).createUserWidget();
+            stateLabel = new KenaiUserUI(author).createUserWidget();
             stateLabel.setText(null);
         }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N

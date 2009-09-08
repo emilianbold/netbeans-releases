@@ -85,7 +85,7 @@ public final class KenaiProject {
     private static HashMap<String, Icon> imageCache = new HashMap<String, Icon>(); //imageUrl -> image
     
     private KenaiFeature[] features;
-    private KenaiUser[] members;
+    private KenaiProjectMember[] members;
     private KenaiLicense[] licenses;
 
     /**
@@ -218,13 +218,13 @@ public final class KenaiProject {
      * @return Role or null if logged user does not have any role in this projects
      * @throws KenaiException
      */
-    public KenaiUser.Role getMyRole() throws KenaiException {
+    public KenaiProjectMember.Role getMyRole() throws KenaiException {
         PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
         if (passwordAuthentication==null) {
             return null;
         }
         String myName = passwordAuthentication.getUserName();
-        for (KenaiUser user:getMembers()) {
+        for (KenaiProjectMember user:getMembers()) {
             if (myName.equals(user.getUserName())) {
                 return user.getRole();
             }
@@ -328,10 +328,10 @@ public final class KenaiProject {
      * @return
      * @throws KenaiException
      */
-    public synchronized KenaiUser[] getMembers() throws KenaiException {
+    public synchronized KenaiProjectMember[] getMembers() throws KenaiException {
         if (members==null) {
-            Collection<KenaiUser> projectMembers = Kenai.getDefault().getProjectMembers(getName());
-            members = projectMembers.toArray(new KenaiUser[projectMembers.size()]);
+            Collection<KenaiProjectMember> projectMembers = Kenai.getDefault().getProjectMembers(getName());
+            members = projectMembers.toArray(new KenaiProjectMember[projectMembers.size()]);
         }
         return members;
     }

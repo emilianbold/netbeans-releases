@@ -41,16 +41,12 @@ package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.Component;
 import java.awt.Graphics;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.collab.chat.SPIAccessor;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -59,70 +55,21 @@ import org.openide.util.ImageUtilities;
  */
 public final class KenaiUserUI {
 
-    static {
-        SPIAccessor.DEFAULT = new SPIAccessorImpl();
-    }
-
-    public static final String PROP_PRESENCE = "Presence";
-
-    private String user;
+    KenaiUser user;
 
     private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/user_online.png"));
     private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/user_offline.png"));
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private Icon icon;
 
-    private static HashMap<String, KenaiUserUI> users = new HashMap();
-
-    private KenaiUserUI(String user) {
-        this.user=user;
+    public KenaiUserUI(String userName) {
+        this.user=KenaiUser.forName(userName);
     }
     
-    public static synchronized KenaiUserUI forName(final String user) {
-        KenaiUserUI kuser = users.get(user);
-        if (kuser==null) {
-            kuser = new KenaiUserUI(user);
-            users.put(user, kuser);
-        }
-        return kuser;
-    }
-
-    static synchronized void clear() {
-        users.clear();
-    }
-
-    /**
-     * Get the value of online
-     *
-     * @return the value of online
-     */
-    public boolean isOnline() {
-        return isOnline(this.user);
-    }
-
-    /**
-     * Add PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Remove PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
     public Icon getIcon() {
         if (icon==null) {
             icon = new Icon() {
                 public void paintIcon(Component c, Graphics g, int x, int y) {
-                    if (isOnline()) {
+                    if (user.isOnline()) {
                         ONLINE.paintIcon(c, g, x, y);
                     } else {
                         OFFLINE.paintIcon(c, g, x, y);
@@ -130,7 +77,7 @@ public final class KenaiUserUI {
                 }
 
                 public int getIconWidth() {
-                    if (isOnline()) {
+                    if (user.isOnline()) {
                         return ONLINE.getIconWidth();
                     } else {
                         return ONLINE.getIconWidth();
@@ -138,7 +85,7 @@ public final class KenaiUserUI {
                 }
 
                 public int getIconHeight() {
-                    if (isOnline()) {
+                    if (user.isOnline()) {
                         return ONLINE.getIconHeight();
                     } else {
                         return ONLINE.getIconHeight();
@@ -149,20 +96,12 @@ public final class KenaiUserUI {
         return icon;
     }
 
-    void firePropertyChange(String string, boolean b, boolean b0) {
-        propertyChangeSupport.firePropertyChange(string, b, b0);
-    }
-
-    public static boolean isOnline(String user) {
-        return KenaiConnection.getDefault().isUserOnline(user);
-    }
-
     public JLabel createUserWidget() {
         return UIUtils.createUserWidget(this);
     }
 
-    public String getUser() {
-        return user;
+    public String getUserName() {
+        return user.getUserName();
     }
 
     public void startChat() {
@@ -170,7 +109,7 @@ public final class KenaiUserUI {
             public void run() {
                 ChatTopComponent tc = ChatTopComponent.findInstance();
                 tc.open();
-                tc.setActivePrivate(user);
+                tc.setActivePrivate(user.getUserName());
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -178,5 +117,9 @@ public final class KenaiUserUI {
         } else {
             SwingUtilities.invokeLater(run);
         }
+    }
+
+    public KenaiUser getKenaiUser() {
+        return user;
     }
 }

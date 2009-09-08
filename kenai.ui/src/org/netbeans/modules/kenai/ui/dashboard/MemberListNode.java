@@ -75,7 +75,6 @@ public class MemberListNode extends SectionNode {
                         public void run() {
                             if (lblName!=null) {
                                 lblName.setText(getText(msg));
-                                project.firePropertyChange(PROP_MEMBERS, null, null);
                             }
                         }
                     });

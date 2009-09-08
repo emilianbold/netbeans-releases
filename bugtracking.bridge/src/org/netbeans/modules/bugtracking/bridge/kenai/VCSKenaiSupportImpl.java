@@ -114,13 +114,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
     @Override
     public KenaiUser forName(String user) {
-        org.netbeans.modules.kenai.ui.spi.KenaiUserUI kenaiUser =
-                org.netbeans.modules.kenai.ui.spi.KenaiUserUI.forName(user);
-        if(kenaiUser == null) {
-            return null;
-        } else {
-            return new KenaiUserImpl(kenaiUser);
-        }
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(user));
     }
 
     public void addVCSNoficationListener(PropertyChangeListener l) {
@@ -166,7 +160,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
     @Override
     public boolean isUserOnline(String user) {
-        return org.netbeans.modules.kenai.ui.spi.KenaiUserUI.isOnline(user);
+        return org.netbeans.modules.kenai.api.KenaiUser.isOnline(user);
     }
 
     @Override
@@ -213,17 +207,17 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-            delegate.removePropertyChangeListener(listener);
+            delegate.getKenaiUser().removePropertyChangeListener(listener);
         }
 
         @Override
         public boolean isOnline() {
-            return delegate.isOnline();
+            return delegate.getKenaiUser().isOnline();
         }
 
         @Override
         public String getUser() {
-            return delegate.getUser();
+            return delegate.getUserName();
         }
 
         @Override
@@ -238,7 +232,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            delegate.addPropertyChangeListener(listener);
+            delegate.getKenaiUser().addPropertyChangeListener(listener);
         }
 
     }
