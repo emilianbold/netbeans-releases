@@ -45,8 +45,10 @@ import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
 public class ErprintSession {
@@ -57,8 +59,10 @@ public class ErprintSession {
     private volatile Erprint er_print;
     private final SunStudioFiltersProvider dataFiltersProvider;
     private String filterString;
+    private volatile boolean ready;
+    private volatile boolean stopped;
 
-    public ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
+    private ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
         id = idCounter.incrementAndGet();
         String er_printCmd = sproHome + "/bin/er_print"; // NOI18N
         NativeProcessBuilder erProcessBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -68,6 +72,52 @@ public class ErprintSession {
         this.dataFiltersProvider = dataFiltersProvider;
 
         npb = erProcessBuilder;
+    }
+
+    /**
+     * Creates new ErprintSession for specified experiment on specified
+     * host. Metod returns Future&lt;ErprintSession&gt; that either return
+     * session (it is guarantied
+     * @param execEnv
+     * @param sproHome
+     * @param experimentDirectory
+     * @param dataFiltersProvider
+     * @return
+     */
+    public static final ErprintSession createNew(final ExecutionEnvironment execEnv, final String sproHome, final String experimentDirectory, final SunStudioFiltersProvider dataFiltersProvider) {
+        final ErprintSession session = new ErprintSession(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
+        session.ready = false;
+        session.stopped = false;
+
+        Runnable r = new Runnable() {
+
+            public void run() {
+                while (true) {
+                    if (session.stopped || Thread.interrupted()) {
+                        return;
+                    }
+                    try {
+                        if (!HostInfoUtils.fileExists(execEnv, experimentDirectory + "/overview")) { // NOI18N
+                            Thread.sleep(200);
+                        } else {
+                            session.ready = true;
+                            return;
+                        }
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        };
+
+        // IZ165095: RUN FAILED on remote host (problem description is in the IZ)
+        // Submit a task that will set readyness flag when experiment directory is ready
+        
+        DLightExecutorService.submit(r, "ErprintSession: session warmup"); // NOI18N
+
+        return session;
     }
 
     private void applyFilters() {
@@ -94,6 +144,18 @@ public class ErprintSession {
     }
 
     private synchronized Erprint restartAndLock(boolean restart) throws IOException {
+        while (!ready) {
+            if (Thread.interrupted()) {
+                return null;
+            }
+
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
         if (er_print == null || restart) {
             stop_er_print();
             er_print = new Erprint(npb, id);
@@ -120,6 +182,7 @@ public class ErprintSession {
     }
 
     public void close() {
+        stopped = true;
         stop_er_print();
     }
 

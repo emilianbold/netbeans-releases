@@ -59,7 +59,13 @@ public class ErprintCommand {
     private ErprintCommand(String cmd, String... args) {
         StringBuilder sb = new StringBuilder(cmd);
         for (String arg : args) {
-            sb.append(" \"").append(arg).append("\""); // NOI18N
+            arg = arg.trim();
+
+            if (arg.indexOf(' ') > 0) {
+                sb.append(" \"").append(arg).append("\""); // NOI18N
+            } else {
+                sb.append(' ').append(arg);
+            }
         }
         this.cmd = sb.toString();
     }
