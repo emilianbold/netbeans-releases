@@ -40,15 +40,17 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.ExtKit.GotoDeclarationAction;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
 import org.openide.util.NbBundle;
@@ -59,7 +61,15 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  * @version 1.0
  */
-public class CCGoToDeclarationAction extends GotoDeclarationAction {
+@EditorActionRegistrations({
+    @EditorActionRegistration(
+        name = "goto-declaration",
+        menuPath = "GoTo",
+        menuPosition = 900,
+        menuText = "#goto-identifier-declaration"
+    )
+})
+public class CCGoToDeclarationAction extends BaseAction {
 
     static final long serialVersionUID = 1L;
     private static CCGoToDeclarationAction instance;
@@ -109,7 +119,6 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         return false;
     }
 
-    @Override
     public boolean gotoDeclaration(final JTextComponent target) {
         final String taskName = "Go to declaration"; //NOI18N
         Runnable run = new Runnable() {
@@ -159,5 +168,10 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
             }
         }
         return retValue;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        gotoDeclaration(target);
     }
 }
