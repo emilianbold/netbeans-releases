@@ -89,13 +89,11 @@ public class PresenceIndicator {
 
     public void setStatus(Kenai.Status status) {
         label.setIcon(status == Kenai.Status.ONLINE?ONLINE:OFFLINE);
-        if (status==Kenai.Status.OFFLINE) {
+        if (status!=Kenai.Status.ONLINE) {
             label.setText("");
             label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
-            label.setVisible(false);
-        } else {
-            label.setVisible(true);
         }
+            label.setVisible(status!=Kenai.Status.OFFLINE);
     }
 
     Component getComponent() {
