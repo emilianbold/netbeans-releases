@@ -123,8 +123,6 @@ public class DwarfLineInfoSection extends ElfSection {
             fname = reader.readString();
         }
 
-        reader.seek(currPos + stmt_list.prologue_length + 10);
-        
         reader.seek(currPos);
         
         //TODO: add code...
@@ -152,7 +150,7 @@ public class DwarfLineInfoSection extends ElfSection {
         long currPos = reader.getFilePointer();
         try {
             DwarfStatementList statementList = getStatementList(shift);
-            reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + 10);
+            reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + (reader.is32Bit()?10:22));
             return interpret(target, statementList, shift);
         } finally {
             reader.seek(currPos);
@@ -163,7 +161,7 @@ public class DwarfLineInfoSection extends ElfSection {
         long currPos = reader.getFilePointer();
         try {
             DwarfStatementList statementList = getStatementList(shift);
-            reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + 10);
+            reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + (reader.is32Bit()?10:22));
             return interpret(statementList, shift);
         } finally {
             reader.seek(currPos);
@@ -191,7 +189,7 @@ public class DwarfLineInfoSection extends ElfSection {
             if (opcode < section.opcode_base) {
                 switch (LNS.get(opcode)) {
                     case DW_LNS_extended_op: {
-                        long insn_len = reader.readSignedLEB128();
+                        int insn_len = reader.readUnsignedLEB128();
                         opcode = reader.readByte();
 
                         switch (LNE.get(opcode)) {
@@ -208,10 +206,11 @@ public class DwarfLineInfoSection extends ElfSection {
 
                             case DW_LNE_set_address:
                                 prev_base_address = base_address;
-                                base_address = reader.readByte() & 0xFF;
-                                base_address |= (reader.readByte() & 0xFFL) << 8;
-                                base_address |= (reader.readByte() & 0xFFL) << 16;
-                                base_address |= (reader.readByte() & 0xFFL) << 24;
+                                if (insn_len == 9) {
+                                    base_address = reader.readNumber(8);
+                                } else if (insn_len == 5) {
+                                    base_address = reader.readNumber(4);
+                                }
                                 address = base_address;
                                 if (prev_base_address == 0) {
                                     prev_base_address = base_address;
@@ -321,7 +320,7 @@ public class DwarfLineInfoSection extends ElfSection {
             if (opcode < section.opcode_base) {
                 switch (LNS.get(opcode)) {
                     case DW_LNS_extended_op: {
-                        long insn_len = reader.readSignedLEB128();
+                        int insn_len = reader.readUnsignedLEB128();
                         opcode = reader.readByte();
 
                         switch (LNE.get(opcode)) {
@@ -340,10 +339,11 @@ public class DwarfLineInfoSection extends ElfSection {
 
                             case DW_LNE_set_address:
                                 prev_base_address = base_address;
-                                base_address = reader.readByte() & 0xFF;
-                                base_address |= (reader.readByte() & 0xFFL) << 8;
-                                base_address |= (reader.readByte() & 0xFFL) << 16;
-                                base_address |= (reader.readByte() & 0xFFL) << 24;
+                                if (insn_len == 9) {
+                                    base_address = reader.readNumber(8);
+                                } else if (insn_len == 5) {
+                                    base_address = reader.readNumber(4);
+                                }
                                 address = base_address;
                                 if (prev_base_address == 0) {
                                     prev_base_address = base_address;

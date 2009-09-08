@@ -52,6 +52,7 @@ public interface ViewportModel {
     /**
      * Returns limits. Limits is the available data range,
      * which can be viewed through this viewport.
+     * Same as <code>getState().getLimits()</code>.
      *
      * @return current limits
      */
@@ -67,6 +68,7 @@ public interface ViewportModel {
     /**
      * Returns viewport. Viewport's start and
      * end are in milliseconds since session start.
+     * Same as <code>getState().getViewport()</code>.
      *
      * @return current viewport
      */
@@ -79,6 +81,14 @@ public interface ViewportModel {
      * @param viewport  new viewport
      */
     void setViewport(Range<Long> viewport);
+
+    /**
+     * Returns model state consisting of current limits and viewport.
+     * This is a way to get limits and viewport atomically.
+     *
+     * @return model state
+     */
+    ViewportModelState getState();
 
     /**
      * Adds change listener. <code>ChangeEvent</code>s are sent

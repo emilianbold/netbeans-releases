@@ -66,6 +66,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.support.ViewportManager;
 import org.netbeans.modules.dlight.management.api.DLightManager;
@@ -211,10 +212,10 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
                 }
             }
         });
-        setContent(indicators);
+        setContent(session, indicators);
     }
 
-    private void setContent(List<Indicator<?>> indicators) {
+    private void setContent(DLightSession session, List<Indicator<?>> indicators) {
         ViewportManager viewportManager = null;
         JComponent componentToAdd = null;
         if (indicators != null) {
@@ -237,7 +238,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
                 JComponent component = indicators.get(i).getComponent();
                 if (indicator instanceof ViewportAware) {
                     if (viewportManager == null) {
-                        viewportManager = new ViewportManager();
+                        viewportManager = new ViewportManager((DataFilterManager) session);
                     }
                     viewportManager.addManagedComponent((ViewportAware)indicator);
                 }

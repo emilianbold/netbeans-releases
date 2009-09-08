@@ -105,7 +105,7 @@ public class CacheTest extends NbTestCase {
 
         // setting changed data => MODIFIED, attrs stay the same
         long tsAfterRepo = System.currentTimeMillis();
-        cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32", issue);
+        cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
         status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
@@ -139,7 +139,7 @@ public class CacheTest extends NbTestCase {
 
         // refresh
         Thread.sleep(10);
-        cache.setIssueData("1", "1#issue1#" + tsAfterRepo + "#" + System.currentTimeMillis()  + "#v12#v22#v32", issue);
+        cache.setIssueData(issue, "1#issue1#" + tsAfterRepo + "#" + System.currentTimeMillis()  + "#v12#v22#v32");
         status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
         attr = cache.getSeenAttributes(issue.getID());
@@ -289,7 +289,7 @@ public class CacheTest extends NbTestCase {
 
         // one more time setting changed data => MODIFIED, attrs stay the same
         tsAfterRepo = System.currentTimeMillis();
-        cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32", issue);
+        cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
         status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
@@ -340,7 +340,7 @@ public class CacheTest extends NbTestCase {
 
         // setting changed data => MODIFIED, unchanged attrs
         long tsAfterRepo = System.currentTimeMillis();
-        cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31", issue);
+        cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
         status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
@@ -448,27 +448,23 @@ public class CacheTest extends NbTestCase {
 
         private class TestCache extends IssueCache<String> {
             public TestCache(String nameSpace) {
-                super(nameSpace);
-            }
-            @Override
-            protected Issue createIssue(String issueData) {
-                return new TestIssue(TestRepository.this, issueData);
-            }
-            @Override
-            protected void setIssueData(Issue issue, String issueData) {
-                ((TestIssue)issue).setData(issueData);
-            }
-            @Override
-            protected String getRecentChanges(Issue issue) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override
-            protected long getLastModified(Issue issue) {
-                return Long.parseLong(((TestIssue)issue).dataArray[3]);
-            }
-            @Override
-            protected long getCreated(Issue issue) {
-                return Long.parseLong(((TestIssue)issue).dataArray[2]);
+                super(nameSpace, new IssueAccessor<String>() {
+                    public Issue createIssue(String issueData) {
+                        return new TestIssue(TestRepository.this, issueData);
+                    }
+                    public void setIssueData(Issue issue, String issueData) {
+                        ((TestIssue)issue).setData(issueData);
+                    }
+                    public String getRecentChanges(Issue issue) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                    public long getLastModified(Issue issue) {
+                        return Long.parseLong(((TestIssue)issue).dataArray[3]);
+                    }
+                    public long getCreated(Issue issue) {
+                        return Long.parseLong(((TestIssue)issue).dataArray[2]);
+                    }
+                });
             }
             protected void cleanup() {
 

@@ -89,7 +89,7 @@ import org.openide.windows.InputOutput;
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference, DataFilterManager, DLightSessionIOProvider {
+public final class DLightSession implements DLightTargetListener, DataFilterManager, DLightSessionIOProvider, DLightSessionInternalReference {
     private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);

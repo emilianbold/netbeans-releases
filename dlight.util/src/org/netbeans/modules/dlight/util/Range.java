@@ -82,4 +82,27 @@ public final class Range<T extends Number & Comparable<? super T>> {
     public String toString() {
         return String.valueOf(start) + STRING_DELIMITER + String.valueOf(end); // NOI18N
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Range<?>)) {
+            return false;
+        }
+        final Range<?> other = (Range<?>) obj;
+        if (this.start != other.start && (this.start == null || !this.start.equals(other.start))) {
+            return false;
+        }
+        if (this.end != other.end && (this.end == null || !this.end.equals(other.end))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + (this.start != null ? this.start.hashCode() : 0);
+        hash = 53 * hash + (this.end != null ? this.end.hashCode() : 0);
+        return hash;
+    }
 }

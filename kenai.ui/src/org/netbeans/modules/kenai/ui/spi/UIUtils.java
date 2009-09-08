@@ -60,6 +60,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
@@ -262,17 +263,17 @@ public final class UIUtils {
     }
 
     public static JLabel createUserWidget(String user) {
-        return createUserWidget(KenaiUserUI.forName(user));
+        return createUserWidget(new KenaiUserUI(user));
     }
 
     static JLabel createUserWidget(final KenaiUserUI u) {
-        final JLabel result = new JLabel(u.getUser());
+        final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        u.addPropertyChangeListener(new PropertyChangeListener() {
+        u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (KenaiUserUI.PROP_PRESENCE.equals(evt.getPropertyName())) {
-                    result.firePropertyChange(KenaiUserUI.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
+                    result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
                     result.repaint();
                 }
             }

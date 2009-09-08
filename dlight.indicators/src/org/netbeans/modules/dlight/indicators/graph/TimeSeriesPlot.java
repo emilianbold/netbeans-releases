@@ -49,11 +49,11 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
-import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.util.Util;
 
@@ -175,9 +175,9 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         }
     }
 
-    public void setSession(DLightSession session) {
-        if (session != null) {
-            session.addDataFilterListener(this);
+    public void setDataFilterManager(DataFilterManager filterManager) {
+        if (filterManager != null) {
+            filterManager.addDataFilterListener(this);
         } else {
             synchronized (timeFilterLock) {
                 timeFilter = null;
