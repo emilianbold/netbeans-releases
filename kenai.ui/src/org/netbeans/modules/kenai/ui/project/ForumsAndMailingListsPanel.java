@@ -79,6 +79,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -203,6 +204,25 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                 // url does not exist?
             } catch (IOException e) {
                 // url does not exist?
+            } catch (SAXParseException e) {
+                // Display info about the problem...
+                final String appString = "<div class=\"section\"><i>" + NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_PARSE_ERR") + "</i></div>"; //NOI18N
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        try {
+                            Element insertionPoint = ((HTMLDocument) commChannelsDisplayer.getDocument()).getElement("DYN_CONTENT"); //NOI18N
+                            if (insertionPoint != null) {
+                                ((HTMLDocument) commChannelsDisplayer.getDocument()).insertAfterStart(insertionPoint, appString);
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                return;
             }
             String _appString = "<div class=\"section\">"; //NOI18N
             if (entriesCount > 0 && entries != null) {
@@ -377,6 +397,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         setBackground(new java.awt.Color(255, 255, 255));
         setLayout(new java.awt.BorderLayout());
 
+        commChannelsDisplayer.setBackground(new java.awt.Color(255, 255, 255));
         commChannelsDisplayer.setContentType(org.openide.util.NbBundle.getMessage(ForumsAndMailingListsPanel.class, "ForumsAndMailingListsPanel.commChannelsDisplayer.contentType")); // NOI18N
         commChannelsDisplayer.setEditable(false);
         commChannelsDisplayer.addFocusListener(new java.awt.event.FocusAdapter() {

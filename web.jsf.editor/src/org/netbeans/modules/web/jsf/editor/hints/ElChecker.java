@@ -95,13 +95,12 @@ public class ElChecker extends HintsProvider {
                         topLevel.embedded(ELTokenId.language());
                     if(elTokenSequence != null) {
                         elTokenSequence.moveEnd();
-                        if ( !elTokenSequence.moveNext() ){
-                            elTokenSequence.movePrevious();
+                        if ( elTokenSequence.moveNext() || elTokenSequence.movePrevious()){
+                            Token<ELTokenId> token = elTokenSequence.token();
+                            int offset = elTokenSequence.offset() + token.length();
+                            checkEl( webModule , doc , offset , elTokenSequence ,
+                                    fileObject, result );
                         }
-                        Token<ELTokenId> token = elTokenSequence.token();
-                        int offset = elTokenSequence.offset() + token.length();
-                        checkEl( webModule , doc , offset , elTokenSequence , 
-                                fileObject, result );
                     }
                 }
             }

@@ -351,7 +351,7 @@ public class ChatPanel extends javax.swing.JPanel {
         online.setHorizontalTextPosition(JLabel.LEFT);
         if (isPrivate()) {
             topPanel.remove(online);
-            online = KenaiUserUI.forName(getPrivateName()).createUserWidget();
+            online = new KenaiUserUI(getPrivateName()).createUserWidget();
             online.setText(null);
             online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
             topPanel.add(online, java.awt.BorderLayout.EAST);

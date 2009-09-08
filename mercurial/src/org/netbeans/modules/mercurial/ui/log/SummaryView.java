@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.plaf.TextUI;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.mercurial.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;

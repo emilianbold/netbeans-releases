@@ -43,8 +43,6 @@ import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ToolTipManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;

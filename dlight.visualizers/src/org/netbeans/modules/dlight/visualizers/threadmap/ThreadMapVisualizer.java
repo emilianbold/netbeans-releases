@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
@@ -68,6 +69,7 @@ import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -110,17 +112,32 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
-            public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
-               ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
-               DataProvider d  = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE); //NOI18N
-               StackDataProvider stackDataProvider = d == null || !(d instanceof StackDataProvider) ?  null  : (StackDataProvider)d;
-               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(stackDataProvider,  threadDump, query.getStartTime());
+            public ThreadStackVisualizer showStack(long startTime, final ThreadDumpQuery query) {
+                Future<ThreadDump> task = DLightExecutorService.submit(new Callable<ThreadDump>() {
+
+                    public ThreadDump call() {
+                        final ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
+                        return threadDump;
+                    }
+                }, "Thread Dump  request from Thread Map Visualizer");//NOI18N
+                ThreadDump threadDump = null;
+                try {
+                    threadDump = task.get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                DataProvider d = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE); //NOI18N
+                final StackDataProvider stackDataProvider = d == null || !(d instanceof StackDataProvider) ? null : (StackDataProvider) d;
+                ThreadStackVisualizer visualizer = new ThreadStackVisualizer(stackDataProvider, threadDump, query.getStartTime());
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();
                 tc.requestVisible();
                 tc.requestFocus(true);
                 return visualizer;
+
             }
         });
 
@@ -219,12 +236,12 @@ public class ThreadMapVisualizer extends JPanel implements
     }
 
     public void refresh() {
-        if (EventQueue.isDispatchThread()){
+        if (EventQueue.isDispatchThread()) {
             asyncFillModel(false);
-        }else{
+        } else {
             syncFillModel();
         }
-        
+
     }
 
     private void setContent(boolean isEmpty) {

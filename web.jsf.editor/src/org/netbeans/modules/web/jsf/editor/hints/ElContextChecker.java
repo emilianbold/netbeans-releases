@@ -49,7 +49,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -122,7 +121,8 @@ class JsfElBeanContextChecker implements JsfElContextChecker{
                 TypeElement lastType = getTypePreceedingCaret(controller);
                 if (lastType != null){
                     String property = expression.getPropertyBeingTypedName();
-                    if ( property.charAt(property.length()-1) == ']'){
+                    // Fix for IZ#171723 - StringIndexOutOfBoundsException: String index out of range: -1
+                    if ( property.length() >0 && property.charAt(property.length()-1) == ']'){
                         property = property.substring( 0, property.length()-1);
                     }
                     String suffix = removeQuotes(property);

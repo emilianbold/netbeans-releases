@@ -44,14 +44,15 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
+import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 
-public interface StackDataProvider extends SourceFileInfoDataProvider {
+public interface StackDataProvider extends SourceFileInfoDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
 
     public List<FunctionMetric> getMetricsList();
 
-    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate);
+    public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
 
-    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate);
+    public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit);
 

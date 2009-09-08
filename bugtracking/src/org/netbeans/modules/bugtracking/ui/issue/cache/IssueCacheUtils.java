@@ -98,7 +98,7 @@ public class IssueCacheUtils {
      * @return
      */
     public static String getRecentChanges(Issue issue) {
-        String changes = getCache(issue).getRecentChanges(issue);
+        String changes = getCache(issue).getIssueAccessor().getRecentChanges(issue);
         if(changes == null) {
             changes = "";
         } else {

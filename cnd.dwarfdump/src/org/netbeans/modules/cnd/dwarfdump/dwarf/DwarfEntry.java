@@ -432,9 +432,14 @@ public class DwarfEntry {
         if (getKind().equals(TAG.DW_TAG_typedef)) {
             return getType();
         }
-        
-        Integer typeRefIdx = (Integer)getAttributeValue(ATTR.DW_AT_type);
-        DwarfEntry typeRef = compilationUnit.getTypedefFor(typeRefIdx);
+
+        Object typeRefIdx = getAttributeValue(ATTR.DW_AT_type);
+        DwarfEntry typeRef = null;
+        if (typeRefIdx instanceof Integer) {
+            typeRef = compilationUnit.getTypedefFor((Integer)typeRefIdx);
+        } else if (typeRefIdx instanceof Long) {
+            typeRef = compilationUnit.getTypedefFor((Long)typeRefIdx);
+        }
         
         return (typeRef == null) ? getType() : typeRef.getType();
     }

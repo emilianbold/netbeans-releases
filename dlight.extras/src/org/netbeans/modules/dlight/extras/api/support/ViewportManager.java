@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
@@ -64,7 +65,7 @@ public final class ViewportManager extends JPanel
     private final ViewportModel viewportModel;
     private boolean isAdjusting;
 
-    public ViewportManager() {
+    public ViewportManager(DataFilterManager filterManager) {
         super(new BorderLayout());
 
         viewportModel = new DefaultViewportModel();
@@ -72,7 +73,7 @@ public final class ViewportManager extends JPanel
         viewportModel.setViewport(new Range<Long>(0L, EXTENT));
         viewportModel.addChangeListener(this);
 
-        viewportBar = new ViewportBar(viewportModel);
+        viewportBar = new ViewportBar(viewportModel, filterManager);
 
         scrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         adjust();
@@ -91,10 +92,10 @@ public final class ViewportManager extends JPanel
         Range<Long> viewport = viewportModel.getViewport();
         limits = limits.extend(viewport);
         isAdjusting = true;
-        scrollBar.setMinimum((int)TimeUnit.MILLISECONDS.toSeconds(limits.getStart()));
-        scrollBar.setMaximum((int)TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()));
-        scrollBar.setValue((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart()));
-        scrollBar.setVisibleAmount((int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd() - viewport.getStart()));
+        scrollBar.setMinimum((int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()));
+        scrollBar.setMaximum((int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()));
+        scrollBar.setValue((int) TimeUnit.MILLISECONDS.toSeconds(viewport.getStart()));
+        scrollBar.setVisibleAmount((int) TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd() - viewport.getStart()));
         isAdjusting = false;
     }
 

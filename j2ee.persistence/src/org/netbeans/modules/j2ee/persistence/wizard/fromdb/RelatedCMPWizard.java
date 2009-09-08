@@ -244,19 +244,21 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
             
             //Only add library for Hibernate in NB 6.5
             String providerClass = helper.getPersistenceUnit().getProvider();
-            if (providerClass.equals("org.hibernate.ejb.HibernatePersistence")) {
-                Library lib = LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
-                if (lib != null) {
-                    Util.addLibraryToProject(project, lib);
+            if(providerClass != null){
+                if (providerClass.equals("org.hibernate.ejb.HibernatePersistence")) {
+                    Library lib = LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
+                    if (lib != null) {
+                        Util.addLibraryToProject(project, lib);
+                    }
                 }
-            }
-            else if(providerClass.equals("org.eclipse.persistence.jpa.PersistenceProvider"))//NOI18N
-            {
-                //fix #170046
-                //TODO: find some common approach what libraries to add and what do not need to be added
-                Library lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
-                if (lib != null) {
-                    Util.addLibraryToProject(project, lib);
+                else if(providerClass.equals("org.eclipse.persistence.jpa.PersistenceProvider"))//NOI18N
+                {
+                    //fix #170046
+                    //TODO: find some common approach what libraries to add and what do not need to be added
+                    Library lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
+                    if (lib != null) {
+                        Util.addLibraryToProject(project, lib);
+                    }
                 }
             }
 

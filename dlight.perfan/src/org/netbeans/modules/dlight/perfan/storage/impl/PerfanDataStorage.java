@@ -65,7 +65,7 @@ public final class PerfanDataStorage implements DataStorage {
     public static final String ID = "PerfanDataStorage"; //NOI18N
     public static final DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(ID);
     private final static Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
-    private ErprintSession er_print;
+    private volatile ErprintSession er_print;
     private String experimentDirectory = null;
     private ExecutionEnvironment env;
     private final List<DataTableMetadata> tableMetadatas;
@@ -99,7 +99,7 @@ public final class PerfanDataStorage implements DataStorage {
                 er_print.close();
             }
 
-            er_print = new ErprintSession(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
+            er_print = ErprintSession.createNew(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
         }
     }
 
@@ -131,7 +131,7 @@ public final class PerfanDataStorage implements DataStorage {
         return result == null ? new String[0] : result;
     }
 
-    public String[] getTopFunctions(String command, Metrics metrics, int limit) throws InterruptedException {
+    public String[] getTopFunctions(ErprintCommand command, Metrics metrics, int limit) throws InterruptedException {
         String[] result = null;
 
         try {

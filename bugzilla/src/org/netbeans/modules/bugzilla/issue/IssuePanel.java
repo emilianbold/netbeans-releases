@@ -113,8 +113,6 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel {
-    private static final DateFormat creationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
-    private static final DateFormat modificationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
@@ -348,12 +346,8 @@ public class IssuePanel extends javax.swing.JPanel {
             if (!isNew) {
                 format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
                 String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
-                try {
-                    Date creation = creationFormat.parse(creationTxt);
-                    creationTxt = DateFormat.getDateInstance(DateFormat.DEFAULT).format(creation);
-                } catch (ParseException pex) {
-                    Bugzilla.LOG.log(Level.INFO, null, pex);
-                }
+                Date creation = issue.getCreatedDate();
+                creationTxt = DateFormat.getDateInstance(DateFormat.DEFAULT).format(creation);
                 String reporterName = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME);
                 String reporter = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER);
                 String reporterTxt = ((reporterName == null) || (reporterName.trim().length() == 0)) ? reporter : reporterName;
@@ -363,7 +357,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 if (isKenaiRepository && (reportedStatusLabel.getIcon() == null)) {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
-                    JLabel label = KenaiUserUI.forName(userName).createUserWidget();
+                    JLabel label = new KenaiUserUI(userName).createUserWidget();
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
                     reportedStatusLabel = label;
@@ -371,12 +365,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
                 // modified field
                 String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
-                try {
-                    Date modification = modificationFormat.parse(modifiedTxt);
-                    modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
-                } catch (ParseException pex) {
-                    Bugzilla.LOG.log(Level.INFO, null, pex);
-                }
+                Date modification = issue.getCreatedDate();
+                modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
                 modifiedField.setText(modifiedTxt);
                 fixPrefSize(modifiedField);
             }
@@ -386,7 +376,7 @@ public class IssuePanel extends javax.swing.JPanel {
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
-                JLabel label = KenaiUserUI.forName(userName).createUserWidget();
+                JLabel label = new KenaiUserUI(userName).createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
                 assignedToStatusLabel = label;

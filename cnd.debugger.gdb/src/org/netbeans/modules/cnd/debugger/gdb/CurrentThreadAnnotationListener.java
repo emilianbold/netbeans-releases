@@ -48,6 +48,7 @@ import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.*;
 
+import org.netbeans.modules.cnd.debugger.common.EditorContext;
 import org.openide.text.Annotation;
 import org.openide.util.RequestProcessor;
 

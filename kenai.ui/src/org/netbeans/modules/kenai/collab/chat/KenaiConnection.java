@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,7 +63,6 @@ import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -73,7 +71,6 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -106,8 +103,6 @@ public class KenaiConnection implements PropertyChangeListener {
     private HashMap<String, LinkedList<Message>> privateMessageQueue = new HashMap<String, LinkedList<Message>>();
 
     private static ChatNotifications chatNotifications = ChatNotifications.getDefault();
-
-    private final HashSet<String> onlineUsers = new HashSet<String>();
 
 
     /**
@@ -241,12 +236,6 @@ public class KenaiConnection implements PropertyChangeListener {
         } else if (!muc.isJoined())
             tryJoinChat(muc);
         isConnectionFailed=false;
-    }
-
-    public boolean isUserOnline(String user) {
-        synchronized (onlineUsers) {
-            return onlineUsers.contains(user);
-        }
     }
 
     /**
@@ -417,10 +406,8 @@ public class KenaiConnection implements PropertyChangeListener {
                         privateListeners.clear();
                         privateMessageQueue.clear();
                         privateChats.clear();
-                        if (SPIAccessor.DEFAULT!=null)
-                            SPIAccessor.DEFAULT.clear();
                     }
-                    PresenceIndicator.getDefault().setStatus(Kenai.Status.OFFLINE);
+                    PresenceIndicator.getDefault().setStatus(Kenai.Status.LOGGED_IN);
                     ChatNotifications.getDefault().clearAll();
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -466,23 +453,7 @@ public class KenaiConnection implements PropertyChangeListener {
              xmppProcessor.post(new Runnable() {
 
                 public void run() {
-                    synchronized (onlineUsers) {
-                        onlineUsers.clear();
-                        for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
-                            Iterator<String> i = muc.getOccupants();
-                            while (i.hasNext()) {
-                                String uname = StringUtils.parseResource(i.next());
-                                onlineUsers.add(uname);
-                            }
-                        }
-                    }
-                    Presence presence = (Presence) packet;
-                    KenaiUserUI user = KenaiUserUI.forName(StringUtils.parseResource(packet.getFrom()));
-                    SPIAccessor.DEFAULT.firePropertyChange(
-                            user,
-                            presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
                     SwingUtilities.invokeLater(new Runnable() {
-
                         public void run() {
                             ChatTopComponent.refreshContactList();
                         }

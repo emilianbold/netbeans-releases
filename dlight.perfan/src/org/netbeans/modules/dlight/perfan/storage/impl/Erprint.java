@@ -172,7 +172,7 @@ final class Erprint {
         }
 
         int prevLimit = currentLimit;
-        exec("limit " + limit); // NOI18N
+        exec(ErprintCommand.limit(limit));
         currentLimit = limit;
 
         return prevLimit;
@@ -182,7 +182,7 @@ final class Erprint {
 
         synchronized (this) {
             // Get current metrics ...
-            String[] data = exec("metrics"); // NOI18N
+            String[] data = exec(ErprintCommand.metrics());
 
             if (data == null || data.length != 2) {
                 return null;
@@ -197,14 +197,14 @@ final class Erprint {
             }
 
             // Set new metrics (ignore output)
-            exec("metrics " + metrics.mspec); // NOI18N
-            exec("sort " + metrics.msort); // NOI18N
+            exec(ErprintCommand.metrics(metrics.mspec));
+            exec(ErprintCommand.sort(metrics.msort));
 
             return prevMetrics;
         }
     }
 
-    String[] getHotFunctions(String command, int limit) throws IOException {
+    String[] getHotFunctions(ErprintCommand command, int limit) throws IOException {
         String[] stat = exec(command);
         ArrayList<String> result = new ArrayList<String>();
 
@@ -221,17 +221,17 @@ final class Erprint {
     }
 
     String[] getHotFunctions(int limit) throws IOException {
-        return getHotFunctions("functions", limit); // NOI18N
+        return getHotFunctions(ErprintCommand.functions(), limit); // NOI18N
     }
 
     ExperimentStatistics getExperimentStatistics() throws IOException {
-        String[] stat = exec("statistics"); // NOI18N
+        String[] stat = exec(ErprintCommand.statistics());
         return new ExperimentStatistics(stat);
     }
 
     ThreadsStatistic getThreadsStatistics() throws IOException {
-        exec("threads"); // NOI18N
-        String[] toParse = exec("thread_list"); // NOI18N
+//        exec(ErprintCommand.threads());
+        String[] toParse = exec(ErprintCommand.thread_list());
         return new ThreadsStatistic(toParse);
     }
 
@@ -244,7 +244,7 @@ final class Erprint {
         StringBuilder object_select = new StringBuilder();
 
         synchronized (this) {
-            String[] objects = exec("object_list"); // NOI18N
+            String[] objects = exec(ErprintCommand.object_list());
 
             Collection<String> selectedObjects = collectedObjectsFilter.selectedObjects();
             Collection<String> hiddenObjects = collectedObjectsFilter.hiddenObjects();
@@ -267,37 +267,36 @@ final class Erprint {
 
 
             if (object_select.length() != 0) {
-                exec("object_select " + object_select.toString()); // NOI18N
+                exec(ErprintCommand.object_select(object_select.toString()));
             }
         }
     }
 
     LeaksStatistics getExperimentLeaks() throws IOException {
-        String[] stat = exec("leaks"); // NOI18N
+        String[] stat = exec(ErprintCommand.leaks());
         return new LeaksStatistics(stat);
     }
 
     List<DataraceImpl> getDataRaces() throws IOException {
-        String[] races = exec("rdetail all"); // NOI18N
+        String[] races = exec(ErprintCommand.rdetail_all());
         return DataraceImpl.fromErprint(races);
     }
 
     boolean setFilter(String filterString) throws IOException{
-        String[] result = exec("filter " + (filterString == null ? "\"\"" : filterString));//NOI18N
+        String[] result = exec(ErprintCommand.filter(filterString == null ? "\"\"" : filterString));//NOI18N
         if (result != null && result.length > 0 && result[0].startsWith("Error") ) {//NOI18N
             return false;
         }
         return true;
     }
-
     
     List<DeadlockImpl> getDeadlocks() throws IOException {
-        String[] deadlocks = exec("ddetail all"); // NOI18N
+        String[] deadlocks = exec(ErprintCommand.ddetail_all());
         return DeadlockImpl.fromErprint(deadlocks);
     }
 
     FunctionStatistic getFunctionStatistic(String functionName) throws IOException {
-        String[] stat = exec("fsingle \"" + functionName + "\" 1"); // NOI18N
+        String[] stat = exec(ErprintCommand.fsingle(functionName, 1));
         return new FunctionStatistic(stat);
     }
 
@@ -308,7 +307,7 @@ final class Erprint {
             }
 
             String functionName = functionCall.getFunction().getName();
-            String[] stat = exec("fsingle \"" + functionName + "\""); // NOI18N
+            String[] stat = exec(ErprintCommand.fsingle(functionName));
 
             if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
                 String choice = "1"; // NOI18N
@@ -341,7 +340,7 @@ final class Erprint {
         }
     }
 
-    private String[] exec(String command) throws IOException {
+    private String[] exec(ErprintCommand command) throws IOException {
         synchronized (this) {
             if (stopped) {
                 return new String[0];
@@ -351,9 +350,9 @@ final class Erprint {
 
             try {
                 if (log.isLoggable(Level.FINEST)) {
-                    log.finest("> " + command + "'"); // NOI18N
+                    log.finest("> '" + command.getCmd() + "'"); // NOI18N
                 }
-                post(command);
+                post(command.getCmd());
             } catch (IOException ex) {
                 stop();
                 return new String[0];
@@ -362,7 +361,7 @@ final class Erprint {
             String[] output = outProcessor.getOutput();
 
             if (log.isLoggable(Level.FINEST)) {
-                log.finest("Command '" + command + "' done in " + // NOI18N
+                log.finest("Command '" + command.getCmd() + "' done in " + // NOI18N
                     (System.currentTimeMillis() - startTime) / 1000 +
                     " secs. Response is " + output.length + " lines."); // NOI18N
             }

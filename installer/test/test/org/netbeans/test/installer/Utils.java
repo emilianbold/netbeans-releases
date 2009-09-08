@@ -62,7 +62,7 @@ public class Utils {
     public static final String NB_DIR_NAME = "NetBeans";
     public static final String GF2_DIR_NAME = "GlassFish2";
     public static final String GF3_DIR_NAME = "GlassFish3";
-    public static final String TOMACAT_DIR_NAME = "Tomcat";
+    public static final String TOMCAT_DIR_NAME = "Tomcat";
     public static final String NEXT_BUTTON_LABEL = "Next >";
     public static final String FINISH_BUTTON_LABEL = "Finish";
     public static final String INSTALL_BUTTON_LABEL = "Install";
@@ -70,15 +70,25 @@ public class Utils {
     public static final String MAIN_FRAME_TITLE = "Netbeans IDE";
     public static final String OK = "OK";
 
-    public static String getInstaller(TestData data) {
-        //      File sourceBandle = new File(data.getInstallerFileName());
-        File destBundle = new File(data.getTestWorkDir() + File.separator + "installer" + "." + data.getPlatformExt());
+    public static String getInstaller( TestData data )
+    {
+      //      File sourceBandle = new File(data.getInstallerFileName());
 
+      String sAddr = data.getInstallerURL( );
+      String sFileName = sAddr.substring( sAddr.lastIndexOf( "/" ) + 1 );
+      if( sFileName.equals( "" ) )
+        sFileName = "installer" + "." + data.getPlatformExt( );
+      data.SetExecutableName( sFileName );
+
+      File destBundle = new File(data.getTestWorkDir() + File.separator + sFileName );
+
+      if( !destBundle.exists( ) )
+      {
         InputStream in = null;
         FileOutputStream out = null;
 
         try {
-            URL sourceBandeleURL = new URL(data.getInstallerURL());
+            URL sourceBandeleURL = new URL(sAddr);
             Proxy proxy = null;
 
             proxy = data.getProxy();
@@ -87,7 +97,7 @@ public class Utils {
 //            in = new FileInputStream(sourceBandle);
             out = new FileOutputStream(destBundle);
 
-            byte[] buffer = new byte[10240];
+            byte[] buffer = new byte[ 1 << 20 ]; // Just 1Mb
             int bytesRead;
 
             while ((bytesRead = in.read(buffer)) != -1) {
@@ -114,8 +124,9 @@ public class Utils {
                 }
             }
         }
-        data.setInstallerFile(destBundle);
-        return OK;
+      }
+      data.setInstallerFile(destBundle);
+      return OK;
     }
 
     @SuppressWarnings("empty-statement")
@@ -395,13 +406,8 @@ public class Utils {
         phaseOnePTwo(data);
     }
 
-    public static void phaseFour(TestData data) {
-        //Installation
-        Utils.stepInstall(data);
-
-        //finish
-        Utils.stepFinish();
-
+    public static void phaseFourFive(TestData data)
+    {
         Utils.waitSecond(data, 5);
 
         TestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
@@ -421,17 +427,17 @@ public class Utils {
         TestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
 
         TestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
+        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMCAT_DIR_NAME, data).equals(OK));
         TestCase.assertFalse("GlassFish2 dir deleted", Utils.dirExist(GF2_DIR_NAME, data).equals(OK));
         TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
     }
 
-    public static void phaseFourWOUninstall(TestData data) {
+    public static void phaseFour(TestData data) {
         //Installation
-        Utils.stepInstall(data);
+        //Utils.stepInstall(data);
 
         //finish
-        Utils.stepFinish();
+        //Utils.stepFinish();
 
         Utils.waitSecond(data, 5);
 
@@ -455,33 +461,11 @@ public class Utils {
         TestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
 
         TestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
+        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMCAT_DIR_NAME, data).equals(OK));
         TestCase.assertFalse("GlassFish2 dir deleted", Utils.dirExist(GF2_DIR_NAME, data).equals(OK));
         TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
     }
     
-    public static void phaseTwo(TestData data) {
-        //welcome
-        stepWelcome();
-
-        //license
-        stepLicense();
-
-        //Choose dir
-        stepSetDir(data, "Install the NetBeans IDE", NB_DIR_NAME);
-    }
-
-    public static void phaseThree(TestData data) {
-        //Choose GF2 dir
-        stepSetDir(data, "Install GlassFish", GF2_DIR_NAME);
-        
-        //Choose GF3 dir
-        stepSetDir(data, "Install GlassFish", GF3_DIR_NAME);
-
-        //Choose Tomcat dir
-        stepSetDir(data, "Install Apache Tomcat", TOMACAT_DIR_NAME);
-    }
-
     public static void waitSecond(TestData data, int sec) {
         wait(data, 1000 * sec);
     }

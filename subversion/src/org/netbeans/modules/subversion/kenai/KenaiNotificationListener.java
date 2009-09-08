@@ -54,7 +54,6 @@ import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
@@ -142,7 +141,7 @@ public class KenaiNotificationListener implements PropertyChangeListener {
     
     private void notifyFileChange(File file, SVNUrl url, long revision) {
         NotificationDisplayer.getDefault().notify(
-                NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_Title"), //NOI18N
+                NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Title"), //NOI18N
                 ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
                 getSimplePane(file), getDetailsPane(file, url, revision), NotificationDisplayer.Priority.NORMAL);
     }

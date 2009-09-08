@@ -106,7 +106,10 @@ public enum XhtmlElTokenId implements TokenId {
                     //lexer infrastructure workaround - need to adjust skiplenghts in case of short token
                     int startSkipLength = token.length() > 2 ? 2 : token.length();
                     int endSkipLength = token.length() > 2 ? 1 : 0;
-                    return LanguageEmbedding.create(getELLanguage(), startSkipLength, endSkipLength);
+                    Language elLang = getELLanguage();
+                    if(elLang != null) {
+                        return LanguageEmbedding.create(elLang, startSkipLength, endSkipLength);
+                    }
 
                 default:
                     return null;

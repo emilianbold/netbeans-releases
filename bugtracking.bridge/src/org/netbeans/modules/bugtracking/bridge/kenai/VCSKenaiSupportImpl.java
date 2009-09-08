@@ -114,13 +114,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
     @Override
     public KenaiUser forName(String user) {
-        org.netbeans.modules.kenai.ui.spi.KenaiUserUI kenaiUser =
-                org.netbeans.modules.kenai.ui.spi.KenaiUserUI.forName(user);
-        if(kenaiUser == null) {
-            return null;
-        } else {
-            return new KenaiUserImpl(kenaiUser);
-        }
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(user));
     }
 
     public void addVCSNoficationListener(PropertyChangeListener l) {
@@ -166,7 +160,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
     @Override
     public boolean isUserOnline(String user) {
-        return org.netbeans.modules.kenai.ui.spi.KenaiUserUI.isOnline(user);
+        return org.netbeans.modules.kenai.api.KenaiUser.isOnline(user);
     }
 
     @Override
@@ -189,10 +183,10 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         String repositoryName = null;
         // XXX unofficial API
         // repository url looks like https://..../mercurial|svn/PROJECT_NAME~REPOSITORY_NAME
-        int pos = sourcesUrl.lastIndexOf('~') + 1;
+        int pos = sourcesUrl.lastIndexOf('~') + 1;                              // NOI18N
         if (pos > 0 && sourcesUrl.length() > pos) {
             String repositoryNameCandidate = sourcesUrl.substring(pos);
-            if (repositoryNameCandidate.indexOf('/') == -1) {
+            if (repositoryNameCandidate.indexOf('/') == -1) {                   // NOI18N
                 repositoryName = repositoryNameCandidate;
             }
         }
@@ -213,17 +207,17 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-            delegate.removePropertyChangeListener(listener);
+            delegate.getKenaiUser().removePropertyChangeListener(listener);
         }
 
         @Override
         public boolean isOnline() {
-            return delegate.isOnline();
+            return delegate.getKenaiUser().isOnline();
         }
 
         @Override
         public String getUser() {
-            return delegate.getUser();
+            return delegate.getUserName();
         }
 
         @Override
@@ -238,7 +232,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            delegate.addPropertyChangeListener(listener);
+            delegate.getKenaiUser().addPropertyChangeListener(listener);
         }
 
     }
@@ -297,7 +291,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
                 case DELETE:
                     return Type.DELETE;
                 default:
-                    throw new IllegalStateException("unknown modification type" + m.getType());
+                    throw new IllegalStateException("unknown modification type" + m.getType());   // NOI18N
             }
         }
 
