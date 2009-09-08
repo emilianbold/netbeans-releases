@@ -68,4 +68,7 @@ public final class GizmoServiceInfo {
         }
 
     }
+
+    private GizmoServiceInfo() {
+    }
 }

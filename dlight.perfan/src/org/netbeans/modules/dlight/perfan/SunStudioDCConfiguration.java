@@ -48,9 +48,9 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
-import org.netbeans.modules.dlight.perfan.dataprovider.MemoryMetric;
-import org.netbeans.modules.dlight.perfan.dataprovider.THAMetric;
-import org.netbeans.modules.dlight.perfan.dataprovider.TimeMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.MemoryMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.THAMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.TimeMetric;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
 import org.openide.util.NbBundle;

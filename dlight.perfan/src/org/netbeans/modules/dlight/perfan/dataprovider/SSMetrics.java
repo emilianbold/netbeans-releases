@@ -38,20 +38,52 @@
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
+import java.util.HashMap;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric.FunctionMetricConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.openide.util.NbBundle;
 
-public class MemoryMetric {
+public final class SSMetrics {
 
-    public static final FunctionMetric LeakBytesMetric = fm("e.bleak", Integer.class); // NOI18N
-    public static final FunctionMetric LeaksCountMetric = fm("e.leak", Integer.class); // NOI18N
+    private final static HashMap<String, FunctionMetric> hash = new HashMap<String, FunctionMetric>();
 
-    static private FunctionMetric fm(String id, Class clazz) {
-        return FunctionMetricsFactory.getInstance().getFunctionMetric(
+    public final static FunctionMetric getMetric(Column dataColumn) {
+        return hash.get(dataColumn.getColumnName());
+    }
+
+    public final static class MemoryMetric {
+
+        private static String GID = "MemoryMetric"; // NOI18N
+        public static final FunctionMetric LeakBytesMetric = fm(GID, "e.bleak", Integer.class); // NOI18N
+        public static final FunctionMetric LeaksCountMetric = fm(GID, "e.leak", Integer.class); // NOI18N
+    }
+
+    public final static class THAMetric {
+
+        private static String GID = "THAMetric"; // NOI18N
+        public static final FunctionMetric DeadlockMetric = fm(GID, "e.deadlocks", Integer.class); // NOI18N
+        public static final FunctionMetric RaceMetric = fm(GID, "e.raccess", Integer.class); // NOI18N
+    }
+
+    public final static class TimeMetric {
+
+        private static String GID = "TimeMetric"; // NOI18N
+        static public final FunctionMetric UserFuncTimeInclusive = fm(GID, "i.user", Double.class); // NOI18N
+        static public final FunctionMetric UserFuncTimeExclusive = fm(GID, "e.user", Double.class); // NOI18N
+        static public final FunctionMetric SyncWaitTimeInclusive = fm(GID, "i.sync", Double.class); // NOI18N
+        static public final FunctionMetric SyncWaitCallInclusive = fm(GID, "i.syncn", Integer.class); // NOI18N
+        static public final FunctionMetric SyncWaitTimeExclusive = fm(GID, "e.sync", Double.class); // NOI18N
+        static public final FunctionMetric SyncWaitCallExclusive = fm(GID, "e.syncn", Integer.class); // NOI18N
+    }
+
+    static private FunctionMetric fm(String groupID, String id, Class clazz) {
+        FunctionMetric m = FunctionMetricsFactory.getInstance().getFunctionMetric(
                 new FunctionMetricConfiguration(id,
-                NbBundle.getMessage(MemoryMetric.class,
-                "MemoryMetric." + id + ".uname"), clazz)); // NOI18N
+                NbBundle.getMessage(SSMetrics.class,
+                groupID + "." + id + ".uname"), clazz)); // NOI18N
+        hash.put(id, m);
+        return m;
     }
 }

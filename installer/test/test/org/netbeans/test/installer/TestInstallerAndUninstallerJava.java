@@ -33,39 +33,56 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Mikhail Vaysman
  */
-public class TestInstallerAndUninstallerJavaEE extends NbTestCase {
+public class TestInstallerAndUninstallerJava extends Installer{
 
-    public TestInstallerAndUninstallerJavaEE() {
+    /*
+    public TestInstallerAndUninstallerJavaSE() {
         super("Installer test");
     }
 
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(TestInstallerAndUninstallerJavaEE.class);
+        TestSuite suite = new NbTestSuite(TestInstallerAndUninstallerJavaSE.class);
 
         return suite;
     }
+    */
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
 
-        Utils.phaseOne(this, data, "javaee");
+        Utils.phaseOne(data, "java");
 
-        //select apache 
-        //apache selected by default
-        //Utils.stepChooseComponet("Apache Tomcat");
+        // Pages
+          // Apache
+        Utils.stepChooseComponet("Apache Tomcat");
+        // Welcome
+        Utils.stepWelcome();
+        // Agreement
+        Utils.stepLicense();
+        // Location
+        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
+        // GF
+        Utils.stepSetDir(data, "Install GlassFish", Utils.GF2_DIR_NAME);
+        // Apache
+        Utils.stepSetDir(data, "Install Apache Tomcat", Utils.TOMCAT_DIR_NAME);
+        // Summary
+        Utils.stepInstall(data);
+        //Installation
+        //finish
+        Utils.stepFinish();
 
-        //welcome, license and set NB dir
-        Utils.phaseTwo(data);
-
-        Utils.phaseThree(data);
+        //Utils.phaseTwo( data );
+        //Utils.phaseThree( data );
 
         Utils.phaseFour(data);
+
+        Utils.phaseFive( data );
 
         //TODO Dir removed test
         //TODO Clean up work dir
     }
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+    //public static void main(String[] args) {
+    //    junit.textui.TestRunner.run(suite());
+    //}
 }

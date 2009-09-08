@@ -193,6 +193,9 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
     void setProject(Project project){
         this.project = project;
+        if (controlPanel != null){
+            this.remove(controlPanel);
+        }
         controlPanel = THAControlPanel.create(thaActionsProvider, project, thaConfiguration);
         add(controlPanel, BorderLayout.NORTH);
         setSession(null);

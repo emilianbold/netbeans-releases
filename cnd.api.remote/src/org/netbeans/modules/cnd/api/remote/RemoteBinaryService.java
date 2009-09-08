@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,29 +34,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.dataprovider;
 
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric.FunctionMetricConfiguration;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.api.remote;
 
-public final class TimeMetric {
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup;
 
-    static public final FunctionMetric UserFuncTimeInclusive = fm("i.user", Double.class); // NOI18N
-    static public final FunctionMetric UserFuncTimeExclusive = fm("e.user", Double.class); // NOI18N
-    static public final FunctionMetric SyncWaitTimeInclusive = fm("i.sync", Double.class); // NOI18N
-    static public final FunctionMetric SyncWaitCallInclusive = fm("i.syncn", Integer.class); // NOI18N
-    static public final FunctionMetric SyncWaitTimeExclusive = fm("e.sync", Double.class); // NOI18N
-    static public final FunctionMetric SyncWaitCallExclusive = fm("e.syncn", Integer.class); // NOI18N
+/**
+ * Makes a remote binary accessible locally
+ * @author Vladimir Kvashin
+ */
+public abstract class RemoteBinaryService {
 
-    static private FunctionMetric fm(String id, Class clazz) {
-        return FunctionMetricsFactory.getInstance().getFunctionMetric(
-            new FunctionMetricConfiguration(id,
-            NbBundle.getMessage(TimeMetric.class,
-            "TimeMetric." + id + ".uname"), clazz)); // NOI18N
+    protected RemoteBinaryService() {}
+
+    /**
+     * Gets a local path to a binary built on remote machine.
+     * In the case it is shared, returns just a path to the same physical binary.
+     * In the case it is not shared, ensures that the file is copied to the local host
+     * and returns full path to the copy
+     *
+     * The method can be very slow.
+     * It should never be called from AWT thread.
+     */
+    public static String getRemoteBinary(ExecutionEnvironment execEnv, String remotePath) {
+        if (execEnv.isLocal()) {
+            return remotePath;
+        } else {
+            RemoteBinaryService rbs = Lookup.getDefault().lookup(RemoteBinaryService.class);
+            if (rbs == null) {
+                return null;
+            } else {
+                return rbs.getRemoteBinaryImpl(execEnv, remotePath);
+            }
+        }
     }
-}
 
+    protected abstract String getRemoteBinaryImpl(ExecutionEnvironment execEnv, String remotePath);
+}
