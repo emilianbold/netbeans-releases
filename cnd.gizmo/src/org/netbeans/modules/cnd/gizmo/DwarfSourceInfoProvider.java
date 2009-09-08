@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.FileNotFoundException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,8 +56,13 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
+import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
+import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,12 +77,32 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     public DwarfSourceInfoProvider() {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
-
+    
     public SourceFileInfo fileName(String functionSignature, int lineNumber, long offset, Map<String, String> serviceInfo) {
+        SourceFileInfo info = _fileName(functionSignature, lineNumber, offset, serviceInfo);
+        if (info != null) {
+            PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
+            if (provider != null) {
+                PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
+                if (pathMapper != null) {
+                    String remote = pathMapper.getLocalPath(info.getFileName());
+                    if (remote != null) {
+                        return new SourceFileInfo(remote, info.getLine(), 0);
+                    }
+                }
+            }
+        }
+        return info;
+    }
+
+    private SourceFileInfo _fileName(String functionSignature, int lineNumber, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
             return null;
         }
-        String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
+        String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_REMOTE_EXECUTABLE);
+        if (executable == null) {
+            executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
+        }
         if (executable != null) {
             String functionName = functionSignature;
             int parenIdx = functionSignature.indexOf('(');
@@ -131,6 +157,8 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 } finally {
                     dwarf.dispose();
                 }
+            } catch (FileNotFoundException ex) {
+                DLightLogger.instance.log(Level.SEVERE, ex.getMessage(), ex);
             } catch (IOException ex) {
                 DLightLogger.instance.log(Level.INFO, ex.getMessage());
             } catch (Throwable ex) {
