@@ -154,12 +154,12 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
+        public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
             fail("Parser is not expected to call this method");
             return null;
         }
 
-        public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
+        public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
             fail("Parser is not expected to call this method");
             return null;
         }
