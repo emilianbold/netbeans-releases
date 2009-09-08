@@ -841,17 +841,25 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof RemoteConfiguration;
             setName("ComboBox.listRenderer"); // NOI18N
-            RemoteConfiguration remoteConfig = (RemoteConfiguration) value;
-            setText(remoteConfig.getDisplayName());
+            // #171722
+            String text = null;
+            Color foreground = null;
+            if (value instanceof RemoteConfiguration) {
+                RemoteConfiguration remoteConfig = (RemoteConfiguration) value;
+                text = remoteConfig.getDisplayName();
+                foreground = getForeground(remoteConfig, list, isSelected);
+            }
+            setText(text);
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
             } else {
                 setBackground(list.getBackground());
             }
-            setForeground(getForeground(remoteConfig, list, isSelected));
+            if (foreground != null) {
+                setForeground(foreground);
+            }
             return this;
         }
 
