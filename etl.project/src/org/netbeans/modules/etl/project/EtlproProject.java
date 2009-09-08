@@ -59,6 +59,7 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -137,8 +138,8 @@ public final class EtlproProject implements Project, AntProjectListener, Project
         String webModuleLabel = nbBundle1.substring(15); //NOI18N
         String srcJavaLabel = nbBundle2.substring(15); //NOI18N*/
 
-		String webModuleLabel = "EJB Module";
-        String srcJavaLabel =  "Source Packages";
+		String webModuleLabel = NbBundle.getMessage (EtlproProject.class, "CTL_EJB_Module");
+        String srcJavaLabel =  NbBundle.getMessage (EtlproProject.class, "CTL_Source_Packages");
 
         sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SOURCE_ROOT + "}", webModuleLabel, /*XXX*/ null, null);
         sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", srcJavaLabel, /*XXX*/ null, null);
