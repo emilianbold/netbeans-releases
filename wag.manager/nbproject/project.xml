@@ -166,6 +166,7 @@
                 <friend>org.netbeans.modules.wag.kit</friend>
                 <package>org.netbeans.modules.wag.manager.model</package>
                 <package>org.netbeans.modules.wag.manager.spi</package>
+                <package>org.netbeans.modules.wag.manager.zembly</package>
             </friend-packages>
         </data>
     </configuration>
