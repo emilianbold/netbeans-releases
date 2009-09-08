@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorDelegator;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorsTopComponent;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.DialogDescriptor;
@@ -117,14 +119,26 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
 //                    reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags());
         }
 
-        THAConfiguration thaConfiguration = configurationPanel.getTHAConfiguration();
-        THAActionsProvider provider = new THAActionsProvider(currentProject, thaConfiguration);
-        if (!THAActionsProvider.start(provider.dlightTargetListener, currentProject, thaConfiguration)) {
-            return;
-        }
-        THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(provider, currentProject, thaConfiguration);
-        topComponent.open();
-        topComponent.requestActive();
+        final THAConfiguration thaConfiguration = configurationPanel.getTHAConfiguration();
+        final THAActionsProvider provider = new THAActionsProvider(currentProject, thaConfiguration);
+        DLightExecutorService.submit(new Runnable() {
+
+            public void run() {
+                if (!THAActionsProvider.start(provider.dlightTargetListener, currentProject, thaConfiguration)) {
+                    return;
+                }
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(provider, currentProject, thaConfiguration);
+                        topComponent.open();
+                        topComponent.requestActive();
+                    }
+                });
+
+            }
+        }, "Start THA");//NOI18N
+
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

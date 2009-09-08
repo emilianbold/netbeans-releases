@@ -367,7 +367,7 @@ public final class THAActionsProvider {
         }
     }
 
-    static private boolean start(final DLightTargetListener listener, final Project project, final THAConfiguration thaConfiguration) {
+    static  boolean start(final DLightTargetListener listener, final Project project, final THAConfiguration thaConfiguration) {
         THAProjectSupport support = THAProjectSupport.getSupportFor(project);
 
         if (support == null) {
