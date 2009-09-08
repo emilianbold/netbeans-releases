@@ -46,29 +46,44 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
+import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.util.DLightMath;
 
 /**
  * @author Alexey Vladykin
  */
-/*package*/ class ViewportBar extends JComponent implements ChangeListener {
+/*package*/ class ViewportBar extends JComponent implements ChangeListener, DataFilterListener {
 
-    private final Mark viewportStartMark;
-    private final Mark viewportEndMark;
+    private final ViewportModel viewportModel;
+    private final DataFilterManager filterManager;
+    private final List<Mark> marks;
     //private final int margin;
 
-    public ViewportBar(final ViewportModel viewportModel/*, int margin*/) {
+    public ViewportBar(final ViewportModel viewportModel, final DataFilterManager filterManager) {
         setMinimumSize(new Dimension(200, 30));
         setPreferredSize(new Dimension(200, 30));
         setOpaque(true);
 
-        viewportStartMark = new AbstractMark() {
+        List<Mark> tmpMarks = new ArrayList<Mark>();
+
+        this.viewportModel = viewportModel;
+
+        Mark viewportStartMark = new AbstractMark() {
             @Override
             public int getPosition() {
                 Range<Long> limits = viewportModel.getLimits();
@@ -87,8 +102,12 @@ import org.netbeans.modules.dlight.util.DLightMath;
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
             }
+            @Override
+            protected Color getColor() {
+                return Color.BLACK;
+            }
         };
-        viewportEndMark = new AbstractMark() {
+        Mark viewportEndMark = new AbstractMark() {
             @Override
             public int getPosition() {
                 Range<Long> limits = viewportModel.getLimits();
@@ -107,14 +126,116 @@ import org.netbeans.modules.dlight.util.DLightMath;
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
             }
+            @Override
+            protected Color getColor() {
+                return Color.BLACK;
+            }
         };
         viewportStartMark.setRightBound(viewportEndMark);
         viewportEndMark.setLeftBound(viewportStartMark);
+        tmpMarks.add(viewportStartMark);
+        tmpMarks.add(viewportEndMark);
         viewportModel.addChangeListener(this);
+
+        this.filterManager = filterManager;
+
+        Mark selectionStartMark = new AbstractMark() {
+            @Override
+            public int getPosition() {
+                Range<Long> limits = viewportModel.getLimits();
+                Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
+                Range<Long> selection = getTimeSelection();
+                if (selection == null) {
+                    selection = limits;
+                }
+                return (int) DLightMath.map(selection.getStart(), limits.getStart(), limits.getEnd(), 0, getWidth() - 2);
+            }
+            @Override
+            protected void setPosition(int pos) {
+                Range<Long> limits = viewportModel.getLimits();
+                Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
+                setTimeSelection(new Range<Long>(DLightMath.map(pos, 0, getWidth() - 2, limits.getStart(), limits.getEnd()), null));
+            }
+            @Override
+            public Cursor getCursor() {
+                return Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
+            }
+            @Override
+            protected Color getColor() {
+                return Color.RED;
+            }
+        };
+        Mark selectionEndMark = new AbstractMark() {
+            @Override
+            public int getPosition() {
+                Range<Long> limits = viewportModel.getLimits();
+                Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
+                Range<Long> selection = getTimeSelection();
+                if (selection == null) {
+                    selection = limits;
+                }
+                return (int) DLightMath.map(selection.getEnd(), limits.getStart(), limits.getEnd(), 0, getWidth() - 2);
+            }
+            @Override
+            protected void setPosition(int pos) {
+                Range<Long> limits = viewportModel.getLimits();
+                Range<Long> viewport = viewportModel.getViewport();
+                limits = limits.extend(viewport);
+                setTimeSelection(new Range<Long>(null, DLightMath.map(pos, 0, getWidth() - 2, limits.getStart(), limits.getEnd())));
+            }
+            @Override
+            public Cursor getCursor() {
+                return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
+            }
+            @Override
+            protected Color getColor() {
+                return Color.RED;
+            }
+        };
+        selectionStartMark.setRightBound(selectionEndMark);
+        selectionEndMark.setLeftBound(selectionStartMark);
+        tmpMarks.add(selectionStartMark);
+        tmpMarks.add(selectionEndMark);
+        if (this.filterManager != null) {
+            this.filterManager.addDataFilterListener(this);
+        }
+
+        this.marks = Collections.unmodifiableList(tmpMarks);
 
         DragAdapter dragAdapter = new DragAdapter();
         addMouseListener(dragAdapter);
         addMouseMotionListener(dragAdapter);
+    }
+
+    private Range<Long> getTimeSelection() {
+        Collection<TimeIntervalDataFilter> timeFilters = filterManager == null? null : filterManager.getDataFilter(TimeIntervalDataFilter.class);
+        if (timeFilters != null && !timeFilters.isEmpty()) {
+            Range<Long> selection = timeFilters.iterator().next().getInterval();
+            return new Range<Long>(
+                    TimeUnit.NANOSECONDS.toMillis(selection.getStart()),
+                    TimeUnit.NANOSECONDS.toMillis(selection.getEnd()));
+        } else {
+            return null;
+        }
+    }
+
+    private void setTimeSelection(Range<Long> selection) {
+        if (selection.getStart() == null || selection.getEnd() == null) {
+            Range<Long> currentSelection = getTimeSelection();
+            selection = substituteDefaults(selection, currentSelection == null? viewportModel.getLimits() : currentSelection);
+        }
+        filterManager.addDataFilter(TimeIntervalDataFilterFactory.create(new Range<Long>(
+                TimeUnit.MILLISECONDS.toNanos(selection.getStart()),
+                TimeUnit.MILLISECONDS.toNanos(selection.getEnd()))));
+    }
+
+    private Range<Long> substituteDefaults(Range<Long> range, Range<Long> defaults) {
+        return new Range<Long>(
+                range.getStart() == null ? defaults.getStart() : range.getStart(),
+                range.getEnd() == null ? defaults.getEnd() : range.getEnd());
     }
 
     @Override
@@ -124,12 +245,13 @@ import org.netbeans.modules.dlight.util.DLightMath;
         g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        viewportStartMark.paint(g);
-        viewportEndMark.paint(g);
+        for (Mark mark : marks) {
+            mark.paint(g);
+        }
     }
 
     private Mark findMark(Point p) {
-        for (Mark mark : new Mark[] {viewportStartMark, viewportEndMark}) {
+        for (Mark mark : marks) {
             if (mark.containsPoint(p)) {
                 return mark;
             }
@@ -147,6 +269,10 @@ import org.netbeans.modules.dlight.util.DLightMath;
     }
 
     public void stateChanged(ChangeEvent e) {
+        repaint();
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
         repaint();
     }
 
@@ -224,6 +350,8 @@ import org.netbeans.modules.dlight.util.DLightMath;
 
         protected abstract void setPosition(int pos);
 
+        protected abstract Color getColor();
+
         public boolean containsPoint(Point p) {
             int pos = getPosition();
             return pos <= p.x && p.x <= pos + 2;
@@ -258,7 +386,7 @@ import org.netbeans.modules.dlight.util.DLightMath;
         }
 
         public void paint(Graphics g) {
-            g.setColor(Color.BLACK);
+            g.setColor(getColor());
             int pos = getPosition();
             g.fillRect(pos, 0, 2, ViewportBar.this.getHeight());
         }
