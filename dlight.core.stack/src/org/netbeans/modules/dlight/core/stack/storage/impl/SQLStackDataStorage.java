@@ -237,7 +237,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return METRICS;
     }
 
-    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
+    public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         try {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
             ResultSet rs = sqlStorage.select(null, null, prepareCallersSelect(path));
@@ -257,7 +257,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
+    public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         try {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
             ResultSet rs = sqlStorage.select(null, null, prepareCalleesSelect(path));
@@ -422,42 +422,47 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return -1;
     }
 
-    private String prepareCallersSelect(FunctionCallWithMetric[] path) throws SQLException {
+    private String prepareCallersSelect(List<FunctionCallWithMetric> path) throws SQLException {
         StringBuilder buf = new StringBuilder();
+        int size = path.size();
+
         buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
         buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id "); //NOI18N
-        for (int i = 1; i < path.length; ++i) {
+
+        for (int i = 1; i < size; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
         }
         buf.append(" WHERE "); //NOI18N
-        for (int i = 0; i < path.length; ++i) {
+        for (int i = 0; i < size; ++i) {
             if (0 < i) {
                 buf.append("AND "); //NOI18N
             }
             buf.append("N").append(i + 1).append(".func_id = "); //NOI18N
-            buf.append(((FunctionImpl) path[i].getFunction()).getId());
+            buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
         buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
         return buf.toString();
     }
 
-    private String prepareCalleesSelect(FunctionCallWithMetric[] path) throws SQLException {
+    private String prepareCalleesSelect(List<FunctionCallWithMetric> path) throws SQLException {
         StringBuilder buf = new StringBuilder();
+        int size = path.size();
+
         buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 "); //NOI18N
-        for (int i = 1; i < path.length; ++i) {
+        for (int i = 1; i < size; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
         }
-        buf.append(" INNER JOIN Node N ON N").append(path.length).append(".node_id = N.caller_id "); //NOI18N
+        buf.append(" INNER JOIN Node N ON N").append(size).append(".node_id = N.caller_id "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id WHERE "); //NOI18N
-        for (int i = 0; i < path.length; ++i) {
+        for (int i = 0; i < size; ++i) {
             if (0 < i) {
                 buf.append(" AND "); //NOI18N
             }
             buf.append(" N").append(i + 1).append(".func_id = "); //NOI18N
-            buf.append(((FunctionImpl) path[i].getFunction()).getId());
+            buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
         buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
         return buf.toString();

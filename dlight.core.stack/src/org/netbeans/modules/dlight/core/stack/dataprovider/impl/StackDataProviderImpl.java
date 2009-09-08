@@ -52,15 +52,15 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Lookup;
 
+
 /**
  * @author Alexey Vladykin
  */
-final class StackDataProviderImpl implements StackDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
+final class StackDataProviderImpl implements StackDataProvider {
 
     private final List<FunctionMetric> metricsList = Arrays.<FunctionMetric>asList(
             FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
@@ -79,12 +79,11 @@ final class StackDataProviderImpl implements StackDataProvider, TreeTableDataPro
         return metricsList;
     }
 
-    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
-        return storage.getCallers(path, aggregate);
+    public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
+        return storage.getCallers(path, columns, orderBy, aggregate);
     }
-
-    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
-        return storage.getCallees(path, aggregate);
+    public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
+        return storage.getCallees(path, columns, orderBy, aggregate);
     }
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
@@ -99,8 +98,10 @@ final class StackDataProviderImpl implements StackDataProvider, TreeTableDataPro
         return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getHotSpotFunctions(null, null, limit));
     }
 
-    public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
-        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCallWithMetric[0]), false));
+    public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path, List<Column> columns, List<Column> orderBy) {
+        List<FunctionCallWithMetric> fcPath = FunctionCallTreeTableNode.getFunctionCalls(path);
+        List<FunctionCallWithMetric> callers = getCallees(fcPath, columns, orderBy, false);
+        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(callers);
     }
 
     public FunctionCallTreeTableNode getValueAt(int row) {
