@@ -59,6 +59,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -96,6 +97,11 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     public synchronized Map<String, FaceletsLibrary> getLibraries() {
         if (faceletsLibraries == null) {
             faceletsLibraries = findLibraries();
+
+            if(faceletsLibraries == null) {
+                //an error when scanning libraries, return no libraries, but give it a next try
+                return Collections.emptyMap();
+            }
 //            debugLibraries();
         }
 
@@ -177,6 +183,10 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //parse the libraries
         ConfigManager cm = ConfigManager.getInstance();
         Document[] documents = (Document[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
+        if(documents == null) {
+            return null; //error????
+        }
+
         FaceletsTaglibConfigProcessorPatched processor = new FaceletsTaglibConfigProcessorPatched(this);
 
         //process the found documents
