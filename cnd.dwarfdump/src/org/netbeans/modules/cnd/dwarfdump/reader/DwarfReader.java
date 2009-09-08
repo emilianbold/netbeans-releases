@@ -137,7 +137,7 @@ public class DwarfReader extends ElfReader {
         } else if (form.equals(FORM.DW_FORM_ref4)) {
             return readInt();
         } else if (form.equals(FORM.DW_FORM_ref8)) {
-            return read(new byte[8]);
+            return readLong();
         } else if (form.equals(FORM.DW_FORM_ref_udata)) {
             return read(new byte[readUnsignedLEB128()]);
         } else if (form.equals(FORM.DW_FORM_indirect)) {
