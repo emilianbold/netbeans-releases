@@ -59,6 +59,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -177,6 +178,10 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //parse the libraries
         ConfigManager cm = ConfigManager.getInstance();
         Document[] documents = (Document[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
+        if(documents == null) {
+            return Collections.emptyMap();
+        }
+
         FaceletsTaglibConfigProcessorPatched processor = new FaceletsTaglibConfigProcessorPatched(this);
 
         //process the found documents
