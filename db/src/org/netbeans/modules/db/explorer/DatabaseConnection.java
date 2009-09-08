@@ -138,6 +138,9 @@ public class DatabaseConnection implements DBConnection {
 
     /** Connection name */
     private String name;
+
+    /** The user-specified name that is to be displayed for this connection. */
+    private String displayName;
     
     /** Error code */
     private int errorCode = -1;
@@ -166,6 +169,7 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_DEFCATALOG = "defaultCatalog"; //NOI18N
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
+    public static final String PROP_DISPLAY_NAME = "displayName"; //NOI18N
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final int DERBY_UNICODE_ERROR_CODE = 20000;
     private OpenConnectionInterface openConnection = null;
@@ -457,6 +461,22 @@ public class DatabaseConnection implements DBConnection {
         name = value;
         if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_NAME, old, name);
+        }
+    }
+
+    public String getDisplayName() {
+        return (displayName != null && displayName.length() > 0) ? displayName : getName();
+    }
+
+    public void setDisplayName(String value) {
+        if ((displayName == null && value == null) || (displayName != null && displayName.equals(value))) {
+            return;
+        }
+
+        String old = displayName;
+        displayName = value;
+        if (propertySupport != null) {
+            propertySupport.firePropertyChange(PROP_DISPLAY_NAME, old, displayName);
         }
     }
 
@@ -860,8 +880,10 @@ public class DatabaseConnection implements DBConnection {
 
         try {
             drvname = (String) in.readObject();
+            displayName = (String) in.readObject();
         } catch (Exception exc) {
-            //IGNORE - not stored in 3.6 and earlier
+            //IGNORE - drvname not stored in 3.6 and earlier
+            //IGNORE - displayName not stored in 6.7 and earlier
         }
 
         // boston setting/pilsen setting?
@@ -885,6 +907,7 @@ public class DatabaseConnection implements DBConnection {
         out.writeObject(schema);
         out.writeObject(DatabaseConnection.SUPPORT);
         out.writeObject(drvname);
+        out.writeObject(displayName);
     }
 
     @Override
