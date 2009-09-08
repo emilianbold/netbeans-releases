@@ -152,7 +152,13 @@ public class IssueCache<T> {
         public long getCreated(Issue issue);
 
     }
-    
+
+    /**
+     * Creates a new IssueCache
+     * 
+     * @param nameSpace
+     * @param issueAccessor
+     */
     public IssueCache(String nameSpace, IssueAccessor<T> issueAccessor) {
         assert issueAccessor != null;
         this.nameSpace = nameSpace;
@@ -287,6 +293,13 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * Sets the {@link Issue} with the given id as seen, or unseen.
+     *
+     * @param id issue id
+     * @param seen seen flag
+     * @throws IOException
+     */
     public void setSeen(String id, boolean seen) throws IOException {
         if (id == null) {
             return;
@@ -319,6 +332,12 @@ public class IssueCache<T> {
         fireSeenChanged(entry.issue, oldValue, seen);
     }
 
+    /**
+     * Determines wheter the {@link Issue} with the given id was seen or unseen.
+     *
+     * @param id issue id
+     * @return true if issue was seen, otherwise false
+     */
     public boolean wasSeen(String id) {
         IssueEntry entry;
         synchronized(CACHE_LOCK) {
@@ -333,6 +352,12 @@ public class IssueCache<T> {
         return seen;
     }
 
+    /**
+     * Returns the last seen attributes for the issue with the given id.
+     * 
+     * @param id issue id
+     * @return last seen sttributes
+     */
     public Map<String, String> getSeenAttributes(String id) {
         IssueEntry entry;
         synchronized(CACHE_LOCK) {
@@ -346,14 +371,12 @@ public class IssueCache<T> {
         }
     }
 
-    private IssueEntry createNewEntry(String id) {
-        IssueEntry entry = new IssueEntry();
-        entry.id = id;
-        entry.status = ISSUE_STATUS_NEW;
-        getCache().put(id, entry);
-        return entry;
-    }
-
+    /**
+     * Returns a {@link Issue} with the given id
+     * 
+     * @param id issue id
+     * @return the {@link Issue} with the given id or null if not known yet
+     */
     public Issue getIssue(String id) {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
@@ -361,6 +384,18 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * Returns status value for the {@link Issue} with the given id
+     *
+     * @param id issue id
+     * @return issue status
+     * @see #ISSUE_STATUS_UNKNOWN
+     * @see #ISSUE_STATUS_NEW
+     * @see #ISSUE_STATUS_MODIFIED
+     * @see #ISSUE_STATUS_ALL
+     * @see #ISSUE_STATUS_SEEN
+     * @see #ISSUE_STATUS_NOT_SEEN
+     */
     public int getStatus(String id) {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
@@ -377,6 +412,11 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * Stres the given id-s for a query
+     * @param name query name
+     * @param ids id-s
+     */
     public void storeQueryIssues(String name, String[] ids) {
         synchronized(CACHE_LOCK) {
             try {
@@ -387,10 +427,21 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * Returns the timestamp when a queries issues were written the last time
+     *
+     * @param name query name
+     * @return timestamp
+     */
     public long getQueryTimestamp(String name) {
         return IssueStorage.getInstance().getQueryTimestamp(nameSpace, name);
     }
 
+    /**
+     * Returns the id-s stored for a query
+     * @param name query name
+     * @return list od id-s
+     */
     public List<String> readQueryIssues(String name) {
         synchronized(CACHE_LOCK) {
             try {
@@ -402,6 +453,12 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * Stores the given id-s as archived
+     *
+     * @param name query name
+     * @param ids isues id-s
+     */
     public void storeArchivedQueryIssues(String name, String[] ids) {
         synchronized(CACHE_LOCK) {
             try {
@@ -412,6 +469,12 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * Returns the id-s for all issues stored as archived for the query with the given name
+     *
+     * @param name query name
+     * @return list of id-s
+     */
     public List<String> readArchivedQueryIssues(String name) {
         synchronized(CACHE_LOCK) {
             try {
@@ -424,6 +487,12 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * 
+     * Removes all data assotiated with a query from the storage.
+     *
+     * @param name query name
+     */
     public void removeQuery(String name) {
         synchronized(CACHE_LOCK) {
             try {
@@ -432,6 +501,14 @@ public class IssueCache<T> {
                 BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    private IssueEntry createNewEntry(String id) {
+        IssueEntry entry = new IssueEntry();
+        entry.id = id;
+        entry.status = ISSUE_STATUS_NEW;
+        getCache().put(id, entry);
+        return entry;
     }
 
     private Map<String, IssueEntry> getCache() {
