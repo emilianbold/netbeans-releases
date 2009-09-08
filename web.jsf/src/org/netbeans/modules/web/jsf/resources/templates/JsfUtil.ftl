@@ -6,7 +6,11 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
-    TBD
+    packageName - package name (String)
+    comment - always (Boolean; always FALSE)
+
+  This template is accessible via top level menu Tools->Templates and can
+  be found in category JavaServer Faces->JSF from Entity.
 
 </#if>
 

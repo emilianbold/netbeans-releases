@@ -6,14 +6,21 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
-    controllerClassName
-    controllerPackageName
-    entityFullClassName
-    ejbFullClassName
-    ejbClassName
-    entityClassName
-    managedBeanName
+    controllerClassName - controller class name (type: String)
+    controllerPackageName - controller package name (type: String)
+    entityClassName - entity class name without package (type: String)
+    entityFullClassName - fully qualified entity class name (type: String)
+    ejbClassName - EJB class name (type: String)
+    ejbFullClassName - fully qualified EJB class name (type: String)
+    managedBeanName - name of managed bean (type: String)
+    keyEmbedded - is entity primary key is an embeddable class (type: Boolean)
+    keyType - fully qualified class name of entity primary key
+    keyBody - body of Controller.Converter.getKey() method
+    keyStringBody - body of Controller.Converter.getStringKey() method
+    keyGetter - entity getter method returning primaty key instance
 
+  This template is accessible via top level menu Tools->Templates and can
+  be found in category JavaServer Faces->JSF from Entity.
 
 </#if>
 package ${controllerPackageName};
@@ -56,7 +63,6 @@ public class ${controllerClassName} {
     }
 
     private ${ejbClassName} getFacade() {
-        assert ejbFacade != null;
         return ejbFacade;
     }
 
