@@ -51,6 +51,10 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorDelegator;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorsTopComponent;
@@ -85,64 +89,15 @@ public final class THAActionsProvider {
     private final EventListenerList listenerList = new EventListenerList();
 
     static {
-        startThreadAnalyzerConfiguration = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformer() {
-
-            public synchronized boolean enable(final Project project) {
-                return THAProjectSupport.isSupported(project);
-            }
-
-            public void perform(final Project project) {
-                if (!THAProjectSupport.isSupported(project)) {
-                    return;
-                }
-                //show dialog here with the configuration
-                JButton startB = new JButton("Start");//NOI18N
-                Object[] options = new Object[]{DialogDescriptor.CANCEL_OPTION, startB};
-                THAConfigurationPanel configurationPanel = new THAConfigurationPanel();
-                DialogDescriptor dialogDescriptor = new DialogDescriptor(configurationPanel, "Configure Profile", true, options, startB, DialogDescriptor.BOTTOM_ALIGN, null, null);//NOI18N
-                Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
-                if (ret != startB) {
-                    return;
-//                    reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags());
-                }
-
-                final THAConfiguration thaConfiguration = configurationPanel.getTHAConfiguration();
-                final THAActionsProvider provider = new THAActionsProvider(project, thaConfiguration);
-
-                DLightExecutorService.submit(new Runnable() {
-
-                    public void run() {
-                        if (!start(provider.dlightTargetListener, project, thaConfiguration)) {
-                            return;
-                        }
-
-                        UIThread.invoke(new Runnable() {
-
-                            public void run() {
-                                THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(provider, project, thaConfiguration);
-                                topComponent.open();
-                                topComponent.requestActive();
-                            }
-                        });
-                    }
-                }, "Start THA"); // NOI18N
-
-
-            }
-        }, loc("LBL_THAMainProjectAction"), null); // NOI18N
-
-        startThreadAnalyzerConfiguration.putValue("command", "THAProfile"); // NOI18N
-        startThreadAnalyzerConfiguration.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
-        startThreadAnalyzerConfiguration.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
-        startThreadAnalyzerConfiguration.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
+        startThreadAnalyzerConfiguration = new THAMainProjectAction();
     }
     private RemoveInstrumentationAction removeInstrumentation;
     private final Project project;
     private final THAConfiguration thaConfiguration;
-    private final DLightTargetListener dlightTargetListener;
+    final DLightTargetListener dlightTargetListener;
     //private final static Map<Project, THAActionsProvider> cache = new HashMap<Project, THAActionsProvider>();
 
-    private THAActionsProvider(Project project, THAConfiguration thaConfiguration) {
+    THAActionsProvider(Project project, THAConfiguration thaConfiguration) {
         this.project = project;
         this.thaConfiguration = thaConfiguration;
         this.dlightTargetListener = new DLightTargetListenerImpl();
@@ -154,16 +109,7 @@ public final class THAActionsProvider {
         if (!THAProjectSupport.isSupported(project)) {
             return null;
         }
-
-//        if (cache.containsKey(project)) {
-//            return cache.get(project);
-//        }
-
-
-
         THAActionsProvider support = new THAActionsProvider(project, thaConfiguration);
-        // cache.put(project, support);
-
         return support;
     }
 

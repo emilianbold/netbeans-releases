@@ -42,6 +42,8 @@ import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -53,15 +55,17 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.FunctionsListViewVisualizer.FunctionCallChildren;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
@@ -84,9 +88,9 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     private JToggleButton callers;
     private JToggleButton calls;
     private boolean isCalls = true;
-    private List<? extends FunctionMetric> metricsList = null;
     private Future<List<FunctionCallWithMetric>> syncFillDataTask;
     private DefaultMutableTreeNode focusedTreeNode = null;
+    private final List<Column> metricsList;
 
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
         super(configuration, (TreeTableDataProvider) dataProvider);
@@ -94,6 +98,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;
         isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);
+        metricsList = Arrays.asList(TreeTableVisualizerConfigurationAccessor.getDefault().getTableColumns(configuration));
 
     }
 
@@ -283,9 +288,9 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             for (FunctionCallWithMetric call : result) {
                 rootNode.add(new DefaultMutableTreeNode(new FunctionCallTreeTableNode(call)));
             }
-        }
-
+        }        
         fireTreeModelChanged(rootNode);
+        notifyAnnotedSourceProviders();
 
     }
 
@@ -295,6 +300,58 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
                 dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
 
         update(flist);
+    }
+
+    private final List<FunctionCallWithMetric> getAllChildren(TreeNode n){
+        if (!(n instanceof DefaultMutableTreeNode)){
+            return Collections.emptyList();
+        }
+        DefaultMutableTreeNode node =(DefaultMutableTreeNode)n;
+        if (!(node.getUserObject() instanceof FunctionCallTreeTableNode)){
+            return Collections.emptyList();
+        }
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
+        result.add(((FunctionCallTreeTableNode)node.getUserObject()).getDeligator());
+        for (int i = 0, count = node.getChildCount(); i < count; i++){
+            result.addAll(getAllChildren(node.getChildAt(i)));
+        }
+        return result;
+        
+    }
+
+    private final List<FunctionCallWithMetric> getAllFunctions(){
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
+        for (int i = 0, count = TREE_ROOT.getChildCount(); i < count; i++){
+            result.addAll(getAllChildren(TREE_ROOT.getChildAt(i)));
+        }
+        return result;
+    }
+
+    private void notifyAnnotedSourceProviders() {
+        
+        final List<FunctionCallWithMetric> list =  getAllFunctions();
+        Collection<? extends AnnotatedSourceSupport> supports = Lookup.getDefault().lookupAll(AnnotatedSourceSupport.class);
+        for (final AnnotatedSourceSupport sourceSupport : supports) {
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                }
+            }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
+        }
+    }
+
+    private void notifyAnnotedSourceProviders(final List<FunctionCallWithMetric> list) {
+
+        Collection<? extends AnnotatedSourceSupport> supports = Lookup.getDefault().lookupAll(AnnotatedSourceSupport.class);
+        for (final AnnotatedSourceSupport sourceSupport : supports) {
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                }
+            }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
+        }
     }
 
     private void update(List<FunctionCallWithMetric> list) {
@@ -309,6 +366,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             }
 
             updateList(res);
+            notifyAnnotedSourceProviders(list);
         }
     }
 
@@ -326,15 +384,6 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             calls.setSelected(isCalls);
             callers.setSelected(!isCalls);
         }
-    }
-
-    private FunctionMetric getMetricByID(String id) {
-        for (FunctionMetric metric : metricsList) {
-            if (metric.getMetricID().equals(id)) {
-                return metric;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -454,7 +503,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
                 public void run() {
                     SourceFileInfo sourceFileInfo = null;
                     try {
-                        sourceFileInfo = sourceFileInfoTask.get();
+                        sourceFileInfo = sourceFileInfoTask.get();                        
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (ExecutionException ex) {
@@ -466,6 +515,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
 
                     SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
                     sourceSupportProvider.showSource(sourceFileInfo);
+                    notifyAnnotedSourceProviders();
                 }
             }, "GoToSource from Callers Calees Visualizer"); // NOI18N
         }
