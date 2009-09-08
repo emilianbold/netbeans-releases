@@ -366,52 +366,6 @@ public class ChatTopComponent extends TopComponent {
         chats.setForegroundAt(i, Color.BLUE);
     }
 
-    void showPopup(MouseEvent evt) {
-        JPopupMenu menu = new JPopupMenu();
-        HashSet<String> projectNames = new HashSet<String>();
-        try {
-            for (KenaiProject prj : Kenai.getDefault().getMyProjects()) {
-                projectNames.add(prj.getName());
-            }
-        } catch (KenaiException kenaiException) {
-            Exceptions.printStackTrace(kenaiException);
-        }
-        ArrayList<Action> tree = new ArrayList<Action>();
-
-        for (KenaiFeature prj : kec.getMyChats()) {
-            projectNames.remove(prj.getName());
-            if (!open.contains(prj.getName())) {
-                tree.add(new OpenChatAction(prj));
-            }
-        }
-        for (String name:projectNames) {
-            tree.add(new CreateChatAction(name));
-        }
-        
-        Collections.sort(tree, new Comparator<Action>() {
-            public int compare(Action o1, Action o2) {
-                return ((String) o1.getValue(Action.NAME)).compareTo((String) o2.getValue(Action.NAME));
-            }
-        });
-
-        for (Action a:tree) {
-            menu.add(a);
-        }
-        if (menu.getComponentCount()==0) {
-            final JMenuItem jMenuItem = new JMenuItem(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "CTL_NoMoreChats")); // NOI18N
-            jMenuItem.setEnabled(false);
-            menu.add(jMenuItem);
-        }
-
-        menu.add(new CreatePrivateChatAction());
-        if (evt!=null) {
-            menu.show((Component) evt.getSource(),evt.getX(), evt.getY());
-        } else {
-            menu.show(chats, 0, 0);
-        }
-    }
-
-
     public static boolean isGroupInitedAndVisible(String name) {
         return instance==null?false:instance.isShowing()&&instance.isOpened()&&instance.open.contains(name) && name.equals(instance.chats.getSelectedComponent().getName());
     }

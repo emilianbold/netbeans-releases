@@ -37,20 +37,61 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.chat;
+package org.netbeans.modules.kenai.api;
 
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.kenai.UserData;
 
 /**
+ * Represents member of project.
+ * It contains reference to KenaiUser and his Role.
  *
  * @author Jan Becicka
  */
-public abstract class SPIAccessor {
+public final class KenaiProjectMember {
 
-    public static SPIAccessor DEFAULT;
+    private final KenaiUser user;
+    private final Role role;
+    KenaiProjectMember(UserData userData) {
+        if ("registered".equals(userData.role)) {
+            this.role = Role.OBSERVER;
+        } else {
+            this.role= Role.valueOf(userData.role.toUpperCase());
+        }
+        this.user = KenaiUser.get(userData);
+    }
 
-    public abstract void clear();
+    /**
+     * member's user name
+     * @return
+     */
+    public String getUserName() {
+        return user.data.user_name;
 
-    public abstract void firePropertyChange(KenaiUserUI forName, boolean oldOne, boolean newOne);
+    }
 
+    /**
+     * reference to KenaiUser
+     * @return
+     */
+    public KenaiUser getKenaiUser() {
+        return user;
+    }
+
+    /**
+     * Members role in project
+     * @return
+     */
+    public Role getRole() {
+        return role;
+    }
+
+    /**
+     * user role in projects
+     */
+    public static enum Role {
+        ADMIN,
+        OBSERVER,
+        DEVELOPER,
+        CONTENT
+    }
 }

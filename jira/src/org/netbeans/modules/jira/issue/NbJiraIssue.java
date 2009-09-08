@@ -45,8 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -333,11 +331,10 @@ public class NbJiraIssue extends Issue {
         return getFieldValues(IssueField.SUBTASK_IDS);
     }
 
-    // XXX unify with issuepanel
     public long getLastModify() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            return  Long.parseLong(value);
+            return Long.parseLong(value);
         } catch (NumberFormatException nfex) {
             Jira.LOG.log(Level.WARNING, null, nfex);
         }
@@ -347,7 +344,7 @@ public class NbJiraIssue extends Issue {
     public long getCreated() {
         String value = getFieldValue(IssueField.CREATION);
         try {
-            return  Long.parseLong(value);
+            return Long.parseLong(value);
         } catch (NumberFormatException nfex) {
             Jira.LOG.log(Level.WARNING, null, nfex);
         }
@@ -490,7 +487,7 @@ public class NbJiraIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            getRepository().getIssueCache().setIssueData(this, td); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }
@@ -512,8 +509,7 @@ public class NbJiraIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            String key = getID(td);
-            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            getRepository().getIssueCache().setIssueData(this, td);
             if (controller != null) {
                 controller.refreshViewData();
             }

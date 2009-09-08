@@ -184,7 +184,7 @@ public class CommentsPanel extends JPanel {
         if (issue.getRepository() instanceof KenaiRepository) {
             int index = author.indexOf('@');
             String userName = (index == -1) ? author : author.substring(0,index);
-            stateLabel = KenaiUserUI.forName(userName).createUserWidget();
+            stateLabel = new KenaiUserUI(userName).createUserWidget();
             stateLabel.setText(null);
         }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N

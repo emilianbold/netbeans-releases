@@ -59,6 +59,9 @@ public abstract class VCSKenaiSupport {
      */
     public final static String PROP_KENAI_VCS_NOTIFICATION = "kenai.vcs.notification"; // NOI18N
 
+    /**
+     * A Kenai service
+     */
     public enum Service {
         VCS_SVN,
         VCS_HG,
@@ -106,17 +109,36 @@ public abstract class VCSKenaiSupport {
     public abstract void setFirmAssociations(File[] roots, String url);
 
     /**
-     * Returns true if user is logged into kenai
-     * @return true if user is logged into kenai
+     * Determines if the user is logged into kenai
+     * @return true if user is logged into kenai otherwise false
      */
     public abstract boolean isLogged ();
-    
-    public abstract KenaiUser forName(final String user);
 
-    public abstract boolean isUserOnline(String user);
+    /**
+     * Returns a {@link KenaiUser} with the given name
+     * @param userName user name
+     * @return a KenaiUser instance
+     */
+    public abstract KenaiUser forName(final String userName);
 
+    /**
+     * Determines wheter the user with the given name is online or not
+     *
+     * @param userName user name
+     * @return true if user is online, otherwise false
+     */
+    public abstract boolean isUserOnline(String userName);
+
+    /**
+     * Registers a listener to listen on changes in a kenai VCS repository
+     * @param l listener
+     */
     public abstract void addVCSNoficationListener(PropertyChangeListener l);
 
+    /**
+     * Unregisters a listener to listen on changes in a kenai VCS repository
+     * @param l listener
+     */
     public abstract void removeVCSNoficationListener(PropertyChangeListener l);
 
     /**
@@ -127,47 +149,119 @@ public abstract class VCSKenaiSupport {
      */
     public abstract String getRevisionUrl (String sourcesUrl, String revision);
 
+    /**
+     * Repesents a Kenai user
+     */
     public abstract class KenaiUser {
 
+        /**
+         * Determines wheter the {@link KenaiUser} is online or not
+         * @return true if user is online, othewise false
+         */
         public abstract boolean isOnline();
 
+        /**
+         * Register a listener
+         * @param listener
+         */
         public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
+        /**
+         * Unregister a listener
+         * @param listener
+         */
         public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
+        /**
+         * Returns an icon representing the users online status
+         * @return
+         */
         public abstract Icon getIcon();
 
+        /**
+         * Returns an widget representing the users
+         * @return
+         */
         public abstract JLabel createUserWidget();
 
+        /**
+         * Returns user name
+         * @return
+         */
         public abstract String getUser();
 
+        /**
+         * Start a chat session with this user
+         */
         public abstract void startChat();
     }
 
+    /**
+     * Represents a change in a kenai VCS repository
+     */
     public abstract class VCSKenaiNotification {
 
+        /**
+         * The repository uri
+         * @return
+         */
         public abstract URI getUri();
 
+        /**
+         * Timestamp of change
+         * @return
+         */
         public abstract Date getStamp();
 
+        /**
+         * Determines the repository service - e.g svn, hg
+         * @return
+         */
         public abstract Service getService();
 
+        /**
+         * Notified modifications
+         * @return
+         */
         public abstract List<VCSKenaiModification> getModifications();
 
+        /**
+         * Author who made the change
+         * @return
+         */
         public abstract String getAuthor();
     }
 
+    /**
+     * Represenst a modification in a Kenai VCS repository
+     */
     public abstract static class VCSKenaiModification {
+
+        /**
+         * Type of modification
+         */
         public static enum Type {
             NEW,
             CHANGE,
             DELETE
         }
 
+        /**
+         * Determines the type of this modification
+         * @return
+         */
         public abstract Type getType();
 
+        /**
+         * Determines the affeted resource
+         * @return
+         */
         public abstract String getResource();
 
+        /**
+         * Identifies this modification - e.g reviosion or changeset
+         * @return
+         */
         public abstract String getId();
     }
     

@@ -39,6 +39,14 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
+import java.util.HashSet;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.util.StringUtils;
 import org.netbeans.modules.kenai.UserData;
 
 /**
@@ -47,10 +55,19 @@ import org.netbeans.modules.kenai.UserData;
  */
 public final class KenaiUser {
 
+    public static final String PROP_PRESENCE = "Presence";
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private static final HashMap<String, KenaiUser> users = new HashMap();
+    private static final HashSet<String> onlineUsers = new HashSet<String>();
     UserData data;
 
-    KenaiUser(UserData data) {
+    private KenaiUser(UserData data) {
         this.data = data;
+    }
+
+    private KenaiUser(String username) {
+        this.data = new UserData();
+        this.data.user_name = username;
     }
     
     /**
@@ -78,57 +95,133 @@ public final class KenaiUser {
     }
     
     /**
-     * getter for role
+     * user status
      * @return
      */
-    public Role getRole() {
-        if ("registered".equals(data.role)) {
-            return Role.OBSERVER;
+    public Status getStatus() {
+        if (Kenai.getDefault().getPasswordAuthentication()==null) {
+            return Status.UNKNOWN;
         }
-        return Role.valueOf(data.role.toUpperCase());
+        if (isOnline())
+            return Status.ONLINE;
+        return Status.OFFLINE;
     }
-//    public Status getStatus() {
-//        return Status.UNKNOWN;
-//    }
 
     @Override
     public String toString() {
-        return getUserName() + " (" + getRole() + ")";
+        return getUserName();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public static KenaiUser forName(final String name) {
+        synchronized (users) {
+            KenaiUser user = users.get(name);
+            if (user==null) {
+                user = new KenaiUser(name);
+                users.put(name, user);
+            }
+            return user;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
+    }
+    
+    static KenaiUser get(UserData data) {
+        synchronized (users) {
+            KenaiUser user = users.get(data.user_name);
+            if (user!=null) {
+                user.data = data;
+            } else {
+                user = new KenaiUser(data);
+                users.put(data.user_name, user);
+            }
+            return user;
         }
-        final KenaiUser other = (KenaiUser) obj;
-        if (this.data != other.data && (this.data == null || !this.data.user_name.equals(other.data.user_name))) {
-            return false;
-        }
-        return true;
     }
 
-    @Override
-    public int hashCode() {
-        return data.user_name.hashCode();
+
+    static synchronized void clear() {
+        synchronized (users) {
+            users.clear();
+        }
+        synchronized (onlineUsers) {
+            onlineUsers.clear();
+    }
     }
 
-//    public static enum Status {
-//        ONLINE,
-//        OFFLINE,
-//        DND,
-//        UNKNOWN
-//    }
+    /**
+     * Get the value of online
+     *
+     * @return the value of online
+     */
+    public boolean isOnline() {
+        return isOnline(this.getUserName());
+    }
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
     
     /**
-     * user role in projects
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
      */
-    public static enum Role {
-        ADMIN,
-        OBSERVER,
-        DEVELOPER
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
+
+    public static boolean isOnline(String user) {
+        synchronized (onlineUsers) {
+            return onlineUsers.contains(user);
+        }
+    }
+
+    static class KenaiPacketListener implements PacketListener {
+
+        public void processPacket(Packet packet) {
+            Presence presence = (Presence) packet;
+            String from = presence.getFrom();
+            if (null != packet.getExtension("x", "http://jabber.org/protocol/muc#user")) {
+                String user = StringUtils.parseResource(from);
+                if (presence.getType() == Presence.Type.available) {
+                    synchronized (onlineUsers) {
+                        onlineUsers.add(user);
+                    }
+                    synchronized (users) {
+                        KenaiUser u = users.get(user);
+                        if (u != null) {
+                            u.propertyChangeSupport.firePropertyChange(PROP_PRESENCE,
+                                    presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
+                        }
+                    }
+
+                } else if (presence.getType() == Presence.Type.unavailable) {
+                    synchronized (onlineUsers) {
+                        onlineUsers.remove(user);
+                    }
+                    synchronized (users) {
+                        KenaiUser u = users.get(user);
+                        if (u != null) {
+                            u.propertyChangeSupport.firePropertyChange(PROP_PRESENCE,
+                                    presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * user status
+     */
+    public static enum Status {
+        ONLINE,
+        OFFLINE,
+        DND,
+        UNKNOWN
+    }
+    
 }

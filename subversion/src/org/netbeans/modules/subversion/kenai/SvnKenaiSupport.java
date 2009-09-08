@@ -111,7 +111,7 @@ public class SvnKenaiSupport {
     }
 
     public void register() {
-        SvnKenaiSupport.getInstance().addVCSNoficationListener(new KenaiNotificationListener());
+        addVCSNoficationListener(new KenaiNotificationListener());
     }
 
 }

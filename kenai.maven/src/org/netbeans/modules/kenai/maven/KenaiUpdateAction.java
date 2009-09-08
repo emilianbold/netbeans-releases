@@ -52,8 +52,8 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Contributor;
 import org.netbeans.modules.maven.model.pom.Developer;
@@ -215,7 +215,7 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
                 updateLicense(mProj, kLicenses[i], factory);
             }
 
-            KenaiUser[] kMembers = kProj.getMembers();
+            KenaiProjectMember[] kMembers = kProj.getMembers();
             for (int i = 0; i < kMembers.length; i++) {
                 updateMember(mProj, kMembers[i], factory);
             }
@@ -362,9 +362,9 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
         mLicense.setComments(kLicense.getDisplayName());
     }
 
-    private static void updateMember(Project mProj, KenaiUser kUser, POMComponentFactory factory) {
-        final String kName = kUser.getFirstName() + " " + kUser.getLastName();
-        if (KenaiUser.Role.OBSERVER.equals(kUser.getRole())) {
+    private static void updateMember(Project mProj, KenaiProjectMember kUser, POMComponentFactory factory) {
+        final String kName = kUser.getKenaiUser().getFirstName() + " " + kUser.getKenaiUser().getLastName();
+        if (KenaiProjectMember.Role.OBSERVER.equals(kUser.getRole())) {
             // contributors
             List<Contributor> contrs = mProj.getContributors();
             Contributor contributor = null;
