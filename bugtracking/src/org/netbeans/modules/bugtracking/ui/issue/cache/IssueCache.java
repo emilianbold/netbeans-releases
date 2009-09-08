@@ -58,8 +58,6 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
  */
 public class IssueCache<T> {
 
-    // XXX do we need this?
-    public static final String ATTR_DATE_MODIFICATION = "date.modification";    // NOI18N
     /**
      * No information available
      */
@@ -504,11 +502,6 @@ public class IssueCache<T> {
             String oldValue = e.getValue();
             if(newValue == null && oldValue == null) {
                 continue;
-            }
-            if(!e.getKey().equals(ATTR_DATE_MODIFICATION) &&
-               (newValue == null || !newValue.trim().equals(oldValue.trim())))
-            {
-                return true;
             }
         }
         return false;
