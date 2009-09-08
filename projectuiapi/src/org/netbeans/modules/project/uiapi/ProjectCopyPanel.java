@@ -263,6 +263,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         add(progress, gridBagConstraints);
 
         warningTextArea.setColumns(20);
+        warningTextArea.setEditable(false);
         warningTextArea.setForeground(UIManager.getColor("nb.errorForeground"));
         warningTextArea.setLineWrap(true);
         warningTextArea.setRows(5);
