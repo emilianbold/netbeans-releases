@@ -57,6 +57,8 @@ import org.codeviation.commons.utils.Iterators;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.packet.Presence;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiREST;
 import org.netbeans.modules.kenai.KenaiImpl;
@@ -558,7 +560,7 @@ public final class Kenai {
             try {
                 xmppConnection.removePacketListener(packetListener);
                 xmppConnection.connect();
-                xmppConnection.addPacketListener(packetListener, null);
+                xmppConnection.addPacketListener(packetListener, new PacketTypeFilter(Presence.class));
                 xmppConnection.login(auth.getUserName(), new String(auth.getPassword()), "NetBeans"); //NOI18N
             } catch (XMPPException xMPPException) {
                 propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
