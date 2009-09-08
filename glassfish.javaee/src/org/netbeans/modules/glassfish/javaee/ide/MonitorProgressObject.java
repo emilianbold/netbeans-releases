@@ -217,8 +217,8 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
                     String k = e.getKey();
                     int dex1 = k.lastIndexOf(".module."); // NOI18N
                     int dex2 = k.lastIndexOf(".name"); // NOI18N
-                    if (dex2 > dex1 && dex1 > 0) {
-                        String moduleName = e.getValue();
+                    String moduleName = e.getValue();
+                    if (dex2 > dex1 && dex1 > 0 && !moduleId.getModuleID().equals(moduleName)) {
                         for (String guess : TYPES) {
                             String type = data.get("applications.application." + moduleId.getModuleID() + ".module." + moduleName + ".engine." + guess + ".sniffer"); // NOI18N
                             if (null != type) {
