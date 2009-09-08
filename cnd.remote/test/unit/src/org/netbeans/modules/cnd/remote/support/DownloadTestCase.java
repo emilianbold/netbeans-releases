@@ -38,14 +38,9 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.Future;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
