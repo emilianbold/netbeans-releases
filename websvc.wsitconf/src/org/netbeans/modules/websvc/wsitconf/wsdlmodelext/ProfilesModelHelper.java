@@ -94,7 +94,7 @@ public class ProfilesModelHelper {
     
     private static HashMap<ConfigVersion, ProfilesModelHelper> instances =
             new HashMap<ConfigVersion, ProfilesModelHelper>();
-    private ConfigVersion configVersion = ConfigVersion.CONFIG_1_3;
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
 
     /**
      * Creates a new instance of ProfilesModelHelper
@@ -789,7 +789,7 @@ public class ProfilesModelHelper {
                 updateServiceUrl(c, isSSLProfile(profile));
             }
             
-            if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
+            if (!ConfigVersion.CONFIG_1_0.equals(configVersion)) {
                 boolean rm = RMModelHelper.getInstance(configVersion).isRMEnabled(c);
                 if (rm) {
                     if (isSSLProfile(profile)) {

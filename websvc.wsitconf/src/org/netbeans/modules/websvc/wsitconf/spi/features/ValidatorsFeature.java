@@ -28,10 +28,12 @@
 
 package org.netbeans.modules.websvc.wsitconf.spi.features;
 
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+
 /**
  *
  * @author mg116726
  */
 public interface ValidatorsFeature {
-    
+    public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType);
 }

@@ -92,6 +92,7 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static final String DEFAULT_LIFETIME = "300000";                     //NOI18N
     public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.security.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
+    public static final String DEFAULT_CONTRACT_CLASS_METRO13 = "com.sun.xml.ws.security.trust.impl.WSTRustContractImpl"; //NOI18N
     public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
@@ -644,7 +645,11 @@ public class ProprietarySecurityPolicyModelHelper {
     
     public void enableSTS(Binding b, boolean enable) {
         if (enable) {
-            setSTSContractClass(b, DEFAULT_CONTRACT_CLASS);
+            if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
+                setSTSContractClass(b, DEFAULT_CONTRACT_CLASS_METRO13);
+            } else {
+                setSTSContractClass(b, DEFAULT_CONTRACT_CLASS);
+            }
             setSTSLifeTime(b, DEFAULT_LIFETIME);
             Collection<BindingOperation> bOperations = b.getBindingOperations();
             WSDLModel model = b.getModel();
