@@ -213,7 +213,7 @@ public class ErprintSession {
         }
     }
 
-    public String[] getHotFunctions(String command, Metrics metrics, int limit, boolean restart) throws IOException {
+    public String[] getHotFunctions(ErprintCommand command, Metrics metrics, int limit, boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
 
         synchronized (erp) {

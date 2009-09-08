@@ -89,7 +89,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     private DefaultMutableTreeNode focusedTreeNode = null;
 
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
-        super(configuration, (TreeTableDataProvider)dataProvider);
+        super(configuration, (TreeTableDataProvider) dataProvider);
         this.configuration = (CallersCalleesVisualizerConfiguration) configuration;
         this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;
@@ -203,8 +203,8 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
 
         loadTree(focusedTreeNode, Arrays.asList(new FunctionCallTreeTableNode(focusedFunction)));
 
-    //
-    //and now chage tree and invoke fireTreeModelChanged()
+        //
+        //and now chage tree and invoke fireTreeModelChanged()
 
     }
 
@@ -242,19 +242,9 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         Runnable r = new Runnable() {
 
             public void run() {
-
-                final List<FunctionCallWithMetric> result;
-                FunctionCallWithMetric[] path = new FunctionCallWithMetric[ppath.size()];
-                for (int i = 0, size = ppath.size(); i < size; i++) {
-                    path[i] = ppath.get(i).getDeligator();
-                }
+                final List<FunctionCallWithMetric> path = FunctionCallTreeTableNode.getFunctionCalls(ppath);
                 //FunctionCall[] path = ppath.toArray(new FunctionCallTreeTableNode[0]);
-
-                if (CallersCalleesVisualizer.this.isCalls) {
-                    result = dataProvider.getCallees(path, isCalls);
-                } else {
-                    result = dataProvider.getCallers(path, false);
-                }
+                final List<FunctionCallWithMetric> result = dataProvider.getCallees(path, configuration.getMetadata().getColumns(), null, isCalls);
 
                 UIThread.invoke(new Runnable() {
 
@@ -327,14 +317,12 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         return super.getIcon(node);
     }
 
-
-
     @Override
     protected void updateButtons() {
         if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(getConfiguration())) {
             return;
         }
-        if (calls != null){
+        if (calls != null) {
             calls.setSelected(isCalls);
             callers.setSelected(!isCalls);
         }
@@ -399,7 +387,6 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             GoToSourceAction action = new GoToSourceAction(functionCall);
             action.actionPerformed(null);
         }
-
 
         public Action[] getActions(Object node) throws UnknownTypeException {
             if (!(node instanceof DefaultMutableTreeNode)) {
