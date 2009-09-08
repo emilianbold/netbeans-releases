@@ -44,12 +44,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JDialogOperator.JDialogFinder;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.operators.CommitOperator;
@@ -105,7 +109,7 @@ public class InitializeTest extends JellyTestCase {
 //        } finally {
 //            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
 //        }
-
+         NbDialogOperator ndo = null;
         try {
             long start;
             long end;
@@ -132,12 +136,21 @@ public class InitializeTest extends JellyTestCase {
 
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
             nodeFile.performPopupActionNoBlock("Versioning|Initialize Mercurial Project");
+
+            ndo = new NbDialogOperator("Repository root path");
+            JButtonOperator buttOperator = new JButtonOperator(ndo,"OK");
+            buttOperator.push();
+
+
             System.out.println(s);
             System.out.println("tady1");
+
   //          TestKit.waitText(mh);
 //            TestKit.waitText(mh2);
 
             new EventTool().waitNoEvent(1000);
+
+
 
 //            mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
