@@ -39,69 +39,26 @@
 package org.netbeans.modules.dlight.extras.api;
 
 import org.netbeans.modules.dlight.util.Range;
-import javax.swing.event.ChangeListener;
 
 /**
- * Model for components that have viewport or are otherwise
- * involved in viewport management.
  *
  * @author Alexey Vladykin
  */
-public interface ViewportModel {
+public interface ViewportModelState {
 
     /**
      * Returns limits. Limits is the available data range,
      * which can be viewed through this viewport.
-     * Same as <code>getState().getLimits()</code>.
      *
      * @return current limits
      */
     Range<Long> getLimits();
 
     /**
-     * Sets limits.
-     *
-     * @param limits  new limits
-     */
-    void setLimits(Range<Long> limits);
-
-    /**
      * Returns viewport. Viewport's start and
      * end are in milliseconds since session start.
-     * Same as <code>getState().getViewport()</code>.
      *
      * @return current viewport
      */
     Range<Long> getViewport();
-
-    /**
-     * Sets viewport. Start and/or end can be <code>null</code>
-     * to keep current values.
-     *
-     * @param viewport  new viewport
-     */
-    void setViewport(Range<Long> viewport);
-
-    /**
-     * Returns model state consisting of current limits and viewport.
-     * This is a way to get limits and viewport atomically.
-     *
-     * @return model state
-     */
-    ViewportModelState getState();
-
-    /**
-     * Adds change listener. <code>ChangeEvent</code>s are sent
-     * when limits or viewport are modified.
-     *
-     * @param listener  listener to add
-     */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes change listener.
-     *
-     * @param listener  listener to remove
-     */
-    void removeChangeListener(ChangeListener listener);
 }
