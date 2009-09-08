@@ -86,11 +86,11 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593389531357591271L;
-    private static final String NO_CONFIG = "no-config"; // NOI18N
-    private static final String MISSING_CONFIG = "missing-config"; // NOI18N
-    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
+    public static final String NO_CONFIG = "no-config"; // NOI18N
+    public static final String MISSING_CONFIG = "missing-config"; // NOI18N
+    public static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty(NO_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
-    private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
+    public static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty(MISSING_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
@@ -833,7 +833,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    private static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
+    public static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
         private static final long serialVersionUID = 93621381917558630L;
 
         public RemoteConnectionRenderer() {
@@ -878,7 +878,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    private static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
+    public static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
         private static final long serialVersionUID = 86192358777523629L;
 
         public RemoteUploadRenderer() {
