@@ -310,6 +310,15 @@ public class ProprietarySecurityPolicyModelHelper {
         return null;
     }
     
+    public static boolean isPreSTSShareToken(Binding b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        PreconfiguredSTS ps = getPreconfiguredSTS(p);
+        if (ps != null) {
+            return ps.isShareToken();
+        }
+        return false;
+    }
+
     public static String getPreSTSWstVersion(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
@@ -1487,6 +1496,26 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
+    public static void setPreSTSShareToken(Binding b, boolean value) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        PreconfiguredSTS ps = getPreconfiguredSTS(p);
+        if ((ps == null) || (p == null)) {
+            ps = createPreconfiguredSTS(b);
+        }
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            ps.setShareToken(value);
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+
     public static void setPreSTSWsdlLocation(Binding b, String value) {
         WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
