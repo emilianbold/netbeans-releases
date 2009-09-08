@@ -181,11 +181,13 @@ public class CompilationUnit {
     }
 
     public DwarfEntry getReferencedType(DwarfEntry entry) throws IOException{
-        Integer typeRef = (Integer)entry.getAttributeValue(ATTR.DW_AT_type);
-        if (typeRef == null) {
-            return null;
+        Object typeRef = entry.getAttributeValue(ATTR.DW_AT_type);
+        if (typeRef instanceof Integer) {
+            return getEntry((Integer)typeRef);
+        } else if (typeRef instanceof Long) {
+            return getEntry((Long)typeRef);
         }
-        return getEntry(typeRef);
+        return null;
     }
 
     public String getType(DwarfEntry entry) throws IOException {
@@ -195,13 +197,17 @@ public class CompilationUnit {
             return "null"; // NOI18N
         }
         
-        Integer typeRef = (Integer)entry.getAttributeValue(ATTR.DW_AT_type);
-        
-        if (typeRef == null) {
+        Object typeRef = entry.getAttributeValue(ATTR.DW_AT_type);
+        long ref;
+        if (typeRef instanceof Integer) {
+            ref =(Integer)typeRef;
+        } else if (typeRef instanceof Long) {
+            ref =(Long)typeRef;
+        } else {
             return "void"; // NOI18N
         }
-        
-        DwarfEntry typeEntry = getEntry(typeRef);
+
+        DwarfEntry typeEntry = getEntry(ref);
         TAG kind = typeEntry.getKind();
         
         if (kind.equals(TAG.DW_TAG_base_type)) {
@@ -233,12 +239,13 @@ public class CompilationUnit {
             if (atType == null) {
                 return "const void"; // NOI18N
             }
-            
+            DwarfEntry refTypeEntry = null;
             if (atType instanceof Integer) {
-                Integer constTypeRef = (Integer)typeEntry.getAttributeValue(ATTR.DW_AT_type);
-                
-                DwarfEntry refTypeEntry = getEntry(constTypeRef);
-                typeEntry.getKind();
+                refTypeEntry = getEntry((Integer)atType);
+            } else if (atType instanceof Long) {
+                refTypeEntry = getEntry((Long)atType);
+            }
+            if (refTypeEntry != null) {
                 if (refTypeEntry.getKind().equals(TAG.DW_TAG_reference_type) ||
                         refTypeEntry.getKind().equals(TAG.DW_TAG_array_type)) {
                     return getType(typeEntry);
@@ -326,14 +333,20 @@ public class CompilationUnit {
         return root;
     }
     
-    public DwarfEntry getTypedefFor(Integer typeRef) throws IOException {
+    public DwarfEntry getTypedefFor(long typeRef) throws IOException {
         // TODO: Rewrite not to iterate every time.
         
         for (DwarfEntry entry : getDebugInfo(true).getChildren()) {
             if (entry.getKind().equals(TAG.DW_TAG_typedef)) {
                 Object entryTypeRef = entry.getAttributeValue(ATTR.DW_AT_type);
-                if (entryTypeRef != null && ((Integer)entryTypeRef).equals(typeRef)) {
-                    return entry;
+                if (entryTypeRef instanceof Integer) {
+                    if (((Integer)entryTypeRef).equals(typeRef)) {
+                        return entry;
+                    }
+                } else if (entryTypeRef instanceof Long) {
+                    if (((Long)entryTypeRef).equals(typeRef)) {
+                        return entry;
+                    }
                 }
             }
         }

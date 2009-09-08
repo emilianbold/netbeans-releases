@@ -104,6 +104,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -328,7 +329,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     gdb.file_exec_and_symbols(pgm);
                     isSharedLibrary = true;
                 } else {
-                    gdb.file_exec_and_symbols(path);
+                    gdb.file_symbol_file(path);
                 }
                 
                 CommandBuffer cb = getAttachCommand(attachTarget);
@@ -805,17 +806,22 @@ public class GdbDebugger implements PropertyChangeListener {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             String procdir = "/proc/" + Long.toString(pid); // NOI18N
             File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
-            if (!pathfile.exists()) {
-                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
-            }
-            if (pathfile.exists()) {
-                File exefile = new File(exepath);
-                if (exefile.exists()) {
-                    String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                    if (comparePaths(path, exefile.getAbsolutePath())) {
-                        return true;
+            try {
+                String path = getPathFromSymlink(pathfile.getAbsolutePath());
+                if (path == null) {
+                    pathfile = new File(procdir, "exe"); // NOI18N - Linux?
+                    path = getPathFromSymlink(pathfile.getAbsolutePath());
+                }
+                if (path != null) {
+                    File exefile = new File(exepath);
+                    if (HostInfoUtils.fileExists(execEnv, exepath)) {
+                        if (comparePaths(path, exefile.getAbsolutePath())) {
+                            return true;
+                        }
                     }
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return false;
@@ -875,29 +881,22 @@ public class GdbDebugger implements PropertyChangeListener {
         return null;
     }
 
-    private static String getPathFromSymlink(String path) {
-        File ls = new File("/bin/ls"); // NOI18N
-        if (ls.isFile()) {
-            List<String> list = new ArrayList<String>();
-            list.add(ls.getAbsolutePath());
-            list.add("-l"); // NOI18N
-            list.add(path);
-            ProcessBuilder pb = new ProcessBuilder(list);
-            pb.redirectErrorStream(true);
-
-            try {
-                Process process = pb.start();
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line = br.readLine(); // just read 1st line...
-                br.close();
-                if (line != null) {
-                    int pos = line.indexOf("->"); // NOI18N
-                    if (pos > 0) {
-                        return line.substring(pos + 2).trim();
-                    }
+    private String getPathFromSymlink(String path) {
+        try {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable("/bin/ls").setArguments("-l", path).redirectError(); // NOI18N
+            final NativeProcess process = npb.call();
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = br.readLine(); // just read 1st line...
+            br.close();
+            if (line != null) {
+                int pos = line.indexOf("->"); // NOI18N
+                if (pos > 0) {
+                    return line.substring(pos + 2).trim();
                 }
-            } catch (IOException ioe) {
             }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }

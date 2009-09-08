@@ -38,9 +38,13 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
 import java.beans.PropertyVetoException;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -51,11 +55,13 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -110,11 +116,24 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         String timeString = TimeLineUtils.getMillisValue(time);
         String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
         stackPanel.setRootVisible(rootName);
-        for (ThreadSnapshot stack : descriptor.getThreadStates()) {
+        for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
             MSAState msa = stack.getState();
             ThreadStateResources res = ThreadStateResources.forState(msa);
             if (res != null) {
-                stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), stack.getStack()); // NOI18N
+                Future<List<FunctionCall>> task = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
+
+                    public List<FunctionCall> call() throws Exception {
+                        return stack.getStack();
+                    }
+                }, "Ask for a stack");//NOI18N
+                try {
+                    //NOI18N
+                    stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), task.get()); // NOI18N
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
 
         }

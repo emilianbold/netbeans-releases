@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,31 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.extras.api;
 
-package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
-
-import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import java.beans.BeanDescriptor;
-import java.beans.SimpleBeanInfo;
+import org.netbeans.modules.dlight.util.Range;
 
 /**
  *
- * @author Martin Entlicher
+ * @author Alexey Vladykin
  */
-class GdbBreakpointBeanInfo extends SimpleBeanInfo {
-    
-    public GdbBreakpointBeanInfo() {}
+public interface ViewportModelState {
 
-    @Override
-    public BeanDescriptor getBeanDescriptor() {
-        return new BeanDescriptor(
-                CndBreakpoint.class,
-                GdbBreakpointCustomizer.class);
-    }
+    /**
+     * Returns limits. Limits is the available data range,
+     * which can be viewed through this viewport.
+     *
+     * @return current limits
+     */
+    Range<Long> getLimits();
 
+    /**
+     * Returns viewport. Viewport's start and
+     * end are in milliseconds since session start.
+     *
+     * @return current viewport
+     */
+    Range<Long> getViewport();
 }

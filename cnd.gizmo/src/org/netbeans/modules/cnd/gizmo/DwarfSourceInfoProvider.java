@@ -83,11 +83,14 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         if (info != null) {
             PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
             if (provider != null) {
-                PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
-                if (pathMapper != null) {
-                    String remote = pathMapper.getLocalPath(info.getFileName());
-                    if (remote != null) {
-                        return new SourceFileInfo(remote, info.getLine(), 0);
+                String env = serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY);
+                if (env != null) {
+                    PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(env));
+                    if (pathMapper != null) {
+                        String remote = pathMapper.getLocalPath(info.getFileName());
+                        if (remote != null) {
+                            return new SourceFileInfo(remote, info.getLine(), 0);
+                        }
                     }
                 }
             }
@@ -143,6 +146,9 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         if (sourceInfoMap == null) {
             sourceInfoMap = new HashMap<String, AbstractFunctionToLine>();
             try {
+                if (TRACE) {
+                    System.err.println("Process file: "+executable); // NOI18N
+                }
                 Dwarf dwarf = new Dwarf(executable);
                 try {
                     for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {

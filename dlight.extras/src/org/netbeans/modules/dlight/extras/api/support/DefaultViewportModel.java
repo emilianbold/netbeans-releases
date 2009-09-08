@@ -3,6 +3,7 @@ package org.netbeans.modules.dlight.extras.api.support;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
+import org.netbeans.modules.dlight.extras.api.ViewportModelState;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -81,11 +82,34 @@ public final class DefaultViewportModel implements ViewportModel {
         }
     }
 
+    public synchronized ViewportModelState getState() {
+        return new StateImpl(getLimits(), getViewport());
+    }
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    private static class StateImpl implements ViewportModelState {
+
+        private final Range<Long> limits;
+        private final Range<Long> viewport;
+
+        public StateImpl(Range<Long> limits, Range<Long> viewport) {
+            this.limits = limits;
+            this.viewport = viewport;
+        }
+
+        public Range<Long> getLimits() {
+            return limits;
+        }
+
+        public Range<Long> getViewport() {
+            return viewport;
+        }
     }
 }

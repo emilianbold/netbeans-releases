@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.cnd.debugger.common.models.BoldVariablesTableModelFilterFirst;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
