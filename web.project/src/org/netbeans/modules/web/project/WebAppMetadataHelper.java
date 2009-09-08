@@ -40,6 +40,7 @@
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
@@ -59,6 +60,16 @@ public class WebAppMetadataHelper {
     public static List<ServletInfo> getServlets(MetadataModel<WebAppMetadata> mm)
             throws MetadataModelException, IOException
     {
+        /* Fix for IZ#168634 -NullPointerException at org.netbeans.modules.web.project.WebAppMetadataHelper.getServlets 
+         *
+         * It is possible to have null metamodel. It could happen as result
+         * of metamodel factory corner case ( f.e. null argument for factory ).
+         * So I put here check for <code>mm</code>. Just for the case.  
+         */
+        if ( mm == null ){
+            return Collections.emptyList();
+        }
+        
         return mm.runReadAction(new MetadataModelAction<WebAppMetadata, List<ServletInfo>>() {
             public List<ServletInfo> run(WebAppMetadata metadata) throws Exception {
                 return metadata.getServlets();
