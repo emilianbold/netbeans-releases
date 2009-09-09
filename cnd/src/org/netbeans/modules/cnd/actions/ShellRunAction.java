@@ -46,10 +46,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -61,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -92,7 +96,19 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+    public static void performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project) {
+        if (SwingUtilities.isEventDispatchThread()){
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    _performAction(node, listener, outputListener, project);
+                }
+            });
+        } else {
+            _performAction(node, listener, outputListener, project);
+        }
+    }
+
+    private static void _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return;
@@ -118,6 +134,12 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (execEnv.isRemote()) {
+            String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
+            if (s != null) {
+                buildDir = new File(s);
+            }
+        }
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.

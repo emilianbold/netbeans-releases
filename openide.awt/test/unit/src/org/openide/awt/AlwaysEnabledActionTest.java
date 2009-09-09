@@ -342,7 +342,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     }
 
     public void testPreferencesAction() throws Exception {
-        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
+//        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
         checkPreferencesAction("testUserPreferences.instance", Preferences.userRoot());
         checkPreferencesAction("testNbPreferences.instance", NbPreferences.root());
         checkPreferencesAction("testCustomPreferences.instance", Preferences.userRoot()); // customPreferences() uses "myNode" subnode
