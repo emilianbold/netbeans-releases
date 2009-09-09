@@ -110,8 +110,9 @@ public class SvnClientFactory {
      */
     public synchronized static void init() {
         if(instance == null) {
-            instance = new SvnClientFactory();
-            instance.setup();
+            SvnClientFactory fac = new SvnClientFactory();
+            fac.setup();
+            instance = fac;
         }
     }
 
@@ -221,6 +222,14 @@ public class SvnClientFactory {
     public static boolean isClientAvailable() {
         init();
         return exception == null;
+    }
+
+    /**
+     * Immediately returns true if the factory has been initialized, otherwise returns false.
+     * @return
+     */
+    public static boolean isInitialized () {
+        return instance != null;
     }
 
     public static boolean wasJavahlCrash() {

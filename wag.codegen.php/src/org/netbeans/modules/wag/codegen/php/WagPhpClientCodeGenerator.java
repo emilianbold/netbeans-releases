@@ -51,6 +51,8 @@ import org.netbeans.modules.wag.codegen.WagClientCodeGenerator;
 import org.netbeans.modules.wag.codegen.php.util.PhpUtil;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
+import org.netbeans.modules.wag.manager.zembly.ZemblySession;
+import org.netbeans.modules.wag.manager.zembly.ZemblyUserInfo;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -95,6 +97,15 @@ public class WagPhpClientCodeGenerator extends WagClientCodeGenerator {
 
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
         try {
+            ZemblyUserInfo userInfo = ZemblySession.getInstance().getUserInfo();
+            String key = "your_zembly_key";
+            String secret = "your_zembly_secret";
+
+            if (userInfo != null) {
+                key = userInfo.getKey();
+                secret = userInfo.getSecret();
+            }
+
             String paramStr = "array(";
 
             int index = 0;
@@ -107,9 +118,10 @@ public class WagPhpClientCodeGenerator extends WagClientCodeGenerator {
 
             paramStr += ")";
 
+            
             String code = "require_once('zclphp/zembly.php');\n" +
                     "try {\n" +
-                    "\t$config = new Configuration('your_zembly_key', 'your_zembly_secret');\n" +
+                    "\t$config = new Configuration('" + key + "', '" + secret + "');\n" +
                     "\t$result = Zembly::getInstance($config)->callService(\n" +
                     "\t\t'" + service.getCallableName() + "',\n" +
                     "\t\t" + paramStr + ");\n" +

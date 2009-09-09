@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -198,6 +199,10 @@ public final class ConnectionManager {
             char[] password,
             boolean storePassword) throws IOException, CancellationException {
 
+        if (SwingUtilities.isEventDispatchThread()) {
+            // otherwise UI can hang forever
+            throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
+        }
         if (env.isLocal()) {
             return true;
         }
@@ -225,6 +230,10 @@ public final class ConnectionManager {
     public boolean connectTo(
             final ExecutionEnvironment env) throws IOException, CancellationException {
 
+        if (SwingUtilities.isEventDispatchThread()) {
+            // otherwise UI can hang forever
+            throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
+        }
         synchronized (this) {
             if (connecting) {
                 return false;

@@ -222,7 +222,7 @@ class SftpSupport {
             final int mask, final Writer error) {
 
             Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error);
-            FutureTask<Integer> ftask = new FutureTask(uploader);
+            FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
             requestProcessor.post(ftask);
             LOG.fine(uploader.getTraceName() + " schedulled");
             return ftask;
@@ -234,7 +234,7 @@ class SftpSupport {
             final Writer error) {
 
             Downloader downloader = new Downloader(srcFileName, execEnv, dstFileName, error);
-            FutureTask<Integer> ftask = new FutureTask(downloader);
+            FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
             requestProcessor.post(ftask);
             LOG.fine(downloader.getTraceName() + " schedulled");
             return ftask;

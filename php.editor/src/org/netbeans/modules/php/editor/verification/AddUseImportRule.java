@@ -165,7 +165,7 @@ public class AddUseImportRule extends AbstractRule {
                 if (isFunctionName(parentNode)) {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedFunction> functions = context.index.getFunctions(null, nodeName.toName().toString(), Kind.EXACT);
+                        Collection<IndexedFunction> functions = context.getIndex().getFunctions(null, nodeName.toName().toString(), Kind.EXACT);
                         for (IndexedFunction indexedFunction : functions) {
                             addImportHints(indexedFunction.getQualifiedName(), nodeName, currenNamespace, node);
                         }
@@ -174,7 +174,7 @@ public class AddUseImportRule extends AbstractRule {
                 } else if (isClassName(parentNode)) {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedClass> classes = context.index.getClasses(null, nodeName.toName().toString(), Kind.EXACT);
+                        Collection<IndexedClass> classes = context.getIndex().getClasses(null, nodeName.toName().toString(), Kind.EXACT);
                         for (IndexedClass indexedClass : classes) {
                             addImportHints(indexedClass.getQualifiedName(), nodeName, currenNamespace, node);
                         }

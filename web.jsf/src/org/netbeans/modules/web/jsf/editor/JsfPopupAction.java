@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
-import org.netbeans.modules.web.jsf.editor.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,9 +52,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.Description;
 import org.netbeans.modules.web.jsf.api.facesmodel.Description;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.dialogs.AddDialog;

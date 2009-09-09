@@ -39,8 +39,11 @@
 package org.netbeans.modules.webpreview;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JToggleButton;
 
@@ -54,7 +57,7 @@ import org.openide.util.actions.Presenter;
 
 public final class HTMLPreviewAction extends AbstractAction implements Presenter.Toolbar {
 
-    private static final String mimeType = "text/html";
+    private static final String mimeType = "text/html"; // NOI18N
 
     public HTMLPreviewAction() {
         putValue(NAME, "Preview");
@@ -78,8 +81,18 @@ public final class HTMLPreviewAction extends AbstractAction implements Presenter
     }
 
     public Component getToolbarPresenter() {
-        JToggleButton presenter = new JToggleButton(this);
+        final JToggleButton presenter = new JToggleButton(this);
         presenter.setEnabled(EmbeddedBrowserFactory.getDefault().isEnabled());
+        EmbeddedBrowserFactory.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                presenter.setEnabled(EmbeddedBrowserFactory.getDefault().isEnabled());
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        WebPreviewTopComponent.findInstance().maybeInitWebBrowser();
+                    }
+                });
+            }
+        });
         presenter.setSelected(false);
         return presenter;
     }

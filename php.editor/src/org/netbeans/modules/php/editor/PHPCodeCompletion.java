@@ -88,7 +88,6 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.QualifiedName;
@@ -227,9 +226,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // TODO: separate the code that uses informatiom from lexer
         // and avoid running the index/ast analysis under read lock
         // in order to improve responsiveness
-        doc.readLock();
+        doc.readLock();        //TODO: use token hierarchy from snapshot and not use read lock in CC #171702
 
-        try{
+
+        try {
             ParserResult info = completionContext.getParserResult();
             int caretOffset = completionContext.getCaretOffset();
 
@@ -238,14 +238,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             PHPParseResult result = (PHPParseResult) info;
 
-            if (result.getProgram() == null){
+            if (result.getProgram() == null) {
                 return CodeCompletionResult.NONE;
             }
 
             CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
             LOGGER.fine("CC context: " + context);
 
-            if (context == CompletionContext.NONE){
+            if (context == CompletionContext.NONE) {
                 return CodeCompletionResult.NONE;
             }
 
@@ -262,13 +262,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 Exceptions.printStackTrace(ex);
             }
 
-            switch(context){
+            switch (context) {
                 case NAMESPACE_KEYWORD:
                     autoCompleteNamespaces(proposals, request, QualifiedNameKind.QUALIFIED);
                     break;
                 case GLOBAL:
                     autoCompleteGlobals(proposals, request);
-                break;
+                    break;
                 case EXPRESSION:
                     autoCompleteNamespaces(proposals, request);
                     autoCompleteExpression(proposals, request);
@@ -291,7 +291,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case CLASS_NAME:
                     autoCompleteNamespaces(proposals, request);
-                    autoCompleteClassNames(proposals, request,false);
+                    autoCompleteClassNames(proposals, request, false);
                     break;
                 case INTERFACE_NAME:
                     autoCompleteNamespaces(proposals, request);
@@ -316,7 +316,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteClassMembers(proposals, request, true);
                     break;
                 case PHPDOC:
-                    if (PHPDOCCodeCompletion.isTypeCtx(request)){
+                    if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                         autoCompleteTypeNames(proposals, request);
                     } else {
                         PHPDOCCodeCompletion.complete(proposals, request);
@@ -609,7 +609,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String varName = tokenSequence.token().text().toString();
             Collection<? extends TypeScope> types = Collections.emptyList();
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
-            Model model = ModelFactory.getModel(request.result);
+            Model model = request.result.getModel();
             if (varName.equals("self")) { //NOI18N
                 varKind = VariableKind.SELF;
                 types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
@@ -1327,7 +1327,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public ParameterInfo parameters(final ParserResult info, final int caretOffset, CompletionProposal proposal) {
-        final org.netbeans.modules.php.editor.model.Model model = ModelFactory.getModel(info);
+        final org.netbeans.modules.php.editor.model.Model model = ((PHPParseResult)info).getModel();
         ParameterInfoSupport infoSupport = model.getParameterInfoSupport(caretOffset);
         return infoSupport.getParameterInfo();
     }

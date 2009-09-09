@@ -464,6 +464,11 @@ public class CacheTest extends NbTestCase {
                     public long getCreated(Issue issue) {
                         return Long.parseLong(((TestIssue)issue).dataArray[2]);
                     }
+
+                    public String getID(String issueData) {
+                        String[] a = issueData.split("#");
+                        return a[0];
+                    }
                 });
             }
             protected void cleanup() {

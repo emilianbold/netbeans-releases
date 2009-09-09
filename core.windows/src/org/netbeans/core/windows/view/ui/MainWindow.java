@@ -108,13 +108,6 @@ public final class MainWindow extends JFrame {
 
     /** Constructs main window. */
     public MainWindow() {
-        //make all menu heavyweight by default
-        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-        //make all popups heavyweight
-        PopupFactory pf = PopupFactory.getSharedInstance();
-        if( !(pf instanceof HeavyWeightPopupFactory) ) {
-            PopupFactory.setSharedInstance(new HeavyWeightPopupFactory());
-        }
         if( "Aqua".equals(UIManager.getLookAndFeel().getID())
                 && null == System.getProperty("apple.awt.brushMetalLook") ) //NOI18N
             getRootPane().putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N

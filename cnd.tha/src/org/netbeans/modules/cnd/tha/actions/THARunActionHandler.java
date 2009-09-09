@@ -51,6 +51,7 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
@@ -60,7 +61,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.tha.THAConfigurationOptions;
 import org.netbeans.modules.cnd.tha.THAServiceInfo;
-import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
@@ -76,7 +76,6 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -119,7 +118,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
         String runDirectory = pae.getProfile().getRunDirectory();
         if (execEnv.isRemote()) {
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            executable = mapper.getLocalPath(executable);
+            executable = RemoteBinaryService.getRemoteBinary(execEnv, executable);
             runDirectory = mapper.getRemotePath(runDirectory, true);
         }
 

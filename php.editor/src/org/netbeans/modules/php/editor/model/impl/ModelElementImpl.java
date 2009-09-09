@@ -129,7 +129,13 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public String getNormalizedName() {
-        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart())+getFileObject().getPath();
+        String filePath = "";//NOI18N
+        final FileObject fileObject = getFileObject();
+        if (fileObject != null) {
+            filePath = fileObject.getPath();
+        }
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() +
+                String.valueOf(offsetRange.getStart())+filePath;
     }
 
     static boolean nameKindMatch(Pattern p, String text) {
@@ -231,10 +237,12 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         if (fileObject == null) {
             assert file.hasFirst();
             String fileUrl = file.first();
-            fileObject = PHPIndex.getFileObject(fileUrl);
-            synchronized (ModelElementImpl.class) {
-                if (fileObject != null) {
-                    file = Union2.createSecond(fileObject);
+            if (fileUrl != null) {
+                fileObject = PHPIndex.getFileObject(fileUrl);
+                synchronized (ModelElementImpl.class) {
+                    if (fileObject != null) {
+                        file = Union2.createSecond(fileObject);
+                    }
                 }
             }
         }

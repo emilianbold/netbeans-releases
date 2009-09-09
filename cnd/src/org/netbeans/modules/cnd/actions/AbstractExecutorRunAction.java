@@ -68,12 +68,12 @@ import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -192,6 +192,27 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return false;
         }
         return set.isSunCompiler();
+    }
+
+    private static CompilerSet getCompilerSet(Node node ){
+        Project project;
+        DataObject dataObject = node.getCookie(DataObject.class);
+        FileObject fileObject = dataObject.getPrimaryFile();
+        project = findProject(node);
+        if (project == null) {
+            project = findInOpenedProject(fileObject);
+        }
+        CompilerSet set = null;
+        if (project != null) {
+            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
+            if (toolchain != null) {
+                set = toolchain.getCompilerSet();
+            }
+        }
+        if (set == null) {
+            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        }
+        return set;
     }
 
     protected static String getCommand(Node node, Project project, int tool, String defaultName){
@@ -322,27 +343,21 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return res;
     }
 
-    private static List<String> prepareEnv(ExecutionEnvironment execEnv) {
-        CompilerSet cs = null;
+    private static List<String> prepareEnv(ExecutionEnvironment execEnv, Node node) {
         String csdirs = ""; // NOI18N
-        String dcsn = CppSettings.getDefault().getCompilerSetName();
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
-        if (dcsn != null && dcsn.length() > 0) {
-            cs = CompilerSetManager.getDefault(execEnv).getCompilerSet(dcsn);
-            if (cs != null) {
-                csdirs = cs.getDirectory();
-                // TODO Provide platform info
-                String commands = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
-                if (commands != null && commands.length()>0) {
-                    // Also add msys to path. Thet's where sh, mkdir, ... are.
-                    csdirs += pi.pathSeparator() + commands;
-                }
+        CompilerSet cs = getCompilerSet(node);
+        if (cs != null) {
+            csdirs = cs.getDirectory();
+            // TODO Provide platform info
+            String commands = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
+            if (commands != null && commands.length()>0) {
+                // Also add msys to path. Thet's where sh, mkdir, ... are.
+                csdirs += pi.pathSeparator() + commands;
             }
         }
         List<String> res = new ArrayList<String>();
-        if (csdirs.length() > 0) {
-            res.add(pi.getPathAsStringWith(csdirs));
-        }
+        res.add(pi.getPathAsStringWith(csdirs));
         return res;
     }
 
@@ -351,7 +366,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (additionalEnvironment != null) {
             nodeEnvironment.addAll(additionalEnvironment);
         }
-        nodeEnvironment.addAll(prepareEnv(execEnv));
+        nodeEnvironment.addAll(prepareEnv(execEnv, node));
         Map<String, String> envMap = new HashMap<String, String>();
         for(String s: nodeEnvironment) {
             int i = s.indexOf('='); // NOI18N
@@ -514,9 +529,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     postRunnable = new Runnable() {
                         public void run() {
                             String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                            String statusMessage = getString("Status."+resourceKey+"Terminated"); // NOI18N
                             tab.getOut().println();
                             tab.getOut().println(message);
                             tab.getOut().flush();
+                            StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
                     break;
@@ -529,9 +546,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     postRunnable = new Runnable() {
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
+                            String statusMessage = getString("Status."+resourceKey+"FailedToStart"); // NOI18N
                             tab.getOut().println();
                             tab.getOut().println(message);
                             tab.getOut().flush();
+                            StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
                     break;
@@ -544,14 +563,18 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     postRunnable = new Runnable() {
                         public void run() {
                             String message;
+                            String statusMessage;
                             if (process.exitValue() != 0) {
                                 message = getString("Output."+resourceKey+"Failed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                                statusMessage = getString("Status."+resourceKey+"Failed"); // NOI18N
                             } else {
                                 message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                                statusMessage = getString("Status."+resourceKey+"Successful"); // NOI18N
                             }
                             tab.getOut().println();
                             tab.getOut().println(message);
                             tab.getOut().flush();
+                            StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
                     break;

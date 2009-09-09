@@ -145,7 +145,11 @@ public final class PlatformInfo {
     }
 
     public String getPathAsStringWith(String newDir) {
-        return getPathName() + '=' + getPathAsString() + pathSeparator() + newDir;
+        if (newDir == null || newDir.length() == 0) {
+            return getPathName() + '=' + getPathAsString();
+        } else {
+            return getPathName() + '=' + newDir + pathSeparator() + getPathAsString();
+        }
     }
 
     /**

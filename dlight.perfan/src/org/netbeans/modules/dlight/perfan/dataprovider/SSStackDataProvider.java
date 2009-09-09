@@ -134,7 +134,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         this.serviceInfoStorage = serviceInfoStorage;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         boolean hasTimeIntervalFilter = false;
         for (DataFilter f : newSet) {
             if (f instanceof HotSpotFunctionsFilter) {

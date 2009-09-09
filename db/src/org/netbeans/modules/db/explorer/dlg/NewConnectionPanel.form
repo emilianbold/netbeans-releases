@@ -6,7 +6,7 @@
     </Component>
   </NonVisualComponents>
   <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,3,89,0,0,2,-68"/>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,-22,0,0,2,-62"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -22,18 +22,19 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="inputModelLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="inputModelLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="displayNameLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="showUrlCheckBox" alignment="0" pref="132" max="32767" attributes="1"/>
+                              <Component id="directUrlLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                               <Component id="templateLabel" alignment="0" max="32767" attributes="1"/>
-                              <Component id="hostLabel" alignment="0" max="32767" attributes="1"/>
-                              <Component id="portLabel" alignment="0" max="32767" attributes="1"/>
-                              <Component id="databaseLabel" alignment="0" max="32767" attributes="1"/>
+                          </Group>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                               <Component id="passwordLabel" alignment="0" max="32767" attributes="1"/>
                               <Component id="userLabel" alignment="0" max="32767" attributes="1"/>
                               <Component id="instanceLabel" alignment="0" max="32767" attributes="1"/>
@@ -41,45 +42,48 @@
                               <Component id="dsnLabel" alignment="0" max="32767" attributes="1"/>
                               <Component id="tnsLabel" alignment="0" max="32767" attributes="1"/>
                               <Component id="serviceLabel" alignment="0" max="32767" attributes="1"/>
-                              <Component id="sidLabel" alignment="0" pref="119" max="32767" attributes="1"/>
+                              <Component id="sidLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="databaseLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="portLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="hostLabel" alignment="0" min="-2" pref="121" max="-2" attributes="1"/>
                           </Group>
-                          <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="additionalPropsLabel" alignment="1" max="32767" attributes="1"/>
-                              <Component id="directUrlLabel" alignment="0" max="32767" attributes="1"/>
-                              <Component id="showUrlCheckBox" alignment="1" min="-2" pref="132" max="-2" attributes="1"/>
-                          </Group>
+                          <Component id="additionalPropsLabel" alignment="0" min="-2" pref="117" max="-2" attributes="1"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="urlField" alignment="0" pref="532" max="32767" attributes="1"/>
-                          <Component id="additionalPropsField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Group type="102" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <Component id="fieldInputCheckBox" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="directInputCheckBox" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="templateComboBox" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="hostField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="portField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="databaseField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="sidField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="serviceField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="tnsField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="dsnField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="serverNameField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="instanceField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="userField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Component id="passwordField" alignment="1" pref="532" max="32767" attributes="1"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="passwordCheckBox" pref="393" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="139" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="directUrlScroll" alignment="1" pref="532" max="32767" attributes="0"/>
+                          <Component id="passwordCheckBox" alignment="0" min="-2" pref="256" max="-2" attributes="0"/>
+                          <Component id="templateComboBox" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="hostField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="portField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="databaseField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="sidField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="serviceField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="tnsField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="dsnField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="serverNameField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="instanceField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="userField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="passwordField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="displayNameField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="additionalPropsField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="urlField" alignment="0" pref="550" max="32767" attributes="2"/>
+                          <Component id="directUrlScroll" alignment="0" pref="550" max="32767" attributes="2"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="errorInfoPanel" alignment="0" pref="676" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="errorInfoPanel" alignment="0" pref="686" max="32767" attributes="0"/>
+                          <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -152,28 +156,33 @@
                   <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="displayNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="displayNameField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="passwordCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="additionalPropsField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="showUrlCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="directUrlLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="directUrlScroll" min="-2" pref="84" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="errorInfoPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="161" max="32767" attributes="0"/>
+              <EmptySpace pref="138" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -355,6 +364,23 @@
         </Property>
       </Properties>
     </Component>
+    <Component class="javax.swing.JLabel" name="displayNameLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="displayNameField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionDisplayName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="displayNameField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionDisplayNameA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
     <Component class="javax.swing.JLabel" name="userLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -526,7 +552,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="676" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="686" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">

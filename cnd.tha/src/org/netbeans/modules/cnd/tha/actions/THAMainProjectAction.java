@@ -41,13 +41,16 @@ package org.netbeans.modules.cnd.tha.actions;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.MissingResourceException;
+import java.util.concurrent.CancellationException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -57,10 +60,13 @@ import org.netbeans.modules.cnd.tha.ui.THAIndicatorsTopComponent;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -74,7 +80,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
     private final Action sensorMainAction;
 
     public THAMainProjectAction() {
-        super(loc("LBL_THAMainProjectAction"));
+        super(loc("LBL_THAMainProjectAction")); // NOI18N
         sensorMainAction = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformerImpl(), null, null);
         sensorMainAction.addPropertyChangeListener(this);
         putValue("command", "THAProfile"); // NOI18N
@@ -104,7 +110,26 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         return sensorMainAction.isEnabled();
     }
 
+    private boolean ensureConnected() {
+        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(currentProject);
+        MakeConfiguration mc = mcd.getActiveConfiguration();
+        ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
+        // ensure that connection is established and ServerRecord exists for the
+        // development host....
+        return ServerListUI.ensureRecordOnline(execEnv);
+    }
     public void actionPerformed(ActionEvent e) {
+        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(currentProject);
+        MakeConfiguration mc = mcd.getActiveConfiguration();
+        ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
+        try {
+            ConnectionManager.getInstance().connectTo(execEnv);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         if (!THAProjectSupport.isSupported(currentProject)) {
             return;
         }
@@ -124,6 +149,9 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         DLightExecutorService.submit(new Runnable() {
 
             public void run() {
+                if (!ensureConnected()) {
+                    return;
+                }
                 if (!THAActionsProvider.start(provider.dlightTargetListener, currentProject, thaConfiguration)) {
                     return;
                 }
@@ -149,7 +177,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         }
         if ("enabled".equals(evt.getPropertyName())) {
             setEnabled(isEnabled());
-            System.out.println("Source=" + evt.getSource());
+            System.out.println("Source=" + evt.getSource()); // NOI18N
         }
         if (!evt.getPropertyName().equals("mainProject") && !Configurations.PROP_ACTIVE_CONFIGURATION.equals(evt.getPropertyName())) { // NOI18N
             return;
@@ -178,10 +206,14 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
             if (project != currentProject && currentProject != null) {
                 //remove property change listener
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
-                MakeConfiguration mc = mcd.getActiveConfiguration();
-                mc.removePropertyChangeListener(THAMainProjectAction.this);
-                Configurations c = mcd.getConfs();
-                c.removePropertyChangeListener(THAMainProjectAction.this);
+                if (mcd != null){
+                    MakeConfiguration mc = mcd.getActiveConfiguration();
+                    mc.removePropertyChangeListener(THAMainProjectAction.this);
+                    Configurations c = mcd.getConfs();
+                    if (c != null){
+                        c.removePropertyChangeListener(THAMainProjectAction.this);
+                    }
+                }
             }
 
             boolean isEnabled = THAProjectSupport.isSupported(project);

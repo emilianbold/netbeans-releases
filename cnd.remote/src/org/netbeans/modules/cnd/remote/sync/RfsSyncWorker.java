@@ -86,7 +86,7 @@ class RfsSyncWorker extends ZipSyncWorker {
                     return super.getFileInputStream(file);
                 } else {
                     // Fooling SunStudio dmake, which (in some circumstances) does not open file with zero length
-                    return new DummyInputStream("\n");
+                    return new DummyInputStream("\n"); // NOI18N
                 }
             }
 

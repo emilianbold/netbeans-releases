@@ -192,7 +192,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             PHPIndex.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
-            Model model = ModelFactory.getModel(r);
+            Model model = r.getModel();
             final FileScope fileScope = model.getFileScope();
             IndexDocument reverseIdxDocument = support.createDocument(indexable);
             documents.add(reverseIdxDocument);

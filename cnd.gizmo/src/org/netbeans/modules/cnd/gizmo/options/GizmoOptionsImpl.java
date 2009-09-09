@@ -233,7 +233,8 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public boolean isConfigurationModified(String toolName) {
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         //in case different from the default
-        if (toolConfigurations.get(toolName) != null && gizmoConfiguration.getToolByName(toolName) != null && (gizmoConfiguration.getToolByName(toolName).isEnabled() != toolConfigurations.get(toolName).getValue())){
+        DLightTool tool = gizmoConfiguration.getToolByName(toolName);
+        if (toolConfigurations.get(toolName) != null &&  tool != null && (tool.isEnabled() != toolConfigurations.get(toolName).getValue())){
             return true;
         }
         return false;

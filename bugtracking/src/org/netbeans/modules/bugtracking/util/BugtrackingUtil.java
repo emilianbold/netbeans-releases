@@ -216,7 +216,7 @@ public class BugtrackingUtil {
     }
 
     public static Repository[] getKnownRepositories() {
-        return BugtrackingManager.getInstance().getKnownRepositories();
+        return BugtrackingManager.getInstance().getKnownRepositories(true);
     }
 
     public static BugtrackingConnector[] getBugtrackingConnectors() {

@@ -333,4 +333,9 @@ final class VisualizerChildren extends Object {
             parent = (VisualizerNode) parent.getParent();
         }
     }
+
+    @Override
+    public String toString() {
+        return "Parent: " + parent + "  children: " + visNodes.toString();
+    }
 }

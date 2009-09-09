@@ -35,14 +35,14 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="addrChBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jSeparator4" alignment="0" pref="509" max="32767" attributes="0"/>
+                  <Component id="jSeparator4" alignment="0" pref="510" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="cfgVersionLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cfgVersionCombo" pref="364" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator1" alignment="0" pref="509" max="32767" attributes="2"/>
-                  <Component id="jSeparator2" alignment="0" pref="509" max="32767" attributes="1"/>
+                  <Component id="jSeparator1" alignment="0" pref="510" max="32767" attributes="2"/>
+                  <Component id="jSeparator2" alignment="0" pref="510" max="32767" attributes="1"/>
                   <Component id="mtomChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="rmChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
@@ -93,7 +93,7 @@
                       </Group>
                       <EmptySpace min="-2" pref="109" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator3" alignment="0" pref="509" max="32767" attributes="0"/>
+                  <Component id="jSeparator3" alignment="0" pref="510" max="32767" attributes="0"/>
                   <Component id="tcpChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="stsChBox" min="-2" max="-2" attributes="0"/>
@@ -101,7 +101,7 @@
                       <Component id="stsConfigButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="fiChBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jSeparator5" alignment="1" pref="509" max="32767" attributes="0"/>
+                  <Component id="jSeparator5" alignment="1" pref="510" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>

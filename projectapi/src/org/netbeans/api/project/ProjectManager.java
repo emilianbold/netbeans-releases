@@ -626,6 +626,7 @@ public final class ProjectManager {
      * @param p the project to save
      * @throws IOException if it cannot be saved
      * @throws IllegalArgumentException if the project was not created through this manager
+     * @see ProjectFactory#saveProject
      */
     public void saveProject(final Project p) throws IOException, IllegalArgumentException {
         try {
@@ -661,6 +662,7 @@ public final class ProjectManager {
      * Save all modified projects.
      * <p>Acquires write access.
      * @throws IOException if any of them cannot be saved
+     * @see ProjectFactory#saveProject
      */
     public void saveAllProjects() throws IOException {
         try {
