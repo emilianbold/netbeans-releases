@@ -66,7 +66,7 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
         String remotePath = "/bin/ls";
         String localPath;
         File localFile = null;
-
+        RemoteBinaryServiceImpl.resetDownloadCount();
         for (int i = 0; i < 4; i++) {
             boolean delete = (i == 3);
             if (delete) {

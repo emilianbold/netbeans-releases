@@ -92,6 +92,11 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
         return downloadCount;
     }
 
+    /*package-local for test purposes*/ static void resetDownloadCount() {
+        downloadCount = 0;
+    }
+
+
     /**
      * Corresoinds to the particular execution environment.
      * An instance of impl is created for each execution environment
