@@ -62,22 +62,41 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 
     @ForAllEnvironments
     public void testBinaryService() throws Exception {
+
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String remotePath = "/bin/ls";
+
+        // setup: create a temp file and copy /bin/ls into it
+        RemoteCommandSupport rcs;
+        rcs = new RemoteCommandSupport(execEnv, "mktemp");
+        assertTrue(rcs.run() == 0);
+        String remotePath = rcs.getOutput();
+        assertNotNull(remotePath);
+        if (remotePath.endsWith("\n")) {
+            remotePath = remotePath.substring(0, remotePath.length() - 1);
+        }
+        assertTrue(remotePath.length() > 0);
+        rcs = new RemoteCommandSupport(execEnv, "cp /bin/ls " + remotePath);
+        assertTrue(rcs.run() == 0);
+
         String localPath;
         File localFile = null;
         RemoteBinaryServiceImpl.resetDownloadCount();
-        for (int i = 0; i < 4; i++) {
-            boolean delete = (i == 3);
-            if (delete) {
+        int expectedDownloadCount = 1;
+        for (int i = 0; i < 5; i++) {
+            if (i == 3) {
                 localFile.delete();
+                expectedDownloadCount++;
+            } else if (i == 4) {
+                rcs = new RemoteCommandSupport(execEnv, "touch " + remotePath);
+                assertTrue(rcs.run() == 0);
+                expectedDownloadCount++;
             }
             localPath = RemoteBinaryService.getRemoteBinary(execEnv, remotePath);
             assertNotNull(localPath);
             localFile = new File(localPath);
             assertTrue(localFile.exists());
             assertTrue(localFile.length() > 0);
-            assertEquals("Download Count differs", delete ? 2 : 1, RemoteBinaryServiceImpl.getDownloadCount());
+            assertEquals("Download Count differs", expectedDownloadCount, RemoteBinaryServiceImpl.getDownloadCount());
         }
     }
     
