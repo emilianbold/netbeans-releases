@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
 import org.eclipse.mylyn.internal.jira.core.model.ServerInfo;
@@ -55,6 +59,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -73,7 +78,8 @@ public class JiraAutoupdate {
         SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("3.13.3"); // NOI18N
     }
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
-
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
+    
     private static Map<String, Long> lastChecks = null;
 
     /**
@@ -119,7 +125,14 @@ public class JiraAutoupdate {
             if(u.getCodeName().equals(JIRA_MODULE_CODE_NAME)) {
                 List<UpdateElement> elements = u.getAvailableUpdates();
                 if(elements != null) {
-                    return elements.size() > 0;
+                    for (UpdateElement updateElement : elements) {
+                        String desc = updateElement.getDescription();
+                        JiraVersion version = getVersion(desc);
+                        if(version != null && SUPPORTED_JIRA_VERSION.compareTo(version) < 0) {
+                            return true;
+                        }
+                    }
+                    return false;
                 } else {
                     return false;
                 }
@@ -128,17 +141,21 @@ public class JiraAutoupdate {
         return false;
     }
 
-    boolean checkSupportedJiraServerVersion(JiraRepository repository) {
-        JiraConfiguration conf = repository.getConfiguration();
-        ServerInfo info = null;
-        try {
-            info = conf.getServerInfo(new NullProgressMonitor());
-        } catch (JiraException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-            return false;
+    boolean checkSupportedJiraServerVersion(final JiraRepository repository) {
+        final String[] v = new String[1];
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                JiraConfiguration conf = repository.getConfiguration();
+                ServerInfo info = conf.getServerInfo(new NullProgressMonitor());
+                v[0] = info.getVersion();
+            }
+        };
+        repository.getExecutor().execute(cmd, false, false, false);
+        if(cmd.hasFailed()) {
+            return true; // be optimistic at this point
         }
-        String v = info.getVersion();
-        JiraVersion version = new JiraVersion(v);
+        JiraVersion version = new JiraVersion(v[0]);
         boolean ret = isSupportedVersion(version);
         if(!ret) {
             Jira.LOG.log(Level.WARNING,
@@ -174,5 +191,13 @@ public class JiraAutoupdate {
             return -1;
         }
         return l;
+    }
+
+    JiraVersion getVersion(String desc) {
+        Matcher m = VERSION_PATTERN.matcher(desc);
+        if(m.matches()) {
+            return new JiraVersion(m.group(1)) ;
+        }
+        return null;
     }
 }

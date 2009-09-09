@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.WeakSet;
@@ -736,7 +737,7 @@ public class FileStatusCache {
             FileInformation info = files.get(interestingFile);
 
             // recursive scan for unexplored folders: run refresh on children if necessary
-            if (recursiveScanEnabled                                        // scan is allowed and dir is not yet planned
+            if (info != null
                     && (info.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NOTMANAGED | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0 // do not scan notmanaged or ignored files
                     && turbo.readEntry(interestingFile, FILE_STATUS_MAP) == null) {    // scan only those which have not yet been scanned, no information is available for them
                     refreshAsync(interestingFile.listFiles());
@@ -1272,8 +1273,16 @@ public class FileStatusCache {
                             }
                         }
                     } catch (SVNClientException ex) {
-                        LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting status and info for " + filesToRefresh.toString());
-                        LABELS_CACHE_LOG.log(Level.INFO, null, ex);
+                        if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                            try {
+                                WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, files[0]);
+                            } catch (SVNClientException ex1) {
+                                // do not log again
+                            }
+                        } else {
+                            LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting status and info for " + filesToRefresh.toString());
+                            LABELS_CACHE_LOG.log(Level.INFO, null, ex);
+                        }
                     }
                     Subversion.getInstance().refreshAnnotations(files);
                     synchronized (fileLabels) {

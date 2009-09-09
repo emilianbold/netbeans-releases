@@ -2673,7 +2673,7 @@ public class HgCommand {
         if(logUsage) {
             Utils.logVCSClientEvent("HG", "CLI");
         }
-        final List<String> list = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         BufferedReader error = null;
         Process proc = null;
@@ -2709,12 +2709,13 @@ public class HgCommand {
             input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
             final BufferedReader errorReader = error;
+            final LinkedList<String> errorOutput = new LinkedList<String>();
             Thread errorThread = new Thread(new Runnable () {
                 public void run() {
                     try {
                         String line;
                         while ((line = errorReader.readLine()) != null) {
-                            list.add(line);
+                            errorOutput.add(line);
                         }
                     } catch (IOException ex) {
                         // not interested
@@ -2733,6 +2734,7 @@ public class HgCommand {
             } catch (InterruptedException ex) {
                 // not interested
             }
+            list.addAll(errorOutput); // appending error output
             error.close();
             error = null;
             try {
