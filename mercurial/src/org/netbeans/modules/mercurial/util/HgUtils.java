@@ -52,7 +52,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Collection;
@@ -78,6 +77,7 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -408,6 +408,45 @@ public class HgUtils {
         return patterns;
     }
 
+    // cached not sharable files and folders
+    private static final Map<File, Set<String>> notSharable = Collections.synchronizedMap(new HashMap<File, Set<String>>(5));
+    private static void addNotSharable (File topFile, String ignoredPath) {
+        synchronized (notSharable) {
+            // get cached patterns
+            Set ignores = notSharable.get(topFile);
+            if (ignores == null) {
+                ignores = new HashSet<String>();
+            }
+            String patternCandidate = ignoredPath;
+            // test for duplicate patterns
+            for (Iterator<String> it = ignores.iterator(); it.hasNext();) {
+                String storedPattern = it.next();
+                if (storedPattern.equals(ignoredPath) // already present
+                        || ignoredPath.startsWith(storedPattern + '/')) { // path already ignored by its ancestor
+                    patternCandidate = null;
+                    break;
+                } else if (storedPattern.startsWith(ignoredPath + '/')) { // stored pattern matches a subset of ignored path
+                    // remove the stored pattern and add the ignored path
+                    it.remove();
+                }
+            }
+            if (patternCandidate != null) {
+                ignores.add(patternCandidate);
+            }
+            notSharable.put(topFile, ignores);
+        }
+    }
+
+    private static boolean isNotSharable (String path, File topFile) {
+        boolean retval = false;
+        Set<String> notSharablePaths = notSharable.get(topFile);
+        if (notSharablePaths == null) {
+            notSharablePaths = Collections.emptySet();
+        }
+        retval = notSharablePaths.contains(path);
+        return retval;
+    }
+
     /**
      * isIgnored - checks to see if this is a file Hg should ignore
      *
@@ -430,12 +469,20 @@ public class HgUtils {
         
         Set<Pattern> patterns = getIgnorePatterns(topFile);
         path = path.substring(topFile.getAbsolutePath().length() + 1);
+        if (File.separatorChar != '/') {
+            path = path.replace(File.separatorChar, '/');
+        }
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
             if (pattern.matcher(path).find()) {
                 return true;
             }
+        }
+
+        // check cached not sharable folders and files
+        if (isNotSharable(path, topFile)) {
+            return true;
         }
 
         // If a parent of the file matches a pattern ignore the file
@@ -447,8 +494,11 @@ public class HgUtils {
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
             int sharability = SharabilityQuery.getSharability(file);
-            if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
+            if (sharability == SharabilityQuery.NOT_SHARABLE) {
+                addNotSharable(topFile, path);
+                return true;
             }
+        }
         return false;
     }
 
@@ -671,7 +721,7 @@ public class HgUtils {
                 if (line.length() == 0) continue;
                 String [] array = line.split(" ");
                 if (array[0].equals("syntax:")) continue;
-                entries.addAll(Arrays.asList(array));
+                entries.add(line);
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
@@ -680,8 +730,10 @@ public class HgUtils {
     }
 
     private static String computePatternToIgnore(File directory, File file) {
-        String name = file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1);
-        return name.replace(' ', '?').replace(File.separatorChar, '/').replace("#", "\\#");
+        String name = "^" + file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1) + "$"; //NOI18N
+        // # should be escaped, otherwise works as a comment
+        // . should be escaped, otherwise works as a special char in regexp
+        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\."); //NOI18N
     }
 
     private static void writeIgnoreEntries(File directory, Set entries) throws IOException {
