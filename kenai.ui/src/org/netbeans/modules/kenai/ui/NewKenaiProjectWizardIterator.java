@@ -62,10 +62,10 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanelGUI.SharedItem;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -595,11 +595,44 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     }
 
     private WizardDescriptor.Panel[] createPanels() {
+        List<SharedItem> initialItems = getInitialItems(activeNodes);
         return new WizardDescriptor.Panel[]{
-                    new NameAndLicenseWizardPanel(),
-                    new SourceAndIssuesWizardPanel(activeNodes),
+                    new NameAndLicenseWizardPanel(initialItems),
+                    new SourceAndIssuesWizardPanel(initialItems),
                     new SummaryWizardPanel()
                 };
+    }
+
+    private List<SharedItem> getInitialItems(Node [] nodes) {
+        List<SharedItem> items = new ArrayList<SharedItem>();
+        for (Node node : nodes) {
+            Project prj = node.getLookup().lookup(Project.class);
+            if (prj != null) {
+                File file = FileUtil.toFile(prj.getProjectDirectory());
+                if (VersioningSupport.getOwner(file) == null) {
+                    items.add(new SharedItem(file));
+                }
+            }
+        }
+        return items;
+    }
+
+    public static class SharedItem {
+
+        private final File      root;
+
+        public SharedItem(File file) {
+            this.root = file;
+        }
+
+        @Override
+        public String toString() {
+            return root.getName();
+        }
+
+        public File getRoot() {
+            return root;
+        }
     }
 
 }
