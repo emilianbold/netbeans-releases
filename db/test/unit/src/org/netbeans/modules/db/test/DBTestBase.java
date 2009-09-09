@@ -753,14 +753,14 @@ public abstract class DBTestBase extends TestBase {
         if (urlString.startsWith("nbinst")) {
             // The path to the NetBeans installation
             URL url = new URL(urlString.replace("nbinst:", "file:"));
-            return "file://" + clusterDir.getAbsolutePath() + url.getPath();
+            return new File(clusterDir.getAbsolutePath(), url.getPath()).toURI().toURL().toExternalForm();
 
         } else if (urlString.startsWith("nball")) {
             // The path to the root of the NetBeans source tree.  This only
             // works if you're testing from a source tree
             URL url = new URL(urlString.replace("nball:", "file:"));
             String rootpath = clusterDir.getParentFile().getParentFile().getParentFile().getAbsolutePath();
-            return "file://" + rootpath + url.getPath();
+            return new File(rootpath, url.getPath()).toURI().toURL().toExternalForm();
         } else {
             return urlString;
         }

@@ -63,7 +63,7 @@ public class ProjectOpenFileImpl implements OpenFileImpl {
             try {
                 Project p = ProjectManager.getDefault().findProject(fileObject);
                 if (p != null) {
-                    OpenProjects.getDefault().open(new Project[] {p}, false);
+                    OpenProjects.getDefault().open(new Project[] {p}, false, true);
                     return true;
                 }
             } catch (IOException ex) {

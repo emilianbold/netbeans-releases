@@ -289,7 +289,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 completeColumn(ident);
                 break;
             default:
-                if (tablesClause != null) {
+                if (!updateStatement.getSubqueries().isEmpty()) {
+                    completeSelect();
+                } else if (tablesClause != null) {
                     completeColumnWithDefinedTable(ident);
                 }
         }

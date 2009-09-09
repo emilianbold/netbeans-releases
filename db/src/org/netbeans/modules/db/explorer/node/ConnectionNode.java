@@ -135,6 +135,10 @@ public class ConnectionNode extends BaseNode {
             connection.setSchema(val.toString());
         } else if (nps.getName().equals(SCHEMA)) {
             connection.setSchema(val.toString());
+        } else if (nps.getName().equals(DISPLAYNAME)) {
+            connection.setDisplayName(val.toString());
+            setDisplayName(val.toString());
+            refreshNode = false;
         }
 
         if (refreshNode) {
@@ -147,6 +151,7 @@ public class ConnectionNode extends BaseNode {
             clearProperties();
             boolean connected = !connection.getConnector().isDisconnected();
 
+            addProperty(DISPLAYNAME, DISPLAYNAMEDESC, String.class, true, connection.getDisplayName());
             addProperty(DATABASEURL, DATABASEURLDESC, String.class, !connected, connection.getDatabase());
             addProperty(DRIVER, DRIVERDESC, String.class, !connected, connection.getDriver());
             addProperty(SCHEMA, SCHEMADESC, String.class, false, connection.getSchema());
@@ -336,7 +341,7 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return connection.getName();
+        return connection.getDisplayName();
     }
  
     public String getIconBase() {
@@ -369,7 +374,11 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage (ConnectionNode.class, "ND_Connection"); //NOI18N
+        if (!getName().equals(getDisplayName())) {
+            return getName();
+        } else {
+            return NbBundle.getMessage (ConnectionNode.class, "ND_Connection"); //NOI18N
+        }
     }
 
     @Override
