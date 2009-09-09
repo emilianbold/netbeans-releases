@@ -40,7 +40,9 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Component;
+import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
@@ -57,10 +59,15 @@ public class NameAndLicenseWizardPanel implements WizardDescriptor.Panel,
     private WizardDescriptor settings;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final List<SharedItem> initialItems;
 
-    public NameAndLicenseWizardPanel() {
+    public NameAndLicenseWizardPanel(List<SharedItem> items) {
+        this.initialItems = items;
     }
 
+    List<SharedItem> getInitialItems() {
+        return initialItems;
+    }
 
     public Component getComponent() {
         if (component == null) {

@@ -50,10 +50,10 @@ public class SessionDataFiltersSupport {
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
     private final Collection<DataFilterListener> listeners = new ArrayList<DataFilterListener>();
 
-    public void addFilter(DataFilter filter) {
+    public void addFilter(DataFilter filter, boolean isAdjusting) {
         synchronized (lock) {
             if (filters.add(filter)) {
-                notifyListeners();
+                notifyListeners(isAdjusting);
             }
         }
     }
@@ -62,7 +62,7 @@ public class SessionDataFiltersSupport {
         synchronized (lock) {
             boolean result = filters.remove(filter);
             if (result) {
-                notifyListeners();
+                notifyListeners(false);
             }
             return result;
         }
@@ -83,10 +83,15 @@ public class SessionDataFiltersSupport {
     public void cleanAll(){
         synchronized (lock) {
             filters.clear();
-            notifyListeners();
+            notifyListeners(false);
         }
     }
+
     public void cleanAll(Class clazz){
+        cleanAll(clazz, true);
+    }
+
+    public void cleanAll(Class clazz, boolean notify){
         synchronized (lock) {
             Collection<DataFilter> toRemove = new ArrayList<DataFilter>();
             for (DataFilter f : filters){
@@ -95,7 +100,9 @@ public class SessionDataFiltersSupport {
                 }
             }
             filters.removeAll(toRemove);
-            notifyListeners();
+            if (notify){
+                notifyListeners(false);
+            }
         }
     }
 
@@ -103,8 +110,8 @@ public class SessionDataFiltersSupport {
         synchronized (lock) {
             listeners.add(listener);
 
-            // And immediately notify it...
-            listener.dataFiltersChanged(filters);
+           // And immediately notify it...
+            listener.dataFiltersChanged(filters, false);
         }
     }
 
@@ -120,9 +127,9 @@ public class SessionDataFiltersSupport {
         }
     }
 
-    private void notifyListeners() {
+    private void notifyListeners(boolean isAdjusting) {
         for (DataFilterListener listener : listeners) {
-            listener.dataFiltersChanged(filters);
+            listener.dataFiltersChanged(filters, isAdjusting);
         }
     }
 }

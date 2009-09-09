@@ -83,6 +83,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
      * @param file a file
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
      */
+    @Override
     public File getTopmostManagedAncestor(File file) {
         Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
@@ -133,14 +134,17 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         return topmost;
     }
 
+    @Override
     public VCSAnnotator getVCSAnnotator() {
         return Subversion.getInstance().getVCSAnnotator();
     }
 
+    @Override
     public VCSInterceptor getVCSInterceptor() {
         return Subversion.getInstance().getVCSInterceptor();
     }
 
+    @Override
     public void getOriginalFile(File workingCopy, File originalFile) {
         Subversion.getInstance().getOriginalFile(workingCopy, originalFile);
     }

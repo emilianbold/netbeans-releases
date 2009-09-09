@@ -45,85 +45,83 @@
  * Created on June 26, 2000, 9:29 AM
  */
 
-package org.netbeans.test.java.generating.SuperClassInterfaces;
+package org.netbeans.test.java.generating;
 
 import org.netbeans.test.java.Common;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import junit.framework.Test;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
 
-/** <B>Java Module General API test: InnerInterface</B>
+/** <B>Java Module General API Test: ConstructorElement</B>
  * <BR><BR><I>What it tests:</I><BR>
- * Creating and handling with ClassElement.
+ * Creating and handling with ConstructorElement.
  * Test is focused on checking of correctness of generated code.
- * <BR><BR><I>How it works</I><BR>
- * New class is created using DataObject.createFromTemplate() and also some ClassElements are created.
- * These are customized using setters, set to be the Interfaces and filled with fields, methods etc.
- * Then these ClassElements are added using ClassElement.addClass() into ClassElement.
+ * <BR><BR><I>How it works:</I><BR>
+ * New class is created using DataObject.createFromTemplate() and required constructors
+ * are created via API calls.
  * These actions cause generating of .java code. This code is compared with supposed one.
- * <BR><BR><I>Output</I><BR>
+ * <BR><BR><I>Output:</I><BR>
  * Generated Java code.
- * <BR><BR><I>Possible reasons of failure</I><BR>
- * <U>Interfaces are not inserted properly:</U><BR>
- * If there are some Interfaces in .diff file.
- * <BR><BR><U>Classes have/return bad properies</U><BR>
+ * <BR><BR><I>Possible reasons of failure:</I><BR>
+ * <U>Constructors are not inserted properly</U><BR>
+ * If there is some constructors in .diff file.
+ * <BR><BR><U>Constructors have/return bad properties</U><BR>
  * See .diff file to get which ones
  * <BR><BR><U>Bad indentation</U><BR>
- * This is probably not a bug of Java Module. (->Editor Bug)
+ * This is propably not a bug of Java Module. (Editor Bug)
  * In .diff file could be some whitespaces.
- * <BR><BR><U>Exception occured</U><BR><BR>
+ * <BR><BR><U>Exception occured:</U><BR>
  * See .log file for StackTrace
  *
  * @author Jan Becicka <Jan.Becicka@sun.com>
  */
 
 
-public class SuperClassInterfaces extends org.netbeans.test.java.XRunner {
+public class ConstructorElem extends org.netbeans.test.java.XRunner {
     
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
     
-    public SuperClassInterfaces() {
+    public ConstructorElem() {
         super("");
     }
     
-    public SuperClassInterfaces(java.lang.String testName) {
+    public ConstructorElem(java.lang.String testName) {
         super(testName);
     }
-    
+        
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
      * @throws Exception
      * @return true if test passed
      * false if failed
-     */
-    
+     */    
     public boolean go(Object o, java.io.PrintWriter log) throws Exception {
+        boolean passed = true;
         FileObject fo = (FileObject) o;
-        JavaSource js = JavaSource.forFileObject(fo);                                
-        List<String> list = new ArrayList<String>();
-        list.add("java.util.List");
-        list.add("java.io.Closeable");        
-        Common.addExtendImplementClause(js, "java.io.File", list);
+        JavaSource js = JavaSource.forFileObject(fo);    
+        Common.removeConstructors(js);
+        Common.addConstructor(js, Collections.EMPTY_MAP);
+        Common.addConstructor(js, Common.PARS1);
+        Common.addConstructor(js, Common.PARS2);
+        Common.addConstructor(js, Common.PARS3);                       
         return true;
     }
-   
+    
     /**
-     */
+     */    
     protected void setUp() {
         super.setUp();
-        name = "JavaTestSourceSuperClassInterfaces";
+        name = "JavaTestSourceConstructorElem";
         packageName = "org.netbeans.test.java.testsources";
     }
     
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(SuperClassInterfaces.class).enableModules(".*").clusters(".*"));
+                NbModuleSuite.createConfiguration(ConstructorElem.class).enableModules(".*").clusters(".*"));
     }
-    
 }

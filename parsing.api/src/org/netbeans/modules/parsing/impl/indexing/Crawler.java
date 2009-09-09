@@ -95,9 +95,9 @@ public abstract class Crawler {
         return finished;
     }
 
-    protected final boolean isUpToDate(FileObject f) {
+    protected final boolean isUpToDate(FileObject f, String relativePath) {
         // always call this in order to update the file's timestamp
-        boolean upToDate = timeStamps.checkAndStoreTimestamp(f);
+        boolean upToDate = timeStamps.checkAndStoreTimestamp(f, relativePath);
         return checkTimeStamps ? upToDate : false;
     }
 

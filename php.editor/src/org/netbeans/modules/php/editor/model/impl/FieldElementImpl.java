@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -148,6 +149,19 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
                           recursionDetection.remove(checkName);
                         }
                     }
+                }
+            }
+        }
+        return retval;
+    }
+
+    public Collection<? extends String> getDefaultTypeNames() {
+        Collection<String> retval = Collections.<String>emptyList();
+        if (defaultType != null && defaultType.length() > 0) {
+            retval = new ArrayList<String>();
+            for (String typeName : defaultType.split("\\|")) {//NOI18N
+                if (!typeName.contains("@")) {//NOI18N
+                    retval.add(typeName);
                 }
             }
         }

@@ -44,13 +44,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -67,6 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 
@@ -82,7 +81,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private boolean aspTags = false;
     private ParserResult result = null;
     private boolean projectPropertiesListenerAdded = false;
-    private Collection<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
+    private ChangeSupport changeSupport = new ChangeSupport(this);
 
     @Override
     public Result getResult(Task task) throws ParseException {
@@ -96,12 +95,12 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     @Override
     public void addChangeListener(ChangeListener changeListener) {
-        changeListeners.add(changeListener);
+        changeSupport.addChangeListener(changeListener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
-        changeListeners.remove(changeListener);
+        changeSupport.removeChangeListener(changeListener);
     }
 
     @Override
@@ -520,9 +519,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     private void forceReparsing(){
-        for (ChangeListener changeListener : changeListeners){
-            changeListener.stateChanged(new ChangeEvent(this));
-        }
+        changeSupport.fireChange();
     }
     
     /** Attempts to sanitize the input buffer */

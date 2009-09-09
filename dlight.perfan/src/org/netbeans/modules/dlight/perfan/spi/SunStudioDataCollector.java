@@ -584,7 +584,7 @@ public class SunStudioDataCollector
         return NbBundle.getMessage(SunStudioDataCollector.class, key, params);
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         synchronized (dataFilters) {
             dataFilters.clear();
 

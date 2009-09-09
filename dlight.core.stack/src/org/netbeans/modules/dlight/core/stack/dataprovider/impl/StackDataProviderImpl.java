@@ -127,7 +127,7 @@ final class StackDataProviderImpl implements StackDataProvider {
         return null;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     public ThreadDumpProvider getThreadDumpProvider() {

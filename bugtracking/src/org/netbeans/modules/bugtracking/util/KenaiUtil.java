@@ -172,10 +172,11 @@ public class KenaiUtil {
         List<RepositoryUser> members = null;
         try {
             KenaiProject kp = Kenai.getDefault().getProject(projectName);
-            KenaiProjectMember[] users = kp.getMembers();
-            members = new ArrayList<RepositoryUser>(users.length);
-            for (KenaiProjectMember user : users) {
-                members.add(new RepositoryUser(user.getUserName(), user.getKenaiUser().getFirstName()+" "+user.getKenaiUser().getLastName())); // NOI18N
+            KenaiProjectMember[] kenaiMembers = kp.getMembers();
+            members = new ArrayList<RepositoryUser>(kenaiMembers.length);
+            for (KenaiProjectMember member : kenaiMembers) {
+                KenaiUser user = member.getKenaiUser();
+                members.add(new RepositoryUser(user.getUserName(), user.getFirstName()+" "+user.getLastName())); // NOI18N
             }
         } catch (KenaiException kex) {
             kex.printStackTrace();

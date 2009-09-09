@@ -198,7 +198,7 @@ public final class TimeSeriesIndicator
         return panel;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
-        graph.dataFiltersChanged(newSet);
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        graph.dataFiltersChanged(newSet, isAdjusting);
     }
 }
