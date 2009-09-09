@@ -440,21 +440,6 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
     public void defaultAction(E o) {
     }
 
-    private void defaultObjectAction() {
-        int selectedIndex = getSelectedIndex();
-        if (selectedIndex < 0) {
-            return;
-        }
-        if (selectedIndex >= (listData.size())) {
-            return;
-        }
-        defaultAction(listData.elementAt(selectedIndex));
-        // Update gui
-        isChanged = true;
-        setData(listData);
-        setSelectedIndex(selectedIndex);
-        checkSelection();
-    }
     public void editAction(E o) {
     }
 
