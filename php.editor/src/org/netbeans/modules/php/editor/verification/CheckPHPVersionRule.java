@@ -95,7 +95,7 @@ public class CheckPHPVersionRule extends PHPRule {
 
     @Override
     public void visit(NamespaceDeclaration declaration) {
-        createWarning(declaration);
+        createWarning(declaration.getStartOffset(), declaration.getName().getEndOffset());
     }
 
     @Override
@@ -126,15 +126,19 @@ public class CheckPHPVersionRule extends PHPRule {
             createWarning(namespaceName);
         }
     }
-    
-    private void createWarning(ASTNode node){
-        OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+
+    protected void createWarning(int startOffset, int endOffset){
+        OffsetRange range = new OffsetRange(startOffset, endOffset);
 
         Hint hint = new Hint(CheckPHPVersionRule.this, getDisplayName(),
                 context.parserResult.getSnapshot().getSource().getFileObject(),
                 range, null, 500);
 
         addResult(hint);
+    }
+    
+    protected void createWarning(ASTNode node){
+        createWarning(node.getStartOffset(), node.getEndOffset());
         super.visit(node);
     }
 
