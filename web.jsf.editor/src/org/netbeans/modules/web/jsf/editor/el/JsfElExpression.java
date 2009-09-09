@@ -267,7 +267,13 @@ public class JsfElExpression extends ELExpression {
     public String getObjectClass(){
         String beanName = extractBeanName();
         if (bundleName !=null && bundleName.startsWith("#{")) {//NOI18N
-            beanName = bundleName.substring(2,bundleName.length()-1);
+            int pos = bundleName.indexOf(".");
+            setExpression(getExpression().replaceAll(beanName, bundleName.substring(2,bundleName.length()-1)));
+            if (pos != -1) {
+                beanName = bundleName.substring(2,pos);
+            } else {
+                beanName = bundleName.substring(2,bundleName.length()-1);
+            }
         }
   
         List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
