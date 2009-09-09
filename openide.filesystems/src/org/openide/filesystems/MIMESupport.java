@@ -56,11 +56,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 
 /**
@@ -366,6 +368,10 @@ final class MIMESupport extends Object {
 
         public InputStream getInputStream() throws java.io.FileNotFoundException {
             if (fixIt == null) {
+                LogRecord rec = new LogRecord(Level.FINE, "MSG_CACHED_INPUT_STREAM");
+                rec.setParameters(new Object[] { this });
+                rec.setResourceBundle(NbBundle.getBundle(MIMESupport.class));
+                ERR.log(rec);
                 InputStream is = fileObj.getInputStream();
 
                 if (!(is instanceof BufferedInputStream)) {
