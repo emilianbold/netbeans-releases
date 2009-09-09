@@ -1325,11 +1325,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (jsr45EngineProviders != null) {
                 for (Iterator<JSR45DebuggerEngineProvider> i = jsr45EngineProviders.iterator(); i.hasNext();) {
                     JSR45DebuggerEngineProvider provider = i.next();
-                    provider.getDesctuctor().killEngine();
+                    DebuggerEngine.Destructor d = provider.getDesctuctor();
+                    if (d != null) {
+                        d.killEngine();
+                    }
                 }
                 jsr45EngineProviders = null;
             }
-            javaEngineProvider.getDestructor ().killEngine ();
+            DebuggerEngine.Destructor d = javaEngineProvider.getDestructor();
+            if (d != null) {
+                d.killEngine ();
+            }
             if (vm != null) {
                 try {
                     if (di instanceof AttachingDICookie) {
