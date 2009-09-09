@@ -68,6 +68,8 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -1263,6 +1265,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private final AtomicBoolean finished = new AtomicBoolean(false);
+        private final AtomicBoolean externalCancel = new AtomicBoolean(false);
         private final boolean followUpJob;
         private final boolean checkEditor;
         private final CountDownLatch latch = new CountDownLatch(1);
@@ -1677,6 +1680,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return cancelled.get();
         }
 
+        protected final boolean isExternalCancel() {
+            return externalCancel.get();
+        }
+
         protected final CancelRequest getShuttdownRequest() {
             return cancelRequest;
         }
@@ -1708,6 +1715,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public final void setCancelled(boolean cancelled) {
             this.cancelled.set(cancelled);
+            this.externalCancel.set(cancelled);
         }
 
         public final void cancelBy(Work newWork) {
@@ -2721,10 +2729,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public @Override boolean getDone() {
             try {
                 if (waitForProjects) {
-                    try {
-                        OpenProjects.getDefault().openProjects().get();
-                    } catch (Exception ex) {
-                        // ignore
+                    boolean retry = true;
+                    while (retry) {
+                        try {
+                            OpenProjects.getDefault().openProjects().get(1000, TimeUnit.MILLISECONDS);
+                            retry = false;
+                        } catch (TimeoutException ex) {
+                            if (isExternalCancel()) {
+                                return false;
+                            }
+                        } catch (Exception ex) {
+                            // ignore
+                            retry = false;
+                        }
                     }
                 }
 
