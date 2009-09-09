@@ -189,6 +189,10 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
 
     @Override
     public void setTitleAt(int idx, String title) {
+        if (title == null) {
+            super.setTitleAt(idx, null);
+            return;
+        }
         // workaround for JDK bug (http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6670274)
         // NB issue #113388
         if (removeHtmlTags != null && title.startsWith("<html>")) {
