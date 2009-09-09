@@ -430,6 +430,9 @@ public class HgUtils {
         
         Set<Pattern> patterns = getIgnorePatterns(topFile);
         path = path.substring(topFile.getAbsolutePath().length() + 1);
+        if (File.separatorChar != '/') {
+            path = path.replace(File.separatorChar, '/');
+        }
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
