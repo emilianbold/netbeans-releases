@@ -64,6 +64,7 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -572,17 +573,26 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             // checking, whether the folder is the right one
             String folder = jtFolder.getText().trim();
             String message;
-
+            
             // TODO: perhaps remove the version check at all:
             message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_0);
+            if ("".equals(folder)) {
+                Properties properties = controller.getProperties();
+                controller.setErrorMessage(null);
+                properties.setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+                return false;
+            }
+            
             if (message != null) {
-                controller.setErrorMessage(message); 
+                controller.setErrorMessage(message);
                 return false;
             }
             // checking new library name
             String newLibraryName = jtNewLibraryName.getText().trim();
             if (newLibraryName.length() <= 0) {
-                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
+                controller.setErrorMessage(null);
+                controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName"));
+//                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
                 return false;
             }
             
