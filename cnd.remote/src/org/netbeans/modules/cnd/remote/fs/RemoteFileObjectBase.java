@@ -161,11 +161,17 @@ public abstract class RemoteFileObjectBase extends FileObject {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean isReadOnly() {
         return true;
     }
 
+    @Override
+    public boolean canWrite() {
+        return false;
+    }
+    
     @Override
     public boolean isRoot() {
         return false;
@@ -206,6 +212,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void setImportant(boolean b) {
         // Deprecated. Noithing to do.
