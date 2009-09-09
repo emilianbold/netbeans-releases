@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -130,6 +131,18 @@ public class PHPHintsProvider implements HintsProvider {
             List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
             unhandled.addAll(errors);
         }
+
+        FileObject fobj = NbEditorUtilities.getFileObject(context.doc);
+
+        if (fobj != null && CheckPHPVersionVisitor.appliesTo(fobj)) {
+            PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+            if (phpParseResult.getProgram() != null) {
+
+                CheckPHPVersionVisitor visitor = new CheckPHPVersionVisitor(fobj);
+                phpParseResult.getProgram().accept(visitor);
+                unhandled.addAll(visitor.getErrors());
+            }
+        }
     }
 
     public void cancel() {
@@ -189,8 +202,4 @@ public class PHPHintsProvider implements HintsProvider {
             }
         }
     }
-//
-//    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<org.netbeans.modules.csl.api.Error> unhandled) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
 }
