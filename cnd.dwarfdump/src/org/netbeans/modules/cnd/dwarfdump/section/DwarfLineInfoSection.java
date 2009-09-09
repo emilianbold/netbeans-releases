@@ -177,7 +177,7 @@ public class DwarfLineInfoSection extends ElfSection {
         int lineno = 1;
         int prev_fileno = 0;
         int prev_lineno = 1;
-        final int const_pc_add = 245 / section.line_range;
+        final int const_pc_add = 245 / section.line_range * section.minimum_instruction_length;
         int lineNumber = -1;
         String sourceFile = null;
         Set<LineNumber> result = new HashSet<LineNumber>();
@@ -283,7 +283,7 @@ public class DwarfLineInfoSection extends ElfSection {
                 }
             } else {
                 int adj = (opcode & 0xFF) - section.opcode_base;
-                int addr_adv = adj / section.line_range;
+                int addr_adv = adj / section.line_range * section.minimum_instruction_length;
                 int line_adv = section.line_base + (adj % section.line_range);
                 long new_addr = address + addr_adv;
                 int new_line = lineno + line_adv;
@@ -310,7 +310,7 @@ public class DwarfLineInfoSection extends ElfSection {
         int lineno = 1;
         int prev_fileno = 0;
         int prev_lineno = 1;
-        final int const_pc_add = 245 / section.line_range;
+        final int const_pc_add = 245 / section.line_range * section.minimum_instruction_length;
         int lineNumber = -1;
         String sourceFile = null;
 
@@ -418,7 +418,7 @@ public class DwarfLineInfoSection extends ElfSection {
                 }
             } else {
                 int adj = (opcode & 0xFF) - section.opcode_base;
-                int addr_adv = adj / section.line_range;
+                int addr_adv = adj / section.line_range * section.minimum_instruction_length;
                 int line_adv = section.line_base + (adj % section.line_range);
                 long new_addr = address + addr_adv;
                 int new_line = lineno + line_adv;

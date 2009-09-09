@@ -74,7 +74,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
     private final Action sensorMainAction;
 
     public THAMainProjectAction() {
-        super(loc("LBL_THAMainProjectAction"));
+        super(loc("LBL_THAMainProjectAction")); // NOI18N
         sensorMainAction = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformerImpl(), null, null);
         sensorMainAction.addPropertyChangeListener(this);
         putValue("command", "THAProfile"); // NOI18N
@@ -149,7 +149,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         }
         if ("enabled".equals(evt.getPropertyName())) {
             setEnabled(isEnabled());
-            System.out.println("Source=" + evt.getSource());
+            System.out.println("Source=" + evt.getSource()); // NOI18N
         }
         if (!evt.getPropertyName().equals("mainProject") && !Configurations.PROP_ACTIVE_CONFIGURATION.equals(evt.getPropertyName())) { // NOI18N
             return;

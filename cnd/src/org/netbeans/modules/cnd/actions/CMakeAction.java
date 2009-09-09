@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
@@ -55,6 +56,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -84,7 +86,19 @@ public class CMakeAction extends AbstractExecutorRunAction {
         performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+    public static void performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project) {
+        if (SwingUtilities.isEventDispatchThread()){
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    _performAction(node, listener, outputListener, project);
+                }
+            });
+        } else {
+            _performAction(node, listener, outputListener, project);
+        }
+    }
+
+    private static void _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
         //Save file
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
