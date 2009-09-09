@@ -54,6 +54,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
@@ -125,6 +126,12 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
 
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (execEnv.isRemote()) {
+            String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
+            if (s != null) {
+                buildDir = new File(s);
+            }
+        }
         Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
         if (isSunStudio(node, project)) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N

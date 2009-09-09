@@ -51,6 +51,8 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -132,6 +134,12 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (execEnv.isRemote()) {
+            String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
+            if (s != null) {
+                buildDir = new File(s);
+            }
+        }
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
