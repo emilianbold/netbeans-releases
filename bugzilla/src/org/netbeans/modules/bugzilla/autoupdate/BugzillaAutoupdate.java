@@ -124,7 +124,9 @@ public class BugzillaAutoupdate {
                             return true;
                         }
                     }
-                    return false;
+                    return elements.size() > 0; // looks like we weren't able to
+                                                // parse the version; on the other hand ->
+                                                // there is something so lets be optimistic
                 } else {
                     return false;
                 }
