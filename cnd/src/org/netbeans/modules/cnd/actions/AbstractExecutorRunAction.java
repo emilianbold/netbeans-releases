@@ -55,7 +55,6 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.editor.StatusBar;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
@@ -69,7 +68,6 @@ import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -194,6 +192,27 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return false;
         }
         return set.isSunCompiler();
+    }
+
+    private static CompilerSet getCompilerSet(Node node ){
+        Project project;
+        DataObject dataObject = node.getCookie(DataObject.class);
+        FileObject fileObject = dataObject.getPrimaryFile();
+        project = findProject(node);
+        if (project == null) {
+            project = findInOpenedProject(fileObject);
+        }
+        CompilerSet set = null;
+        if (project != null) {
+            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
+            if (toolchain != null) {
+                set = toolchain.getCompilerSet();
+            }
+        }
+        if (set == null) {
+            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        }
+        return set;
     }
 
     protected static String getCommand(Node node, Project project, int tool, String defaultName){
@@ -324,21 +343,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return res;
     }
 
-    private static List<String> prepareEnv(ExecutionEnvironment execEnv) {
-        CompilerSet cs = null;
+    private static List<String> prepareEnv(ExecutionEnvironment execEnv, Node node) {
         String csdirs = ""; // NOI18N
-        String dcsn = CppSettings.getDefault().getCompilerSetName();
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
-        if (dcsn != null && dcsn.length() > 0) {
-            cs = CompilerSetManager.getDefault(execEnv).getCompilerSet(dcsn);
-            if (cs != null) {
-                csdirs = cs.getDirectory();
-                // TODO Provide platform info
-                String commands = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
-                if (commands != null && commands.length()>0) {
-                    // Also add msys to path. Thet's where sh, mkdir, ... are.
-                    csdirs += pi.pathSeparator() + commands;
-                }
+        CompilerSet cs = getCompilerSet(node);
+        if (cs != null) {
+            csdirs = cs.getDirectory();
+            // TODO Provide platform info
+            String commands = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
+            if (commands != null && commands.length()>0) {
+                // Also add msys to path. Thet's where sh, mkdir, ... are.
+                csdirs += pi.pathSeparator() + commands;
             }
         }
         List<String> res = new ArrayList<String>();
@@ -353,7 +368,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (additionalEnvironment != null) {
             nodeEnvironment.addAll(additionalEnvironment);
         }
-        nodeEnvironment.addAll(prepareEnv(execEnv));
+        nodeEnvironment.addAll(prepareEnv(execEnv, node));
         Map<String, String> envMap = new HashMap<String, String>();
         for(String s: nodeEnvironment) {
             int i = s.indexOf('='); // NOI18N
