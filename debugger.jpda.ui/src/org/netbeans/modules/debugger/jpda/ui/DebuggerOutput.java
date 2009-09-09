@@ -406,7 +406,7 @@ PropertyChangeListener {
             print ("CTL_Step_Over", null, null);
     }
 
-    IOManager getIOManager() {
+    public IOManager getIOManager() {
         return ioManager;
     }
 
