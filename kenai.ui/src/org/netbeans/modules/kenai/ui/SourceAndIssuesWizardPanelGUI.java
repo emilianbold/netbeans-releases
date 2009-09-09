@@ -814,7 +814,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File [] selFiles = chooser.getSelectedFiles();
-            for (File file : selFiles) {
+            outter: for (File file : selFiles) {
+                for (SharedItem item : itemsToShare) {
+                    if (item.getRoot().equals(file)) {
+                        continue outter;
+                    }
+                }
                 if (VersioningSupport.getOwner(file) == null) {
                     SharedItem item = new SharedItem(file);
                     itemsToShare.add(item);
