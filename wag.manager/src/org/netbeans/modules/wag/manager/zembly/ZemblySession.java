@@ -54,7 +54,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.wag.manager.util.Utilities;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -71,7 +72,6 @@ public class ZemblySession implements PropertyChangeListener {
     private static final String EMAIL_PARAM = "email";          //NOI18N
     private static final String PASSWORD_PARAM = "password";    //NOI18N
     private static final String USE_CWP_PARAM = "useCWP";       //NOI18N
-
     private static ZemblySession instance;
     private Zembly zembly;
     private SearchEngine searchEngine;
@@ -89,7 +89,7 @@ public class ZemblySession implements PropertyChangeListener {
         ZemblySession session = ZemblySession.getInstance();
         Kenai kenai = Kenai.getDefault();
 
-    //kenai.addPropertyChangeListener(WeakListeners.propertyChange(session, kenai));
+        kenai.addPropertyChangeListener(WeakListeners.propertyChange(session, kenai));
     }
 
     private ZemblySession() {
@@ -262,15 +262,20 @@ public class ZemblySession implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-            PasswordAuthentication newValue = (PasswordAuthentication) evt.getNewValue();
+            final PasswordAuthentication newValue = (PasswordAuthentication) evt.getNewValue();
 
             // If new value is not null, that means login, otherwise, logout
             if (newValue != null) {
-                try {
-                    login(newValue.getUserName(), newValue.getPassword());
-                } catch (Exception ex) {
-                    Utilities.handleException(ex);
-                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            login(newValue.getUserName(), newValue.getPassword());
+                        } catch (Exception ex) {
+                            // Ignore - fail silently
+                            //Utilities.handleException(ex);
+                        }
+                    }
+                });
             } else {
                 logout();
             }

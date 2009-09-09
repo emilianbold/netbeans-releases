@@ -69,7 +69,11 @@ public class ItemInfoRetriever {
     private static final String URL_ATTR = "url";           //NOI18N
     private static final String MIME_TYPE_ATTR = "mimeType";    //NOI18N
     private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";     //NOI18N
+    private static final String JAVA_SERVICE_CONTENT_TYPE = "application/java";     //NOI18N
     private static final String LATEST = "latest";      //NO118N
+    private static final String KEYSET_TYPE = "KEYSET"; //NOI18N
+    private static final String OWNER_ATTR = "owner";   //NOI18N
+    private static final String CODENAME_ATTR = "codename";     //NOI18N
 
     private Zembly zembly;
 
@@ -102,8 +106,16 @@ public class ItemInfoRetriever {
                 String callableName = info.getString(NAME_ATTR);
 
                 String contentType = info.getString(MIME_TYPE_ATTR);
-                if (contentType.equals(WADL_CONTENT_TYPE)) { // || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
+                if (contentType.equals(WADL_CONTENT_TYPE) || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
                     callableName = "web." + callableName;
+                } else {
+                    // Need to prepend the user's codename
+                    JSONObject owner = info.getJSONObject(OWNER_ATTR);
+
+                    if (owner != null) {
+                        String codeName = owner.getString(CODENAME_ATTR);
+                        callableName = codeName + "." + callableName;
+                    }
                 }
 
                 svc.setCallableName(callableName);
@@ -120,7 +132,11 @@ public class ItemInfoRetriever {
                     wp.setName(p.getString(NAME_ATTR));
                     wp.setType(p.getString(TYPE_ATTR));
                     wp.setRequired(p.getBoolean(REQUIRED_ATTR));
-                    wagParams.add(wp);
+
+                    // Filter out the keyset parameter
+                    if (!wp.getType().equals(KEYSET_TYPE)) {
+                        wagParams.add(wp);
+                    }
                 }
 
                 //System.out.println("service: " + svc);

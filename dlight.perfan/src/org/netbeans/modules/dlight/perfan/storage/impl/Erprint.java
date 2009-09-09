@@ -350,7 +350,7 @@ final class Erprint {
 
             try {
                 if (log.isLoggable(Level.FINEST)) {
-                    log.finest("> " + command.getCmd() + "'"); // NOI18N
+                    log.finest("> '" + command.getCmd() + "'"); // NOI18N
                 }
                 post(command.getCmd());
             } catch (IOException ex) {

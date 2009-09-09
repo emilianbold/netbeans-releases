@@ -506,7 +506,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             root = getOwningSourceRoot(newFile);
             if (root != null) {
                 FileObject rootFo = URLMapper.findFileObject(root);
-                String oldFilePath = FileUtil.getRelativePath(rootFo, newFile.getParent()) + "/" + oldNameExt; //NOI18N
+                String ownerPath = FileUtil.getRelativePath(rootFo, newFile.getParent());
+                String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
                 if (newFile.isData()) {
                     final Work work = new DeleteWork(root, Collections.singleton(oldFilePath));
                     eventQueue.record(FileEventLog.FileOp.DELETE, root, oldFilePath, fe, work);
