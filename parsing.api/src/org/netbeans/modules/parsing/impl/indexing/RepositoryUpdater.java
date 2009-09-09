@@ -3029,6 +3029,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
                     }
 
+                    long tm = 0;
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        tm = System.currentTimeMillis();
+                        LOGGER.log(Level.FINE, "Performing {0}", work); //NOI18N
+                    }
                     work.setProgressHandle(progressHandle);
                     try {
                         work.doTheWork();
@@ -3038,6 +3043,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         LOGGER.log(Level.WARNING, null, t);
                     } finally {
                         work.setProgressHandle(null);
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "Finished {0} in {1} ms with result {2}", new Object[] {  //NOI18N
+                                work,
+                                System.currentTimeMillis() - tm,
+                                work.isCancelled() ? "Cancelled" : work.isFinished() ? "Done" : "Interrupted" //NOI18N
+                            });
+                        }
                     }
                 }
             } finally {
