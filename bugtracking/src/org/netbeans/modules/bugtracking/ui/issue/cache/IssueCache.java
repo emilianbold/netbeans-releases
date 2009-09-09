@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
@@ -92,7 +93,7 @@ public class IssueCache<T> {
      * issues seen state changed
      */
     public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
-    
+
     private Map<String, IssueEntry> cache;
     private final Map<String, PropertyChangeSupport> supports = new HashMap<String, PropertyChangeSupport>();
     private Map<String, Map<String, String>> lastSeenAttributes;
@@ -119,8 +120,7 @@ public class IssueCache<T> {
         public Issue createIssue(T issueData);
 
         /**
-         * Sets new task data in the issue. Mind synchrone reentrant calls
-         * on the cache for the given issue.
+         * Sets new task data in the issue. 
          *
          * @param issue
          * @param taskData
@@ -150,6 +150,14 @@ public class IssueCache<T> {
          * @return the last modification time
          */
         public long getCreated(Issue issue);
+
+        /**
+         * Returns the id given by te issueData
+         *
+         * @param issueData
+         * @return id
+         */
+        public String getID(T issueData);
 
     }
 
@@ -217,7 +225,14 @@ public class IssueCache<T> {
         assert issueData != null;
         assert issue != null;
 
-        setIssueData(issue.getID(), issue, issueData);
+        String id;
+        if(issue.getID() == null) {
+            id = issueAccessor.getID(issueData);
+        } else {
+            id = issue.getID();
+        }
+        assert id != null && !id.equals("");
+        setIssueData(id, issue, issueData);
     }
 
     private Issue setIssueData(String id, Issue issue, T issueData) throws IOException {

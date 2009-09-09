@@ -664,6 +664,10 @@ public class BugzillaRepository extends Repository {
             assert issue != null;
             return ((BugzillaIssue)issue).getCreated();
         }
+        public String getID(TaskData issueData) {
+            assert issueData != null;
+            return BugzillaIssue.getID(issueData);
+        }
     }
 
 }
