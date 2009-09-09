@@ -264,7 +264,7 @@ public class LLDataCollector
         service.run();
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     private class MonitorOutputProcessor implements LineProcessor {

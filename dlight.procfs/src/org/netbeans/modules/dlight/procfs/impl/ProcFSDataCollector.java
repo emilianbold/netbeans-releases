@@ -182,7 +182,7 @@ public class ProcFSDataCollector
         }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 

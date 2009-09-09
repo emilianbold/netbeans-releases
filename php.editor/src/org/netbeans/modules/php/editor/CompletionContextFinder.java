@@ -209,6 +209,14 @@ class CompletionContextFinder {
 
         @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
+        //TODO: use token hierarchy from snapshot and not use read lock in CC #171702
+        /*TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return CompletionContext.NONE;
+        }
+        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, caretOffset);
+         */
+
        Document document = info.getSnapshot().getSource().getDocument(false);
 
         if (document == null) {
@@ -227,7 +235,6 @@ class CompletionContextFinder {
         Token<PHPTokenId> token = tokenSequence.token();
         PHPTokenId tokenId =token.id();
         int tokenIdOffset = tokenSequence.token().offset(th);
-        int offset = tokenSequence.token().offset(null);
 
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,(caretOffset-tokenIdOffset), tokenSequence);
         if (clsIfaceDeclContext != null) {

@@ -51,6 +51,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.util.DLightMath;
 
 /**

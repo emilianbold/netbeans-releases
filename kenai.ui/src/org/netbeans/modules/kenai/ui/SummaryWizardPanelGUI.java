@@ -46,7 +46,7 @@ import javax.swing.JScrollPane;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanelGUI.SharedItem;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;

@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.Calendar;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -102,7 +103,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                           "OpenIDE-Module=\"{0}\" " +
                           "OpenIDE-Module-Implementation-Version=\"090527\" " +
                           "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
-                          "OpenIDE-Module-Long-Description=\"JIRA Support (Early Access)\" " +
+                          "OpenIDE-Module-Long-Description=\"JIRA Support (Early Access) up to version 3.13.4\" " +
                           "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
                                                                "org.netbeans.api.progress/1 > 1.13, " +
                                                                "org.netbeans.libs.bugtracking > 1.0, " +
@@ -169,6 +170,24 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
         assertFalse(jau.isSupportedVersion(getHigherMajor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
     }
 
+    public void testGetVersion() {
+        JiraAutoupdate jau = new JiraAutoupdate();
+
+        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
+        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
+        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1").toString());
+        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("version 1.1.1").toString());
+        assertEquals(new JiraVersion("1.1").toString(), jau.getVersion("version 1.1").toString());
+    }
+
+    public void testGotVersion() {
+        JiraAutoupdate jau = new JiraAutoupdate();
+        String desc = NbBundle.getBundle("org/netbeans/modules/jira/Bundle").getString("OpenIDE-Module-Long-Description");
+        JiraVersion version = jau.getVersion(desc);
+        assertNotNull(version);
+        assertEquals(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString(), version.toString());
+    }
+    
     public void testCheckedToday() {
 
         JiraAutoupdate jau = new JiraAutoupdate();
