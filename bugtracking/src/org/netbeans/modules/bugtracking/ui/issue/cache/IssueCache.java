@@ -221,9 +221,7 @@ public class IssueCache<T> {
     }
 
     private Issue setIssueData(String id, Issue issue, T issueData) throws IOException {
-        assert issueData != null;
-        assert id != null && !id.equals("");
-        assert issue == null || issue.getID().equals(id);
+        assert issueData != null;                
         
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
