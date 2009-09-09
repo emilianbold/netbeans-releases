@@ -241,9 +241,6 @@ public class ProfilesModelHelper {
                     if (ComboConstants.KERBEROS.equals(tokenType)) {  // Kerberos Profile
                         return ComboConstants.PROF_KERBEROS;
                     }
-                    if (ComboConstants.USERNAME.equals(tokenType)) {  // Password Derived Keys
-                        return ComboConstants.PROF_PASSWD_DERIVED;
-                    }
                     if (ComboConstants.X509.equals(tokenType)) { // profile 12, 6, 4
                         WSDLComponent tokenKind = null;
                         if (secConv) {
@@ -587,20 +584,6 @@ public class ProfilesModelHelper {
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 stmh.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            } else if (ComboConstants.PROF_PASSWD_DERIVED.equals(profile)) {   // Password Derived Keys (since Metro 2.0)
-                WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
-                WSDLComponent tokenType = stmh.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.USERNAME);
-                stmh.setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
-                spmh.setLayout(bt, ComboConstants.STRICT);
-                spmh.enableIncludeTimestamp(bt, true);
-                spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
-                WssElement wss = spmh.enableWss(c, true);
-                spmh.disableTrust(c);
-                spmh.enableMustSupportRefIssuerSerial(wss, true);
-                spmh.enableMustSupportRefThumbprint(wss, true);
-                spmh.enableMustSupportRefEncryptedKey(wss, true);
-                SecurityTokensModelHelper.removeSupportingTokens(c);
             } else if (ComboConstants.PROF_USERNAME.equals(profile)) {   // Profile #4
                 WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = stmh.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.X509);
