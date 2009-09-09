@@ -97,7 +97,7 @@ public final class SourceGroupModifier {
     }
 
     /**
-     * A wrapper class that is capable of lazily creating a {@link org.netbeans.api.project.SourceGroup} instance.
+     * A wrapper class that is capable of lazily creating a {@link SourceGroup} instance.
      */
     public static final class Future {
 
@@ -112,9 +112,9 @@ public final class SourceGroupModifier {
         }
 
         /**
-         * Create the instance of {@link org.netbeans.api.project.SourceGroup} wrapped by
+         * Create the instance of {@link SourceGroup} wrapped by
          * this object.
-         * @return
+         * @return a source group
          */
         public final SourceGroup createSourceGroup() {
             return impl.createSourceGroup(type, hint);
