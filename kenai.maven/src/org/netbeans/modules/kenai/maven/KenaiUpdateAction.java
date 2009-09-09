@@ -384,6 +384,19 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
                 mProj.addContributor(contributor);
             }
             contributor.setName(kName);
+            String role = kUser.getRole().name().toLowerCase();
+            List<String> roles = contributor.getRoles();
+            boolean exists = false;
+            if (roles != null) {
+                for (String mRole : roles) {
+                    if (mRole.equals(role)) {
+                        exists = true;
+                    }
+                }
+            }
+            if (!exists) {
+                contributor.addRole(role);
+            }
         } else {
             // developers
             List<Developer> devels = mProj.getDevelopers();
@@ -402,6 +415,19 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
             }
             developer.setId(kUser.getUserName());
             developer.setName(kName);
+            String role = kUser.getRole().name().toLowerCase();
+            List<String> roles = developer.getRoles();
+            boolean exists = false;
+            if (roles != null) {
+                for (String mRole : roles) {
+                    if (mRole.equals(role)) {
+                        exists = true;
+                    }
+                }
+            }
+            if (!exists) {
+                developer.addRole(role);
+            }
         }
     }
 
