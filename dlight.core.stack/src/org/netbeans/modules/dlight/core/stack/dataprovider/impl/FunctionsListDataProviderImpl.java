@@ -111,6 +111,6 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         return null;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 }

@@ -220,7 +220,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     private ThreadInfo getLWPInfo(int lwpID) {
