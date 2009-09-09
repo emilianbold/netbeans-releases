@@ -7,6 +7,7 @@
   </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -19,27 +20,32 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="namespaceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="endpointLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="wsdlLocationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="metadataLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="serviceNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="portNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="trustVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="namespaceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="endpointLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="wsdlLocationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="metadataLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="serviceNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="portNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="trustVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="namespaceTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="portNameTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="serviceNameTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="wsdlLocationTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="endpointTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="metadataField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="trustVersionCombo" alignment="0" min="-2" pref="63" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Component id="shareTokenChBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="namespaceTextField" alignment="0" pref="383" max="32767" attributes="2"/>
-                  <Component id="portNameTextField" alignment="0" pref="383" max="32767" attributes="2"/>
-                  <Component id="serviceNameTextField" alignment="0" pref="383" max="32767" attributes="2"/>
-                  <Component id="wsdlLocationTextField" alignment="0" pref="383" max="32767" attributes="2"/>
-                  <Component id="endpointTextField" alignment="0" pref="383" max="32767" attributes="2"/>
-                  <Component id="metadataField" alignment="0" pref="383" max="32767" attributes="2"/>
-                  <Component id="trustVersionCombo" alignment="0" min="-2" pref="63" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -81,6 +87,8 @@
                   <Component id="trustVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="trustVersionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="shareTokenChBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -226,9 +234,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="trustVersionLabel">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="default"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/client/Bundle.properties" key="LBL_STSPanel_PolicyVersion" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -238,6 +243,13 @@
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="shareTokenChBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/client/Bundle.properties" key="LBL_STSPanel_ShareToken" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

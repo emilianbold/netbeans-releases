@@ -222,7 +222,8 @@ public enum SecurityPolicyQName {
     public static String getNamespaceUri(ConfigVersion cfgVersion) {
         switch (cfgVersion) {
             case CONFIG_1_0 : return SECPOLICY_NS;
-            case CONFIG_1_3 : return SECPOLICY_13_NS;
+            case CONFIG_1_3 :
+            case CONFIG_2_0 : return SECPOLICY_13_NS;
         }
         return null;
     }

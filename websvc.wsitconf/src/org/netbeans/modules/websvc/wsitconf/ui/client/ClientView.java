@@ -204,7 +204,8 @@ public class ClientView extends SectionView {
     private boolean isClientAdvancedConfigRequired(Binding binding, WSDLModel serviceModel) {
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
         boolean rmEnabled = RMModelHelper.getInstance(ConfigVersion.CONFIG_1_0).isRMEnabled(serviceBinding) ||
-                            RMModelHelper.getInstance(ConfigVersion.CONFIG_1_3).isRMEnabled(serviceBinding);
+                            RMModelHelper.getInstance(ConfigVersion.CONFIG_1_3).isRMEnabled(serviceBinding) ||
+                            RMModelHelper.getInstance(ConfigVersion.CONFIG_2_0).isRMEnabled(serviceBinding);
         boolean secConvRequired = RequiredConfigurationHelper.isSecureConversationParamRequired(serviceBinding);
         return rmEnabled || secConvRequired /* || timestampEnabled*/;
     }
