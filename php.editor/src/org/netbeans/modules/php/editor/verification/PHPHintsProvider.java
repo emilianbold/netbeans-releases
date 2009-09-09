@@ -189,8 +189,4 @@ public class PHPHintsProvider implements HintsProvider {
             }
         }
     }
-//
-//    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<org.netbeans.modules.csl.api.Error> unhandled) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
 }
