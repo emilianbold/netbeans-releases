@@ -92,8 +92,8 @@ public class VersionTest extends TestCase {
         AddressingModelHelper.getInstance(cfgV).enableAddressing(b, false);
 
         RMModelHelper rmh10 = RMModelHelper.getInstance(cfgV);
-        rmh10.getInstance(cfgV).enableRM(b, true);
-        rmh10.getInstance(cfgV).enableOrdered(b, true);
+        RMModelHelper.getInstance(cfgV).enableRM(b, true);
+        RMModelHelper.getInstance(cfgV).enableOrdered(b, true);
 
         TransportModelHelper.enableMtom(b, true);
         TransportModelHelper.enableFI(b, true);
@@ -110,7 +110,7 @@ public class VersionTest extends TestCase {
         assertTrue(TransportModelHelper.isFIEnabled(b));
         assertTrue(TransportModelHelper.isTCPEnabled(b));
         assertTrue(TransportModelHelper.isMtomEnabled(b));
-        assertTrue(ProfilesModelHelper.getInstance(ConfigVersion.CONFIG_1_3).getSecurityProfile(b).equals(ComboConstants.PROF_USERNAME));
+        assertTrue(ProfilesModelHelper.getSecurityProfile(b).equals(ComboConstants.PROF_USERNAME));
 
         WSITModelSupport.moveCurrentConfig(b, ConfigVersion.CONFIG_1_3, ConfigVersion.CONFIG_1_0, null);
         assertTrue(PolicyModelHelper.getConfigVersion(b).equals(ConfigVersion.CONFIG_1_0));
@@ -120,7 +120,7 @@ public class VersionTest extends TestCase {
         assertTrue(TransportModelHelper.isFIEnabled(b));
         assertTrue(TransportModelHelper.isTCPEnabled(b));
         assertTrue(TransportModelHelper.isMtomEnabled(b));
-        assertTrue(ProfilesModelHelper.getInstance(ConfigVersion.CONFIG_1_0).getSecurityProfile(b).equals(ComboConstants.PROF_USERNAME));
+        assertTrue(ProfilesModelHelper.getSecurityProfile(b).equals(ComboConstants.PROF_USERNAME));
         
         TestUtil.dumpToFile(model.getBaseDocument(), f);
         PolicyModelHelper.cleanPolicies(b);

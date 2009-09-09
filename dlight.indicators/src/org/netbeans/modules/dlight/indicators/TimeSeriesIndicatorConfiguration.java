@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.indicators;
 
+import org.netbeans.modules.dlight.util.ValueFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

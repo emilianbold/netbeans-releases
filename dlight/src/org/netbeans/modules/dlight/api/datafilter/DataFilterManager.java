@@ -50,5 +50,6 @@ public interface DataFilterManager {
     boolean removeDataFilter(DataFilter filter);
     void addDataFilter(DataFilter filter);
     void addDataFilterListener(DataFilterListener l);
+    void removeDataFilterListener(DataFilterListener l);
     <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz);
 }

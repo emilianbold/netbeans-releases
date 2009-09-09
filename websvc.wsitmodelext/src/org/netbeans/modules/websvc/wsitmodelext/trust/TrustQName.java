@@ -81,11 +81,13 @@ public enum TrustQName {
     public static String getNamespaceUri(ConfigVersion cfgVersion) {
         switch (cfgVersion) {
             case CONFIG_1_0 : return TRUST_NS_URI;
-            case CONFIG_1_3 : return TRUST_12_NS_URI;
+            case CONFIG_1_3 : 
+            case CONFIG_2_0 : return TRUST_12_NS_URI;
         }
         return null;
     }
 
+    /* returns lowest compatible version */
     public static ConfigVersion getConfigVersion(QName q) {
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
             if (getQNames(cfgVersion).contains(q)) {

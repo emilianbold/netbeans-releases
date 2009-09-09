@@ -158,6 +158,14 @@ public class ValidatorsPanel extends JPanel {
              userRequired = false;
              timeRequired = false;
         }
+        if (ComboConstants.PROF_STSISSUED.equals(profile) ||
+            ComboConstants.PROF_STSISSUEDCERT.equals(profile) ||
+            ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile) ||
+            ComboConstants.PROF_STSISSUEDENDORSE.equals(profile)) {
+             certRequired = false;
+             userRequired = false;
+             timeRequired = false;
+        }
         
         samlValidatorButton.setEnabled(samlRequired);
         samlValidatorLabel.setEnabled(samlRequired);

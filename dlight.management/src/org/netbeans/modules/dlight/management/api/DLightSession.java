@@ -244,7 +244,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     List<Visualizer> getVisualizers() {
         if (visualizers == null) {
-            return null;
+            return Collections.emptyList();
         }
         List<Visualizer> result = new ArrayList<Visualizer>();
         for (String toolName : visualizers.keySet()) {
@@ -361,6 +361,10 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         dataFiltersSupport.addDataFilterListener(listener);
     }
 
+   public void removeDataFilterListener(DataFilterListener listener) {
+        dataFiltersSupport.removeDataFilterListener(listener);
+    }
+
     public DLightSessionIOProvider getDLigthSessionIOProvider(){
         return this;
     }
@@ -378,6 +382,10 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class);
         }
         dataFiltersSupport.addFilter(filter);
+        for (Visualizer v : getVisualizers()){
+            v.refresh();
+        }
+        //if filter is added - refresh all visualizers
     }
     
     public void cleanAllDataFilter() {
