@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorDelegator;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorsTopComponent;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
-import org.netbeans.modules.dlight.perfan.tha.api.THAInstrumentationSupport;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
