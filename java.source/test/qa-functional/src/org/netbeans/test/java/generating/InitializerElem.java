@@ -40,50 +40,59 @@
  */
 
 /*
- * SourceGenerator.java
+ * FieldElem.java
  *
  * Created on June 26, 2000, 9:29 AM
  */
 
-package org.netbeans.test.java.generating.SourceGenerator;
+package org.netbeans.test.java.generating;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.java.Common;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.junit.*;
+import org.openide.filesystems.FileObject;
 
-/** <B>Java Module General API Test: SourceGenerator</B>
+/** <B>Java Module General API Test: InitializerElement</B>
  * <BR><BR><I>What it tests:</I><BR>
- * This test is more complex and checks adding Elements (especially order of adding).
+ * Creating and handling with InitializerElement.
  * Test is focused on checking of correctness of generated code.
  * <BR><BR><I>How it works:</I><BR>
- * New class is created using DataObject.createFromTemplate().
- * Then all possible Elements are added.
+ * New class is created using DataObject.createFromTemplate() and also some InitializerElements are created.
+ * These are customized using setters and then added using ClassElement.addInitializer() into ClassElement.
  * These actions cause generating of .java code. This code is compared with supposed one.
  * <BR><BR><I>Output:</I><BR>
  * Generated Java code.
  * <BR><BR><I>Possible reasons of failure:</I><BR>
- * <BR><BR><U>Elements are added into bad positions or even not at all</U><BR>
+ * <U>Initialzers are not inserted properly:</U><BR>
+ * If there are some Initialzers in .diff file.
+ * <BR><BR><U>Initializers have/return bad properies</U><BR>
  * See .diff file to get which ones
  * <BR><BR><U>Bad indentation</U><BR>
- * This is probably not a bug of Java Module. (Editor Bug)
+ * This is probably not a bug of Java Module. (->Editor Bug)
  * In .diff file could be some whitespaces.
- * <BR><BR><I>Exception occured:</I><BR>
- * See .out file for StackTrace
+ * <BR><BR><U>Exception occured:</U><BR>
+ * See .log file for StackTrace
  *
  *
  * @author Jan Becicka <Jan.Becicka@sun.com>
  */
 
 
-public class SourceGenerator extends org.netbeans.test.java.XRunner {
+public class InitializerElem extends org.netbeans.test.java.XRunner {
     
-    public SourceGenerator() {
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    public InitializerElem() {
         super("");
     }
     
-    public SourceGenerator(java.lang.String testName) {
+    public InitializerElem(java.lang.String testName) {
         super(testName);
     }
-        
+       
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -92,22 +101,28 @@ public class SourceGenerator extends org.netbeans.test.java.XRunner {
      * false if failed
      */
     public boolean go(Object o, java.io.PrintWriter log) throws Exception {
-//        org.openide.src.ClassElement clazz = ((org.openide.src.SourceElement) o).getClasses()[0];
-//        org.netbeans.test.java.Common.simpleJavaSourceEtalonGenerator(clazz);
-        return true;
+        
+        FileObject fo = (FileObject) o;
+        JavaSource js = JavaSource.forFileObject(fo);    
+//      
+        boolean passed = true;
+        Common.addInitializer(js, false);
+        Common.addInitializer(js, true);
+        Common.addInitializer(js, false);//      
+        return passed;
     }
     
     /**
      */
     protected void setUp() {
         super.setUp();
-        name = "JavaTestSourceSourceGenerator";
+        name = "JavaTestSourceInitializerElem";
         packageName = "org.netbeans.test.java.testsources";
     }
     
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(SourceGenerator.class).enableModules(".*").clusters(".*"));
+                NbModuleSuite.createConfiguration(InitializerElem.class).enableModules(".*").clusters(".*"));
     }
     
 }

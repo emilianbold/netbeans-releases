@@ -39,14 +39,18 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -63,19 +67,22 @@ import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
+import org.openide.util.WeakListeners;
 
 
 /**
  *
  * @author Petr Pisl
  */
-public class GSFPHPParser extends Parser {
+public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
 
     private boolean shortTags = true;
     private boolean aspTags = false;
     private ParserResult result = null;
+    private boolean projectPropertiesListenerAdded = false;
+    private Collection<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
 
     @Override
     public Result getResult(Task task) throws ParseException {
@@ -89,12 +96,12 @@ public class GSFPHPParser extends Parser {
 
     @Override
     public void addChangeListener(ChangeListener changeListener) {
-        // TODO
+        changeListeners.add(changeListener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
-        // TODO
+        changeListeners.remove(changeListener);
     }
 
     @Override
@@ -106,6 +113,13 @@ public class GSFPHPParser extends Parser {
 //        ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
 //        request.listener.started(beginEvent);
         Properties languageProperties = PhpLanguageOptions.getDefault().getProperties(file);
+
+        if (!projectPropertiesListenerAdded){
+            PropertyChangeListener weakListener = WeakListeners.propertyChange(this, languageProperties);
+            PhpLanguageOptions.getDefault().addPropertyChangeListener(weakListener);
+            projectPropertiesListenerAdded = true;
+        }
+
         shortTags = languageProperties.areShortTagsEnabled();
         aspTags = languageProperties.areAspTagsEnabled();
         int end = 0;
@@ -496,6 +510,18 @@ public class GSFPHPParser extends Parser {
             return (String)sequence;
         } else {
             return sequence.toString();
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PhpLanguageOptions.PROP_PHP_VERSION.equals(evt.getPropertyName())){
+            forceReparsing();
+        }
+    }
+
+    private void forceReparsing(){
+        for (ChangeListener changeListener : changeListeners){
+            changeListener.stateChanged(new ChangeEvent(this));
         }
     }
     

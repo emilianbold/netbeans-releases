@@ -36,22 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.FontMetrics;
-import java.util.List;
+package org.netbeans.modules.cnd.debugger.common.spi;
+
+import java.util.Set;
+import javax.swing.text.StyledDocument;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author Egor Ushakov
  */
-public interface AxisMarksProvider {
-
-    /**
-     * @param viewportStart  viewport start - minimal visible value
-     * @param viewportEnd  viewport end - maximal visible value
-     * @param axisSize  axis size in pixels
-     * @param axisFontMetrics  font used to draw axis marks
-     * @return
-     */
-    List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics);
+public interface AutosProvider {
+    Set<String> getAutos(final StyledDocument document, int offset);
 }

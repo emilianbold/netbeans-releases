@@ -44,6 +44,7 @@ import java.awt.event.AdjustmentListener;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
@@ -73,7 +74,7 @@ public final class ViewportManager extends JPanel
         viewportModel.setViewport(new Range<Long>(0L, EXTENT));
         viewportModel.addChangeListener(this);
 
-        viewportBar = new ViewportBar(viewportModel, filterManager);
+        viewportBar = new ViewportBar(viewportModel, filterManager, UIManager.getInt("ScrollBar.width")); // NOI18N
 
         scrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         adjust();

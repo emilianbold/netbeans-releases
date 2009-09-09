@@ -178,10 +178,14 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
             if (project != currentProject && currentProject != null) {
                 //remove property change listener
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
-                MakeConfiguration mc = mcd.getActiveConfiguration();
-                mc.removePropertyChangeListener(THAMainProjectAction.this);
-                Configurations c = mcd.getConfs();
-                c.removePropertyChangeListener(THAMainProjectAction.this);
+                if (mcd != null){
+                    MakeConfiguration mc = mcd.getActiveConfiguration();
+                    mc.removePropertyChangeListener(THAMainProjectAction.this);
+                    Configurations c = mcd.getConfs();
+                    if (c != null){
+                        c.removePropertyChangeListener(THAMainProjectAction.this);
+                    }
+                }
             }
 
             boolean isEnabled = THAProjectSupport.isSupported(project);

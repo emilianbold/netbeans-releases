@@ -45,7 +45,7 @@
  * Created on June 26, 2000, 9:29 AM
  */
 
-package org.netbeans.test.java.generating.InnerClasses;
+package org.netbeans.test.java.generating;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
