@@ -86,17 +86,24 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
     private transient WizardDescriptor.Panel[] panels;
 
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
-        DataObject result = null;
-        boolean isDefaultLocation = false;
-
         Project project = Templates.getProject( wizard );
         String targetName = Templates.getTargetName(wizard);
         FileObject targetDir = Templates.getTargetFolder(wizard);
-      
+
+        FileObject fo = createFacesConfig(project, targetDir, targetName, true);
+        if (fo != null) {
+            return Collections.singleton(DataObject.find(fo));
+        } else {
+            return Collections.EMPTY_SET;
+        }
+    }
+
+    public static FileObject createFacesConfig(Project project, FileObject targetDir, String targetName, boolean addJSFFrameworkIfNecessary) throws IOException {
+        FileObject result = null;
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject dir = wm.getDocumentBase();
-            if (!JSFConfigUtilities.hasJsfFramework(dir)) {
+            if (addJSFFrameworkIfNecessary && !JSFConfigUtilities.hasJsfFramework(dir)) {
                 JSFConfigUtilities.extendJsfFramework(dir, false);
             }
             FileObject dd = wm.getDeploymentDescriptor();
@@ -104,8 +111,8 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
 
             ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-            boolean isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
-            String template_file="faces-config.xml"; //NOI18N
+            boolean isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+            String template_file = "faces-config_2_0.xml"; //NOI18N
             if (ddRoot != null) {
                 Profile profile = wm.getJ2eeProfile();
                 if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
@@ -114,15 +121,16 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
                     } else {
                         template_file = "faces-config_1_2.xml"; //NOI18N
                     }
+                } else {
+                    template_file = "faces-config.xml"; //NOI18N
                 }
             }
-            String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER+template_file), "UTF-8"); //NOI18N
-            FileObject target = FileUtil.createData(targetDir, targetName+".xml"); //NOI18N
-           JSFFrameworkProvider.createFile(target, content, "UTF-8"); //NOI18N
-           result = DataObject.find(target);
+            String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + template_file), "UTF-8"); //NOI18N
+            result = FileUtil.createData(targetDir, targetName + ".xml"); //NOI18N
+            JSFFrameworkProvider.createFile(result, content, "UTF-8"); //NOI18N
 
             FileObject webInf = wm.getWebInf();
-            isDefaultLocation = defaultName.equals(targetName) && targetDir == webInf;
+            boolean isDefaultLocation = defaultName.equals(targetName) && targetDir == webInf;
             if (!isDefaultLocation) {
                 try {
                     //Need to specify config file in javax.faces.FACES_CONFIG property
@@ -133,7 +141,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
                     for (InitParam param : parameters) {
                         if (param.getParamName().equals(FACES_CONFIG_PARAM)) {
                             found = true;
-                            String value = param.getParamValue()+",\n            /"+FileUtil.getRelativePath(wm.getDocumentBase(), targetDir)+"/"+targetName+".xml";  //NOI18N
+                            String value = param.getParamValue() + ",\n            /" + FileUtil.getRelativePath(wm.getDocumentBase(), targetDir) + "/" + targetName + ".xml";  //NOI18N
                             ddRoot.removeContextParam(param);
                             InitParam newParameter = (InitParam) ddRoot.createBean(INIT_PARAM);
                             newParameter.setParamName(FACES_CONFIG_PARAM);
@@ -146,7 +154,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
                     if (!found) {
                         InitParam contextParam = (InitParam) ddRoot.createBean(INIT_PARAM);
                         contextParam.setParamName(FACES_CONFIG_PARAM);
-                        contextParam.setParamValue("/"+FileUtil.getRelativePath(wm.getDocumentBase(), targetDir)+"/"+targetName+".xml");  //NOI18N
+                        contextParam.setParamValue("/" + FileUtil.getRelativePath(wm.getDocumentBase(), targetDir) + "/" + targetName + ".xml");  //NOI18N
                         ddRoot.addContextParam(contextParam);
                     }
                     ddRoot.write(dd);
@@ -156,10 +164,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
                 }
             }
         }
-        if (result != null) {
-            return Collections.singleton(result);
-        }
-        return Collections.EMPTY_SET;
+        return result;
     }
 
     public void initialize(TemplateWizard wizard) {
