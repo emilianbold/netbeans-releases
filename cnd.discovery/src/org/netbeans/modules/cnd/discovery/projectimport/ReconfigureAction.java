@@ -164,7 +164,7 @@ public class ReconfigureAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
-            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getOtherOptions());
+            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getLinkerFlags(), panel.getOtherOptions());
         }
         running = false;
     }
@@ -172,8 +172,9 @@ public class ReconfigureAction extends NodeAction {
     private String getLegend(ReconfigureProject reconfigurator){
         CompilerOptions options = reconfigurator.getLastCompilerOptions();
         if (options != null && options.CFlags != null && options.CppFlags != null &&
-            options.CCompiler != null && options.CppCompiler != null && options.LinkerFlags != null) {
-            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler+"/"+options.CppCompiler, options.CFlags, options.CppFlags, options.LinkerFlags); // NOI18N
+            options.CCompiler != null && options.CppCompiler != null) {
+            String linker = options.LinkerFlags == null ? "" : options.LinkerFlags;
+            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler+"<br>"+options.CppCompiler+"<br>", options.CFlags, options.CppFlags, linker); // NOI18N
         }
         return ""; // NOI18N
     }
