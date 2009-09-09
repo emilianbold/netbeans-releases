@@ -149,12 +149,12 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
         private synchronized String syncImpl() throws IOException, InterruptedException, ExecutionException {
             if (localFile == null) {
-                localFile = File.createTempFile("cnd-remote-binary-", ".bin");
+                localFile = File.createTempFile("cnd-remote-binary-", ".bin"); // NOI18N
                 localFile.deleteOnExit();
             }
             boolean copy = true;
             String newTimeStamp;
-            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "ls -l " + remotePath);
+            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "ls -l " + remotePath); // NOI18N
             if (rcs.run() != 0) {
                 // TODO: is there a better solution in the case ls finished with an error?
                 return null;
