@@ -376,16 +376,19 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return io;
     }
     
-    public void addDataFilter(DataFilter filter) {
+    public void addDataFilter(DataFilter filter, boolean isAdjusting) {
         //if the filter is TimeIntervalFilter: remove first
         if (filter instanceof TimeIntervalDataFilter){
-            dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class);
+            dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
-        dataFiltersSupport.addFilter(filter);
-        for (Visualizer v : getVisualizers()){
-            v.refresh();
-        }
+        dataFiltersSupport.addFilter(filter, isAdjusting);
         //if filter is added - refresh all visualizers
+        if (!isAdjusting){
+            for (Visualizer v : getVisualizers()){
+                v.refresh();
+            }
+        }
+        
     }
     
     public void cleanAllDataFilter() {
@@ -597,7 +600,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         for (String key : info.keySet()) {
             DataFilter filter = DataFiltersManager.getInstance().createFilter(key, info.get(key));
             if (filter != null) {
-                dataFiltersSupport.addFilter(filter);
+                dataFiltersSupport.addFilter(filter, false);
             }
         }
         //Do it at the very end to apply filters

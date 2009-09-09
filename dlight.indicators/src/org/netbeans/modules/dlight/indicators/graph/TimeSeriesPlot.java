@@ -185,7 +185,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         TimeIntervalDataFilter newTimeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, newSet);
         synchronized (timeFilterLock) {
             if (newTimeFilter != timeFilter) {

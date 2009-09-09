@@ -48,7 +48,7 @@ public interface DataFilterManager {
     void cleanAllDataFilter();
     void cleanAllDataFilter(Class clazz);
     boolean removeDataFilter(DataFilter filter);
-    void addDataFilter(DataFilter filter);
+    public void addDataFilter(DataFilter filter, boolean isAdjusting);
     void addDataFilterListener(DataFilterListener l);
     void removeDataFilterListener(DataFilterListener l);
     <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz);

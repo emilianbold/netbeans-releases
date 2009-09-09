@@ -78,7 +78,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
                     applyButton.setEnabled(false);
                     return;
                 }
-                TimeIntervalPanel.this.manager.addDataFilter(TimeIntervalDataFilterFactory.create(getSelectedInterval()));
+                TimeIntervalPanel.this.manager.addDataFilter(TimeIntervalDataFilterFactory.create(getSelectedInterval()), false);
 
             }
         });
@@ -185,7 +185,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         return new Range<Long>((Long) startTimeSpinner.getValue(), (Long) endTimeSpinner.getValue());
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         update(manager.getDataFilter(TimeIntervalDataFilter.class));
     }
 
