@@ -156,6 +156,7 @@ public class FileUtilTestHidden extends TestBaseHid {
             return;
         }
         assertTrue(rootFile.exists());
+        rootFile = FileUtil.normalizeFile(rootFile);
 
         File testFile = new File(rootFile, "abc.txt");
         assertTrue(testFile.createNewFile());
