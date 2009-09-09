@@ -92,7 +92,7 @@ import org.openide.util.NbBundle;
  */
 public class TreeEvaluator {
 
-    private Expression expression;
+    private JavaExpression expression;
     private EvaluationContext evaluationContext;
 
     private StackFrame frame;
@@ -103,7 +103,7 @@ public class TreeEvaluator {
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
 
-    TreeEvaluator(Expression expression, EvaluationContext context) {
+    TreeEvaluator(JavaExpression expression, EvaluationContext context) {
         this.expression = expression;
         this.evaluationContext = context;
     }

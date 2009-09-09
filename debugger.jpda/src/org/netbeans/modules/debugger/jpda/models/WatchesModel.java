@@ -66,7 +66,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.Expression;
+import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.openide.util.NbBundle;
@@ -87,7 +87,7 @@ public class WatchesModel implements TreeModel {
     private Listener            listener;
     private Vector<ModelListener> listeners = new Vector<ModelListener>();
     private ContextProvider     lookupProvider;
-    // Watch to Expression or Exception
+    // Watch to JavaExpression or Exception
     private final Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
     private final JPDAWatch EMPTY_WATCH;
 
@@ -268,7 +268,7 @@ public class WatchesModel implements TreeModel {
         private Watch w;
         private JPDADebuggerImpl debugger;
         private JPDAWatch evaluatedWatch;
-        private Expression expression;
+        private EvaluatorExpression expression;
         private final boolean[] evaluating = new boolean[] { false };
         
         public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
@@ -287,13 +287,10 @@ public class WatchesModel implements TreeModel {
         }
         
         private void parseExpression(String exprStr) {
-            expression = Expression.parse (
-                exprStr,
-                Expression.LANGUAGE_JAVA_1_5
-            );
+            expression = new EvaluatorExpression(exprStr);
         }
         
-        Expression getParsedExpression() {
+        EvaluatorExpression getParsedExpression() {
             return expression;
         }
 
@@ -404,7 +401,7 @@ public class WatchesModel implements TreeModel {
             
             JPDAWatch jw = null;
             try {
-                Expression expr = getParsedExpression();
+                EvaluatorExpression expr = getParsedExpression();
                 Value v = debugger.evaluateIn (expr);
                 //if (v instanceof ObjectReference)
                 //    jw = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
