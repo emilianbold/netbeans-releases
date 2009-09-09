@@ -216,13 +216,13 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         model.modifyOptionsForDoClose (wd);
         switch (model.getOperation ()) {
             case UNINSTALL :
-                panel.setBody (getBundle ("UninstallStep_UninstallDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                panel.setBody (getBundle ("UninstallStep_UninstallDone_Text"), model.getAllVisibleUpdateElements ());
                 break;
             case ENABLE :
-                panel.setBody (getBundle ("UninstallStep_ActivateDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                panel.setBody (getBundle ("UninstallStep_ActivateDone_Text"), model.getAllVisibleUpdateElements ());
                 break;
             case DISABLE :
-                panel.setBody (getBundle ("UninstallStep_DeactivateDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                panel.setBody (getBundle ("UninstallStep_DeactivateDone_Text"), model.getAllVisibleUpdateElements ());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
@@ -247,7 +247,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         switch (model.getOperation ()) {
             case UNINSTALL :
                 panel.setBody (getBundle ("UninstallStep_UninstallFailed_Text", ex.getLocalizedMessage ()),
-                        UninstallUnitWizardModel.getVisibleUpdateElements(model.getAllUpdateElements(), false, model.getOperation()));
+                        model.getAllVisibleUpdateElements ());
                 break;
             case ENABLE :
                 panel.setBody (getBundle ("UninstallStep_ActivateFailed_Text",
@@ -256,7 +256,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                 break;
             case DISABLE :
                 panel.setBody (getBundle ("UninstallStep_DeactivateFailed_Text", ex.getLocalizedMessage ()),
-                        UninstallUnitWizardModel.getVisibleUpdateElements(model.getAllUpdateElements(), false, model.getOperation()));
+                        model.getAllVisibleUpdateElements ());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
@@ -270,13 +270,13 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         panel.setRestartButtonsVisible (true);
         switch (model.getOperation ()) {
             case UNINSTALL :
-                panel.setBody (getBundle ("UninstallStep_UninstallDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                panel.setBody (getBundle ("UninstallStep_UninstallDone_Text"), model.getAllVisibleUpdateElements ());
                 break;
             case ENABLE :
-                panel.setBody (getBundle ("UninstallStep_ActivateDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                panel.setBody (getBundle ("UninstallStep_ActivateDone_Text"), model.getAllVisibleUpdateElements ());
                 break;
             case DISABLE :
-                panel.setBody (getBundle ("UninstallStep_DeactivateDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                panel.setBody (getBundle ("UninstallStep_DeactivateDone_Text"), model.getAllVisibleUpdateElements ());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();

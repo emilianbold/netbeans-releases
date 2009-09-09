@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V63 - NB 6.7
+ *   REMOVE_INSTRUMENTATION_ELEMENT
  * V62 - NB 6.7
  *   SOURCE_FOLDER_FILTER_ELEMENT
  * V61 - NB 6.7

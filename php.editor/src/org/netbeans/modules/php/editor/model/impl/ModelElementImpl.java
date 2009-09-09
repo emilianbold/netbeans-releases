@@ -53,7 +53,6 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
-import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -102,15 +101,8 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this.kind = kind;
         this.file = file;
         this.modifiers = modifiers;
-        if (inScope instanceof ScopeImpl) {
-            //TODO: not nice
-            if (this instanceof AssignmentImpl) {
-                if (inScope instanceof  VariableName) {
-                    ((ScopeImpl)inScope).addElement(this);
-                }
-            } else {
-                ((ScopeImpl)inScope).addElement(this);
-            }            
+        if (inScope instanceof ScopeImpl && !(this instanceof AssignmentImpl)) {
+            ((ScopeImpl)inScope).addElement(this);
         }
     }
 
@@ -137,7 +129,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public String getNormalizedName() {
-        return getName().toLowerCase();
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart())+getFileObject().getPath();
     }
 
     static boolean nameKindMatch(Pattern p, String text) {

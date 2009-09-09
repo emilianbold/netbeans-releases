@@ -168,17 +168,17 @@ public class Utilities {
             return null;
         }
 
-        ts.moveNext();
+        if (ts.moveNext()) {
+            while (ts.offset() >= start) {
+                Token<JavaTokenId> t = ts.token();
 
-        while (ts.offset() >= start) {
-            Token<JavaTokenId> t = ts.token();
+                if (member.equals(t.text().toString())) {
+                    return t;
+                }
 
-            if (member.equals(t.text().toString())) {
-                return t;
+                if (!ts.movePrevious())
+                    break;
             }
-
-            if (!ts.movePrevious())
-                break;
         }
         return null;
     }
@@ -464,7 +464,7 @@ public class Utilities {
         keywords.add("super");
         keywords.add("class");
 
-        nonCtorKeywords = new HashSet(keywords);
+        nonCtorKeywords = new HashSet<String>(keywords);
         nonCtorKeywords.remove("this");
         nonCtorKeywords.remove("super");
 

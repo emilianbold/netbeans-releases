@@ -52,6 +52,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -94,7 +96,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private ClassPath funcTestExecute;
     private Map<FileObject,ClassPath> extraCompilationUnitsCompile = null;
     private Map<FileObject,ClassPath> extraCompilationUnitsExecute = null;
-    
+
+    private static Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
+
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.BOOT)) {
             if (boot == null) {
@@ -118,7 +122,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (type.equals(ClassPath.COMPILE)) {
                 if (compile == null) {
                     compile = ClassPathFactory.createClassPath(createCompileClasspath());
-                    Util.err.log("compile/execute-time classpath for " + project + ": " + compile);
+                    LOG.log(Level.FINE, "compile/execute-time classpath for file '" + file.getPath() + "' (prj: " + project + "): " + compile);
                 }
                 return compile;
             } else if (type.equals(ClassPath.EXECUTE)) {
@@ -138,13 +142,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (type.equals(ClassPath.COMPILE)) {
                 if (testCompile == null) {
                     testCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("unit"));
-                    Util.err.log("compile-time classpath for tests in " + project + ": " + testCompile);
+                    LOG.log(Level.FINE, "compile-time classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testCompile);
                 }
                 return testCompile;
             } else if (type.equals(ClassPath.EXECUTE)) {
                 if (testExecute == null) {
                     testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
-                    Util.err.log("runtime classpath for tests in " + project + ": " + testExecute);
+                    LOG.log(Level.FINE, "runtime classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testExecute);
                 }
                 return testExecute;
             } else if (type.equals(ClassPath.SOURCE)) {
@@ -164,7 +168,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 // See #42331.
                 if (funcTestCompile == null) {
                     funcTestCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("qa-functional"));
-                    Util.err.log("compile-time classpath for func tests in " + project + ": " + funcTestCompile);
+                    LOG.log(Level.FINE, "compile-time classpath for func tests for file '" + file.getPath() + "' (prj: " + project + "): " + funcTestCompile);
                 }
                 return funcTestCompile;
             } else if (type.equals(ClassPath.EXECUTE)) {
@@ -189,7 +193,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (ClassPath.EXECUTE.equals(type)) {
                 if (testExecute == null) {
                     testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
-                    Util.err.log("runtime classpath for tests in " + project + ": " + testExecute);
+                    LOG.log(Level.FINE, "runtime classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testExecute);
                 }
                 return testExecute;
             }

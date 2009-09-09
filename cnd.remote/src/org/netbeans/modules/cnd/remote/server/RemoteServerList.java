@@ -43,7 +43,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -51,6 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
@@ -72,7 +72,6 @@ public class RemoteServerList implements ServerListImplementation {
     private static final char SERVER_RECORD_SEPARATOR = '|'; //NOI18N
     private static final String SERVER_LIST_SEPARATOR = ","; //NOI18N
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
-    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private int defaultIndex;
     private final PropertyChangeSupport pcs;
     private final ChangeSupport cs;
@@ -110,7 +109,7 @@ public class RemoteServerList implements ServerListImplementation {
                     syncFactory = RemoteSyncFactory.fromID(syncId);
                     if (syncFactory == null) {
                         syncFactory = RemoteSyncFactory.getDefault();
-                        log.warning("Unsupported synchronization mode \"" + syncId + "\" for " + env.toString() + //NOI18N
+                        RemoteUtil.LOGGER.warning("Unsupported synchronization mode \"" + syncId + "\" for " + env.toString() + //NOI18N
                                 ". Switching to default one."); //NOI18N
                     }
                 }
@@ -259,7 +258,7 @@ public class RemoteServerList implements ServerListImplementation {
     }
 
     public synchronized void removeServer(ServerRecord record) {
-        log.finest("ServerList: remove " + record);
+        RemoteUtil.LOGGER.finest("ServerList: remove " + record);
         SystemIncludesUtils.cancel(record.getExecutionEnvironment());
         if (items.remove(record)) {
             removeFromPreferences(record);
@@ -269,7 +268,7 @@ public class RemoteServerList implements ServerListImplementation {
 
     @Override
     public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
-        log.finest("ServerList: set " + records);
+        RemoteUtil.LOGGER.finest("ServerList: set " + records);
         Collection<ExecutionEnvironment> removed = clear();
         for (ServerRecord rec : records) {
             addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
@@ -318,7 +317,7 @@ public class RemoteServerList implements ServerListImplementation {
             return false;
         }
         if (SwingUtilities.isEventDispatchThread()) {
-            log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
+            RemoteUtil.LOGGER.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
         int exit_status = RemoteCommandSupport.run(env, "test", "-x", path); // NOI18N
         if (exit_status != 0 && !IpeUtils.isPathAbsolute(path)) {

@@ -88,6 +88,14 @@ class SftpSupport {
             return getInstance(execEnv).uploadFile(srcFileName, dstFileName, mask, error);
     }
 
+    static Future<Integer> downloadFile(
+            final String srcFileName,
+            final ExecutionEnvironment execEnv,
+            final String dstFileName,
+            final Writer error) {
+            return getInstance(execEnv).downloadFile(srcFileName, dstFileName, error);
+    }
+
     //
     // Instance stuff
     //
@@ -126,29 +134,28 @@ class SftpSupport {
         return channel;
     }
 
-    private class Uploader implements Callable<Integer> {
+    private abstract class Worker implements Callable<Integer> {
 
-        private final String srcFileName;
-        private final ExecutionEnvironment execEnv;
-        private final String dstFileName;
-        private final int mask;
-        private final Writer error;
+        protected final String srcFileName;
+        protected final ExecutionEnvironment execEnv;
+        protected final String dstFileName;
+        protected final Writer error;
 
-        public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error) {
+        public Worker(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
             this.srcFileName = srcFileName;
             this.execEnv = execEnv;
             this.dstFileName = dstFileName;
-            this.mask = mask;
             this.error = error;
         }
+
+        protected abstract void work() throws JSchException, SftpException, IOException, CancellationException;
+        protected abstract String getTraceName();
 
         public Integer call() throws Exception {
             int rc = -1;
             try {
-                LOG.fine("Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName + " started");
-                ChannelSftp cftp = getChannel();
-                cftp.put(srcFileName, dstFileName);
-                cftp.chmod(mask, dstFileName);
+                LOG.fine(getTraceName() + " started");
+                work();
                 rc = 0;
             } catch (JSchException ex) {
                 ex.printStackTrace();
@@ -163,10 +170,50 @@ class SftpSupport {
                 // no trace
                 rc = 4;
             }
-            LOG.fine("Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName + (rc == 0 ? " OK" : " FAILED"));
+            LOG.fine(getTraceName() + (rc == 0 ? " OK" : " FAILED"));
             return rc;
+        }        
+    }
+
+    private class Uploader extends Worker implements Callable<Integer> {
+
+        private final int mask;
+
+        public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error) {
+            super(srcFileName, execEnv, dstFileName, error);
+            this.mask = mask;
         }
 
+        @Override
+        protected void work() throws IOException, CancellationException, JSchException, SftpException {
+            ChannelSftp cftp = getChannel();
+            cftp.put(srcFileName, dstFileName);
+            cftp.chmod(mask, dstFileName);
+
+        }
+
+        @Override
+        protected String getTraceName() {
+            return "Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName; // NOI18N
+        }
+    }
+
+    private class Downloader extends Worker implements Callable<Integer> {
+
+        public Downloader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
+            super(srcFileName, execEnv, dstFileName, error);
+        }
+
+        @Override
+        protected void work() throws IOException, CancellationException, JSchException, SftpException {
+            ChannelSftp cftp = getChannel();
+            cftp.get(srcFileName, dstFileName);
+        }
+
+        @Override
+        protected String getTraceName() {
+            return "Downloading " + execEnv + ":" + srcFileName + " to " + dstFileName; // NOI18N
+        }
     }
 
     private Future<Integer> uploadFile(
@@ -177,7 +224,19 @@ class SftpSupport {
             Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error);
             FutureTask<Integer> ftask = new FutureTask(uploader);
             requestProcessor.post(ftask);
-            LOG.fine("Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName + " schedulled");
+            LOG.fine(uploader.getTraceName() + " schedulled");
+            return ftask;
+    }
+
+    private Future<Integer> downloadFile(
+            final String srcFileName,
+            final String dstFileName,
+            final Writer error) {
+
+            Downloader downloader = new Downloader(srcFileName, execEnv, dstFileName, error);
+            FutureTask<Integer> ftask = new FutureTask(downloader);
+            requestProcessor.post(ftask);
+            LOG.fine(downloader.getTraceName() + " schedulled");
             return ftask;
     }
 

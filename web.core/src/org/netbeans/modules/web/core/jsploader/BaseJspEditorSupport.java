@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
@@ -95,6 +96,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakListeners;
 
@@ -244,28 +246,67 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     
     @Override
     public void open(){
-        ((JspDataObject)getDataObject()).updateFileEncoding(false);
-        encoding = ((JspDataObject)getDataObject()).getFileEncoding(); //use encoding from fileobject
-        
+        //the call to updateFileEncoding() method can potentially take long
+        //time if the JspParser is used to determine the page encoding.
+        //There is a FastOpenInfoParser implementation which should quickly
+        //find the encoding in most cases, but under some circumstances the
+        //heavyweight jsp parser is started and asked for the page encoding.
+        //in such case the AWT thread may be blocked for a long time, so
+        //I am moving the call to the parser to another thread and once the
+        //parser finishes the open method on the editor suppor will be called
+        //again in AWT.
+        open(true);
+    }
+
+    private void open(final boolean inBackgroundThread) {
+        Runnable task = new Runnable() {
+            public void run() {
+                //analyze the page, can be time consuming task
+                ((JspDataObject) getDataObject()).updateFileEncoding(false);
+
+                if(inBackgroundThread) {
+                    //ensure the document is opened in AWT
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            open(false);
+                        }
+                    });
+                }
+            }
+        };
+
+        if(inBackgroundThread) {
+            RequestProcessor.getDefault().post(task);
+            return ; //do not open the document now, we need the encoding first
+        } else {
+            task.run(); //this time we will get the cached page parsing result quickly, can be done in AWT
+        }
+
+        encoding = ((JspDataObject) getDataObject()).getFileEncoding(); //use encoding from fileobject
+
         if (!isSupportedEncoding(encoding)) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
-                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
-                                    encoding, 
-                                    defaulEncoding} ), 
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE);
+                    NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
+                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                        encoding,
+                        defaulEncoding}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
-            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                return;
+            }
         }
         super.open();
-        
+
         // #120530 - make sure parsing task is started
         restartTimer(false);
 
         //add document listener to the opened document
         getDocument().addDocumentListener(DOCUMENT_LISTENER);
-    }  
+
+    }
+
 
     /** Notify about the editor closing.
      */

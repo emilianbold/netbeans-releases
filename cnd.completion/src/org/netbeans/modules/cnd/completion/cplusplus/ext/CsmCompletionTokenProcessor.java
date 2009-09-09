@@ -1719,6 +1719,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
                                 break;
 
+                            case METHOD: // a()(
+                                popExp();
+                                CsmCompletionExpression mtdOpExp = createTokenExp(METHOD_OPEN);
+                                mtdOpExp.addParameter(top);
+                                pushExp(mtdOpExp);
+                                break;
+
                             case IF:
                             case FOR:
                             case SWITCH:

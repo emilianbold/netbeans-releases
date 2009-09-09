@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.perfan.dataprovider;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
 import org.netbeans.modules.dlight.perfan.util.Computable;
 import java.util.ArrayList;
@@ -66,15 +67,20 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
+import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.MemoryMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.TimeMetric;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.HotSpotFunctionsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
+import org.netbeans.modules.dlight.perfan.storage.impl.Address;
+import org.netbeans.modules.dlight.perfan.storage.impl.ErprintCommand;
 import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -102,7 +108,7 @@ import org.openide.util.Lookup;
  *      request.
  *
  */
-class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
+class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
     private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
@@ -122,17 +128,37 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     private PerfanDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
     private volatile HotSpotFunctionsFilter filter;
+    private volatile TimeIntervalDataFilter timeIntervalDataFilter;
 
     public void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
         this.serviceInfoStorage = serviceInfoStorage;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet) {
+        boolean hasTimeIntervalFilter = false;
         for (DataFilter f : newSet) {
             if (f instanceof HotSpotFunctionsFilter) {
-                filter =  (HotSpotFunctionsFilter) f;
+                filter = (HotSpotFunctionsFilter) f;
+            }
+            if (f instanceof TimeIntervalDataFilter) {
+                timeIntervalDataFilter = (TimeIntervalDataFilter) f;
+                hasTimeIntervalFilter = true;
             }
         }
+        if (!hasTimeIntervalFilter && timeIntervalDataFilter != null) {
+            //clear filter
+            if (storage != null) {
+                storage.setFilter("\"\"");//NOI18Ns
+            }
+            timeIntervalDataFilter = null;
+        }
+        if (hasTimeIntervalFilter && timeIntervalDataFilter != null) {
+            storage.setFilter(timeIntervalDataFilter.getInterval() == null ? "\"\"" : "TSTAMP>" + timeIntervalDataFilter.getInterval().getStart() + "&&TSTAMP<" + timeIntervalDataFilter.getInterval().getEnd());//NOI18N
+        }
+    }
+
+    public ThreadDumpProvider getThreadDumpProvider() {
+        return null;
     }
 
     private static enum CC_MODE {
@@ -144,11 +170,11 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     public SSStackDataProvider() {
     }
 
-    public synchronized List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
+    public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLERS, path, aggregate);
     }
 
-    public synchronized List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
+    public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLEES, path, aggregate);
     }
 
@@ -161,8 +187,11 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getFunctionCalls(columns, orderBy, limit));
     }
 
-    public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
-        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCallWithMetric[0]), false));
+    public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path, List<Column> columns, List<Column> orderBy) {
+        List<FunctionCallWithMetric> fpath = FunctionCallTreeTableNode.getFunctionCalls(path);
+        List<FunctionCallWithMetric> callers = getCallers(fpath, columns, orderBy, false);
+
+        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(callers);
     }
 
     public FunctionCallTreeTableNode getValueAt(int row) {
@@ -174,7 +203,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     }
 
     // TODO: implement
-    private synchronized List<FunctionCallWithMetric> getCallersCallees(CC_MODE mode, FunctionCallWithMetric[] path, boolean aggregate) {
+    private synchronized List<FunctionCallWithMetric> getCallersCallees(CC_MODE mode, List<FunctionCallWithMetric> path, boolean aggregate) {
         //TODO: Now just take the last from the path...
 //        FunctionCall parent_fc = path[path.length - 1];
 //
@@ -184,12 +213,12 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
 //            return Collections.emptyList();
 //        }
 //
-//        SortedSet<FunctionCall> result = rawDataToResult(raw_data, NaturalFunctionCallComparator.getInstance(TimeMetric.UserFuncTimeInclusive));
+//        SortedSet<FunctionCallWithMetric> result = rawDataToResult(raw_data, NaturalFunctionCallComparator.getInstance(TimeMetric.UserFuncTimeInclusive));
 //
-//        List<FunctionCall> callees = new ArrayList<FunctionCall>(10);
-//        Iterator<FunctionCall> it = result.iterator();
+//        List<FunctionCallWithMetric> callees = new ArrayList<FunctionCallWithMetric>(10);
+//        Iterator<FunctionCallWithMetric> it = result.iterator();
 //        while (it.hasNext()) {
-//            FunctionCall fc = it.next();
+//            FunctionCallWithMetric fc = it.next();
 //            callees.add(fc);
 //        }
 //
@@ -202,7 +231,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
 
         try {
             result = hotSpotFunctionsFetcher.compute(
-                    new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit, filter)); // NOI18N
+                    new HotSpotFunctionsFetcherParams(ErprintCommand.lines(), columns, orderBy, limit, filter));
         } catch (InterruptedException ex) {
             log.fine("HotSpotFunctionsFetcher interrupted"); // NOI18N
         }
@@ -214,7 +243,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             final List<Column> columns, final List<Column> orderBy, final int limit) {
 
         try {
-            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("functions", columns, orderBy, limit, filter));//NOI18N
+            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams(ErprintCommand.functions(), columns, orderBy, limit, filter));
         } catch (InterruptedException ex) {
             log.fine("HotSpotFunctionsFetcher interrupted."); // NOI18N
         }
@@ -284,7 +313,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int)functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int) functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }
@@ -295,14 +324,18 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
 
     private static class HotSpotFunctionsFetcherParams {
 
-        private final String command;
-        private final List<Column> columns;
+        private final ErprintCommand command;
+        private final List<Column> resultColumns;
+        private final List<Column> requestColumns;
+        private final int[] columnsIdxRef;
         private final List<Column> orderBy;
         private final int limit;
         private final Metrics metrics;
+        private final int nameIdx;
+        private final int addressIdx;
         private final HotSpotFunctionsFilter filter;
 
-        HotSpotFunctionsFetcherParams(String command,
+        HotSpotFunctionsFetcherParams(ErprintCommand command,
                 final List<Column> columns,
                 final List<Column> orderBy,
                 final int limit,
@@ -316,16 +349,68 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 throw new IllegalArgumentException("HotSpotFunctionsFetcherParams: empty columns list!"); // NOI18N
             }
 
-            this.command = (command == null) ? "functions" : command; // NOI18N
-            this.columns = columns;
+            // It is much easier to parse function name once it is the last column ;)
+            // 
+            // Moreover, identification of function just by name is not enough
+            // so... for fething we use "own" list of columns based on provided one
+            // But the result will comply with the request.
+
+            resultColumns = new ArrayList<Column>();
+
+            int size = columns.size();
+            columnsIdxRef = new int[size];
+            int nameColumnIdx = -1;
+            int addressColumnIdx = -1;
+            int idx = 0;
+
+            for (int cidx = 0; cidx < size; cidx++) {
+                Column c = columns.get(cidx);
+
+                if (c.equals(SunStudioDCConfiguration.c_address)) {
+                    addressColumnIdx = cidx;
+                } else if (c.equals(SunStudioDCConfiguration.c_name)) {
+                    nameColumnIdx = cidx;
+                } else {
+                    resultColumns.add(c);
+                    columnsIdxRef[cidx] = idx++;
+                }
+            }
+
+            if (addressColumnIdx == -1) {
+                resultColumns.add(SunStudioDCConfiguration.c_address);
+                addressColumnIdx = idx;
+            } else {
+                resultColumns.add(columns.get(addressColumnIdx));
+                columnsIdxRef[addressColumnIdx] = idx;
+            }
+
+            addressIdx = idx;
+            idx += 2; // increase idx by 2 as address takes 2 columns
+
+            if (nameColumnIdx == -1) {
+                resultColumns.add(SunStudioDCConfiguration.c_name);
+                nameColumnIdx = idx;
+            } else {
+                resultColumns.add(columns.get(nameColumnIdx));
+                columnsIdxRef[nameColumnIdx] = idx;
+            }
+
+            nameIdx = idx;
+            idx += 1;
+
+            this.command = (command == null) ? ErprintCommand.functions() : command;
+            this.requestColumns = columns;
             this.orderBy = orderBy == null ? Arrays.asList(columns.get(0)) : orderBy;
             this.limit = limit;
-            this.metrics = Metrics.constructFrom(columns, orderBy);
+
+            // To identify functions use of address is better than use of names
+
+            this.metrics = Metrics.constructFrom(resultColumns, orderBy);
             this.filter = filter;
         }
 
         boolean isDefaultCommand() {
-            return "functions".equals(command); // NOI18N
+            return ErprintCommand.functions().equals(command);
         }
 
         @Override
@@ -365,6 +450,8 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             String[] er_result = null;
 
             try {
+                if (SSStackDataProvider.this.timeIntervalDataFilter != null) {
+                }
                 er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
             } catch (InterruptedException ex) {
                 log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
@@ -382,17 +469,21 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             int limit = Math.min(er_result.length, taskArguments.limit);
             ArrayList<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>(limit);
 
-            int colCount = taskArguments.columns.size();
             Column primarySortColumn = taskArguments.orderBy.get(0);
 
             for (int i = 0; i < limit; i++) {
                 int lineNumber = -1;
                 String fileName = null;
-                String[] info = er_result[i].split("[ \t]+", colCount); // NOI18N
-                String name = info[colCount - 1];
+
+                // name is ALWAYS the last column (see HotSpotFunctionsFetcherParams)
+                // Splitting output string on nameIdx pieces
+
+                String[] info = er_result[i].split("[ \t]+", taskArguments.nameIdx + 1); // NOI18N
+                String name = info[taskArguments.nameIdx];
+
                 if (!taskArguments.isDefaultCommand()) {
                     //parse
-                    if ("lines".equals(taskArguments.command)) { // NOI18N
+                    if (ErprintCommand.lines().equals(taskArguments.command)) { // NOI18N
                         //if name.startsWith< will skip
                         Matcher match;
 
@@ -421,7 +512,8 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                     }
                 }
 
-                Function f = new FunctionImpl(name, name.hashCode());
+                Address address = Address.parse(info[taskArguments.addressIdx] + info[taskArguments.addressIdx + 1]);
+                Function f = new FunctionImpl(name, address == null ? name.hashCode() : address.hashCode());
 
                 Map<FunctionMetric, Object> metricsValues =
                         new HashMap<FunctionMetric, Object>();
@@ -429,41 +521,52 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 // Will skip function if value of primary sorting metric == 0
                 boolean skipFunction = false;
 
-                for (int midx = 0; midx < colCount - 1; midx++) {
-                    Column col = taskArguments.columns.get(midx);
+                // Returned result is not, actually what was requested..
+                // need to return what was requested.
+
+                for (int midx = 0; midx < taskArguments.requestColumns.size(); midx++) {
+                    Column col = taskArguments.requestColumns.get(midx);
+
+                    if (col.equals(SunStudioDCConfiguration.c_name)) {
+                        continue;
+                    }
+
                     String colName = col.getColumnName();
                     Class colClass = col.getColumnClass();
                     FunctionMetric metric = getMetricInstance(colName);
                     boolean isPrimaryColumn = col.equals(primarySortColumn);
-                    Object value = info[midx];
+
+                    String val = info[taskArguments.columnsIdxRef[midx]];
+                    Object metricValue = val;
+
                     try {
-                        Number nvalue = df.parse(info[midx]);
+                        Number nvalue = df.parse(val);
                         if (Integer.class == colClass) {
                             if (isPrimaryColumn && nvalue.intValue() == 0) {
                                 skipFunction = true;
                             }
-                            value = new Integer(nvalue.intValue());
+                            metricValue = new Integer(nvalue.intValue());
                         } else if (Double.class == colClass) {
                             if (isPrimaryColumn && nvalue.doubleValue() == 0) {
                                 skipFunction = true;
                             }
-                            value = new Double(nvalue.doubleValue());
+                            metricValue = new Double(nvalue.doubleValue());
                         } else if (Float.class == colClass) {
                             if (isPrimaryColumn && nvalue.floatValue() == 0) {
                                 skipFunction = true;
                             }
-                            value = new Float(nvalue.floatValue());
+                            metricValue = new Float(nvalue.floatValue());
                         } else if (Long.class == colClass) {
                             if (isPrimaryColumn && nvalue.longValue() == 0) {
                                 skipFunction = true;
                             }
-                            value = new Long(nvalue.longValue());
+                            metricValue = new Long(nvalue.longValue());
                         }
 
                     } catch (ParseException ex) {
                         // use plain info[midx]
                     }
-                    metricsValues.put(metric, value);
+                    metricsValues.put(metric, metricValue);
                 }
 
                 if (!skipFunction) {
@@ -479,5 +582,5 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
 
             return result;
         }
-            }
-        }
+    }
+}

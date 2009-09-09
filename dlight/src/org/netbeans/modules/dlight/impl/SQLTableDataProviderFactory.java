@@ -4,14 +4,14 @@
  */
 package org.netbeans.modules.dlight.impl;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -20,10 +20,11 @@ import org.openide.util.lookup.ServiceProviders;
  *
  * @author mt154047
  */
-@ServiceProviders({@ServiceProvider(service=DataProviderFactory.class), @ServiceProvider(service=VisualizerDataProviderFactory.class)})
+@ServiceProviders({@ServiceProvider(service = DataProviderFactory.class), @ServiceProvider(service = VisualizerDataProviderFactory.class)})
 public final class SQLTableDataProviderFactory implements DataProviderFactory {
 
-    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:table")); //NOI18N
+    private final DataStorageType supportedStorageType = SQLDataStorage.getStorageType();
+    private final Collection<DataModelScheme> providedSchemas = Collections.singletonList(DataModelSchemeProvider.getInstance().getScheme("model:table")); //NOI18N
 
     public DataProvider create() {
         return new SQLTableDataProvider();
@@ -42,7 +43,7 @@ public final class SQLTableDataProviderFactory implements DataProviderFactory {
         return getProvidedDataModelScheme().contains(dataModel);
     }
 
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
-        return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+    public boolean validate(DataStorage storage) {
+        return storage.supportsType(supportedStorageType);
     }
 }

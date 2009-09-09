@@ -110,15 +110,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
 //        }
     }
 
-    void applyChanges() {
-        //#109507 workaround
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        sc.setServerInstanceId(null);
-        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-        //any save of the project shall effectively cause the module server change..
-        POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange();
-
+    void applyChangesInAWT() {
         // USG logging
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
@@ -127,6 +119,16 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
             record.setParameters(new Object[] { obj.toString() });
             POHImpl.USG_LOGGER.log(record);
         }
+    }
+
+    void applyChanges() {
+        //#109507 workaround
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        sc.setServerInstanceId(null);
+        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
+        //any save of the project shall effectively cause the module server change..
+        POHImpl poh = project.getLookup().lookup(POHImpl.class);
+        poh.hackModuleServerChange();
     }
 
     /** This method is called from within the constructor to

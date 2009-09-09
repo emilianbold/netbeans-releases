@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
@@ -192,10 +193,10 @@ public class ReactorChecker implements PrerequisitesChecker {
                 File selected = FileUtilities.resolveFilePath(FileUtil.toFile(config.getProject().getProjectDirectory()), path);
                 config.setExecutionDirectory(selected);
                 // persist in nbactions.xml file
-                UserActionGoalProvider usr = config.getProject().getLookup().lookup(UserActionGoalProvider.class);
+                M2ConfigProvider usr = config.getProject().getLookup().lookup(M2ConfigProvider.class);
                 NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
                 try {
-                    ActionToGoalMapping mapping = reader.read(new StringReader(usr.getRawMappingsAsString()));
+                    ActionToGoalMapping mapping = reader.read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
                     NetbeansActionMapping m = findAction(mapping.getActions(), config.getActionName());
                     if (m == null) {
                         //add from other locations..

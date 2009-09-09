@@ -70,6 +70,7 @@ public class DiffStreamSource extends StreamSource {
     private final String    revision;
     private final String    title;
     private String          mimeType;
+    private boolean         initialized;
 
     /**
      * Null is a valid value if base file does not exist in this revision. 
@@ -168,6 +169,10 @@ public class DiffStreamSource extends StreamSource {
      * Loads data over network.
      */
     synchronized void init() throws IOException {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
         if (propertyValue != null || remoteFile != null || revision == null) return;
         if (propertyName != null) {
             initProperty();

@@ -41,36 +41,15 @@
 
 package org.netbeans.test.autoupdate.xml;
 
-import org.netbeans.jellytools.JellyTestCase;
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.JemmyException;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.jemmy.operators.JListOperator;
-import junit.framework.Test;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import java.util.List;
 import java.util.regex.*;
 import org.netbeans.test.autoupdate.Autoupdate;
 

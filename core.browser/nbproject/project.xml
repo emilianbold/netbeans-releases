@@ -16,6 +16,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.html</friend>
+                <friend>org.netbeans.modules.webpreview</friend>
                 <package>org.netbeans.core.browser.api</package>
             </friend-packages>
         </data>

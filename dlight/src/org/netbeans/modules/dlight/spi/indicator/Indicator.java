@@ -68,7 +68,6 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
-import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
@@ -232,7 +231,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         if (component == null) {
             return;
         }
-        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+//        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
         component.addMouseListener(new MouseAdapter() {
 
@@ -255,7 +254,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             @Override
             public void mouseClicked(MouseEvent e) {
                 component.requestFocus();
-                notifyListeners();
+                //do not notify anyone - click is not default action anymore
+                //notifyListeners();
             }
         });
         final Color c = component.getBackground();

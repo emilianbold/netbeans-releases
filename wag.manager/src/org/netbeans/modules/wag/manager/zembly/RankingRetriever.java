@@ -137,7 +137,7 @@ public class RankingRetriever {
             for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
                 WagApi api = new WagApi(item.getString(NAME_ATTR), item.getString(PATH_ATTR));
-                System.out.println("api: " + api);
+                //System.out.println("api: " + api);
                 apis.add(api);
             }
 

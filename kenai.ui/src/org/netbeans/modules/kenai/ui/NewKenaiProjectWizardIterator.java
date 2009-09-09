@@ -42,9 +42,10 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
-import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -53,18 +54,22 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanelGUI.SharedItem;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -78,8 +83,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private transient int index;
-    private Node activeNode;
-    private boolean isShareExistingFolder;
+    private Node [] activeNodes;
 
     public static final String PROP_PRJ_NAME = "projectName"; // NOI18N
     public static final String PROP_PRJ_TITLE = "projectTitle"; // NOI18N
@@ -89,10 +93,12 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String PROP_SCM_NAME = "projectSCMName"; // NOI18N
     public static final String PROP_SCM_URL = "projectSCMUrl"; // NOI18N
     public static final String PROP_SCM_LOCAL = "projectSCMLocal"; // NOI18N
+    public static final String PROP_SCM_PREVIEW = "projectSCMPreview"; // NOI18N
     public static final String PROP_ISSUES = "projectIssues"; // NOI18N
     public static final String PROP_ISSUES_URL = "projectIssuesUrl"; // NOI18N
     public static final String PROP_AUTO_COMMIT = "projectIssuesUrl"; // NOI18N
     public static final String PROP_CREATE_CHAT = "projectCreateChat"; // NOI18N
+    public static final String PROP_FOLDERS_TO_SHARE = "projectFoldersToShare"; // NOI18N
 
     public static final String PROP_EXC_ERR_MSG = "exceptionErrorMessage"; // NOI18N
 
@@ -102,13 +108,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
 
-    NewKenaiProjectWizardIterator(Node activatedNode) {
-        this.activeNode = activatedNode;
-        isShareExistingFolder = true;
-    }
-
-    NewKenaiProjectWizardIterator() {
-        isShareExistingFolder = false;
+    NewKenaiProjectWizardIterator(Node [] activatedNodes) {
+        this.activeNodes = activatedNodes;
     }
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
@@ -129,6 +130,15 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         String newPrjIssuesUrl = (String) wizard.getProperty(PROP_ISSUES_URL);
         boolean autoCommit = Boolean.valueOf((String) wizard.getProperty(PROP_AUTO_COMMIT));
         Boolean createChat = (Boolean) wizard.getProperty(PROP_CREATE_CHAT);
+
+        List<SharedItem> sharedItems = (List<SharedItem>) wizard.getProperty(PROP_FOLDERS_TO_SHARE);
+
+        if (KenaiService.Names.MERCURIAL.equals(newPrjScmType)) {
+            if (!Mercurial.isClientAvailable()) {
+                ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, "Mercurial client is not available");
+                throw new IOException("Mercurial client is not available");
+            }
+        }
 
         if (KenaiService.Names.SUBVERSION.equals(newPrjScmType)) {
             if (!Subversion.isClientAvailable(autoCommit)) {
@@ -228,36 +238,61 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                             ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
                     PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
                     if (passwdAuth != null) {
-                        final File localFile = new File(newPrjScmLocal);
+                        final File localScmRoot = new File(newPrjScmLocal);
+                        boolean inPlaceRepository = isCommonParent(sharedItems, newPrjScmLocal);
                         if (KenaiService.Names.SUBVERSION.equals(featureService)) {
-                            try {
-                                if (isShareExistingFolder) {
-                                    String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
-                                    String dirName = new File(newPrjScmLocal).getName();
-                                    final String remoteDir = scmLoc.concat("/" + dirName); // NOI18N
-                                    Subversion.mkdir(remoteDir, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
-                                    Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."}, localFile, // NOI18N
-                                            passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
-                                    if (autoCommit) {
-                                        handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                                                "NewKenaiProject.progress.repositoryCommit"), 5);
-                                        Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
-                                    }
-                                } else {
-                                    Subversion.checkoutRepositoryFolder(scmLoc, new String[]{"."}, localFile, // NOI18N
-                                            passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
-                                }
-                            } catch (IOException io) {
-                                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(io.getMessage())) {
-                                    // DO SOMETHING, svn client is unavailable
-                                }
-                                throw io;
+                            if (!inPlaceRepository) {
+                                copySharedItems(sharedItems, localScmRoot);
                             }
-                        } else if (KenaiService.Names.MERCURIAL.equals(featureService)) {
-
-                            Mercurial.cloneRepository(scmLoc,localFile, "", "", "", // NOI18N
-                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
-
+                            Subversion.checkoutRepositoryFolder(scmLoc, new String[] {"."}, localScmRoot, // NOI18N
+                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
+                            if (autoCommit) {
+                                String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
+                                handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                                        "NewKenaiProject.progress.repositoryCommit"), 5);
+                                Subversion.commit(new File[] { localScmRoot }, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                            }
+                        } else {
+                            if (inPlaceRepository) {
+                                File tempFolder = createTempFolder();
+                                Mercurial.cloneRepository(scmLoc, tempFolder, localScmRoot.getName(), "", "", // NOI18N
+                                    passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
+                                copy(FileUtil.toFileObject(new File(tempFolder, localScmRoot.getName())), FileUtil.toFileObject(localScmRoot.getParentFile()));
+                                FileUtil.toFileObject(tempFolder).delete();
+                            } else {
+                                Mercurial.cloneRepository(scmLoc, localScmRoot, "", "", "", // NOI18N
+                                    passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
+                                copySharedItems(sharedItems, localScmRoot);
+                            }
+                            if (autoCommit) {
+                                String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
+                                handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                                        "NewKenaiProject.progress.repositoryCommit"), 5);
+        //                        Mercurial.commit(new File[] { localScmRoot }, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                            }
+                        }
+                        if (!inPlaceRepository) {
+                            // if shared items contain projects, those projects need to be closed and open from new location
+                            Project mainProject = OpenProjects.getDefault().getMainProject();
+                            List<Project> projectsToClose = new ArrayList<Project>();
+                            List<Project> projectsToOpen = new ArrayList<Project>();
+                            for (SharedItem item : sharedItems) {
+                                Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(item.getRoot()));
+                                if (prj != null) {
+                                    projectsToClose.add(prj);
+                                    File newRoot = new File(localScmRoot, item.getRoot().getName());
+                                    Project movedProject = FileOwnerQuery.getOwner(FileUtil.toFileObject(newRoot));
+                                    projectsToOpen.add(movedProject);
+                                    if (prj.equals(mainProject)) {
+                                        mainProject = movedProject;
+                                    }
+                                }
+                            }
+                            projectsToClose.remove(null);
+                            projectsToOpen.remove(null);
+                            OpenProjects.getDefault().close(projectsToClose.toArray(new Project[projectsToClose.size()]));
+                            OpenProjects.getDefault().open(projectsToOpen.toArray(new Project[projectsToOpen.size()]), false);
+                            OpenProjects.getDefault().setMainProject(mainProject);
                         }
                     } else {
                         // user not logged in, do nothing
@@ -298,6 +333,82 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
         return set;
         
+    }
+
+    public static File createTempFolder() {
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+        for (;;) {
+            File dir = new File(tmpDir, "kenai-" + Long.toString(System.currentTimeMillis())); // NOI18N
+            if (!dir.exists() && dir.mkdirs()) {
+                dir.deleteOnExit();
+                return FileUtil.normalizeFile(dir);
+            }
+        }
+    }
+
+    /**
+     * Copy all items (projects, folders) to be shared on Kenai to a new directory, the SCM root.
+     *
+     * @param sharedItems
+     * @param localScmRoot
+     */
+    private void copySharedItems(List<SharedItem> sharedItems, File localScmRoot) throws IOException {
+        localScmRoot.mkdirs();
+        FileObject dest = FileUtil.toFileObject(localScmRoot);
+        for (SharedItem item : sharedItems) {
+            FileObject root = FileUtil.toFileObject(item.getRoot());
+            copy(root, dest);
+        }
+    }
+
+    /**
+     * Copies the given file/folder into the given destination folder.
+     *
+     * @param src source file/folder to copy
+     * @param dest destination folder
+     */
+    private void copy(FileObject src, FileObject destFolder) throws IOException {
+        if (src.isFolder()) {
+            FileObject srcCopy = destFolder.getFileObject(src.getNameExt());
+            if (srcCopy == null) {
+                srcCopy = destFolder.createFolder(src.getNameExt());
+            }
+            FileObject [] files = src.getChildren();
+            for (FileObject file : files) {
+                copy(file, srcCopy);
+            }
+        } else {
+            src.copy(destFolder, src.getName(), src.getExt());
+        }
+    }
+
+    static File getCommonParent(List<SharedItem> sharedItems) {
+        File commonParent = null;
+        if (sharedItems.size() > 0) {
+            commonParent = sharedItems.get(0).getRoot().getParentFile();
+            for (SharedItem item : sharedItems) {
+                if (!commonParent.equals(item.getRoot().getParentFile())) {
+                    commonParent = null;
+                    break;
+                }
+            }
+            if (commonParent != null && commonParent.list().length != sharedItems.size()) {
+                commonParent = null;
+            }
+        }
+        return commonParent;
+    }
+
+    static boolean isCommonParent(List<SharedItem> sharedItems, String newPrjScmLocal) {
+        File commonParent = new File(newPrjScmLocal);
+        for (SharedItem item : sharedItems) {
+            if (!commonParent.equals(item.getRoot().getParentFile())) {
+                return false;
+            }
+        }
+
+        if (commonParent.list() == null || commonParent.list().length != sharedItems.size()) return false;
+        return true;
     }
 
     public Set<?> instantiate() throws IOException {
@@ -484,17 +595,11 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        if (isShareExistingFolder) {
-            return new WizardDescriptor.Panel[]{
-                        new NameAndLicenseWizardPanel(activeNode)
-                    };
-
-        } else {
-            return new WizardDescriptor.Panel[]{
-                        new NameAndLicenseWizardPanel(),
-                        new SourceAndIssuesWizardPanel()
-                    };
-        }
+        return new WizardDescriptor.Panel[]{
+                    new NameAndLicenseWizardPanel(),
+                    new SourceAndIssuesWizardPanel(activeNodes),
+                    new SummaryWizardPanel()
+                };
     }
 
 }

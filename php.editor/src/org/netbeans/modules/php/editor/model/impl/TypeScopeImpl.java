@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -122,7 +123,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                     if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
                         IndexScope indexScope = ModelUtils.getIndexScope(ps);
                         if (indexScope != null) {
-                            List<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
+                            Collection<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
                             ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
                             for (InterfaceScope interfaceScope : cIfaces) {
                                 retval.add((InterfaceScopeImpl)interfaceScope);
@@ -168,7 +169,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     public Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.findMethods(this, queryName, modifiers);
+            QualifiedName qn = getNamespaceName().append(getName());
+            NamespaceIndexFilter filter = new NamespaceIndexFilter(qn.toString());
+            List<? extends MethodScope> methods = indexScopeImpl.findMethods(this, queryName, modifiers);
+            return filter.filterModelElements(methods, true);
         }
 
         return filter(getElements(), new ElementFilter() {
@@ -258,7 +262,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         PHPIndex index = indexScope.getIndex();
         QuerySupport.Kind kind = "".equals(queryName) ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT;
+        QualifiedName qn = getNamespaceName().append(getName());
+        NamespaceIndexFilter filter = new NamespaceIndexFilter(qn.toString());
         Collection<IndexedClassMember<IndexedFunction>> allMethods = index.getAllMethods(null, getName(), queryName, kind, Modifier.PUBLIC | Modifier.PROTECTED);
+        allMethods = filter.filter(allMethods, true);
         for (IndexedClassMember<IndexedFunction> indexedClassMember : allMethods) {
             IndexedFunction indexedFunction = indexedClassMember.getMember();
             String in = indexedFunction.getIn();

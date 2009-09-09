@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.indicators.graph;
 
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -48,8 +49,9 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
+import org.netbeans.modules.dlight.util.DLightMath;
 
 /**
  * A delegate that is responsible for painting,
@@ -64,24 +66,21 @@ import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
  */
 //package-local
 class GraphPainter {
-    private static final int MAX_ALPHA = 255;
     private static final Stroke BALL_STROKE = new BasicStroke(1.0f);
     private static final Stroke LINE_STROKE = new BasicStroke(GraphConfig.LINE_WIDTH);
 
-    private final LabelRenderer renderer;
-    private final List<GraphDescriptor> descriptors;
+    private final List<TimeSeriesDescriptor> descriptors;
     private final int seriesCount;
 
-    private CyclicArray<float[]> data;
+    private List<float[]> data;
     private final Object dataLock = new Object();
 
 //    private BufferedImage cachedImage;
 
-    public GraphPainter(LabelRenderer renderer, List<GraphDescriptor> descriptors) {
+    public GraphPainter(List<TimeSeriesDescriptor> descriptors) {
         this.descriptors = descriptors;
-        this.renderer = renderer;
         seriesCount = descriptors.size();
-        data = new CyclicArray<float[]>(1000);
+        data = new ArrayList<float[]>(1000);
 //        initCacheImage();
     }
 
@@ -106,12 +105,16 @@ class GraphPainter {
         }
      }
 
+    public int getDataSize() {
+        return data.size();
+    }
+
     public int calculateUpperLimit(float... data) {
         float absLimit = 0;
         float relLimit = 0;
         for (int i = 0; i < data.length; ++i) {
             float value = data[i];
-            GraphDescriptor descriptor = descriptors.get(i);
+            TimeSeriesDescriptor descriptor = descriptors.get(i);
             switch (descriptor.getKind()) {
                 case ABS_SURFACE:
                 case LINE:
@@ -156,12 +159,13 @@ class GraphPainter {
      * @param h  height of drawing area
      * @param ticks  whether to draw ticks on graph
      */
-    public void paint(Graphics g, int scale, int x, int y, int w, int h, boolean ticks) {
+    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
             if (GraphConfig.GRID_SIZE < w && GraphConfig.GRID_SIZE < h) {
-                paintGrid(g, x, y, w, h, ticks);
-                paintGraph(g, scale, x, y, w, h);
+                paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
+                paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
+                dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
             }
         }
     }
@@ -181,48 +185,28 @@ class GraphPainter {
     /**
      * Paints background grid.
      */
-    private void paintGrid(Graphics g, int x, int y, int w, int h, boolean ticks) {
+    private static void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
         // vertical lines
-        g.setColor(GraphConfig.GRID_COLOR);
-        int scrolled = GraphConfig.STEP_SIZE * (data.size() - w / GraphConfig.STEP_SIZE + 1);
-        int dx = (scrolled > 0) ? GraphConfig.GRID_SIZE - scrolled % GraphConfig.GRID_SIZE : 0;
-        for (int gridX = x + dx; gridX < x + w; gridX += GraphConfig.GRID_SIZE) {
-            g.drawLine(gridX, y, gridX, y + h - 1);
+        for (AxisMark xMark : xMarks) {
+            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, xMark.getMarkOpacity()));
+            g.drawLine(x + xMark.getPosition(), y, x + xMark.getPosition(), y + h - 1);
         }
         if (ticks) {
-            g.setColor(GraphConfig.BORDER_COLOR);
-            for (int gridX = x + dx; gridX < x + w; gridX += GraphConfig.GRID_SIZE) {
-                g.drawLine(gridX, y + h - 1, gridX, y + h - 5);
+            for (AxisMark xMark : xMarks) {
+                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, xMark.getMarkOpacity()));
+                g.drawLine(x + xMark.getPosition(), y + h - 5, x + xMark.getPosition(), y + h - 1);
             }
         }
         // horizontal lines
-        paintHLine(g, x, x + w - 1, y + (int)(GraphConfig.FONT_SIZE / 2), MAX_ALPHA, ticks); // yes, font size affects how we paint grid
-        paintHLine(g, x, x + w - 1, y + h - 1, MAX_ALPHA, ticks);
-        paintHLines(g, x, y + 5, x + w - 1, y + h - 1, ticks);
-    }
-
-    /**
-     * Recursively paints horizontal grid lines.
-     */
-    private static void paintHLines(Graphics g, int x1, int y1, int x2, int y2, boolean ticks) {
-        if (y2 - y1 <= GraphConfig.GRID_SIZE) { return; }
-        int my = (y1 + y2) / 2; // middle y
-        paintHLine(g, x1, x2, my, map(y2 - y1, 3 * GraphConfig.GRID_SIZE / 2, 2 * GraphConfig.GRID_SIZE, 0, MAX_ALPHA), ticks);
-        if (2 * GraphConfig.GRID_SIZE <= y2 - y1) {
-            paintHLines(g, x1, y1, x2, my, ticks);
-            paintHLines(g, x1, my, x2, y2, ticks);
+        for (AxisMark yMark : yMarks) {
+            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, yMark.getMarkOpacity()));
+            g.drawLine(x, y + h - 1 - yMark.getPosition(), x + w - 1, y + h - 1 - yMark.getPosition());
         }
-    }
-
-    /**
-     * Paints single horizontal line of the grid.
-     */
-    private static void paintHLine(Graphics g, int x1, int x2, int y, int alpha, boolean ticks) {
-        g.setColor(transparent(GraphConfig.GRID_COLOR, alpha));
-        g.drawLine(x1, y, x2, y);
         if (ticks) {
-            g.setColor(transparent(GraphConfig.BORDER_COLOR, alpha));
-            g.drawLine(x1, y, x1 + GraphConfig.GRID_SIZE / 2, y);
+            for (AxisMark yMark : yMarks) {
+                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, yMark.getMarkOpacity()));
+                g.drawLine(x, y + h - 1 - yMark.getPosition(), x + 5, y + h - 1 - yMark.getPosition());
+            }
         }
     }
 
@@ -230,39 +214,38 @@ class GraphPainter {
      * Paints the entire graph.
      * Should be called under synchronized (dataLock)
      */
-    private void paintGraph(Graphics g, int scale, int x, int y, int w, int h) {
+    private void paintGraph(Graphics g, int scale, int viewportStart, int viewportEnd, int x, int y, int w, int h) {
         Graphics2D g2 = ((Graphics2D)g);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         Stroke oldStroke = g2.getStroke();
 
-        int sampleCount = Math.min(w / GraphConfig.STEP_SIZE, data.size()) - 1;
+        int sampleCount = Math.min(viewportEnd + 1, data.size()) - viewportStart;
         if (0 < sampleCount) {
             int[] xx = new int[sampleCount + 2];
             int[] yy = new int[sampleCount + 2];
-            int firstSample = Math.max(0, data.size() - sampleCount);
             int effectiveHeight = (int)(h - 2 - GraphConfig.FONT_SIZE / 2);
             for (int ser = 0; ser < seriesCount; ++ser) {
                 int lastx = 0;
                 int lasty = 0;
                 for (int i = 0; i < sampleCount; ++i) {
-                    float[] values = data.get(firstSample + i);
+                    float[] values = data.get(viewportStart + i);
                     float value = values[ser];
                     int bonus = 0;
-                    if (descriptors.get(ser).getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                    if (descriptors.get(ser).getKind() == TimeSeriesDescriptor.Kind.REL_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors.get(j).getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                            if (descriptors.get(j).getKind() == TimeSeriesDescriptor.Kind.REL_SURFACE) {
                                 value += values[j];
                             }
                         }
-                    } else if (descriptors.get(ser).getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                    } else if (descriptors.get(ser).getKind() == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors.get(j).getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                            if (descriptors.get(j).getKind() == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
                                 bonus += 2;
                             }
                         }
                     }
-                    xx[i] = lastx = x + GraphConfig.STEP_SIZE * i;
+                    xx[i] = lastx = DLightMath.map(viewportStart + i, viewportStart, viewportEnd, x, x + w);
                     yy[i] = lasty = (int)(y + h - 2 - value * effectiveHeight / scale) - bonus;
                 }
                 g2.setColor(descriptors.get(ser).getColor());
@@ -291,7 +274,38 @@ class GraphPainter {
         g2.setStroke(oldStroke);
     }
 
+    private void dimInactiveRegions(Graphics g, int viewportStart, int viewportEnd, int filterStart, int filterEnd, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(GraphConfig.DIM_COLOR);
+        if (viewportStart <= filterStart ) {
+            int xx = DLightMath.map(filterStart, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(x, y, xx, h);
+        }
+        if (filterEnd <= viewportEnd) {
+            int xx = DLightMath.map(filterEnd, viewportStart, viewportEnd, 0, w);
+            g2.fillRect(x + xx, y, w - xx, h);
+        }
+    }
+
 // axes painting ///////////////////////////////////////////////////////////////
+
+    public void paintHorizontalAxis(Graphics g, int x, int y, int w, int h, List<AxisMark> marks, Color bg) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(bg);
+        g2.fillRect(x, y, w, h);
+
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setFont(g2.getFont().deriveFont(GraphConfig.FONT_SIZE));
+
+        FontMetrics fm = g2.getFontMetrics();
+        for (AxisMark mark : marks) {
+            if (mark.getText() != null) {
+                int length = fm.stringWidth(mark.getText());
+                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getTextOpacity()));
+                g.drawString(mark.getText(), x + mark.getPosition() - length / 2, y + fm.getAscent());
+            }
+        }
+    }
 
     /**
      * Paints vertical axis (currently only labels).
@@ -303,7 +317,7 @@ class GraphPainter {
      * @param h  height of drawing area
      * @param bg  background color
      */
-    public void paintVerticalAxis(Graphics g, int x, int y, int w, int h, int scale, Color bg) {
+    public void paintVerticalAxis(Graphics g, int x, int y, int w, int h, List<AxisMark> marks, Color bg) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(bg);
         g2.fillRect(x, y, w, h);
@@ -312,72 +326,16 @@ class GraphPainter {
         g2.setFont(g2.getFont().deriveFont(GraphConfig.FONT_SIZE));
 
         FontMetrics fm = g2.getFontMetrics();
-        paintVLabel(g, scale, x + w - 1 - fm.getAscent() / 2, y + fm.getAscent() / 2, MAX_ALPHA, fm);
-        paintVLabels(g, x, w, y + fm.getAscent() / 2, y + h - 1, scale, 0, fm);
-    }
-
-    /**
-     * Recursively paints labels on vertical axis.
-     *
-     * @param g  graphics
-     * @param w  drawing area width
-     * @param y1  upper coordinate of drawing area (y1 &lt; y2)
-     * @param y2  lower coordinate of drawing area (y1 &lt; y2)
-     * @param v1  value corresponding to y1
-     * @param v2  value corresponding to y2
-     * @param fm  font metrics (used to calculate label width and height)
-     */
-    private void paintVLabels(Graphics g, int x, int w, int y1, int y2, int v1, int v2, FontMetrics fm) {
-        if (y2 - y1 <= 2 * fm.getAscent() || v1 <= v2 + 1) { return; }
-        int my = (y2 + y1) / 2; // middle y
-        int mv = (v1 + v2) / 2; // middle value
-        paintVLabel(g, mv, x + w - 1 - fm.getAscent() / 2, my,
-                map(y2 - y1, 5 * fm.getAscent() / 2, 3 * fm.getAscent(), 0, MAX_ALPHA), fm);
-        if (4 * fm.getAscent() <= y2 - y1) {
-            paintVLabels(g, x, w, y1, my, v1, mv, fm);
-            paintVLabels(g, x, w, my, y2, mv, v2, fm);
+        for (AxisMark mark : marks) {
+            if (mark.getText() != null) {
+                int length = fm.stringWidth(mark.getText());
+                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getTextOpacity()));
+                g.drawString(mark.getText(), x + w - length - fm.getAscent() / 2, y + h - 1 - mark.getPosition() + fm.getAscent() / 2);
+            }
         }
-    }
-
-    /**
-     * Paints label on vertical axis.
-     *
-     * @param g  graphics
-     * @param value  label value
-     * @param fm  font metrics (used to calculate label width and height)
-     * @param x  coordinate of right label edge
-     * @param y  coordinate of label middle line
-     */
-    private void paintVLabel(Graphics g, int value, int x, int y, int alpha, FontMetrics fm) {
-        String text = renderer == null? Integer.toString(value) : renderer.render(value);
-        int length = fm.stringWidth(text);
-        g.setColor(transparent(GraphConfig.TEXT_COLOR, alpha));
-        g.drawString(text, x - length, y + fm.getAscent() / 2);
     }
 
 // common math /////////////////////////////////////////////////////////////////
-
-    /**
-     * Maps <code>value</code> from range <code>a..b</code> into <code>x..y</code>.
-     * Values less than <code>a</code> are mapped to <code>x</code>.
-     * Values greater than <code>b</code> are mapped to <code>y</code>.
-     *
-     * @param value  value to be mapped
-     * @param a  source range lower bound
-     * @param b  source range upper bound
-     * @param x  destination range lower bound
-     * @param y  destination range upper bound
-     * @return value mapped from range <code>a..b</code> into <code>x..y</code>
-     */
-    private static int map(int value, int a, int b, int x, int y) {
-        if (value <= a) {
-            return x;
-        } else if (value < b) {
-            return x + (value - a) * (y - x) / (b - a);
-        } else {
-            return y;
-        }
-    }
 
     /**
      * Returns a copy of passed color with adjusted alpha value.
@@ -386,7 +344,11 @@ class GraphPainter {
      * @param alpha  new alpha value
      * @return copy of color with adjusted alpha
      */
-    private static Color transparent(Color orig, int alpha) {
-        return new Color(orig.getRed(), orig.getGreen(), orig.getBlue(), alpha);
+    private static Color adjustAlpha(Color orig, int alpha) {
+        if (orig.getAlpha() == alpha) {
+            return orig;
+        } else {
+            return new Color(orig.getRed(), orig.getGreen(), orig.getBlue(), alpha);
+        }
     }
 }

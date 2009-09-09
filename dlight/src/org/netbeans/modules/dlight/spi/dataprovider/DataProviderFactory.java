@@ -36,31 +36,27 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.dataprovider;
 
-import java.util.Collection;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
 
 /**
  * Factory to create {@link org.netbeans.modules.dlight.spi.dataprovider.DataProvider} instances.
  * Register your factory instance in Global Lookup.
  */
-public interface DataProviderFactory extends VisualizerDataProviderFactory<DataProvider>{
+public interface DataProviderFactory extends VisualizerDataProviderFactory<DataProvider> {
 
-  /**
-   * Creates new DataProvider instance
-   * @return newly created instance of DataProvider
-   */
-  DataProvider create();
+    /**
+     * Creates new DataProvider instance
+     * @return newly created instance of DataProvider
+     */
+    DataProvider create();
 
- 
-  /**
-   * The types of {@link org.netbeans.modules.dlight.spi.storage.DataStorage} this
-   *  DataProvider can get data from
-   * @return the list of {@link org.netbeans.modules.dlight.spi.storage.DataStorageType}
-   *  supported by this DataProvider
-   */
-  Collection<DataStorageType> getSupportedDataStorageTypes();
+    /**
+     * Returns true if can attach to this storage
+     * @param storage
+     * @return
+     */
+    boolean validate(DataStorage storage);
 }

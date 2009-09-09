@@ -45,8 +45,6 @@ made subject to such option by the copyright holder.
     <configuration>
         <buildExtensions xmlns="http://www.netbeans.org/ns/ant-build-extender/1">
             <extension file="jaxws-build.xml" id="jaxws">
-                <dependency dependsOn="wsimport-service-compile" target="-do-compile"/>
-                <dependency dependsOn="wsimport-service-compile" target="-do-compile-single"/>
                 <dependency dependsOn="wsimport-service-generate" target="-pre-pre-compile"/>
             </extension>
         </buildExtensions>

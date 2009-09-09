@@ -74,15 +74,29 @@ public class SQLCompletionEnv {
         return new SQLCompletionEnv(statement, 0, caretOffset, substitutionHandler);
     }
 
-    // Not private because of unit tests.
+    /** Returns SQLCompletionEnv for given SQL script. Not private because of unit tests.
+     * @param script SQL script
+     * @param caretOffset caret offset within script
+     */
     static SQLCompletionEnv forScript(String script, int caretOffset) {
+        return forScript(script, caretOffset, 0);
+    }
+
+    /** Returns SQLCompletionEnv for given SQL script. Parameter scriptOffset
+     * used for embedded scripts, e.g. in create procedure statement. Called
+     * directly from SQLCompletionQuery.
+     * @param script SQL script
+     * @param caretOffset caret offset within script
+     * @param scriptOffset script offset in document
+     */
+    static SQLCompletionEnv forScript(String script, int caretOffset, int scriptOffset) {
         SQLScriptStatement statement = SQLScript.create(script).getStatementAtOffset(caretOffset);
         if (statement != null) {
             return new SQLCompletionEnv(statement.getText(), statement.getStartOffset(), caretOffset - statement.getStartOffset(),
-                    new ScriptSubstitutionHandler(statement.getStartOffset()));
+                    new ScriptSubstitutionHandler(statement.getStartOffset() + scriptOffset));
         } else {
             // empty script
-            return new SQLCompletionEnv("", 0, caretOffset, new ScriptSubstitutionHandler(0));  //NOI18N
+            return new SQLCompletionEnv("", 0, caretOffset, new ScriptSubstitutionHandler(scriptOffset));  //NOI18N
         }
     }
 

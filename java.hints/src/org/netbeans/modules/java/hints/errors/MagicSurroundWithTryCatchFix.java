@@ -391,7 +391,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             return null;
         }
 
-        if (!GeneratorUtils.supportsOverride(info.getFileObject())) {
+        if (!GeneratorUtils.supportsOverride(info)) {
             return null;
         }
 

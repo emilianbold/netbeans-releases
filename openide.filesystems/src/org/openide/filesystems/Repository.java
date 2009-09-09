@@ -46,17 +46,28 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbCollections;
 import org.openide.util.io.NbMarshalledObject;
 
 /**
@@ -73,6 +84,125 @@ import org.openide.util.io.NbMarshalledObject;
  * is no longer used and is now deprecated.
  */
 public class Repository implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(Repository.class.getName());
+    private static Repository repository;
+    static void reset() {
+        repository = null;
+    }
+
+    private static final AtomicReference<Object> ADD_FS = new AtomicReference<Object>();
+    static {
+        ADD_FS.set(ADD_FS);
+    }
+    private static synchronized final boolean addFileSystemDelayed(FileSystem fs) {
+        return !ADD_FS.compareAndSet(ADD_FS, fs);
+    }
+
+
+    /** Initializes the context and errManager
+     */
+    private static void initialize() {
+        Lookup lkp = Lookup.getDefault();
+
+        Repository r;
+        synchronized (Repository.class) {
+            r = repository;
+        }
+
+        if (r == null) {
+            Repository registeredRepository = lkp.lookup(Repository.class);
+            Repository realRepository = assignRepository(registeredRepository);
+
+
+            FileSystem fs = (FileSystem)ADD_FS.getAndSet(null);
+            if (fs != null) {
+                addFS(realRepository, fs);
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void addFS(Repository r, FileSystem fs) {
+        r.addFileSystem(fs);
+    }
+
+    /**
+     * @param rep may be null
+     */
+    private static synchronized Repository assignRepository(Repository rep) {
+        repository = rep;
+
+        if (repository == null) {
+            // if not provided use default one
+            repository = new Repository(new MainFS());
+        }
+
+        return repository;
+    }
+
+    private static final class MainFS extends MultiFileSystem implements LookupListener {
+        private static final Lookup.Result<FileSystem> ALL = Lookup.getDefault().lookupResult(FileSystem.class);
+        private static final FileSystem MEMORY = FileUtil.createMemoryFileSystem();
+        private static final XMLFileSystem layers = new XMLFileSystem();
+
+        public MainFS() {
+            ALL.addLookupListener(this);
+            List<URL> layerUrls = new ArrayList<URL>();
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            try {
+                for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
+                    InputStream is = manifest.openStream();
+                    try {
+                        Manifest mani = new Manifest(is);
+                        String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+                        if (layerLoc != null) {
+                            URL layer = l.getResource(layerLoc);
+                            if (layer != null) {
+                                layerUrls.add(layer);
+                            } else {
+                                LOG.warning("No such layer: " + layerLoc);
+                            }
+                        }
+                    } finally {
+                        is.close();
+                    }
+                }
+                for (URL generatedLayer : NbCollections.iterable(l.getResources("META-INF/generated-layer.xml"))) { // NOI18N
+                    layerUrls.add(generatedLayer);
+                }
+                layers.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
+                LOG.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
+            } catch (Exception x) {
+                LOG.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
+            }
+            resultChanged(null); // run after add listener - see PN1 in #26338
+        }
+
+        private static FileSystem[] computeDelegates() {
+            List<FileSystem> arr = new ArrayList<FileSystem>();
+            arr.add(MEMORY);
+            for (FileSystem f : ALL.allInstances()) {
+                if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
+                    continue;
+                }
+                arr.add(f);
+            }
+            arr.add(layers);
+            for (FileSystem f : ALL.allInstances()) {
+                if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
+                    arr.add(f);
+                }
+            }
+            return arr.toArray(new FileSystem[0]);
+        }
+
+
+        public void resultChanged(LookupEvent ev) {
+            setDelegates(computeDelegates());
+        }
+    } // end of MainFS
+
     static final long serialVersionUID = -6344768369160069704L;
 
     /** list of filesystems (FileSystem) */
@@ -153,7 +283,8 @@ public class Repository implements Serializable {
      * @return default repository for the system
      */
     public static Repository getDefault() {
-        return ExternalUtil.getRepository();
+        initialize();
+        return repository;
     }
 
     /** Initialazes the pool.
@@ -162,7 +293,7 @@ public class Repository implements Serializable {
         // empties the pool
         fileSystems = new ArrayList<FileSystem>();
         names = new Hashtable<String, FileSystem>();
-        if (ExternalUtil.addFileSystemDelayed(system)) {
+        if (addFileSystemDelayed(system)) {
             addFileSystem(system);
         }
     }
@@ -679,17 +810,17 @@ public class Repository implements Serializable {
 
         private void writeObject(ObjectOutputStream oos)
         throws IOException {
-            ExternalUtil.getRepository().writeExternal(oos);
+            getDefault().writeExternal(oos);
         }
 
         private void readObject(ObjectInputStream ois)
         throws IOException, ClassNotFoundException {
-            ExternalUtil.getRepository().readExternal(ois);
+            getDefault().readExternal(ois);
         }
 
         /** @return the default pool */
         public Object readResolve() {
-            return ExternalUtil.getRepository();
+            return getDefault();
         }
     }
 }

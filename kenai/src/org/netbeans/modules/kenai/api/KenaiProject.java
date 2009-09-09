@@ -39,15 +39,24 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.kenai.FeatureData;
+import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 
@@ -73,8 +82,11 @@ public final class KenaiProject {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     private ProjectData     data;
+    private static HashMap<String, Icon> imageCache = new HashMap<String, Icon>(); //imageUrl -> image
     
     private KenaiFeature[] features;
+    private KenaiProjectMember[] members;
+    private KenaiLicense[] licenses;
 
     /**
      * I assume that this constructor does NOT provide full project information. If it does then
@@ -150,6 +162,7 @@ public final class KenaiProject {
     /**
      * Description of this project
      * @return project description
+     * @throws KenaiException 
      */
     public synchronized String getDescription() throws KenaiException {
         fetchDetailsIfNotAvailable();
@@ -159,10 +172,83 @@ public final class KenaiProject {
     /**
      * Url of the image of this project
      * @return project picture
+     * @throws KenaiException
      */
     public synchronized String getImageUrl() throws KenaiException {
         fetchDetailsIfNotAvailable();
         return data.image;
+    }
+
+    /**
+     * Synchronously (!) loads the image of the project and stores it in the image cache
+     */
+    public synchronized void cacheProjectImage() {
+        String key = "dummy"; //NOI18N
+        try {
+            key = getImageUrl();
+        } catch (KenaiException ex) {
+        }
+        Icon icon = imageCache.get(key);
+        if (icon == null) {
+            BufferedImage img = null;
+            try {
+                img = ImageIO.read(new URL(getImageUrl()));
+                icon = new ImageIcon(img);
+                imageCache.put(key, icon);
+            } catch (IOException ex) {
+                // load failed
+            }
+        }
+    }
+
+    /**
+     * is this project bookmarked?
+     * @return true if bookmarked and logged in<br>
+     *         false otherwise
+     */
+    public boolean isMyProject() {
+        Collection<KenaiProject> my = Kenai.getDefault().myProjects;
+        if (my==null)
+            return false;
+        return my.contains(this);
+    }
+
+    /**
+     * get my role. User must be logged in.
+     * @return Role or null if logged user does not have any role in this projects
+     * @throws KenaiException
+     */
+    public KenaiProjectMember.Role getMyRole() throws KenaiException {
+        PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
+        if (passwordAuthentication==null) {
+            return null;
+        }
+        String myName = passwordAuthentication.getUserName();
+        for (KenaiProjectMember user:getMembers()) {
+            if (myName.equals(user.getUserName())) {
+                return user.getRole();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the image of the project, loads it if needed (synchronous load)
+     * @param loadIfNeeded indicates if image should be loaded and cached if it wasn't already cached
+     * @return the image of the project or null, if loading image fails or if image is not cached and loadIfNeeded is false
+     */
+    public synchronized Icon getProjectIcon(boolean loadIfNeeded) {
+        String key = "dummy"; //NOI18N
+        try {
+            key = getImageUrl();
+        } catch (KenaiException ex) {
+        }
+        Icon retIcon = imageCache.get(key);
+        if (retIcon == null && loadIfNeeded) {
+            cacheProjectImage();
+            retIcon = imageCache.get(key);
+        }
+        return retIcon;
     }
 
     /**
@@ -174,12 +260,18 @@ public final class KenaiProject {
         return data.tags;
     }
 
+    /**
+     * true if this project is private
+     * @return
+     * @throws KenaiException
+     */
     public synchronized boolean isPrivate() throws KenaiException {
         fetchDetailsIfNotAvailable();
         return data.private_hidden;
     }
 
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+    private static final int repositoryPatternProjectGroup = 4;
 
     /**
      * Looks up a project by repository location.
@@ -192,14 +284,30 @@ public final class KenaiProject {
     public static KenaiProject forRepository(String uri) throws KenaiException {
         Matcher m = repositoryPattern.matcher(uri);
         if (m.matches()) {
-            return Kenai.getDefault().getProject(m.group(4));
+            return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
 
         return null;
     }
 
     /**
+     * get project uniqe name for repository
+     * The current implementation does not work for external repositories.
+     * @param uri location of repository; for example SVN HTTP URL;
+     *            typically gotten from {@code ProvidedExtensions.RemoteLocation} file attribute of project directory
+     * @return name of kenai project or null, if given uri is not from kenai
+     */
+    public static String getNameForRepository(String uri) {
+        Matcher m = repositoryPattern.matcher(uri);
+        if (m.matches()) {
+            return m.group(repositoryPatternProjectGroup);
+        }
+        return null;
+    }
+
+    /**
      * @return features of given project
+     * @throws KenaiException
      * @see KenaiFeature
      */
     public synchronized KenaiFeature[] getFeatures() throws KenaiException {
@@ -212,6 +320,20 @@ public final class KenaiProject {
             }
         }
         return features;
+    }
+
+    /**
+     * returns members of this project
+     * @see KenaiUser
+     * @return
+     * @throws KenaiException
+     */
+    public synchronized KenaiProjectMember[] getMembers() throws KenaiException {
+        if (members==null) {
+            Collection<KenaiProjectMember> projectMembers = Kenai.getDefault().getProjectMembers(getName());
+            members = projectMembers.toArray(new KenaiProjectMember[projectMembers.size()]);
+        }
+        return members;
     }
 
     /**
@@ -231,7 +353,24 @@ public final class KenaiProject {
     }
 
     /**
-     * Creates new feateru for this project
+     * @return licenses of given project
+     * @throws KenaiException 
+     * @see KenaiLicense
+     */
+    public synchronized KenaiLicense[] getLicenses() throws KenaiException {
+        fetchDetailsIfNotAvailable();
+        if (licenses==null) {
+            licenses=new KenaiLicense[data.licenses.length];
+            int i=0;
+            for (LicenceData licence : data.licenses) {
+                licenses[i++] = new KenaiLicense(licence);
+            }
+        }
+        return licenses;
+    }
+
+    /**
+     * Creates new feature for this project
      * @param name
      * @param display_name
      * @param description
@@ -274,6 +413,8 @@ public final class KenaiProject {
             }
             this.data = prj;
             features = null;
+            members = null;
+            licenses = null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }

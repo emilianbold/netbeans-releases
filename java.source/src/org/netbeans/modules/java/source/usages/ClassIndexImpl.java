@@ -65,6 +65,8 @@ public abstract class ClassIndexImpl {
     
     public final List<WeakReference<ClassIndexImplListener>> listeners = Collections.synchronizedList(new ArrayList<WeakReference<ClassIndexImplListener>> ());
 
+    private State state = State.NEW;
+
 
     public static enum UsageType {
 
@@ -83,6 +85,11 @@ public abstract class ClassIndexImpl {
         int getOffset () {
             return this.offset;
         }
+    }
+
+    public static enum State {
+        NEW,
+        INITIALIZED,
     }
     
     
@@ -107,6 +114,8 @@ public abstract class ClassIndexImpl {
     public abstract void setDirty (URL url);
 
     public abstract boolean isSource ();
+
+    public abstract boolean isEmpty ();
     
     protected abstract void close () throws IOException;
     
@@ -154,6 +163,19 @@ public abstract class ClassIndexImpl {
                 }
             }
         }
+    }
+
+    public State getState() {
+        return this.state;
+    }
+
+    public void setState(final State state) {
+        assert state != null;
+        assert this.state != null;
+        if (state.ordinal() < this.state.ordinal()) {
+            throw new IllegalArgumentException();
+        }
+        this.state=state;
     }
     
     public static final class IndexAlreadyClosedException extends IOException {        

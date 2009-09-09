@@ -40,16 +40,26 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.net.PasswordAuthentication;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectMember;
+import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class KenaiUtil {
 
@@ -75,6 +85,16 @@ public class KenaiUtil {
         return false;
     }
 
+    /**
+     * Returns true if the given repository is a Kenai repository
+     *
+     * @param repo
+     * @return
+     */
+    public static boolean isKenai(Repository repo) {
+        return repo.getLookup().lookup(KenaiProject.class) != null;
+    }
+    
     /**
      * Returns an instance of PasswordAuthentication holding the actuall
      * Kenai credentials.
@@ -134,13 +154,55 @@ public class KenaiUtil {
      * @return
      */
     public static Repository getKenaiRepository(String url) {
+        KenaiProject kp = getKenaiProject(url);
+        return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
+    }
+
+    /**
+     * Returns a URL of web location of a kenai project associated with given repository url
+     * @param sourcesUrl url of a kenai vcs repository
+     * @return web location of associated kenai project or null if no such project exists
+     */
+    public static String getProjectUrl (String sourcesUrl) {
+        KenaiProject kp = getKenaiProject(sourcesUrl);
+        return kp == null ? null : kp.getWebLocation().toString();
+    }
+
+    public static Collection<RepositoryUser> getProjectMembers(String projectName) {
+        List<RepositoryUser> members = null;
+        try {
+            KenaiProject kp = Kenai.getDefault().getProject(projectName);
+            KenaiProjectMember[] users = kp.getMembers();
+            members = new ArrayList<RepositoryUser>(users.length);
+            for (KenaiProjectMember user : users) {
+                members.add(new RepositoryUser(user.getUserName(), user.getKenaiUser().getFirstName()+" "+user.getKenaiUser().getLastName())); // NOI18N
+            }
+        } catch (KenaiException kex) {
+            kex.printStackTrace();
+        }
+        if (members == null) {
+            members = Collections.emptyList();
+        }
+        return members;
+    }
+
+    public static KenaiProject getKenaiProject(ProjectHandle ph) {
+        // XXX cache ???
+        try {
+            return Kenai.getDefault().getProject(ph.getId());
+        } catch (KenaiException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    private static KenaiProject getKenaiProject(String url) {
         KenaiProject kp;
         try {
             kp = KenaiProject.forRepository(url);
         } catch (KenaiException ex) {
             return null;
         }
-        return KenaiRepositories.getInstance().getRepository(kp);
+        return kp;
     }
-
 }

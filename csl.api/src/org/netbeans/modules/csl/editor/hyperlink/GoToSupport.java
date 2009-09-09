@@ -181,10 +181,15 @@ public class GoToSupport {
                                 }
                             }
 
-                            UiUtils.open(location.getFileObject(), location.getOffset());
+                            FileObject f = location.getFileObject();
+                            int offset = location.getOffset();
 
-                            String desc = "Description not yet implemented";
-                            result[0] = "<html><body>" + desc;
+                            if (f != null && f.isValid()) {
+                                UiUtils.open(f, offset);
+                            }
+
+//                            String desc = "Description not yet implemented";
+//                            result[0] = "<html><body>" + desc;
                         }
 
                     } else {
@@ -292,7 +297,9 @@ public class GoToSupport {
         assert finder != null;
 
         OffsetRange range = finder.getReferenceSpan(doc, offset);
-        if (range != OffsetRange.NONE) {
+        if (range == null) {
+            throw new NullPointerException(finder + " violates its contract; should not return null from getReferenceSpan."); //NOI18N
+        } else if (range != OffsetRange.NONE) {
             return new int[] { range.getStart(), range.getEnd() };
         }
         

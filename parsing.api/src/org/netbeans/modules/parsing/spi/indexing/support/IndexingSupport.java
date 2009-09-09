@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
@@ -48,6 +49,9 @@ import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
 /**
@@ -64,6 +68,7 @@ public final class IndexingSupport {
         SupportAccessor.setInstance(new MyAccessor());
     }
 
+    private final Context context;
     private final IndexFactoryImpl spiFactory;
     private final IndexImpl spiIndex;
 //    private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
@@ -74,6 +79,7 @@ public final class IndexingSupport {
             factory = new LuceneIndexFactory();
         }
         assert factory != null;
+        this.context = ctx;
         this.spiFactory = factory;
         this.spiIndex = this.spiFactory.createIndex(ctx);
     }
@@ -125,6 +131,45 @@ public final class IndexingSupport {
         }
 
         return support;
+    }
+
+    /**
+     * Checks a validity of the index
+     * <p class="nonnormative">
+     * Implementations of the {@link SourceIndexerFactory} should check the validity of the
+     * index in the {@link SourceIndexerFactory#scanStarted(org.netbeans.modules.parsing.spi.indexing.Context)} method
+     * and force reindexing of the root for which the index is broken. In case of CSL based factories the check is done by the CSL itself.
+     * </p>
+     * @return false when the index exists but it's broken
+     * @since 1.21
+     */
+    public boolean isValid() {
+        try {
+            return spiIndex.isValid();
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Creates a new {@link IndexDocument}. This method does exactly the same as
+     * {@link #createDocument(org.netbeans.modules.parsing.spi.indexing.Indexable), but you can
+     * use <code>FileObject</code>s directly. The <code>FileObject</code> passed in
+     * as a parameter has to be in the folders hierarchy under the root, which
+     * this <code>IndexingSupport</code> instance was created for.
+     *
+     * @param file The file to create <code>IndexDocument</code> for.
+     *
+     * @return The <code>IndexDocument</code> created for the <code>file</code>.
+     * @since 1.22
+     */
+    public IndexDocument createDocument(FileObject file) {
+        FileObject root = context.getRoot();
+        if (FileUtil.isParentOf(root, file)) {
+            return createDocument(SPIAccessor.getInstance().create(new FileObjectIndexable(root, file)));
+        } else {
+            throw new IllegalArgumentException(file + " is not under the root " + root); //NOI18N
+        }
     }
 
     /**

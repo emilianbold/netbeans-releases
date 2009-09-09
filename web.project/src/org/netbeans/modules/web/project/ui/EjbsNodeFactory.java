@@ -68,7 +68,7 @@ import org.openide.util.Exceptions;
  *
  * @author kaktus
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-web-project", position=100)
+@NodeFactory.Registration(projectType="org-netbeans-modules-web-project", position=350)
 public class EjbsNodeFactory implements NodeFactory {
 
     public EjbsNodeFactory() {

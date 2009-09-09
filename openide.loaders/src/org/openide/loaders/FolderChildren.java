@@ -203,6 +203,10 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 (filter == null || filter.acceptDataObject (obj))
             ) {
                 ret = obj.getClonedNodeDelegate (filter);
+                if (!obj.isValid()) {
+                    // #153008 - DataObject became invalid meanwhile
+                    ret = null;
+                }
             } 
         } catch (DataObjectNotFoundException e) {
             Logger.getLogger(FolderChildren.class.getName()).log(Level.FINE, null, e);

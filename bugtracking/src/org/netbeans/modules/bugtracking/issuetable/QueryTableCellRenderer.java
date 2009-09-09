@@ -1,6 +1,7 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FontMetrics;
@@ -15,9 +16,9 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
-import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -205,13 +206,13 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                 style.background = isSelected ? obsoleteHighlightColor : style.background;
             } else {
                 int status = query.getIssueStatus(issue);
-                if(!issue.wasSeen()) {
+                if(!IssueCacheUtils.wasSeen(issue)) {
                     switch(status) {
-                        case Issue.ISSUE_STATUS_NEW :
+                        case IssueCache.ISSUE_STATUS_NEW :
                             style.format     = isSelected ? style.format      : issueNewFormat;
                             style.background = isSelected ? newHighlightColor : style.background;
                             break;
-                        case Issue.ISSUE_STATUS_MODIFIED :
+                        case IssueCache.ISSUE_STATUS_MODIFIED :
                             style.format     = isSelected ? style.format           : issueModifiedFormat;
                             style.background = isSelected ? modifiedHighlightColor : style.background;
                             break;
@@ -254,7 +255,6 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
             l.setForeground(style.foreground);
         }
     }
-
 }
 
 

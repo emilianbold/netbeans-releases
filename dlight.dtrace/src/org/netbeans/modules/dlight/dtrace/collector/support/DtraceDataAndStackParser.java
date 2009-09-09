@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
+import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -175,11 +176,11 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     return null;
                 } else {
                     Collections.reverse(currStack);
-                    int stackId = sds == null? -1 : sds.putStack(currStack, currSampleDuration);
+                    long stackId = sds == null? -1 : sds.putStack(currStack, currSampleDuration);
                     currStack.clear();
                     //colNames.get(colNames.size()-1);
                     state = State.WAITING_DATA;
-                    currData.add(Integer.toString(stackId));
+                    currData.add(Long.toString(stackId));
                     return new DataRow(colNames, currData);
                 }
         }

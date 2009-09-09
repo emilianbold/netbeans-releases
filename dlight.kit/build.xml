@@ -8,6 +8,7 @@
         <subant target="test" buildpath="../dlight.db.derby" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../dlight.db.h2" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../dlight.dtrace" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../dlight.extras" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../dlight.indicators" inheritrefs="false" inheritall="false" failonerror="false"/>
         <!--<subant target="test" buildpath="../dlight.nativeexecution" inheritrefs="false" inheritall="false" failonerror="false"/>-->
         <subant target="test" buildpath="../dlight.perfan" inheritrefs="false" inheritall="false" failonerror="false"/>

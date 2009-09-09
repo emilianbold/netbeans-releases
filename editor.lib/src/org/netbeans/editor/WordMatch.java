@@ -52,8 +52,8 @@ import javax.swing.text.Position;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.openide.util.WeakListeners;
 
 /** Word matching support enables to fill in the rest of the word

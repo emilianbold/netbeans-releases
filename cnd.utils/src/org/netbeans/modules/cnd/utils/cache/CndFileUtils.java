@@ -40,7 +40,10 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Map;
@@ -48,7 +51,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.netbeans.modules.cnd.spi.utils.FileSystemsProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -174,6 +180,42 @@ public final class CndFileUtils {
         return getFlags(file, filePath, false).directory;
     }
 
+   /**
+    * Gets file input stream. File can be either a "classic" file,
+    * or other kind of file, say, remote one.
+    *
+    * NB: can be ver slow; e.g. can cause connection to the host in the case of the remote file
+    *
+    * NB: does nothing to buffer the file - it's up to caller
+    *
+    * @param filePath is either just a path to local file
+    * or a URL of remote or other kind of file
+    *
+    * @return input stream
+    *
+    * @throws java.io.IOException
+    */
+   public static InputStream getInputStream(CharSequence filePath) throws IOException {
+       FileSystemsProvider.Data data = FileSystemsProvider.get(filePath);
+       if (data == null) {
+           File file = new File(filePath.toString());
+           FileObject fo = FileUtil.toFileObject(file);
+           InputStream is;
+           if (fo != null) {
+               is = fo.getInputStream();
+           } else {
+               is = new FileInputStream(file);
+           }
+           return is;
+       } else {
+           FileObject fo = data.fileSystem.getRoot().getFileObject(data.path);
+           if (fo == null) {
+               throw new FileNotFoundException(filePath.toString());
+           }
+           return fo.getInputStream();
+       }
+   }
+
     private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
         assert file != null || absolutePath != null;
         absolutePath = (absolutePath == null) ? file.getAbsolutePath() : absolutePath;
@@ -224,7 +266,7 @@ public final class CndFileUtils {
 
     private static void index(File file, String path, ConcurrentMap<String, Flags> files) {
         if (file.canRead()) {
-            File[] listFiles = file.listFiles();
+            File[] listFiles = listFilesImpl(file);
             for (int i = 0; i < listFiles.length; i++) {
                 File curFile = listFiles[i];
                 String absPath = curFile.getAbsolutePath();
@@ -276,13 +318,42 @@ public final class CndFileUtils {
         }
         return map;
     }
-    
+
+    private static boolean existsImpl(File file) {
+       FileSystemsProvider.Data data = FileSystemsProvider.get(file);
+       if (data == null) {
+            return file.exists();
+       } else {
+            FileObject fo = data.fileSystem.getRoot().getFileObject(data.path);
+            if (fo == null) {
+                return false;
+            } else {
+                return ! fo.isVirtual();
+            }
+       }
+    }
+
+    private static File[] listFilesImpl(File file) {
+       FileSystemsProvider.Data data = FileSystemsProvider.get(file);
+       if (data == null) {
+            return file.listFiles();
+       } else {
+           FileObject fo = data.fileSystem.getRoot().getFileObject(data.path);
+           //FileObject[] children = fo.getChildren();
+           // FIXUP: a very very dirty hack, just to make sure it will fly
+           fo.getFileObject("dummy"); // NOI18N
+           return file.listFiles();
+       }
+    }
+
+
     private static final Lock maRefLock = new ReentrantLock();
     private static final Lock mapNormalizedRefLock = new ReentrantLock();
     
     private static Reference<ConcurrentMap<String, Flags>> mapRef = new SoftReference<ConcurrentMap<String, Flags>>(new ConcurrentHashMap<String, Flags>());
     private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
     private final static class Flags {
+
         private final boolean exist;
         private final boolean directory;
         private Flags(boolean exist, boolean directory){
@@ -296,7 +367,7 @@ public final class CndFileUtils {
         private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
 
         private static Flags get(File file) {
-            if (file.exists()) {
+            if (existsImpl(file)) {
                 if (file.isDirectory()) {
                     return DIRECTORY;
                 } else {

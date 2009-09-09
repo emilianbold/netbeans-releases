@@ -72,7 +72,8 @@ public enum YamlTokenId implements TokenId {
     /** Contents inside <% %> */
     RUBY("ruby"),
     /** <% or %> */
-    DELIMITER("ruby-delimiter");
+    DELIMITER("ruby-delimiter"),
+    PHP("php");
 
     private final String primaryCategory;
 
@@ -129,7 +130,17 @@ public enum YamlTokenId implements TokenId {
                             }
 
                             return rubyLanguage != null ? LanguageEmbedding.create(rubyLanguage, 0, 0, false) : null;
+                        case PHP:
+                            Language<? extends TokenId> phpLanguage = null;
 
+                            providers = (Collection<LanguageProvider>) Lookup.getDefault().lookupAll(LanguageProvider.class);
+                            for (LanguageProvider provider : providers) {
+                                phpLanguage = (Language<? extends TokenId>) provider.findLanguage("text/x-php5");
+                                if (phpLanguage != null) {
+                                    break;
+                                }
+                            }
+                            return phpLanguage != null ? LanguageEmbedding.create(phpLanguage, 0, 0, false) : null;
                         default:
                             return null;
                     }

@@ -48,6 +48,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -86,7 +87,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         totalSize = uploadSize = 0;
         long time = 0;
         
-        if (logger.isLoggable(Level.FINE)) {
+        if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
             System.out.printf("Uploading %s to %s ...\n", localDir.getAbsolutePath(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
@@ -116,12 +117,12 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
             Zipper zipper = createZipper(zipFile);
             {
-                if (logger.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();                
                 zipper.add(localDir, filter);
                 float zipTime = ((float) (System.currentTimeMillis() - zipStart))/1000f;
-                if (logger.isLoggable(Level.FINE)) {System.out.printf("\t%d files zipped; file size is %d\n", zipper.getFileCount(), zipFile.length()); } // NOI18N
-                if (logger.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", localDir.getAbsolutePath(), zipFile, zipTime); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\t%d files zipped; file size is %d\n", zipper.getFileCount(), zipFile.length()); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", localDir.getAbsolutePath(), zipFile, zipTime); } // NOI18N
             }
 
             if (zipper.getFileCount() == 0) {
@@ -137,11 +138,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             String remoteFile = remoteDir + '/' + zipFile.getName(); //NOI18N
             {
                 long uploaStart = System.currentTimeMillis();
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s ...\n", zipFile, executionEnvironment, remoteFile); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s ...\n", zipFile, executionEnvironment, remoteFile); } // NOI18N
                 Future<Integer> upload = CommonTasksSupport.uploadFile(zipFile.getAbsolutePath(), executionEnvironment, remoteFile, 0777, err);
                 int rc = upload.get();
                 float uploadTime = ((float) (System.currentTimeMillis() - uploaStart))/1000f;
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s finished in %f s with rc=%d\n", zipFile, executionEnvironment, remoteFile, uploadTime, rc); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s finished in %f s with rc=%d\n", zipFile, executionEnvironment, remoteFile, uploadTime, rc); } // NOI18N
                 if (rc != 0) {
                     throw new IOException("uploading " + zipFile + " to " + executionEnvironment + ':' + remoteFile + // NOI18N
                             " finished with error code " + rc); // NOI18N
@@ -149,7 +150,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             }
 
             {
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: unzipping %s:%s ...\n", executionEnvironment, remoteFile); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: unzipping %s:%s ...\n", executionEnvironment, remoteFile); } // NOI18N
                 long unzipStart = System.currentTimeMillis();
 
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
@@ -168,7 +169,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 }
                 in = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
                 while ((line = in.readLine()) != null) {
-                    if (logger.isLoggable(Level.FINE)) { System.err.printf("\t%s\n", line); } //NOI18N
+                    if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) { System.err.printf("\t%s\n", line); } //NOI18N
                 }
 
                 int rc = proc.waitFor();
@@ -176,7 +177,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 //RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, cmd);
                 //int rc = rcs.run();
                 float unzipTime = ((float) (System.currentTimeMillis() - unzipStart))/1000f;
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: unzipping %s:%s finished in %f s; rc=%d\n", executionEnvironment , remoteFile, unzipTime, rc); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: unzipping %s:%s finished in %f s; rc=%d\n", executionEnvironment , remoteFile, unzipTime, rc); } // NOI18N
                 if (rc != 0) {
                     throw new IOException("unzipping " + remoteFile + " at " + executionEnvironment + " finished with error code " + rc); // NOI18N
                 }
@@ -189,12 +190,12 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         } finally {
             if (zipFile != null & zipFile.exists()) {
                 if (!zipFile.delete()) {
-                    logger.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
+                    RemoteUtil.LOGGER.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
                 }
             }
         }
 
-        if (logger.isLoggable(Level.FINE)) {
+        if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
             long bps = uploadSize * 1000L / time;
             String speed = (bps < 1024*8) ? (bps + " b/s") : ((bps/1024) + " Kb/s"); // NOI18N

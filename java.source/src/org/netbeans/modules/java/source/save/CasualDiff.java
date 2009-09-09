@@ -1011,8 +1011,17 @@ public class CasualDiff {
                 copyTo(localPointer, endetHier);
                 localPointer = finalBounds[1];
             }
+            copyTo(localPointer, bounds[1]);
+        } else {
+            if (newT.finalizer != null) {
+                int catchEnd = oldT.catchers.isEmpty() ? bounds[1] : endPos(oldT.catchers.reverse().head);
+                copyTo(localPointer, localPointer = catchEnd);
+                printer.printFinallyBlock(newT.finalizer);
+                copyTo(localPointer, bounds[1]);
+            } else {
+                copyTo(localPointer, bounds[1]);
+            }
         }
-        copyTo(localPointer, bounds[1]);
 
         return bounds[1];
     }

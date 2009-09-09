@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.hudson.ui.notification;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -48,6 +46,8 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.UI;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Build failed or was unstable.
  */
-class ProblemNotification implements ActionListener {
+class ProblemNotification {
 
     private static final Logger LOG = Logger.getLogger(ProblemNotification.class.getName());
 
@@ -79,11 +79,11 @@ class ProblemNotification implements ActionListener {
                 job.getDisplayName(), build);
     }
 
-    private String getDescription() {
+    String showFailureText() {
         return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.description.failed" : "ProblemNotification.description.unstable");
     }
 
-    public void actionPerformed(final ActionEvent e) {
+    void showFailure() {
         // BuildHandleImpl.getDefaultAction similar but not identical.
         UI.selectNode(job.getInstance().getUrl(), job.getName(), Integer.toString(build));
         RequestProcessor.getDefault().post(new Runnable() {
@@ -91,15 +91,15 @@ class ProblemNotification implements ActionListener {
                 for (HudsonJobBuild b : job.getBuilds()) {
                     if (b.getNumber() == build) {
                         if (failed) {
-                            UI.showConsoleAction(b).actionPerformed(e);
+                            UI.showConsoleAction(b).actionPerformed(null);
                         } else if (b.getMavenModules().isEmpty()) {
-                            UI.showFailuresAction(b).actionPerformed(e);
+                            UI.showFailuresAction(b).actionPerformed(null);
                         } else {
                             for (HudsonMavenModuleBuild module : b.getMavenModules()) {
                                 switch (module.getColor()) {
                                 case yellow:
                                 case yellow_anime:
-                                    UI.showFailuresAction(module).actionPerformed(e);
+                                    UI.showFailuresAction(module).actionPerformed(null);
                                 }
                             }
                         }
@@ -108,6 +108,15 @@ class ProblemNotification implements ActionListener {
                 }
             }
         });
+    }
+
+    void ignore() { // #161601
+        if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(ProblemNotification.class, "ProblemNotification.ignore.question", job.getDisplayName(), job.getInstance().getName()),
+                NbBundle.getMessage(ProblemNotification.class, "ProblemNotification.ignore.title", job.getDisplayName()),
+                NotifyDescriptor.OK_CANCEL_OPTION)) == NotifyDescriptor.OK_OPTION) {
+            job.setSalient(false);
+        }
     }
 
     private Priority getPriority() {
@@ -120,7 +129,7 @@ class ProblemNotification implements ActionListener {
 
     void add() {
         LOG.log(Level.FINE, "Adding {0}", this);
-        notification = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
+        notification = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), new ProblemPanel(this), new ProblemPanel(this), getPriority());
     }
 
     void remove() {

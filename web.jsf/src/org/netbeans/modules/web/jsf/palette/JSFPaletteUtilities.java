@@ -41,11 +41,24 @@
 
 package org.netbeans.modules.web.jsf.palette;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.Map;
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -126,7 +139,7 @@ public final class JSFPaletteUtilities {
         }
     }
         
-    private static FileObject getFileObject(JTextComponent target) {
+    public static FileObject getFileObject(JTextComponent target) {
         BaseDocument doc = (BaseDocument) target.getDocument();
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
@@ -184,6 +197,40 @@ public final class JSFPaletteUtilities {
         }
         
         return start;
+    }
+    
+    private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
+
+    public static void expandJSFTemplate(FileObject template, Map<String, Object> values, FileObject target) throws IOException {
+        Writer w = new OutputStreamWriter(target.getOutputStream());
+        try {
+            expandJSFTemplate(template, values, FileEncodingQuery.getEncoding(template), w);
+        } finally {
+            w.close();
+        }
+    }
+
+    public static void expandJSFTemplate(FileObject template, Map<String, Object> values, Charset targetEncoding, Writer w) throws IOException {
+        Charset sourceEnc = FileEncodingQuery.getEncoding(template);
+        ScriptEngineManager manager;
+        manager = new ScriptEngineManager();
+        ScriptEngine eng = manager.getEngineByName("freemarker"); // NOI18N
+        Bindings bind = eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        bind.putAll(values);
+        bind.put(ENCODING_PROPERTY_NAME, targetEncoding.name());
+
+        Reader is = null;
+        try {
+            eng.getContext().setWriter(w);
+            is = new InputStreamReader(template.getInputStream(), sourceEnc);
+            eng.eval(is);
+        } catch (ScriptException ex) {
+            IOException io = new IOException(ex.getMessage());
+            io.initCause(ex);
+            throw io;
+        } finally {
+            if (is != null) is.close();
+        }
     }
 
 }

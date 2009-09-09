@@ -56,9 +56,9 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -73,6 +73,7 @@ import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.LifecycleManager;
 import org.openide.awt.*;
 import org.openide.cookies.InstanceCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
@@ -99,6 +100,10 @@ public final class MainWindow extends JFrame {
     
     /** Flag indicating main window is initialized. */ 
     private boolean inited;
+
+    private Lookup.Result <SaveCookie> saveResult;
+    private Lookup.Result <DataObject> dobResult;
+    private LookupListener saveListener;
     
 
     /** Constructs main window. */
@@ -239,7 +244,47 @@ public final class MainWindow extends JFrame {
         });
         //#38810 end
         setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", System.getProperty("netbeans.buildnumber")));
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            //Show a "save dot" in the close button if a modified file is
+            //being edited
+            //Show the icon of the edited file in the window titlebar like
+            //other mac apps
+            saveResult = Utilities.actionsGlobalContext().lookupResult (SaveCookie.class);
+            dobResult = Utilities.actionsGlobalContext().lookupResult (DataObject.class);
+            if( null != saveResult && null != dobResult ) {
+                saveListener = new LookupListener() {
+                    public void resultChanged(LookupEvent ev) {
+                        if (ev.getSource() == saveResult) {
+                            boolean modified = saveResult.allItems().size() > 0;
+                            getRootPane().putClientProperty ("Window.documentModified", //NOI18N
+                                    modified ? Boolean.TRUE : Boolean.FALSE);
+                        } else if (ev.getSource() == dobResult) {
+                            int count = dobResult.allItems().size();
+                            switch (count) {
+                                case 1 :
+                                    DataObject dob = dobResult.allInstances().iterator().next();
+                                    FileObject file = dob.getPrimaryFile();
+                                    File f = FileUtil.toFile(file);
+                                    if (f != null) {
+                                        getRootPane().putClientProperty("Window.documentFile", f); //NOI18N
+                                        break;
+                                    }
+                                    //Fall through
+                                case 0 :
+                                    //Fall through
+                                default :
+                                    getRootPane().putClientProperty("Window.documentFile", null); //NOI18N
+                            }
+                        }
+                    }
+
+                };
+                saveResult.addLookupListener(saveListener);
+                dobResult.addLookupListener(saveListener);
+            }
+        }
     }
+
     
     private static void decoratePanel (JPanel panel, boolean safeAccess) {
         assert safeAccess || SwingUtilities.isEventDispatchThread () : "Must run in AWT queue.";
