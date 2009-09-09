@@ -153,21 +153,21 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         final Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
 
-        final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
-                getProjectDirectory(),
-                getSources(descriptor),
-                (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
-                wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
-                (PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION),
-                (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
-                getUrl(),
-                wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders),
-                descriptor,
-                isCopyFiles(),
-                getCopySrcTarget(),
-                (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION),
-                (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY),
-                wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD));
+        final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties()
+                .setProjectDirectory(getProjectDirectory())
+                .setSourcesDirectory(getSources(descriptor))
+                .setName((String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME))
+                .setRunAsType(wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType())
+                .setPhpVersion((PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION))
+                .setCharset((Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING))
+                .setUrl(getUrl())
+                .setIndexFile(wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders))
+                .setDescriptor(descriptor)
+                .setCopySources(isCopyFiles())
+                .setCopySourcesTarget(getCopySrcTarget())
+                .setRemoteConfiguration((RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION))
+                .setRemoteDirectory((String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY))
+                .setUploadFiles(wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD));
 
         PhpProjectGenerator.Monitor monitor = null;
         switch (wizardType) {

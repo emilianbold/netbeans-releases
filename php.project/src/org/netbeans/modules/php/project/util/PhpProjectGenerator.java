@@ -99,35 +99,36 @@ public final class PhpProjectGenerator {
         }
         monitor.starting();
 
-        boolean existingSources = projectProperties.getSourcesDirectory().exists();
+        ProjectProperties projectPropertiesCopy = new ProjectProperties(projectProperties);
+        boolean existingSources = projectPropertiesCopy.getSourcesDirectory().exists();
 
         // #140346
         // first, create sources
-        FileObject sourceDir = FileUtil.createFolder(projectProperties.getSourcesDirectory());
+        FileObject sourceDir = FileUtil.createFolder(projectPropertiesCopy.getSourcesDirectory());
 
         // project
-        AntProjectHelper helper = createProject0(projectProperties);
+        AntProjectHelper helper = createProject0(projectPropertiesCopy);
 
         // usage logging
-        logUsage(helper.getProjectDirectory(), sourceDir, projectProperties.getRunAsType(), projectProperties.isCopySources());
+        logUsage(helper.getProjectDirectory(), sourceDir, projectPropertiesCopy.getRunAsType(), projectPropertiesCopy.isCopySources());
 
         // index file
-        String indexFile = projectProperties.getIndexFile();
+        String indexFile = projectPropertiesCopy.getIndexFile();
         if (!existingSources && indexFile != null) {
             monitor.creatingIndexFile();
 
             FileObject template = null;
-            RunAsType runAsType = projectProperties.getRunAsType();
+            RunAsType runAsType = projectPropertiesCopy.getRunAsType();
             if (runAsType == null) {
                 // run configuration panel not shown at all
-                template = Templates.getTemplate(projectProperties.getDescriptor());
+                template = Templates.getTemplate(projectPropertiesCopy.getDescriptor());
             } else {
                 switch (runAsType) {
                     case SCRIPT:
                         template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP"); // NOI18N
                         break;
                     default:
-                        template = Templates.getTemplate(projectProperties.getDescriptor());
+                        template = Templates.getTemplate(projectPropertiesCopy.getDescriptor());
                         break;
                 }
             }
@@ -318,126 +319,216 @@ public final class PhpProjectGenerator {
      * PHP project properties.
      */
     public static final class ProjectProperties {
-        private final File projectDirectory;
-        private final File sourcesDirectory;
-        private final String name;
-        private final RunAsType runAsType;
-        private final PhpVersion phpVersion;
-        private final Charset charset;
-        private final String url;
-        private final String indexFile;
-        private final WizardDescriptor descriptor;
-        private final Boolean copySources;
-        private final File copySourcesTarget;
-        private final RemoteConfiguration remoteConfiguration;
-        private final String remoteDirectory;
-        private final PhpProjectProperties.UploadFiles uploadFiles;
+        private File projectDirectory;
+        private File sourcesDirectory;
+        private String name;
+        private RunAsType runAsType;
+        private PhpVersion phpVersion;
+        private Charset charset;
+        private String url;
+        private String indexFile;
+        private WizardDescriptor descriptor;
+        private Boolean copySources;
+        private File copySourcesTarget;
+        private RemoteConfiguration remoteConfiguration;
+        private String remoteDirectory;
+        private PhpProjectProperties.UploadFiles uploadFiles;
 
-        /**
-         * Get PHP project properties.
-         * @param projectDirectory project directory, can be <code>null</code> (sourcesDirectory is used then)
-         * @param sourcesDirectory source directory
-         * @param name project name
-         * @param runAsType run configuration type, can be <code>null</code>
-         * @param phpVersion PHP version
-         * @param charset project charset
-         * @param url project URL
-         * @param indexFile index file, can be <code>null</code>
-         * @param descriptor wizard descriptor (used for getting index file template only!)
-         * @param copySources <code>true</code> if copying sources is enabled, can be <code>null</code>
-         * @param copySourcesTarget target for source copying, can be <code>null</code>
-         * @param remoteConfiguration remote server configuration, can be <code>null</code>
-         * @param remoteDirectory upload directory, can be <code>null</code>
-         * @param uploadFiles upload files mode, can be <code>null</code>
-         */
-        public ProjectProperties(File projectDirectory, File sourcesDirectory, String name, RunAsType runAsType, PhpVersion phpVersion, Charset charset,
-                String url, String indexFile, WizardDescriptor descriptor, Boolean copySources, File copySourcesTarget,
-                RemoteConfiguration remoteConfiguration, String remoteDirectory, UploadFiles uploadFiles) {
-            assert sourcesDirectory != null;
-            assert name != null;
-            assert phpVersion != null;
-            assert charset != null;
-            assert url != null;
-            assert descriptor != null;
+        public ProjectProperties() {
+        }
 
-            if (projectDirectory != null) {
-                projectDirectory = FileUtil.normalizeFile(projectDirectory);
-            }
-            sourcesDirectory = FileUtil.normalizeFile(sourcesDirectory);
-            if (copySourcesTarget != null) {
-                copySourcesTarget = FileUtil.normalizeFile(copySourcesTarget);
-            }
-
-            this.projectDirectory = projectDirectory;
-            this.sourcesDirectory = sourcesDirectory;
-            this.name = name;
-            this.runAsType = runAsType;
-            this.phpVersion = phpVersion;
-            this.charset = charset;
-            this.url = url;
-            this.indexFile = indexFile;
-            this.descriptor = descriptor;
-            this.copySources = copySources;
-            this.copySourcesTarget = copySourcesTarget;
-            this.remoteConfiguration = remoteConfiguration;
-            this.remoteDirectory = remoteDirectory;
-            this.uploadFiles = uploadFiles;
+        public ProjectProperties(ProjectProperties properties) {
+            setProjectDirectory(properties.projectDirectory);
+            setSourcesDirectory(properties.sourcesDirectory);
+            setName(properties.name);
+            setRunAsType(properties.runAsType);
+            setPhpVersion(properties.phpVersion);
+            setCharset(properties.charset);
+            setUrl(properties.url);
+            setIndexFile(properties.indexFile);
+            setDescriptor(properties.descriptor);
+            setCopySources(properties.copySources);
+            setCopySourcesTarget(properties.copySourcesTarget);
+            setRemoteConfiguration(properties.remoteConfiguration);
+            setRemoteDirectory(properties.remoteDirectory);
+            setUploadFiles(properties.uploadFiles);
         }
 
         public String getName() {
             return name;
         }
 
+        public ProjectProperties setName(String name) {
+            assert name != null;
+            this.name = name;
+            return this;
+        }
+
         public File getSourcesDirectory() {
             return sourcesDirectory;
+        }
+
+        /**
+         * @param sourcesDirectory source directory
+         */
+        public ProjectProperties setSourcesDirectory(File sourcesDirectory) {
+            assert sourcesDirectory != null;
+            this.sourcesDirectory = FileUtil.normalizeFile(sourcesDirectory);
+            return this;
         }
 
         public File getProjectDirectory() {
             return projectDirectory;
         }
 
+        /**
+         * @param projectDirectory project directory, can be <code>null</code> (sourcesDirectory is used then)
+         */
+        public ProjectProperties setProjectDirectory(File projectDirectory) {
+            if (projectDirectory != null) {
+                projectDirectory = FileUtil.normalizeFile(projectDirectory);
+            }
+            this.projectDirectory = projectDirectory;
+            return this;
+        }
+
         public RunAsType getRunAsType() {
             return runAsType;
+        }
+
+        /**
+         * @param runAsType run configuration type, can be <code>null</code>
+         */
+        public ProjectProperties setRunAsType(RunAsType runAsType) {
+            this.runAsType = runAsType;
+            return this;
         }
 
         public PhpVersion getPhpVersion() {
             return phpVersion;
         }
 
+        /**
+         * @param phpVersion PHP version
+         */
+        public ProjectProperties setPhpVersion(PhpVersion phpVersion) {
+            assert phpVersion != null;
+            this.phpVersion = phpVersion;
+            return this;
+        }
+
         public Charset getCharset() {
             return charset;
         }
 
+        /**
+         * @param charset project charset
+         */
+        public ProjectProperties setCharset(Charset charset) {
+            assert charset != null;
+            this.charset = charset;
+            return this;
+        }
+
         public String getUrl() {
+            assert url != null;
             return url;
+        }
+
+        /**
+         * @param url project URL
+         */
+        public ProjectProperties setUrl(String url) {
+            this.url = url;
+            return this;
         }
 
         public Boolean isCopySources() {
             return copySources;
         }
 
+        /**
+         * @param copySources <code>true</code> if copying sources is enabled, can be <code>null</code>
+         */
+        public ProjectProperties setCopySources(Boolean copySources) {
+            this.copySources = copySources;
+            return this;
+        }
+
         public File getCopySourcesTarget() {
             return copySourcesTarget;
+        }
+
+        /**
+         * @param copySourcesTarget target for source copying, can be <code>null</code>
+         */
+        public ProjectProperties setCopySourcesTarget(File copySourcesTarget) {
+            if (copySourcesTarget != null) {
+                copySourcesTarget = FileUtil.normalizeFile(copySourcesTarget);
+            }
+            this.copySourcesTarget = copySourcesTarget;
+            return this;
         }
 
         public String getIndexFile() {
             return indexFile;
         }
 
+        /**
+         * @param indexFile index file, can be <code>null</code>
+         */
+        public ProjectProperties setIndexFile(String indexFile) {
+            this.indexFile = indexFile;
+            return this;
+        }
+
         public WizardDescriptor getDescriptor() {
             return descriptor;
+        }
+
+        /**
+         * @param descriptor wizard descriptor (used for getting index file template only!)
+         */
+        public ProjectProperties setDescriptor(WizardDescriptor descriptor) {
+            assert descriptor != null;
+            this.descriptor = descriptor;
+            return this;
         }
 
         public RemoteConfiguration getRemoteConfiguration() {
             return remoteConfiguration;
         }
 
+        /**
+         * @param remoteConfiguration remote server configuration, can be <code>null</code>
+         */
+        public ProjectProperties setRemoteConfiguration(RemoteConfiguration remoteConfiguration) {
+            this.remoteConfiguration = remoteConfiguration;
+            return this;
+        }
+
         public String getRemoteDirectory() {
             return remoteDirectory;
         }
 
+        /**
+         * @param remoteDirectory upload directory, can be <code>null</code>
+         */
+        public ProjectProperties setRemoteDirectory(String remoteDirectory) {
+            this.remoteDirectory = remoteDirectory;
+            return this;
+        }
+
         public UploadFiles getUploadFiles() {
             return uploadFiles;
+        }
+
+        /**
+         * @param uploadFiles upload files mode, can be <code>null</code>
+         */
+        public ProjectProperties setUploadFiles(UploadFiles uploadFiles) {
+            this.uploadFiles = uploadFiles;
+            return this;
         }
     }
 
