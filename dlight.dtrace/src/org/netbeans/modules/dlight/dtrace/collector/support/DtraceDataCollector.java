@@ -597,7 +597,7 @@ public final class DtraceDataCollector
         }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {

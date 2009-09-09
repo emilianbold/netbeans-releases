@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFile;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -453,7 +454,11 @@ public class ProjectActionSupport {
         private boolean checkExecutable(ProjectActionEvent pae) {
             // Check if something is specified
             String executable = pae.getExecutable();
-            if (executable.length() == 0) {
+            MakeConfiguration configuration = pae.getConfiguration();
+            ExecutionEnvironment execEnviroment = configuration.getDevelopmentHost().getExecutionEnvironment();
+            //executable can be not 0 length but still is not a file
+            File executableFile = RemoteFile.create(execEnviroment,executable);
+            if (executable.length() == 0 || executableFile.isDirectory()) {
                 SelectExecutablePanel panel = new SelectExecutablePanel(pae.getConfiguration());
                 DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
                 panel.setDialogDescriptor(descriptor);

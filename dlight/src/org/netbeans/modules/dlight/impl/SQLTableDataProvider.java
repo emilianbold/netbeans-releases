@@ -140,6 +140,6 @@ public class SQLTableDataProvider implements TableDataProvider {
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 }
