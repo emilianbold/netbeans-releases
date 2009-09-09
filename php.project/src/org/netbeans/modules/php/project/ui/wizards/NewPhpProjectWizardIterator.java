@@ -60,6 +60,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -157,6 +158,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 getSources(descriptor),
                 (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
                 wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
+                (PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION),
                 (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
                 getUrl(),
                 wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders),
@@ -352,6 +354,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
         settings.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
         settings.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
+        settings.putProperty(ConfigureProjectPanel.PHP_VERSION, null);
         settings.putProperty(ConfigureProjectPanel.ENCODING, null);
         settings.putProperty(RunConfigurationPanel.VALID, null);
         settings.putProperty(RunConfigurationPanel.RUN_AS, null);

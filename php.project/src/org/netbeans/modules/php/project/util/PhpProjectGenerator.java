@@ -51,6 +51,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -209,6 +210,7 @@ public final class PhpProjectGenerator {
         }
         sharedProperties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
         sharedProperties.setProperty(PhpProjectProperties.WEB_ROOT, "."); // NOI18N
+        sharedProperties.setProperty(PhpProjectProperties.PHP_VERSION, projectProperties.getPhpVersion().name()); // NOI18N
     }
 
     private static void configureEncoding(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
@@ -320,6 +322,7 @@ public final class PhpProjectGenerator {
         private final File sourcesDirectory;
         private final String name;
         private final RunAsType runAsType;
+        private final PhpVersion phpVersion;
         private final Charset charset;
         private final String url;
         private final String indexFile;
@@ -336,6 +339,7 @@ public final class PhpProjectGenerator {
          * @param sourcesDirectory source directory
          * @param name project name
          * @param runAsType run configuration type, can be <code>null</code>
+         * @param phpVersion PHP version
          * @param charset project charset
          * @param url project URL
          * @param indexFile index file, can be <code>null</code>
@@ -346,11 +350,12 @@ public final class PhpProjectGenerator {
          * @param remoteDirectory upload directory, can be <code>null</code>
          * @param uploadFiles upload files mode, can be <code>null</code>
          */
-        public ProjectProperties(File projectDirectory, File sourcesDirectory, String name, RunAsType runAsType, Charset charset,
+        public ProjectProperties(File projectDirectory, File sourcesDirectory, String name, RunAsType runAsType, PhpVersion phpVersion, Charset charset,
                 String url, String indexFile, WizardDescriptor descriptor, Boolean copySources, File copySourcesTarget,
                 RemoteConfiguration remoteConfiguration, String remoteDirectory, UploadFiles uploadFiles) {
             assert sourcesDirectory != null;
             assert name != null;
+            assert phpVersion != null;
             assert charset != null;
             assert url != null;
             assert descriptor != null;
@@ -367,6 +372,7 @@ public final class PhpProjectGenerator {
             this.sourcesDirectory = sourcesDirectory;
             this.name = name;
             this.runAsType = runAsType;
+            this.phpVersion = phpVersion;
             this.charset = charset;
             this.url = url;
             this.indexFile = indexFile;
@@ -392,6 +398,10 @@ public final class PhpProjectGenerator {
 
         public RunAsType getRunAsType() {
             return runAsType;
+        }
+
+        public PhpVersion getPhpVersion() {
+            return phpVersion;
         }
 
         public Charset getCharset() {

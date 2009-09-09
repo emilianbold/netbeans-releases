@@ -48,7 +48,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -68,6 +67,7 @@ import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
+import org.netbeans.modules.php.project.ui.Utils.PhpVersionComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -203,11 +203,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     private void initPhpVersion() {
-        DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(PhpVersion.values());
         PhpVersion phpVersion = ProjectPropertiesSupport.getPhpVersion(properties.getProject());
         assert phpVersion != null;
-        comboBoxModel.setSelectedItem(phpVersion);
-        phpVersionComboBox.setModel(comboBoxModel);
+        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(phpVersion));
     }
 
     private void initTags() {
