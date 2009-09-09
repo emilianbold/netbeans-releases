@@ -430,6 +430,9 @@ public class HgUtils {
         
         Set<Pattern> patterns = getIgnorePatterns(topFile);
         path = path.substring(topFile.getAbsolutePath().length() + 1);
+        if (File.separatorChar != '/') {
+            path = path.replace(File.separatorChar, '/');
+        }
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
@@ -680,8 +683,10 @@ public class HgUtils {
     }
 
     private static String computePatternToIgnore(File directory, File file) {
-        String name = file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1);
-        return name.replace(' ', '?').replace(File.separatorChar, '/').replace("#", "\\#");
+        String name = "^" + file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1) + "$"; //NOI18N
+        // # should be escaped, otherwise works as a comment
+        // . should be escaped, otherwise works as a special char in regexp
+        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\."); //NOI18N
     }
 
     private static void writeIgnoreEntries(File directory, Set entries) throws IOException {
