@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.extras.api;
 
 /**
  * @author Alexey Vladykin
