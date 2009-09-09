@@ -75,7 +75,8 @@ class ElStartContextChecker implements ElContextChecker {
     public boolean check( JspELExpression expression, Document document,
             FileObject fileObject, List<Hint> hints )
     {
-        if (ELImplicitObjects.getELImplicitObject(expression.getExpression()) != null)
+        if (ELImplicitObjects.getELImplicitObject(expression.getExpression(),
+                expression) != null)
         {
             // context expression is implicit object. All is OK.
             return true;
