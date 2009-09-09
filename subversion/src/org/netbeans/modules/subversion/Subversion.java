@@ -114,6 +114,7 @@ public class Subversion {
     private List<ISVNNotifyListener> svnNotifyListeners;
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private SubversionVCS svcs;
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
@@ -139,7 +140,7 @@ public class Subversion {
         refreshHandler = new SvnClientRefreshHandler();
         prepareCache();
         // this should be registered in SubversionVCS but we needed to reduce number of classes loaded
-        SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
+        svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
 
@@ -451,6 +452,15 @@ public class Subversion {
             processorsToUrl.put(key, rp);
         }
         return rp;
+    }
+
+    /**
+     * Delegates to SubversionVCS.getTopmostManagedAncestor
+     * @param file a file for which the topmost managed ancestor shall be looked up.
+     * @return topmost managed ancestor for the given file
+     */
+    public File getTopmostManagedAncestor (File file) {
+        return svcs == null ? null : svcs.getTopmostManagedAncestor(file);
     }
 
     FileStatusProvider getVCSAnnotator() {
