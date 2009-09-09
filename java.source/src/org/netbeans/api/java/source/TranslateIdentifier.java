@@ -857,7 +857,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
                 newlines += numberOfNL(t);
             } else if (isComment(t.id())) {
                 if (foundComments != null) {
-                    attachComments(foundComments, tree, commentService, endPositions, seq);
+                    attachComments(foundComments, tree, commentService, CommentSet.RelativePosition.TRAILING);
                 }
                 foundComments = getCommentsCollection(seq, newlines);
                 if (t.id() == JavaTokenId.LINE_COMMENT) {
@@ -873,16 +873,16 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
                     int[] bounds = foundComments.getBounds();
                     double weight = belongsTo(bounds[0], bounds[1], seq);
                     if (tree.getKind() == Tree.Kind.COMPILATION_UNIT && weight == 0) {
-                        attachComments(foundComments, tree, commentService, endPositions, seq);
+                        attachComments(foundComments, tree, commentService, CommentSet.RelativePosition.TRAILING);
                     } else if (weight >= 0) {
                         TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                         if (path != null && path.getParentPath().getLeaf() == ctree) {
-                            attachComments(foundComments, tree, commentService, endPositions, seq);
+                            attachComments(foundComments, tree, commentService, CommentSet.RelativePosition.TRAILING);
                         }
 //                        attachComments(foundComments, ctree, commentService, endPositions, seq);
                         return;
                     } else {
-                        attachComments(foundComments, tree, commentService, endPositions, seq);
+                        attachComments(foundComments, tree, commentService, CommentSet.RelativePosition.TRAILING);
                     }
                     foundComments = null;
                 }
@@ -932,7 +932,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
                 }
             }
         }
-        attachComments(cc, tree, commentService, endPositions, seq);
+        attachComments(cc, tree, commentService, CommentSet.RelativePosition.PRECEDING);
         seq.move(reset);
         seq.moveNext();
     }
@@ -1069,22 +1069,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         return result;
     }
 
-    private void attachComments(CommentsCollection foundComments, Tree tree, CommentHandler ch, Map<JCTree, Integer> endPositions, TokenSequence<JavaTokenId> ts) {
+    private void attachComments(CommentsCollection foundComments, Tree tree, CommentHandler ch, CommentSet.RelativePosition positioning) {
         if (foundComments == null || foundComments.isEmpty()) return;
-        int[] bounds = getBounds((JCTree) tree, endPositions);
-        CommentSet.RelativePosition positioning;
-        if (tree instanceof BlockTree) {
-            BlockTree bt = (BlockTree) tree;
-            if (bt.getStatements().isEmpty()
-                    && bounds[0] >= foundComments.getBounds()[0]
-                    && bounds[1] <= foundComments.getBounds()[1]) {
-                positioning = CommentSet.RelativePosition.INNER;
-            } else {
-                positioning = computePositioning(bounds, foundComments, ts);
-            }
-        } else {
-            positioning = computePositioning(bounds, foundComments, ts);
-        }
         CommentSet set = createCommentSet(ch, tree);
         for (Token<JavaTokenId> comment : foundComments) {
             attachComment(positioning, set, comment);
@@ -1116,32 +1102,6 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             default:
                 return Comment.Style.WHITESPACE;
         }
-    }
-
-    private CommentSet.RelativePosition computePositioning(int[] treeBounds, CommentsCollection cc, TokenSequence<JavaTokenId> ts) {
-        int[] commentsBounds = cc.getBounds();
-        if (commentsBounds[1] < treeBounds[0]) return CommentSet.RelativePosition.PRECEDING;
-        if (commentsBounds[0] > treeBounds[1]) {
-            TokenSequence<JavaTokenId> sequence = ts.subSequence(treeBounds[1], commentsBounds[0]);
-            sequence.move(0);
-//            sequence.move(treeBounds[1]);
-            if (!sequence.moveNext()) return CommentSet.RelativePosition.INLINE;
-            switch (sequence.token().id()) {
-                case WHITESPACE: {
-                    if (numberOfNL(sequence.token()) > 0) {
-                        return CommentSet.RelativePosition.TRAILING;
-                    } else {
-                        return CommentSet.RelativePosition.INLINE;
-                    }
-                }
-                default:
-                    return CommentSet.RelativePosition.TRAILING;
-            }
-        }
-
-        if (commentsBounds[0] > treeBounds[0] && commentsBounds[1] < treeBounds[1])
-            return CommentSet.RelativePosition.INNER;
-        return CommentSet.RelativePosition.TRAILING;
     }
 
     private int[] getBounds(JCTree tree, Map<JCTree, Integer> endPositions) {
