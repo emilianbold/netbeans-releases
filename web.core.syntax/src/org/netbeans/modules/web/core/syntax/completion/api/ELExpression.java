@@ -282,7 +282,8 @@ public class ELExpression {
         String beanName = extractBeanName();
 
         // not found within declared beans, try implicit objects
-        ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName);
+        ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName,
+                this );
 
         if (implObj != null) {
             return implObj.getClazz();
@@ -295,14 +296,13 @@ public class ELExpression {
         return extractBeanName();
     }
     
+    public FileObject getFileObject() {
+        return DataLoadersBridge.getDefault().getFileObject(doc);
+    }
+    
     protected CompletionInfo getPropertyCompletionInfo(String beanType, int anchor) {
         return new PropertyCompletionItemsTask(beanType, anchor);
     }
-
-    protected FileObject getFileObject() {
-        return DataLoadersBridge.getDefault().getFileObject(doc);
-    }
-            
 
     protected void runTask(CancellableTask<CompilationController> task) {
         
@@ -926,7 +926,8 @@ public class ELExpression {
 
         if (bracketIndex == -1 && dotIndex > -1) {
             String first = expr.substring(0, dotIndex);
-            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size() > 0) {
+            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first
+                    ,this ).size() > 0) {
                 value = EL_IMPLICIT;
             }
 
