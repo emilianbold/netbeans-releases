@@ -674,7 +674,7 @@ public class HgUtils {
                 if (line.length() == 0) continue;
                 String [] array = line.split(" ");
                 if (array[0].equals("syntax:")) continue;
-                entries.addAll(Arrays.asList(array));
+                entries.add(line);
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
