@@ -57,11 +57,21 @@ public final class TimeMarksProvider implements AxisMarksProvider {
     private TimeMarksProvider() {
     }
 
+    private static final int[] INTERVALS = {1, 5, 10, 30, 60};
+
     public List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+        int pixelsPerSecond = axisSize / (viewportEnd - viewportStart);
+        int secondsPerMark = 1;
+        for (int i = 0; i < INTERVALS.length; ++i) {
+            secondsPerMark = INTERVALS[i];
+            if (4 * axisFontMetrics.stringWidth(formatTime(viewportEnd)) / 3 <= secondsPerMark * pixelsPerSecond) {
+                break;
+            }
+        }
         List<AxisMark> marks = new ArrayList<AxisMark>();
         for (int value = viewportStart; value < viewportEnd; ++value) {
             String text = null;
-            if (value % 5 == 0) {
+            if (value % secondsPerMark == 0) {
                 text = formatTime(value);
             }
             marks.add(new AxisMark(DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
