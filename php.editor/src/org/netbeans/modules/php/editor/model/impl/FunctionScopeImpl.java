@@ -133,6 +133,18 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return getReturnTypes(false);
     }
 
+    public Collection<? extends String> getReturnTypeNames() {
+        Collection<String> retval = Collections.<String>emptyList();
+        if (returnType != null && returnType.length() > 0) {
+            retval = new ArrayList<String>();
+            for (String typeName : returnType.split("\\|")) {//NOI18N
+                if (!typeName.contains("@")) {//NOI18N
+                    retval.add(typeName);
+                }
+            }
+        }
+        return retval;
+    }
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
 

@@ -756,17 +756,20 @@ public class VariousUtils {
      */
     public static FileObject resolveInclude(FileObject sourceFile, Include include) {
         Parameters.notNull("sourceFile", sourceFile);
-        FileObject retval = null;
         if (sourceFile.isFolder()) {
             throw new IllegalArgumentException(FileUtil.getFileDisplayName(sourceFile));
         }
-        String fileName = resolveFileName(include);        
+        return  resolveInclude(sourceFile, resolveFileName(include));
+    }
+
+    public static FileObject resolveInclude(FileObject sourceFile, String fileName) {
+        FileObject retval = null;
         if (fileName != null) {
             FileObject parent = sourceFile.getParent();
             assert parent != null : FileUtil.getFileDisplayName(sourceFile);
             retval = PhpSourcePath.resolveFile(parent, fileName);
         }
-        return  retval;
+        return retval;
     }
 
     private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
