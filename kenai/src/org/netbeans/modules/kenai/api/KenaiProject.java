@@ -406,6 +406,10 @@ public final class KenaiProject {
         return Kenai.getDefault().checkName(name);
     }
 
+    private void join() throws KenaiException {
+        Kenai.getDefault().joinProject(this);
+    }
+
     void fillInfo(ProjectData prj) {
         synchronized (this) {
             if (prj.updated_at==null && this.data!=null && this.data.updated_at!=null) {
