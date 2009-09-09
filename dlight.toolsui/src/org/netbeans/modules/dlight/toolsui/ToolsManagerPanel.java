@@ -51,7 +51,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.toolsui.api.DLightConfigurationUIWrapper;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationSupport;
