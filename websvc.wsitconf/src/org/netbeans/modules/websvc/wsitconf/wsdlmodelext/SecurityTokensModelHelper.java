@@ -931,7 +931,7 @@ public class SecurityTokensModelHelper {
                 k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
             }
             if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_NOPROOF)) {
-                if (ConfigVersion.CONFIG_1_3 == configVersion) {
+                if (ConfigVersion.CONFIG_1_0 != configVersion) {
                     k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_NOPROOF13_POLICYSTR);
                 } else {
                     k.setContent(ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR);

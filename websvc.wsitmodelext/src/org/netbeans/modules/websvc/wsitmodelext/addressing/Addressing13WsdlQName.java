@@ -80,6 +80,7 @@ public enum Addressing13WsdlQName {
 
     public static String getNamespaceUri(ConfigVersion cfgVersion) {
         switch (cfgVersion) {
+            case CONFIG_2_0 : return A_NS_URI;
             case CONFIG_1_3 : return A_NS_URI;
             case CONFIG_1_0 : throw new IllegalArgumentException("These ADDR assertions are supported for 1.3 only!");
         }

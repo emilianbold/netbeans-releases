@@ -46,22 +46,22 @@ import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
-import javax.security.auth.RefreshFailedException;
-import javax.security.auth.Refreshable;
-import org.netbeans.api.debugger.Properties;
-import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.ui.DebuggerOutput;
+import org.netbeans.modules.debugger.jpda.ui.IOManager;
 import org.netbeans.modules.debugger.jpda.ui.VariablesFormatter;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
@@ -70,6 +70,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -81,9 +82,20 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     static Map<Object, String> FORMATTED_CHILDREN_VARS = new WeakHashMap<Object, String>();
 
     //private JPDADebugger debugger;
+    private IOManager ioManager;
+    private boolean formattersLoopWarned = false;
 
     public VariablesFormatterFilter(ContextProvider lookupProvider) {
         //debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        List lamls = lookupProvider.lookup
+            (null, LazyActionsManagerListener.class);
+        for (Iterator i = lamls.iterator (); i.hasNext ();) {
+            Object o = i.next();
+            if (o instanceof DebuggerOutput) {
+                ioManager = ((DebuggerOutput) o).getIOManager ();
+                break;
+            }
+        }
     }
     
     public String[] getSupportedTypes () {
@@ -135,6 +147,21 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         int to
     ) throws UnknownTypeException {
 
+        if (!(variable instanceof ObjectVariable)) {
+            original.getChildren (variable, from, to);
+        }
+        return getChildren(original, variable, from, to,
+                           new FormattersLoopControl());
+    }
+
+    private Object[] getChildren (
+        TreeModel original,
+        Variable variable,
+        int from,
+        int to,
+        FormattersLoopControl formatters
+    ) throws UnknownTypeException {
+
         if (variable instanceof ObjectVariable) {
             ObjectVariable ov = (ObjectVariable) variable;
             JPDAClassType ct = ov.getClassType();
@@ -143,8 +170,8 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 return original.getChildren (variable, from, to);
             }
 
-            VariablesFormatter f = getFormatterForType(ct);
-            if (f != null) {
+            VariablesFormatter f = getFormatterForType(ct, formatters.getFormatters());
+            if (f != null && formatters.canUse(f, ct.getName())) {
                 if (f.isUseChildrenVariables()) {
                     Map<String, String> chvs = f.getChildrenVariables();
                     Object[] ch = new Object[chvs.size()];
@@ -175,7 +202,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                             java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
                             evaluateMethod.setAccessible(true);
                             Variable ret = (Variable) evaluateMethod.invoke(ov, code);
-                            return getChildren(original, ret, from, to);
+                            return getChildren(original, ret, from, to, formatters);
                         } catch (java.lang.reflect.InvocationTargetException itex) {
                             Throwable t = itex.getTargetException();
                             if (t instanceof InvalidExpressionException) {
@@ -194,8 +221,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         return original.getChildren (variable, from, to);
     }
 
-    private VariablesFormatter getFormatterForType(JPDAClassType ct) {
-        VariablesFormatter[] formatters = VariablesFormatter.loadFormatters();
+    private VariablesFormatter getFormatterForType(JPDAClassType ct, VariablesFormatter[] formatters) {
         String cname = ct.getName();
         for (VariablesFormatter f: formatters) {
             if (!f.isEnabled()) {
@@ -291,14 +317,27 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         if (!(variable instanceof ObjectVariable)) {
             return original.getValueAt (variable, columnID);
         }
+        return getValueAt(original, variable, columnID,
+                          new FormattersLoopControl());
+    }
+    
+    private Object getValueAt (
+        TableModel original,
+        Variable variable,
+        String columnID,
+        FormattersLoopControl formatters
+    ) throws UnknownTypeException {
+        if (!(variable instanceof ObjectVariable)) {
+            return original.getValueAt (variable, columnID);
+        }
         String type = variable.getType ();
         ObjectVariable ov = (ObjectVariable) variable;
         JPDAClassType ct = ov.getClassType();
         if (ct == null) {
             return original.getValueAt (variable, columnID);
         }
-        VariablesFormatter f = getFormatterForType(ct);
-        if (f != null &&
+        VariablesFormatter f = getFormatterForType(ct, formatters.getFormatters());
+        if (f != null && formatters.canUse(f, ct.getName()) &&
             ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
               columnID == Constants.WATCH_VALUE_COLUMN_ID ||
               columnID == Constants.LOCALS_TO_STRING_COLUMN_ID ||
@@ -309,7 +348,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                     java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
                     evaluateMethod.setAccessible(true);
                     Variable ret = (Variable) evaluateMethod.invoke(ov, code);
-                    return getValueAt(original, ret, columnID);
+                    return getValueAt(original, ret, columnID, formatters);
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable t = itex.getTargetException();
                     if (t instanceof InvalidExpressionException) {
@@ -451,4 +490,41 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         }
     }
 
+    private final class FormattersLoopControl {
+
+        private VariablesFormatter[] formatters;
+        private Map<String, VariablesFormatter> usedFormatters;
+
+        public FormattersLoopControl() {
+            this.formatters = VariablesFormatter.loadFormatters();
+            usedFormatters = new LinkedHashMap<String, VariablesFormatter>();
+        }
+
+        public VariablesFormatter[] getFormatters() {
+            return formatters;
+        }
+
+        public boolean canUse(VariablesFormatter f, String type) {
+            boolean can = usedFormatters.put(type, f) == null;
+            if (!can && ioManager != null) {
+                if (!formattersLoopWarned) {
+                    formattersLoopWarned = true;
+                    ioManager.println(
+                        NbBundle.getMessage(VariablesFormatterFilter.class,
+                                            "MSG_LoopInTypeFormattingIntroErrorMessage"),
+                        null, true);
+                }
+                List<String> names = new ArrayList<String>(usedFormatters.size());
+                for (Map.Entry<String, VariablesFormatter> vf : usedFormatters.entrySet()) {
+                    names.add(vf.getValue().getName()+" ("+vf.getKey()+")");
+                }
+                ioManager.println(
+                        NbBundle.getMessage(VariablesFormatterFilter.class,
+                                            "MSG_LoopInTypeFormatting",
+                                            names.toString()),
+                        null, false);
+            }
+            return can;
+        }
+    }
 }

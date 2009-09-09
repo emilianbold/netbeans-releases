@@ -267,7 +267,12 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
                 FrameworkModelItem item = model.getItem(i);
                 WebModuleExtender extender = (WebModuleExtender) extenders.get(item.getFramework());
                 if (extender != null && !extender.isValid()) {
-                    setErrorMessage(wizardDescriptor, controller.getErrorMessage());
+                    String message = (String) controller.getProperties().getProperty(WizardDescriptor.PROP_INFO_MESSAGE);
+                    if (controller.getErrorMessage()==null && message != null) {
+                        setInfoMessage(wizardDescriptor, message);
+                    } else {
+                        setErrorMessage(wizardDescriptor, controller.getErrorMessage());
+                    }
                     return false;
                 }
             }
@@ -281,6 +286,13 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             errorMessage = " "; // NOI18N
         }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
+    }
+
+    private void setInfoMessage(WizardDescriptor wizardDescriptor, String infoMessage) {
+        if (infoMessage == null || infoMessage.length() == 0) {
+            infoMessage = " "; // NOI18N
+        }
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, infoMessage); // NOI18N
     }
     
     void read(WizardDescriptor settings) {
