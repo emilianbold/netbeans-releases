@@ -357,9 +357,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         List<String> res = new ArrayList<String>();
-        if (csdirs.length() > 0) {
-            res.add(pi.getPathAsStringWith(csdirs));
-        }
+        res.add(pi.getPathAsStringWith(csdirs));
         return res;
     }
 

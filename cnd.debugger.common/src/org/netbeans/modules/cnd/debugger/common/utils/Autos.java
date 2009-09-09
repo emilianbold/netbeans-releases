@@ -37,19 +37,32 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.datafilter;
+package org.netbeans.modules.cnd.debugger.common.utils;
 
-import java.util.Collection;
+import java.util.Set;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.debugger.common.spi.AutosProvider;
+import org.openide.util.Lookup;
 
 /**
  *
+ * @author Egor Ushakov
  */
-public interface DataFilterManager {
-    void cleanAllDataFilter();
-    void cleanAllDataFilter(Class clazz);
-    boolean removeDataFilter(DataFilter filter);
-    void addDataFilter(DataFilter filter);
-    void addDataFilterListener(DataFilterListener l);
-    void removeDataFilterListener(DataFilterListener l);
-    <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz);
+public class Autos {
+    private static AutosProvider DEFAULT = null;
+
+    private Autos() {
+    }
+
+    private static AutosProvider getDefault() {
+        if (DEFAULT == null) {
+            // Take the first one
+            DEFAULT = Lookup.getDefault().lookup(AutosProvider.class);
+        }
+        return DEFAULT;
+    }
+
+    public static Set<String> get(final StyledDocument document, int offset) {
+        return getDefault().getAutos(document, offset);
+    }
 }

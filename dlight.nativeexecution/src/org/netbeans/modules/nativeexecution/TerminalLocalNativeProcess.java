@@ -198,7 +198,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 }
 
                 // Always prepend /bin and /usr/bin to PATH
-                env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
+//                env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
                 OutputStream fos = new FileOutputStream(envFileFile);
                 EnvWriter ew = new EnvWriter(fos);

@@ -42,35 +42,39 @@
  *
  * Created on Sep 2, 2009, 2:52:08 PM
  */
-
 package org.netbeans.modules.dlight.visualizers.support;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.util.Range;
 
-
-
 /**
  *
  * @author mt154047
  */
-public final class TimeIntervalPanel extends javax.swing.JPanel {
+public final class TimeIntervalPanel extends javax.swing.JPanel implements DataFilterListener {
+
     private DataFilterManager manager;
 
     /** Creates new form TimeIntervalPanel */
     public TimeIntervalPanel(DataFilterManager manager) {
         initComponents();
         this.manager = manager;
+        if (manager != null){
+            this.manager.addDataFilterListener(this);
+            update(manager.getDataFilter(TimeIntervalDataFilter.class));
+        }
         applyButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (TimeIntervalPanel.this.manager == null){
+                if (TimeIntervalPanel.this.manager == null) {
                     applyButton.setEnabled(false);
                     return;
                 }
@@ -81,7 +85,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel {
         removeFilterButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (TimeIntervalPanel.this.manager == null){
+                if (TimeIntervalPanel.this.manager == null) {
                     return;
                 }
                 TimeIntervalPanel.this.manager.cleanAllDataFilter(TimeIntervalDataFilter.class);
@@ -89,25 +93,22 @@ public final class TimeIntervalPanel extends javax.swing.JPanel {
         });
     }
 
-    public void update(DataFilterManager manager){
-       this.manager = manager;
-       applyButton.setEnabled(manager != null);
-       Collection<? extends DataFilter> filters = manager.getDataFilter(TimeIntervalDataFilter.class);
-       if (filters.isEmpty()){
-           return;
-       }
-       TimeIntervalDataFilter filter = null;
-       for (DataFilter f : filters){
-           if (f instanceof TimeIntervalDataFilter){
-               filter = (TimeIntervalDataFilter)f;
-               break;
-           }
-       }
-       if (filter == null){
-           return;
-       }
-       startTimeSpinner.setValue(filter.getInterval().getStart());
-       endTimeSpinner.setValue(filter.getInterval().getEnd());
+    public void update(DataFilterManager manager) {
+        if (this.manager != null) {
+            this.manager.removeDataFilterListener(this);
+        }
+
+        this.manager = manager;
+        
+
+        
+        applyButton.setEnabled(manager != null);
+        
+        if (this.manager != null){
+            this.manager.addDataFilterListener(this);
+            update(manager.getDataFilter(TimeIntervalDataFilter.class));
+        }
+
     }
 
     /** This method is called from within the constructor to
@@ -171,8 +172,6 @@ public final class TimeIntervalPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton applyButton;
     private javax.swing.JSpinner endTimeSpinner;
@@ -182,8 +181,31 @@ public final class TimeIntervalPanel extends javax.swing.JPanel {
     private javax.swing.JSpinner startTimeSpinner;
     // End of variables declaration//GEN-END:variables
 
-
-    public Range<Long> getSelectedInterval(){
-        return new Range<Long>((Long)startTimeSpinner.getValue(), (Long)endTimeSpinner.getValue());
+    public Range<Long> getSelectedInterval() {
+        return new Range<Long>((Long) startTimeSpinner.getValue(), (Long) endTimeSpinner.getValue());
     }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+        update(manager.getDataFilter(TimeIntervalDataFilter.class));
+    }
+
+    private final void update(Collection<TimeIntervalDataFilter> filters){
+        if (filters == null || filters.isEmpty()) {
+            return;
+        }
+        TimeIntervalDataFilter filter = null;
+        for (DataFilter f : filters) {
+            if (f instanceof TimeIntervalDataFilter) {
+                filter = (TimeIntervalDataFilter) f;
+                break;
+            }
+        }
+        if (filter == null) {
+            return;
+        }
+        startTimeSpinner.setValue(filter.getInterval().getStart());
+        endTimeSpinner.setValue(filter.getInterval().getEnd());
+    }
+
+
 }

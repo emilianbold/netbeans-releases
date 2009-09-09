@@ -86,7 +86,7 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         linkerFlags = new javax.swing.JTextField();
 
         setMinimumSize(new java.awt.Dimension(300, 200));
-        setPreferredSize(new java.awt.Dimension(300, 220));
+        setPreferredSize(new java.awt.Dimension(300, 250));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(cFlags);

@@ -36,20 +36,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.dlight.api.datafilter;
-
-import java.util.Collection;
+package org.netbeans.modules.dlight.util;
 
 /**
  *
+ * @author Alexey Vladykin
  */
-public interface DataFilterManager {
-    void cleanAllDataFilter();
-    void cleanAllDataFilter(Class clazz);
-    boolean removeDataFilter(DataFilter filter);
-    void addDataFilter(DataFilter filter);
-    void addDataFilterListener(DataFilterListener l);
-    void removeDataFilterListener(DataFilterListener l);
-    <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz);
+public interface ValueFormatter {
+
+    String format(int value);
 }

@@ -78,5 +78,6 @@ echo USER=${USER}
 echo SH=${SH}
 echo TMPDIRBASE=${TMPDIRBASE}
 echo DATETIME=${DATETIME}
+echo PATH=${PATH}
 
 exit 0

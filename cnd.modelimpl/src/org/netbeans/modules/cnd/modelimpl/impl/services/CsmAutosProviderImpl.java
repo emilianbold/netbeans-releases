@@ -37,9 +37,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common.utils;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import java.lang.String;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -67,20 +66,20 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
+import org.netbeans.modules.cnd.debugger.common.spi.AutosProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class AutosProvider {
+@ServiceProvider(service=AutosProvider.class)
+public class CsmAutosProviderImpl implements AutosProvider {
     public static boolean AUTOS_INCLUDE_MACROS = Boolean.getBoolean("debugger.autos.macros");
 
-    private AutosProvider() {
-    }
-
-    public static Set<String> getAutos(final StyledDocument document, int offset) {
+    public Set<String> getAutos(final StyledDocument document, int offset) {
         if (document == null) {
             return Collections.emptySet();
         }

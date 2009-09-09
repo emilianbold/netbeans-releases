@@ -36,20 +36,40 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.extras.api.support;
 
-package org.netbeans.modules.dlight.api.datafilter;
-
-import java.util.Collection;
+import java.awt.FontMetrics;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.extras.api.AxisMark;
+import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
+import org.netbeans.modules.dlight.util.DLightMath;
 
 /**
- *
+ * @author Alexey Vladykin
  */
-public interface DataFilterManager {
-    void cleanAllDataFilter();
-    void cleanAllDataFilter(Class clazz);
-    boolean removeDataFilter(DataFilter filter);
-    void addDataFilter(DataFilter filter);
-    void addDataFilterListener(DataFilterListener l);
-    void removeDataFilterListener(DataFilterListener l);
-    <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz);
+public final class TimeMarksProvider implements AxisMarksProvider {
+
+    public static TimeMarksProvider newInstance() {
+        return new TimeMarksProvider();
+    }
+
+    private TimeMarksProvider() {
+    }
+
+    public List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+        List<AxisMark> marks = new ArrayList<AxisMark>();
+        for (int value = viewportStart; value < viewportEnd; ++value) {
+            String text = null;
+            if (value % 5 == 0) {
+                text = formatTime(value);
+            }
+            marks.add(new AxisMark(DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
+        }
+        return marks;
+    }
+
+    private String formatTime(int seconds) {
+        return String.format("%d:%02d", seconds / 60, seconds % 60);
+    }
 }

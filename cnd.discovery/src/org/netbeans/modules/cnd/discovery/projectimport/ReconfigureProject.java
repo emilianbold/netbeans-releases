@@ -49,6 +49,8 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -74,6 +76,7 @@ public class ReconfigureProject {
     private final Project makeProject;
     private final ConfigurationDescriptorProvider pdp;
     private final boolean isSunCompiler;
+    private CompilerSet compilerSet;
     private DataObject configure;
     private DataObject cmake;
     private DataObject qmake;
@@ -92,7 +95,8 @@ public class ReconfigureProject {
         MakeConfiguration configuration = pdp.getConfigurationDescriptor().getActiveConfiguration();
         assert configuration != null && configuration.getConfigurationType().getValue() ==  MakeConfiguration.TYPE_MAKEFILE;
         CompilerSet2Configuration set = configuration.getCompilerSet();
-        isSunCompiler = set.getCompilerSet().isSunCompiler();
+        compilerSet = set.getCompilerSet();
+        isSunCompiler = compilerSet.isSunCompiler();
         Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
         for(Item item : important.getAllItemsAsArray()){
             DataObject dao = item.getDataObject();
@@ -262,36 +266,23 @@ public class ReconfigureProject {
         if (configure.endsWith("CMakeLists.txt")){ // NOI18N
             buf.append(" -G \"Unix Makefiles\""); // NOI18N
             buf.append(" -DCMAKE_BUILD_TYPE=Debug"); // NOI18N
-            if (isSunCompiler) {
-                buf.append(" -DCMAKE_C_COMPILER=cc"); // NOI18N
-                buf.append(" -DCMAKE_CXX_COMPILER=CC"); // NOI18N
-            } else {
-                buf.append(" -DCMAKE_C_COMPILER=gcc"); // NOI18N
-                buf.append(" -DCMAKE_CXX_COMPILER=g++"); // NOI18N
-            }
+            buf.append(" -DCMAKE_C_COMPILER="+getCCompilerName()); // NOI18N
+            buf.append(" -DCMAKE_CXX_COMPILER="+getCppCompilerName()); // NOI18N
             buf.append(" -DCMAKE_C_FLAGS_DEBUG="+cCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_CXX_FLAGS_DEBUG="+cppCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG="+ldFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
             if (isSunCompiler && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                 buf.append(" -spec solaris-cc"); // NOI18N
-                buf.append(" QMAKE_CC=cc"); // NOI18N
-                buf.append(" QMAKE_CXX=CC"); // NOI18N
-            } else {
-                buf.append(" QMAKE_CC=gcc"); // NOI18N
-                buf.append(" QMAKE_CXX=g++"); // NOI18N
             }
+            buf.append(" QMAKE_CC="+getCCompilerName()); // NOI18N
+            buf.append(" QMAKE_CXX="+getCppCompilerName()); // NOI18N
             buf.append(" QMAKE_CFLAGS="+cCompilerFlags); // NOI18N
             buf.append(" QMAKE_CXXFLAGS="+cppCompilerFlags); // NOI18N
             buf.append(" QMAKE_LDFLAGS="+ldFlags); // NOI18N
         } else {
-            if (isSunCompiler) {
-                buf.append(" CC=cc"); // NOI18N
-                buf.append(" CXX=CC"); // NOI18N
-            } else {
-                buf.append(" CC=gcc"); // NOI18N
-                buf.append(" CXX=g++"); // NOI18N
-            }
+            buf.append(" CC="+getCCompilerName()); // NOI18N
+            buf.append(" CXX="+getCppCompilerName()); // NOI18N
             buf.append(" CFLAGS="+cCompilerFlags); // NOI18N
             buf.append(" CXXFLAGS="+cppCompilerFlags); // NOI18N
             buf.append(" LDFLAGS="+ldFlags); // NOI18N
@@ -469,6 +460,45 @@ public class ReconfigureProject {
      */
     public boolean isSunCompiler() {
         return isSunCompiler;
+    }
+
+    /**
+     * @return compiler set
+     */
+    public CompilerSet getCompilerSet() {
+        return compilerSet;
+    }
+
+    private String getCCompilerName(){
+        String path = getToolPath(Tool.CCompiler);
+        if (path == null) {
+            if (isSunCompiler()) {
+                return "cc"; // NOI18N
+            } else {
+                return "gcc"; // NOI18N
+            }
+        }
+        return path;
+    }
+
+    private String getCppCompilerName(){
+        String path = getToolPath(Tool.CCCompiler);
+        if (path == null) {
+            if (isSunCompiler()) {
+                return "CC"; // NOI18N
+            } else {
+                return "g++"; // NOI18N
+            }
+        }
+        return path;
+    }
+
+    private String getToolPath(int tool){
+        Tool compiler = compilerSet.findTool(tool);
+        if (compiler == null) {
+            return null;
+        }
+        return escapeFlags(compiler.getPath());
     }
 
     public DataObject getImportant(){
