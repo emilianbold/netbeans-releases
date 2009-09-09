@@ -53,12 +53,14 @@ public class DLightConfigurationUIWrapper {
     private String name;
     private  String displayedName;
     private List<DLightToolUIWrapper> tools;
+    private boolean profileOnRun;
     private boolean isModified;
 
     public DLightConfigurationUIWrapper(DLightConfiguration dlightConfiguration, List<DLightTool> allDLightTools) {
         this.dlightConfiguration = dlightConfiguration;
         this.name = dlightConfiguration.getConfigurationName();
         this.displayedName = dlightConfiguration.getDisplayedName();
+        this.profileOnRun = true;
         this.custom = false;
         initWrapper(allDLightTools);
     }
@@ -179,5 +181,19 @@ public class DLightConfigurationUIWrapper {
 
     public void setToolEnabled(DLightToolUIWrapper toolWrapper, boolean isEnabled){
         toolWrapper.setEnabled(isEnabled);
+    }
+
+    /**
+     * @return the profileOnRun
+     */
+    public boolean isProfileOnRun() {
+        return profileOnRun;
+    }
+
+    /**
+     * @param profileOnRun the profileOnRun to set
+     */
+    public void setProfileOnRun(boolean profileOnRun) {
+        this.profileOnRun = profileOnRun;
     }
 }
