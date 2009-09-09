@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -50,17 +51,41 @@ import org.openide.util.Lookup;
  *
  * @author Vladimir Kvashin
  */
-public abstract class ServerListDisplayer {
+public abstract class ServerListUI {
 
     public static boolean showServerListDialog() {
-        ServerListDisplayer displayer = Lookup.getDefault().lookup(ServerListDisplayer.class);
-        if (displayer != null) {
-            return displayer.showServerListDialogImpl();
-        } else {
-            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                    "Can not find " + ServerListDisplayer.class.getSimpleName()); //NOI18N
-            return false;
+        return getDefault().showServerListDialogImpl();
+    }
+
+    /**
+     * Checks whether the record is initialized,
+     * if it is not, ask user whether (s)he wants to (re)connect,
+     * asks password if needs, connects
+     * @param record record to check
+     * @return true in the case record is connected (or it wasn't, user agreed, and it's now connected);
+     * otherwise false
+     */
+    public static boolean ensureRecordOnline(ExecutionEnvironment env) {
+        return getDefault().ensureRecordOnlineImpl(env);
+    }
+
+    /**
+     * The same as ensureRecordOnline(ServerRecord record),
+     * but allows to specify a message instead of defaule one
+     * @param message message to display in the case the record is not connected
+     * @return
+     */
+    public static boolean ensureRecordOnline(ExecutionEnvironment env, String message) {
+        return getDefault().ensureRecordOnlineImpl(env, message);
+    }
+
+
+    private static ServerListUI getDefault() {
+        ServerListUI result = Lookup.getDefault().lookup(ServerListUI.class);
+        if (result == null) {
+            return new Dummy();
         }
+        return result;
     }
 
     /**
@@ -70,4 +95,35 @@ public abstract class ServerListDisplayer {
      */
     protected abstract boolean showServerListDialogImpl();
 
+    protected abstract boolean ensureRecordOnlineImpl(ExecutionEnvironment env, String message);
+
+    protected abstract boolean ensureRecordOnlineImpl(ExecutionEnvironment env);
+
+    private static class Dummy extends ServerListUI {
+
+        private void warning() {
+            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
+                    "Can not find " + ServerListUI.class.getSimpleName()); //NOI18N
+        }
+
+        @Override
+        protected boolean showServerListDialogImpl() {
+            warning();
+            return false;
+        }
+
+        @Override
+        protected boolean ensureRecordOnlineImpl(ExecutionEnvironment env, String message) {
+            warning();
+            return false;
+        }
+
+        @Override
+        protected boolean ensureRecordOnlineImpl(ExecutionEnvironment env) {
+            warning();
+            return false;
+        }
+
+
+    }
 }

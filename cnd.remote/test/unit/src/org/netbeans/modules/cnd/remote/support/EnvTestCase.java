@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,50 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.support;
 
-package org.netbeans.modules.cnd.ui.options;
-
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
-import org.openide.util.Lookup;
+import java.util.Map;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * Two modules - cnd.remote and cnd.core -
- * knows more about displaying server list dialog:
- * they share ToolsCacheManager.
- * That's why we had to extend ServerListDisplayer.
- *
- * @author Vladimir Kvashin
+ * @author Sergey Grinev
  */
-public abstract class ServerListDisplayerEx extends ServerListDisplayer {
+public class EnvTestCase extends RemoteTestBase {
 
-    /**
-     * Displays server list dialog.
-     * Allows to add, remove or modify servers in the list
-     * @return true in the case user pressed OK, otherwise
-     */
-    protected abstract boolean showServerListDialogImpl(ToolsCacheManager cacheManager);
+    static {
+//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
+//        System.setProperty("cnd.remote.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");
+    }
+    public EnvTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+    }
 
-    public static boolean showServerListDialog(ToolsCacheManager cacheManager) {
-        ServerListDisplayer displayer = Lookup.getDefault().lookup(ServerListDisplayer.class);
-        if (displayer != null) {
-            if (displayer instanceof ServerListDisplayerEx) {
-                return ((ServerListDisplayerEx) displayer).showServerListDialogImpl(cacheManager);
-            } else {
-                Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                        displayer.getClass().getName() + "should extend " + //NOI18N
-                        ServerListDisplayerEx.class.getSimpleName()); 
-                return false;
-            }
-        } else {
-            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                    "Can not find " + ServerListDisplayerEx.class.getSimpleName()); //NOI18N
-            return false;
+    @ForAllEnvironments
+    public void testEnv() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        //ConnectionManager.getInstance().connectTo(execEnv);
+
+        Map<String, String> env = HostInfoProvider.getEnv(execEnv);
+        System.out.printf("\n=====\nHostInfoProvider.getEnv:\n");
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            System.out.printf("%s=%s\n", entry.getKey(), entry.getValue());
         }
+        System.out.printf("\n=====\nenv:\n");
+        RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, "env");
+        int rc = rcs2.run();
+        //assertEquals(0, rcs2.run());
+        System.out.printf("rc=%d\n", rc);
+        System.out.printf("%s\n", rcs2.getOutput());
+    }
+    
+    public static Test suite() {
+        return new RemoteDevelopmentTest(EnvTestCase.class);
     }
 }
