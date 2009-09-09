@@ -36,55 +36,40 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.extras.api.support;
 
+import java.awt.FontMetrics;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
-import org.netbeans.modules.dlight.indicators.DetailDescriptor;
-import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
-import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.util.ValueFormatter;
+import org.netbeans.modules.dlight.extras.api.AxisMark;
+import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
+import org.netbeans.modules.dlight.util.DLightMath;
 
 /**
  * @author Alexey Vladykin
  */
-public abstract class TimeSeriesIndicatorConfigurationAccessor {
+public final class TimeMarksProvider implements AxisMarksProvider {
 
-    private static volatile TimeSeriesIndicatorConfigurationAccessor instance;
-
-    public static void setDefault(TimeSeriesIndicatorConfigurationAccessor accessor) {
-        if (instance != null) {
-            throw new IllegalStateException();
-        }
-        instance = accessor;
+    public static TimeMarksProvider newInstance() {
+        return new TimeMarksProvider();
     }
 
-    public static TimeSeriesIndicatorConfigurationAccessor getDefault() {
-        TimeSeriesIndicatorConfigurationAccessor a = instance;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(TimeSeriesIndicatorConfiguration.class.getName(), true,
-                    TimeSeriesIndicatorConfiguration.class.getClassLoader());
-        } catch (Exception e) {
-        }
-        return instance;
+    private TimeMarksProvider() {
     }
 
-    public TimeSeriesIndicatorConfigurationAccessor() {
+    public List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+        List<AxisMark> marks = new ArrayList<AxisMark>();
+        for (int value = viewportStart; value < viewportEnd; ++value) {
+            String text = null;
+            if (value % 5 == 0) {
+                text = formatTime(value);
+            }
+            marks.add(new AxisMark(DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
+        }
+        return marks;
     }
 
-    public abstract String getTitle(TimeSeriesIndicatorConfiguration conf);
-
-    public abstract int getGraphScale(TimeSeriesIndicatorConfiguration conf);
-
-    public abstract List<TimeSeriesDescriptor> getTimeSeriesDescriptors(TimeSeriesIndicatorConfiguration conf);
-
-    public abstract List<DetailDescriptor> getDetailDescriptors(TimeSeriesIndicatorConfiguration conf);
-
-    public abstract DataRowToTimeSeries getDataRowHandler(TimeSeriesIndicatorConfiguration conf);
-
-    public abstract ValueFormatter getLabelRenderer(TimeSeriesIndicatorConfiguration conf);
+    private String formatTime(int seconds) {
+        return String.format("%d:%02d", seconds / 60, seconds % 60);
+    }
 }

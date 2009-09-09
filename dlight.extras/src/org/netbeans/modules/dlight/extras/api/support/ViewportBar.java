@@ -41,8 +41,11 @@ package org.netbeans.modules.dlight.extras.api.support;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -58,6 +61,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
+import org.netbeans.modules.dlight.extras.api.AxisMark;
+import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.extras.api.ViewportModelState;
@@ -73,6 +78,7 @@ import org.netbeans.modules.dlight.util.DLightMath;
     private final ViewportModel viewportModel;
     private final DataFilterManager filterManager;
     private final List<Mark> marks;
+    private final AxisMarksProvider timeMarksProvider;
     //private final int margin;
 
     public ViewportBar(final ViewportModel viewportModel, final DataFilterManager filterManager) {
@@ -189,6 +195,7 @@ import org.netbeans.modules.dlight.util.DLightMath;
         }
 
         this.marks = Collections.unmodifiableList(tmpMarks);
+        this.timeMarksProvider = TimeMarksProvider.newInstance();
 
         DragAdapter dragAdapter = new DragAdapter();
         addMouseListener(dragAdapter);
@@ -235,8 +242,26 @@ import org.netbeans.modules.dlight.util.DLightMath;
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
+
+        FontMetrics fm = g.getFontMetrics();
+        Range<Long> limits = getViewportModelState().getLimits();
+        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
+                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
+                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
+                getWidth(), fm);
+
+        for (AxisMark mark : timeMarks) {
+            g.setColor(Color.BLACK);
+            g.drawLine(mark.getPosition(), 0, mark.getPosition(), 5);
+            if (mark.getText() != null) {
+                int length = fm.stringWidth(mark.getText());
+                g.drawString(mark.getText(), mark.getPosition() - length / 2, 3 * fm.getAscent() / 2);
+            }
+        }
 
         for (Mark mark : marks) {
             mark.paint(g);

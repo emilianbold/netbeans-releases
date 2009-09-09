@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 import java.awt.FontMetrics;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.indicators.ValueFormatter;
+import org.netbeans.modules.dlight.util.ValueFormatter;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.Graphics;
 import java.util.List;
@@ -50,10 +50,14 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
+import org.netbeans.modules.dlight.extras.api.AxisMark;
+import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
+import org.netbeans.modules.dlight.extras.api.support.TimeMarksProvider;
+import org.netbeans.modules.dlight.extras.api.support.ValueMarksProvider;
 import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.util.Util;
 
@@ -80,8 +84,8 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         upperLimit = scale;
         graph = new GraphPainter(series);
         graph.addData(new float[series.size()]); // 0th tick - all zeros
-        timeMarksProvider = AxisMarksProviderFactory.newTimeMarksProvider();
-        valueMarksProvider = AxisMarksProviderFactory.newValueMarksProvider(formatter);
+        timeMarksProvider = TimeMarksProvider.newInstance();
+        valueMarksProvider = ValueMarksProvider.newInstance(formatter);
         ViewportModel model = new DefaultViewportModel();
         model.setLimits(new Range<Long>(0L, 0L));
         model.setViewport(new Range<Long>(0L, EXTENT));
