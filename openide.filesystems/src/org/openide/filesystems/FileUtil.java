@@ -397,7 +397,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileChanged(fe, true);
+                    } else if (listener != null) {
                         listener.fileChanged(fe);
                     }
                 } else {
@@ -410,7 +412,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileDeleted(fe, true);
+                    } else if (listener != null) {
                         listener.fileDeleted(fe);
                     }
                 }
@@ -422,7 +426,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileDataCreated(fe, true);
+                    } else if (listener != null) {
                         listener.fileDataCreated(fe);
                     }
                 } else {
@@ -435,7 +441,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileFolderCreated(fe, true);
+                    } else if (listener != null) {
                         listener.fileFolderCreated(fe);
                     }
                 } else {
@@ -448,7 +456,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileRenamed(fe, true);
+                    } else if (listener != null) {
                         listener.fileRenamed(fe);
                     }
                 }

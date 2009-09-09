@@ -43,7 +43,9 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -53,6 +55,7 @@ final class DeepListener extends WeakReference<FileChangeListener>
 implements FileChangeListener, Runnable {
     private final File path;
     private FileObject watching;
+    private boolean removed;
     private static List<DeepListener> keep = new ArrayList<DeepListener>();
 
     public DeepListener(FileChangeListener listener, File path) {
@@ -67,6 +70,7 @@ implements FileChangeListener, Runnable {
         if (fo != null) {
             fo.removeRecursiveListener(this);
         }
+        removed = true;
         keep.remove(this);
     }
 
@@ -86,8 +90,11 @@ implements FileChangeListener, Runnable {
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        fileRenamed(fe, false);
+    }
+    public void fileRenamed(FileRenameEvent fe, boolean fromHolder) {
         relisten();
-        FileChangeListener listener = get();
+        FileChangeListener listener = get(fe, fromHolder);
         if (listener == null) {
             return;
         }
@@ -95,8 +102,11 @@ implements FileChangeListener, Runnable {
     }
 
     public void fileFolderCreated(FileEvent fe) {
+        fileFolderCreated(fe, false);
+    }
+    public void fileFolderCreated(FileEvent fe, boolean fromHolder) {
         relisten();
-        FileChangeListener listener = get();
+        FileChangeListener listener = get(fe, fromHolder);
         if (listener == null) {
             return;
         }
@@ -104,8 +114,11 @@ implements FileChangeListener, Runnable {
     }
 
     public void fileDeleted(FileEvent fe) {
+        fileDeleted(fe, false);
+    }
+    public void fileDeleted(FileEvent fe, boolean fromHolder) {
         relisten();
-        FileChangeListener listener = get();
+        FileChangeListener listener = get(fe, fromHolder);
         if (listener == null) {
             return;
         }
@@ -113,8 +126,11 @@ implements FileChangeListener, Runnable {
     }
 
     public void fileDataCreated(FileEvent fe) {
+        fileDataCreated(fe, false);
+    }
+    public void fileDataCreated(FileEvent fe, boolean fromHolder) {
         relisten();
-        FileChangeListener listener = get();
+        FileChangeListener listener = get(fe, fromHolder);
         if (listener == null) {
             return;
         }
@@ -122,7 +138,10 @@ implements FileChangeListener, Runnable {
     }
 
     public void fileChanged(FileEvent fe) {
-        FileChangeListener listener = get();
+        fileChanged(fe, false);
+    }
+    public void fileChanged(FileEvent fe, boolean fromHolder) {
+        FileChangeListener listener = get(fe, fromHolder);
         if (listener == null) {
             return;
         }
@@ -130,7 +149,7 @@ implements FileChangeListener, Runnable {
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
-        FileChangeListener listener = get();
+        FileChangeListener listener = get(fe, false);
         if (listener == null) {
             return;
         }
@@ -162,5 +181,20 @@ implements FileChangeListener, Runnable {
         return hash;
     }
 
+    private Set<FileEvent> delivered = new WeakSet<FileEvent>();
+    private FileChangeListener get(FileEvent fe, boolean fromHolder) {
+        if (removed) {
+            return null;
+        }
+        if (fromHolder) {
+            if (fe.getFile() != fe.getSource()) {
+                return null;
+            }
+        }
+        if (!delivered.add(fe)) {
+            return null;
+        }
+        return get();
+    }
 
 }

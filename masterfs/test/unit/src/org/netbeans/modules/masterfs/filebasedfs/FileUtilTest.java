@@ -268,8 +268,8 @@ public class FileUtilTest extends NbTestCase {
         FileObject dirFO = rootFO.createFolder("dir");
         assertEquals("Event fired when just parent dir created.", 0, fcl.checkAll());
         FileObject fileFO = FileUtil.createData(dirFO, "subdir/subsubdir/file");
-        assertEquals("Event not fired when file was created.", 3, fcl.check(EventType.FOLDER_CREATED));
-        assertEquals("Event not fired when file was created.", 3, fcl2.check(EventType.FOLDER_CREATED));
+        assertEquals("Event not fired when file was created.", 2, fcl.check(EventType.FOLDER_CREATED));
+        assertEquals("Event not fired when file was created.", 2, fcl2.check(EventType.FOLDER_CREATED));
         FileObject fileFO2 = FileUtil.createData(dirFO, "subdir/subsubdir/file2");
         assertEquals("Event not fired when file was created.", 2, fcl.check(EventType.DATA_CREATED));
         assertEquals("Event not fired when file was created.", 2, fcl2.check(EventType.DATA_CREATED));
@@ -293,13 +293,13 @@ public class FileUtilTest extends NbTestCase {
         fileFO.delete();
         assertEquals("Event not fired when file deleted.", 1, fcl.check(EventType.DELETED));
         dirFO.delete();
-        assertEquals("Event not fired when parent dir deleted.", 2, fcl.checkAll());
+        assertEquals("Event not fired when parent dir deleted.", 1, fcl.checkAll());
         dirFO = rootFO.createFolder("dir");
         fileFO = FileUtil.createData(dirFO, "subdir/subsubdir/file");
         assertEquals("Event not fired when file was created.", 1, fcl.check(EventType.DATA_CREATED));
-        assertEquals("Event not fired when dirs created.", 3, fcl.check(EventType.FOLDER_CREATED));
+        assertEquals("Event not fired when dirs created.", 2, fcl.check(EventType.FOLDER_CREATED));
         dirFO.delete();
-        assertEquals("Event not fired when parent dir deleted.", 2, fcl.check(EventType.DELETED));
+        assertEquals("Event not fired when parent dir deleted.", 1, fcl.check(EventType.DELETED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
         // atomic action
@@ -332,7 +332,7 @@ public class FileUtilTest extends NbTestCase {
         lock = fileFO.lock();
         fileFO.rename(lock, "fileRenamed", null);
         lock.releaseLock();
-        assertEquals("Renamed event not fired.", 2, fcl.check(EventType.RENAMED));
+        assertEquals("Renamed event not fired.", 1, fcl.check(EventType.RENAMED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
         // disk changes
@@ -580,9 +580,12 @@ public class FileUtilTest extends NbTestCase {
         lock = dirFO.lock();
         dirFO.rename(lock, "dir", null);
         lock.releaseLock();
+        /* According to jskrivanek in http://www.netbeans.org/nonav/issues/showattachment.cgi/86910/X.diff, the rename back does not need to
+         * fire an event:
         assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
         fcl.printAll();
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
+         */
         // cleanup after rename
         dirFO.getFileObject("file1Renamed").delete();
         dirFO.getFileObject("subdirRenamed").delete();
