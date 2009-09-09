@@ -134,4 +134,13 @@ public class PreconfiguredSTSImpl extends ProprietaryTrustComponentClientImpl im
     public String getTrustVersion() {
         return getAttribute(ProprietarySecurityPolicyAttribute.WSTVERSION);
     }
+
+    public void setShareToken(boolean shareToken) {
+        setAttribute(SHARE_TOKEN, ProprietarySecurityPolicyAttribute.SHARETOKEN, Boolean.toString(shareToken));
+    }
+
+    public boolean isShareToken() {
+        return Boolean.parseBoolean(getAttribute(ProprietarySecurityPolicyAttribute.SHARETOKEN));
+    }
+
 }
