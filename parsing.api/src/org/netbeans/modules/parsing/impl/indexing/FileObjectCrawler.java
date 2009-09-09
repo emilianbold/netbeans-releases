@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -83,14 +84,36 @@ public final class FileObjectCrawler extends Crawler {
 
     @Override
     protected boolean collectResources(Collection<IndexableImpl> resources, Collection<IndexableImpl> allResources) {
-        final boolean finished;
+        boolean finished = true;
         final long tm1 = System.currentTimeMillis();
         final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
 
         if (files != null) {
-            finished = collect(files, root, resources, allResources, stats, entry);
+            if (files.length > 1) {
+                Map<FileObject, Set<FileObject>> clusters = new HashMap<FileObject, Set<FileObject>>();
+                for(FileObject f : files) {
+                    FileObject parent = f.getParent();
+                    Set<FileObject> cluster = clusters.get(parent);
+                    if (cluster == null) {
+                        cluster = new HashSet<FileObject>();
+                        clusters.put(parent, cluster);
+                    }
+                    cluster.add(f);
+                }
+                for(FileObject parent : clusters.keySet()) {
+                    Set<FileObject> cluster = clusters.get(parent);
+                    String relativePath = FileUtil.getRelativePath(root, parent);
+                    finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, new StringBuilder(relativePath));
+                    if (!finished) {
+                        break;
+                    }
+                }
+            } else if (files.length == 1) {
+                String relativePath = FileUtil.getRelativePath(root, files[0].getParent());
+                finished = collect(files, root, resources, allResources, stats, entry, new StringBuilder(relativePath));
+            }
         } else {
-            finished = collect(root.getChildren(), root, resources, allResources, stats, entry);
+            finished = collect(root.getChildren(), root, resources, allResources, stats, entry, new StringBuilder());
         }
 
         final long tm2 = System.currentTimeMillis();
@@ -123,7 +146,14 @@ public final class FileObjectCrawler extends Crawler {
     private boolean collect (FileObject[] fos, FileObject root,
             final Collection<IndexableImpl> resources,
             final Collection<IndexableImpl> allResources,
-            final Stats stats, final ClassPath.Entry entry) {
+            final Stats stats, final ClassPath.Entry entry,
+            final StringBuilder relativePathBuilder)
+    {
+        if (relativePathBuilder.length() > 0) {
+            relativePathBuilder.append('/'); //NOI18N
+        }
+        int parentPathEnd = relativePathBuilder.length();
+
         for (FileObject fo : fos) {
             //keep the same logic like in RepositoryUpdater
             if (isCancelled()) {
@@ -132,25 +162,30 @@ public final class FileObjectCrawler extends Crawler {
             if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
                 continue;
             }
-            if (entry != null && !entry.includes(fo)) {
-                continue;
-            }
-            if (fo.isFolder()) {
-                if (!collect(fo.getChildren(), root, resources, allResources, stats, entry)) {
-                    return false;
-                }
-            } else {
-                if (stats != null) {
-                    stats.filesCount++;
-                    Stats.inc(stats.extensions, fo.getExt());
-                }
 
-                String relativePath = FileUtil.getRelativePath(root, fo);
-                FileObjectIndexable indexable = new FileObjectIndexable(root, relativePath);
-                allResources.add(indexable);
-                if (!isUpToDate(fo) && resources != null) {
-                    resources.add(indexable);
+            String relativePath = relativePathBuilder.append(fo.getNameExt()).toString();
+            try {
+                if (entry != null && !entry.includes(relativePath)) {
+                    continue;
                 }
+                if (fo.isFolder()) {
+                    if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, relativePathBuilder)) {
+                        return false;
+                    }
+                } else {
+                    if (stats != null) {
+                        stats.filesCount++;
+                        Stats.inc(stats.extensions, fo.getExt());
+                    }
+
+                    FileObjectIndexable indexable = new FileObjectIndexable(root, relativePath);
+                    allResources.add(indexable);
+                    if (!isUpToDate(fo, relativePath) && resources != null) {
+                        resources.add(indexable);
+                    }
+                }
+            } finally {
+                relativePathBuilder.delete(parentPathEnd, relativePathBuilder.length());
             }
         }
 
