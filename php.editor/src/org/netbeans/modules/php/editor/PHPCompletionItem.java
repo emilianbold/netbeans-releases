@@ -199,7 +199,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
                 case UNQUALIFIED:
                     if (!(elem instanceof IndexedNamespace)) {
-                        Model model = ModelFactory.getModel(request.result);
+                        Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
 

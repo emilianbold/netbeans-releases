@@ -54,9 +54,10 @@ import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
@@ -74,13 +75,14 @@ public class PHPHintsProvider implements HintsProvider {
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
         long startTime = (LOGGER.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         ParserResult info = context.parserResult;
-        
+
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
         if (modelHints != null) {
             PHPRuleContext ruleContext = (PHPRuleContext) context;
-            FileScope modelScope = ModelFactory.getModel(info).getFileScope();
-            ruleContext.index = PHPIndex.get(context.parserResult);
+            PHPParseResult result = (PHPParseResult) info;
+            final Model model = result.getModel();
+            FileScope modelScope = model.getFileScope();
             ruleContext.fileScope = modelScope;
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
@@ -107,8 +109,10 @@ public class PHPHintsProvider implements HintsProvider {
         if (modelHints != null) {
             PHPRuleContext ruleContext = (PHPRuleContext) context;
             ParserResult info = context.parserResult;
-            FileScope modelScope = ModelFactory.getModel(info).getFileScope();
-            ruleContext.index = PHPIndex.get(context.parserResult);
+            if (!(info instanceof PHPParseResult)) return;
+            PHPParseResult result = (PHPParseResult) info;
+            final Model model = result.getModel();
+            FileScope modelScope = model.getFileScope();
             ruleContext.fileScope = modelScope;
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {

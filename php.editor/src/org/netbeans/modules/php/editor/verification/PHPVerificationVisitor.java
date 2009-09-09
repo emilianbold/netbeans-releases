@@ -108,8 +108,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             context.variableStack = varStack;
         }
         
-        context.path = getPath();
-        context.index = PHPIndex.get(context.parserResult);
+        context.path = getPath();        
         this.rules = rules;
     }
 
@@ -360,7 +359,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.index.getAllMethods((PHPParseResult) context.parserResult,
+                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.getIndex().getAllMethods((PHPParseResult) context.parserResult,
                         className, fname, QuerySupport.Kind.EXACT, Modifier.PUBLIC));
                 
                 assumeParamsPassedByRefInitialized(functions, node.getMethod());
@@ -384,7 +383,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             String fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.index.getAllMethods((PHPParseResult) context.parserResult,
+                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.getIndex().getAllMethods((PHPParseResult) context.parserResult,
                         className, fname, QuerySupport.Kind.EXACT,
                         Modifier.PUBLIC | Modifier.STATIC));
                 
@@ -408,7 +407,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             String fname = CodeUtils.extractFunctionName(node);
             
             if (fname != null) {                
-                Collection<IndexedFunction> functions = context.index.getFunctions((PHPParseResult) context.parserResult, fname, QuerySupport.Kind.EXACT);
+                Collection<IndexedFunction> functions = context.getIndex().getFunctions((PHPParseResult) context.parserResult, fname, QuerySupport.Kind.EXACT);
                 assumeParamsPassedByRefInitialized(functions, node);
             }
         }

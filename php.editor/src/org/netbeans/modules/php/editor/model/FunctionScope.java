@@ -48,6 +48,7 @@ import java.util.List;
 public interface FunctionScope extends Scope, VariableScope {
     List<? extends String> getParameterNames();
     List<? extends Parameter> getParameters();
+    Collection<? extends String> getReturnTypeNames();
     Collection<? extends TypeScope> getReturnTypes();
     Collection<? extends TypeScope> getReturnTypes(boolean resolve);
 }
