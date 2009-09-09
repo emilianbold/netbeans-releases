@@ -42,26 +42,37 @@
 package org.openide.awt;
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.Icon;
 import javax.swing.plaf.UIResource;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.AWTEventListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -75,8 +86,9 @@ import org.openide.util.Exceptions;
  * @since 6.10.0
  *
  */
-final class CloseButtonTabbedPane extends JTabbedPane {
+final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener {
 
+    private static final boolean JDK6_OR_LATER = System.getProperty("java.version").substring(0, 3).compareTo("1.6") >= 0;
     private Image closeTabImage;
     private Image closeTabPressedImage;
     private Image closeTabMouseOverImage;
@@ -84,16 +96,15 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     static final String PROP_CLOSE = "close";
 
     CloseButtonTabbedPane() {
-        addChangeListener( new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                reset();
-            }
-        });
-        CloseButtonListener.install();
+        if (!JDK6_OR_LATER) {
+            CloseButtonListener.install();
+        }
         //Bugfix #28263: Disable focus.
         setFocusable(false);
         setFocusCycleRoot(true);
         setFocusTraversalPolicy(new CBTPPolicy());
+        setTabLayoutPolicy(JDK6_OR_LATER ? JTabbedPane.SCROLL_TAB_LAYOUT : JTabbedPane.WRAP_TAB_LAYOUT);
+        addChangeListener(this);
     }
 
     private Component sel() {
@@ -130,19 +141,38 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     @Override
     public Component add (Component c) {
         Component result = super.add(c);
-        if (isNoCloseButton(c)) {
+        if (hideCloseButton(c)) {
             return result;
         }
         // #75317 - don't try to set the title if LF (such as Substance LF)
         // is adding some custom UI components into tabbed pane
         if (!(c instanceof UIResource)) {
+            if (JDK6_OR_LATER && !hideCloseButton(c)) {
+                callSetTabComponentAt(getTabCount()-1, new ButtonTab());
+            }
             String s = c.getName();
             if (s != null) {
-                s += "  ";
                 setTitleAt(getTabCount()-1, s);
             }
         }
         return result;
+    }
+
+    @Override
+    public void insertTab(String title, Icon icon, Component component, String tip, int index) {
+        super.insertTab(title, icon, component, tip, index);
+        if (JDK6_OR_LATER && !hideCloseButton(component)) {
+            callSetTabComponentAt(index, new ButtonTab());
+        }
+        setTitleAt(index, title);
+    }
+
+    @Override
+    public void setIconAt(int index, Icon icon) {
+        super.setIconAt(index, icon);
+        if (JDK6_OR_LATER) {
+            ((ButtonTab) callGetTabComponentAt(index)).setIcon(icon);
+        }
     }
 
     private static final boolean HTML_TABS_BROKEN = htmlTabsBroken();
@@ -168,14 +198,15 @@ final class CloseButtonTabbedPane extends JTabbedPane {
 
         Component c = findTabAt(idx);
         //if NO_CLOSE_BUTTON -> just call super
-        if (isNoCloseButton(c)) {
+        if (hideCloseButton(c) || JDK6_OR_LATER) {
             super.setTitleAt(idx, title);
+            return;
         }
 
         String nue = title.indexOf("</html>") != -1 ? //NOI18N
             title.replace("</html>", "&nbsp;&nbsp;</html>") //NOI18N
             : title + "  ";
-        if (!title.equals(getTitleAt(idx))) {
+        if (!nue.equals(getTitleAt(idx))) {
             super.setTitleAt(idx, nue);
         }
     }
@@ -197,7 +228,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         return null;
     }
 
-    private boolean isNoCloseButton(Component c) {
+    private boolean hideCloseButton(Component c) {
         if (c!=null && c instanceof JComponent) {
             Object prop = ((JComponent) c).getClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON);
             if (prop!=null && prop instanceof Boolean && (Boolean) prop) {
@@ -210,7 +241,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     private Rectangle getCloseButtonBoundsAt(int i) {
         Component c = findTabAt(i);
         //if NO_CLOSE_BUTTON -> return null
-        if (isNoCloseButton(c)) {
+        if (hideCloseButton(c)) {
             return null;
         }
         Rectangle b = getBoundsAt(i);
@@ -284,6 +315,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        if (JDK6_OR_LATER) {
+            return;
+        }
 
         // Have a look at
         // http://ui.netbeans.org/docs/ui/closeButton/closeButtonUISpec.html
@@ -296,7 +330,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
 
             if (i == mouseOverCloseButtonIndex
             || (i == pressedCloseButtonIndex && draggedOut)) {
-                g.drawImage(getCloseTabMouseOverImage(), r.x, r.y , this);
+                g.drawImage(getCloseTabRolloverImage(), r.x, r.y , this);
             } else if (i == pressedCloseButtonIndex) {
                 g.drawImage(getCloseTabPressedImage(), r.x, r.y , this);
             } else {
@@ -339,7 +373,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         return closeTabPressedImage;
     }
     
-    private Image getCloseTabMouseOverImage() {
+    private Image getCloseTabRolloverImage() {
         if( null == closeTabMouseOverImage ) {
             if( isWindowsVistaLaF() ) {
                 closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_rollover.png"); // NOI18N
@@ -472,6 +506,35 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         }
     }
 
+    int lastSel = -1;
+    public void stateChanged(ChangeEvent e) {
+        if (!JDK6_OR_LATER) {
+            reset();
+        }
+        if (isWindowsLaF()) {
+            // In Windows L&F selected and unselected tab may have same color
+            // which make hard to distinguish which tab is selected (especially
+            // in SCROLL_TAB_LAYOUT). In such case manage tab colors manually.
+            Color selected = UIManager.getColor("controlHighlight");
+            Color unselected = UIManager.getColor("control");
+            if (selected.equals(unselected)) {
+                int sel = getSelectedIndex();
+                if (sel != lastSel) {
+                    selected = UIManager.getColor("controlLtHighlight");
+                    selected = new Color((selected.getRed() + unselected.getRed()) / 2,
+                            (selected.getGreen() + unselected.getGreen()) / 2,
+                            (selected.getBlue() + unselected.getBlue()) / 2);
+                }
+                if (lastSel >= 0) {
+                    setBackgroundAt(lastSel, unselected);
+                }
+                if (sel >= 0) {
+                    setBackgroundAt(sel, selected);
+                }
+                lastSel = sel;
+            }
+        }
+    }
 
     private static class CloseButtonListener implements AWTEventListener
     {
@@ -590,6 +653,132 @@ final class CloseButtonTabbedPane extends JTabbedPane {
                         return;
                     }
                     break;
+            }
+        }
+    }
+    
+    private Method setTabComponentAt;
+    private void callSetTabComponentAt(int index, Component component) {
+        if (setTabComponentAt == null) {
+            try {
+                setTabComponentAt = JTabbedPane.class.getMethod("setTabComponentAt", int.class, Component.class);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        try {
+            setTabComponentAt.invoke(this, index, component);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private Method indexOfTabComponent;
+    private int callIndexOfTabComponent(Component tabComponent) {
+        if (indexOfTabComponent == null) {
+            try {
+                indexOfTabComponent = JTabbedPane.class.getMethod("indexOfTabComponent", Component.class);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        int index = 0;
+        try {
+            index = (Integer) indexOfTabComponent.invoke(this, tabComponent);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return index;
+    }
+    
+    private Method getTabComponentAt;
+    private Component callGetTabComponentAt(int index) {
+        if (getTabComponentAt == null) {
+            try {
+                getTabComponentAt = JTabbedPane.class.getMethod("getTabComponentAt", int.class);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        Component comp = null;
+        try {
+            comp = (Component) getTabComponentAt.invoke(this, index);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return comp;
+    }
+
+    /**
+     * Custom tab component for JTabbedPane, API available since jdk6
+     * therefore it is used only for jdk6 and later
+     */
+    class ButtonTab extends JPanel {
+        JLabel label;
+
+        public ButtonTab() {
+            super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            setOpaque(false);
+            label = new JLabel("") {
+                @Override
+                public String getText() {
+                    int i = callIndexOfTabComponent(ButtonTab.this);
+                    if (i != -1) {
+                        String tabTitle = getTitleAt(i);
+                        if (!super.getText().equals(tabTitle)) {
+                            setText(tabTitle);
+                        }
+                        return tabTitle;
+                    }
+                    return null;
+                }
+            };
+            add(label);
+            add(new TabButton());
+        }
+
+        void setIcon(Icon icon) {
+            label.setIcon(icon);
+        }
+
+        private class TabButton extends JButton implements ActionListener {
+            public TabButton() {
+                int size = 16;
+                setPreferredSize(new Dimension(size, size));
+                setContentAreaFilled(false);
+                setFocusable(false);
+                setBorder(BorderFactory.createEmptyBorder());
+                setBorderPainted(false);
+                setRolloverEnabled(true);
+                addActionListener(this);
+                setIcon(ImageUtilities.image2Icon(getCloseTabImage()));
+                setRolloverIcon(ImageUtilities.image2Icon(getCloseTabRolloverImage()));
+                setPressedIcon(ImageUtilities.image2Icon(getCloseTabPressedImage()));
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                int i = callIndexOfTabComponent(ButtonTab.this);
+                if (i != -1) {
+                    fireCloseRequest(CloseButtonTabbedPane.this.getComponentAt(i));
+                }
             }
         }
     }
