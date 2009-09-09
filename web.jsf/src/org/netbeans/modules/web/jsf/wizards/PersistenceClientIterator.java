@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,11 +78,9 @@ import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerU
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -96,6 +94,12 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.impl.facesmodel.ResourceBundleImpl;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.palette.items.FromEntityBase;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -135,6 +139,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
         final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY));
+        final String bundleName = (String)wizard.getProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME);
         
         PersistenceUnit persistenceUnit = 
                 (PersistenceUnit) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.PERSISTENCE_UNIT);
@@ -191,7 +196,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                                 Sources srcs = ProjectUtils.getSources(project);
                                 SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
                                 FileObject webRoot = sgWeb[0].getRootFolder();
-                                generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot);
+                                generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot);
                             } else {
                                 generateJsfControllers(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
                             }
@@ -244,7 +249,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     }
     
     private static int getProgressStepCount(boolean ajaxify, boolean jsf2Generator) {
-        int count = jsf2Generator ? UTIL_CLASS_NAMES2.length+1 : UTIL_CLASS_NAMES.length+2;    //2 "pre" messages (see generateJsfControllers) before generating util classes and controller/converter classes
+        int count = jsf2Generator ? UTIL_CLASS_NAMES2.length+1+1 : UTIL_CLASS_NAMES.length+2;    //2 "pre" messages (see generateJsfControllers) before generating util classes and controller/converter classes
         if (ajaxify) {
             count++;
         }
@@ -335,7 +340,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     }
 
     public static boolean doesSomeFileExistAlready(FileObject javaPackageRoot, FileObject webRoot,
-            String jpaControllerPkg, String jsfControllerPkg, String jsfFolder, List<String> entities) {
+            String jpaControllerPkg, String jsfControllerPkg, String jsfFolder, List<String> entities,
+            String bundleName) {
         for (String entity : entities) {
             String simpleControllerName = getFacadeFileName(entity);
             String pkg = jpaControllerPkg;
@@ -361,6 +367,10 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 return true;
             }
         }
+        bundleName = getBundleFileName(bundleName);
+        if (javaPackageRoot.getFileObject(bundleName) != null) {
+            return true;
+        }
         return false;
     }
     
@@ -378,7 +388,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport,
             boolean genSessionBean,
             int progressIndex,
-            FileObject webRoot) throws IOException {
+            FileObject webRoot,
+            String bundleName,
+            FileObject javaPackageRoot) throws IOException {
         String progressMsg;
 
         //copy util classes
@@ -423,6 +435,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             progressPanel.setText(progressMsg);
         }
 
+        List<TemplateData> bundleData = new ArrayList<TemplateData>();
+
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
             String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
@@ -432,7 +446,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
 
-            FileObject template = FileUtil.getConfigRoot().getFileObject("/Templates/JSF/JSF_From_Entity_Wizard/controller.ftl");
+            FileObject template = FileUtil.getConfigRoot().getFileObject(PersistenceClientSetupPanelVisual.CONTROLLER_TEMPLATE);
             Map<String, Object> params = new HashMap<String, Object>();
             String controllerClassName = controllerFileObjects[i].getName();
             String managedBean = controllerClassName.substring(0, 1).toLowerCase() + controllerClassName.substring(1);
@@ -444,21 +458,116 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params.put("ejbClassName", simpleJpaControllerName);
             params.put("entityClassName", simpleClassName);
             params.put("comment", Boolean.FALSE); // NOI18N
+            params.put("bundle", bundleName); // NOI18N
             FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass);
 
             JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
 
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true);
+            bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
+            params.put("controllerClassName", controllerClassName);
             expandSingleJSFTemplate("create.ftl", entityClass, jsfFolder, webRoot, "Create", params, progressContributor, progressPanel, progressIndex++);
             expandSingleJSFTemplate("edit.ftl", entityClass, jsfFolder, webRoot, "Edit", params, progressContributor, progressPanel, progressIndex++);
             expandSingleJSFTemplate("view.ftl", entityClass, jsfFolder, webRoot, "View", params, progressContributor, progressPanel, progressIndex++);
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".items", true, true);
+            params.put("controllerClassName", controllerClassName);
             expandSingleJSFTemplate("list.ftl", entityClass, jsfFolder, webRoot, "List", params, progressContributor, progressPanel, progressIndex++);
 
             String styleAndScriptTags = "<h:outputStylesheet name=\"css/jsfcrud.css\"/>";
             JSFClientGenerator.addLinkToListJspIntoIndexJsp(WebModule.getWebModule(project.getProjectDirectory()),
                     simpleClassName, styleAndScriptTags, "UTF-8", "/"+getJsfFileName(entityClass, jsfFolder, "List"));
 
+        }
+
+        progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", bundleName); //NOI18N
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
+
+        FileObject template = FileUtil.getConfigRoot().getFileObject(PersistenceClientSetupPanelVisual.BUNDLE_TEMPLATE);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("entities", bundleData);
+        params.put("comment", Boolean.FALSE);
+        String bundleFileName = getBundleFileName(bundleName);
+        FileObject target = javaPackageRoot.getFileObject(bundleFileName);
+        if (target == null) {
+            target = FileUtil.createData(javaPackageRoot, bundleFileName);
+        }
+        JSFPaletteUtilities.expandJSFTemplate(template, params, target);
+
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
+        FileObject fo;
+        if (configFiles.length == 0) {
+            FileObject dest = wm.getWebInf();
+            if (dest == null) {
+                dest = webRoot.createFolder("WEB-INF");
+            }
+            fo = FacesConfigIterator.createFacesConfig(project, dest, "faces-config", false);
+        } else {
+            fo = configFiles[0];
+        }
+        JSFConfigModel model = ConfigurationUtils.getConfigModel(fo, true);
+        ResourceBundle rb = model.getFactory().createResourceBundle();
+        rb.setVar("bundle");
+        rb.setBaseName(bundleName);
+        ResourceBundle existing = findBundle(model, rb);
+        model.startTransaction();
+        try {
+            Application app;
+            if (model.getRootComponent().getApplications().size() == 0) {
+                app = model.getFactory().createApplication();
+                model.getRootComponent().addApplication(app);
+            } else {
+                app = model.getRootComponent().getApplications().get(0);
+            }
+            if (existing != null) {
+                app.removeResourceBundle(existing);
+            }
+            app.addResourceBundle(rb);
+        } finally {
+            model.endTransaction();
+            model.sync();
+        }
+
+    }
+
+    private static ResourceBundle findBundle(JSFConfigModel model, ResourceBundle rb) {
+        for (Application app : model.getRootComponent().getApplications()) {
+            for (ResourceBundle bundle : app.getResourceBundles()) {
+                if (bundle.getVar().equals(rb.getVar())) {
+                    return bundle;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String getBundleFileName(String bundleName) {
+        if (bundleName.startsWith("/")) {
+            bundleName = bundleName.substring(1);
+        }
+        if (!bundleName.endsWith(".properties")) {
+            bundleName = bundleName + ".properties"; //.substring(0, bundleName.length()-11);
+        }
+        return bundleName;
+    }
+
+    public static final class TemplateData {
+
+        private String entityClassName;
+        private List<FromEntityBase.TemplateData> entityDescriptors;
+
+        public TemplateData(String entityClassName, List<FromEntityBase.TemplateData> entityDescriptors) {
+            this.entityClassName = entityClassName;
+            this.entityDescriptors = entityDescriptors;
+        }
+
+        public String getEntityClassName() {
+            return entityClassName;
+        }
+
+        public List<FromEntityBase.TemplateData> getEntityDescriptors() {
+            return entityDescriptors;
         }
 
     }
