@@ -47,6 +47,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -63,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -86,7 +88,19 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         performAction(node, target, null, null, null, null);
     }
 
-    protected void performAction(Node node, String target, final ExecutionListener listener, final Writer outputListener, Project project, List<String> additionalEnvironment) {
+    protected void performAction(final Node node, final String target, final ExecutionListener listener, final Writer outputListener, final Project project, final List<String> additionalEnvironment) {
+        if (SwingUtilities.isEventDispatchThread()){
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    _performAction(node, target, listener, outputListener, project, additionalEnvironment);
+                }
+            });
+        } else {
+            _performAction(node, target, listener, outputListener, project, additionalEnvironment);
+        }
+    }
+
+    private void _performAction(Node node, String target, final ExecutionListener listener, final Writer outputListener, Project project, List<String> additionalEnvironment) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }

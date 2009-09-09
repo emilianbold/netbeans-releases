@@ -55,6 +55,7 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.editor.StatusBar;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
@@ -74,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -514,9 +516,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     postRunnable = new Runnable() {
                         public void run() {
                             String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                            String statusMessage = getString("Status."+resourceKey+"Terminated"); // NOI18N
                             tab.getOut().println();
                             tab.getOut().println(message);
                             tab.getOut().flush();
+                            StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
                     break;
@@ -529,9 +533,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     postRunnable = new Runnable() {
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
+                            String statusMessage = getString("Status."+resourceKey+"FailedToStart"); // NOI18N
                             tab.getOut().println();
                             tab.getOut().println(message);
                             tab.getOut().flush();
+                            StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
                     break;
@@ -544,14 +550,18 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     postRunnable = new Runnable() {
                         public void run() {
                             String message;
+                            String statusMessage;
                             if (process.exitValue() != 0) {
                                 message = getString("Output."+resourceKey+"Failed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                                statusMessage = getString("Status."+resourceKey+"Failed"); // NOI18N
                             } else {
                                 message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
+                                statusMessage = getString("Status."+resourceKey+"Successful"); // NOI18N
                             }
                             tab.getOut().println();
                             tab.getOut().println(message);
                             tab.getOut().flush();
+                            StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
                     break;
