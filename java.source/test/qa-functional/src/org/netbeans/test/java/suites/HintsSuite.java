@@ -41,13 +41,6 @@ package org.netbeans.test.java.suites;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.java.generating.ConstructorElem.ConstructorElem;
-import org.netbeans.test.java.generating.FieldElem.FieldElem;
-import org.netbeans.test.java.generating.InitializerElem.InitializerElem;
-import org.netbeans.test.java.generating.InnerClasses.InnerClasses;
-import org.netbeans.test.java.generating.MethodElem.MethodElem;
-import org.netbeans.test.java.generating.SourceElem.SourceElem;
-import org.netbeans.test.java.generating.SuperClassInterfaces.SuperClassInterfaces;
 import org.netbeans.test.java.hints.AddElementHintTest;
 import org.netbeans.test.java.hints.AddImportTest;
 import org.netbeans.test.java.hints.HintsTest;

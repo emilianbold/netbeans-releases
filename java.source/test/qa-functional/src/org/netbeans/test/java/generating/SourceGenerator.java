@@ -40,60 +40,50 @@
  */
 
 /*
- * FieldElem.java
+ * SourceGenerator.java
  *
  * Created on June 26, 2000, 9:29 AM
  */
 
-package org.netbeans.test.java.generating.MethodElem;
+package org.netbeans.test.java.generating;
 
-import org.netbeans.test.java.Common;
-import java.util.EnumSet;
-import javax.lang.model.element.Modifier;
 import junit.framework.Test;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.junit.*;
-import org.openide.filesystems.FileObject;
+import org.netbeans.junit.NbModuleSuite;
 
-/** <B>Java Module General API Test: MethodElement</B>
+/** <B>Java Module General API Test: SourceGenerator</B>
  * <BR><BR><I>What it tests:</I><BR>
- * Creating and handling with MethodElement.
+ * This test is more complex and checks adding Elements (especially order of adding).
  * Test is focused on checking of correctness of generated code.
  * <BR><BR><I>How it works:</I><BR>
- * New class is created using DataObject.createFromTemplate() and also some MethodElements are created.
- * These are customized using setters and then added using ClassElement.addMethod() into ClassElement.
+ * New class is created using DataObject.createFromTemplate().
+ * Then all possible Elements are added.
  * These actions cause generating of .java code. This code is compared with supposed one.
  * <BR><BR><I>Output:</I><BR>
  * Generated Java code.
  * <BR><BR><I>Possible reasons of failure:</I><BR>
- * <U>Methods are not inserted properly</U><BR>
- * If there are some Interfaces in .diff file.
- * <BR><BR><U>Methods have/return bad properies</U><BR>
+ * <BR><BR><U>Elements are added into bad positions or even not at all</U><BR>
  * See .diff file to get which ones
  * <BR><BR><U>Bad indentation</U><BR>
  * This is probably not a bug of Java Module. (Editor Bug)
  * In .diff file could be some whitespaces.
  * <BR><BR><I>Exception occured:</I><BR>
- * See .log file for StackTrace
+ * See .out file for StackTrace
+ *
  *
  * @author Jan Becicka <Jan.Becicka@sun.com>
  */
 
 
-public class MethodElem extends org.netbeans.test.java.XRunner {
+public class SourceGenerator extends org.netbeans.test.java.XRunner {
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public MethodElem() {
+    public SourceGenerator() {
         super("");
     }
     
-    public MethodElem(java.lang.String testName) {
+    public SourceGenerator(java.lang.String testName) {
         super(testName);
     }
-    
+        
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -102,33 +92,22 @@ public class MethodElem extends org.netbeans.test.java.XRunner {
      * false if failed
      */
     public boolean go(Object o, java.io.PrintWriter log) throws Exception {
-        
-        //        org.openide.src.ClassElement clazz = ((org.openide.src.SourceElement) o).getClasses()[0];
-        boolean passed = true;
-        FileObject fo = (FileObject) o;
-        JavaSource js = JavaSource.forFileObject(fo);
-        
-        Common.addMethod(js, "method1",Common.PARS1,"void", EnumSet.of(Modifier.PUBLIC,Modifier.STATIC));        
-        Common.addMethod(js, "method1",Common.PARS2,"int", EnumSet.of(Modifier.PRIVATE,Modifier.SYNCHRONIZED));        
-        Common.addMethod(js, "method1",Common.PARS3,"float", EnumSet.of(Modifier.PRIVATE,Modifier.FINAL));        
-        Common.addMethod(js, "method2",Common.PARS1,"double", EnumSet.of(Modifier.PUBLIC,Modifier.STATIC));
-        Common.addMethod(js, "method2",Common.PARS2,"boolean", EnumSet.of(Modifier.PUBLIC,Modifier.STATIC));        
-        Common.addMethod(js, "method2",Common.PARS3,"void", EnumSet.of(Modifier.PUBLIC,Modifier.STATIC));
-        
-        return passed;
+//        org.openide.src.ClassElement clazz = ((org.openide.src.SourceElement) o).getClasses()[0];
+//        org.netbeans.test.java.Common.simpleJavaSourceEtalonGenerator(clazz);
+        return true;
     }
     
     /**
      */
     protected void setUp() {
         super.setUp();
-        name = "JavaTestSourceMethodElem";
+        name = "JavaTestSourceSourceGenerator";
         packageName = "org.netbeans.test.java.testsources";
     }
     
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MethodElem.class).enableModules(".*").clusters(".*"));
+                NbModuleSuite.createConfiguration(SourceGenerator.class).enableModules(".*").clusters(".*"));
     }
     
 }
