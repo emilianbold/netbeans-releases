@@ -49,7 +49,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 
@@ -59,8 +58,6 @@ import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
  */
 public class STSVersionPanelUI extends javax.swing.JPanel {
 
-    private SortedSet<ConfigVersion> supportedConfigVersions = new TreeSet<ConfigVersion>();
-
     /** Creates new form STSVersionPanelUI */
     public STSVersionPanelUI(Project project) {        
         initComponents();
@@ -68,14 +65,14 @@ public class STSVersionPanelUI extends javax.swing.JPanel {
         // detect and fill appropriate config options
         WSStackVersion wsStackVersion = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
-            if ((wsStackVersion != null) && (cfgVersion.isSupported(wsStackVersion))) {
-                supportedConfigVersions.add(cfgVersion);
+            if ((wsStackVersion != null) && (cfgVersion.isSupported(wsStackVersion) && (cfgVersion.isVisible()))) {
                 versionCombo.addItem(cfgVersion);
             }
         }
 
         if (versionCombo.getItemCount() <= 0) {
             versionCombo.addItem(ConfigVersion.getDefault());
+            versionCombo.setEnabled(false);
         }
         versionCombo.setSelectedIndex(versionCombo.getItemCount() - 1);
     }
