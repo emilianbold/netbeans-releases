@@ -38,10 +38,13 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
@@ -52,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
@@ -61,27 +65,15 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class CheckPHPVersionRule extends PHPRule {
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+public class CheckPHPVersionVisitor extends DefaultVisitor {
+    private FileObject fobj;
+    private ArrayList<PHPVersionError> errors = new ArrayList<PHPVersionError>();
+
+    public CheckPHPVersionVisitor(FileObject fobj) {
+        this.fobj = fobj;
     }
-
-    public String getId() {
-        return "check.ver"; //NOI18N
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(CheckPHPVersionRule.class, "CheckPHPVerDesc");
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(CheckPHPVersionRule.class, "CheckPHPVerDispName");
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        FileObject fobj = NbEditorUtilities.getFileObject(context.doc);
-
+    
+    public static  boolean appliesTo(FileObject fobj) {
         if (fobj != null){
             Properties props = PhpLanguageOptions.getDefault().getProperties(fobj);
 
@@ -95,27 +87,27 @@ public class CheckPHPVersionRule extends PHPRule {
 
     @Override
     public void visit(NamespaceDeclaration declaration) {
-        createWarning(declaration.getStartOffset(), declaration.getName().getEndOffset());
+        createError(declaration.getStartOffset(), declaration.getName().getEndOffset());
     }
 
     @Override
     public void visit(LambdaFunctionDeclaration declaration) {
-        createWarning(declaration);
+        createError(declaration);
     }
     
     @Override
     public void visit(GotoLabel label) {
-        createWarning(label);
+        createError(label);
     }
 
     @Override
     public void visit(GotoStatement statement) {
-        createWarning(statement);
+        createError(statement);
     }
 
     @Override
     public void visit(UseStatement statement) {
-        createWarning(statement);
+        createError(statement);
     }
 
     @Override
@@ -123,24 +115,71 @@ public class CheckPHPVersionRule extends PHPRule {
 
         QualifiedName qname = QualifiedName.create(namespaceName);
         if (qname.getKind() != QualifiedNameKind.UNQUALIFIED){
-            createWarning(namespaceName);
+            createError(namespaceName);
         }
     }
 
-    protected void createWarning(int startOffset, int endOffset){
-        OffsetRange range = new OffsetRange(startOffset, endOffset);
+    public Collection<? extends org.netbeans.modules.csl.api.Error> getErrors(){
+        return errors;
+    }
 
-        Hint hint = new Hint(CheckPHPVersionRule.this, getDisplayName(),
-                context.parserResult.getSnapshot().getSource().getFileObject(),
-                range, null, 500);
+    private  void createError(int startOffset, int endOffset){
 
-        addResult(hint);
+        PHPVersionError error = new PHPVersionError(startOffset, endOffset);
+        errors.add(error);
     }
     
-    protected void createWarning(ASTNode node){
-        createWarning(node.getStartOffset(), node.getEndOffset());
+    private void createError(ASTNode node){
+        createError(node.getStartOffset(), node.getEndOffset());
         super.visit(node);
     }
 
+    class PHPVersionError implements org.netbeans.modules.csl.api.Error{
+
+        private int startPosition;
+        private int endPosition;
+
+        public PHPVersionError(int startPosition, int endPosition) {
+            this.startPosition = startPosition;
+            this.endPosition = endPosition;
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(CheckPHPVersionVisitor.class, "CheckPHPVerDesc");
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getMessage(CheckPHPVersionVisitor.class, "CheckPHPVerDispName");
+        }
+
+        public String getKey() {
+            return "php.ver"; //NOI18N
+        }
+
+        public FileObject getFile() {
+            return fobj;
+        }
+
+        public int getStartPosition() {
+            return startPosition;
+        }
+
+        public int getEndPosition() {
+            return endPosition;
+        }
+
+        public boolean isLineError() {
+            return true;
+        }
+
+        public Severity getSeverity() {
+            return Severity.ERROR;
+        }
+
+        public Object[] getParameters() {
+            return new Object[]{};
+        }
+
+    }
 
 }
