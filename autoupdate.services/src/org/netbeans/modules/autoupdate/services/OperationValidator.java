@@ -193,7 +193,7 @@ abstract class OperationValidator {
             List<ModuleInfo> moduleInfos,
             Collection<String> brokenDependencies);
     
-    private static class InternalUpdateValidator extends InstallValidator {
+    private static class InternalUpdateValidator extends UpdateValidator {
         @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return uElement.equals(unit.getInstalled()) || containsElement (uElement, unit);
@@ -206,7 +206,7 @@ abstract class OperationValidator {
         
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             Set<Dependency> brokenDeps = new HashSet<Dependency> ();
-            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps));
+            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, false));
             if (brokenDependencies != null) {
                 for (Dependency dep : brokenDeps) {
                     brokenDependencies.add (dep.toString ());
@@ -300,7 +300,14 @@ abstract class OperationValidator {
         }
         
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
-             return FOR_INSTALL.getRequiredElementsImpl(uElement, moduleInfos, brokenDependencies);
+            Set<Dependency> brokenDeps = new HashSet<Dependency> ();
+            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, true));
+            if (brokenDependencies != null) {
+                for (Dependency dep : brokenDeps) {
+                    brokenDependencies.add (dep.toString ());
+                }
+            }
+            return res;
         }
     }
     

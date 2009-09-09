@@ -470,7 +470,8 @@ public class Utilities {
     
     public static Set<UpdateElement> findRequiredUpdateElements (UpdateElement element,
             Collection<ModuleInfo> infos,
-            Set<Dependency> brokenDependencies) {
+            Set<Dependency> brokenDependencies,
+            boolean aggressive) {
         UpdateElementImpl el = Trampoline.API.impl(element);
         Set<UpdateElement> retval = new HashSet<UpdateElement> ();
         switch (el.getType ()) {
@@ -479,7 +480,7 @@ public class Utilities {
             Set<Dependency> deps = new HashSet<Dependency> (((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ());
             Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (infos);
             Set<Dependency> newones;
-            while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies, element)).isEmpty ()) {
+            while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies, element, aggressive)).isEmpty ()) {
                 deps = newones;
             }
             
@@ -487,7 +488,7 @@ public class Utilities {
             Set<ModuleInfo> tmp = new HashSet<ModuleInfo> (availableInfos);
             
             Set<UpdateElement> more;
-            while (retval.addAll (more = handleBackwardCompatability (tmp, moreBroken))) {
+            while (retval.addAll (more = handleBackwardCompatability (tmp, moreBroken, aggressive))) {
                 if (! moreBroken.isEmpty ()) {
                     brokenDependencies.addAll (moreBroken);
                     break;
@@ -507,7 +508,7 @@ public class Utilities {
         case FEATURE :
             FeatureUpdateElementImpl feature = (FeatureUpdateElementImpl) el;
             for (ModuleUpdateElementImpl module : feature.getContainedModuleElements ()) {
-                retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies));
+                retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies, aggressive));
             }
             break;
         case CUSTOM_HANDLED_COMPONENT :
@@ -519,7 +520,7 @@ public class Utilities {
         return retval;
     }
     
-    public static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies) {
+    public static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
         Set<UpdateElement> moreRequested = new HashSet<UpdateElement> ();
         // backward compatibility
         for (ModuleInfo mi : forInstall) {
@@ -575,7 +576,7 @@ public class Utilities {
                                     Set<Dependency> deps = new HashSet<Dependency> (tryUpdated.getDependencies ());
                                     Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (forInstall);
                                     Set<Dependency> newones;
-                                    while (! (newones = processDependencies (deps, moreRequested, availableInfos, brokenDependencies, tryUE)).isEmpty ()) {
+                                    while (! (newones = processDependencies (deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive)).isEmpty ()) {
                                         deps = newones;
                                     }
                                     moreRequested.add (tryUE);
@@ -593,10 +594,11 @@ public class Utilities {
             Set<UpdateElement> retval,
             Set<ModuleInfo> availableInfos,
             Set<Dependency> brokenDependencies,
-            UpdateElement el) {
+            UpdateElement el,
+            boolean agressive) {
         Set<Dependency> res = new HashSet<Dependency> ();
         for (Dependency dep : original) {
-            UpdateElement req = handleDependency (el, dep, availableInfos, brokenDependencies, true);
+            UpdateElement req = handleDependency (el, dep, availableInfos, brokenDependencies, agressive);
             if (req != null) {
                 ModuleUpdateElementImpl reqM = (ModuleUpdateElementImpl) Trampoline.API.impl (req);
                 availableInfos.add (reqM.getModuleInfo ());
@@ -612,7 +614,7 @@ public class Utilities {
             Dependency dep,
             Collection<ModuleInfo> availableInfos,
             Set<Dependency> brokenDependencies,
-            boolean aggressive) {
+            boolean beAggressive) {
         UpdateElement requested = null;
         
         switch (dep.getType ()) {
@@ -628,53 +630,51 @@ public class Utilities {
                 break;
             case Dependency.TYPE_MODULE :
                 UpdateUnit u = DependencyAggregator.getRequested (dep);
-                boolean updateMatched = false;
-                boolean installMatched = false;
-                boolean availableMatched = false;
+                boolean matched = false;
                 if (u != null) {
+                    boolean aggressive = beAggressive;
+                    if (isFirstClassModule(el.getUpdateUnit())) {
+                        aggressive = false;
+                    }
                     // follow aggressive updates strategy
                     // if new module update is available, promote it even though installed one suites all the dependendencies
-                    UpdateElement reqEl = u.getAvailableUpdates().isEmpty() ? null : u.getAvailableUpdates().get(0);
-                    if (reqEl != null) {
-                        UpdateElementImpl reqElImpl = Trampoline.API.impl(reqEl);
-                        ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
-                        ModuleInfo info = reqModuleImpl.getModuleInfo();
-                        if (DependencyChecker.checkDependencyModule(dep, info)) {
-                            if (!availableInfos.contains(info)) {
-                                requested = reqEl;
-                                updateMatched = true;
+                    if (u.getInstalled() != null) {
+                        UpdateElementImpl reqElImpl = Trampoline.API.impl(u.getInstalled());
+                        matched = DependencyChecker.checkDependencyModule(dep, ((ModuleUpdateElementImpl) reqElImpl).getModuleInfo());
+                    }
+
+                    if (!matched) {
+                        for (ModuleInfo m : availableInfos) {
+                            if (DependencyChecker.checkDependencyModule(dep, m)) {
+                                matched = true;
+                                break;
                             }
                         }
                     }
+                    if (aggressive || !matched) {
+                        UpdateElement reqEl = u.getAvailableUpdates().isEmpty() ? null : u.getAvailableUpdates().get(0);
+                        if (reqEl != null) {
+                            UpdateElementImpl reqElImpl = Trampoline.API.impl(reqEl);
+                            ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
+                            ModuleInfo info = reqModuleImpl.getModuleInfo();
+                            if (DependencyChecker.checkDependencyModule(dep, info)) {
+                                if (!availableInfos.contains(info)) {
+                                    requested = reqEl;
+                                    matched = true;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    for (ModuleInfo m : availableInfos) {
+                        if (DependencyChecker.checkDependencyModule(dep, m)) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                }
 
-                    if (u.getInstalled() != null) {
-                            UpdateElementImpl reqElImpl = Trampoline.API.impl(u.getInstalled());
-                            installMatched = DependencyChecker.checkDependencyModule(dep, ((ModuleUpdateElementImpl) reqElImpl).getModuleInfo());
-                    }                    
-                }
-
-                for (ModuleInfo m : availableInfos) {
-                    if (DependencyChecker.checkDependencyModule(dep, m)) {
-                        availableMatched = true;
-                        break;
-                    }
-                }
-                if(updateMatched && installMatched && !aggressive) {
-                    requested = null;
-                }
-                if (updateMatched && installMatched && aggressive) {
-                    if (requested.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
-                        //requested = null;
-                    } else if (/*Trampoline.API.impl(el).isEager() &&*/
-                            !el.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
-                        //requested = null;
-                    }
-                    if(isFirstClassModule(el.getUpdateUnit())) {
-                        requested = null;
-                    }
-                }
-                
-                if (!installMatched && !availableMatched && !updateMatched) {
+                if (!matched) {
                     brokenDependencies.add(dep);
                 }
 
@@ -715,7 +715,7 @@ public class Utilities {
         assert element != null : "UpdateElement cannot be null";
         Set<Dependency> brokenDependencies = new HashSet<Dependency> ();
         // create init collection of brokenDependencies
-        Utilities.findRequiredUpdateElements (element, infos, brokenDependencies);
+        Utilities.findRequiredUpdateElements (element, infos, brokenDependencies, false);
         // backward compatibility
         for (ModuleInfo mi : infos) {
             UpdateUnit u = UpdateManagerImpl.getInstance ().getUpdateUnit (mi.getCodeNameBase ());
