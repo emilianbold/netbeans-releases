@@ -150,4 +150,6 @@ public abstract class KenaiImpl {
             String service
             ) throws KenaiException;
 
+    public abstract void joinProject(String projectName, String userName);
+
 }

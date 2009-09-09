@@ -78,6 +78,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -1240,24 +1241,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
         private void fireContentsChanged() {
             fireContentsChanged(this, 0, Integer.MAX_VALUE);
-        }
-    }
-
-    public static class SharedItem {
-
-        private final File      root;
-
-        public SharedItem(File file) {
-            this.root = file;
-        }
-
-        @Override
-        public String toString() {
-            return root.getName();
-        }
-
-        public File getRoot() {
-            return root;
         }
     }
 }

@@ -42,6 +42,9 @@
 package org.netbeans.modules.form.editors2;
 
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -117,6 +120,23 @@ public class JTableHeaderEditor extends PropertyEditorSupport
         }
         updateUI();
         return customizer;
+    }
+
+    @Override
+    public String getAsText() {
+        return null;
+    }
+
+    @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics g, Rectangle rectangle) {
+        String msg = NbBundle.getMessage(TableColumnModelEditor.class, "TableHeaderEditor_TableHeader"); // NOI18N
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
     /** This method is called from within the constructor to

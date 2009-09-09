@@ -78,6 +78,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
@@ -87,6 +90,7 @@ import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -645,16 +649,31 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     public void read(WizardDescriptor settings) {
         this.settings = settings;
         String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
+        List<NewKenaiProjectWizardIterator.SharedItem> items = panel.getInitialItems();
         if (prjName == null || "".equals(prjName.trim())) {
-            setProjectName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.defaultPrjName")); // NOI18N
+            if (items.size() == 1) {
+                setProjectName(items.get(0).getRoot().getName());
+            } else {
+                setProjectName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                        "NameAndLicenseWizardPanelGUI.defaultPrjName")); // NOI18N
+            }
         } else {
             setProjectName(prjName);
         }
         String prjTitle = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_TITLE);
         if (prjTitle == null || "".equals(prjTitle.trim())) {
-            setProjectTitle(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.defaultPrjTitle")); // NOI18N
+            if (items.size() == 1) {
+                Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(items.get(0).getRoot()));
+                if (prj != null) {
+                    setProjectTitle(ProjectUtils.getInformation(prj).getDisplayName());
+                } else {
+                    setProjectTitle(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                            "NameAndLicenseWizardPanelGUI.defaultPrjTitle")); // NOI18N
+                }
+            } else {
+                setProjectTitle(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                        "NameAndLicenseWizardPanelGUI.defaultPrjTitle")); // NOI18N
+            }
         } else {
             setProjectTitle(prjTitle);
         }
