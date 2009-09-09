@@ -208,7 +208,7 @@ public class Annotator {
      * also return the original name String
      */
     public String annotateNameHtml(String name, FileInformation info, File file) {
-        if(!checkClientAvailable("annotateNameHtml", file)) {
+        if(!checkClientAvailable("annotateNameHtml", file == null ? new File[0] : new File[] {file})) {
             return name;
         }
         name = htmlEncode(name);
@@ -681,14 +681,16 @@ public class Annotator {
         return ret;
     }
 
-    private boolean checkClientAvailable (String methodName, final File... files) {
+    private boolean checkClientAvailable (String methodName, final File[] files) {
         boolean available = true;
         if (!SvnClientFactory.isInitialized()) {
             Subversion.getInstance().getRequestProcessor().post(new Runnable() {
                 public void run() {
                     SvnClientFactory.init();
-                    // ask annotator again
-                    Subversion.getInstance().refreshAnnotations(files);
+                    if (files != null && files.length > 0) {
+                        // ask annotator again
+                        Subversion.getInstance().refreshAnnotations(files);
+                    }
                 }
             });
             Subversion.LOG.log(Level.FINE, " skipping {0} due to not yet initialized client", methodName); //NOI18N
