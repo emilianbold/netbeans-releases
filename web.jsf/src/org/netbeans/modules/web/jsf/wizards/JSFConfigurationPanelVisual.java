@@ -240,6 +240,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         setLayout(new java.awt.CardLayout());
 
+        jsfTabbedPane.setMinimumSize(new java.awt.Dimension(106, 62));
         jsfTabbedPane.setPreferredSize(new java.awt.Dimension(483, 210));
 
         libPanel.setAlignmentX(0.2F);
@@ -435,7 +436,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(cbPreferredLang, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(21, 21, 21))
+                .add(42, 42, 42))
         );
 
         tServletName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ServletName")); // NOI18N
@@ -677,6 +678,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                         // if there is a proffered library, select
                         rbRegisteredLibrary.setSelected(true);
                         cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
+                        updateLibrary();
                     } else {
                         // there is not a proffered library -> select one or select creating new one
                         if (jsfLibraries.size() == 0) {
