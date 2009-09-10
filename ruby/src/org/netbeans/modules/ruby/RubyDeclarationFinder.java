@@ -462,7 +462,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 }
 
                 if (location == DeclarationLocation.NONE) {
-                    location = findInstance(parserResult, root, name);
+                    location = findInstance(parserResult, root, name, index);
                 }
 
                 if (location == DeclarationLocation.NONE) {
@@ -532,7 +532,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             }
 
                             if (location == DeclarationLocation.NONE) {
-                                location = findInstance(parserResult, root, name);
+                                location = findInstance(parserResult, root, name, index);
                             }
 
                             if (location == DeclarationLocation.NONE) {
@@ -1303,7 +1303,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 // but to attributes as well - in Rails' initializer.rb this is used
                 // in a number of places.
                 if (loc == DeclarationLocation.NONE) {
-                    loc = findInstance(info, root, "@" + method);
+                    loc = findInstance(info, root, "@" + method, index);
                 }
 
                 return loc;
@@ -1356,7 +1356,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             // but to attributes as well - in Rails' initializer.rb this is used
             // in a number of places.
             if (loc == DeclarationLocation.NONE) {
-                loc = findInstance(info, root, "@" + method);
+                loc = findInstance(info, root, "@" + method, index);
             }
 
             return loc;
@@ -1807,7 +1807,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return DeclarationLocation.NONE;
     }
 
-    private DeclarationLocation findInstance(ParserResult info, Node node, String name) {
+    private DeclarationLocation findInstance(ParserResult info, Node node, String name, RubyIndex index) {
         if (node instanceof InstAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
                 return getLocation(info, node);
@@ -1826,7 +1826,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 if (name.equals(symbols[i].getName())) {
                     Node root = AstUtilities.getRoot(info);
                     DeclarationLocation location =
-                            findInstanceFromIndex(info, name, new AstPath(root, node), RubyIndex.get(info), true);
+                            findInstanceFromIndex(info, name, new AstPath(root, node), index, true);
                     if (location != DeclarationLocation.NONE) {
                         return location;
                     }
@@ -1841,7 +1841,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             if (child.isInvisible()) {
                 continue;
             }
-            DeclarationLocation location = findInstance(info, child, name);
+            DeclarationLocation location = findInstance(info, child, name, index);
 
             if (location != DeclarationLocation.NONE) {
                 return location;
