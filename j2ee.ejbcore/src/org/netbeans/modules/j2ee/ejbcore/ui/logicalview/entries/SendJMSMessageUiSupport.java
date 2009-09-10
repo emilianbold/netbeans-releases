@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -67,7 +67,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SendJMSMessageUiSupport.MdbHolder;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageUiSupport.MdbHolder;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;

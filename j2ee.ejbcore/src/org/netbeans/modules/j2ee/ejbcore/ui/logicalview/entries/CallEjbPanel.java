@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
@@ -255,9 +255,9 @@ public class CallEjbPanel extends javax.swing.JPanel {
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
 
-        convertToRuntime.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ConvertToRuntimeMneumonic").charAt(0));
+        convertToRuntime.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle").getString("LBL_ConvertToRuntimeMneumonic").charAt(0));
         convertToRuntime.setSelected(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle"); // NOI18N
         convertToRuntime.setText(bundle.getString("LBL_ConvertToRuntime")); // NOI18N
         serviceLocatorPanel.add(convertToRuntime, java.awt.BorderLayout.SOUTH);
         convertToRuntime.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "ACSD_ConvertToRuntime")); // NOI18N
@@ -297,7 +297,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_ReferenceName").charAt(0));
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle").getString("MN_ReferenceName").charAt(0));
         jLabel2.setLabelFor(referenceNameTextField);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferenceName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -326,7 +326,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         referenceNameTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_ReferenceName")); // NOI18N
 
         intefaceButtonGroup.add(noInterfaceRadioButton);
-        noInterfaceRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_NoInterface").charAt(0));
+        noInterfaceRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle").getString("MN_NoInterface").charAt(0));
         noInterfaceRadioButton.setSelected(true);
         noInterfaceRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_NoInterface")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -339,7 +339,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         noInterfaceRadioButton.getAccessibleContext().setAccessibleDescription("No interface");
 
         intefaceButtonGroup.add(localRadioButton);
-        localRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Local").charAt(0));
+        localRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle").getString("MN_Local").charAt(0));
         localRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Local")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -352,7 +352,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         localRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Local")); // NOI18N
 
         intefaceButtonGroup.add(remoteRadioButton);
-        remoteRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Remote").charAt(0));
+        remoteRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle").getString("MN_Remote").charAt(0));
         remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Remote")); // NOI18N
         remoteRadioButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         remoteRadioButton.addItemListener(new java.awt.event.ItemListener() {

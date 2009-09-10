@@ -39,47 +39,50 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
-import java.awt.BorderLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JPanel;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb.MessageNode;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 /**
- *
- * @author Chris Webster
+ * Provide a set of children representing the ejb nodes.
+ * @author ChrisWebster
  */
-public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
-    
-    private final ExplorerManager manager = new ExplorerManager();
-    
-    public NodeDisplayPanel(Node rootNode) {
-        BeanTreeView btv = new BeanTreeView();
-        btv.setRootVisible(false);
-        btv.setDefaultActionAllowed(false);
-        manager.setRootContext(rootNode);
-        manager.addPropertyChangeListener(
-        new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent pce) {
-                firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
-            }
-        });
-        setLayout(new BorderLayout());
-        add(btv, BorderLayout.CENTER);
-        btv.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
-        btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
-    }
-    
-    public Node[] getSelectedNodes() {
-        return manager.getSelectedNodes();
+public class EjbChildren extends Children.Array {
+    private final Node projectNode;
+
+    /** Creates a new instance of EjbChildren */
+    public EjbChildren(Node projectNode) {
+        this.projectNode = projectNode;
     }
 
-    public ExplorerManager getExplorerManager() {
-        return manager;
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        Node ejbsNode = projectNode.getChildren().findChild(EjbNodesFactory.CONTAINER_NODE_NAME);
+        if (ejbsNode != null) {
+            Node[] ejbNodes = ejbsNode.getChildren().getNodes(true);
+            List<Node> filteredNodes = new ArrayList<Node>();
+            for (Node node : ejbNodes) {
+                // #75721: MDB should not appear in Call EJB dialog
+                if (node instanceof MessageNode)
+                    continue;
+                filteredNodes.add(new FilterNode(node, Children.LEAF) {
+                    @Override
+                    public Action[] getActions(boolean context) {
+                        return new Action[0];
+                    }
+                });
+            }
+            Node[] filteredNodesArray = new Node[filteredNodes.size()];
+            add(filteredNodes.toArray(filteredNodesArray));
+        }
     }
     
 }
