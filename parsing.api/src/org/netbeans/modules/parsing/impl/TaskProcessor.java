@@ -412,14 +412,17 @@ public class TaskProcessor {
         assert source != null;
         TaskProcessor.Request r = currentRequest.getTaskToCancel (mayInterruptParser);
         if (r != null) {
-            r.task.cancel();
-            if (sync) {
-                Request oldR;
-                synchronized (rst) {                
-                    oldR = rst.get(source);
-                    rst.put(source,r);
+            try {
+                r.task.cancel();
+            } finally {
+                if (sync) {
+                    Request oldR;
+                    synchronized (rst) {
+                        oldR = rst.get(source);
+                        rst.put(source,r);
+                    }
+                    assert oldR == null;
                 }
-                assert oldR == null;
             }
         }
         return r;

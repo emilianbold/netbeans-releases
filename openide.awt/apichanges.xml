@@ -66,12 +66,12 @@ made subject to such option by the copyright holder.
                 <li>"user" for <code>Preferences.userRoot()</code></li>
                 <li>"nb" for <code>NbPreferences.root()</code></li>
             </ul>
-            or the property value can be <code>Preferences</code> instance or there can be lookup
+            or the property value can be <code>Preferences</code> instance or it can be a <code>Lookup</code>
             with the <code>Preferences</code> instance in it.
             The action will be represented by check box menu item in both menu and popup menu automatically.
         </description>
-        <class package="org.openide.awt" name="HtmlBrowser"/>
-        <issue number="169240"/>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="166027"/>
     </change>
     <change id="ExternalURLDisplayer">
         <api name="awt"/>
