@@ -106,7 +106,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private String getNextVariableType(final String variableName) {
         int offset = request.getComponent().getCaretPosition();
-        Model model = ModelFactory.getModel(info);
+        Model model = ((PHPParseResult)info).getModel();
         VariableScope varScope = model.getVariableScope(offset);
         String varName = variableName;
         if (varName == null) {
@@ -167,7 +167,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         final int caretOffset = request.getComponent().getCaretPosition();
         VariableName var = null;
-        Model model = ModelFactory.getModel(info);
+        Model model = ((PHPParseResult)info).getModel();
         VariableScope varScope = model.getVariableScope(caretOffset);
         if (varScope != null) {
             Collection<? extends VariableName> allVariables = varScope.getDeclaredVariables();

@@ -57,12 +57,12 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -195,8 +195,8 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
 
     private void writeMapping(String actionName, Project project, String clazz) {
         try {
-            UserActionGoalProvider usr = project.getLookup().lookup(UserActionGoalProvider.class);
-            ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getRawMappingsAsString()));
+            M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
+            ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
             NetbeansActionMapping mapp = ActionToGoalUtils.getDefaultMapping(actionName, project);
             mapping.addAction(mapp);
             Set<Map.Entry<Object, Object>> entries = mapp.getProperties().entrySet();

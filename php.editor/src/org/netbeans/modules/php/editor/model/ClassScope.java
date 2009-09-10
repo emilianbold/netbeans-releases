@@ -44,7 +44,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 /**
  * @author Radek Matous
  */
-public interface ClassScope extends TypeScope {
+public interface ClassScope extends TypeScope, VariableScope {
     Collection<? extends InterfaceScope> getSuperInterfaces();
     Collection<? extends ClassScope> getSuperClasses();
     Collection<? extends String> getSuperClassNames();

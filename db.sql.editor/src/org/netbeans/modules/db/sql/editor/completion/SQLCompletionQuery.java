@@ -68,6 +68,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.sql.analyzer.CreateStatement;
 import org.netbeans.modules.db.sql.analyzer.DeleteStatement;
 import org.netbeans.modules.db.sql.analyzer.TablesClause;
 import org.netbeans.modules.db.sql.analyzer.InsertStatement;
@@ -177,6 +178,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
             return items;
         }
+        if (statement.getKind() == SQLStatementKind.CREATE && ((CreateStatement) statement).hasBody()) {
+            completeCreateBody();
+            return items;
+        }
         context = statement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
             completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
@@ -284,7 +289,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 completeColumn(ident);
                 break;
             default:
-                if (tablesClause != null) {
+                if (!updateStatement.getSubqueries().isEmpty()) {
+                    completeSelect();
+                } else if (tablesClause != null) {
                     completeColumnWithDefinedTable(ident);
                 }
         }
@@ -316,6 +323,20 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     completeColumnWithDefinedTable(ident);
                 }
         }
+    }
+
+    /** Provides code completion for body of create procedure/function statement. */
+    private void completeCreateBody() {
+        CreateStatement createStatement = (CreateStatement) statement;
+        String body = env.getStatement().substring(createStatement.getBodyStartOffset(), createStatement.getBodyEndOffset());
+        // caret offset within body
+        int caretOffset = env.getCaretOffset() - createStatement.getBodyStartOffset();
+        // offset of body script in document
+        int scriptOffset = env.getStatementOffset() + createStatement.getBodyStartOffset();
+        // process body script
+        doQuery(SQLCompletionEnv.forScript(body, caretOffset, scriptOffset), metadata, quoter);
+        // adjust anchor for displaying code completion popup
+        anchorOffset += scriptOffset;
     }
 
     /** Adds keyword/s according to typed prefix and given context. */

@@ -39,119 +39,152 @@
 package org.netbeans.modules.cnd.tha.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
-import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorDelegator;
 import org.netbeans.modules.cnd.tha.ui.THAIndicatorsTopComponent;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public final class THAActionsProvider implements DLightTargetListener {
+public final class THAActionsProvider {
 
-    private Action startAndAnalyze;
-    private Action start;
-    private Action enableCollect;
+    public static final String SUSPEND_COMMAND = "THAProfileSuspend";//NOI18N
+    public static final String RESUME_COMMAND = "THAProfileResume";//NOI18N
+    public static final String STOP_COMMAND = "THAProfileStop";//NOI18N
+    private Action suspendDataCollection;
+    private Action resumeDataCollection;
     private Action stop;
-    private Action enableDataRaces;
-    private Action enableDeadlocks;
     private int pid;
     private DLightTarget target;
     private static Action startThreadAnalyzerConfiguration;
+    /** A list of event listeners for this component. */
+    private final EventListenerList listenerList = new EventListenerList();
 
     static {
-        startThreadAnalyzerConfiguration = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformer() {
-
-            public synchronized boolean enable(final Project project) {
-                return THAProjectSupport.isSupported(project);
-            }
-
-            public void perform(final Project project) {
-                if (!THAProjectSupport.isSupported(project)) {
-                    return;
-                }
-                THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(project);
-                topComponent.open();
-                topComponent.requestActive();
-            }
-        }, loc("LBL_THAMainProjectAction"), null); // NOI18N
-
-        startThreadAnalyzerConfiguration.putValue("command", "THAProfile"); // NOI18N
-        startThreadAnalyzerConfiguration.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
-        startThreadAnalyzerConfiguration.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
-        startThreadAnalyzerConfiguration.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
+        startThreadAnalyzerConfiguration = new THAMainProjectAction();
     }
     private RemoveInstrumentationAction removeInstrumentation;
     private final Project project;
-    private final static Map<Project, THAActionsProvider> cache = new HashMap<Project, THAActionsProvider>();
+    private final THAConfiguration thaConfiguration;
+    final DLightTargetListener dlightTargetListener;
+    //private final static Map<Project, THAActionsProvider> cache = new HashMap<Project, THAActionsProvider>();
 
-    private THAActionsProvider(Project project) {
+    THAActionsProvider(Project project, THAConfiguration thaConfiguration) {
         this.project = project;
-        THAProjectSupport.getSupportFor(project).addDLightTargetListener(this);
+        this.thaConfiguration = thaConfiguration;
+        this.dlightTargetListener = new DLightTargetListenerImpl();
+//        THAProjectSupport.getSupportFor(project).addDLightTargetListener(this);
         initActions();
     }
 
-    public static final synchronized THAActionsProvider getSupportFor(Project project) {
-        if (!THAProjectSupport.isSupported(project)){
+    public static final synchronized THAActionsProvider getSupportFor(Project project, THAConfiguration thaConfiguration) {
+        if (!THAProjectSupport.isSupported(project)) {
             return null;
         }
-
-        if (cache.containsKey(project)) {
-            return cache.get(project);
-        }
-
-
-
-        THAActionsProvider support = new THAActionsProvider(project);
-        cache.put(project, support);
-
+        THAActionsProvider support = new THAActionsProvider(project, thaConfiguration);
         return support;
+    }
+
+    /**
+     * Removes an <code>ActionListener</code> from the button.
+     * If the listener is the currently set <code>Action</code>
+     * for the button, then the <code>Action</code>
+     * is set to <code>null</code>.
+     *
+     * @param l the listener to be removed
+     */
+    public void removeActionListener(ActionListener l) {
+        listenerList.remove(ActionListener.class, l);
+    }
+
+    /**
+     * Adds an <code>ActionListener</code> to the button.
+     * @param l the <code>ActionListener</code> to be added
+     */
+    public void addActionListener(ActionListener l) {
+        listenerList.add(ActionListener.class, l);
+    }
+
+    private final String getActionCommand() {
+        return "THAProfile"; //NOI18N
+    }
+
+    /**
+     * Notifies all listeners that have registered interest for
+     * notification on this event type.  The event instance
+     * is lazily created using the <code>event</code>
+     * parameter.
+     *
+     * @param event  the <code>ActionEvent</code> object
+     * @see EventListenerList
+     */
+    protected void fireActionPerformed(ActionEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+        ActionEvent e = null;
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == ActionListener.class) {
+                // Lazily create the event:
+                if (e == null) {
+                    String actionCommand = event.getActionCommand();
+                    if (actionCommand == null) {
+                        actionCommand = getActionCommand();
+                    }
+                    e = new ActionEvent(THAActionsProvider.this,
+                            ActionEvent.ACTION_PERFORMED,
+                            actionCommand,
+                            event.getWhen(),
+                            event.getModifiers());
+                }
+                ((ActionListener) listeners[i + 1]).actionPerformed(e);
+            }
+        }
     }
 
     public static Action getStartTHAConfigurationAction() {
         return startThreadAnalyzerConfiguration;
     }
 
-    public Action getStartThreadAnalysisAction() {
-        return startAndAnalyze;
+    public Action getResumeCollectionAction() {
+        return resumeDataCollection;
     }
 
-    public Action getEnableCollectAction() {
-        return enableCollect;
-    }
-
-    public Action getStopAction(){
+    public Action getStopAction() {
         return stop;
     }
 
-    public Action getEnableDataraceAction() {
-        return enableDataRaces;
-    }
-
-    public Action getEnableDeadlockAction() {
-        return enableDeadlocks;
-    }
-
-    public Action getStartAction() {
-        return start;
+    public Action getSuspendCollectionAction() {
+        return suspendDataCollection;
     }
 
     public Action getRemoveInstrumentationAction() {
@@ -160,102 +193,44 @@ public final class THAActionsProvider implements DLightTargetListener {
 
     private void initActions() {
         removeInstrumentation = new RemoveInstrumentationAction();
-        startAndAnalyze = new AbstractAction() {
+        suspendDataCollection = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 if (project == null) {
                     return;
                 }
-
-                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
-
-                if (support == null) {
-                    return;
-                }
-
-                if (!support.isConfiguredForInstrumentation()) {
-                    boolean instrResult = support.doInstrumentation();
-                    if (!instrResult) {
-                        return;
-                    }
-                }
-
-                startAndAnalyze.setEnabled(false);
-                start.setEnabled(false);
-                enableCollect.setEnabled(false);
-                
-
-                // Initiate RUN ...
-                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-
-                if (ap != null) {
-                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
-                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.create(true))); // NOI18N
-                    }
-                }
-
+                sendSignal();
+                resumeDataCollection.setEnabled(true);
+                suspendDataCollection.setEnabled(false);
+                fireActionPerformed(e);
             }
         };
-        startAndAnalyze.setEnabled(THAProjectSupport.getSupportFor(project) != null);
-        if (startAndAnalyze.isEnabled()) {
-            removeInstrumentation.setProject(project);
-        }
-        startAndAnalyze.putValue("command", "THAProfile"); // NOI18N
-        startAndAnalyze.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
-        startAndAnalyze.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
-        startAndAnalyze.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb24.png", false)); // NOI18N
-        start = new AbstractAction() {
+        suspendDataCollection.putValue("command", SUSPEND_COMMAND); // NOI18N
+        suspendDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THASuspendDataCollection")); // NOI18N
+        suspendDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Pause24.gif"); // NOI18N
+        suspendDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Pause24.gif", false),
+                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment.png", false), 10, 10)); // NOI18N
+        suspendDataCollection.putValue("disabledIcon", ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Pause24_disabled.gif", false),
+                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment_disabled.png", false), 10, 10)); // NOI18N
+        suspendDataCollection.setEnabled(false);
+        resumeDataCollection = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                if (project == null) {
-                    return;
-                }
-
-                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
-
-                if (support == null) {
-                    return;
-                }
-
-                if (!support.isConfiguredForInstrumentation()) {
-                    boolean instrResult = support.doInstrumentation();
-                    if (!instrResult) {
-                        return;
-                    }
-                }
-                startAndAnalyze.setEnabled(false);
-                start.setEnabled(false);
-                enableCollect.setEnabled(true);
-
-
-                // Initiate RUN ...
-                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-
-                if (ap != null) {
-                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
-                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.create(false))); // NOI18N
-                    }
-                }
-
+                sendSignal();
+                resumeDataCollection.setEnabled(false);
+                suspendDataCollection.setEnabled(true);
+                fireActionPerformed(e);
             }
         };
-        start.setEnabled(THAProjectSupport.getSupportFor(project) != null);
-        if (start.isEnabled()) {
-            removeInstrumentation.setProject(project);
-        }
+        resumeDataCollection.putValue("command", RESUME_COMMAND); // NOI18N
+        resumeDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAResumeDataCollection")); // NOI18N
+        resumeDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Continue24.gif"); // NOI18N
+        resumeDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Continue24.gif", false),
+                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment.png", false), 10, 10)); // NOI18N
+        resumeDataCollection.putValue("disabledIcon", ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Continue24_disabled.gif", false),
+                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment_disabled.png", false), 10, 10)); // NOI18N
+        resumeDataCollection.setEnabled(false);
 
-
-        start.putValue("command", "THAProfile"); // NOI18N
-        start.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
-        start.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/runProject24.png"); // NOI18N
-        start.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/runProject24.png", false)); // NOI18N
-
-        enableCollect = new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                startCollect();
-            }
-        };
         stop = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -269,32 +244,19 @@ public final class THAActionsProvider implements DLightTargetListener {
             }
         };
         stop.setEnabled(false);
-
-
-        stop.putValue("command", "THAProfileStop"); // NOI18N
-        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        stop.putValue("command", STOP_COMMAND); // NOI18N
+        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAStopDataCollection")); // NOI18N
         stop.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Kill24.gif"); // NOI18N
-        stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/Kill24.gif", false)); // NOI18N
-
-        enableDataRaces = new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-            }
-        };
-        enableDataRaces.setEnabled(false);
-        enableDeadlocks = new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-            }
-        };
-        enableDeadlocks.setEnabled(false);
-
-
-
+        stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/Kill24.gif", false)); // NOI18N       
     }
 
     private static String loc(String key, String... params) {
-        return NbBundle.getMessage(THAActionsProvider.class, key, params);
+        try {
+            return NbBundle.getMessage(THAActionsProvider.class, key, params);
+        } catch (MissingResourceException e) {
+            e.printStackTrace();
+            return key;
+        }
     }
 
     private final class RemoveInstrumentationAction extends AbstractAction implements PropertyChangeListener {
@@ -405,7 +367,38 @@ public final class THAActionsProvider implements DLightTargetListener {
         }
     }
 
-    public void startCollect() {
+    static  boolean start(final DLightTargetListener listener, final Project project, final THAConfiguration thaConfiguration) {
+        THAProjectSupport support = THAProjectSupport.getSupportFor(project);
+
+        if (support == null) {
+            return false;
+        }
+
+        if (!support.isConfiguredForInstrumentation()) {
+            boolean instrResult = support.doInstrumentation();
+            if (!instrResult) {
+                return false;
+            }
+        }
+
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                // Initiate RUN ...
+                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+
+                if (ap != null) {
+                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
+                        ap.invokeAction("custom.action", Lookups.fixed(thaConfiguration, listener)); // NOI18N
+                    }
+                }
+            }
+        });
+
+        return true;
+    }
+
+    void sendSignal() {
         if (0 < pid) {
             CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
         }
@@ -414,34 +407,31 @@ public final class THAActionsProvider implements DLightTargetListener {
     private void targetStarted(int pid) {
         //means stop button should be enabled
         this.pid = pid;
-        //enableCollect.setEnabled(false);
+        suspendDataCollection.setEnabled(thaConfiguration.collectFromBeginning());
+        resumeDataCollection.setEnabled(!thaConfiguration.collectFromBeginning());
         stop.setEnabled(true);
 
     }
 
     private void targetFailed() {
         //back all as it was
-        start.setEnabled(THAProjectSupport.getSupportFor(project) != null);
-        startAndAnalyze.setEnabled(THAProjectSupport.getSupportFor(project) != null);
-        enableCollect.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        suspendDataCollection.setEnabled(false);
+        resumeDataCollection.setEnabled(false);
         stop.setEnabled(false);
+        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, STOP_COMMAND));
     }
 
     private void targetFinished(Integer status) {
-        start.setEnabled(THAProjectSupport.getSupportFor(project) != null);
-        startAndAnalyze.setEnabled(THAProjectSupport.getSupportFor(project) != null);
-        enableCollect.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        suspendDataCollection.setEnabled(false);
+        resumeDataCollection.setEnabled(false);
         stop.setEnabled(false);
+        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, STOP_COMMAND));
     }
 
-    private class EnableCollectAction extends AbstractAction {
+    private final class DLightTargetListenerImpl implements DLightTargetListener {
 
-        public void actionPerformed(ActionEvent e) {
-            if (e.getActionCommand() == null) {
-                return;//nothing to do
-            } else {
-                //use it as a pid and send a signal
-            }
+        public void targetStateChanged(DLightTargetChangeEvent event) {
+            THAActionsProvider.this.targetStateChanged(event);
         }
     }
 }

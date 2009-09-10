@@ -262,13 +262,10 @@ class EarImpl implements EarImplementation, EarImplementation2,
      * Returns module specification version
      */
     public String getModuleVersion() {
-        String j2ee = getJ2eePlatformVersion();
-        if (EjbProjectConstants.J2EE_14_LEVEL.equals(j2ee)) {
-            return J2eeModule.JAVA_EE_5;
-        }
-//        System.out.println("earimpl: get module version");
-        //TODO??
-        return J2eeModule.J2EE_14;
+        Profile prf = getJ2eeProfile();
+        if (prf == Profile.JAVA_EE_6_FULL) return Application.VERSION_6;
+        if (prf == Profile.JAVA_EE_5) return Application.VERSION_5;
+        return Application.VERSION_1_4;
     }
 
     /**

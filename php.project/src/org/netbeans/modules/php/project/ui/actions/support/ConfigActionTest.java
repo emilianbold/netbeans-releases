@@ -54,6 +54,7 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -110,7 +111,7 @@ class ConfigActionTest extends ConfigAction {
         FileObject rootFolder = getTestDirectory(false);
         assert rootFolder != null : "Test directory not found but isRunFileEnabled() for a test file called?!";
         FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
-        return file != null && CommandUtils.isPhpFile(file);
+        return file != null && FileUtils.isPhpFile(file);
     }
 
     @Override

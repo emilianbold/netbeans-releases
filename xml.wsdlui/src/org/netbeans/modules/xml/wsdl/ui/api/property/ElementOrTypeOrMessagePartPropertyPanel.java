@@ -140,14 +140,6 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
         return null;
     }
 
-    private ElementOrTypeOrMessagePart createElement(GlobalElement element) {
-        return new ElementOrTypeOrMessagePart(element, mProv.getModel());
-    }
-
-    private ElementOrTypeOrMessagePart createType(GlobalType type) {
-        return new ElementOrTypeOrMessagePart(type, mProv.getModel());
-    }
-
     private class WsdlPartnerLinkTypeTreeView
             extends JPanel implements ExplorerManager.Provider {
 

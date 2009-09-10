@@ -314,8 +314,10 @@ public final class CustomizerComponentFactory {
         void reloadData(Map<String, Boolean> publicPackages) {
             selected = new Boolean[publicPackages.size()];
             publicPackages.values().toArray(selected);
-            originalSelected = new Boolean[publicPackages.size()];
-            System.arraycopy(selected, 0, originalSelected, 0, selected.length);
+            if (originalSelected == null) {
+                originalSelected = new Boolean[publicPackages.size()];
+                System.arraycopy(selected, 0, originalSelected, 0, selected.length);
+            }
             pkgNames = new String[publicPackages.size()];
             publicPackages.keySet().toArray(pkgNames);
             fireTableDataChanged();
@@ -352,17 +354,20 @@ public final class CustomizerComponentFactory {
             selected[rowIndex] = (Boolean) aValue;
             fireTableCellUpdated(rowIndex, 0);
         }
-        
-        String[] getSelectedPackages() {
+
+        /**
+         * Returns a (sorted) set of selected packages.
+         * Set is newly created each time the method gets called
+         * @return set of selected packages
+         */
+        Set<String> getSelectedPackages() {
             Set<String> s = new TreeSet<String>();
             for (int i = 0; i < pkgNames.length; i++) {
                 if (selected[i]) {
                     s.add(pkgNames[i]);
                 }
             }
-            String[] result = new String[s.size()];
-            s.toArray(result);
-            return result;
+            return s;
         }
         
         public boolean isChanged() {
@@ -407,9 +412,8 @@ public final class CustomizerComponentFactory {
             super.fireIntervalRemoved(this, 0, friends.size());
         }
         
-        String[] getFriends() {
-            String[] result = new String[friends.size()];
-            return friends.toArray(result);
+        Set<String> getFriends() {
+            return Collections.unmodifiableSet(friends);
         }
         
         boolean isChanged() {

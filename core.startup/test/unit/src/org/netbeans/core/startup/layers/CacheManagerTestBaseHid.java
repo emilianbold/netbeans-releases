@@ -42,7 +42,6 @@
 package org.netbeans.core.startup.layers;
 
 import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.beans.BeanInfo;
 import java.io.IOException;
@@ -55,6 +54,7 @@ import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 /** Test layer cache managers generally.
  * @author Jesse Glick
@@ -144,10 +144,8 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         assertEquals("one too", attr(f, "foo/test3", "y"));
         assertEquals("", slurp(f, "foo/test4"));
         // #29356: methodvalue should pass in MultiFileObject, not the original FileObject:
-        FixedFileSystem ffs = new FixedFileSystem("ffs", "FFS");
-        FixedFileSystem.Instance i = new FixedFileSystem.Instance(false, null, null, null, (URL)null);
-        i.writeAttribute("x", "val");
-        ffs.add("foo/29356", i);
+        FileSystem ffs = FileUtil.createMemoryFileSystem();
+        FileUtil.createData(ffs.getRoot(), "foo/29356").setAttribute("x", "val");
         MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {f, ffs});
         assertEquals("val", attr(ffs, "foo/29356", "x"));
         assertEquals("val", attr(mfs, "foo/29356", "x"));
@@ -156,15 +154,16 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         assertEquals("val/map2", attr(mfs, "foo/29356", "map2"));
         assertEquals("Ahoj", attr(mfs, "foo/29356", "mapDisplayName"));
 
+        FileSystem.Status s = FileUtil.getConfigRoot().getFileSystem().getStatus();
         FileObject annot = f.findResource("foo/29356");
-        String annotName = SystemFileSystem.annotateName(annot);
+        String annotName = s.annotateName(null, Collections.singleton(annot));
         assertEquals("Ahoj", annotName);
 
-        Image img = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_16x16);
+        Image img = s.annotateIcon(null, BeanInfo.ICON_COLOR_16x16, Collections.singleton(annot));
         assertNotNull("Icon provided", img);
         assertEquals("height", 16, img.getHeight(this));
         assertEquals("width", 16, img.getHeight(this));
-        Image img32 = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_32x32);
+        Image img32 = s.annotateIcon(null, BeanInfo.ICON_COLOR_32x32, Collections.singleton(annot));
         assertNotNull("Icon 32 provided", img32);
         assertEquals("height", 32, img32.getHeight(this));
         assertEquals("width", 32, img32.getHeight(this));

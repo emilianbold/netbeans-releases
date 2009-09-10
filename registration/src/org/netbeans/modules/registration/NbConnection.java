@@ -118,7 +118,7 @@ class NbConnection {
         + Thread.currentThread().getName());
         File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
-        if (statusFile.exists()) {
+        if (statusFile.exists() && statusFile.length() > 0) {
             LOG.log(Level.FINE,"Load registration status from:" + statusFile);
             //Status file exists, check its content
             BufferedInputStream in = null;

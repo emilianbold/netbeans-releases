@@ -131,7 +131,7 @@ made subject to such option by the copyright holder.
                 <xsl:attribute name="if">no.netbeans.home</xsl:attribute>
 
                 <property file="${{basedir}}/nbproject/private/private.properties"/>
-                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform10"/>
+                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform11"/>
                 <property name="netbeans.user" value="${{caps.netbeans.user}}"/>
                 <property name="from.commandline" value="true"/>
             </target>

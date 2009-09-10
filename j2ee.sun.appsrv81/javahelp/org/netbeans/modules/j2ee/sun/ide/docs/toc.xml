@@ -8,10 +8,10 @@
 <tocitem text="IDE Basics" expand="false">
     <tocitem text="Servers and Databases">
         <tocitem text="Servers">
-            <tocitem text="Sun Java System Application Server/GlassFish">
-                <tocitem text="About the Sun Java System Application Server/GlassFish"  target="aboutplugin"/>
-                <tocitem text="Working with the Sun Java System Application Server/GlassFish"  target="working_withsjs"/>
-                <tocitem text="Sun Java System Application Server/GlassFish Tasks: Quick Reference"  target="sjs_quickref"/>
+            <tocitem text="GlassFish Application Server">
+                <tocitem text="About the GlassFish Application Server"  target="aboutplugin"/>
+                <tocitem text="Working with the GlassFish Application Server"  target="working_withsjs"/>
+                <tocitem text="GlassFish Application Server Tasks: Quick Reference"  target="sjs_quickref"/>
                 <tocitem text="Registering a Server Instance"  target="register_appserver"/>
                 <tocitem text="Viewing the Server in the IDE"  target="viewing_appserver"/>
                 <tocitem text="Viewing the Server Log File"  target="viewing_logfile"/>

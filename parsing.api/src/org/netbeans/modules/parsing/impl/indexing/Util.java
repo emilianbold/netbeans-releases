@@ -46,7 +46,10 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -153,6 +156,17 @@ public final class Util {
         return false;
     }
 
+    public static FileObject getFileObject(Document doc) {
+        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof FileObject) {
+            return (FileObject)sdp;
+        }
+        if (sdp instanceof DataObject) {
+            return ((DataObject)sdp).getPrimaryFile();
+        }
+        return null;
+    }
+    
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
     
     private Util() {

@@ -42,6 +42,8 @@
 package org.netbeans.spi.queries;
 
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import org.netbeans.modules.queries.UnknownEncoding;
 import org.openide.filesystems.FileObject;
 
@@ -70,8 +72,7 @@ import org.openide.filesystems.FileObject;
  * by calling the {@link FileEncodingQueryImplementation#throwUnknownEncoding} method.
  * </p>
  * </div>
- * @see org.netbeans.modules.queries/1 1.9
- * @since org.netbeans.modules.projectapi/1 1.13
+ * @since org.netbeans.modules.queries/1 1.9
  * @author Tomas Zezula
  */
 public abstract class FileEncodingQueryImplementation {

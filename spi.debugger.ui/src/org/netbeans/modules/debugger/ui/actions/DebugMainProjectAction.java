@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -52,7 +53,6 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
@@ -64,11 +64,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -120,8 +117,20 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
         JPopupMenu menu = new JPopupMenu();
         JButton button = DropDownButtonFactory.createDropDownButton(
                 new ImageIcon(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), menu);
-        JMenuItem item = new JMenuItem(Actions.cutAmpersand((String) getValue(NAME)));//"<html><b>"+Actions.cutAmpersand((String) getValue(NAME))+"</b></html>") {
+        final JMenuItem item = new JMenuItem(Actions.cutAmpersand((String) delegate.getValue("menuText")));
         item.setEnabled(delegate.isEnabled());
+
+        delegate.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if ("enabled".equals(propName)) {
+                    item.setEnabled((Boolean)evt.getNewValue());
+                } else if ("menuText".equals(propName)) {
+                    item.setText(Actions.cutAmpersand((String) evt.getNewValue()));
+                }
+            }
+        });
+
         menu.add(item);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -133,9 +142,9 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
             DataObject obj = DataObject.find(fo);
             InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
             ConnectAction ca = (ConnectAction) ic.instanceCreate();
-            item = new JMenuItem(Actions.cutAmpersand((String) ca.getValue(NAME)));
-            Actions.connect(item, ca);
-            menu.add(item);
+            JMenuItem item2 = new JMenuItem(Actions.cutAmpersand((String) ca.getValue(NAME)));
+            Actions.connect(item2, ca);
+            menu.add(item2);
         } catch (Exception nsee) {
             Exceptions.printStackTrace(nsee);
         }

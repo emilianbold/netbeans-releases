@@ -190,16 +190,11 @@ public class OperationPanel extends javax.swing.JPanel {
     }
     
     private JComponent getElementsComponent (List<UpdateElement> elements) {
-        JTextPane area = new JTextPane ();
-        area.setEditable (false);
-        area.setContentType ("text/html"); // NOI18N
-        String body = new String ();
+        StringBuilder body = new StringBuilder ();
         for (UpdateElement el : elements) {
-            body = body + el.getDisplayName () + "<br>"; // NOI18N
+            body.append(el.getDisplayName () + "<br>"); // NOI18N
         }
-        area.setText (body);
-        area.setOpaque (false);
-        return area;
+        return getElementsComponent(body.toString());
     }
     
     private JComponent getElementsComponent (String msg) {

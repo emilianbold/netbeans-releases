@@ -202,7 +202,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                 return res == ELExpression.EL_BEAN;
             }
             // is the a reachable tag file?
-            return (getTagFile(tokenSequence, jspSup) != null);
+            return (canBeTagFile(tokenSequence, jspSup));
             
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
@@ -261,7 +261,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
         }
         Token<?> token = tokenSequence.token();
         
-        if (getTagFile(tokenSequence, jspSup) != null){
+        if (canBeTagFile(tokenSequence, jspSup)){
             // a reachable tag file.
             int start = token.offset(tokenHierarchy);
             int end = token.offset(tokenHierarchy) + token.length();
@@ -443,6 +443,21 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
         }
     }
     
+    private boolean canBeTagFile(TokenSequence<?> tokenSequence, JspSyntaxSupport jspSup){
+        Token token = tokenSequence.token();
+        if(token.id() == JspTokenId.TAG) {
+            String image = token.text().toString().trim();
+            if (image.startsWith("<")) {                                 // NOI18N
+                image = image.substring(1).trim();
+            }
+            if (!image.startsWith("jsp:") && image.indexOf(':') != -1){  // NOI18N
+                return true;
+            }
+
+        }
+        return false;
+    }
+
     private FileObject getTagFile(TokenSequence<?> tokenSequence, JspSyntaxSupport jspSup){
         Token token = tokenSequence.token();
         if(token.id() == JspTokenId.TAG) {
@@ -457,7 +472,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                     if (libInfo != null){
                         TagFileInfo fileInfo = libInfo.getTagFile(getTagName(image));
                         if (fileInfo != null)
-                            return JspUtils.getFileObject(jspSup.getDocument(), 
+                            return JspUtils.getFileObject(jspSup.getDocument(),
                                     fileInfo.getPath());
                     }
                 }

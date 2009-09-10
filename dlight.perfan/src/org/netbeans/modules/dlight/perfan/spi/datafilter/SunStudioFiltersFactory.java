@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.perfan.spi.datafilter;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -59,12 +60,20 @@ public class SunStudioFiltersFactory implements DataFilterFactory {
             return new HotSpotFunctionsFilter(filterSpec);
         }
 
+        if (THAConfiguration.THA_DATA_FILTER_NAME.equals(filterID)){
+            return new THAFilter(filterSpec);
+        }
+        if (THAConfiguration.THA_STARTUP_FILTER_NAME.equals(filterID)){
+            return new THAStartupFilter(filterSpec);
+        }
         return null;
     }
 
     public Collection<String> getSupportedFilterIDs() {
         return Arrays.asList(
                 CollectedObjectsFilterID,
-                HotSpotFunctionsFilterID);
+                HotSpotFunctionsFilterID,
+                THAConfiguration.THA_DATA_FILTER_NAME,
+                THAConfiguration.THA_STARTUP_FILTER_NAME);
     }
 }

@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -212,5 +213,21 @@ public class Util {
             }
         }
         return (path.delete());
+    }
+
+    /**
+     * Returns first instance of class from a collection.
+     * @param <T>  class to search for
+     * @param clazz  class to search for
+     * @param objects  collection to search in
+     * @return first instance of class from collection
+     */
+    public static <T> T firstInstanceOf(Class<T> clazz, Collection<? super T> objects) {
+        for (Object obj : objects) {
+            if (clazz.isAssignableFrom(obj.getClass())) {
+                return clazz.cast(obj);
+            }
+        }
+        return null;
     }
 }

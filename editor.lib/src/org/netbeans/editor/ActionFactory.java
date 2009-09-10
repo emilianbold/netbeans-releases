@@ -2031,7 +2031,10 @@ public class ActionFactory {
     
     }
 
-    /** Switch visibility of line numbers in editor */
+    /**
+     * Switch visibility of line numbers in editor
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
     //@EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
     // Registration in createActions() due to getPopupMenuItem()
     public static class ToggleLineNumbersAction extends LocalBaseAction {

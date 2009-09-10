@@ -57,16 +57,13 @@ import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
-import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -86,7 +83,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private static final String PREFERRED_ID = "CssPreviewTC";//NOI18N
     
-    CssPreviewPanel previewPanel = new CssPreviewPanel();
+    private CssPreviewComponent previewPanel;
     
     private CssPreviewable lastSelectedPreviewable;
     
@@ -131,6 +128,27 @@ public final class CssPreviewTopComponent extends TopComponent {
         initComponents();
         setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent")); //NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+
+        if (EmbeddedBrowserFactory.getDefault().isEnabled()) {
+            previewPanel = new CssWebPreviewPanel();
+        } else {
+            previewPanel = new CssPreviewPanel();
+        }
+
+        EmbeddedBrowserFactory.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                previewPanel.dispose();
+                remove(previewPanel.getComponent());
+                if (EmbeddedBrowserFactory.getDefault().isEnabled()) {
+                    previewPanel = new CssWebPreviewPanel();
+                } else {
+                    previewPanel = new CssPreviewPanel();
+                }
+                add(previewPanel.getComponent(), BorderLayout.CENTER);
+                revalidate();
+                repaint();
+            }
+        });
 
         NO_PREVIEW_PANEL = makeMsgPanel(NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview"));
         add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
@@ -216,7 +234,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     private void setPreviewing(String title) {
         setName(title);
         removeAll();
-        add(previewPanel, BorderLayout.CENTER);
+        add(previewPanel.getComponent(), BorderLayout.CENTER);
         previewing = true;
         error = false;
         
@@ -270,6 +288,7 @@ public final class CssPreviewTopComponent extends TopComponent {
         return getDefault();
     }
     
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -316,7 +335,7 @@ public final class CssPreviewTopComponent extends TopComponent {
 
             LOGGER.log(Level.FINE, "preview - setting content " + htmlCode); //NOI18N
             //set XHTML preview panel content - the generated sample
-            previewPanel.panel().setDocument(new ByteArrayInputStream(htmlCode.toString().getBytes()), relativeURL);
+            previewPanel.setDocument(new ByteArrayInputStream(htmlCode.toString().getBytes()), relativeURL);
         } catch (Throwable e) {
             //an error - show message into the preview
             setError();
@@ -365,10 +384,12 @@ public final class CssPreviewTopComponent extends TopComponent {
 //        super.componentActivated();
 //    }
 //    
-//    @Override
-//    public void componentClosed() {
+
+    @Override
+    public void componentClosed() {
+        previewPanel.dispose();
 //        WindowManager.getDefault().getRegistry().removePropertyChangeListener(WINDOW_REGISTRY_LISTENER);
-//    }
+    }
     
     /** replaces this in object stream */
     public Object writeReplace() {

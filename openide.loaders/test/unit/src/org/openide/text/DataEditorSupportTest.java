@@ -44,6 +44,7 @@ package org.openide.text;
 
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,6 +74,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -123,6 +126,7 @@ public class DataEditorSupportTest extends NbTestCase {
     @Override
     protected void setUp () throws Exception {
         RUNNING = this;
+        DataEditorSupport.TABNAMES_HTML = false;
         
         fs = org.openide.filesystems.FileUtil.createMemoryFileSystem ();
         org.openide.filesystems.Repository.getDefault ().addFileSystem (fs);
@@ -804,6 +808,58 @@ public class DataEditorSupportTest extends NbTestCase {
         public String getHtmlDisplayName() {
             return "<b>" + getDisplayName() + "</b>";
         }
+    }
+
+    public void testAnnotateName() throws Exception {
+        assertEquals("foo", DataEditorSupport.annotateName("foo", false, false, false));
+        assertEquals("foo *", DataEditorSupport.annotateName("foo", false, true, false));
+        assertEquals("foo [r/o]", DataEditorSupport.annotateName("foo", false, false, true));
+        assertEquals("foo [r/o] *", DataEditorSupport.annotateName("foo", false, true, true));
+        assertEquals("<html>foo", DataEditorSupport.annotateName("foo", true, false, false));
+        assertEquals("<html>foo *", DataEditorSupport.annotateName("foo", true, true, false));
+        assertEquals("<html>foo [r/o]", DataEditorSupport.annotateName("foo", true, false, true));
+        assertEquals("<html>foo [r/o] *", DataEditorSupport.annotateName("foo", true, true, true));
+        assertEquals("<html>foo", DataEditorSupport.annotateName("<html>foo", true, false, false));
+        assertEquals("<html>foo *", DataEditorSupport.annotateName("<html>foo", true, true, false));
+        assertEquals("<html>foo [r/o]", DataEditorSupport.annotateName("<html>foo", true, false, true));
+        assertEquals("<html>foo [r/o] *", DataEditorSupport.annotateName("<html>foo", true, true, true));
+        DataEditorSupport.TABNAMES_HTML = true;
+        assertEquals("foo", DataEditorSupport.annotateName("foo", false, false, false));
+        assertEquals("foo *", DataEditorSupport.annotateName("foo", false, true, false));
+        assertEquals("foo [r/o]", DataEditorSupport.annotateName("foo", false, false, true));
+        assertEquals("foo [r/o] *", DataEditorSupport.annotateName("foo", false, true, true));
+        assertEquals("<html>foo", DataEditorSupport.annotateName("foo", true, false, false));
+        assertEquals("<html><b>foo</b>", DataEditorSupport.annotateName("foo", true, true, false));
+        assertEquals("<html><i>foo</i>", DataEditorSupport.annotateName("foo", true, false, true));
+        assertEquals("<html><i><b>foo</b></i>", DataEditorSupport.annotateName("foo", true, true, true));
+        assertEquals("<html>foo", DataEditorSupport.annotateName("<html>foo", true, false, false));
+        assertEquals("<html><b>foo</b>", DataEditorSupport.annotateName("<html>foo", true, true, false));
+        assertEquals("<html><i>foo</i>", DataEditorSupport.annotateName("<html>foo", true, false, true));
+        assertEquals("<html><i><b>foo</b></i>", DataEditorSupport.annotateName("<html>foo", true, true, true));
+        try {
+            DataEditorSupport.annotateName(null, true, false, false);
+            fail();
+        } catch (NullPointerException x) {/*expected*/}
+    }
+
+    public void testToolTip() throws Exception {
+        clearWorkDir();
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        FileObject fo = lfs.getRoot().createData("foo.txt");
+        assertNotNull(fo);
+        File f = FileUtil.toFile(fo);
+        assertNotNull(f);
+        String path = f.getAbsolutePath();
+        assertEquals(path, DataEditorSupport.toolTip(fo, false, false));
+        assertEquals(path, DataEditorSupport.toolTip(fo, true, false));
+        assertEquals(path, DataEditorSupport.toolTip(fo, false, true));
+        assertEquals(path, DataEditorSupport.toolTip(fo, true, true));
+        DataEditorSupport.TABNAMES_HTML = true;
+        assertEquals(path, DataEditorSupport.toolTip(fo, false, false));
+        assertEquals(path + " (modified)", DataEditorSupport.toolTip(fo, true, false));
+        assertEquals(path + " (read-only)", DataEditorSupport.toolTip(fo, false, true));
+        assertEquals(path + " (modified) (read-only)", DataEditorSupport.toolTip(fo, true, true));
     }
     
 }

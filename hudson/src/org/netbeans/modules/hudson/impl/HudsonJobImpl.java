@@ -195,7 +195,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
                     }
                     public void setValue(Boolean val) {
                         if (!getValue().equals(val)) {
-                            instance.setSalient(HudsonJobImpl.this, val);
+                            setSalient(val);
                         }
                     }
                 }
@@ -271,6 +271,10 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
 
     public boolean isSalient() {
         return instance.isSalient(this);
+    }
+
+    public void setSalient(boolean b) {
+        instance.setSalient(this, b);
     }
 
     final List<HudsonMavenModule> mavenModules = new LinkedList<HudsonMavenModule>();

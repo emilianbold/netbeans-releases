@@ -54,8 +54,8 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -81,6 +81,7 @@ public class Bugzilla {
         BugzillaCorePlugin.setConfigurationCacheFile(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
         brc = new BugzillaRepositoryConnector();
         clientManager = getRepositoryConnector().getClientManager();
+        BugzillaIssueProvider.getInstance();
         try {
             bcp.start(null);
         } catch (Exception ex) {
@@ -88,7 +89,7 @@ public class Bugzilla {
         }
     }
 
-    public static Bugzilla getInstance() {
+    public static synchronized Bugzilla getInstance() {
         if(instance == null) {
             instance = new Bugzilla();
         }
@@ -144,14 +145,14 @@ public class Bugzilla {
         }
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().add(repository);
-            BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
+            BugzillaConfig.getInstance().putRepository(repository.getID(), repository);
         }
     }
 
     public void removeRepository(BugzillaRepository repository) {
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
-            BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
+            BugzillaConfig.getInstance().removeRepository(repository.getID());
         }
     }
 

@@ -135,7 +135,8 @@ public class RollbackAction extends ContextAction {
                                             "MSG_ROLLBACK_FORCE_UPDATE", root.getAbsolutePath())); // NOI18N
                                     list = HgCommand.doUpdateAll(root, true, null);
                                     
-                                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();        
+                                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                                    // XXX containsFileOfStatus would be better (do not test exclusions from commit)
                                     if(cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0){
                                         ConflictResolvedAction.resolved(ctx);                                       
                                     }

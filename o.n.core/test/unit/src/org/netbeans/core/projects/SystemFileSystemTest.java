@@ -78,6 +78,7 @@ public class SystemFileSystemTest extends NbTestCase {
     private File satJar;
     private Module satModule;
     protected @Override void setUp() throws Exception {
+        // XXX simplify all this and move to org.openide.filesystems.RepositoryTest
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         org.netbeans.core.startup.Main.initializeURLFactory ();
         try {
@@ -120,6 +121,7 @@ public class SystemFileSystemTest extends NbTestCase {
     }
     
     public void testContentOfFileSystemIsInfluencedByLookup () throws Exception {
+        // XXX move to org.netbeans.core.startup.layers.SystemFileSystemTest
         FileSystem mem = FileUtil.createMemoryFileSystem();
         String dir = "/yarda/own/file";
         org.openide.filesystems.FileUtil.createFolder (mem.getRoot (), dir);

@@ -41,6 +41,8 @@ package org.netbeans.core.browser.xulrunner;
 
 import java.io.File;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -51,6 +53,7 @@ import org.netbeans.core.IDESettings;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbPreferences;
 
 /**
  * Enables/disables embedded browser according to OS, CPU architecture etc.
@@ -68,6 +71,11 @@ public class BrowserManager {
         initXULRunnerHome();
         //TODO implement and install WindowCreator
         initProfileDir();
+        NbPreferences.forModule(IDESettings.class).addPreferenceChangeListener(new PreferenceChangeListener() {
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                changeSupport.fireChange();
+            }
+        });
     }
     
     public static BrowserManager getDefault() {

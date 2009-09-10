@@ -45,9 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileAttributeEvent;
@@ -60,7 +58,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -184,69 +181,82 @@ public final class CompoundFolderChildren implements FileChangeListener {
     }
 
     public void fileFolderCreated(FileEvent fe) {
-        rebuild();
+        fe.runWhenDeliveryOver(rebuildRunnable);
     }
 
     public void fileDataCreated(FileEvent fe) {
-        rebuild();
+        fe.runWhenDeliveryOver(rebuildRunnable);
     }
 
     public void fileChanged(FileEvent fe) {
-        pcs.firePropertyChange(PROP_CHILDREN, null, null);
+        fe.runWhenDeliveryOver(propChangeRunnable);
     }
 
     public void fileDeleted(FileEvent fe) {
-        rebuild();
+        fe.runWhenDeliveryOver(rebuildRunnable);
     }
 
     public void fileRenamed(FileRenameEvent fe) {
-        rebuild();
+        fe.runWhenDeliveryOver(rebuildRunnable);
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
-        if (FileUtil.affectsOrder(fe)) {
-            if (!filterEvents(fe)) {
-                rebuild();
-            } else {
-                rebuildTask.schedule(DELAY);
-            }
-        }
+//        if (FileUtil.affectsOrder(fe)) {
+//            if (!filterEvents(fe)) {
+//                rebuild();
+//            } else {
+//                rebuildTask.schedule(DELAY);
+//            }
+//        }
+        fe.runWhenDeliveryOver(rebuildRunnable);
     }
 
-    // ignoring loads of fileAttributeChanged events fired when installing plugins
-    // see issue #161201 and #168536
-    private static final int DELAY = 1000; // milliseconds
-    private final RequestProcessor.Task rebuildTask = RequestProcessor.getDefault().create(new Runnable() {
+    private final Runnable rebuildRunnable = new Runnable() {
         public void run() {
-            synchronized (times) {
-                times.clear();
-            }
             rebuild();
         }
-    });
-    private final Map<String, Long> times = new HashMap<String, Long>();
-    private long rebuildCnt = 0;
-    private boolean filterEvents(FileEvent event) {
-        // filter out duplicate events
-        synchronized (times) {
-            Long timestamp = times.get(event.getFile().getPath());
-            times.put(event.getFile().getPath(), event.getTime());
-            boolean filterOut = timestamp != null && Math.abs(event.getTime() - timestamp) < DELAY;
-            if (LOG.isLoggable(Level.FINER)) {
-                if (filterOut) {
-                    LOG.fine("Filtering out filesystem event: [" + printEvent(event) + "]"); //NOI18N
-                } else {
-                    LOG.fine("Processing filesystem event: [" + printEvent(event) + "]"); //NOI18N
-                }
-            }
-            return filterOut;
+    };
 
+    private final Runnable propChangeRunnable = new Runnable() {
+        public void run() {
+            pcs.firePropertyChange(PROP_CHILDREN, null, null);
         }
-    }
+    };
 
-    private static String printEvent(FileEvent event) {
-        return event.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(event)) //NOI18N
-                + ", ts=" + event.getTime() //NOI18N
-                + ", path=" + event.getFile().getPath(); //NOI18N
-    }
+//    // ignoring loads of fileAttributeChanged events fired when installing plugins
+//    // see issue #161201 and #168536
+//    private static final int DELAY = 1000; // milliseconds
+//    private final RequestProcessor.Task rebuildTask = RequestProcessor.getDefault().create(new Runnable() {
+//        public void run() {
+//            synchronized (times) {
+//                times.clear();
+//            }
+//            rebuild();
+//        }
+//    });
+//    private final Map<String, Long> times = new HashMap<String, Long>();
+    private long rebuildCnt = 0;
+//    private boolean filterEvents(FileEvent event) {
+//        // filter out duplicate events
+//        synchronized (times) {
+//            Long timestamp = times.get(event.getFile().getPath());
+//            times.put(event.getFile().getPath(), event.getTime());
+//            boolean filterOut = timestamp != null && Math.abs(event.getTime() - timestamp) < DELAY;
+//            if (LOG.isLoggable(Level.FINER)) {
+//                if (filterOut) {
+//                    LOG.fine("Filtering out filesystem event: [" + printEvent(event) + "]"); //NOI18N
+//                } else {
+//                    LOG.fine("Processing filesystem event: [" + printEvent(event) + "]"); //NOI18N
+//                }
+//            }
+//            return filterOut;
+//
+//        }
+//    }
+//
+//    private static String printEvent(FileEvent event) {
+//        return event.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(event)) //NOI18N
+//                + ", ts=" + event.getTime() //NOI18N
+//                + ", path=" + event.getFile().getPath(); //NOI18N
+//    }
 }

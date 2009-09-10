@@ -19,8 +19,7 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>A session bean is an enterprise bean that provides a service to a particular 
   user session. A session bean is typically created when the session needs one. Relative to 
-  entity beans, session beans are short-lived. A session bean can be one of two 
-  types:</p>
+  entity beans, session beans are short-lived. A session bean can be of the following types.</p>
 <ul>
   <li><b>Stateless.</b> The bean does not save state information during its conversation 
     with the user. These enterprise beans are useful for simple interactions between 
@@ -41,9 +40,16 @@
       of the lot. The stateful session bean has to store the unprocessed items 
       and enable the end user to add more.</p>
   </li>
+  <li><b>Singleton.</b> (Java EE 6) A singleton session bean is instantiated only once per application
+          and exists for the lifecycle of the application.
+          You can create a singleton bean that the container instantiates when the application
+          starts up by using the <tt>@Startup</tt> annotation.
+
+        <p>An example is a bean that is used to intialize data for an application that can be concurrently accessed by many clients.</p>
+      </li>
 </ul>
 <h3>Interfaces</h3>
-<p>Like all entity beans, session beans can have local interfaces, remote interfaces, 
+<p>Session beans can have local interfaces, remote interfaces,
   or both. Session beans are more likely to have remote interfaces than entity 
   beans and message-driven beans, since they are usually the entry point for access 
   from remote clients.</p>
@@ -52,6 +58,10 @@
   the session bean's modules through its local interfaces. Modules that are not 
   in the same enterprise application must access the bean's methods through its 
   remote interfaces.</p>
+<ul class="notes">
+    <li>In Java EE 6 applications, session beans are not required to have a business interface.
+    if the implementation class is only accessed by local clients.</li>
+</ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="about_entity_beans.html">About Entity Beans</a></dd>

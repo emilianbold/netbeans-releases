@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -111,6 +112,7 @@ public class J2SEProjectProperties {
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
     private static final String COS_MARK = ".netbeans_automatic_build";     //NOI18N
+    private static final Logger LOG = Logger.getLogger(J2SEProjectProperties.class.getName());
     private Integer javacDebugBooleanKind;
     private Integer doJarBooleanKind;
     private Integer javadocPreviewBooleanKind;
@@ -426,13 +428,26 @@ public class J2SEProjectProperties {
                     storeProperties();
                     //Delete COS mark
                     if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
-                        FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR));
-                        if (buildClasses != null) {
-                            FileObject mark = buildClasses.getFileObject(COS_MARK);
-                            if (mark != null) {
-                                final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-                                assert ap != null;
-                                ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                        String buildClassesDir = evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR);
+                        if (buildClassesDir == null) {
+                            //BUILD_CLASSES_DIR is mandatory property => broken project?
+                            //Log
+                            StringBuilder logRecord = new StringBuilder();
+                            logRecord.append("EVALUATOR: "+evaluator.getProperties().toString()+";");       //NOI18N
+                            logRecord.append("PROJECT_PROPS: "+updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).entrySet()+";");    //NOI18N
+                            logRecord.append("PRIVATE_PROPS: "+updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).entrySet()+";");    //NOI18N
+                            assert buildClassesDir != null : logRecord.toString();  //In dev build throw an ae to get issue to find why BUILD_CLASSES_DIR is null
+                            LOG.warning("No build.classes.dir property: " + logRecord.toString()); //In release at least log
+                        }
+                        else {
+                            FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(buildClassesDir);
+                            if (buildClasses != null) {
+                                FileObject mark = buildClasses.getFileObject(COS_MARK);
+                                if (mark != null) {
+                                    final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+                                    assert ap != null;
+                                    ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                                }
                             }
                         }
                     }

@@ -152,9 +152,13 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         optionsPanel.setVisible(false);
         optionsPanel.removeAll();
         String mimeType = (String)languageCombo.getSelectedItem();
-        OptionsPanelController opc = controller.getController(mimeType);
-        JComponent component = opc.getComponent(controller.getLookup());
-        optionsPanel.add(component, BorderLayout.CENTER); 
-        optionsPanel.setVisible(true);  
+        if (mimeType != null) {
+            OptionsPanelController opc = controller.getController(mimeType);
+            if (opc != null) {
+                JComponent component = opc.getComponent(controller.getLookup());
+                optionsPanel.add(component, BorderLayout.CENTER);
+                optionsPanel.setVisible(true);
+            }
+        }
     }
 }

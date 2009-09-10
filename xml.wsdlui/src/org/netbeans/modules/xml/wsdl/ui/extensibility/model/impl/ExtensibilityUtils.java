@@ -72,9 +72,10 @@ import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityEle
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementsFactory;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.AbstractXSDVisitor;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode;
-import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -102,7 +103,7 @@ public class ExtensibilityUtils {
                 ms = Utilities.getModelSource(fileObject, false);
             }
             SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(ms);
-            if (schemaModel.getState() != Model.State.NOT_WELL_FORMED) {
+            if (schemaModel.getState() != State.NOT_WELL_FORMED) {
                 schema = schemaModel.getSchema();
             }
         } catch(Exception ex) {
@@ -251,7 +252,8 @@ class ElementFinderVisitor  extends AbstractXSDVisitor {
     @Override
     public void visit(GlobalElement ge) {
         if (qnames.size() > 0) {
-            if (new QName(ge.getModel().getSchema ().getTargetNamespace(), ge.getName()).equals(qnames.get(0))) {
+            String targetNs = Utility.getTargetNamespace(ge.getModel());
+            if (new QName(targetNs, ge.getName()).equals(qnames.get(0))) {
                 qnames.remove(0);
                 if (qnames.size() == 0) {
                     element = ge;
@@ -266,7 +268,8 @@ class ElementFinderVisitor  extends AbstractXSDVisitor {
     @Override
     public void visit(LocalElement le) {
         if (qnames.size() > 0) {
-            if (new QName(le.getModel().getSchema ().getTargetNamespace(), le.getName()).equals(qnames.get(0))) {
+            String targetNs = Utility.getTargetNamespace(le.getModel());
+            if (new QName(targetNs, le.getName()).equals(qnames.get(0))) {
                 qnames.remove(0);
                 if (qnames.size() == 0) {
                     element = le;

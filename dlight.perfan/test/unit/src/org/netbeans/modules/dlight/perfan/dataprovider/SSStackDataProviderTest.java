@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.junit.After;
@@ -51,6 +52,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -62,6 +64,9 @@ import org.openide.util.Exceptions;
  * @author ak119685
  */
 public class SSStackDataProviderTest {
+    private static final List<Column> fcols = Arrays.asList(
+            SunStudioDCConfiguration.c_eUser,
+            SunStudioDCConfiguration.c_iUser);
 
     public SSStackDataProviderTest() {
     }
@@ -82,17 +87,21 @@ public class SSStackDataProviderTest {
     public void tearDown() {
     }
 
+    @Test
+    public void testFake() {
+        
+    }
     /**
      * Test of getCallers method, of class SSStackDataProvider.
      */
 //    @Test
     public void testGetCallers() {
         System.out.println("getCallers");
-        FunctionCallWithMetric[] path = null;
+        List<FunctionCallWithMetric> path = null;
         boolean aggregate = false;
         SSStackDataProvider instance = new SSStackDataProvider();
         List<FunctionCallWithMetric> expResult = null;
-        List<FunctionCallWithMetric> result = instance.getCallers(path, aggregate);
+        List<FunctionCallWithMetric> result = instance.getCallers(path, fcols, null, aggregate);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -104,11 +113,11 @@ public class SSStackDataProviderTest {
 //    @Test
     public void testGetCallees() {
         System.out.println("getCallees");
-        FunctionCallWithMetric[] path = null;
+        List<FunctionCallWithMetric> path = null;
         boolean aggregate = false;
         SSStackDataProvider instance = new SSStackDataProvider();
         List<FunctionCallWithMetric> expResult = null;
-        List<FunctionCallWithMetric> result = instance.getCallees(path, aggregate);
+        List<FunctionCallWithMetric> result = instance.getCallees(path, fcols, null, aggregate);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -140,7 +149,7 @@ public class SSStackDataProviderTest {
         List<FunctionCallTreeTableNode> path = null;
         SSStackDataProvider instance = new SSStackDataProvider();
         List<FunctionCallTreeTableNode> expResult = null;
-        List<FunctionCallTreeTableNode> result = instance.getChildren(path);
+        List<FunctionCallTreeTableNode> result = instance.getChildren(path, fcols, null);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -183,7 +192,7 @@ public class SSStackDataProviderTest {
     /**
      * Test of getHotSpotFunctions method, of class SSStackDataProvider.
      */
-    @Test
+//    @Test
     public void testGetHotSpotFunctions() {
         System.out.println("getHotSpotFunctions");
         final List<Column> columns = new ArrayList<Column>();

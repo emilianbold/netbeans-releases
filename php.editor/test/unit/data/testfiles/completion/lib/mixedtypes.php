@@ -13,8 +13,6 @@ class Book {
      */
     public $title;
 
-    public $author;
-
     private function __construct($title) {
         $this->title = $title;
     }

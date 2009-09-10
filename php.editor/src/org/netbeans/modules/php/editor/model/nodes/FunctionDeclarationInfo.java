@@ -86,7 +86,7 @@ public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
 
     @Override
     public QualifiedName getQualifiedName() {
-        return QualifiedName.createUnqualifiedName(getOriginalNode().getFunctionName());
+        return QualifiedName.createUnqualifiedName(getName());
     }
 
     @Override

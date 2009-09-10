@@ -63,7 +63,7 @@ public final class ImportUtils {
                 } else if (rest.startsWith("'")){ // NOI18N
                     rest = "\""+rest+"\""; // NOI18N
                 } else {
-                    if (rest.indexOf(' ')>0) { // NOI18N
+                    if (rest.indexOf(' ')>0 || rest.indexOf('=')>0) { // NOI18N
                         rest = "\""+rest+"\""; // NOI18N
                     }
                 }
@@ -144,6 +144,10 @@ public final class ImportUtils {
                     if (inQuote == 0) {
                         value.setLength(0);
                         inValue = true;
+                    } else {
+                        if (inValue) {
+                            value.append(c);
+                        }
                     }
                     i++;
                     continue;

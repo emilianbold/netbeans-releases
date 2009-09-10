@@ -149,7 +149,7 @@ public final class TimerTicker
         return "Timer"; //NOI18N
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
 
     }
 }

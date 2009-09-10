@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,7 +63,6 @@ import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -73,8 +71,6 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.Status;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -107,8 +103,6 @@ public class KenaiConnection implements PropertyChangeListener {
     private HashMap<String, LinkedList<Message>> privateMessageQueue = new HashMap<String, LinkedList<Message>>();
 
     private static ChatNotifications chatNotifications = ChatNotifications.getDefault();
-
-    private final HashSet<String> onlineUsers = new HashSet<String>();
 
 
     /**
@@ -210,7 +204,7 @@ public class KenaiConnection implements PropertyChangeListener {
         try {
             connect();
             initChats();
-            PresenceIndicator.getDefault().setStatus(Status.ONLINE);
+            PresenceIndicator.getDefault().setStatus(Kenai.Status.ONLINE);
             isConnectionFailed = false;
         } catch (XMPPException ex) {
             isConnectionFailed = true;
@@ -242,12 +236,6 @@ public class KenaiConnection implements PropertyChangeListener {
         } else if (!muc.isJoined())
             tryJoinChat(muc);
         isConnectionFailed=false;
-    }
-
-    public boolean isUserOnline(String user) {
-        synchronized (onlineUsers) {
-            return onlineUsers.contains(user);
-        }
     }
 
     /**
@@ -297,14 +285,17 @@ public class KenaiConnection implements PropertyChangeListener {
         public void processPacket(Packet packet) {
             synchronized (KenaiConnection.this) {
                 final Message msg = (Message) packet;
-                final String name = StringUtils.parseName(msg.getFrom());
+                String n = StringUtils.parseName(msg.getFrom());
+                if (n.contains("@")) {
+                    n = StringUtils.parseName(n);
+                }
+                final String name = n;
                 final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", "jabber:client");
                 if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) {
-                    final String name2 = msg.getFrom().substring(0, msg.getFrom().indexOf('@'));
                     post(new Runnable() {
                         public void run() {
                             try {
-                                Kenai.getDefault().getProject(name2).firePropertyChange(KenaiProject.PROP_PROJECT_NOTIFICATION, null, ne);
+                                Kenai.getDefault().getProject(name).firePropertyChange(KenaiProject.PROP_PROJECT_NOTIFICATION, null, ne.getNotification());
                             } catch (KenaiException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -387,12 +378,12 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
     public void propertyChange(final PropertyChangeEvent e) {
-        if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+        if (Kenai.PROP_XMPP_LOGIN.equals(e.getPropertyName())) {
             if (e.getNewValue() != null) {
                 post(new Runnable() {
                     public void run() {
                         synchronized(KenaiConnection.this) {
-                            final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
+                            final PasswordAuthentication pa = Kenai.getDefault().getPasswordAuthentication();
                             USER = pa.getUserName();
                             tryConnect();
                         }
@@ -415,9 +406,8 @@ public class KenaiConnection implements PropertyChangeListener {
                         privateListeners.clear();
                         privateMessageQueue.clear();
                         privateChats.clear();
-                        SPIAccessor.DEFAULT.clear();
                     }
-                    PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
+                    PresenceIndicator.getDefault().setStatus(Kenai.Status.LOGGED_IN);
                     ChatNotifications.getDefault().clearAll();
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -430,8 +420,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private String USER;
     
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
-    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER; // NOI18N
+    private static final String CHAT_ROOM = "@muc." + Kenai.getDefault().getName(); // NOI18N
 
     /**
      * TODO: should return kenai account name
@@ -464,23 +453,7 @@ public class KenaiConnection implements PropertyChangeListener {
              xmppProcessor.post(new Runnable() {
 
                 public void run() {
-                    synchronized (onlineUsers) {
-                        onlineUsers.clear();
-                        for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
-                            Iterator<String> i = muc.getOccupants();
-                            while (i.hasNext()) {
-                                String uname = StringUtils.parseResource(i.next());
-                                onlineUsers.add(uname);
-                            }
-                        }
-                    }
-                    Presence presence = (Presence) packet;
-                    KenaiUser user = KenaiUser.forName(StringUtils.parseResource(packet.getFrom()));
-                    SPIAccessor.DEFAULT.firePropertyChange(
-                            user,
-                            presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
                     SwingUtilities.invokeLater(new Runnable() {
-
                         public void run() {
                             ChatTopComponent.refreshContactList();
                         }

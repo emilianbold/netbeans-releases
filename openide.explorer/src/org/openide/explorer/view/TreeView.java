@@ -1119,20 +1119,21 @@ public abstract class TreeView extends JScrollPane {
     void removedNodes(List<VisualizerNode> removed) {
         TreeSelectionModel sm = tree.getSelectionModel();
 	TreePath[] selPaths = (sm != null) ? sm.getSelectionPaths() : null;
-        if (selPaths == null) return;
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
             visHolder.removeRecur(vn.getChildren(false));
-            TreePath path = new TreePath(vn.getPathToRoot());
-	    for(TreePath tp : selPaths) {
-                if (path.isDescendant(tp)) {
-                    if (remSel == null) {
-                        remSel = new ArrayList<TreePath>();
+            if (selPaths != null) {
+                TreePath path = new TreePath(vn.getPathToRoot());
+                for(TreePath tp : selPaths) {
+                    if (path.isDescendant(tp)) {
+                        if (remSel == null) {
+                            remSel = new ArrayList<TreePath>();
+                        }
+                        remSel.add(tp);
                     }
-                    remSel.add(tp);
                 }
-	    }
+            }
         }
         
         if (remSel != null) {
@@ -1937,7 +1938,7 @@ public abstract class TreeView extends JScrollPane {
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
 
-            int startIndex = origSelectionPaths != null ? getRowForPath(origSelectionPaths[0]) : 0;
+            int startIndex = origSelectionPaths != null ? Math.max(0, getRowForPath(origSelectionPaths[0])) : 0;
             int size = getRowCount();
 
             if (size == 0) {
@@ -1997,10 +1998,10 @@ public abstract class TreeView extends JScrollPane {
 
             int max = getRowCount();
             if (substring == null) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Substring is null");
             }
             if (startingRow < 0 || startingRow >= max) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("startingRow = " + startingRow + " rowCount = " + max);
             }
             substring = substring.toUpperCase();
 
@@ -2235,6 +2236,7 @@ public abstract class TreeView extends JScrollPane {
             }
 
             public void focusLost(FocusEvent e) {
+                results.clear();
                 removeSearchField();
             }
         }

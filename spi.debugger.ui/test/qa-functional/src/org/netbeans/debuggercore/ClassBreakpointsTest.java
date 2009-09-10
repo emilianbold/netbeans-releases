@@ -70,7 +70,19 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author ehucka, Revision Petr Cyhelsky
  */
-public class ClassBreakpointsTest extends JellyTestCase {
+public class ClassBreakpointsTest extends DebuggerTestCase {
+
+    private static String[] tests = new String[]{
+        "testClassBreakpointCreation",
+        "testClassBreakpointPrefilledInClass",
+        "testClassBreakpointPrefilledInInitializer",
+        "testClassBreakpointPrefilledInConstructor",
+        "testClassBreakpointPrefilledInMethod",
+        "testClassBreakpointPrefilledInSecondClass",
+        "testClassBreakpointFunctionalityOnPrimaryClass",
+        "testClassBreakpointFunctionalityOnSecondClass",
+        "testClassBreakpointFunctionalityWithFilter"
+    };
 
     //MainWindowOperator.StatusTextTracer stt = null;
     /**
@@ -94,19 +106,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
      * @return
      */
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ClassBreakpointsTest.class).addTest(
-                    "testClassBreakpointCreation",
-                    "testClassBreakpointPrefilledInClass",
-                    "testClassBreakpointPrefilledInInitializer",
-                    "testClassBreakpointPrefilledInConstructor",
-                    "testClassBreakpointPrefilledInMethod",
-                    "testClassBreakpointPrefilledInSecondClass",
-                    "testClassBreakpointFunctionalityOnPrimaryClass",
-                    "testClassBreakpointFunctionalityOnSecondClass",
-                    "testClassBreakpointFunctionalityWithFilter"
-                )
-            .enableModules(".*").clusters(".*"));
+        return createModuleTest(ClassBreakpointsTest.class, tests);
     }
 
     /**
@@ -114,18 +114,8 @@ public class ClassBreakpointsTest extends JellyTestCase {
      */
     @Override
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  ####### ");
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
     }
 
     /**
@@ -298,7 +288,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
             try {
                 Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper", 10000);
             } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.Helper")) {
+                if (!Utilities.checkConsoleForText("Class breakpoint hit for class examples.advanced.Helper",2)) {
                     System.err.println(e.getMessage());
                     throw e;
                 }

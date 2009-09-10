@@ -52,6 +52,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -263,7 +264,9 @@ public class Action {
         boolean compareExactly = !Operator.getDefaultStringComparator().equals("abc", "a"); // NOI18N
         defaultComparator = new DefaultStringComparator(compareExactly, true);
     }
-    
+
+    //This is to suppress the FindBugs warning that all targets throw UnsupportedOperationException
+    @org.netbeans.api.annotations.common.SuppressWarnings("DMI_UNSUPPORTED_METHOD")
     private void perform(int mode) {
         switch (mode) {
             case POPUP_MODE: performPopup(); break;
@@ -290,6 +293,16 @@ public class Action {
             case MENU_MODE: performMenu(nodes); break;
             case API_MODE: performAPI(nodes); break;
             case SHORTCUT_MODE: performShortcut(nodes); break;
+            default: throw new IllegalArgumentException("Wrong Action.MODE");
+        }
+    }
+
+    private void perform(OutlineNode node, int mode) {
+        switch (mode) {
+            case POPUP_MODE: performPopup(node); break;
+            case MENU_MODE: performMenu(node); break;
+            case API_MODE: performAPI(node); break;
+            case SHORTCUT_MODE: performShortcut(node); break;
             default: throw new IllegalArgumentException("Wrong Action.MODE");
         }
     }
@@ -336,6 +349,20 @@ public class Action {
         int modes[] = sequence[getDefaultMode()];
         for (int i=0; i<modes.length; i++) try {
             perform(nodes, modes[i]);
+            return;
+        } catch (UnsupportedOperationException e) {}
+    }
+
+    /**
+     * performs action depending on default mode,<br>
+     * calls performPopup(), performMenu(), performShortcut or performAPI(),<br>
+     * when default mode is not supported, others are tried
+     * @param node node to be action performed on
+     */
+    public void perform(OutlineNode node) {
+        int modes[] = sequence[getDefaultMode()];
+        for (int i=0; i<modes.length; i++) try {
+            perform(node, modes[i]);
             return;
         } catch (UnsupportedOperationException e) {}
     }
@@ -393,6 +420,18 @@ public class Action {
         }
         performMenu();
     }
+
+    public void performMenu(OutlineNode node) {
+        if (menuPath==null)
+            throw new UnsupportedOperationException(getClass().toString()+" does not define menu path");
+        node.select();
+        try {
+            Thread.sleep(SELECTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
+        performMenu();
+    }
     
     /** performs action through main menu
      * @param component component to be action performed on
@@ -425,6 +464,24 @@ public class Action {
      * @throws UnsupportedOperationException when action does not support popup mode */    
     public void performPopup(Node[] nodes) {
         callPopup(nodes).pushMenu(popupPath, "|", getComparator());
+        try {
+            Thread.sleep(AFTER_ACTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
+    }
+
+    /**
+     * Performs action on an OutlineNode through popup menu.
+     *
+     * @param node node to be performed on
+     */
+    public void performPopup(OutlineNode node)
+    {
+        if (popupPath==null) {
+            throw new UnsupportedOperationException(getClass().toString()+" does not define popup path");
+        }
+        node.callPopup().pushMenu(popupPath, "|", getComparator());
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
@@ -550,6 +607,21 @@ public class Action {
         }
         performAPI();
     }
+
+     /** performs action through API
+     * @param node node to be action performed on
+     * @throws UnsupportedOperationException when action does not support API mode */
+    public void performAPI(OutlineNode node) {
+        if (systemActionClass==null)
+            throw new UnsupportedOperationException(getClass().toString()+" does not define SystemAction");
+        node.select();
+        try {
+            Thread.sleep(SELECTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
+        performAPI();
+    }
     
     /** performs action through API
      * @param component component to be action performed on
@@ -601,6 +673,23 @@ public class Action {
         nodes[0].select();
         for (int i=1; i<nodes.length; i++)
             nodes[i].addSelectionPath();
+        try {
+            Thread.sleep(SELECTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
+        performShortcut();
+    }
+
+    /** performs action through shortcut
+     * @param node node to be action performed on
+     * @throws UnsupportedOperationException when action does not support shortcut mode */
+    public void performShortcut(OutlineNode node) {
+        final KeyStroke[] strokes = getKeyStrokes();
+        if (strokes == null) {
+            throw new UnsupportedOperationException(getClass().toString()+" does not define shortcut");
+        }
+        node.select();
         try {
             Thread.sleep(SELECTION_WAIT_TIME);
         } catch (Exception e) {

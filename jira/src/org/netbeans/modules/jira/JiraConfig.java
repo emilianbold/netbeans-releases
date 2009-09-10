@@ -126,7 +126,9 @@ public class JiraConfig {
         throw new UnsupportedOperationException();
     }
 
-    public void putRepository(String repoName, JiraRepository repository) {
+    public void putRepository(String repoID, JiraRepository repository) {
+        String repoName = repository.getDisplayName();
+
         String user = repository.getUsername();
         String password = BugtrackingUtil.scramble(repository.getPassword());
 
@@ -134,28 +136,33 @@ public class JiraConfig {
         String httpPassword = BugtrackingUtil.scramble(repository.getHttpPassword());
         String url = repository.getUrl();
         getPreferences().put(
-                REPO_NAME + repoName,
+                REPO_NAME + repoID,
                 url + DELIMITER +
                 user + DELIMITER +
                 password + DELIMITER +
                 httpUser + DELIMITER +
-                httpPassword);
+                httpPassword + DELIMITER +
+                repoName);
     }
 
-    public JiraRepository getRepository(String repoName) {
-        String repoString = getPreferences().get(REPO_NAME + repoName, "");     // NOI18N
+    public JiraRepository getRepository(String repoID) {
+        String repoString = getPreferences().get(REPO_NAME + repoID, "");     // NOI18N
         if(repoString.equals("")) {                                             // NOI18N
             return null;
         }
         String[] values = repoString.split(DELIMITER);
-        assert values.length == 3 || values.length == 5;
         String url = values[0];
         String user = values[1];
         String password = BugtrackingUtil.descramble(values[2]);
         String httpUser = values.length > 3 ? values[3] : null;
         String httpPassword = values.length > 3 ? BugtrackingUtil.descramble(values[4]) : null;
-
-        return new JiraRepository(repoName, url, user, password, httpUser, httpPassword);
+        String repoName;
+        if(values.length > 5) {
+            repoName = values[5];
+        } else {
+            repoName = repoID;
+        }
+        return new JiraRepository(repoID, repoName, url, user, password, httpUser, httpPassword);
     }
 
     public String[] getRepositories() {

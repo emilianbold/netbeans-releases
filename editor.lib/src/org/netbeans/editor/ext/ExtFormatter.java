@@ -65,7 +65,7 @@ import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Syntax;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;

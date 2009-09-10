@@ -181,34 +181,31 @@ public class LexUtilities {
     @CheckForNull
     public static TokenSequence<PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        TokenSequence<PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
+        return getPHPTokenSequence(th, offset);
+    }
 
+    public static TokenSequence<PHPTokenId> getPHPTokenSequence(TokenHierarchy<?> th, int offset) {
+        TokenSequence<PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
             // First try with backward bias true
             List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
-
             for (TokenSequence t : list) {
                 if (t.language() == PHPTokenId.language()) {
                     ts = t;
-
                     break;
                 }
             }
-
             if (ts == null) {
                 list = th.embeddedTokenSequences(offset, false);
-
                 for (TokenSequence t : list) {
                     if (t.language() == PHPTokenId.language()) {
                         ts = t;
-
                         break;
                     }
                 }
             }
         }
-
         return ts;
     }
 

@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
@@ -217,7 +218,17 @@ public class Util {
         PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
         return Util.isSupportedJavaEEVersion(project) && providerSupplier != null && providerSupplier.supportsDefaultProvider();
     }
-    
+
+    public static Provider getDefaultProvider(Project project) {
+        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+        return providerSupplier.supportsDefaultProvider() ? providerSupplier.getSupportedProviders().get(0) : null;
+    }
+
+    public static boolean isDefaultProvider(Project project, Provider provider)
+    {
+        return provider!=null && provider.equals(getDefaultProvider(project));
+    }
+
     public static boolean isEjbModule(Project project) {
         JPAModuleInfo moduleInfo = project.getLookup().lookup(JPAModuleInfo.class);
         if (moduleInfo == null){
@@ -301,12 +312,13 @@ public class Util {
         Library lib = null;
         if (result == createPUButton) {
             if (isContainerManaged) {
-                //TODO: may be require to add some libraries also.
+                //TODO: verify if need to add library here
                 PersistenceUnitWizardPanelDS puDS = (PersistenceUnitWizardPanelDS) panel;
                 lib = PersistenceLibrarySupport.getLibrary(puDS.getSelectedProvider());
             } else {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                 lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
+                //TODO: verify if don't need to add library here
                 if (lib != null){
                     addLibraryToProject(project, lib);
                 }

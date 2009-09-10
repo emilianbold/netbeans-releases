@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 
 /** Support for attribute value completion for JSP tags and directives.
  *
@@ -79,8 +78,8 @@ public abstract class AttributeValueSupport {
     private static void initialize() {
         supports = new HashMap();
         // jsp:useBean
-        putSupport(new AttrSupports.ScopeSupport(true, "jsp:useBean", "scope"));     // NOI18N
-        putSupport(new AttrSupports.ClassNameSupport(true, "jsp:useBean", "class")); // NOI18N
+        //putSupport(new AttrSupports.ScopeSupport(true, "jsp:useBean", "scope"));     // NOI18N
+        //putSupport(new AttrSupports.ClassNameSupport(true, "jsp:useBean", "class")); // NOI18N
         // jsp:getProperty, jsp:setProperty
         putSupport(new AttrSupports.GetSetPropertyName(true, "jsp:getProperty", "name")); // NOI18N
         putSupport(new AttrSupports.GetSetPropertyName(true, "jsp:setProperty", "name")); // NOI18N
@@ -90,7 +89,7 @@ public abstract class AttributeValueSupport {
         putSupport(new AttrSupports.TaglibURI());
         putSupport(new AttrSupports.TaglibTagdir());
         // @page
-        putSupport(new AttrSupports.PackageListSupport(false, "page", "import")); // NOI18N
+        //putSupport(new AttrSupports.PackageListSupport(false, "page", "import")); // NOI18N
         putSupport(new AttrSupports.ClassNameSupport(false, "page", "extends")); // NOI18N
         putSupport(new AttrSupports.PageLanguage());
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "session")); // NOI18N
@@ -101,7 +100,7 @@ public abstract class AttributeValueSupport {
         putSupport(new AttrSupports.EncodingSupport(false, "page", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "isELIgnored")); // NOI18N
         // @tag 
-        putSupport(new AttrSupports.PackageListSupport(false, "tag", "import")); // NOI18N
+        //putSupport(new AttrSupports.PackageListSupport(false, "tag", "import")); // NOI18N
         putSupport(new AttrSupports.EncodingSupport(false, "tag", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "tag", "isELIgnored")); // NOI18N
         putSupport(new AttrSupports.FilenameSupport(false, "tag", "small-icon")); // NOI18N
@@ -132,7 +131,7 @@ public abstract class AttributeValueSupport {
         // PENDING - add supports for known attributes
 
         // jsp:directive.page
-        putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.page", "import")); // NOI18N
+        //putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.page", "import")); // NOI18N
         putSupport(new AttrSupports.ClassNameSupport(true, "jsp:directive.page", "extends")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "session")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "autoFlush")); // NOI18N
@@ -149,7 +148,7 @@ public abstract class AttributeValueSupport {
         putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.attribute", "type")); // NOI18N
 
         //jsp:directive.page
-        putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.tag", "import")); // NOI18N
+        //putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.tag", "import")); // NOI18N
         putSupport(new AttrSupports.EncodingSupport(true, "jsp:directive.tag", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.tag", "isELIgnored")); // NOI18N
         putSupport(new AttrSupports.FilenameSupport(true, "jsp:directive.tag", "small-icon")); // NOI18N

@@ -34,11 +34,7 @@ public class BeanPanel implements NavigatorPanel {
 
     private BeanPanelUI component;
 
-    private static BeanPanel INSTANCE;
-    
-    public BeanPanel() {
-        this.INSTANCE = this;
-    }
+    public BeanPanel() {}
 
     public void panelActivated(Lookup context) {
         assert context != null;
@@ -78,12 +74,5 @@ public class BeanPanel implements NavigatorPanel {
         }
         return this.component;
     }
-    
-    public static BeanPanel getInstance() {
-        return INSTANCE;
-    }   
-    
-    
-    
     
 }

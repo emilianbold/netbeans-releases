@@ -56,6 +56,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
+import javax.swing.ListModel;
 
 /**
  *
@@ -113,7 +114,19 @@ public class XMLCodeCompletion extends GeneralXMLTest {
       NewFileWizardOperator.invoke().cancel( );
 
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
-      opNewFileWizard.selectCategory( "Java" );
+
+      // There is no comparator support in this class,
+      // but we need it because "Java Server Faces" is before "Java"
+      // and there is no way to find "Java" using standard method,
+      // so find by ourself.
+      // +++ start of hack
+      JDialogOperator jd = new JDialogOperator( "New File" );
+      Sleep( 1500 );
+      JTreeOperator jt = new JTreeOperator( jd, 0 );
+      jt.clickOnPath( jt.findPath( "Java", new CFulltextStringComparator( ) ) );
+      //opNewFileWizard.selectCategory( "Java" );
+      // --- end of hack
+
       opNewFileWizard.selectFileType( "Java Package" );
       opNewFileWizard.next( );
       opNewFileWizard.finish( );

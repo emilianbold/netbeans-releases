@@ -53,6 +53,7 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
 
     protected JCheckBox check;
     protected HtmlRenderer.Renderer renderer = HtmlRenderer.createRenderer();
+    private CheckNode renderedNode;
     private static Dimension checkDim;
 
     static Rectangle checkBounds;
@@ -79,13 +80,12 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
     public Component getTreeCellRendererComponent(JTree tree, Object value,
     boolean isSelected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         CheckNode node = (CheckNode) value;
+        this.renderedNode = node;
         stringDisplayer = renderer.getTreeCellRendererComponent(tree, 
             getNodeText(node), isSelected, expanded, leaf, row, hasFocus);
 
         renderer.setIcon (node.getIcon());
         stringDisplayer.setEnabled(!node.isDisabled());
-        String toolTip = node.getToolTip();
-        setToolTipText(toolTip);
         
         //HtmlRenderer does not tolerate null colors - real ones are needed to
         //ensure fg/bg always diverge enough to be readable
@@ -102,7 +102,24 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         }
         return this;
     }
+
+    private boolean outerCallGetToolTipText = true;
+    @Override
+    public String getToolTipText() {
+        if (outerCallGetToolTipText) {
+            try {
+                outerCallGetToolTipText = false;
+                // 171657: postpone renderedNode.getToolTip() as possible since
+                // it loads document if it is not in memory yet
+                setToolTipText(renderedNode.getToolTip());
+            } finally {
+                outerCallGetToolTipText = true;
+            }
+        }
+        return super.getToolTipText();
+    }
     
+    @Override
     public void paintComponent (Graphics g) {
         Dimension d_check = check == null ? new Dimension(0, 0) : check.getSize();
         Dimension d_label = stringDisplayer == null ? new Dimension(0,0) : 
@@ -143,6 +160,7 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         }
     }
     
+    @Override
     public Dimension getPreferredSize() {
         if (stringDisplayer != null) {
             stringDisplayer.setFont(getFont());
@@ -157,6 +175,7 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         return new Dimension(d_check.width  + d_label.width, (d_check.height < d_label.height ? d_label.height : d_check.height));
     }
     
+    @Override
     public void doLayout() {
         Dimension d_check = check == null ? new Dimension(0, 0) : check.getPreferredSize();
         Dimension d_label = stringDisplayer == null ? new Dimension (0,0) : stringDisplayer.getPreferredSize();
