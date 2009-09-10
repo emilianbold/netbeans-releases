@@ -66,6 +66,9 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletContext;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -80,9 +83,56 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     private JsfSupport jsfSupport;
     private Map<String, FaceletsLibrary> faceletsLibraries;
 
+    private FileChangeListener DDLISTENER = new FileChangeAdapter() {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            ddChanged();
+        }
+
+    };
+    
+    private static final String DD_FILE_NAME = "web.xml"; //NOI18N
+
     public FaceletsLibrarySupport(JsfSupport jspSupport) {
         this.jsfSupport = jspSupport;
+
+        //listen on classpath and refresh the libraries when changed
         jspSupport.getClassPath().addPropertyChangeListener(this);
+
+        //listen on /WEB-INF/web.xml changes - <param-name>javax.faces.FACELETS_LIBRARIES</param-name>
+        //may change and redefine the libraries
+        final FileObject dd = jsfSupport.getWebModule().getDeploymentDescriptor();
+        if (dd != null) {
+            dd.addFileChangeListener(DDLISTENER);
+        }
+
+        //listen on the /WEB-INF folder since the dd is arbitrary and may
+        //be created later
+        jsfSupport.getWebModule().getWebInf().addFileChangeListener(new FileChangeAdapter() {
+
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                FileObject file = fe.getFile();
+                if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                    file.addFileChangeListener(DDLISTENER);
+                }
+            }
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                FileObject file = fe.getFile();
+                if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                    file.removeFileChangeListener(DDLISTENER);
+                }
+            }
+        });
+    }
+
+    //TODO cache the context-param entry value and check if has changed,
+    //now we invalidate libs on each change
+    private void ddChanged() {
+        faceletsLibraries = null; //invalidate libraries, force refresh
     }
 
     public JsfSupport getJsfSupport() {
@@ -98,7 +148,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         if (faceletsLibraries == null) {
             faceletsLibraries = findLibraries();
 
-            if(faceletsLibraries == null) {
+            if (faceletsLibraries == null) {
                 //an error when scanning libraries, return no libraries, but give it a next try
                 return Collections.emptyMap();
             }
@@ -166,6 +216,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             urls.add(URLMapper.findURL(file, URLMapper.EXTERNAL));
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
+
             public Collection<URL> getResources(ServletContext sc) {
                 return urls;
             }
@@ -183,7 +234,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //parse the libraries
         ConfigManager cm = ConfigManager.getInstance();
         Document[] documents = (Document[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
-        if(documents == null) {
+        if (documents == null) {
             return null; //error????
         }
 

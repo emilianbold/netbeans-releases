@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -149,7 +149,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
 
         dsRefLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_ConnectionMnemonic").charAt(0));
         dsRefLabel.setLabelFor(dsRefCombo);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(dsRefLabel, bundle.getString("LBL_DsReference")); // NOI18N
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
