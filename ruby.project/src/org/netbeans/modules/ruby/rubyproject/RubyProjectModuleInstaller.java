@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.modules.ModuleInstall;
 
 
