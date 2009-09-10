@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
@@ -92,7 +93,7 @@ public class IssueCache<T> {
      * issues seen state changed
      */
     public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
-    
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache");
     private Map<String, IssueEntry> cache;
     private final Map<String, PropertyChangeSupport> supports = new HashMap<String, PropertyChangeSupport>();
     private Map<String, Map<String, String>> lastSeenAttributes;
@@ -119,8 +120,7 @@ public class IssueCache<T> {
         public Issue createIssue(T issueData);
 
         /**
-         * Sets new task data in the issue. Mind synchrone reentrant calls
-         * on the cache for the given issue.
+         * Sets new task data in the issue. 
          *
          * @param issue
          * @param taskData
@@ -151,6 +151,14 @@ public class IssueCache<T> {
          */
         public long getCreated(Issue issue);
 
+        /**
+         * Returns the id given by te issueData
+         *
+         * @param issueData
+         * @return id
+         */
+        public String getID(T issueData);
+
     }
 
     /**
@@ -168,7 +176,7 @@ public class IssueCache<T> {
             this.referenceTime = IssueStorage.getInstance().getReferenceTime(nameSpace);
         } catch (IOException ex) {
             referenceTime = System.currentTimeMillis(); // fallback
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
         
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
@@ -217,13 +225,18 @@ public class IssueCache<T> {
         assert issueData != null;
         assert issue != null;
 
-        setIssueData(issue.getID(), issue, issueData);
+        String id;
+        if(issue.getID() == null) {
+            id = issueAccessor.getID(issueData);
+        } else {
+            id = issue.getID();
+        }
+        assert id != null && !id.equals("");
+        setIssueData(id, issue, issueData);
     }
 
     private Issue setIssueData(String id, Issue issue, T issueData) throws IOException {
-        assert issueData != null;
-        assert id != null && !id.equals("");
-        assert issue == null || issue.getID().equals(id);
+        assert issueData != null;                
         
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
@@ -235,11 +248,11 @@ public class IssueCache<T> {
             if(entry.issue == null) {
                 if(issue != null) {
                     entry.issue = issue;
-                    BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
+                    LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
                     issueAccessor.setIssueData(entry.issue, issueData);
                 } else {
                     entry.issue = issueAccessor.createIssue(issueData);
-                    BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
+                    LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
                     readIssue(entry);                    
                     Map<String, String> attr = entry.getSeenAttributes();
                     if(attr == null || attr.size() == 0) {
@@ -253,36 +266,36 @@ public class IssueCache<T> {
                     }
                 }
             } else {
-                BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
+                LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
                 issueAccessor.setIssueData(entry.issue, issueData);
             }
 
             if(entry.seenAttributes != null) {
                 if(entry.wasSeen()) {
-                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
+                    LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
                     long lastModified = issueAccessor.getLastModified(entry.issue);
                     if(isChanged(entry.seenAttributes, entry.issue.getAttributes()) || entry.lastSeenModified < lastModified) {
-                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
+                        LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         if(entry.lastSeenModified >= lastModified) {
-                            BugtrackingManager.LOG.warning(" issue {0} changed, yet last known modify > last modify. [" + entry.lastSeenModified + "," + lastModified +"]"); // NOI18N
+                            LOG.warning(" issue {0} changed, yet last known modify > last modify. [" + entry.lastSeenModified + "," + lastModified +"]"); // NOI18N
                         }
                         storeIssue(entry);
                         entry.seen = false;
                         entry.status= ISSUE_STATUS_MODIFIED;
                     } else {
-                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
+                        LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
                         // keep old values
                     }
                 } else {
-                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} wasn't seen yet", new Object[] {id}); // NOI18N
+                    LOG.log(Level.FINE, " issue {0} wasn't seen yet", new Object[] {id}); // NOI18N
                     if(isChanged(entry.seenAttributes, entry.issue.getAttributes()) ||
                        referenceTime < issueAccessor.getLastModified(entry.issue))
                     {
-                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
+                        LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         entry.seen = false;
                         entry.status= ISSUE_STATUS_MODIFIED;
                     } else {
-                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
+                        LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
                         entry.seenAttributes = null;
                         entry.seen = false;
                         entry.status= ISSUE_STATUS_NEW;
@@ -304,7 +317,7 @@ public class IssueCache<T> {
         if (id == null) {
             return;
         }
-        BugtrackingManager.LOG.log(Level.FINE, "setting seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
+        LOG.log(Level.FINE, "setting seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         assert !SwingUtilities.isEventDispatchThread();
         boolean oldValue;
         IssueEntry entry;
@@ -348,7 +361,7 @@ public class IssueCache<T> {
             }
         }
         boolean seen = entry != null ? entry.seen : false;
-        BugtrackingManager.LOG.log(Level.FINE, "returning seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
+        LOG.log(Level.FINE, "returning seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         return seen;
     }
 
@@ -400,14 +413,14 @@ public class IssueCache<T> {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
             if(entry == null ) {
-                BugtrackingManager.LOG.log(Level.FINE, "returning UKNOWN status for issue {0}", new Object[] {id}); // NOI18N
+                LOG.log(Level.FINE, "returning UKNOWN status for issue {0}", new Object[] {id}); // NOI18N
                 return ISSUE_STATUS_UNKNOWN;
             }
             if(entry.seen) {
-                BugtrackingManager.LOG.log(Level.FINE, "returning SEEN status for issue {0}", new Object[] {id}); // NOI18N
+                LOG.log(Level.FINE, "returning SEEN status for issue {0}", new Object[] {id}); // NOI18N
                 return ISSUE_STATUS_SEEN;
             }
-            BugtrackingManager.LOG.log(Level.FINE, "returning status {0} for issue {1}", new Object[] {entry.status, id}); // NOI18N
+            LOG.log(Level.FINE, "returning status {0} for issue {1}", new Object[] {entry.status, id}); // NOI18N
             return entry.status;
         }
     }
@@ -422,7 +435,7 @@ public class IssueCache<T> {
             try {
                 IssueStorage.getInstance().storeQuery(nameSpace, name, ids);
             } catch (IOException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -447,7 +460,7 @@ public class IssueCache<T> {
             try {
                 return IssueStorage.getInstance().readQuery(nameSpace, name);
             } catch (IOException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
             }
             return new ArrayList<String>(0);
         }
@@ -464,7 +477,7 @@ public class IssueCache<T> {
             try {
                 IssueStorage.getInstance().storeArchivedQueryIssues(nameSpace, name, ids);
             } catch (IOException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -481,7 +494,7 @@ public class IssueCache<T> {
                 Map<String, Long> m = IssueStorage.getInstance().readArchivedQueryIssues(nameSpace, name);
                 return new ArrayList<String>(m.keySet());
             } catch (IOException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
             }
             return new ArrayList<String>(0);
         }
@@ -498,7 +511,7 @@ public class IssueCache<T> {
             try {
                 IssueStorage.getInstance().removeQuery(nameSpace, name);
             } catch (IOException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -529,7 +542,7 @@ public class IssueCache<T> {
         try {
             IssueStorage.getInstance().readIssue(nameSpace, entry);
         } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
