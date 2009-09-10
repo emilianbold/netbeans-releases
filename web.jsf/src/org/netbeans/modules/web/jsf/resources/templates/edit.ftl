@@ -36,41 +36,44 @@
 
     <ui:composition template="/template.xhtml">
         <ui:define name="title">
-            <h:outputText value="Edit"></h:outputText>
+            <h:outputText value="${r"#{"}bundle.Edit${entityName}Title${r"}"}"></h:outputText>
         </ui:define>
         <ui:define name="body">
+            <h:panelGroup id="messagePanel" layout="block">
+                <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
+            </h:panelGroup>
             <h:form>
                 <h:panelGrid columns="2">
 <#list entityDescriptors as entityDescriptor>
-                    <h:outputLabel value="${entityDescriptor.label}:" for="${entityDescriptor.id}" />
+                    <h:outputLabel value="${r"#{"}bundle.Edit${entityName}Label_${entityDescriptor.id}${r"}"}" for="${entityDescriptor.id}" />
     <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-                    <h:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
+                    <h:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id}${r"}"}"</#if>>
                         <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
                     </h:inputText>
     <#elseif entityDescriptor.blob>
-                    <h:inputTextarea rows="4" cols="30" id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
+                    <h:inputTextarea rows="4" cols="30" id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id}${r"}"}"</#if>/>
     <#elseif entityDescriptor.relationshipOne>
-                    <h:selectOneMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
+                    <h:selectOneMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id}${r"}"}"</#if>>
                         <f:selectItems value="${r"#{"}${entityDescriptor.valuesGetter}${r"}"}"/>
                     </h:selectOneMenu>
     <#elseif entityDescriptor.relationshipMany>
-                    <h:selectManyMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
+                    <h:selectManyMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id}${r"}"}"</#if>>
                         <f:selectItems value="${r"#{"}entityDescriptor.valuesGetter${r"}"}"/>
                     </h:selectManyMenu>
     <#else>
-                    <h:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
+                    <h:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id}${r"}"}"</#if>/>
     </#if>
 </#list>
                 </h:panelGrid>
-                <h:commandLink action="${r"#{"}${managedBean}${r".update}"}" value="Save"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".update}"}" value="${r"#{"}bundle.Edit${entityName}SaveLink${r"}"}"/>
                 <br />
                 <br />
-                <h:commandLink action="View" value="View" immediate="true"/>
+                <h:commandLink action="View" value="${r"#{"}bundle.Edit${entityName}ViewLink${r"}"}" immediate="true"/>
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="Show All ${entityName} Items" immediate="true"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}bundle.Edit${entityName}ShowAllLink${r"}"}" immediate="true"/>
                 <br />
                 <br />
-                <h:commandLink value="Index" action="/index" immediate="true" />
+                <h:commandLink value="${r"#{"}bundle.Edit${entityName}IndexLink${r"}"}" action="/index" immediate="true" />
             </h:form>
         </ui:define>
     </ui:composition>
