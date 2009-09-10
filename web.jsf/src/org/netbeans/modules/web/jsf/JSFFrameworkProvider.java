@@ -551,10 +551,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 if (isJSF20) {
                     defaultCSSFolder = CSS_FOLDER2;
                 }
-                if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+File.separator+DEFAULT_CSS) == null){
+                if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+"/"+DEFAULT_CSS) == null){   //NOI18N
                     is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + DEFAULT_CSS);  
                     content = readResource(is, encoding.name());
-                    target = FileUtil.createData(webModule.getDocumentBase(), defaultCSSFolder + File.separator+DEFAULT_CSS);
+                    //File.separator replaced by "/" because it is used in createData method
+                    target = FileUtil.createData(webModule.getDocumentBase(), defaultCSSFolder + "/"+ DEFAULT_CSS);  //NOI18N
                     createFile(target, content, encoding.name());
                 }
             }

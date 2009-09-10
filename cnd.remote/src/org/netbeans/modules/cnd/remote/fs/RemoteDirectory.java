@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NotImplementedException;
@@ -91,7 +92,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     parentFile = file.getParentFile();
                     parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
                 }
-                getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath);
+                getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath, remoteAbsPath);
             }
             if (! file.exists()) {
                 return null;
@@ -100,6 +101,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             } else {
                 return new RemotePlainFile(fileSystem, execEnv, remoteAbsPath, file);
             }
+        } catch (CancellationException ex) {
+            // TODO: clear CndUtils cache
+            return null;
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;

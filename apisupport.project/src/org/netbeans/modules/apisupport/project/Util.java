@@ -67,7 +67,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -91,7 +90,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -473,16 +471,11 @@ public final class Util {
      * @exception IOException if properties cannot be written to the file
      */
     public static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
-        FileLock lock = propsFO.lock();
+        OutputStream os = propsFO.getOutputStream();
         try {
-            OutputStream os = propsFO.getOutputStream(lock);
-            try {
-                props.store(os);
-            } finally {
-                os.close();
-            }
+            props.store(os);
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
     
@@ -514,16 +507,11 @@ public final class Util {
      * @exception IOException if manifest cannot be written to the file
      */
     public static void storeManifest(FileObject manifestFO, EditableManifest em) throws IOException {
-        FileLock lock = manifestFO.lock();
+        OutputStream os = manifestFO.getOutputStream();
         try {
-            OutputStream os = manifestFO.getOutputStream(lock);
-            try {
-                em.write(os);
-            } finally {
-                os.close();
-            }
+            em.write(os);
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
 

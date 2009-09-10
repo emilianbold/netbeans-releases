@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;

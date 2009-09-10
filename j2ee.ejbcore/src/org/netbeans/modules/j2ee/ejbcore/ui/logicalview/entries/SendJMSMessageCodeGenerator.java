@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;

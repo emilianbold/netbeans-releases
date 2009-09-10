@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.extras.api.support.dragging;
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
-
-import java.awt.BorderLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JPanel;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Node;
+import java.awt.Cursor;
+import java.awt.Graphics;
+import java.awt.Point;
 
 /**
  *
- * @author Chris Webster
+ * @author Alexey Vladykin
  */
-public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
-    
-    private final ExplorerManager manager = new ExplorerManager();
-    
-    public NodeDisplayPanel(Node rootNode) {
-        BeanTreeView btv = new BeanTreeView();
-        btv.setRootVisible(false);
-        btv.setDefaultActionAllowed(false);
-        manager.setRootContext(rootNode);
-        manager.addPropertyChangeListener(
-        new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent pce) {
-                firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
-            }
-        });
-        setLayout(new BorderLayout());
-        add(btv, BorderLayout.CENTER);
-        btv.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
-        btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
-    }
-    
-    public Node[] getSelectedNodes() {
-        return manager.getSelectedNodes();
-    }
+public interface Draggable {
 
-    public ExplorerManager getExplorerManager() {
-        return manager;
-    }
-    
+    void setLeftBound(Draggable mark);
+
+    void setRightBound(Draggable mark);
+
+    int getPosition();
+
+    boolean containsPoint(Point p);
+
+    void startDragging(Point p);
+
+    void dragTo(Point p, boolean isAdjusting);
+
+    void finishDragging();
+
+    void paint(Graphics g);
+
+    Cursor getCursor();
 }

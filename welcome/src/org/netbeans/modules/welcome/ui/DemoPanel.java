@@ -44,8 +44,6 @@ package org.netbeans.modules.welcome.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -74,6 +72,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
+import javax.swing.text.View;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.RSSFeed;
@@ -278,18 +277,7 @@ class DemoPanel extends RSSFeedReaderPanel {
 
         @Override
         public JToolTip createToolTip() {
-            JToolTip tip = super.createToolTip();
-            JLabel lbl = new JLabel( getToolTipText() );
-            Dimension preferredSize = lbl.getPreferredSize();
-            
-            FontMetrics fm = tip.getFontMetrics( tip.getFont() );
-            int lines = preferredSize.width / 500;
-            if( preferredSize.width % 500 > 0 )
-                lines++;
-            preferredSize.height =  Math.min( lines * fm.getHeight() + 10, 300 );
-            preferredSize.width = 500;
-            tip.setPreferredSize( preferredSize );
-            return tip;
+            return new MyTooltip();
         }
     }
     
@@ -333,5 +321,19 @@ class DemoPanel extends RSSFeedReaderPanel {
         public int getIconHeight() {
             return MAX_IMAGE_HEIGHT;
         }
+    }
+
+    private static class MyTooltip extends JToolTip {
+
+        @Override
+        public void setTipText(String tipText) {
+            super.setTipText(tipText);
+            if( getPreferredSize().width > 400 ) {
+                View v = (View) getClientProperty("html"); //NOI18N
+                if( null != v )
+                    v.setSize(300.0f, 300.0f);
+            }
+        }
+
     }
 }

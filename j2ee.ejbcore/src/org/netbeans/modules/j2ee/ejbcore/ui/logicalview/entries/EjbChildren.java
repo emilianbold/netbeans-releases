@@ -38,27 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.rubyproject;
 
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb.MessageNode;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 
 /**
- * Module install for Ruby projects.
- * Used to initialize executable permissions on the JRuby binaries.
- *
- * @author Tor Norbye
+ * Provide a set of children representing the ejb nodes.
+ * @author ChrisWebster
  */
-public class RubyProjectModuleInstaller extends ModuleInstall {
-    /** 
-     * @todo This should really be {@link #installed} instead,
-     * but there's a problm where modules installed via AutoUpdate
-     * doesn't run this code.
-     * See http://www.netbeans.org/issues/show_bug.cgi?id=95965
-     */
-    public void restored() {
-        // On install, ensure that the JRuby bits are executable
-        // done through nbm.executable.files in project.properties now
-        // RubyInstallation.getInstance().ensureExecutable();
+public class EjbChildren extends Children.Array {
+    private final Node projectNode;
+
+    /** Creates a new instance of EjbChildren */
+    public EjbChildren(Node projectNode) {
+        this.projectNode = projectNode;
     }
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        Node ejbsNode = projectNode.getChildren().findChild(EjbNodesFactory.CONTAINER_NODE_NAME);
+        if (ejbsNode != null) {
+            Node[] ejbNodes = ejbsNode.getChildren().getNodes(true);
+            List<Node> filteredNodes = new ArrayList<Node>();
+            for (Node node : ejbNodes) {
+                // #75721: MDB should not appear in Call EJB dialog
+                if (node instanceof MessageNode)
+                    continue;
+                filteredNodes.add(new FilterNode(node, Children.LEAF) {
+                    @Override
+                    public Action[] getActions(boolean context) {
+                        return new Action[0];
+                    }
+                });
+            }
+            Node[] filteredNodesArray = new Node[filteredNodes.size()];
+            add(filteredNodes.toArray(filteredNodesArray));
+        }
+    }
+    
 }
