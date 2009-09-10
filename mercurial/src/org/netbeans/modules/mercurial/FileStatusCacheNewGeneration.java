@@ -418,25 +418,22 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         // update all managed parents
         File child = file;
         while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            boolean exists = parent.exists();
-            if (exists) {
-                if (!info.isDirectory()) {
-                    info = createFolderFileInformation(parent, null);
-                }
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "updateParentInformation: updating {0} with {1} triggered by {2}", new Object[] {parent, newInfo, file});
-                }
-                if (check) {
-                    checkIsParentOf(parent, child);
-                    if (info == FILE_INFORMATION_EXCLUDED || info == FILE_INFORMATION_UPTODATE || info == FILE_INFORMATION_NOTMANAGED
-                            || info == FILE_INFORMATION_NOTMANAGED_DIRECTORY || info == FILE_INFORMATION_UNKNOWN || info == FILE_INFORMATION_NEWLOCALLY) {
-                        throw new IllegalStateException("Wrong info, expected an own instance for " + parent + ", " + info.getStatusText() + " - " + info.getStatus()); //NOI18N
+            if (!info.isDirectory()) {
+                info = createFolderFileInformation(parent, null);
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "updateParentInformation: updating {0} with {1} triggered by {2}", new Object[]{parent, newInfo, file});
+            }
+            if (check) {
+                checkIsParentOf(parent, child);
+                if (info == FILE_INFORMATION_EXCLUDED || info == FILE_INFORMATION_UPTODATE || info == FILE_INFORMATION_NOTMANAGED
+                        || info == FILE_INFORMATION_NOTMANAGED_DIRECTORY || info == FILE_INFORMATION_UNKNOWN || info == FILE_INFORMATION_NEWLOCALLY) {
+                    throw new IllegalStateException("Wrong info, expected an own instance for " + parent + ", " + info.getStatusText() + " - " + info.getStatus()); //NOI18N
                     }
-                }
-                if (!info.setModifiedChild(child, newInfo)) {
-                    // do not notify parent
-                    break;
-                }
+            }
+            if (!info.setModifiedChild(child, newInfo)) {
+                // do not notify parent
+                break;
             }
             child = parent;
         }
