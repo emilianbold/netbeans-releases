@@ -46,6 +46,7 @@ import java.awt.Toolkit;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,21 +75,15 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 /**
  * Handles addition of badges to a filesystem a la system filesystem.
- * Specifically interprets the following attributes:
- * <ul>
- * <li><tt>SystemFileSystem.localizingBundle</tt></li>
- * <li><tt>displayName</tt></li>
- * <li><tt>SystemFileSystem.icon</tt></li>
- * <li><tt>SystemFileSystem.icon32</tt></li>
- * </ul>
- * Also tries to provide display labels for InstanceDataObject's.
- * Parts copied from <tt>org.netbeans.core.projects.SystemFileSystem</tt>.
+ * Specifically interprets attributes as specified by {@link FileSystem#getStatus}.
+ * Also tries to provide display labels for {@link InstanceDataObject}s.
  * @author Jesse Glick
  */
 final class BadgingSupport implements FileSystem.Status, FileChangeListener {
@@ -294,6 +289,16 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             if (value instanceof Image) {
                 // #18832
                 return (Image)value;
+            }
+            if (value == null) {
+                Object iconBase = fo.getAttribute("iconBase");
+                if (iconBase instanceof String) {
+                    try {
+                        value = new URL("nbresloc:/" + iconBase);
+                    } catch (MalformedURLException x) {
+                        assert false : x;
+                    }
+                }
             }
             if (value != null) {
                 try {
