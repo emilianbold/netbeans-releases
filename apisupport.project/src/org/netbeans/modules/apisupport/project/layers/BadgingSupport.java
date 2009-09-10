@@ -46,7 +46,6 @@ import java.awt.Toolkit;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -213,7 +212,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     private static String getInstanceLabel(FileObject fo) {
         try {
             // First try to load it in current IDE, as this handles most platform cases OK.
-            InstanceCookie ic = DataObject.find(fo).getCookie(InstanceCookie.class);
+            InstanceCookie ic = DataObject.find(fo).getLookup().lookup(InstanceCookie.class);
             if (ic != null) {
                 Object o;
                 Logger fslogger = Logger.getLogger("org.openide.filesystems"); // NOI18N
