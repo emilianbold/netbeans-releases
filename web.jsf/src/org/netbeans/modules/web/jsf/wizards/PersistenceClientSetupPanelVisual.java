@@ -89,6 +89,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     public static final String CONTROLLER_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Wizard/controller.ftl"; // NOI18N
     public static final String PAGINATION_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Wizard/PaginationHelper.ftl"; // NOI18N
     public static final String UTIL_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Wizard/JsfUtil.ftl"; // NOI18N
+    public static final String BUNDLE_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Wizard/bundle.ftl"; // NOI18N
 
     private WizardDescriptor wizard;
     private Project project;
@@ -105,6 +106,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         jsfPackageComboBoxEditor = (JTextComponent)jsfPackageComboBox.getEditor().getEditorComponent();
         jsfPackageComboBoxEditor.getDocument().addDocumentListener(this);
         jsfFolder.getDocument().addDocumentListener(this);
+        localizationBundleTextField.getDocument().addDocumentListener(this);
     }
     
     /** This method is called from within the constructor to
@@ -131,6 +133,8 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         jpaPackageComboBox = new javax.swing.JComboBox();
         overrideExistingCheckBox = new javax.swing.JCheckBox();
         customizeTemplatesLabel = new javax.swing.JLabel();
+        localizationBundleLabel = new javax.swing.JLabel();
+        localizationBundleTextField = new javax.swing.JTextField();
 
         setName(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_JSFPagesAndClasses")); // NOI18N
 
@@ -199,39 +203,38 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
             }
         });
 
+        localizationBundleLabel.setLabelFor(localizationBundleTextField);
+        localizationBundleLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.localizationBundle")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel6)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(projectLabel)
-                            .add(locationLabel))
+                            .add(locationLabel)
+                            .add(jpaPackageLabel)
+                            .add(jsfPackageLabel)
+                            .add(jLabel2)
+                            .add(localizationBundleLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, locationComboBox, 0, 518, Short.MAX_VALUE)
-                            .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(jpaPackageLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jpaPackageComboBox, 0, 428, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(jsfPackageLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jsfPackageComboBox, 0, 442, Short.MAX_VALUE))
-                    .add(jLabel4)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jsfFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                            .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                            .add(locationComboBox, 0, 330, Short.MAX_VALUE)
+                            .add(jpaPackageComboBox, 0, 330, Short.MAX_VALUE)
+                            .add(jsfPackageComboBox, 0, 330, Short.MAX_VALUE)
+                            .add(jsfFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                            .add(localizationBundleTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseFolderButton))
-                    .add(ajaxifyCheckbox)
+                    .add(customizeTemplatesLabel)
                     .add(overrideExistingCheckBox)
-                    .add(customizeTemplatesLabel))
+                    .add(ajaxifyCheckbox)
+                    .add(jLabel4)
+                    .add(jLabel6))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -262,11 +265,15 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(jLabel2)
                         .add(jsfFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(localizationBundleLabel)
+                    .add(localizationBundleTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(ajaxifyCheckbox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(overrideExistingCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 54, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 27, Short.MAX_VALUE)
                 .add(customizeTemplatesLabel))
         );
 
@@ -319,7 +326,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     private void customizeTemplatesLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_customizeTemplatesLabelMouseClicked
         JPopupMenu menu = new JPopupMenu();
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.allTemplates"),
-                VIEW_TEMPLATE, EDIT_TEMPLATE, CREATE_TEMPLATE, LIST_TEMPLATE, UTIL_TEMPLATE, CONTROLLER_TEMPLATE, PAGINATION_TEMPLATE));
+                VIEW_TEMPLATE, EDIT_TEMPLATE, CREATE_TEMPLATE, LIST_TEMPLATE, UTIL_TEMPLATE, CONTROLLER_TEMPLATE, PAGINATION_TEMPLATE, BUNDLE_TEMPLATE));
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.viewTemplate"), VIEW_TEMPLATE));
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.editTemplate"), EDIT_TEMPLATE));
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.createTemplate"), CREATE_TEMPLATE));
@@ -327,6 +334,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.controllerTemplate"), CONTROLLER_TEMPLATE));
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.paginationTemplate"), PAGINATION_TEMPLATE));
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.utilTemplate"), UTIL_TEMPLATE));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.bundleTemplate"), BUNDLE_TEMPLATE));
         menu.show(customizeTemplatesLabel, evt.getX(), evt.getY());
 
     }//GEN-LAST:event_customizeTemplatesLabelMouseClicked
@@ -344,6 +352,8 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     private javax.swing.JTextField jsfFolder;
     private javax.swing.JComboBox jsfPackageComboBox;
     private javax.swing.JLabel jsfPackageLabel;
+    private javax.swing.JLabel localizationBundleLabel;
+    private javax.swing.JTextField localizationBundleTextField;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JCheckBox overrideExistingCheckBox;
@@ -432,11 +442,20 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
             if (overrideExistingCheckBox.isVisible()) {
                 boolean conflict = PersistenceClientIterator.doesSomeFileExistAlready(
                         getLocationValue().getRootFolder(), pagesRootFolder, getJpaPackage(),
-                        getJsfPackage(), jsfFolder.getText(), (List<String>)wizard.getProperty(WizardProperties.ENTITY_CLASS));
-                if (conflict && !overrideExistingCheckBox.isSelected()) {
-                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_FileAlreadyExist")); //NOI18N
-                    return false;
+                        getJsfPackage(), jsfFolder.getText(), (List<String>)wizard.getProperty(WizardProperties.ENTITY_CLASS),
+                        localizationBundleTextField.getText());
+                if (conflict) {
+                    if (overrideExistingCheckBox.isSelected()) {
+                        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_FileAlreadyExistWarning")); //NOI18N
+                    } else {
+                        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_FileAlreadyExist")); //NOI18N
+                        return false;
+                    }
                 }
+            }
+            if (localizationBundleTextField.isVisible() && localizationBundleTextField.getText().length() == 0) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_MissingBundleName")); //NOI18N
+                return false;
             }
 
             if (ajaxifyCheckbox.isSelected()) {
@@ -486,10 +505,16 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
             //change label if we will generate session beans
             jpaPackageLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_Jpa_SessionBean_Package")); // NOI18N
         }
-        //
-        ajaxifyCheckbox.setVisible(!"true".equals(settings.getProperty(PersistenceClientIterator.JSF2_GENERATOR_PROPERTY)));
-        overrideExistingCheckBox.setVisible("true".equals(settings.getProperty(PersistenceClientIterator.JSF2_GENERATOR_PROPERTY)));
-        customizeTemplatesLabel.setVisible("true".equals(settings.getProperty(PersistenceClientIterator.JSF2_GENERATOR_PROPERTY)));
+        if (localizationBundleTextField.getText().length() == 0) {
+            localizationBundleTextField.setText(NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.defaultBundleName")); // NOI18N
+        }
+
+        boolean jsf2Generator = "true".equals(settings.getProperty(PersistenceClientIterator.JSF2_GENERATOR_PROPERTY));
+        ajaxifyCheckbox.setVisible(!jsf2Generator);
+        overrideExistingCheckBox.setVisible(jsf2Generator);
+        customizeTemplatesLabel.setVisible(jsf2Generator);
+        localizationBundleLabel.setVisible(jsf2Generator);
+        localizationBundleTextField.setVisible(jsf2Generator);
 
     }
     
@@ -501,6 +526,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, jsfPkg);
         settings.putProperty(WizardProperties.AJAXIFY_JSF_CRUD, Boolean.valueOf(ajaxifyCheckbox.isSelected()));
         settings.putProperty(WizardProperties.JAVA_PACKAGE_ROOT_FILE_OBJECT, getLocationValue().getRootFolder());
+        settings.putProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME, localizationBundleTextField.getText());
     }
 
     private void updateSourceGroupPackages() {
