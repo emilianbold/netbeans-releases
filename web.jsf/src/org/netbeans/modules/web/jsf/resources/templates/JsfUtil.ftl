@@ -39,7 +39,7 @@ public class JsfUtil {
         return items;
     }
     
-    public static void ensureAddErrorMessage(Exception ex, String defaultMsg) {
+    public static void addErrorMessage(Exception ex, String defaultMsg) {
         String msg = ex.getLocalizedMessage();
         if (msg != null && msg.length() > 0) {
             addErrorMessage(msg);

@@ -30,6 +30,7 @@ import ${controllerPackageName}.util.JsfUtil;
 import ${controllerPackageName}.util.PaginationHelper;
 import ${ejbFullClassName};
 
+import java.util.ResourceBundle;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -104,10 +105,10 @@ public class ${controllerClassName} {
     public String create() {
         try {
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("${entityClassName} was successfully created.");
+            JsfUtil.addSuccessMessage(ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Created"));
             return prepareCreate();
         } catch (Exception e) {
-            JsfUtil.ensureAddErrorMessage(e, "A persistence error occurred.");
+            JsfUtil.addErrorMessage(e, ResourceBundle.getBundle("${bundle}").getString("PersistenceErrorOccured"));
             return null;
         }
     }
@@ -121,10 +122,10 @@ public class ${controllerClassName} {
     public String update() {
         try {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("${entityClassName} was successfully updated.");
+            JsfUtil.addSuccessMessage(ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Updated"));
             return "View";
         } catch (Exception e) {
-            JsfUtil.ensureAddErrorMessage(e, "A persistence error occurred.");
+            JsfUtil.addErrorMessage(e, ResourceBundle.getBundle("${bundle}").getString("PersistenceErrorOccured"));
             return null;
         }
     }
@@ -153,9 +154,9 @@ public class ${controllerClassName} {
     private void performDestroy() {
         try {
             getFacade().remove(current);
-            JsfUtil.addSuccessMessage("${entityClassName} was successfully deleted.");
+            JsfUtil.addSuccessMessage(ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Deleted"));
         } catch (Exception e) {
-            JsfUtil.ensureAddErrorMessage(e, "A persistence error occurred.");
+            JsfUtil.addErrorMessage(e, ResourceBundle.getBundle("${bundle}").getString("PersistenceErrorOccured"));
         }
     }
 
