@@ -68,39 +68,46 @@ public class SessionDataFiltersSupport {
         }
     }
 
-    public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz){
+    public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
         synchronized (lock) {
             Collection<T> result = new ArrayList<T>();
             for (DataFilter f : filters) {
                 if (f.getClass() == clazz) {
                     result.add(clazz.cast(f));
+                } else {
+                    try {
+                        Class<? extends T> r = f.getClass().asSubclass(clazz);
+                        result.add(clazz.cast(f));
+                    } catch (ClassCastException e) {
+                    }
+
                 }
             }
             return result;
         }
     }
 
-    public void cleanAll(){
+    public void cleanAll() {
         synchronized (lock) {
             filters.clear();
             notifyListeners(false);
         }
     }
 
-    public void cleanAll(Class clazz){
+    public void cleanAll(Class clazz) {
         cleanAll(clazz, true);
     }
 
-    public void cleanAll(Class clazz, boolean notify){
+    public void cleanAll(Class clazz, boolean notify) {
         synchronized (lock) {
             Collection<DataFilter> toRemove = new ArrayList<DataFilter>();
-            for (DataFilter f : filters){
-                if (f.getClass() == clazz){
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
                     toRemove.add(f);
                 }
             }
             filters.removeAll(toRemove);
-            if (notify){
+            if (notify) {
                 notifyListeners(false);
             }
         }
@@ -110,7 +117,7 @@ public class SessionDataFiltersSupport {
         synchronized (lock) {
             listeners.add(listener);
 
-           // And immediately notify it...
+            // And immediately notify it...
             listener.dataFiltersChanged(filters, false);
         }
     }
