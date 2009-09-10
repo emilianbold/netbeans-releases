@@ -125,6 +125,11 @@ public class SQLExecuteHelperTest extends NbTestCase {
             new StatementInfo("select bar", 15, 18, 0, 18, 41, 41),
             new StatementInfo("select baz", 42, 46, 1, 3, 56, 67),
         });
+
+        // correct start line with line comments (#171865)
+        String sql = "\n\n-- ---\n-- line comment\n-- ---\nselect foo  ;";
+        assertSplit(sql, "select foo");
+        assertSplit(sql, new StatementInfo("select foo", 0, 32, 5, 0, 42, 44));
     }
     
     private static void assertSplit(String script, String... expected) {
@@ -135,7 +140,7 @@ public class SQLExecuteHelperTest extends NbTestCase {
         }
     }
     
-    private static void assertSplit(String script, StatementInfo[] expected) {
+    private static void assertSplit(String script, StatementInfo... expected) {
         List<StatementInfo> stmts = SQLExecuteHelper.split(script);
         assertEquals(expected.length, stmts.size());
         for (int i = 0; i < expected.length; i++) {

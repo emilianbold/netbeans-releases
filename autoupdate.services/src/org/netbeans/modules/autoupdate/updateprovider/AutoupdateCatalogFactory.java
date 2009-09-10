@@ -175,7 +175,7 @@ public class AutoupdateCatalogFactory {
             String id = getPreferences ().get (PROP_QUALIFIED_IDENTITY, null);
             if (id == null) {
                 // can ignore it, property used only for logging purposes
-                Logger.getLogger(AutoupdateCatalogFactory.class.getName()).warning("Property PROP_IDE_IDENTITY hasn't been initialized yet."); // NOI18N
+                Logger.getLogger(AutoupdateCatalogFactory.class.getName()).fine("Property PROP_IDE_IDENTITY hasn't been initialized yet."); // NOI18N
                 id = "";
             }
             String prefix = NbBundle.getBundle (AutoupdateCatalogFactory.class).getString ("URL_Prefix_Hash_Code"); // NOI18N
