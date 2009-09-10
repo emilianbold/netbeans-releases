@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -56,6 +56,13 @@ import java.sql.Connection;
 
 public interface DBConnection extends java.io.Serializable
 {
+
+    /** Returns the name that is displayed for this connection. */
+    public String getDisplayName();
+
+    /** Set the name that is displayed for this connection. */
+    public void setDisplayName(String name);
+
     /** Returns driver URL */
     public String getDriver();
 

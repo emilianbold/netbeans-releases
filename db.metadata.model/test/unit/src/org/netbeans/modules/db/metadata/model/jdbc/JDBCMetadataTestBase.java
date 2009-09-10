@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
-import org.openide.util.Lookup;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
- * Two modules - cnd.remote and cnd.core -
- * knows more about displaying server list dialog:
- * they share ToolsCacheManager.
- * That's why we had to extend ServerListDisplayer.
  *
- * @author Vladimir Kvashin
+ * @author David Van Couvering
  */
-public abstract class ServerListDisplayerEx extends ServerListDisplayer {
+public abstract class JDBCMetadataTestBase extends MetadataTestBase {
+    @Override
+    public abstract void setUp() throws Exception;
 
-    /**
-     * Displays server list dialog.
-     * Allows to add, remove or modify servers in the list
-     * @return true in the case user pressed OK, otherwise
-     */
-    protected abstract boolean showServerListDialogImpl(ToolsCacheManager cacheManager);
+    public JDBCMetadataTestBase(String name) {
+        super(name);
+    }
 
-    public static boolean showServerListDialog(ToolsCacheManager cacheManager) {
-        ServerListDisplayer displayer = Lookup.getDefault().lookup(ServerListDisplayer.class);
-        if (displayer != null) {
-            if (displayer instanceof ServerListDisplayerEx) {
-                return ((ServerListDisplayerEx) displayer).showServerListDialogImpl(cacheManager);
-            } else {
-                Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                        displayer.getClass().getName() + "should extend " + //NOI18N
-                        ServerListDisplayerEx.class.getSimpleName()); 
-                return false;
-            }
-        } else {
-            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                    "Can not find " + ServerListDisplayerEx.class.getSimpleName()); //NOI18N
-            return false;
-        }
+    protected void checkForeignKeyColumn(ForeignKey key, Table referredTable, String referringColName, String referredColName,
+            int position) throws Exception {
+        ForeignKeyColumn col = key.getColumn(referringColName);
+        assertEquals(referredTable.getColumn(referredColName), col.getReferredColumn());
+        assertEquals(key.getParent().getColumn(referringColName), col.getReferringColumn());
+        assertEquals(position, col.getPosition());
     }
 }

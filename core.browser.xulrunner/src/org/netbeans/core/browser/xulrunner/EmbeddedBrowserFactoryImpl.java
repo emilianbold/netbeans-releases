@@ -78,11 +78,11 @@ public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        propSupport.addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        propSupport.removePropertyChangeListener(l);
     }
 }

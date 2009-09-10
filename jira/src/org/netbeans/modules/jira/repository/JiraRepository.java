@@ -705,5 +705,9 @@ public class JiraRepository extends Repository {
             assert issue != null;
             return ((NbJiraIssue)issue).getCreated();
         }
+        public String getID(TaskData issueData) {
+            assert issueData != null;
+            return NbJiraIssue.getID(issueData);
+        }
     }
 }

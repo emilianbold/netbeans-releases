@@ -181,7 +181,7 @@ case "`uname`" in
             --jdkhome '"$netbeans_jdkhome"' \
             -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
-            '"-J-Xdock:icon=$progdir/../nb6.7/netbeans.icns"' \
+            '"-J-Xdock:icon=$progdir/../nb6.8/netbeans.icns"' \
             --branding nb \
             --clusters '"$netbeans_clusters"' \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \

@@ -47,6 +47,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -187,13 +188,45 @@ public final class WatchProjects {
         if (Boolean.getBoolean("ignore.random.failures")) {
             // remove the if we don't care about random failures
             // reported as #
-            removeTreeView(Frame.getFrames());
+            //removeTreeView(Frame.getFrames());
         }
 
         System.setProperty("assertgc.paths", "5");
-        Log.assertInstances("Checking if all projects are really garbage collected", "Project");
+        try {
+            Log.assertInstances("Checking if all projects are really garbage collected", "Project");
+        } catch (AssertionFailedError t) {
+            if (printTreeView(Frame.getFrames()) == 0 || !Boolean.getBoolean("ignore.random.failures")) {
+                throw t;
+            }
+        }
     }
     
+    private static int printTreeView(Component[] arr) throws Exception {
+        int cnt = 0;
+        StringBuilder str = new StringBuilder();
+        for (Component c : arr) {
+            if (c instanceof TreeView) {
+                Set<?> set = (Set<?>) getField(TreeView.class, "visHolder").get(c);
+                if (!set.isEmpty()) {
+                    cnt += set.size();
+                    str.append("visHolder for TreeView in '" + c.getParent().getName() + "':");
+                    for (Object o : set) {
+                        str.append(o);
+                    }
+                }
+                continue;
+            }
+            if (c instanceof Container) {
+                Container o = (Container)c;
+                cnt += printTreeView(o.getComponents());
+            }
+        }
+        if (str.length() > 0) {
+            Logger.getLogger(WatchProjects.class.getName()).warning(str.toString());
+        }
+        return cnt;
+    }
+
     private static void removeTreeView(Component[] arr) throws Exception {
         for (Component c : arr) {
             if (c instanceof TreeView) {
