@@ -51,10 +51,10 @@ public class DLightConfigurationUIWrapper {
     private DLightConfiguration dlightConfiguration;
     private boolean custom;
     private String name;
-    private  String displayedName;
+    private String displayedName;
     private List<DLightToolUIWrapper> tools;
     private boolean profileOnRun;
-    private boolean isModified;
+    private boolean modified;
 
     public DLightConfigurationUIWrapper(DLightConfiguration dlightConfiguration, List<DLightTool> allDLightTools) {
         this.dlightConfiguration = dlightConfiguration;
@@ -64,7 +64,6 @@ public class DLightConfigurationUIWrapper {
         this.custom = false;
         initWrapper(allDLightTools);
     }
-
 
     public DLightConfigurationUIWrapper(String name, List<DLightTool> allDLightTools) {
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
@@ -174,11 +173,6 @@ public class DLightConfigurationUIWrapper {
         this.tools = tools;
     }
 
-
-    public boolean isModified(){
-        return isModified;
-    }
-
     public void setToolEnabled(DLightToolUIWrapper toolWrapper, boolean isEnabled){
         toolWrapper.setEnabled(isEnabled);
     }
@@ -194,6 +188,34 @@ public class DLightConfigurationUIWrapper {
      * @param profileOnRun the profileOnRun to set
      */
     public void setProfileOnRun(boolean profileOnRun) {
+        if (this.profileOnRun != profileOnRun){
+            modified = true;
+        }
         this.profileOnRun = profileOnRun;
+    }
+
+    /**
+     * @return the modified
+     */
+    public boolean isModified() {
+        return modified;
+    }
+
+    /**
+     * @param modified the modified to set
+     */
+    public void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
+    public DLightConfigurationUIWrapper copy() {
+        List<DLightTool> toolsCopy = new ArrayList<DLightTool>(getTools().size());
+        for (DLightToolUIWrapper dltuWrapper : getTools()) {
+            toolsCopy.add(dltuWrapper.getDLightTool());
+        }
+        DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper(getDLightConfiguration(), toolsCopy);
+        copy.setProfileOnRun(isProfileOnRun());
+        copy.setModified(false);
+        return copy;
     }
 }

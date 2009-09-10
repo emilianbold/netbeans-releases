@@ -44,7 +44,6 @@
  */
 package org.netbeans.modules.dlight.toolsui;
 
-import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.util.List;
@@ -110,6 +109,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     }
 
     public boolean apply() {
+        // save wrappers
+        DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
+        // save configurations and tools
         for (DLightConfigurationUIWrapper configuration : dLightConfigurations){
             for (DLightToolUIWrapper toolUI : configuration.getTools()){
                 if (toolUI.isModified()){
@@ -385,7 +387,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 DLightToolUIWrapper copyTool = copyTools.get(i++);
                 copy.setToolEnabled(copyTool, tool.isEnabled());
                 copyTool.setOnByDefault(tool.isOnByDefault());
-                copyTool.setVisible(tool.isVisible());
             }
             return copy;
         }
