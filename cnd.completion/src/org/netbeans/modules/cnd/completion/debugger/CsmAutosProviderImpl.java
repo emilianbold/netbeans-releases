@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.impl.services;
+package org.netbeans.modules.cnd.completion.debugger;
 
 import java.util.ArrayList;
 import java.util.Collections;

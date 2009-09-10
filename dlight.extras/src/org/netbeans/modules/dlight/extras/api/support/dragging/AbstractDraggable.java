@@ -36,75 +36,76 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.extras.api.support.dragging;
 
-package org.netbeans.modules.cnd.remote.fs;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Shape;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
+public abstract class AbstractDraggable implements Draggable {
 
-/**
- *
- * @author Vladimir Kvashin
- */
-public class RemotePlainFile extends RemoteFileObjectBase {
+    private final Component component;
+    private boolean dragging;
+    private int draggingShift;
+    private Draggable leftBound;
+    private Draggable rightBound;
 
-    public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, String remotePath, File cache) {
-        super(fileSystem, execEnv, remotePath, cache);
+    public AbstractDraggable(Component component) {
+        this.component = component;
     }
 
-    @Override
-    public final FileObject[] getChildren() {
-        return new FileObject[0];
+    public final void setLeftBound(Draggable leftBound) {
+        this.leftBound = leftBound;
     }
 
-    @Override
-    public final boolean isFolder() {
-        return false;
+    public final void setRightBound(Draggable rightBound) {
+        this.rightBound = rightBound;
     }
 
-    @Override
-    public boolean isData() {
-        return true;
+    public abstract int getPosition();
+
+    protected abstract void setPosition(int pos, boolean isAdjusting);
+
+    protected abstract Shape getShape();
+
+    protected abstract Color getColor();
+
+    public final boolean containsPoint(Point p) {
+        return getShape().contains(p);
     }
 
-    @Override
-    public final FileObject getFileObject(String name, String ext) {
-        return null;
-    }
-
-    @Override
-    public FileObject getFileObject(String relativePath) {
-        return null;
-    }
-
-    @Override
-    public InputStream getInputStream() throws FileNotFoundException {
-        // TODO: check error processing
-        try {
-            getRemoteFileSupport().ensureFileSync(cache, remotePath);
-        } catch (IOException ex) {             
-            throw new FileNotFoundException(cache.getAbsolutePath());
-        } catch (InterruptedException ex) {
-            throwFileNotFoundException(ex);
-        } catch (ExecutionException ex) {
-            throwFileNotFoundException(ex);
-        } catch (CancellationException ex) {
-            // TODO: clear CndUtils cache
-            return null;
+    public final void startDragging(Point p) {
+        if (!dragging) {
+            dragging = true;
+            draggingShift = getPosition() - p.x;
         }
-        return new FileInputStream(cache);
     }
 
-    private void throwFileNotFoundException(Exception cause) throws FileNotFoundException {
-        FileNotFoundException ex = new FileNotFoundException(cache.getAbsolutePath());
-        ex.initCause(cause);
-        throw ex;
+    public final void dragTo(Point p, boolean isAdjusting) {
+        if (dragging) {
+            int leftBoundPos = leftBound == null ? 0 : leftBound.getPosition();
+            int rightBoundPos = rightBound == null ? component.getWidth() - 1 : rightBound.getPosition();
+            int newPos = p.x + draggingShift;
+            if (newPos < leftBoundPos) {
+                newPos = leftBoundPos;
+            } else if (rightBoundPos < newPos) {
+                newPos = rightBoundPos;
+            }
+            setPosition(newPos, isAdjusting);
+        }
+    }
+
+    public final void finishDragging() {
+        if (dragging) {
+            dragging = false;
+        }
+    }
+
+    public final void paint(Graphics g) {
+        g.setColor(getColor());
+        ((Graphics2D) g).fill(getShape());
     }
 }

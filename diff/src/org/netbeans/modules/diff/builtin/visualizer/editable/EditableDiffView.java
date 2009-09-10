@@ -1018,6 +1018,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         refreshDividerSize();
                         jSplitPane1.repaint();
                         diffMarkprovider.refresh();
+                        if (diffs.length > 0) {
+                            setCurrentDifference(0);
+                        }
                     }
                 });
             }

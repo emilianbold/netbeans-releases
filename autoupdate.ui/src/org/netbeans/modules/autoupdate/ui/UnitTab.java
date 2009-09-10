@@ -1175,6 +1175,7 @@ public class UnitTab extends javax.swing.JPanel {
             } finally {
                 Containers.forUninstall ().removeAll ();
                 Containers.forDisable().removeAll ();
+                Containers.forEnable().removeAll ();
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
@@ -1194,13 +1195,13 @@ public class UnitTab extends javax.swing.JPanel {
             for (Unit u : units) {
                 if (u instanceof Unit.Installed) {
                     Unit.Installed inst = (Unit.Installed)u;
-                    if (!inst.isUninstallAllowed() && !inst.isDeactivationAllowed()) {
-                        setEnabled(false);
+                    if (inst.isUninstallAllowed()) {
+                        setEnabled(true);
                         return;
                     }
                 }
             }
-            setEnabled (true);
+            setEnabled (false);
         }
 
     }
@@ -1360,12 +1361,17 @@ public class UnitTab extends javax.swing.JPanel {
                 finished = wizard.invokeWizard(true);
             } finally {
                 Containers.forEnable().removeAll();
+                Containers.forDisable().removeAll();
+                Containers.forUninstall ().removeAll();
                 if (finished) {
                     for (Unit u : model.getMarkedUnits()) {
                         u.setMarked(false);
                     }
                 }
                 fireUpdataUnitChange();
+                if(!finished) {
+                    UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
+                }
                 restoreSelectedRow(row);
                 refreshState ();
                 focusTable ();
@@ -1495,6 +1501,7 @@ public class UnitTab extends javax.swing.JPanel {
         @Override
         public void performerImpl() {
             final int row = getSelectedRow ();
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
             OperationContainer<OperationSupport> c = Containers.forDisable();
             for (Unit u : model.getUnits()) {
                 if (u.isMarked() && isEnabled(u)) {
@@ -1502,14 +1509,21 @@ public class UnitTab extends javax.swing.JPanel {
                 }
             }
             UninstallUnitWizard wizard = new UninstallUnitWizard ();
-            if (wizard.invokeWizard (false)) {
+            boolean finished = false;
+            try {
+                finished = wizard.invokeWizard(false);
+            } finally {
                 Containers.forUninstall().removeAll();
+                Containers.forDisable().removeAll();
+                Containers.forEnable().removeAll();
+                fireUpdataUnitChange();
+                if (!finished) {
+                    UnitCategoryTableModel.restoreState(model.getUnits(), state, model.isMarkedAsDefault());
+                }
+                restoreSelectedRow(row);
+                refreshState();
+                focusTable();
             }
-            Containers.forDisable().removeAll();
-            fireUpdataUnitChange ();
-            restoreSelectedRow(row);
-            refreshState ();
-            focusTable ();
         }
         /*
             Unit.Installed unit = (Unit.Installed)u;

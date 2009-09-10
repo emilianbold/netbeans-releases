@@ -238,7 +238,9 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                                 }
                             }
                             File file = new File(path);
-                            if (CndFileUtils.exists(file)) {
+                            //if (CndFileUtils.exists(file)) {
+                            // do not use CndFileUtils. It results in a lot of GC
+                            if (file.exists()) {
                                 unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
                             }
                         }
