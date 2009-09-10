@@ -80,12 +80,8 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
         allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
-
-//        ArrayList<DLightConfigurationWrapper> list = new ArrayList<DLightConfigurationWrapper>();
-//        for (DLightConfiguration dLightConfiguration : DLightConfigurationManager.getInstance().getDLightConfigurations()) {
-//            list.add(new DLightConfigurationWrapper(dLightConfiguration, allDLightTools));
-//        }
         initDialog(DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers());
+        toolNameTextField.setBackground(getBackground());
         setPreferredSize(new Dimension(700, 400));
     }
 
@@ -103,7 +99,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     private void initConfigurationPanel(DLightConfigurationUIWrapper dlightConfigurationUIWrapper) {
         DLightConfiguration gizmoConfiguration = dlightConfigurationUIWrapper.getDLightConfiguration();
         assert gizmoConfiguration != null;
-        profileOnRunCheckBox.setSelected(true);
+        profileOnRunCheckBox.setSelected(dlightConfigurationUIWrapper.isProfileOnRun());
         defaultDataProviderComboBox.removeAllItems();
         defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
         defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
@@ -113,6 +109,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     }
 
     public boolean apply() {
+        // save wrappers
+        DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
+        // save configurations and tools
         for (DLightConfigurationUIWrapper configuration : dLightConfigurations){
             for (DLightToolUIWrapper toolUI : configuration.getTools()){
                 if (toolUI.isModified()){
@@ -141,7 +140,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             DLightToolUIWrapper tool = getSelectedDLightToolWrapper();
             toolNameTextField.setText(tool.getDLightTool().getName());
             onByDefaultCheckBox.setSelected(tool.isOnByDefault());
-            visibleCheckBox.setSelected(tool.isVisible());
             detailsLabel.setText(tool.getDLightTool().getDetailedName());
         }
     }
@@ -174,7 +172,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolNameTextField = new javax.swing.JTextField();
         onByDefaultCheckBox = new javax.swing.JCheckBox();
         detailsLabel = new javax.swing.JLabel();
-        visibleCheckBox = new javax.swing.JCheckBox();
         updateButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
@@ -253,6 +250,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolPropertyPanel.add(toolNameLabel, gridBagConstraints);
 
         toolNameTextField.setEditable(false);
+        toolNameTextField.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -271,6 +269,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
         toolPropertyPanel.add(onByDefaultCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -280,21 +279,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         toolPropertyPanel.add(detailsLabel, gridBagConstraints);
-
-        visibleCheckBox.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.visibleCheckBox.text")); // NOI18N
-        visibleCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                visibleCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        toolPropertyPanel.add(visibleCheckBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -328,9 +312,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(toolsPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void profileOnRunCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileOnRunCheckBoxActionPerformed
-    }//GEN-LAST:event_profileOnRunCheckBoxActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....\nFrom this dialog the user will be able to (semi) automatically add new tools to list and update existing tools. Details TBD but could be via update center...", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
@@ -372,10 +353,10 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         lastSelectedIndex = profileConfigurationComboBox.getSelectedIndex();
     }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
 
-    private void visibleCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_visibleCheckBoxActionPerformed
-        DLightToolUIWrapper tool = getSelectedDLightToolWrapper();
-        tool.setVisible(!tool.isVisible());
-    }//GEN-LAST:event_visibleCheckBoxActionPerformed
+    private void profileOnRunCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileOnRunCheckBoxActionPerformed
+        DLightConfigurationUIWrapper dLightConfigurationWrapper = (DLightConfigurationUIWrapper) profileConfigurationComboBox.getSelectedItem();
+        dLightConfigurationWrapper.setProfileOnRun(!dLightConfigurationWrapper.isProfileOnRun());
+    }//GEN-LAST:event_profileOnRunCheckBoxActionPerformed
 
     class MyListEditorPanel extends ListEditorPanel<DLightConfigurationUIWrapper> {
 
@@ -406,7 +387,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 DLightToolUIWrapper copyTool = copyTools.get(i++);
                 copy.setToolEnabled(copyTool, tool.isEnabled());
                 copyTool.setOnByDefault(tool.isOnByDefault());
-                copyTool.setVisible(tool.isVisible());
             }
             return copy;
         }
@@ -449,6 +429,5 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane toolsList;
     private javax.swing.JPanel toolsPanel;
     private javax.swing.JButton updateButton;
-    private javax.swing.JCheckBox visibleCheckBox;
     // End of variables declaration//GEN-END:variables
     }
