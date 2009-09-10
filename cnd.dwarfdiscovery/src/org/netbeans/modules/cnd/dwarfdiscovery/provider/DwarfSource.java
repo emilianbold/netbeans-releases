@@ -480,7 +480,7 @@ public class DwarfSource implements SourceFileProperties{
         for(String path : list){
             cutFolderPrefix(path, dwarfTable);
         }
-        ArrayList<String> dwarfIncludedFiles = dwarfTable.getFilePaths();
+        List<String> dwarfIncludedFiles = dwarfTable.getFilePaths();
         for(String path : dwarfIncludedFiles){
             String includeFullName = path;
             if (FULL_TRACE) {System.out.println("Included file original:"+path);} // NOI18N
@@ -523,7 +523,7 @@ public class DwarfSource implements SourceFileProperties{
             String name = path.substring(n+1);
             String relativeDir = path.substring(0,n);
             String dir = "/"+relativeDir; // NOI18N
-            ArrayList<String> paths = dwarfTable.getPathsForFile(name);
+            List<String> paths = dwarfTable.getPathsForFile(name);
             if (FULL_TRACE) {System.out.println("Try to find new include paths for:"+name+" in folder "+dir);} // NOI18N
             for(String dwarfPath : paths){
                 if (FULL_TRACE) {System.out.println("    candidate:"+dwarfPath);} // NOI18N
