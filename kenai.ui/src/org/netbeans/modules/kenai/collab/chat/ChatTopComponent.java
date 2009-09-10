@@ -219,6 +219,9 @@ public class ChatTopComponent extends TopComponent {
 
     private void addMoreChatsTab(int index) {
         chats.add(contactList);
+        //workaround for #171890
+        chats.setTitleAt(0, "");
+
         chats.setIconAt(index, ImageUtilities.loadImageIcon(PLUS, true));
         //chats.setEnabledAt(index, false);
         chats.setToolTipTextAt(index, NbBundle.getMessage(ChatTopComponent.class, "LBL_MoreChats"));

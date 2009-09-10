@@ -40,12 +40,14 @@
 package org.netbeans.modules.bugtracking.util;
 
 import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
+import javax.swing.MutableComboBoxModel;
 
 /**
  * A custom combo-box model whose main feature is method
  * {@code setData(Object[])}. This method retains selection if the data is
- * changed, if possible.
+ * changed, if possible. Methods {@code addElement()},
+ * {@code insertElementAt()}, {@code removeElement()} and
+ * {@code removeElementAt()} retain the selection, too.
  * <p>
  * The main motivation for creating this model was a need to work-around a bug
  * that {@code ItemListener}s are not notified of item selection change
@@ -56,7 +58,7 @@ import javax.swing.ComboBoxModel;
  *
  * @author Marian Petras
  */
-final class RepositoryComboModel extends AbstractListModel implements ComboBoxModel {
+final class RepositoryComboModel extends AbstractListModel implements MutableComboBoxModel {
 
     private Object[] data;
     private Object selectedItem;
@@ -124,7 +126,7 @@ final class RepositoryComboModel extends AbstractListModel implements ComboBoxMo
                 selectedItem = null;
             } else if (originalSelectedItem == null) {
                 selectedItem = this.data[0];
-            } else if (!isAmong(originalSelectedItem, data)) {
+            } else if (indexOf(originalSelectedItem, data) == -1) {
                 selectedItem = this.data[0];
             } else {
                 selectedItem = originalSelectedItem;
@@ -134,40 +136,6 @@ final class RepositoryComboModel extends AbstractListModel implements ComboBoxMo
         fireContentsChanged(this, 0, Math.max(originalSize, newSize));
 
         assert (this.data == null) || (this.data.length > 0);
-    }
-
-    /**
-     * Removes the first item from the model.
-     * The currently selection (if any) is retained unless the selected item
-     * is the one being removed.
-     *
-     * @exception  java.lang.IllegalStateException
-     *             if this model does not contain any data
-     */
-    void removeFirstItem() {
-        if (data == null) {
-            throw new IllegalStateException("no items");                //NOI18N
-        }
-
-        assert data.length > 0;
-
-        if (data.length == 1) {
-            selectedItem = null;
-
-            data = null;
-        } else {
-            if (selectedItem == data[0]) {
-                selectedItem = null;
-            }
-
-            Object[] newData = new Object[data.length - 1];
-            System.arraycopy(data, 1, newData, 0, newData.length);
-            data = newData;
-        }
-
-        assert (data == null) || (data.length > 0);
-
-        fireIntervalRemoved(this, 0, 0);
     }
 
     public int getSize() {
@@ -206,26 +174,117 @@ final class RepositoryComboModel extends AbstractListModel implements ComboBoxMo
         return selectedItem;
     }
 
-    private static boolean isAmong(Object originalSelectedItem, Object[] data) {
+    public void addElement(Object newObj) {
+        assert (data == null) || (data.length > 0);
+
         if (data == null) {
-            throw new IllegalArgumentException();
+            data = new Object[] {newObj};
+            if (!clearSelection) {
+                selectedItem = newObj;
+            }
+        } else {
+            Object[] newData = new Object[data.length + 1];
+            System.arraycopy(data, 0, newData, 0, data.length);
+            newData[data.length] = newObj;
+            data = newData;
+        }
+        int lastIndex = data.length - 1;
+        fireIntervalAdded(this, lastIndex, lastIndex);
+    }
+
+    public void insertElementAt(Object obj, int index) {
+        final int size = getSize();
+
+        checkIndex(index, size);
+
+        if (index == size) {        //this includes the case that (size == 0)
+            addElement(obj);
+        } else {
+            Object[] newData = new Object[data.length + 1];
+            System.arraycopy(data,    index,
+                             newData, index + 1,
+                             size - index);
+            if (index != 0) {
+                System.arraycopy(data,    0,
+                                 newData, 0,
+                                 index);
+            }
+            newData[index] = obj;
+            data = newData;
+            fireIntervalAdded(this, index, index);
+        }
+    }
+
+    public void removeElement(Object obj) {
+        int index = indexOf(obj);
+        if (index != -1) {
+            removeElementAt(index);
+        }
+    }
+
+    public void removeElementAt(int index) {
+        if (isEmpty()) {
+            throw new IllegalStateException(
+                    "Cannot remove items from an empty model.");        //NOI18N
         }
 
-        if (originalSelectedItem == null) {
-            return false;
+        final int size = getSize();
+
+        checkIndex(index, size - 1);
+
+        final Object removedItem = data[index];
+
+        if (size == 1) {
+            data = null;
+        } else {
+            Object[] newData = new Object[size - 1];
+            if (index != 0) {
+                System.arraycopy(data,    0,
+                                 newData, 0,
+                                 index);
+            }
+            if (index != (size - 1)) {
+                System.arraycopy(data,    index + 1,
+                                 newData, index,
+                                 size - index - 1);
+            }
+            data = newData;
         }
 
-        if (data.length == 0) {
-            return false;
+        if (removedItem == selectedItem) {
+            selectedItem = null;
+        }
+
+        fireIntervalRemoved(this, index, index);
+    }
+
+    public boolean isEmpty() {
+        assert (data == null) || (data.length > 0);
+        return (data == null);
+    }
+
+    private int indexOf(Object obj) {
+        return indexOf(obj, data);
+    }
+
+    private static int indexOf(Object obj, Object[] data) {
+        if ((data == null) || (data.length == 0)) {
+            return -1;
         }
 
         for (int i = 0; i < data.length; i++) {
-            if (data[i] == originalSelectedItem) {
-                return true;
+            if (data[i] == obj) {
+                return i;
             }
         }
+        return -1;
+    }
 
-        return false;
+    private static void checkIndex(int index, int upperBound) {
+        if ((index < 0) || (index > upperBound)) {
+            throw new IndexOutOfBoundsException(
+               "index: " + index + "; bounds: (0, " + upperBound + ')');//NOI18N
+        }
     }
 
 }
