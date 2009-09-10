@@ -69,7 +69,8 @@ public abstract class Shortcut {
         setNames(new HashMap<Locale, String>());
         setDescriptions(new HashMap<Locale, String>());
         setName(name);
-        setCategories(new String [] {});        
+        setCategories(new String [] {});
+        setAdditionalProperties(new Properties());
     }
     public Map<Locale, String> getNames() {
         return names;
