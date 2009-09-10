@@ -43,6 +43,7 @@ import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
 import org.netbeans.modules.cnd.remote.sync.RemoteBinaryServiceTestCase;
@@ -101,7 +102,8 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
              ServerListTestCase.class,
              ZipSyncWorkerTestCase.class,
              HostSetupTestCase.class,
-             RemoteFileTestCase.class);
+             RemoteFileTestCase.class,
+             RemoteFileSystemTestCase.class);
     }
 
 
