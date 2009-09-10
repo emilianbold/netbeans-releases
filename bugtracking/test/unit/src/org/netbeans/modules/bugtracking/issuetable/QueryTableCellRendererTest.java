@@ -436,6 +436,9 @@ public class QueryTableCellRendererTest {
                 public long getCreated(Issue issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
+                public String getID(Object issueData) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
             }) {});
         }
 

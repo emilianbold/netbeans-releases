@@ -121,9 +121,9 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
             BodyDeclaration.Modifier.PUBLIC;
 
         Collection<IndexedConstant> flds = null;        
-        for (IndexedElement indexedElement : context.index.getClassAncestors(null, className)) {
+        for (IndexedElement indexedElement : context.getIndex().getClassAncestors(null, className)) {
             String clazzName = indexedElement.getName();
-            flds = getFields(context.index, clazzName, field, modifiers);
+            flds = getFields(context.getIndex(), clazzName, field, modifiers);
             if (!flds.isEmpty()) {
                 break;
             } else {

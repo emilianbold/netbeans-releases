@@ -74,11 +74,7 @@ made subject to such option by the copyright holder.
             <folder name="x-jsf+xml">
                 <folder name="Popup">
                     <file name="org-netbeans-modules-web-jsf-editor-JsfPopupAction.instance">
-                        <attr name="position" intvalue="3500"/>
-                    </file>
-                    <file name="Separator0.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="3600"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
             </folder>
@@ -142,6 +138,10 @@ made subject to such option by the copyright holder.
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="view.ftl" url="templates/view.ftl">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="bundle.ftl" url="templates/bundle.ftl">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                     <attr name="template" boolvalue="true"/>
                 </file>

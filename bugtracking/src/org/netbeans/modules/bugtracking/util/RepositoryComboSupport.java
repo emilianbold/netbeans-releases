@@ -47,7 +47,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.event.PopupMenuEvent;
@@ -82,6 +82,7 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
 
     private final JComponent component;
     private final JComboBox comboBox;
+    private final RepositoryComboModel comboBoxModel;
     private final File refFile;
     private final Node[] selectedNodes;
     private boolean tooLate;
@@ -171,17 +172,30 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
 
         checkJustOneSpecified(defaultRepo, refFile, selectedNodes);
 
+        checkOldComboBoxModel(comboBox);
+
         this.component = panel;
         this.comboBox = comboBox;
+        this.comboBox.setModel(comboBoxModel = new RepositoryComboModel());
+        this.comboBox.setRenderer(new RepositoryComboRenderer());
         this.defaultRepo = defaultRepo;
         this.refFile = refFile;
         this.selectedNodes = selectedNodes;
 
         defaultRepoComputationPending = (defaultRepo == null);
 
-        comboBox.setModel(new DefaultComboBoxModel(new Object[] {LOADING_REPOSITORIES}));
-        comboBox.setRenderer(new RepositoryComboRenderer());
+        setComboBoxData(new Object[] {LOADING_REPOSITORIES});
+    }
 
+    private void checkOldComboBoxModel(JComboBox comboBox) {
+        ComboBoxModel oldModel = comboBox.getModel();
+        if ((oldModel != null) && (oldModel.getSize() != 0)) {
+            throw new IllegalStateException("The combo-box must be empty."); //NOI18N
+        }
+    }
+
+    private void setComboBoxData(Object[] data) {
+        comboBoxModel.setData(data);
     }
 
     private void checkJustOneSpecified(Object... items) {
@@ -271,7 +285,7 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
                     public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                         comboBox.removePopupMenuListener(this);
                         if (comboBox.getSelectedItem() != SELECT_REPOSITORY) {
-                            comboBox.removeItemAt(0);
+                            comboBoxModel.removeFirstItem();
                         } else {
                             /* Restore the item selection listener: */
                             comboBox.addItemListener(RepositoryComboSupport.this);
@@ -279,7 +293,7 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
                     }
                 });
             } else {
-                comboBox.removeItemAt(0);
+                comboBoxModel.removeFirstItem();
                 comboBox.removeItemListener(this);
             }
         }
@@ -367,7 +381,14 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
                  */
                 LOG.finest("run() called from AWT - going to select the repository (if any)"); //NOI18N
                 try {
-                    preselectRepository(defaultRepo);
+                    if (comboBox.getSelectedItem() instanceof Repository) {
+                        /*
+                         * the user has already selected some item
+                         * - do not override it
+                         */
+                    } else {
+                        preselectRepository(defaultRepo);
+                    }
                 } finally {
                     defaultRepoSelected = true;
                 }
@@ -399,11 +420,6 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
 
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("preselectRepository(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
-        }
-
-        if (comboBox.getSelectedItem() instanceof Repository) {
-            /* the user has already selected some item - do not change it */
-            return;
         }
 
         if (comboBox.isPopupVisible()) {
@@ -463,8 +479,7 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
         if (reposCount != 0) {
             System.arraycopy(repos, 0, comboData, startIndex, reposCount);
         }
-        comboBox.setModel(new DefaultComboBoxModel(comboData));
-        comboBox.setSelectedItem(null);             // HACK to force itemSeleted evetn after first time selection
+        setComboBoxData(comboData);
 
         if (comboBox.getSelectedItem() == SELECT_REPOSITORY) {
             comboBox.addItemListener(this);
@@ -475,23 +490,12 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
         LOG.finer("refreshRepositoryModel()");
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                DefaultComboBoxModel repoModel;
-                loadRepositories();
-                final Object item = comboBox.getSelectedItem();
-                repoModel = new DefaultComboBoxModel(repositories);
-                comboBox.setModel(repoModel);
-                if(item != null) {
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            Repository lastSelection = null;
-                            if(item instanceof Repository) {
-                                lastSelection = (Repository) item;
-                            }
-                            preselectRepository(lastSelection);
-                        }
-                    });
+                if (RequestProcessor.getDefault().isRequestProcessorThread()) {
+                    loadRepositories();
+                    EventQueue.invokeLater(this);
                 } else {
-                    LOG.finest(" no previous selection available - done"); //NOI18N
+                    assert EventQueue.isDispatchThread();
+                    setComboBoxData(repositories);
                 }
             }
         });

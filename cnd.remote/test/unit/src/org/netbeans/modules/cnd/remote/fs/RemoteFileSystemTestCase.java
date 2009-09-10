@@ -135,7 +135,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         
         RemoteFileSupport remoteFileSupport = fs.getRemoteFileSupport();
         time = System.currentTimeMillis();
-        remoteFileSupport.syncDirStruct(localDir, dirName);
+        remoteFileSupport.ensureDirSync(localDir, dirName, null);
         time = System.currentTimeMillis() - time;
         assertTrue("File " + stdioFile + " should exist", stdioFile.exists());
         System.err.printf("Synchronizing %s took %d ms\n", dirName, time);
@@ -143,7 +143,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         // check that ensureDirSync does not take too long
         long maxTime = time / 10;
         time = System.currentTimeMillis();
-        remoteFileSupport.ensureDirSync(localDir, dirName);
+        remoteFileSupport.ensureDirSync(localDir, dirName, null);
         time = System.currentTimeMillis() - time;
         System.err.printf("Checking sync for %s took %d ms\n", dirName, time);
         assertTrue("ensureDirSync worked too long", time < maxTime);

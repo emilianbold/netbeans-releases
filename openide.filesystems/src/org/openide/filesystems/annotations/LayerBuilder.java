@@ -41,6 +41,7 @@ package org.openide.filesystems.annotations;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedHashMap;

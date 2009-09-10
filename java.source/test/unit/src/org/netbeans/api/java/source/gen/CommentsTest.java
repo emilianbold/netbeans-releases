@@ -70,6 +70,7 @@ public class CommentsTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CommentsTest.class);
+//        suite.addTest(new CommentsTest("testAddStatement"));
         return suite;
     }
 
@@ -102,7 +103,7 @@ public class CommentsTest extends GeneratorTest {
             "         */\n" +
             "        int b; //NOI18N\n" +
             "        // cecko\n" +
-            "        int c;\n" +
+            "        int c; // trail\n" +
             "    }\n" +
             "\n" +
             "}\n";
@@ -784,6 +785,115 @@ public class CommentsTest extends GeneratorTest {
                             null);
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, mt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testMethodFromString171043b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication11;\n" +
+            "public class Class1 {\n" +
+            "}\n");
+        String golden =
+            "package javaapplication11;\n" +
+            "public class Class1 {\n\n" +
+            "    public boolean equals(Object object) {\n" +
+            "        // TODO: Warning - this method won't work in the case the id fields are not set\n" +
+            "        if (!(object instanceof MyEntity)) {\n" +
+            "            return false;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ModifiersTree empty = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                ModifiersTree pub = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                MethodTree mt = make.Method(pub,
+                            "equals",
+                            make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.BOOLEAN)),
+                            Collections.<TypeParameterTree>emptyList(),
+                            Collections.singletonList(make.Variable(empty, "object", make.QualIdent(workingCopy.getElements().getTypeElement("java.lang.Object")), null)),
+                            Collections.<ExpressionTree>emptyList(),
+                            "{" +
+                            "// TODO: Warning - this method won't work in the case the id fields are not set\n" +
+                            "if (!(object instanceof MyEntity)) {" +
+                            "return false;" +
+                            "}" +
+                            "}",
+                            null);
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, mt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testMoveMethod171345() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication11;\n" +
+            "public class Class1 {\n" +
+            "     public class Test {\n" +
+            "         /*bflmpsvz*/\n" +
+            "         private void test() {\n" +
+            "             //byt\n" +
+            "             System.err.println();\n" +
+            "             //bydlet\n\n" +
+            "             if (true) {\n" +
+            "                 //obyvatel\n" +
+            "             }\n" +
+            "         }\n" +
+            "         //Pribyslav\n" +
+            "     }\n" +
+            "}\n");
+        String golden =
+            "package javaapplication11;\n" +
+            "public class Class1 {\n" +
+            "     public class Test {\n" +
+            "     }\n\n" +
+            "    /*bflmpsvz*/\n" +
+            "    private void test() {\n" +
+            "        //byt\n" +
+            "        System.err.println();\n" +
+            "        //bydlet\n" +
+            "        if (true) {\n" +
+            "            //obyvatel\n" +
+            "        }\n" +
+            "    }\n" +
+            "    //Pribyslav\n" +
+            "}\n";
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                ClassTree inner = (ClassTree) topLevel.getMembers().get(1);
+                MethodTree mt = (MethodTree) inner.getMembers().get(1);
+                MethodTree nue = gu.importComments(mt, cut);
+                workingCopy.rewrite(topLevel, make.addClassMember(topLevel, nue));
+                workingCopy.rewrite(inner, make.removeClassMember(inner, mt));
             }
 
         };

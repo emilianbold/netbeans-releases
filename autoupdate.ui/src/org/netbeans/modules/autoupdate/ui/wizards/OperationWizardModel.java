@@ -520,6 +520,8 @@ public abstract class OperationWizardModel {
     }
     
     private void addRequiredElements (Set<UpdateElement> elems) {
+        OperationContainer baseContainer = getBaseContainer();
+        OperationContainer customContainer = getCustomHandledContainer();
         for (UpdateElement el : elems) {
             if (el == null || el.getUpdateUnit () == null) {
                 Logger.getLogger (OperationWizardModel.class.getName ()).log (Level.INFO, "UpdateElement " + el + " cannot be null"
@@ -527,9 +529,9 @@ public abstract class OperationWizardModel {
                 continue;
             }
             if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == el.getUpdateUnit ().getType ()) {
-                getCustomHandledContainer ().add (el);
+                customContainer.add (el);
             } else {
-                getBaseContainer ().add (el);
+                baseContainer.add (el);
             }
         }
     }

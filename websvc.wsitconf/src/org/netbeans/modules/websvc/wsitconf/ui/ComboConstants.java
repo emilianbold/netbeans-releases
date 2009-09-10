@@ -77,6 +77,7 @@ public interface ComboConstants {
     String PROF_TRANSPORT_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Transport_Info");    //NOI18N
     String PROF_MSGAUTHSSL_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_MsgAuthSSL_Info");    //NOI18N
     String PROF_SAMLSSL_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_SAMLSSL_Info");    //NOI18N
+    String PROF_PASSWD_DERIVED_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Passwd_Derived_Info");    //NOI18N
     String PROF_USERNAME_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Username_Info");    //NOI18N
     String PROF_MUTUALCERT_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_MutualCert_Info");    //NOI18N
     String PROF_ENDORSCERT_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_EndorsCert_Info");    //NOI18N

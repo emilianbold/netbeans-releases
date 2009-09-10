@@ -73,7 +73,7 @@ public final class CodeAssistancePanelController extends OptionsPanelController 
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.NEED_TOPIC"); // NOI18N
+        return new HelpCtx("cnd.optionsDialog"); // NOI18N
     }
     
     public JComponent getComponent(Lookup masterLookup) {

@@ -57,11 +57,11 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.php.editor.model.CodeMarker;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
@@ -98,7 +98,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 return o1.compareTo(o2);
             }
         });
-        Model model = ModelFactory.getModel(parameter);
+        Model model = ((PHPParseResult)parameter).getModel();
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
         Occurence caretOccurence = occurencesSupport.getOccurence();        
         if (caretOccurence != null) {

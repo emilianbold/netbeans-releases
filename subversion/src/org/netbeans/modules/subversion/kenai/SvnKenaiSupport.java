@@ -71,11 +71,13 @@ public class SvnKenaiSupport {
     }
 
     public PasswordAuthentication getPasswordAuthentication(boolean forceRelogin) {
-        return kenaiSupport.getPasswordAuthentication(forceRelogin);
+        return kenaiSupport != null ? kenaiSupport.getPasswordAuthentication(forceRelogin) : null;
     }
 
     public void setFirmAssociations(File[] files, String url) {
-        kenaiSupport.setFirmAssociations(files, url);
+        if(kenaiSupport != null) {
+            kenaiSupport.setFirmAssociations(files, url);
+        }
     }
 
     /**
@@ -83,15 +85,15 @@ public class SvnKenaiSupport {
      * @return true if successfully logged in
      */
     public boolean showLogin () {
-        return kenaiSupport.showLogin();
+        return kenaiSupport != null ? kenaiSupport.showLogin() : false;
     }
 
     public boolean isOnline(String user) {
-        return kenaiSupport.isUserOnline(user);
+        return kenaiSupport != null && kenaiSupport.isUserOnline(user);
     }
 
     public KenaiUser forName(String user) {
-        return kenaiSupport.forName(user);
+        return kenaiSupport != null ? kenaiSupport.forName(user) : null;
     }
 
     public boolean isLogged () {
@@ -103,11 +105,15 @@ public class SvnKenaiSupport {
     }
 
     public void removeVCSNoficationListener(PropertyChangeListener l) {
-        kenaiSupport.removeVCSNoficationListener(l);
+        if(kenaiSupport != null) {
+            kenaiSupport.removeVCSNoficationListener(l);
+        }
     }
 
     public void addVCSNoficationListener(PropertyChangeListener l) {
-        kenaiSupport.addVCSNoficationListener(l);
+        if(kenaiSupport != null) {
+            kenaiSupport.addVCSNoficationListener(l);
+        }
     }
 
     public void register() {

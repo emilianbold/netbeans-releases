@@ -247,15 +247,6 @@ public class SvnUtils {
         return getCurrentContext(nodes, includingFileStatus, includingFolderStatus, false);
     }
 
-    public static File getTopManagedFolder(File file) {
-        File topManaged = file;
-        while (file != null && isManaged(file)) {
-            topManaged = file;
-            file = file.getParentFile();
-        }
-        return topManaged;
-    }
-
     /**
      * Validates annotation format text
      * @param format format to be validatet

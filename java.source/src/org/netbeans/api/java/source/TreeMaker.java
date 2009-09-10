@@ -2645,7 +2645,7 @@ public final class TreeMaker {
         assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
         Scope scope = copy.getTrees().getScope(TreePath.getPath(copy.getCompilationUnit(), method));
         treeUtils.attributeTree(body, scope);
-        mapComments((BlockTree) body, bodyText, copy, handler);
+        mapComments((BlockTree) body, bodyText, copy, handler, positions[0]);
         return (BlockTree) body;
     }
 
@@ -2675,13 +2675,13 @@ public final class TreeMaker {
         SourcePositions[] positions = new SourcePositions[1];
         StatementTree body = copy.getTreeUtilities().parseStatement(bodyText, positions);
         assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
-        mapComments((BlockTree) body, bodyText, copy, handler);
+        mapComments((BlockTree) body, bodyText, copy, handler, positions[0]);
         return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, (BlockTree) body, defaultValue);
     }
     
-    private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments) {        
+    private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments, SourcePositions positions) {
         TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-        TranslateIdentifier ti = new TranslateIdentifier(copy, true, false, seq);
+        TranslateIdentifier ti = new TranslateIdentifier(copy, true, false, seq, positions);
         ti.translate(block);
         /*List<? extends StatementTree> trees = block.getStatements();
         SourcePositions pos = copy.getTrees().getSourcePositions();

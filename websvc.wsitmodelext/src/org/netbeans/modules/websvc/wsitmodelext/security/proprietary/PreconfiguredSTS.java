@@ -56,6 +56,7 @@ public interface PreconfiguredSTS extends ExtensibilityElement{
     public static final String PORTNAME = "portName";  //NOI18N
     public static final String NAMESPACE = "namespace";  //NOI18N
     public static final String WSTVERSION = "wstversion";  //NOI18N
+    public static final String SHARE_TOKEN = "shareToken";  //NOI18N
 
     void setVisibility(String vis);
     String getVisibility();
@@ -80,4 +81,7 @@ public interface PreconfiguredSTS extends ExtensibilityElement{
 
     void setTrustVersion(String trustVersion);
     String getTrustVersion();
+
+    void setShareToken(boolean shareToken);
+    boolean isShareToken();
 }

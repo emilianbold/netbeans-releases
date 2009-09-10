@@ -74,6 +74,8 @@ import java.util.*;
 import java.text.MessageFormat;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -534,6 +536,10 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
      */
     private boolean prepareIgnore(File dir) throws IOException {
         File[] projectMeta = dir.listFiles();
+        if (projectMeta == null) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "{0} dir is not a directory", dir); //NOI18N
+            return false;
+        }
         Set ignored = new HashSet();
         for (int i = 0; i < projectMeta.length; i++) {
             if (Thread.interrupted()) {

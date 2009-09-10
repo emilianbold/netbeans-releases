@@ -58,13 +58,14 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -245,22 +246,12 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
             //Only add library for Hibernate in NB 6.5
             String providerClass = helper.getPersistenceUnit().getProvider();
             if(providerClass != null){
-                if (providerClass.equals("org.hibernate.ejb.HibernatePersistence")) {
-                    Library lib = LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
-                    if (lib != null) {
-                        Util.addLibraryToProject(project, lib);
-                    }
+                Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
+                Library lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
+                if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
+                    Util.addLibraryToProject(project, lib);
                 }
-                else if(providerClass.equals("org.eclipse.persistence.jpa.PersistenceProvider"))//NOI18N
-                {
-                    //fix #170046
-                    //TODO: find some common approach what libraries to add and what do not need to be added
-                    Library lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
-                    if (lib != null) {
-                        Util.addLibraryToProject(project, lib);
-                    }
-                }
-            }
+           }
 
 
             try {

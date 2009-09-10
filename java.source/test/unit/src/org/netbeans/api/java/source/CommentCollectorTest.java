@@ -58,6 +58,7 @@ public class CommentCollectorTest extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CommentCollectorTest.class);
+//        suite.addTest(new CommentCollectorTest("testMethod2"));
         return suite;
     }
 
@@ -143,7 +144,7 @@ public class CommentCollectorTest extends NbTestCase {
                             verify(node, CommentSet.RelativePosition.PRECEDING
                                     , service, "//TODO: (COMM4) This is inside the class comment"
                                     , "/** (COMM5) method which do something */");
-                            verify(node.getBody(), CommentSet.RelativePosition.INNER, service, "//TODO: (COMM6) Implement this method to do something");
+                            verify(node.getBody(), CommentSet.RelativePosition.INNER, service, /*XXX:*/"\n\t".trim(), "//TODO: (COMM6) Implement this method to do something");
                         }
                         return super.visitMethod(node, aVoid);
                     }
@@ -159,7 +160,7 @@ public class CommentCollectorTest extends NbTestCase {
     }
 
 
-    public void DtestMethod() throws Exception {
+    public void testMethod() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String origin = "\n" +
                 "import java.io.File;\n" +
@@ -212,7 +213,7 @@ public class CommentCollectorTest extends NbTestCase {
 
     }
 
-    public void DtestMethod2() throws Exception {
+    public void testMethod2() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         final String origin =
                 "public class Origin {\n" +
@@ -282,7 +283,7 @@ public class CommentCollectorTest extends NbTestCase {
         java.util.List<Comment> cl = set.getComments(position);
         assertEquals("Unexpected size of " + tree.getKind() + " "
                 + position.toString().toLowerCase() +
-                " comments", cl.size(), comments.length);
+                " comments", comments.length, cl.size());
         Arrays.sort(comments);
         for (Comment comment : cl) {
             String text = comment.getText().trim();
