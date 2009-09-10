@@ -41,15 +41,12 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -72,7 +69,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.RequestProcessor;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener {
     
@@ -80,8 +76,6 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
      */
     private static final String PROJECT_URL_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.Project_URL"; // NOI18N
     private final ProjectDirListener prjDirListener = new ProjectDirListener(); 
-
-    private static RequestProcessor MENU_FILLER_RP = new RequestProcessor("Recent Projects Menu Filler");
 
     private UpdatingMenu subMenu;
     
@@ -135,21 +129,17 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private void fillSubMenu(final JMenu menu) {
         menu.removeAll();
 
-        MENU_FILLER_RP.post(new Runnable() {
-            public void run() {
-
         List<UnloadedProjectInformation> projects = OpenProjectList.getDefault().getRecentProjectsInformation();
         if ( projects.isEmpty() ) {
             menu.setEnabled( false );
             return;
         }
-        
+
         menu.setEnabled( true );
-        ActionListener jmiActionListener = new MenuItemActionListener(); 
+        ActionListener jmiActionListener = new MenuItemActionListener();
                         
         // Fill menu with items
 
-        final List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
         for (UnloadedProjectInformation p : projects) {
                 URL prjDirURL = p.getURL();
                 FileObject prjDir = URLMapper.findFileObject(prjDirURL);
@@ -158,22 +148,11 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 }
                 prjDir.removeFileChangeListener(prjDirListener);            
                 prjDir.addFileChangeListener(prjDirListener);
-                final JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon());
-                menuItems.add(jmi);
+                JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon());
+                menu.add(jmi);
                 jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
                 jmi.addActionListener( jmiActionListener );
         }
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                for (Iterator<JMenuItem> iter = menuItems.iterator(); iter.hasNext(); ) {
-                    menu.add(iter.next());
-                }
-            }
-        });
-
-            }
-        });
 
     }
 
