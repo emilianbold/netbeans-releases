@@ -87,7 +87,7 @@ import org.openide.util.Lookup;
     public static final String CLUSTER_PLATFORM = "platform11";
     public static final String CLUSTER_ENTERPRISE = "enterprise5";
     public static final String CLUSTER_APISUPPORT = "apisupport1";
-    public static final String CLUSTER_JAVA = "java2";
+    public static final String CLUSTER_JAVA = "java3";
 
     protected TestBase(String name) {
         super(name);
