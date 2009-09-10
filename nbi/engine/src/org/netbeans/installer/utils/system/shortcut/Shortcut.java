@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import org.netbeans.installer.utils.StringUtils;
 
 public abstract class Shortcut {
@@ -60,6 +61,8 @@ public abstract class Shortcut {
     private String[] categories;
     
     private String path;
+
+    private Properties properties;
     
    
     protected Shortcut(final String name) {
@@ -197,5 +200,16 @@ public abstract class Shortcut {
 
     public void setIconIndex(int iconIndex) {
         this.iconIndex = iconIndex;
+    }
+    public Properties getAdditionalProperties() {
+        return properties;
+    }
+
+    public void setAdditionalProperties(final Properties props) {
+        this.properties = props;
+    }
+
+    public void setAdditionalProperty(final String propName, final String propValue) {
+        properties.put(propName, propValue);
     }
 }
