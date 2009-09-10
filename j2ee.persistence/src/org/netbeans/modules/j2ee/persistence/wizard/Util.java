@@ -221,7 +221,7 @@ public class Util {
 
     public static Provider getDefaultProvider(Project project) {
         PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-        return providerSupplier.supportsDefaultProvider() ? providerSupplier.getSupportedProviders().get(0) : null;
+        return (providerSupplier!=null && providerSupplier.supportsDefaultProvider()) ? providerSupplier.getSupportedProviders().get(0) : null;
     }
 
     public static boolean isDefaultProvider(Project project, Provider provider)
