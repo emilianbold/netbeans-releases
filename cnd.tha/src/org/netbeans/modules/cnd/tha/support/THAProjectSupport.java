@@ -60,6 +60,7 @@ import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.perfan.tha.api.THAInstrumentationSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -401,11 +402,15 @@ public final class THAProjectSupport implements PropertyChangeListener {
         String ccPath = ccTool.getPath();
         String sunstudioBinDir = ccPath.substring(0, ccPath.length() - ccTool.getName().length());
 
-        // ensure that connection is established and ServerRecord exists for the
-        // development host....
-
-
-        return THAInstrumentationSupport.getSupport(mc.getDevelopmentHost().getExecutionEnvironment(), sunstudioBinDir);
+        ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
+        return THAInstrumentationSupport.getSupport(execEnv, sunstudioBinDir);
+//        // ensure that connection is established and ServerRecord exists for the
+//        // development host....
+//        if (ServerListUI.ensureRecordOnline(execEnv)) {
+//            return THAInstrumentationSupport.getSupport(execEnv, sunstudioBinDir);
+//        } else {
+//            return null;
+//        }
     }
 
     private void setModified() {

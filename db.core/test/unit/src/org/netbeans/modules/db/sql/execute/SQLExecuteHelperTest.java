@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -63,7 +64,7 @@ public class SQLExecuteHelperTest extends NbTestCase {
         assertSplit("select ##line\n from dual", "select \n from dual");
         assertSplit("select #line from dual", "select");
         assertSplit("# This should be ignored \nselect from dual", "select from dual");
-        
+
         // removing block comments
         assertSplit("select /* block */ from dual", "select  from dual");
         assertSplit("select ///* block */ from dual", "select // from dual");
@@ -76,7 +77,7 @@ public class SQLExecuteHelperTest extends NbTestCase {
         assertSplit("This is a test; #comment\n#A full comment line\nAnother test;",
                 new String[]{"This is a test", "Another test"});
 
-        
+
         // ; in comments should not be considered a statement separator
         assertSplit("select --comment; \n foo", "select \n foo");
         assertSplit("select /* ; */ foo", "select  foo");
@@ -87,7 +88,7 @@ public class SQLExecuteHelperTest extends NbTestCase {
 
         // newlines in strings
         assertSplit("select 'foo\nbar';", new String[] { "select 'foo\nbar'" });
-        
+
         // test changing the delimiter
         assertSplit("select delimiter foo; " +
                     "delimiter ?? " +
@@ -102,6 +103,20 @@ public class SQLExecuteHelperTest extends NbTestCase {
                         "select baddle"
                     });
 
+        // double-slash delimiter
+        assertSplit("DELIMITER //\n" +
+                "CREATE PROCEDURE p1()\n" +
+                "BEGIN\n" +
+                "  SELECT * FROM tab_customer;\n" +
+                "  SELECT * FROM tab_customer;\n" +
+                "END//",
+                "CREATE PROCEDURE p1()\n" +
+                "BEGIN\n" +
+                "  SELECT * FROM tab_customer;\n" +
+                "  SELECT * FROM tab_customer;\n" +
+                "END"
+                );
+        
         // splitting and start/end positions
         String test = "  select foo  ;   select /* comment */bar;\n   select baz -- comment";
         // System.out.println(test.substring(12));
@@ -112,29 +127,25 @@ public class SQLExecuteHelperTest extends NbTestCase {
         });
     }
     
-    private static void assertSplit(String script, String expected) {
-        assertSplit(script, new String[] { expected });
-    }
-    
-    private static void assertSplit(String script, String[] expected) {
-        StatementInfo[] stmts = (StatementInfo[])SQLExecuteHelper.split(script).toArray(new StatementInfo[0]);
-        assertEquals(expected.length, stmts.length);
+    private static void assertSplit(String script, String... expected) {
+        List<StatementInfo> stmts = SQLExecuteHelper.split(script);
+        assertEquals(expected.length, stmts.size());
         for (int i = 0; i < expected.length; i++) {
-            assertEquals(expected[i], stmts[i].getSQL());
+            assertEquals(expected[i], stmts.get(i).getSQL());
         }
     }
     
     private static void assertSplit(String script, StatementInfo[] expected) {
-        StatementInfo[] stmts = (StatementInfo[])SQLExecuteHelper.split(script).toArray(new StatementInfo[0]);
-        assertEquals(expected.length, stmts.length);
+        List<StatementInfo> stmts = SQLExecuteHelper.split(script);
+        assertEquals(expected.length, stmts.size());
         for (int i = 0; i < expected.length; i++) {
-            assertEquals(expected[i].getSQL(), stmts[i].getSQL());
-            assertEquals(expected[i].getRawStartOffset(), stmts[i].getRawStartOffset());
-            assertEquals(expected[i].getStartOffset(), stmts[i].getStartOffset());
-            assertEquals(expected[i].getStartLine(), stmts[i].getStartLine());
-            assertEquals(expected[i].getStartColumn(), stmts[i].getStartColumn());
-            assertEquals(expected[i].getEndOffset(), stmts[i].getEndOffset());
-            assertEquals(expected[i].getRawEndOffset(), stmts[i].getRawEndOffset());
+            assertEquals(expected[i].getSQL(), stmts.get(i).getSQL());
+            assertEquals(expected[i].getRawStartOffset(), stmts.get(i).getRawStartOffset());
+            assertEquals(expected[i].getStartOffset(), stmts.get(i).getStartOffset());
+            assertEquals(expected[i].getStartLine(), stmts.get(i).getStartLine());
+            assertEquals(expected[i].getStartColumn(), stmts.get(i).getStartColumn());
+            assertEquals(expected[i].getEndOffset(), stmts.get(i).getEndOffset());
+            assertEquals(expected[i].getRawEndOffset(), stmts.get(i).getRawEndOffset());
         }
     }
 }

@@ -404,6 +404,10 @@ public class JiraConfiguration extends JiraClientCache {
                 // XXX what else !!!
 
                 Project p = data.projectsById.get(project.getId());
+                if(p == null) {
+                    refreshData();
+                    p = data.projectsById.get(project.getId());
+                }
                 if (p.getComponents() == null) {
                     ensureProjectHasInitializedFields(p, project);
                 }

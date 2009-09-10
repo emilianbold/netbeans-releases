@@ -75,7 +75,7 @@ public class PagesTablePanel extends DefaultTablePanel {
                 
                 
                 errorPageComboBox.removeItem(deleteItem);
-                if(selectedItem.equals(deleteItem)) {
+                if(selectedItem != null && selectedItem.equals(deleteItem)) {
                     errorPageComboBox.setSelectedIndex(-1);
                 }
                 errorPageComboBox.updateUI();

@@ -284,8 +284,9 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         if(cbExtension.getItemAt(0).equals(chooseExtensionItem)) {
             // remove initial hint item
             cbExtension.removeItem(chooseExtensionItem);
-            cbType.setEnabled(true);
         }
+        // refuse to change xml extension MIME type (#171126)
+        cbType.setEnabled(!newExtension.equalsIgnoreCase("xml")); //NOI18N
         cbType.setSelectedItem(model.getMimeItem(newExtension));
         btnRemove.setEnabled(model.canBeRemoved(newExtension));
     }//GEN-LAST:event_cbExtensionActionPerformed

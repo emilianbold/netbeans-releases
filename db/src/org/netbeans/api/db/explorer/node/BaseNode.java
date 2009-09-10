@@ -84,6 +84,8 @@ public abstract class BaseNode extends AbstractNode {
     protected static final String REMEMBERPWDESC = "RememberPasswordDescription"; // NOI18N
     protected static final String CATALOG = "Catalog"; // NOI18N
     protected static final String CATALOGDESC = "CatalogDescription"; // NOI18N
+    protected static final String DISPLAYNAME = "DisplayName"; // NOI18N
+    protected static final String DISPLAYNAMEDESC = "DisplayNameDescription"; // NOI18N
     protected static final String UNIQUE = "UniqueNoMnemonic"; // NOI18N
     protected static final String UNIQUEDESC = "UniqueDescription"; // NOI18N
     protected static final String NULL = "Null"; // NOI18N

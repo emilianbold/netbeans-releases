@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,15 +55,12 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.explorer.node.RootNode;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -82,7 +79,6 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.netbeans.modules.db.util.Base64;
-import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -232,6 +228,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 handler.user,
                 handler.password, 
                 handler.rememberPassword);
+        if (handler.displayName != null) {
+            dbconn.setDisplayName(handler.displayName);
+        }
 
         return dbconn;
     }
@@ -379,6 +378,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             if (instance.getUser() != null) {
                 pw.println("  <user value='" + XMLUtil.toAttributeValue(instance.getUser()) + "'/>"); //NOI18N
             }
+            if (!instance.getName().equals(instance.getDisplayName())) {
+                pw.println("  <display-name value='" + XMLUtil.toAttributeValue(instance.getDisplayName()) + "'/>"); //NOI18N
+            }
             if (instance.rememberPassword() ) {
                 String password = instance.getPassword();
                 
@@ -407,6 +409,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_SCHEMA = "schema"; // NOI18N
         private static final String ELEMENT_USER = "user"; // NOI18N
         private static final String ELEMENT_PASSWORD = "password"; // NOI18N
+        private static final String ELEMENT_DISPLAY_NAME = "display-name"; // NOI18N
         private static final String ELEMENT_REMEMBER_PASSWORD = "remember-password";
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
@@ -419,17 +422,21 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String user;
         String password;
         boolean rememberPassword;
+        String displayName;
         
         public Handler(String connectionFileName) {
             this.connectionFileName = connectionFileName;
         }
 
+        @Override
         public void startDocument() throws SAXException {
         }
 
+        @Override
         public void endDocument() throws SAXException {
         }
 
+        @Override
         public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException {
             String value = attrs.getValue(ATTR_PROPERTY_VALUE);
             if (ELEMENT_DRIVER_CLASS.equals(qName)) {
@@ -442,6 +449,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 schema = value;
             } else if (ELEMENT_USER.equals(qName)) {
                 user = value;
+            } else if (ELEMENT_DISPLAY_NAME.equals(qName)) {
+                displayName = value;
             } else if (ELEMENT_PASSWORD.equals(qName)) {
                 // If the password was saved, then it means the user checked
                 // the box to say the password should be remembered.

@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
                 <xsd:element name="reference" minOccurs="0" maxOccurs="unbounded">
                     <xsd:complexType>
                         <xsd:sequence>
-                            <xsd:element name="foreign-project" type="xsd:NCName"/>
+                            <xsd:element name="foreign-project" type="xsd:token"/>
                             <xsd:element name="artifact-type" type="xsd:token"/>
                             <!-- semantics of script field changed in /2 version (#50092) -->
                             <xsd:element name="script" type="xsd:string"/>
