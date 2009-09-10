@@ -222,6 +222,10 @@ public class RemoteFileSupport {
 
     private void checkConnection(ExecutionEnvironment execEnv, String filePath) throws IOException, CancellationException {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            // a workaround for #171731 IDE hangs after start
+            if (true) { // fool javac
+                throw new CancellationException();
+            }
             synchronized (cancels) {
                 Boolean cancel = cancels.get(execEnv);
                 if (cancel != null && cancel.booleanValue()) {
