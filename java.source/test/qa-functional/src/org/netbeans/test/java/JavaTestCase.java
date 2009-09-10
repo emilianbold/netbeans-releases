@@ -74,9 +74,8 @@ public class JavaTestCase extends JellyTestCase {
         this.projectName = projectName;
         File projectPath = new File(this.getDataDir() + "/projects", projectName);
                 
-        /* 1. check if project is open  */
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+        /* 1. check if project is open  */        
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         boolean isOpen = true;
         try {
             JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", OPENED_PROJECT_ACCESS_TIMEOUT); 

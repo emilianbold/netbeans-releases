@@ -53,7 +53,15 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 class PHPRuleContext extends RuleContext {
     PHPVerificationVisitor.VariableStack variableStack;
     List<ASTNode> path;
-    PHPIndex index;
+    private PHPIndex index;
     @NullAllowed
     FileScope fileScope;
+
+    public PHPIndex getIndex() {
+        if (index == null) {
+            index = PHPIndex.get(parserResult);
+        }
+        return index;
+    }
+
 }

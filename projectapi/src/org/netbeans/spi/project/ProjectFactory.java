@@ -43,6 +43,7 @@ package org.netbeans.spi.project;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -61,7 +62,8 @@ public interface ProjectFactory {
      * from {@link #loadProject} even when returning <code>true</code> from this
      * method, in case the directory looked like a project directory but in fact
      * had something wrong with it.</p>
-     * <p>Will be called inside read access.</p>
+     * <p>Will be called inside read access by {@link ProjectManager#isProject}
+     * or {@link ProjectManager#isProject2}.</p>
      * @param projectDirectory a directory which might refer to a project
      * @return true if this factory recognizes it
      */
@@ -71,7 +73,7 @@ public interface ProjectFactory {
      * Create a project that resides on disk.
      * If this factory does not
      * in fact recognize the directory, it should just return null.
-     * <p>Will be called inside read access.
+     * <p>Will be called inside read access by {@link ProjectManager#findProject}.
      * <p>Do not do your own caching! The project manager caches projects for you, properly.
      * <p>Do not attempt to recognize subdirectories of your project directory (just return null),
      * unless they are distinct nested projects.
@@ -83,7 +85,8 @@ public interface ProjectFactory {
 
     /**
      * Save a project to disk.
-     * <p>Will be called inside write access.
+     * <p>Will be called inside write access, by {@link ProjectManager#saveProject}
+     * or {@link ProjectManager#saveAllProjects}.
      * @param project a project created with this factory's {@link #loadProject} method
      * @throws IOException if there is a problem saving
      * @throws ClassCastException if this factory did not create this project

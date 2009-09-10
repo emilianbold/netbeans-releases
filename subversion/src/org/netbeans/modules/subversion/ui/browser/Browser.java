@@ -112,6 +112,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     
     private List<SvnProgressSupport> supportList = new ArrayList<SvnProgressSupport>();
     private volatile boolean cancelled = false;
+    private Node[] selectedNodes;
     /**
      * Creates a new instance
      *
@@ -201,12 +202,12 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         }
         
         // get the nodes first
-        Node[] nodes = getExplorerManager().getSelectedNodes();
+        Node[] nodes = selectedNodes;
         
         // clean up - even if the dialog was closed, we always cancel all running tasks
         cancel();  
         
-        if(nodes.length == 0) {
+        if(nodes == null || nodes.length == 0) {
             return EMPTY_ROOT;
         }
         
@@ -225,16 +226,20 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(helpID));
         dialogDescriptor.setValid(false);
-        
+
         addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
-                    dialogDescriptor.setValid(getSelectedNodes().length > 0);
+                    Node[] nodes = getSelectedNodes();
+                    if (nodes != null && nodes.length > 0) {
+                        selectedNodes = nodes;
+                        dialogDescriptor.setValid(nodes.length > 0);
+                    }
                 }
             }
         });        
         
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title"));
         dialog.setVisible(true);                
 

@@ -4182,6 +4182,10 @@ public abstract class CslTestBase extends NbTestCase {
             this.original = original;
         }
 
+        public boolean isValid() throws IOException {
+            return true;
+        }
+
         // --------------------------------------------------------------------
         // IndexImpl implementation
         // --------------------------------------------------------------------

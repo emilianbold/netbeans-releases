@@ -356,7 +356,7 @@ public abstract class JUnitPlugin {
      *          the default implementation returns always {@code true}
      */
     protected boolean createTestActionCalled(FileObject[] selectedFiles) {
-        assert EventQueue.isDispatchThread();
+        // assert EventQueue.isDispatchThread(); #170707
 
         return true;
     }

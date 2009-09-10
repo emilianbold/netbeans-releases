@@ -53,15 +53,21 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author cincura, ehucka, Jiri Vagner, ppis, cyhelsky
+ * @author cincura, ehucka, Jiri Vagner, ppis, cyhelsky, vsigler
  */
-public class StartDebuggerTest extends JellyTestCase {
-    
+public class StartDebuggerTest extends DebuggerTestCase {
+
+    public static String[] tests = new String[]{
+        "testDebugProject",
+        "testDebugFile",
+        "testRunDebuggerStepInto",
+        "testRunDebuggerRunToCursor",
+        "testDebugMainProject"
+    };
+
     public StartDebuggerTest(String name) {
         super(name);
     }
@@ -71,26 +77,14 @@ public class StartDebuggerTest extends JellyTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(StartDebuggerTest.class).addTest(
-                "testDebugProject",
-                "testDebugFile",
-                "testRunDebuggerStepInto",
-                "testRunDebuggerRunToCursor",
-                "testDebugMainProject"
-                ).enableModules(".*").clusters(".*"));
+        return createModuleTest(StartDebuggerTest.class, tests);
     }
     
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");
     }
-    
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
-    }
-    
+        
     public void testDebugProject() throws Throwable {
         try {
             Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
@@ -116,8 +110,7 @@ public class StartDebuggerTest extends JellyTestCase {
 
     public void testDebugFile() throws Throwable {
         try {
-            //open source
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            //open source            
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new EventTool().waitNoEvent(1000);
@@ -132,8 +125,7 @@ public class StartDebuggerTest extends JellyTestCase {
     }
     
     public void testRunDebuggerStepInto() throws Throwable {
-        try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+        try {            
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new EventTool().waitNoEvent(1000);
@@ -151,8 +143,7 @@ public class StartDebuggerTest extends JellyTestCase {
     }
     
     public void testRunDebuggerRunToCursor() throws Throwable {
-        try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+        try {            
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new EventTool().waitNoEvent(1000);
@@ -168,8 +159,7 @@ public class StartDebuggerTest extends JellyTestCase {
     }
 
     public void testDebugMainProject() throws Throwable {
-        try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+        try {            
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));

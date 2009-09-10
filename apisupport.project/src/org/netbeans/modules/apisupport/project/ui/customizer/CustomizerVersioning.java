@@ -167,7 +167,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         if (!checkMajorReleaseVersion()) {
             category.setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
             category.setValid(true);
-        } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().length < 1) {
+        } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().size() < 1) {
             category.setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
             category.setValid(false);
         } else if (implVerValue.getText().matches(".*[^0-9].*")) { // NOI18N

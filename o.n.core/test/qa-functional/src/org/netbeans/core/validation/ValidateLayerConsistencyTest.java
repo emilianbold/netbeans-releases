@@ -139,7 +139,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
                 clusters("(?!ergonomics).*").enableClasspathModules(false).enableModules(".*").gui(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
-                clusters("(platform|harness|ide|websvccommon|gsf|java|profiler|nb)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
+                clusters("(platform|harness|ide|websvccommon|java|profiler|nb)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
                 clusters("(platform|ide)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
         return suite;
@@ -340,10 +340,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         List<String> errors = new ArrayList<String>();
         
         Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
-        FILE: while (files.hasMoreElements()) {
+        while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
-            if (skipFile(fo.getPath())) {
+            if (skipFile(fo)) {
                 continue;
             }
             
@@ -351,19 +351,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 DataObject obj = DataObject.find (fo);
                 InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
                 if (ic != null) {
-                    String iof = (String) fo.getAttribute("instanceOf");
-                    if (iof != null) {
-                        for (String clz : iof.split("[, ]+")) {
-                            try {
-                                Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass(clz);
-                            } catch (ClassNotFoundException x) {
-                                // E.g. Services/Hidden/org-netbeans-lib-jsch-antlibrary.instance in ide cluster
-                                // cannot be loaded (and would just be ignored) if running without java cluster
-                                System.err.println("Warning: skipping " + fo.getPath() + " due to inaccessible interface " + clz);
-                                continue FILE;
-                            }
-                        }
-                    }
                     Object o = ic.instanceCreate ();
                 }
             } catch (Exception ex) {
@@ -388,7 +375,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         FILE: while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
 
-            if (skipFile(fo.getPath())) {
+            if (skipFile(fo)) {
                 continue;
             }
 
@@ -464,6 +451,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     if (o instanceof String) {
                         String origF = o.toString().replaceFirst("\\/*", "");
                         if (origF.startsWith("Actions/")) {
+                            continue;
+                        }
+                        if (origF.startsWith("Editors/")) {
                             continue;
                         }
                     }
@@ -891,7 +881,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return attrs;
     }
     
-    private boolean skipFile (String s) {
+    private boolean skipFile(FileObject fo) {
+        String s = fo.getPath();
+
         if (s.startsWith ("Templates/") && !s.startsWith ("Templates/Services")) {
             if (s.endsWith (".shadow") || s.endsWith (".java")) {
                 return true;
@@ -912,6 +904,58 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
         if (s.startsWith ("Shortcuts/D-BACK_QUOTE.shadow")) return true;
         
+        String iof = (String) fo.getAttribute("instanceOf");
+        if (iof != null) {
+            for (String clz : iof.split("[, ]+")) {
+                try {
+                    Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass(clz);
+                } catch (ClassNotFoundException x) {
+                    // E.g. Services/Hidden/org-netbeans-lib-jsch-antlibrary.instance in ide cluster
+                    // cannot be loaded (and would just be ignored) if running without java cluster
+                    System.err.println("Warning: skipping " + fo.getPath() + " due to inaccessible interface " + clz);
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
+
+    public void testKeymapOverrides() throws Exception { // #170677
+        List<String> warnings = new ArrayList<String>();
+        FileObject[] keymaps = FileUtil.getConfigFile("Keymaps").getChildren();
+        Map<String,Integer> definitionCountById = new HashMap<String,Integer>();
+        for (FileObject keymap : keymaps) {
+            for (FileObject shortcut : keymap.getChildren()) {
+                DataObject d = DataObject.find(shortcut);
+                if (d instanceof DataShadow) {
+                    String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
+                    Integer prior = definitionCountById.get(id);
+                    definitionCountById.put(id, prior == null ? 1 : prior + 1);
+                } else {
+                    warnings.add("Anomalous file " + d);
+                }
+            }
+        }
+        for (FileObject shortcut : FileUtil.getConfigFile("Shortcuts").getChildren()) {
+            DataObject d = DataObject.find(shortcut);
+            if (d instanceof DataShadow) {
+                String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
+                if (!org.openide.util.Utilities.isMac() && // Would fail on Mac due to applemenu module
+                        Integer.valueOf(keymaps.length).equals(definitionCountById.get(id)))
+                {
+                    String layers = Arrays.toString((URL[]) d.getPrimaryFile().getAttribute("layers"));
+                    warnings.add(d.getPrimaryFile().getPath() + " " + layers + " useless since " + id + " is bound (somehow) in all keymaps");
+                }
+            } else {
+                warnings.add("Anomalous file " + d);
+            }
+        }
+        // XXX consider also checking for bindings in Shortcuts/ which are overridden in all keymaps or at least NetBeans
+        // taking into consideration O- and D- virtual modifiers
+        // (this is likely to be more common, e.g. mysterious Shortcuts/D-A.shadow in uml.drawingarea)
+        // XXX check for shortcut conflict between Shortcuts and each keymap, e.g. Ctrl-R in Eclipse keymap
+        assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
+    }
+
 }

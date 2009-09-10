@@ -72,7 +72,7 @@ public final class ToolsPanelController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
+        return new HelpCtx("cnd.optionsDialog"); // NOI18N
     }
     
     public JComponent getComponent(Lookup masterLookup) {

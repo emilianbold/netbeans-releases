@@ -41,10 +41,12 @@
 package org.netbeans.modules.wag.codegen.java;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -58,7 +60,10 @@ import org.netbeans.modules.wag.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.wag.codegen.java.support.JavaUtil;
 import org.netbeans.modules.wag.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
+import org.netbeans.modules.wag.manager.zembly.ZemblySession;
+import org.netbeans.modules.wag.manager.zembly.ZemblyUserInfo;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  * Code generator for Accessing Saas services.
@@ -67,6 +72,9 @@ import org.openide.filesystems.FileObject;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.wag.codegen.spi.WagCodeGenerationProvider.class)
 public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
+
+    private static final String CONSUMER_KEY_PROP = "consumerKey";      //NOI18N
+    private static final String CONSUMER_SECRET_PROP = "consumerSecret";    //NOI18N
 
     private JavaSource targetSource;
     private FileObject defaultPkg;
@@ -102,10 +110,24 @@ public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
         addWagLib();
 
         try {
-            Util.createDataObjectFromTemplate("Templates/WAG/zcl.properties",
+            DataObject dobj = Util.createDataObjectFromTemplate("Templates/WAG/zcl.properties",
                     getDefaultFolder(), "zcl");
+
+            Properties properties = new Properties();
+            properties.load(dobj.getPrimaryFile().getInputStream());
+
+            ZemblyUserInfo userInfo = ZemblySession.getInstance().getUserInfo();
+            if (userInfo != null) {
+                if (!userInfo.getKey().equals(properties.getProperty(CONSUMER_KEY_PROP))) {
+                    properties.setProperty(CONSUMER_KEY_PROP, userInfo.getKey());
+                    properties.setProperty(CONSUMER_SECRET_PROP, userInfo.getSecret());
+
+                    properties.store(dobj.getPrimaryFile().getOutputStream(), "AUTO-GENERATED"); //NOI18N
+                }
+            }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            //TODO: Need to handle exception
         }
     }
 

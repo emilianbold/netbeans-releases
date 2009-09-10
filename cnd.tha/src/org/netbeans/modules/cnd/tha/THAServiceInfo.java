@@ -36,14 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.tha;
 
 /**
  *
  * @author mt154047
  */
-public interface THAServiceInfo {
-    String THA_RUN = "project.tha.run";//NOI18N
+public final class THAServiceInfo {
 
+    public static final String THA_RUN = "project.tha.run";//NOI18N
+
+    public static boolean isPlatformSupported(String platform) {
+        return platform != null && (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
+    }
 }

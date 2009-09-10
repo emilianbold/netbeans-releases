@@ -418,8 +418,13 @@ public class JarClassLoader extends ProxyClassLoader {
                 requests++;
                 used++;
                 if (jar == null) {
+                    long now = System.currentTimeMillis();
                     jar = new JarFile(file, false);
+                    long took = System.currentTimeMillis() - now;
                     opened(this, forWhat);
+                    if (took > 500) {
+                        LOGGER.log(Level.WARNING, "Opening " + file + " took " + took + " ms"); // NOI18N
+                    }
                 }
                 return jar;
             }

@@ -64,6 +64,7 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -240,6 +241,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         setLayout(new java.awt.CardLayout());
 
+        jsfTabbedPane.setMinimumSize(new java.awt.Dimension(106, 62));
         jsfTabbedPane.setPreferredSize(new java.awt.Dimension(483, 210));
 
         libPanel.setAlignmentX(0.2F);
@@ -435,7 +437,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(cbPreferredLang, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(21, 21, 21))
+                .add(42, 42, 42))
         );
 
         tServletName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ServletName")); // NOI18N
@@ -571,17 +573,26 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             // checking, whether the folder is the right one
             String folder = jtFolder.getText().trim();
             String message;
-
+            
             // TODO: perhaps remove the version check at all:
             message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_0);
+            if ("".equals(folder)) {
+                Properties properties = controller.getProperties();
+                controller.setErrorMessage(null);
+                properties.setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+                return false;
+            }
+            
             if (message != null) {
-                controller.setErrorMessage(message); 
+                controller.setErrorMessage(message);
                 return false;
             }
             // checking new library name
             String newLibraryName = jtNewLibraryName.getText().trim();
             if (newLibraryName.length() <= 0) {
-                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
+                controller.setErrorMessage(null);
+                controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName"));
+//                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
                 return false;
             }
             
@@ -677,6 +688,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                         // if there is a proffered library, select
                         rbRegisteredLibrary.setSelected(true);
                         cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
+                        updateLibrary();
                     } else {
                         // there is not a proffered library -> select one or select creating new one
                         if (jsfLibraries.size() == 0) {

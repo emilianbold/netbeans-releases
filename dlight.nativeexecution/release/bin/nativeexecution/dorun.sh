@@ -1,8 +1,9 @@
 #!/bin/sh 
 PATH=/bin:/usr/bin:${PATH}
-PROG=`basename '$0'`
-USAGE="usage: ${PROG} -p pidfile -e envfile [-w work dir] [-x prompt] ..."
+PROG=`basename "$0"`
+USAGE="usage: ${PROG} -p pidfile -e envfile [-s] [-w work dir] [-x prompt] ..."
 PROMPT=NO
+SUSPEND=
 
 fail() {
   echo $@ >&2
@@ -19,7 +20,7 @@ doExit() {
 
 [ $# -lt 1 ] && fail $USAGE
 
-while getopts w:e:p:x: opt; do
+while getopts w:e:p:x:s opt; do
   case $opt in
     p) PIDFILE=$OPTARG
        ;;
@@ -28,6 +29,8 @@ while getopts w:e:p:x: opt; do
     e) ENVFILE=$OPTARG
        ;;
     w) WDIR=$OPTARG
+       ;;
+    s) SUSPEND=1
        ;;
   esac
 done
@@ -42,11 +45,17 @@ fi
 
 STATUS=-1
 
+echo "echo \$\$>\"${PIDFILE}\" || exit \$?" > "${PIDFILE}.sh"
 if [ -r "${ENVFILE}" ]; then
-  echo "echo \$\$>\"${PIDFILE}\" && . \"${ENVFILE}\" && cd \"${WDIR}\" && exec $@" > "${PIDFILE}.sh"
-else
-  echo "echo \$\$>\"${PIDFILE}\" && cd \"${WDIR}\" && exec $@" > "${PIDFILE}.sh"
+  echo ". \"${ENVFILE}\" || exit \$?" >> "${PIDFILE}.sh"
 fi
+echo "cd \"${WDIR}\" || exit \$?" >> "${PIDFILE}.sh"
+if [ -n "$SUSPEND" ]; then
+  echo "ITS_TIME_TO_START=" >> "${PIDFILE}.sh"
+  echo "trap 'ITS_TIME_TO_START=1' CONT" >> "${PIDFILE}.sh"
+  echo "while [ -z \"\$ITS_TIME_TO_START\" ]; do sleep 1; done" >> "${PIDFILE}.sh"
+fi
+echo "exec $@" >> "${PIDFILE}.sh"
 
 /bin/sh "${PIDFILE}.sh"
 STATUS=$?

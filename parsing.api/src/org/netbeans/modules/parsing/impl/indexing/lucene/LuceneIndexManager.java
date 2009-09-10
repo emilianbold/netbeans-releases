@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -54,7 +53,7 @@ public class LuceneIndexManager {
 
     private static LuceneIndexManager instance;
     private volatile boolean invalid;
-    private final ReadWriteLock lock  = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock lock  = new ReentrantReadWriteLock();
 
     private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
 
@@ -85,6 +84,10 @@ public class LuceneIndexManager {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    boolean holdsWriteLock () {
+        return lock.isWriteLockedByCurrentThread();
     }
 
 

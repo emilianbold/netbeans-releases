@@ -75,7 +75,7 @@ public final class StackRenderer implements Renderer<DataRow> {
                     List<FunctionCall> stack = stackProvider.getCallStack(stackId);
                     if (stack != null) {
                         if (resultPanel == null) {
-                            resultPanel = MultipleCallStackPanel.createInstance();
+                            resultPanel = MultipleCallStackPanel.createInstance(stackProvider);
                         }
                         resultPanel.add(column.getColumnUName(), true, stack);
                     }

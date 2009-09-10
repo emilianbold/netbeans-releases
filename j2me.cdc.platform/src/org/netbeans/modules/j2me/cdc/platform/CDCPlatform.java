@@ -73,13 +73,13 @@ import org.openide.util.Lookup;
  * bootstrap classpath information.
  */
 public class CDCPlatform extends JavaPlatform {
-    
+
     public static final String PROP_ANT_NAME = "antName";                   //NOI18N
     public static final String PLATFORM_CDC = "cdc";                      //NOI18N
 
     protected static final String PLAT_PROP_ANT_NAME="platform.ant.name";             //NOI18N
     public static final String PLATFORM_STRING_PREFIX = "${platform.home}/"; // NOI18N
-    
+
 //    protected static final String SYSPROP_BOOT_CLASSPATH = "sun.boot.class.path";     // NOI18N
 //    protected static final String SYSPROP_JAVA_CLASS_PATH = "java.class.path";        // NOI18N
 //    protected static final String SYSPROP_JAVA_EXT_PATH = "java.ext.dirs";            //NOI18N
@@ -87,7 +87,7 @@ public class CDCPlatform extends JavaPlatform {
     public static String PROP_EXEC_MAIN   = "main";
     public static String PROP_EXEC_XLET   = "xlet";
     public static String PROP_EXEC_APPLET = "applet";
-    
+
     /**
      * Holds the properties of the platform
      */
@@ -97,14 +97,14 @@ public class CDCPlatform extends JavaPlatform {
      * Holds the display name of the platform
      */
     private String displayName;
-        
+
     /**
      * String type of VM
      */
     private String type;
 
     /**
-     * String supported class version 
+     * String supported class version
      */
     private String classVersion;
 
@@ -129,7 +129,7 @@ public class CDCPlatform extends JavaPlatform {
     private CDCDevice[] devices;
 
     private boolean fatJar;
-    
+
     /**
      * Holds bootstrap libraries for the platform
      */
@@ -162,7 +162,7 @@ public class CDCPlatform extends JavaPlatform {
         this.classVersion = classVersion;
         this.devices = devices;
         this.fatJar = fatJar;
-        
+
         if (installFolders != null) {
             this.installFolders = installFolders;       //No copy needed, called from this module => safe
         }
@@ -176,7 +176,7 @@ public class CDCPlatform extends JavaPlatform {
         properties = new Properties();
         properties.put (PLAT_PROP_ANT_NAME, antName);
     }
-    
+
     /**
      * @return  a descriptive, human-readable name of the platform
      */
@@ -192,7 +192,7 @@ public class CDCPlatform extends JavaPlatform {
         this.displayName = name;
         firePropertyChange(PROP_DISPLAY_NAME, null, null); // NOI18N
     }
-    
+
     /**
      * Alters the human-readable name of the platform without firing
      * events. This method is an internal contract to allow lazy creation
@@ -208,9 +208,9 @@ public class CDCPlatform extends JavaPlatform {
      */
     public String getAntName () {
         return (String) properties.get (PLAT_PROP_ANT_NAME);
-    }    
+    }
 
-    /** 
+    /**
      * @param antName name of platfrom
      */
     public void setAntName (String antName) {
@@ -220,7 +220,7 @@ public class CDCPlatform extends JavaPlatform {
         this.properties.put(PLAT_PROP_ANT_NAME, antName);
         this.firePropertyChange (PROP_ANT_NAME,null,null);
     }
-    
+
     /**
      * Set platform bootpath to specified values
      */
@@ -239,7 +239,7 @@ public class CDCPlatform extends JavaPlatform {
                 if (!newPath.remove(url))
                     removed.add(entry.getRoot());
             }
-            
+
             boolean changing = false;
             bootstrap = new WeakReference<ClassPath>(ClassPathSupport.createClassPath(bs.toArray(new URL[bs.size()])));
             for (CDCDevice device : devices ) {
@@ -254,7 +254,7 @@ public class CDCPlatform extends JavaPlatform {
                     {
                         fobs.remove(fo);
                     }
-                    
+
                     //Construct new bootstrap classpath
                     StringBuffer newBS=new StringBuffer();
                     for (URL url : bs)
@@ -269,30 +269,30 @@ public class CDCPlatform extends JavaPlatform {
                             {}
                         else
                             name=fo.getPath();
-                        
+
                         if (newPath.contains(url))
                         {
                             newBS.append(name);
                             newBS.append(';');
                         }
-                        
+
                         if (fobs.contains(fo))
                         {
                             newBS.append(name);
                             newBS.append(';');
                         }
                     }
-                    
+
                     changing = true;
                     profile.setBootClassPath(newBS.toString());
-                    profile.setRunClassPath(newBS.toString());                    
+                    profile.setRunClassPath(newBS.toString());
                 }
             }
-            if (changing) 
+            if (changing)
                 firePropertyChange("classpath", null, null);
         }
     }
-    
+
     /**
      * @return bootstarap libraries. If there are more platfrom with different classpath supported, return all classpath entries
      */
@@ -358,7 +358,7 @@ public class CDCPlatform extends JavaPlatform {
     public void setClassVersion(String classVersion) {
         this.classVersion = classVersion;
     }
-    
+
     public CDCDevice[] getDevices() {
         return devices;
     }
@@ -366,7 +366,7 @@ public class CDCPlatform extends JavaPlatform {
     public void setDevices(CDCDevice[] devices) {
         this.devices = devices;
     }
-    
+
     /**
      * This implementation simply reads and parses `java.class.path' property and creates a ClassPath
      * out of it.
@@ -391,7 +391,7 @@ public class CDCPlatform extends JavaPlatform {
         }
         return null;
     }
-    
+
     /**
      * Retrieves a collection of {@link org.openide.filesystems.FileObject}s of one or more folders
      * where the Platform is installed. Typically it returns one folder, but
@@ -402,7 +402,7 @@ public class CDCPlatform extends JavaPlatform {
         for (URL url : installFolders ) {
             FileObject root = URLMapper.findFileObject(url);
             if (root != null) {
-                result.add (root); 
+                result.add (root);
             }
         }
         return result;
@@ -469,7 +469,7 @@ public class CDCPlatform extends JavaPlatform {
     public Map getProperties() {
         return properties;
     }
-    
+
     public Collection getInstallFolderURLs () {
         return Collections.unmodifiableList(this.installFolders);
     }
@@ -491,7 +491,7 @@ public class CDCPlatform extends JavaPlatform {
                 List<FileObject> list=resolveRelativePathToFileObjects(profile.getBootClassPath());
                 int lastIndex = -1;
                 for (FileObject fo : list)
-                {   
+                {
                     if (!fobs.contains(fo))
                         fobs.add(lastIndex+1,fo);
                     lastIndex = fobs.indexOf(fo);
@@ -499,13 +499,13 @@ public class CDCPlatform extends JavaPlatform {
             }
         }
         return fobs.toArray(new FileObject[fobs.size()]);
-    }        
+    }
 
     private List<FileObject> resolveRelativePathToFileObjects(String path) {
         ArrayList<FileObject> res = new ArrayList<FileObject>();
         if (path == null)
             return res;
-        String paths[] = PropertyUtils.tokenizePath(path);    
+        String paths[] = PropertyUtils.tokenizePath(path);
         for (String pth : paths ) {
             FileObject fo = resolveRelativePathToFileObject(pth.trim());
             if (fo != null)
@@ -513,21 +513,23 @@ public class CDCPlatform extends JavaPlatform {
         }
         return res;
     }
-    
+
     public FileObject resolveRelativePathToFileObject(String path) {
         if (path == null  ||  path.length () <= 0) return null;
         File f;
         if (path.startsWith (PLATFORM_STRING_PREFIX)){
             FileObject fo = URLMapper.findFileObject(installFolders.iterator().next());
+            if (fo == null) return null;
             f = new File (FileUtil.toFile(fo), path.substring (PLATFORM_STRING_PREFIX.length ()));
         } else {
             f = new File (path);
+            if (!f.exists()) return null;
         }
         f = FileUtil.normalizeFile (f);
         FileObject fo = FileUtil.toFileObject(f);
         if (fo == null || !FileUtil.isArchiveFile(fo)) return fo;
         return FileUtil.getArchiveRoot(fo);
-    }      
+    }
 
     public boolean isFatJar() {
         return fatJar;

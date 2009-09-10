@@ -80,6 +80,7 @@ public final class HostInfoFactory {
         info.shell = initData.getProperty("SH", UNKNOWN); // NOI18N
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
         info.cpuNum = getInt(initData, "CPUNUM", 1); // NOI18N
+        info.path = initData.getProperty("PATH", "/bin:/usr/bin"); // NOI18N
 
         if (initData.containsKey("LOCALTIME")) { // NOI18N
             long localTime = (Long)initData.get("LOCALTIME"); // NOI18N
@@ -127,6 +128,7 @@ public final class HostInfoFactory {
         private String tempDir;
         private int cpuNum;
         private long clockSkew;
+        private String path;
 
         public OS getOS() {
             return os;
@@ -166,6 +168,10 @@ public final class HostInfoFactory {
 
         public long getClockSkew() {
             return clockSkew;
+        }
+
+        public String getPath() {
+            return path;
         }
     }
 

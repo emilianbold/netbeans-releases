@@ -171,7 +171,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.activePlatform = newPlaf;
         if (clusterPath != null) {
             // translate cluster.path for new platform
-            EditableProperties ep = new EditableProperties();
+            EditableProperties ep = new EditableProperties(false);
             storeClusterPath(ep);
             PropertyEvaluator pe = PropertyUtils.sequentialPropertyEvaluator(null,
                     PropertyUtils.fixedPropertyProvider(ep),

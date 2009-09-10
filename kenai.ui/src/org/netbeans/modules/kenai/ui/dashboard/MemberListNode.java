@@ -39,15 +39,16 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
+import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,8 +58,38 @@ import org.openide.util.NbBundle;
  */
 public class MemberListNode extends SectionNode {
 
+    private MessagingHandle msg;
+    private PropertyChangeListener l;
+    private static final String PROP_MEMBERS = "members";
+
     public MemberListNode( ProjectNode parent ) {
-        super( NbBundle.getMessage(MemberListNode.class, "LBL_Members"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+        super(getText(MessagingAccessor.getDefault().getMessaging(parent.getProject())),
+             parent, PROP_MEMBERS); //NOI18N
+        msg = MessagingAccessor.getDefault().getMessaging(project);
+        msg.addPropertyChangeListener(l=new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (MessagingHandle.PROP_ONLINE_COUNT.equals(evt.getPropertyName())) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            if (lblName!=null) {
+                                lblName.setText(getText(msg));
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private static String getText(MessagingHandle msg) {
+        int count = msg.getOnlineCount();
+        if (count>=0) {
+            return NbBundle.getMessage(MemberListNode.class, "LBL_MembersOnline", msg.getOnlineCount());
+        } else {
+            return NbBundle.getMessage(MemberListNode.class, "LBL_Members");
+        }
     }
 
     @Override
@@ -71,4 +102,14 @@ public class MemberListNode extends SectionNode {
         }
         return res;
     }
+
+    @Override
+    protected void dispose() {
+        super.dispose();
+        if (msg!=null) {
+            msg.removePropertyChangeListener(l);
+        }
+    }
+
+
 }

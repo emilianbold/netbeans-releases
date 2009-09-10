@@ -40,13 +40,15 @@
  */
 package org.netbeans.modules.web.core.syntax.spi;
 
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
+
 public class ELImplicitObject {
     
     public static final int OBJECT_TYPE = 0;
     public static final int MAP_TYPE = 1;
             
     /** Creates a new instance of ELImplicitObject */
-    public ELImplicitObject(String name) {
+    public ELImplicitObject(String name ) {
         myName = name;
         setType(MAP_TYPE);
     }
@@ -69,6 +71,10 @@ public class ELImplicitObject {
     
     public void setClazz(String clazz){
         myClazz = clazz;
+    }
+    
+    public boolean isApplicable( ELExpression expression ){
+        return true;
     }
     
     private String myName;

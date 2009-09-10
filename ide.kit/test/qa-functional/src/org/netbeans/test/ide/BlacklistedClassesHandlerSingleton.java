@@ -341,13 +341,26 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                     }
                     if (blacklist.containsKey(className)) { //violator
                         Exception exc = new BlacklistedClassesViolationException(record.getParameters()[0].toString());
-                        System.out.println("BlacklistedClassesHandler blacklist violator: " + className);
-                        exc.printStackTrace();
-                        synchronized (blacklist) {
-                            // TODO: Probably we should synchronize by list
-                            ((List) blacklist.get(className)).add(exc);
+                        // Check for AntProjectModule.checkForXalan() - fails on MacOSX
+                        boolean ignore = false;
+                        for (StackTraceElement elem : exc.getStackTrace()) {
+                            if ("checkForXalan".equals(elem.getMethodName()) &&
+                                    (elem.getClassName().endsWith("AntProjectModule") ||
+                                     elem.getClassName().endsWith("RakeProjectModule")))
+                            {
+                                ignore = true;
+                                break;
+                            }
                         }
-                        violation = true;
+                        if (!ignore) {
+                            System.out.println("BlacklistedClassesHandler blacklist violator: " + className);
+                            exc.printStackTrace();
+                            synchronized (blacklist) {
+                                // TODO: Probably we should synchronize by list
+                                ((List) blacklist.get(className)).add(exc);
+                            }
+                            violation = true;
+                        }
                     } else if (whitelistEnabled && !whitelist.contains(className)) {
                         Exception exc = new BlacklistedClassesViolationException(record.getParameters()[0].toString());
                         System.out.println("BlacklistedClassesHandler whitelist violator: " + className);

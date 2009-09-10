@@ -39,7 +39,7 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import javax.swing.Icon;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 
 /**
  *
@@ -81,12 +81,12 @@ public class UserListItem implements ContactListItem {
     }
 
     public void openChat() {
-        KenaiUser user = KenaiUser.forName(entry.getUser());
+        KenaiUserUI user = new KenaiUserUI(entry.getUser());
         user.startChat();
     }
 
     public Icon getIcon() {
-        return KenaiUser.forName(entry.getUser()).getIcon();
+        return new KenaiUserUI(entry.getUser()).getIcon();
     }
 
     public boolean hasMessages() {

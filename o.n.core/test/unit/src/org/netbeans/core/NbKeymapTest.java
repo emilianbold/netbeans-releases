@@ -130,10 +130,26 @@ public class NbKeymapTest extends NbTestCase {
         FileObject def = make("Actions/paste.instance");
         def.setAttribute("instanceCreate", new DummyAction("paste"));
         DataFolder shortcuts = DataFolder.findFolder(makeFolder("Shortcuts"));
-        DataShadow.create(shortcuts, "C-V", DataObject.find(def)).getPrimaryFile();
-        DataShadow.create(shortcuts, "PASTE", DataObject.find(def)).getPrimaryFile();
+        DataShadow.create(shortcuts, "C-V", DataObject.find(def));
+        DataShadow.create(shortcuts, "PASTE", DataObject.find(def));
         Keymap km = new NbKeymap();
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK), def, "paste");
+    }
+
+    public void testKeymapOverride() throws Exception { // #170677
+        FileObject def1 = make("Actions/start.instance");
+        def1.setAttribute("instanceCreate", new DummyAction("start"));
+        FileObject def2 = make("Actions/continue.instance");
+        def2.setAttribute("instanceCreate", new DummyAction("continue"));
+        DataFolder shortcuts = DataFolder.findFolder(makeFolder("Shortcuts"));
+        DataShadow.create(shortcuts, "F5", DataObject.find(def1));
+        DataShadow.create(shortcuts, "C-F5", DataObject.find(def2));
+        DataFolder netbeans = DataFolder.findFolder(makeFolder("Keymaps/NetBeans"));
+        DataShadow.create(netbeans, "C-F5", DataObject.find(def1));
+        DataShadow.create(netbeans, "F5", DataObject.find(def2));
+        Keymap km = new NbKeymap();
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK), def1, "start");
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), def2, "continue");
     }
     
     public void testUnusualInstanceFileExtensions() throws Exception {

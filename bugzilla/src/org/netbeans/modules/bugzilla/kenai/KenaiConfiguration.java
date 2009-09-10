@@ -59,7 +59,6 @@ public class KenaiConfiguration extends BugzillaConfiguration {
 
     public KenaiConfiguration(BugzillaRepository repository, String product) {
         this.repository = repository;
-        // XXX check if product exists
         ArrayList<String> l = new ArrayList<String>();
         l.add(product);
         this.products = Collections.unmodifiableList(l);
@@ -85,10 +84,9 @@ public class KenaiConfiguration extends BugzillaConfiguration {
 
     private synchronized void ensureProduct() {
         List<String> knownProducts = super.getProducts();
-        for (String knownProduct : products) {
-            if(!knownProducts.contains(knownProduct)) {
+        for (String product : products) {
+            if(!knownProducts.contains(product)) {
                 initialize(repository, true);
-                rc = null;
                 break;
             }
         }

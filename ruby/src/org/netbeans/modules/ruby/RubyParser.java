@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -623,11 +621,7 @@ public final class RubyParser extends Parser {
         if (platform.isJRuby()) {
             return getParserForJRuby(owner);
         }
-        String version = platform.getVersion();
-        if (version == null) {
-            return new Ruby18Parser();
-        }
-        if (version.startsWith("1.9")) { //NOI18N
+        if (platform.is19()) {
             return new Ruby19Parser();
         }
         return new Ruby18Parser();

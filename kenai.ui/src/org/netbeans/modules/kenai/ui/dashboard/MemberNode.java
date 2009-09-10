@@ -54,7 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
@@ -78,18 +78,6 @@ public class MemberNode extends LeafNode {
     public MemberNode( final MemberHandle user, TreeListNode parent ) {
         super( parent );
         this.user = user;
-        user.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        if (lbl!=null)
-                            lbl.setIcon(KenaiUser.forName(user.getName()).getIcon());
-                    }
-                });
-            }
-        });
     }
 
     @Override
@@ -98,7 +86,7 @@ public class MemberNode extends LeafNode {
             panel = new JPanel( new BorderLayout() );
             panel.setOpaque(false);
             lbl = new TreeLabel( user.getDisplayName() );
-            lbl.setIcon(KenaiUser.forName(user.getName()).getIcon());
+            lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());
             panel.add( lbl, BorderLayout.CENTER);
             if (user.hasMessages()) {
                 btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction());

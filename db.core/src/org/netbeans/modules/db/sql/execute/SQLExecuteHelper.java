@@ -45,7 +45,6 @@ import org.netbeans.modules.db.sql.history.SQLHistory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,14 +84,13 @@ public final class SQLExecuteHelper {
         long totalExecutionTime = 0;
         String url = conn.getDatabaseURL();
 
-        for (Iterator i = statements.iterator(); i.hasNext();) {
+        for (StatementInfo info : statements) {
             
             cancelled = Thread.currentThread().isInterrupted();
             if (cancelled) {
                 break;
             }
             
-            StatementInfo info = (StatementInfo)i.next();
             String sql = info.getSQL();
 
             SQLExecutionResult result = null;
@@ -220,6 +218,14 @@ public final class SQLExecuteHelper {
                 
                 switch (state) {
                     case STATE_MEANINGFUL_TEXT:
+                        if (isDelimiter()) {
+                            rawEndOffset = pos;
+                            addStatement();
+                            statement.setLength(0);
+                            rawStartOffset = pos + delimiter.length(); // skip the delimiter
+                            pos += delimiter.length();
+                            continue;
+                        }
                         if (ch == '-') {
                             state = STATE_MAYBE_LINE_COMMENT;
                         } else if (ch == '/') {
@@ -287,13 +293,7 @@ public final class SQLExecuteHelper {
                         assert false;
                 }
                 
-                if (state == STATE_MEANINGFUL_TEXT && isDelimiter()) {
-                    rawEndOffset = pos;
-                    addStatement();
-                    statement.setLength(0);
-                    rawStartOffset = pos + delimiter.length(); // skip the delimiter
-                    pos += delimiter.length();
-                } else if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
+                if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
                     // don't append leading whitespace
                     if (statement.length() > 0 || !Character.isWhitespace(ch)) {
                         // remember the position of the first appended char
@@ -315,10 +315,8 @@ public final class SQLExecuteHelper {
                             endOffset = pos + 1;
                         }
                     }
-                    pos++;
-                } else {
-                    pos++;
                 }
+                pos++;
             }
             
             rawEndOffset = pos;
@@ -463,12 +461,12 @@ public final class SQLExecuteHelper {
             // PENDING since startOffset is the first non-whitespace char and
             // endOffset is the offset after the last non-whitespace char,
             // the trim() call could be replaced with statement.substring(startOffset, endOffset)
-            String sql = statement.toString().trim();
-            if (sql.length() <= 0) {
+            String sqlTrimmed = statement.toString().trim();
+            if (sqlTrimmed.length() <= 0) {
                 return;
             }
             
-            StatementInfo info = new StatementInfo(sql, rawStartOffset, startOffset, startLine, startColumn, endOffset, rawEndOffset);
+            StatementInfo info = new StatementInfo(sqlTrimmed, rawStartOffset, startOffset, startLine, startColumn, endOffset, rawEndOffset);
             statements.add(info);
         }
         

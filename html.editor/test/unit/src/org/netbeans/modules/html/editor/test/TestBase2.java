@@ -46,7 +46,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.html.editor.HtmlKit;
+import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
 /**

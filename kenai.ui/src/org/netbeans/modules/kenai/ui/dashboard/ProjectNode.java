@@ -52,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.kenai.ui.RemoveProjectAction;
 import org.netbeans.modules.kenai.ui.spi.BuildAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
@@ -61,6 +62,7 @@ import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,7 +77,8 @@ public class ProjectNode extends TreeListNode {
 
     private JPanel component = null;
     private JLabel lbl = null;
-    private LinkButton btnDetails = null;
+    private LinkButton btnBookmark = null;
+    private LinkButton btnClose = null;
 
     private boolean isMemberProject = false;
 
@@ -141,12 +144,26 @@ public class ProjectNode extends TreeListNode {
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-                btnDetails = new LinkButton(NbBundle.getMessage(ProjectNode.class, "LBL_ProjectDetails"), accessor.getDetailsAction(project)); //NOI18N
-                component.add( btnDetails, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true),
+                        accessor.getBookmarkAction(project)); //NOI18N
+                btnBookmark.setRolloverEnabled(true);
+                component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
+                btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+                btnClose.setRolloverEnabled(true);
+                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close_over.png", true));
+                component.add( btnClose, new GridBagConstraints(4,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
             }
             lbl.setForeground(foreground);
             lbl.setFont( isMemberProject ? boldFont : regFont );
-            btnDetails.setForeground(foreground, isSelected);
+            btnBookmark.setForeground(foreground, isSelected);
+            btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true));
+            btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true));
+            btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            btnClose.setForeground(foreground, isSelected);
             return component;
         }
     }

@@ -124,6 +124,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <folder name="Application">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
+                    <attr name="position" intvalue="500"/>
                     <file name="Self.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createApplication"/>
                         <attr name="position" intvalue="0"/>

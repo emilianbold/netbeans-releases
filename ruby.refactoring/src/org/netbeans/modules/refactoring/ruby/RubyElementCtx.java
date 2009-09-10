@@ -28,6 +28,7 @@
 package org.netbeans.modules.refactoring.ruby;
 
 import java.util.Iterator;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.jrubyparser.ast.ArgumentNode;
 import org.jrubyparser.ast.ClassNode;
@@ -49,6 +50,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -395,7 +397,7 @@ public class RubyElementCtx {
                 }
                 String lhs = call.getLhs();
 
-                if ((types.isKnown()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+                if (!types.isKnown() && lhs != null && node != null && call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(node, getPath());
 
                     if (method != null) {
@@ -403,7 +405,7 @@ public class RubyElementCtx {
                         // up and do it a bit more cleverly
                         ContextKnowledge knowledge =
                             new ContextKnowledge(null, method, node, astOffset, lexOffset, info);
-                        RubyTypeInferencer rti = RubyTypeInferencer.create(knowledge);
+                        RubyTypeInferencer rti = RubyTypeInferencer.create(knowledge, false);
                         types = rti.inferType(lhs);
                     }
                 } else if (call == Call.LOCAL) {
@@ -415,7 +417,10 @@ public class RubyElementCtx {
                         fqn = RubyIndex.OBJECT;
                     }
 
-                    IndexedMethod method = index.getOverridingMethod(fqn, getName());
+                    Set<IndexedMethod> methods = index.getMethods(getName(), fqn, Kind.EXACT);
+                    IndexedMethod method = !methods.isEmpty() 
+                            ? methods.iterator().next()
+                            : index.getSuperMethod(fqn, getName());
 
                     if (method != null) {
                         defClass = method.getIn();
@@ -425,7 +430,7 @@ public class RubyElementCtx {
 
                 if (defClass == null) {
                     // Just an inherited method call?
-                    if ((types.isKnown()) && (lhs == null)) {
+                    if (!types.isKnown() && (lhs == null || "self".equals(lhs))) {
                         defClass = AstUtilities.getFqnName(getPath());
                     } else if (types.isKnown()) {
                         // TODO handle all types - types.getRealTypes();

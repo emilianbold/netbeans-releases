@@ -65,6 +65,8 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -83,6 +85,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private Issue issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
     private Task prepareTask;
+    private RepositoryComboSupport rs;
 
     /**
      * Creates new {@code IssueTopComponent}.
@@ -91,6 +94,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         initComponents();
         RepositoriesSupport.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
+        newButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onNewClick();
+            }
+        });
     }
 
     /**
@@ -106,50 +114,26 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         initNewIssue(toSelect, false);
     }
 
-    public void initNewIssue(Repository toSelect, boolean suggestedSelectionOnly) {
+    public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly) {
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
 
-        newButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onNewClick();
-            }
-        });
-
-        repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                Repository r = null;
-                if(value != null) {
-                    r = (Repository) value;
-                    value = r.getDisplayName();
-                }
-                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if(renderer instanceof JLabel && r != null) {
-                    ((JLabel) renderer).setIcon((Icon) r.getIcon());
-                }
-                return renderer;
-            }
-        });
-
-        if ((toSelect != null) && !suggestedSelectionOnly) {
+        if ((defaultRepository != null) && !suggestedSelectionOnly) {
             /* fixed selection that cannot be changed by user */
             DefaultComboBoxModel  repoModel = new DefaultComboBoxModel();
-            repoModel.addElement(toSelect);
+            repoModel.addElement(defaultRepository);
             repositoryComboBox.setModel(repoModel);
-            repositoryComboBox.setSelectedItem(toSelect);
+            repositoryComboBox.setRenderer(new RepositoryComboRenderer());
+            repositoryComboBox.setSelectedItem(defaultRepository);
             repositoryComboBox.setEnabled(false);
             newButton.setEnabled(false);
             onRepoSelected();
         } else {
-            boolean selected = setupRepositoryModel(toSelect);
-            if (!selected && (repositoryComboBox.getModel().getSize() > 0)) {
-                repositoryComboBox.setSelectedIndex(0);
-                selected = true;
-            }
-            if (selected) {
-                onRepoSelected();
+            if(defaultRepository == null) {
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, false);
+            } else {
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
             }
         }
         repositoryComboBox.addItemListener(new ItemListener() {
@@ -305,7 +289,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 try {
                     handle.start();
                     preparingLabel.setVisible(true);
-                    Repository repo = (Repository) repositoryComboBox.getSelectedItem();
+                    Repository repo = getRepository();
                     if (repo == null) {
                         return;
                     }
@@ -336,6 +320,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 }
             }
         });
+    }
+
+    private Repository getRepository() {
+        Object item = repositoryComboBox.getSelectedItem();
+        if (item == null || !(item instanceof Repository)) {
+            return null;
+        }
+        return (Repository) item;
     }
 
     private void focusFirstEnabledComponent() {
@@ -370,6 +362,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.getController().opened();
         }
+        BugtrackingManager.LOG.fine("IssueTopComponent Opened " + (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     @Override
@@ -382,6 +375,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(prepareTask != null) {
             prepareTask.cancel();
         }
+        BugtrackingManager.LOG.fine("IssueTopComponent Closed " + (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     /**
@@ -391,10 +385,25 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @return top-component that should display the given issue.
      */
     public static synchronized IssueTopComponent find(Issue issue) {
+        return find(issue, true);
+    }
+
+    /**
+     * Returns top-component that should display the given issue. 
+     *
+     * @param issue issue for which the top-component should be found.
+     * @param forceCreate determines wheter a TopComponent is created if none available yet
+     *
+     * @return top-component that should display the given issue.
+     */
+    public static synchronized IssueTopComponent find(Issue issue, boolean forceCreate) {
         for (IssueTopComponent tc : openIssues) {
             if (issue.equals(tc.getIssue())) {
                 return tc;
             }
+        }
+        if(!forceCreate) {
+            return null;
         }
         IssueTopComponent tc = new IssueTopComponent();
         tc.setIssue(issue);
@@ -445,46 +454,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    setupRepositoryModel();
+                    if(rs != null) {
+                        rs.refreshRepositoryModel();
+                    }
                 }
             });
         }
-    }
-
-    private void setupRepositoryModel() {
-        setupRepositoryModel(null);
-    }
-
-    /**
-     * Initializes the combo-box's data model.
-     *
-     * @param  object (repository) to be preselected if possible, or {@code null}
-     * @return  {@code true} if the preferred selection was found and selected,
-     *          {@code false} otherwise
-     */
-    private boolean setupRepositoryModel(Object preferredSelection) {
-        assert (preferredSelection == null)
-               || (preferredSelection instanceof Repository);
-
-        if (preferredSelection == null) {
-            preferredSelection = repositoryComboBox.getSelectedItem();
-        }
-
-        DefaultComboBoxModel repoModel;
-        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-        repoModel = new DefaultComboBoxModel(repos);
-        repositoryComboBox.setModel(repoModel);
-
-        if (preferredSelection != null) {
-            for (int i = 0; i < repoModel.getSize(); i++) {
-                Repository r = (Repository) repoModel.getElementAt(i);
-                if (r == preferredSelection) {
-                    repoModel.setSelectedItem(r);
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     @Override

@@ -64,8 +64,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Set;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 
@@ -88,6 +90,7 @@ public class CompilationUnit {
     
     private DwarfAbbriviationTable abbr_table = null;
     private DwarfStatementList statement_list = null;
+    private DwarfLineInfoSection lineInfoSection = null;
     private DwarfMacinfoTable macrosTable = null;
     private DwarfNameLookupTable pubnamesTable = null;
     private long debugInfoOffset;
@@ -102,6 +105,10 @@ public class CompilationUnit {
         this.unit_offset = unitOffset;
         readCompilationUnitHeader();
         root = getDebugInfo(false);
+    }
+
+    public int getDataEncoding(){
+        return reader.getDataEncoding();
     }
 
     public String getProducer() throws IOException {
@@ -172,7 +179,17 @@ public class CompilationUnit {
         }
         return null;
     }
-    
+
+    public DwarfEntry getReferencedType(DwarfEntry entry) throws IOException{
+        Object typeRef = entry.getAttributeValue(ATTR.DW_AT_type);
+        if (typeRef instanceof Integer) {
+            return getEntry((Integer)typeRef);
+        } else if (typeRef instanceof Long) {
+            return getEntry((Long)typeRef);
+        }
+        return null;
+    }
+
     public String getType(DwarfEntry entry) throws IOException {
         TAG entryKind = entry.getKind();
         
@@ -180,13 +197,17 @@ public class CompilationUnit {
             return "null"; // NOI18N
         }
         
-        Integer typeRef = (Integer)entry.getAttributeValue(ATTR.DW_AT_type);
-        
-        if (typeRef == null) {
+        Object typeRef = entry.getAttributeValue(ATTR.DW_AT_type);
+        long ref;
+        if (typeRef instanceof Integer) {
+            ref =(Integer)typeRef;
+        } else if (typeRef instanceof Long) {
+            ref =(Long)typeRef;
+        } else {
             return "void"; // NOI18N
         }
-        
-        DwarfEntry typeEntry = getEntry(typeRef);
+
+        DwarfEntry typeEntry = getEntry(ref);
         TAG kind = typeEntry.getKind();
         
         if (kind.equals(TAG.DW_TAG_base_type)) {
@@ -218,12 +239,13 @@ public class CompilationUnit {
             if (atType == null) {
                 return "const void"; // NOI18N
             }
-            
+            DwarfEntry refTypeEntry = null;
             if (atType instanceof Integer) {
-                Integer constTypeRef = (Integer)typeEntry.getAttributeValue(ATTR.DW_AT_type);
-                
-                DwarfEntry refTypeEntry = getEntry(constTypeRef);
-                typeEntry.getKind();
+                refTypeEntry = getEntry((Integer)atType);
+            } else if (atType instanceof Long) {
+                refTypeEntry = getEntry((Long)atType);
+            }
+            if (refTypeEntry != null) {
                 if (refTypeEntry.getKind().equals(TAG.DW_TAG_reference_type) ||
                         refTypeEntry.getKind().equals(TAG.DW_TAG_array_type)) {
                     return getType(typeEntry);
@@ -311,14 +333,20 @@ public class CompilationUnit {
         return root;
     }
     
-    public DwarfEntry getTypedefFor(Integer typeRef) throws IOException {
+    public DwarfEntry getTypedefFor(long typeRef) throws IOException {
         // TODO: Rewrite not to iterate every time.
         
         for (DwarfEntry entry : getDebugInfo(true).getChildren()) {
             if (entry.getKind().equals(TAG.DW_TAG_typedef)) {
                 Object entryTypeRef = entry.getAttributeValue(ATTR.DW_AT_type);
-                if (entryTypeRef != null && ((Integer)entryTypeRef).equals(typeRef)) {
-                    return entry;
+                if (entryTypeRef instanceof Integer) {
+                    if (((Integer)entryTypeRef).equals(typeRef)) {
+                        return entry;
+                    }
+                } else if (entryTypeRef instanceof Long) {
+                    if (((Long)entryTypeRef).equals(typeRef)) {
+                        return entry;
+                    }
                 }
             }
         }
@@ -379,6 +407,28 @@ public class CompilationUnit {
         return statement_list;
     }
     
+    public  Set<LineNumber> getLineNumbers() throws IOException{
+        if (statement_list == null) {
+            initStatementList();
+        }
+        Number statementListOffset = (Number)root.getAttributeValue(ATTR.DW_AT_stmt_list);
+        if (statementListOffset != null) {
+            return lineInfoSection.getLineNumbers(statementListOffset.longValue());
+        }
+        return null;
+    }
+
+    public LineNumber getLineNumber(long target) throws IOException{
+        if (statement_list == null) {
+            initStatementList();
+        }
+        Number statementListOffset = (Number)root.getAttributeValue(ATTR.DW_AT_stmt_list);
+        if (statementListOffset != null) {
+            return lineInfoSection.getLineNumber(statementListOffset.longValue(), target);
+        }
+        return null;
+    }
+
     public DwarfMacinfoTable getMacrosTable() throws IOException {
         if (macrosTable == null) {
             initMacrosTable();
@@ -467,8 +517,8 @@ public class CompilationUnit {
     }
     
     private void initStatementList() throws IOException {
-        DwarfLineInfoSection lineInfoSection = (DwarfLineInfoSection)reader.getSection(SECTIONS.DEBUG_LINE);
-        
+        lineInfoSection = (DwarfLineInfoSection)reader.getSection(SECTIONS.DEBUG_LINE);
+
         if (root == null) {
             return;
         }

@@ -15,7 +15,7 @@ import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
  */
 public class AnnotationMarkProvider extends MarkProvider {
 
-  private List<AnnotationMark> marks = Collections.emptyList();
+  private List marks = Collections.emptyList();
 
   public void setMarks(List<AnnotationMark> marks) {
     List old = this.marks;
@@ -23,7 +23,8 @@ public class AnnotationMarkProvider extends MarkProvider {
     firePropertyChange(PROP_MARKS, old, marks);
   }
 
-  public synchronized List getMarks() {
+  @SuppressWarnings("unchecked")
+  public synchronized List<Mark> getMarks() {
     return marks;
   }
 }

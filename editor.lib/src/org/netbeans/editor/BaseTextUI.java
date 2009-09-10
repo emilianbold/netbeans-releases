@@ -66,8 +66,8 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.editor.view.spi.LockView;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 

@@ -146,6 +146,9 @@ public class JsfElCompletionProvider implements CompletionProvider{
                                 elExpr.getObjectClass(), anchor);
                         complItems.addAll(ref_items);
                         break;
+                    case JsfElExpression.EL_COMPOSITE_COMPONENT:
+                        complItems.addAll(elExpr.getCompositeComponentItems(anchor));
+                        break;
                 }
 //                for (int i = 0; i < complItems.size(); i++)
 //                    ((JspCompletionItem.JspResultItem)complItems.get(i)).setSubstituteOffset(offset - elExpr.getReplace().length());

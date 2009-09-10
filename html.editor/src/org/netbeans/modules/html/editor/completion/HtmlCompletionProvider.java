@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
@@ -70,11 +71,6 @@ import org.openide.util.Exceptions;
  * @author Marek Fukala
  */
 public class HtmlCompletionProvider implements CompletionProvider {
-
-    /** Creates a new instance of JavaDocCompletionProvider */
-    public HtmlCompletionProvider() {
-        NbReaderProvider.setupReaders();
-    }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
@@ -109,11 +105,11 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
-    static class DocQuery extends AbstractQuery {
+    public static class DocQuery extends AbstractQuery {
 
         private CompletionItem item;
 
-        DocQuery(HtmlCompletionItem item) {
+        public DocQuery(HtmlCompletionItem item) {
             this.item = item;
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,10 +56,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
-import java.awt.Dialog;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -81,7 +78,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
@@ -89,7 +85,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
@@ -104,18 +99,13 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -142,40 +132,14 @@ public class GoToSupport {
     }
     
     private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc) {
-        if (!tooltip && !javadoc && SourceUtils.isScanInProgress()) {
-            final AtomicBoolean cancel = new AtomicBoolean(false);
-            final Dialog[] d = new Dialog[1];
-            String warning = NbBundle.getMessage(GoToSupport.class, "LBL_ScanInProgress");
-            String caption = NbBundle.getMessage(GoToSupport.class, "CAP_ScanInProgress");
-            String cancelButton = NbBundle.getMessage(GoToSupport.class, "BTN_ScanInProgress_Cancel");
-            DialogDescriptor nd = new DialogDescriptor(warning, caption, true, new Object[] {cancelButton}, cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    cancel.set(true);
-                    d[0].setVisible(false);
-                }
-            });
-
-            nd.setMessageType(NotifyDescriptor.INFORMATION_MESSAGE);
-
-            d[0] = DialogDisplayer.getDefault().createDialog(nd);
-
-            RequestProcessor.getDefault().post(new Runnable() {
+        if (!tooltip && !javadoc) {
+            final AtomicBoolean cancel = new AtomicBoolean();
+            
+            RunOffAWT.runOffAWT(new Runnable() {
                 public void run() {
-                    performGoToImpl(doc, offset, goToSource, tooltip, javadoc, new Action<Boolean>() {
-                        public Boolean run() {
-                            return !cancel.get();
-                        }
-                    });
-
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            d[0].setVisible(false);
-                        }
-                    });
+                    performGoToImpl(doc, offset, goToSource, tooltip, javadoc, cancel);
                 }
-            });
-
-            d[0].setVisible(true);
+            }, NbBundle.getMessage(GoToSupport.class, goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel);
             
             return null;
         } else {
@@ -183,7 +147,7 @@ public class GoToSupport {
         }
     }
 
-    private static String performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final Action<Boolean> atStart) {
+    private static String performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final AtomicBoolean cancel) {
         try {
             final FileObject fo = getFileObject(doc);
             
@@ -201,7 +165,7 @@ public class GoToSupport {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult (offset);
-                    if (atStart != null && atStart.run() == Boolean.FALSE)
+                    if (cancel != null && cancel.get())
                         return ;
                     CompilationController controller = CompilationController.get(res);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
@@ -395,22 +359,20 @@ public class GoToSupport {
             if (tryToOpen[0]) {
                 assert result[0] == null;
 
-                Mutex.EVENT.readAccess(new Runnable() {
-                    public void run() {
-                        boolean openSucceeded = false;
+                boolean openSucceeded = false;
 
-                        if (offsetToOpen[0] >= 0) {
-                            openSucceeded = CALLER.open(fo, offsetToOpen[0]);
-                        } else {
-                            if (elementToOpen[0] != null) {
-                                openSucceeded = CALLER.open(cpInfo[0], elementToOpen[0]);
-                            }
-                        }
-                        if (!openSucceeded) {
-                            CALLER.warnCannotOpen(displayNameForError[0]);
-                        }
+                if (cancel.get()) return null;
+
+                if (offsetToOpen[0] >= 0) {
+                    openSucceeded = CALLER.open(fo, offsetToOpen[0]);
+                } else {
+                    if (elementToOpen[0] != null) {
+                        openSucceeded = CALLER.open(cpInfo[0], elementToOpen[0]);
                     }
-                });
+                }
+                if (!openSucceeded) {
+                    CALLER.warnCannotOpen(displayNameForError[0]);
+                }
             }
             
             return result[0];
@@ -420,14 +382,6 @@ public class GoToSupport {
     }
     
     public static void goTo(final Document doc, final int offset, final boolean goToSource) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                goToImpl(doc, offset, goToSource);
-            }
-        });
-    }
-
-    static void goToImpl(final Document doc, final int offset, final boolean goToSource) {
         performGoTo(doc, offset, goToSource, false, false);
     }
     
@@ -456,9 +410,9 @@ public class GoToSupport {
         Token<JavaTokenId> t = ts.token();
         
         if (JavaTokenId.JAVADOC_COMMENT == t.id()) {
-            // javadoc hyperlinking (references + XXX param names)
+            // javadoc hyperlinking (references + param names)
             TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
-            if (JavadocImports.isInsideReference(jdts, offset)) {
+            if (JavadocImports.isInsideReference(jdts, offset) || JavadocImports.isInsideParamName(jdts, offset)) {
                 jdts.move(offset);
                 jdts.moveNext();
                 if (token != null) {

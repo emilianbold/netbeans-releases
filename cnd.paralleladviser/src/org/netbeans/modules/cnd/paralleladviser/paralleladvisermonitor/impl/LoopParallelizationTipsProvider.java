@@ -99,6 +99,7 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
             ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
             if(!arrayList.isEmpty()) {
                 arrayList.add(new LoopParallelizationCommonAdvice());
+                arrayList.add(new SunStudioCompilerXautoparAdvice());
             }
             return arrayList;
         }

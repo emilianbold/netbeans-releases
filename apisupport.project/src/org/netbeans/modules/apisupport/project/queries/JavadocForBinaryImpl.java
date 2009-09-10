@@ -43,12 +43,16 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -56,6 +60,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  * Defines Javadoc locations for built modules with built javadoc.
@@ -77,7 +82,7 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
 
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
         if (!binaryRoot.equals(FileUtil.urlForArchiveOrDir(project.getModuleJarLocation()))) {
-            return null;
+            return findForCPExt(binaryRoot);
         }
         String cnb = project.getCodeNameBase();
         if (cnb == null) { // #115521
@@ -116,6 +121,38 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
         } catch (MalformedURLException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Find Javadoc roots for classpath extensions ("wrapped" JARs) of the project
+     * added by naming convention <tt>&lt;jar name&gt;-javadoc(.zip)</tt>
+     * See issue #66275
+     * @param binaryRoot
+     * @return
+     */
+    private Result findForCPExt(URL binaryRoot) {
+        URL jar = FileUtil.getArchiveFile(binaryRoot);
+        if (jar == null)
+            return null;    // not a class-path-extension
+        File binaryRootF = new File(URI.create(jar.toExternalForm()));
+        // XXX this will only work for modules following regular naming conventions:
+        String n = binaryRootF.getName();
+        if (!n.endsWith(".jar")) { // NOI18N
+            // ignore
+            return null;
+        }
+        // convention-over-cfg per mkleint's suggestion: <jarname>-javadoc(.zip) folder or ZIP
+        File jFolder = new File(binaryRootF.getParentFile(), 
+                n.substring(0, n.length() - ".jar".length()) + "-javadoc");
+        if (jFolder.isDirectory()) {
+                return new R(new URL[]{FileUtil.urlForArchiveOrDir(jFolder)});
+        } else {
+            File jZip = new File(jFolder.getAbsolutePath() + ".zip");
+            if (jZip.isFile()) {
+                return new R(new URL[]{FileUtil.urlForArchiveOrDir(jZip)});
+            }
+        }
+        return null;
     }
 
     private static final class R implements JavadocForBinaryQuery.Result {

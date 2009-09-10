@@ -111,7 +111,7 @@ public class JspELExpression extends ELExpression {
                 }
             }
             if (value == EL_UNKNOWN && 
-                    ELImplicitObjects.getELImplicitObjects(first).size() > 0) 
+                    ELImplicitObjects.getELImplicitObjects(first, this ).size() > 0) 
             {
                 value = EL_IMPLICIT;
             }

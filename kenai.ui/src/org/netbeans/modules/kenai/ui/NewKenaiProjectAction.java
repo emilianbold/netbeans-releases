@@ -54,13 +54,14 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 public final class NewKenaiProjectAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
 
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator());
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0]));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,

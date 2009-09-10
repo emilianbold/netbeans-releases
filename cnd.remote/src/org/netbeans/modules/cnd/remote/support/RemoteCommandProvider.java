@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.util.Map;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -53,20 +52,19 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class RemoteCommandProvider implements CommandProvider {
     
     private RemoteCommandSupport support;
-    private Logger log = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
     public RemoteCommandProvider() {
-        log.finest(getClass().getSimpleName() + " .ctor");
+        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " .ctor");
     }
 
     public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
-        log.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
+        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
         support = new RemoteCommandSupport(execEnv, cmd, env);
         return support.run();
     }
 
     public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, String... args) {
-        log.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
+        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
         support = new RemoteCommandSupport(execEnv, cmd, env, args);
         return support.run();
     }

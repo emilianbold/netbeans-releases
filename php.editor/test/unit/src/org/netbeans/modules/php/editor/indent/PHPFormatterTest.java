@@ -103,6 +103,14 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/multiline_function_header.php");
     }
 
+    public void testLineSplitting1() throws Exception {
+        reformatFileContents("testfiles/formatting/line_splitting1.php");
+    }
+
+    public void testLineSplitting2() throws Exception {
+        reformatFileContents("testfiles/formatting/line_splitting2.php");
+    }
+
     public void testSimpleClassDef() throws Exception {
         reformatFileContents("testfiles/formatting/simple_class_def.php");
     }
@@ -138,6 +146,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test161049() throws Exception {
         reformatFileContents("testfiles/formatting/issue161049.php");
     }
+
+    public void test171309() throws Exception {
+        reformatFileContents("testfiles/formatting/issue171309.php");
+    }
+
 
     public void test162126() throws Exception {
         reformatFileContents("testfiles/formatting/issue162126.php");

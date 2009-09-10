@@ -93,7 +93,7 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
     }
 
     public int compareTo( ProjectHandle other ) {
-        return getDisplayName().compareTo(other.getDisplayName());
+        return getDisplayName().compareToIgnoreCase(other.getDisplayName());
     }
 
     @Override
@@ -116,6 +116,11 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
         int hash = 5;
         hash = 29 * hash + (this.id != null ? this.id.hashCode() : 0);
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return getId();
     }
 }
 

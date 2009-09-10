@@ -41,6 +41,7 @@ package org.openide.filesystems.annotations;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -165,6 +166,9 @@ public final class LayerBuilder {
                 }
                 if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(originatingElement.asType(), typeMirror)) {
                     throw new LayerGenerationException(clazz + " is not assignable to " + typeMirror, originatingElement);
+                }
+                if (!originatingElement.getModifiers().contains(Modifier.PUBLIC)) {
+                    throw new LayerGenerationException(clazz + " is not public", originatingElement);
                 }
                 return new String[] {clazz, null};
             }

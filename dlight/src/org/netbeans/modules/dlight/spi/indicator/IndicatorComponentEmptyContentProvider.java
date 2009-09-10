@@ -46,6 +46,6 @@ import java.util.List;
  * @author mt154047
  */
 public interface IndicatorComponentEmptyContentProvider {
-    List<Indicator> getEmptyContent();
+    List<Indicator<?>> getEmptyContent();
 
 }

@@ -39,13 +39,10 @@
 
 package org.netbeans.modules.editor.lib2;
 
-import java.io.IOException;
-import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
+import java.util.List;
+import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.actions.PresenterEditorAction;
 import java.util.Set;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -55,10 +52,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
-import javax.tools.StandardLocation;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.openide.filesystems.annotations.LayerBuilder;
@@ -67,7 +64,8 @@ import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Annotation processor for
+ * Annotation processor for {@link EditorActionRegistration}
+ * and {@link EditorActionRegistrations}.
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
@@ -101,7 +99,9 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         String methodName;
         TypeMirror swingActionType = processingEnv.getTypeUtils().getDeclaredType(
                 processingEnv.getElementUtils().getTypeElement("javax.swing.Action"));
-
+        TypeMirror utilMapType = processingEnv.getTypeUtils().getDeclaredType(
+                processingEnv.getElementUtils().getTypeElement("java.util.Map"));
+        boolean directActionCreation = false; // Whether construct AlwaysEnabledAction or annotated action directly
         switch (e.getKind()) {
             case CLASS:
                 className = processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
@@ -111,24 +111,35 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
                 if (!e.getModifiers().contains(Modifier.PUBLIC)) {
                     throw new LayerGenerationException(className + " is not public", e);
                 }
-                boolean hasDefaultCtor = false;
+                ExecutableElement defaultCtor = null;
+                ExecutableElement mapCtor = null;
                 for (ExecutableElement constructor : ElementFilter.constructorsIn(e.getEnclosedElements())) {
-                    if (constructor.getParameters().isEmpty()) {
-                        if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
-                            throw new LayerGenerationException("Default constructor of " + className + " is not public", e);
-                        }
-                        hasDefaultCtor = true;
-                        break;
+                    List<? extends VariableElement> params = constructor.getParameters();
+                    if (params.isEmpty()) {
+                        defaultCtor = constructor;
+
+                    } else if (params.size() == 1 &&
+                        processingEnv.getTypeUtils().isAssignable(params.get(0).asType(), utilMapType))
+                    {
+                        mapCtor = constructor;
                     }
                 }
-                if (!hasDefaultCtor) {
-                    throw new LayerGenerationException(className + " must have a no-argument constructor", e);
+                String msgBase = "No-argument (or single-argument \"Map<String,?> attrs\") constructor";
+                if (defaultCtor == null && mapCtor == null) {
+                    throw new LayerGenerationException(msgBase + " not present in " + className, e);
+                }
+                boolean defaultCtorPublic = (defaultCtor != null && defaultCtor.getModifiers().contains(Modifier.PUBLIC));
+                boolean mapCtorPublic = (mapCtor != null && mapCtor.getModifiers().contains(Modifier.PUBLIC));
+                if (!defaultCtorPublic && !mapCtorPublic) {
+                    throw new LayerGenerationException(msgBase + " not public in " + className, e);
                 }
 
                 if (!processingEnv.getTypeUtils().isAssignable(e.asType(), swingActionType)) {
                     throw new LayerGenerationException(className + " is not assignable to javax.swing.Action", e);
                 }
-
+                if (mapCtorPublic) {
+                    directActionCreation = true;
+                }
                 methodName = null;
                 break;
 
@@ -136,17 +147,27 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
                 className = processingEnv.getElementUtils().getBinaryName((TypeElement) e.getEnclosingElement()).toString();
                 methodName = e.getSimpleName().toString();
                 if (!e.getModifiers().contains(Modifier.STATIC)) {
-                    throw new LayerGenerationException(className + "." + methodName + " must be static", e);
+                    throw new LayerGenerationException(className + "." + methodName + " must be static", e); // NOI18N
                 }
                 // It appears that actually even non-public method registration works - so commented following
 //                    if (!e.getModifiers().contains(Modifier.PUBLIC)) {
 //                        throw new LayerGenerationException(className + "." + methodName + " must be public", e);
 //                    }
-                if (!((ExecutableElement) e).getParameters().isEmpty()) {
-                    throw new LayerGenerationException(className + "." + methodName + " must not take arguments", e);
+                List<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
+                boolean emptyParams = params.isEmpty();
+                boolean mapParam = (params.size() == 1 && processingEnv.getTypeUtils().isAssignable(
+                        params.get(0).asType(), utilMapType));
+                if (!emptyParams && !mapParam)
+                {
+                    throw new LayerGenerationException(className + "." + methodName +
+                            " must not take arguments (or have a single-argument \"Map<String,?> attrs\")", e); // NOI18N
                 }
-                if (swingActionType != null && !processingEnv.getTypeUtils().isAssignable(((ExecutableElement)e).getReturnType(), swingActionType)) {
+                TypeMirror returnType = ((ExecutableElement)e).getReturnType();
+                if (swingActionType != null && !processingEnv.getTypeUtils().isAssignable(returnType, swingActionType)) {
                     throw new LayerGenerationException(className + "." + methodName + " is not assignable to javax.swing.Action", e);
+                }
+                if (mapParam) {
+                    directActionCreation = true;
                 }
                 break;
 
@@ -157,14 +178,16 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
 
         String actionName = annotation.name();
         StringBuilder filePath = new StringBuilder(50);
+        String mimeType = annotation.mimeType();
         filePath.append("Editors");
-        if (annotation.mimeType().length() > 0) {
-            filePath.append("/").append(annotation.mimeType());
+        if (mimeType.length() > 0) {
+            filePath.append("/").append(mimeType);
         }
         filePath.append("/Actions/").append(actionName).append(".instance");
-        LayerBuilder.File file = layer(e).file(filePath.toString());
-
-        file.stringvalue("displayName", actionName);
+        LayerBuilder layer = layer(e);
+        LayerBuilder.File file = layer.file(filePath.toString());
+        String preferencesKey = annotation.preferencesKey();
+        boolean checkBoxPresenter = (preferencesKey.length() > 0);
 
         // Resolve icon resource
         String iconResource = annotation.iconResource();
@@ -199,13 +222,117 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
             file.bundlevalue("popupText", popupText);
         }
 
-        file.methodvalue("instanceCreate", "org.openide.awt.Actions", "alwaysEnabled");
-        if (methodName != null) {
-            file.methodvalue("delegate", className, methodName);
-        } else {
-            file.newvalue("delegate", className);
+        // Check presenters
+        String presenterActionName = null;
+
+        // Check menu path
+        String menuPath = annotation.menuPath();
+        int menuPosition = annotation.menuPosition();
+        if (menuPosition != Integer.MAX_VALUE) {
+            StringBuilder presenterFilePath = new StringBuilder(50);
+            presenterFilePath.append("Menu/");
+            if (menuPath.length() > 0) {
+                presenterFilePath.append(menuPath).append('/');
+            }
+            presenterFilePath.append(actionName).append(".shadow");
+            LayerBuilder.File presenterShadowFile = layer.file(presenterFilePath.toString());
+            if (presenterActionName == null) {
+                if (checkBoxPresenter) { // Point directly to AlwaysEnabledAction
+                    presenterActionName = "Editors/Actions/" + actionName + ".instance";
+                } else {
+                    presenterActionName = generatePresenterAction(layer, actionName);
+                }
+            }
+            presenterShadowFile.stringvalue("originalFile", presenterActionName);
+            presenterShadowFile.intvalue("position", menuPosition);
+            presenterShadowFile.write();
+        }
+
+        // Check popup path
+        String popupPath = annotation.popupPath();
+        int popupPosition = annotation.popupPosition();
+        if (popupPosition != Integer.MAX_VALUE) {
+            StringBuilder presenterFilePath = new StringBuilder(50);
+            presenterFilePath.append("Editors/Popup/");
+            if (mimeType.length() > 0) {
+                presenterFilePath.append(mimeType).append("/");
+            }
+            if (popupPath.length() > 0) {
+                presenterFilePath.append(popupPath).append('/');
+            }
+            presenterFilePath.append(actionName).append(".shadow");
+            LayerBuilder.File presenterShadowFile = layer.file(presenterFilePath.toString());
+            if (presenterActionName == null) {
+                if (checkBoxPresenter) { // Point directly to AlwaysEnabledAction
+                    presenterActionName = "Editors/Actions/" + actionName + ".instance";
+                } else {
+                    presenterActionName = generatePresenterAction(layer, actionName);
+                }
+            }
+            presenterShadowFile.stringvalue("originalFile", presenterActionName);
+            presenterShadowFile.intvalue("position", popupPosition);
+            presenterShadowFile.write();
+        }
+        
+        int toolBarPosition = annotation.toolBarPosition();
+        if (toolBarPosition != Integer.MAX_VALUE) {
+            StringBuilder presenterFilePath = new StringBuilder(50);
+            presenterFilePath.append("Editors/Toolbar/");
+            if (mimeType.length() > 0) {
+                presenterFilePath.append(mimeType).append("/");
+            }
+            presenterFilePath.append(actionName).append(".shadow");
+            LayerBuilder.File presenterShadowFile = layer.file(presenterFilePath.toString());
+            if (presenterActionName == null) {
+                presenterActionName = generatePresenterAction(layer, actionName);
+            }
+            presenterShadowFile.stringvalue("originalFile", presenterActionName);
+            presenterShadowFile.intvalue("position", toolBarPosition);
+            presenterShadowFile.write();
+        }
+
+        if (preferencesKey.length() > 0) {
+            file.stringvalue("PreferencesKey", preferencesKey);
+            file.methodvalue("PreferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
+        }
+
+        // Deafult helpID is action's name
+        file.stringvalue("helpID", actionName);
+
+        // Resolve accelerator through method
+        file.methodvalue(Action.ACCELERATOR_KEY, EditorActionUtilities.class.getName(), "getAccelerator");
+
+        // Always generate Action.NAME since although AlwaysEnabledAction tweaks its retrieval to "displayName"
+        // some tools may query FO's properties and expect it there.
+        file.stringvalue(Action.NAME, actionName);
+
+        if (directActionCreation) {
+            if (methodName != null) {
+                file.methodvalue("instanceCreate", className, methodName);
+            } else {
+                file.newvalue("instanceCreate", className);
+            }
+
+        } else { // Create always enabled action
+            file.methodvalue("instanceCreate", "org.openide.awt.Actions", "alwaysEnabled");
+            file.stringvalue("displayName", actionName);
+
+            if (methodName != null) {
+                file.methodvalue("delegate", className, methodName);
+            } else {
+                file.newvalue("delegate", className);
+            }
         }
         file.write();
+    }
+
+    private String generatePresenterAction(LayerBuilder layer, String actionName) {
+        String presenterActionName = "Editors/ActionPresenters/" + actionName + ".instance";
+        LayerBuilder.File presenterActionFile = layer.file(presenterActionName);
+        presenterActionFile.methodvalue("instanceCreate", PresenterEditorAction.class.getName(), "create");
+        presenterActionFile.stringvalue(Action.NAME, actionName);
+        presenterActionFile.write();
+        return presenterActionName;
     }
 
 }

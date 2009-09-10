@@ -164,7 +164,7 @@ public class TestUtil extends ProxyLookup {
         /**************/
 
         // XXX please use MODULENAME.dir properties instead of hardcoding cluster names!
-        final String rootIDE=File.separator+"netbeans"+File.separator+"ide11";
+        final String rootIDE=File.separator+"netbeans"+File.separator+"ide12";
         final String rootAnt=File.separator+"java2"+File.separator+"ant";
         /* Hack to get ant directories */
         String classPath=System.getProperty("java.class.path");

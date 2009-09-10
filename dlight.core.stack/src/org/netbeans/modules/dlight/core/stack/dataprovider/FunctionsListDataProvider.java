@@ -55,5 +55,9 @@ public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
         FunctionDatatableDescription functionDescription,
         List<Column> metricsColumn);
 
+    List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata,
+        FunctionDatatableDescription functionDescription,
+        List<Column> metricsColumn);
+
    
 }

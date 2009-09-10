@@ -41,9 +41,12 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.Collections;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 
@@ -55,6 +58,7 @@ public class PHPParseResult extends ParserResult {
     
     private final Program root;
     private List<Error> errors;
+    private volatile Model model;
 
     public PHPParseResult(Snapshot snapshot, Program rootNode) {
         super(snapshot);
@@ -69,6 +73,13 @@ public class PHPParseResult extends ParserResult {
     @Override
     public List<? extends Error> getDiagnostics() {
         return errors;
+    }
+
+    public Model getModel() {
+        if (model == null) {
+            model = ModelFactory.getModel(this);
+        }
+        return model;
     }
 
     @Override
