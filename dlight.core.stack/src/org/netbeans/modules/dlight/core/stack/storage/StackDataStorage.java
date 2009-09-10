@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -80,5 +81,5 @@ public interface StackDataStorage {//extends StackSupport {
 
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
-    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
+    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters);
 }
