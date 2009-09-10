@@ -99,7 +99,7 @@ public class RemoteServerListUI extends ServerListUIEx {
         }
     }
 
-    private boolean showConfirmDialog(final String message, final String title) {
+    public static boolean showConfirmDialog(final String message, final String title) {
         final AtomicBoolean res = new AtomicBoolean(false);
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -126,7 +126,7 @@ public class RemoteServerListUI extends ServerListUIEx {
         ServerRecord record = ServerList.get(env);
         boolean result = false;
         if (record.isDeleted()) {
-            final String message = MessageFormat.format(
+            String message = MessageFormat.format(
                     NbBundle.getMessage(getClass(), "ERR_RequestingDeletedConnection"),
                     record.getDisplayName());
             boolean res = showConfirmDialog(message, NbBundle.getMessage(getClass(), "DLG_TITLE_DeletedConnection"));
@@ -137,7 +137,7 @@ public class RemoteServerListUI extends ServerListUIEx {
         } else if (record.isOnline()) {
             result = true;
         } else { //  !record.isOnline()
-            final String message = MessageFormat.format(
+            String message = MessageFormat.format(
                     NbBundle.getMessage(getClass(), "ERR_NeedToConnectToRemoteHost"),
                     record.getDisplayName());
             boolean res = showConfirmDialog(message, NbBundle.getMessage(getClass(), "DLG_TITLE_Connect"));
