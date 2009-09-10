@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -60,6 +62,9 @@ import org.openide.util.NbBundle;
 
 
 final class CodeTemplatesModel {
+
+    // -J-Dorg.netbeans.lib.editor.codetemplates.storage.ui.CodeTemplatesModel.level=FINEST
+    private static final Logger LOG = Logger.getLogger(CodeTemplatesModel.class.getName());
 
     // A mime type is something like text/x-java and a language is a localized name of
     // the programming language denoted by a mime type (e.g. Java).
@@ -96,7 +101,9 @@ final class CodeTemplatesModel {
             if (language.equals (mimeType))
                 continue;
             languages.add(language);
-            Collections.sort(languages);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("CodeTemplatesModel: Added language \"" + language + "\" for mimeType \"" + mimeType + "\"\n"); // NOI18N
+            }
             languageToMimeType.put(language, mimeType);
             
             // Load the table
@@ -105,6 +112,9 @@ final class CodeTemplatesModel {
                 CodeTemplateDescription ctd = abbreviationsMap.get(abbreviation);
                 Vector<String> line =  new Vector<String>(2);
                 line.add(abbreviation);
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("CodeTemplatesModel:     Added abbrev \"" + abbreviation + "\"\n"); // NOI18N
+                }
                 line.add(ctd.getParametrizedText());
                 line.add(ctd.getDescription());
                 table.add(line);
@@ -117,6 +127,7 @@ final class CodeTemplatesModel {
             modelToLanguage.put(tableModel, language);
             languageToModel.put(language, tableModel);
         }
+        Collections.sort(languages);
         
         expander = CodeTemplateSettingsImpl.get(MimePath.EMPTY).getExpandKey();
     }
