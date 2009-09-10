@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
         <resource>http://download.java.net/maven/1/com.sun.facelets/poms/jsf-facelets-1.1.14.pom</resource>
-        <resources>http://download.java.net/maven/2/com/sun/el/el-ri/1.0/el-ri-1.0.pom</resources>
+        <resource>http://download.java.net/maven/2/com/sun/el/el-ri/1.0/el-ri-1.0.pom</resource>
     </volume>
 
 </library>
