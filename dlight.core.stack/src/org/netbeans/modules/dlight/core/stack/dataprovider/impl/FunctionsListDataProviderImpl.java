@@ -92,7 +92,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     }
 
     public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
-        return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
+        return  getFunctionsList(metadata, functionDescription, metricsColumn);
     }
 
     
