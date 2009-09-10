@@ -62,7 +62,7 @@
             <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
             <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
             <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java2/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
             <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise5/modules"/>
 
             <!-- BPEL sample 1 -->
@@ -86,7 +86,7 @@
             <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
             <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
             <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java2/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
             <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise5/modules"/>
 
             <!-- BPEL sample 2 -->
@@ -106,7 +106,7 @@
             <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
             <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
             <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java2/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
             <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise5/modules"/>
 
             <!-- XSLT sample -->
