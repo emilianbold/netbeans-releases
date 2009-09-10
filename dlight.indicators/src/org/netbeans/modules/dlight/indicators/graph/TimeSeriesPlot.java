@@ -58,7 +58,7 @@ import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
 import org.netbeans.modules.dlight.extras.api.support.TimeMarksProvider;
 import org.netbeans.modules.dlight.extras.api.support.ValueMarksProvider;
-import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.util.Util;
 
 /**

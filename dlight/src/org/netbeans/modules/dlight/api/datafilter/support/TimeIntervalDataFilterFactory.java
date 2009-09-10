@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.timeline;
+package org.netbeans.modules.dlight.api.datafilter.support;
 
 import java.util.Arrays;
 import java.util.Collection;
