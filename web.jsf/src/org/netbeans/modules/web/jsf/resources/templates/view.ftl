@@ -36,34 +36,37 @@
 
     <ui:composition template="/template.xhtml">
         <ui:define name="title">
-            <h:outputText value="View"></h:outputText>
+            <h:outputText value="${r"#{"}bundle.View${entityName}Title${r"}"}"></h:outputText>
         </ui:define>
         <ui:define name="body">
+            <h:panelGroup id="messagePanel" layout="block">
+                <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
+            </h:panelGroup>
             <h:form>
                 <h:panelGrid columns="2">
 <#list entityDescriptors as entityDescriptor>
-                    <h:outputText value="${entityDescriptor.label}:"/>
+                    <h:outputText value="${r"#{"}bundle.View${entityName}Label_${entityDescriptor.id}${r"}"}"/>
     <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}">
+                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.View${entityName}Title_${entityDescriptor.id}${r"}"}">
                         <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
                     </h:outputText>
     <#else>
-                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}"/>
+                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.View${entityName}Title_${entityDescriptor.id}${r"}"}"/>
     </#if>
 </#list>
                 </h:panelGrid>
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".destroyAndView}"}" value="Destroy"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".destroyAndView}"}" value="${r"#{"}bundle.View${entityName}DestroyLink${r"}"}"/>
                 <br />
                 <br />
-                <h:commandLink action="Edit" value="Edit"/>
+                <h:commandLink action="Edit" value="${r"#{"}bundle.View${entityName}EditLink${r"}"}"/>
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".prepareCreate}"}" value="Create New ${entityName}" />
+                <h:commandLink action="${r"#{"}${managedBean}${r".prepareCreate}"}" value="${r"#{"}bundle.View${entityName}CreateLink${r"}"}" />
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="Show All ${entityName} Items"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}bundle.View${entityName}ShowAllLink${r"}"}"/>
                 <br />
                 <br />
-                <h:commandLink value="Index" action="/index" immediate="true" />
+                <h:commandLink value="${r"#{"}bundle.View${entityName}IndexLink${r"}"}" action="/index" immediate="true" />
 
             </h:form>
         </ui:define>
