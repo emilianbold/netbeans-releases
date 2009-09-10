@@ -138,7 +138,7 @@ public class ExportDiffAction extends ContextAction {
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            noop = Subversion.getInstance().getStatusCache().containsFiles(context, FileInformation.STATUS_LOCAL_CHANGE, true);
+            noop = !Subversion.getInstance().getStatusCache().containsFiles(context, FileInformation.STATUS_LOCAL_CHANGE, true);
         }
         if (noop) {
             NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(ExportDiffAction.class, "BK3001"), NotifyDescriptor.INFORMATION_MESSAGE);
