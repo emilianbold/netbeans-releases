@@ -46,6 +46,12 @@ import org.netbeans.modules.cnd.dwarfdump.section.FileEntry;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -61,8 +67,9 @@ public class DwarfStatementList {
     public int line_range;
     public int opcode_base;
     public long[] standard_opcode_lengths;
-    public ArrayList<String> includeDirs = new ArrayList<String>();
-    public ArrayList<FileEntry> fileEntries = new ArrayList<FileEntry>();    
+    public List<String> includeDirs = new ArrayList<String>();
+    public List<FileEntry> fileEntries = new ArrayList<FileEntry>();
+    public Map<String, Set<FileEntry>> name2entry;
     
     private long offset;
     
@@ -72,11 +79,11 @@ public class DwarfStatementList {
         this.offset = offset;
     }
 
-    public ArrayList<String> getIncludeDirectories() {
+    public List<String> getIncludeDirectories() {
         return includeDirs;
     }
 
-    public ArrayList<String> getFilePaths() {
+    public List<String> getFilePaths() {
         ArrayList<String> result = new ArrayList<String>();
         
         for (int idx = 1; idx <= fileEntries.size(); idx++) {
@@ -89,7 +96,7 @@ public class DwarfStatementList {
         return result;
     }
     
-    public ArrayList<FileEntry> getFileEntries() {
+    public List<FileEntry> getFileEntries() {
         return fileEntries;
     }
     
@@ -196,11 +203,16 @@ public class DwarfStatementList {
         return result;
     }
 
-    public ArrayList<String> getPathsForFile(String fname) {
+    public List<String> getPathsForFile(String fname) {
+        Map<String, Set<FileEntry>> map = getName2Entry();
+        Set<FileEntry> set = map.get(fname);
+        if (set == null){
+            return Collections.<String>emptyList();
+        }
         ArrayList<String> result = new ArrayList<String>();
         String suffix = File.separator + fname;
         StringBuilder buf = new StringBuilder(100);
-        for (FileEntry fileEntry : fileEntries) {
+        for (FileEntry fileEntry : set) {
             if (fileEntry.fileName.equals(fname)){
                 String dir = (fileEntry.dirIndex == 0) ? "." : includeDirs.get(fileEntry.dirIndex - 1); // NOI18N
                 result.add(dir);
@@ -212,7 +224,30 @@ public class DwarfStatementList {
                 result.add(buf.toString());
             }
         }
-        
         return result;
     }
+
+    private Map<String, Set<FileEntry>> getName2Entry(){
+        if (name2entry == null) {
+            Map<String, Set<FileEntry>> res = new HashMap<String, Set<FileEntry>>();
+            for (FileEntry fileEntry : fileEntries) {
+                int i = fileEntry.fileName.lastIndexOf(File.separator);
+                String key;
+                if (i >= 0) {
+                    key = fileEntry.fileName.substring(i+1);
+                } else {
+                    key = fileEntry.fileName;
+                }
+                Set<FileEntry> set = res.get(key);
+                if (set == null) {
+                    set = new HashSet<FileEntry>();
+                    res.put(key, set);
+                    set.add(fileEntry);
+                }
+            }
+            name2entry = res;
+        }
+        return name2entry;
+    }
+
 }
