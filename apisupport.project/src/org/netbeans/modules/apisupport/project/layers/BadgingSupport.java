@@ -50,7 +50,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -119,20 +118,18 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     }
     
     private void fireFileStatusChanged(FileStatusEvent e) {
-        Iterator it = listeners.iterator();
-        while (it.hasNext()) {
-            ((FileStatusListener) it.next()).annotationChanged(e);
+        for (FileStatusListener l : listeners) {
+            l.annotationChanged(e);
         }
     }
     
-    public String annotateName(String name, Set files) {
+    public String annotateName(String name, Set<? extends FileObject> files) {
         return annotateNameGeneral(name, files, suffix, fileChangeListener, classpath);
     }
     
-    private static String annotateNameGeneral(String name, Set files, String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
-        Iterator it = files.iterator();
-        while (it.hasNext()) {
-            FileObject fo = (FileObject) it.next();
+    private static String annotateNameGeneral(String name, Set<? extends FileObject> files,
+            String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
+        for (FileObject fo : files) {
             // #168446: try <attr name="displayName" bundlevalue="Bundle#key"/> first
             String bundleKey = (String) fo.getAttribute("literal:displayName"); // NOI18N
             String bundleName;
@@ -268,11 +265,11 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         }
     }
     
-    public Image annotateIcon(Image icon, int type, Set files) {
+    public Image annotateIcon(Image icon, int type, Set<? extends FileObject> files) {
         return annotateIconGeneral(icon, type, files, suffix, fileChangeListener, classpath);
     }
     
-    private static Image annotateIconGeneral(Image icon, int type, Set files, String suffix,
+    private static Image annotateIconGeneral(Image icon, int type, Set<? extends FileObject> files, String suffix,
             FileChangeListener fileChangeListener, ClassPath cp) {
         String attr;
         if (type == BeanInfo.ICON_COLOR_16x16) {
@@ -282,9 +279,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         } else {
             return icon;
         }
-        Iterator it = files.iterator();
-        while (it.hasNext()) {
-            FileObject fo = (FileObject) it.next();
+        for (FileObject fo : files) {
             Object value = fo.getAttribute(attr);
             if (value instanceof Image) {
                 // #18832
