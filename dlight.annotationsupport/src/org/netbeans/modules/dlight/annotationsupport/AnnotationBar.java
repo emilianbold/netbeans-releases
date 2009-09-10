@@ -79,7 +79,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     private boolean annotated;
     private Color backgroundColor = Color.WHITE;
     private Color foregroundColor = Color.BLACK;
-    private Color selectedColor = Color.BLUE;
+    private Color BOX_COLOR = new Color(200, 200, 200);
     private Color metricsFG = null;
     private Color metricsBG = null;
     private Color textHighlightFG = null;
@@ -159,6 +159,13 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         return foregroundColor;
     }
 
+    private Color defaultBackground() {
+        if (textComponent != null) {
+            return textComponent.getBackground();
+        }
+        return backgroundColor;
+    }
+
     /**
      * Components created by SibeBarFactory are positioned
      * using a Layout manager that determines componnet size
@@ -185,7 +192,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     private int getBarWidth() {
         String sample = fileAnnotationInfo.getLineAnnotationInfo().get(0).getAnnotation();
         int cwidth = getGraphics().getFontMetrics().charWidth('X');
-        return sample.length() * cwidth + 4; // thp: controls bar width
+        return sample.length() * cwidth + 7; // thp: controls bar width
     }
 
     /**
@@ -242,6 +249,9 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     }
 
     private void setHighlight(StyledDocument doc, int line1, int line2, Color bgColor, Color fgColor) {
+        if (bgColor == null) {
+            return;
+        }
         for (int line = line1 - 1; line < line2; line++) {
             if (line < 0) {
                 continue;
@@ -255,9 +265,9 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
                 if (bgColor != null) {
                     s.addAttribute(StyleConstants.ColorConstants.Background, bgColor);
                 }
-                if (fgColor != null) {
-                    s.addAttribute(StyleConstants.ColorConstants.Foreground, fgColor);
-                }
+//                if (fgColor != null) {
+//                    s.addAttribute(StyleConstants.ColorConstants.Foreground, fgColor);
+//                }
                 doc.setLogicalStyle(offset, s);
             }
         }
@@ -285,7 +295,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
             return;
         }
 
-        g.setColor(backgroundColor());
+        g.setColor(defaultBackground());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
         AbstractDocument adoc = (AbstractDocument) component.getDocument();
@@ -340,11 +350,17 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 //        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLine(line + 1);
         LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLineOffset(offset);
         if (lineAnnotationInfo != null) {
+            Rectangle clip = g.getClipBounds();
+            g.setColor(backgroundColor());
+            g.fillRect(clip.x, yBase, clip.width-1, editorUI.getLineHeight()-1);
+            g.setColor(BOX_COLOR);
+            g.drawRect(clip.x, yBase, clip.width-1, editorUI.getLineHeight());
+
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
             g.setColor(foregroundColor());
-            g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
-            lineAnnotationInfo.setY(yBase, yBase+editorUI.getLineAscent());
+            g.drawString(annotation, 4, yBase + editorUI.getLineAscent());
+            lineAnnotationInfo.setY(yBase, yBase + editorUI.getLineHeight());
         }
     }
 
