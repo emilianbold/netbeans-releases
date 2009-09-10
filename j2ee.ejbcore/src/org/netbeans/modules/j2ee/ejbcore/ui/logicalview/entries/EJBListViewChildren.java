@@ -39,50 +39,59 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb.MessageNode;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 /**
- * Provide a set of children representing the ejb nodes.
- * @author ChrisWebster
+ * Provides EJB tree of all open projects. This class is not used for displaying Enterprise Beans node in project view.
  */
-public class EjbChildren extends Children.Array {
-    private final Node projectNode;
+public final class EJBListViewChildren extends Children.Keys<EJBListViewChildren.KEY> {
 
-    /** Creates a new instance of EjbChildren */
-    public EjbChildren(Node projectNode) {
-        this.projectNode = projectNode;
+    public enum KEY { EJB }
+
+    private final Project project;
+
+    public EJBListViewChildren(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
     @Override
     protected void addNotify() {
         super.addNotify();
-        Node ejbsNode = projectNode.getChildren().findChild(EjbNodesFactory.CONTAINER_NODE_NAME);
-        if (ejbsNode != null) {
-            Node[] ejbNodes = ejbsNode.getChildren().getNodes(true);
-            List<Node> filteredNodes = new ArrayList<Node>();
-            for (Node node : ejbNodes) {
-                // #75721: MDB should not appear in Call EJB dialog
-                if (node instanceof MessageNode)
-                    continue;
-                filteredNodes.add(new FilterNode(node, Children.LEAF) {
-                    @Override
-                    public Action[] getActions(boolean context) {
-                        return new Action[0];
-                    }
-                });
-            }
-            Node[] filteredNodesArray = new Node[filteredNodes.size()];
-            add(filteredNodes.toArray(filteredNodesArray));
-        }
+        createNodes();
     }
-    
+
+    private void createNodes() {
+        List<KEY> keys = new ArrayList<KEY>();
+        keys.add(KEY.EJB);
+        setKeys(keys);
+    }
+
+    @Override
+    protected void removeNotify() {
+        setKeys(Collections.<KEY>emptySet());
+        super.removeNotify();
+    }
+
+    public Node[] createNodes(KEY key) {
+        Node node = null;
+        if (key == KEY.EJB) {
+            EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
+            if (null != apiEjbJars && apiEjbJars.length > 0)
+                node = J2eeProjectView.createEjbsView(apiEjbJars[0], project);
+        }
+        return node == null ? new Node[0] : new Node[] {node};
+    }
+
 }
+
+

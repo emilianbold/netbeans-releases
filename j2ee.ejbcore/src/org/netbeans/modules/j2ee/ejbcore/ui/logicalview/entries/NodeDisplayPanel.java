@@ -39,59 +39,47 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-import org.openide.nodes.Children;
+import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.JPanel;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 
 /**
- * Provides EJB tree of all open projects. This class is not used for displaying Enterprise Beans node in project view.
+ *
+ * @author Chris Webster
  */
-public final class EJBListViewChildren extends Children.Keys<EJBListViewChildren.KEY> {
-
-    public enum KEY { EJB }
-
-    private final Project project;
-
-    public EJBListViewChildren(Project project) {
-        assert project != null;
-        this.project = project;
+public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
+    
+    private final ExplorerManager manager = new ExplorerManager();
+    
+    public NodeDisplayPanel(Node rootNode) {
+        BeanTreeView btv = new BeanTreeView();
+        btv.setRootVisible(false);
+        btv.setDefaultActionAllowed(false);
+        manager.setRootContext(rootNode);
+        manager.addPropertyChangeListener(
+        new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent pce) {
+                firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
+            }
+        });
+        setLayout(new BorderLayout());
+        add(btv, BorderLayout.CENTER);
+        btv.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
+        btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
+    }
+    
+    public Node[] getSelectedNodes() {
+        return manager.getSelectedNodes();
     }
 
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        createNodes();
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
-
-    private void createNodes() {
-        List<KEY> keys = new ArrayList<KEY>();
-        keys.add(KEY.EJB);
-        setKeys(keys);
-    }
-
-    @Override
-    protected void removeNotify() {
-        setKeys(Collections.<KEY>emptySet());
-        super.removeNotify();
-    }
-
-    public Node[] createNodes(KEY key) {
-        Node node = null;
-        if (key == KEY.EJB) {
-            EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
-            if (null != apiEjbJars && apiEjbJars.length > 0)
-                node = J2eeProjectView.createEjbsView(apiEjbJars[0], project);
-        }
-        return node == null ? new Node[0] : new Node[] {node};
-    }
-
+    
 }
-
-
