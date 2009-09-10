@@ -1938,7 +1938,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private void checkJSR45Languages (JPDAThread t) {
         if (t.getStackDepth () > 0)
             try {
-                CallStackFrame f = t.getCallStack (0, 1) [0];
+                CallStackFrame[] frames = t.getCallStack (0, 1);
+                if (frames.length < 1) return ; // Internal error or disconnected
+                CallStackFrame f = frames [0];
                 List<String> l = f.getAvailableStrata ();
                 String stratum = f.getDefaultStratum ();
                 //String sourceDebugExtension;
