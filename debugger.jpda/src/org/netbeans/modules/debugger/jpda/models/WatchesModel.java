@@ -565,7 +565,7 @@ public class WatchesModel implements TreeModel {
             }
             if (m.debugger.getState () == JPDADebugger.STATE_RUNNING ||
                  JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName) &&
-                 m.debugger.getCurrentCallStackFrameOrNull() == null) {
+                 m.debugger.getCurrentCallStackFrame() == null) {
 
                     return;
             }

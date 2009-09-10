@@ -286,50 +286,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public CallStackFrame getCurrentCallStackFrame () {
         CallStackFrame csf = null;
-        JPDAThread t = null;
-        synchronized (currentThreadAndFrameLock) {
-            if (currentCallStackFrame != null) {
-                try {
-                    if (!currentCallStackFrame.getThread().isSuspended()) {
-                        currentCallStackFrame = null;
-                    }
-                } catch (InvalidStackFrameException isfex) {
-                    currentCallStackFrame = null;
-                }
-                csf = currentCallStackFrame;
-            }
-            if (currentCallStackFrame == null && currentThread != null) {
-                t = currentThread;
-            }
-        }
-        if (csf == null && t != null) {
-            Lock l = t.getReadAccessLock();
-            l.lock();
-            try {
-                if (t.isSuspended()) {
-                    // Must not call this under currentThreadAndFrameLock, other lock acquired.
-                    csf = t.getCallStack(0, 1)[0];
-                    synchronized (currentThreadAndFrameLock) {
-                        if (currentThread == t) { // Check if the current thread did not change
-                            currentCallStackFrame = csf;
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-            } finally {
-                l.unlock();
-            }
-        }
-        return csf;
-    }
-
-    /**
-     * Returns current stack frame or null.
-     *
-     * @return current stack frame or null
-     */
-    public CallStackFrame getCurrentCallStackFrameOrNull () {
-        CallStackFrame csf = null;
         synchronized (currentThreadAndFrameLock) {
             if (currentCallStackFrame != null) {
                 try {
@@ -685,11 +641,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public void setCurrentThread (JPDAThread thread) {
         Object oldT;
+        PropertyChangeEvent event;
         synchronized (currentThreadAndFrameLock) {
             oldT = currentThread;
             currentThread = (JPDAThreadImpl) thread;
+            event = updateCurrentCallStackFrameNoFire(thread);
         }
-        PropertyChangeEvent event = updateCurrentCallStackFrameNoFire(thread);
         if (thread != oldT) {
             firePropertyChange (PROP_CURRENT_THREAD, oldT, thread);
         }
@@ -706,14 +663,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     private PropertyChangeEvent setCurrentThreadNoFire(JPDAThread thread) {
         Object oldT;
+        PropertyChangeEvent evt = null;
+        PropertyChangeEvent evt2;
         synchronized (currentThreadAndFrameLock) {
             oldT = currentThread;
             currentThread = (JPDAThreadImpl) thread;
+            evt2 = updateCurrentCallStackFrameNoFire(thread);
         }
-        PropertyChangeEvent evt = null;
-        if (thread != oldT)
+        if (thread != oldT) {
             evt = new PropertyChangeEvent(this, PROP_CURRENT_THREAD, oldT, thread);
-        PropertyChangeEvent evt2 = updateCurrentCallStackFrameNoFire(thread);
+        }
         if (evt == null) evt = evt2;
         else if (evt2 != null) evt.setPropagationId(evt2);
         return evt;

@@ -653,7 +653,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     public boolean isCurrent() {
-        return this.equals(debugger.getCurrentCallStackFrameOrNull());
+        return this.equals(debugger.getCurrentCallStackFrame());
     }
     
     /**
