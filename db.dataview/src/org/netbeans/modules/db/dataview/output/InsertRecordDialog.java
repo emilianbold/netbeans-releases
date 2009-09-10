@@ -193,7 +193,6 @@ class InsertRecordDialog extends javax.swing.JDialog {
         jTextArea1.setRows(3);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jTextArea1.text")); // NOI18N
         jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setAutoscrolls(false);
         jTextArea1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         getContentPane().add(jTextArea1, java.awt.BorderLayout.NORTH);
         jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "insertRecodrDialog.jTextArea")); // NOI18N
@@ -217,10 +216,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
         jScrollPane2.setFont(jScrollPane2.getFont());
 
-        jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.contentType")); // NOI18N
         jEditorPane1.setEditable(false);
         jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
-        jEditorPane1.setFont(jEditorPane1.getFont());
         jEditorPane1.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.toolTipText")); // NOI18N
         jEditorPane1.setOpaque(false);
         jScrollPane2.setViewportView(jEditorPane1);
@@ -394,7 +391,6 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     public void refreshSQL() {
         try {
-            jEditorPane1.setContentType("text/x-sql"); // NOI18N
             String sqlText = "";
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
@@ -402,10 +398,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     String sql = stmtBldr.generateRawInsertStatement(getInsertValues(i));
                     sqlText = sqlText + sql + "\n";
                 }
+                jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql")); // NOI18N
                 jEditorPane1.setText(sqlText);
             }
         } catch (DBException ex) {
             jEditorPane1.setContentType("text/html"); // NOI18N
+            // a hack to avoid Parsing API to don't care about this editor now
+            jEditorPane1.getDocument().putProperty("mimeType", "text/plain"); // NOI18N
             String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
             jEditorPane1.setText(str);//ex.getMessage());
             return;
@@ -458,7 +457,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         int rsColumnCount = jTable1.getRSColumnCount();
         Object[] insertData = new Object[rsColumnCount];
-        if (jTable1.getRowCount() > 0) {
+        if (jTable1.getRowCount() <= 0) {
             return insertData;
         }
         for (int i = 0; i < rsColumnCount; i++) {
