@@ -55,6 +55,7 @@ import org.netbeans.modules.debugger.jpda.expr.JavaExpression;
 import org.netbeans.modules.debugger.jpda.expr.TreeEvaluator;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -142,6 +143,9 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
             }
         } catch (InternalExceptionWrapper e) {
             throw new InvalidExpressionException(e.getLocalizedMessage());
+        } catch (ObjectCollectedExceptionWrapper e) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                TreeEvaluator.class, "CTL_EvalError_collected"));
         } catch (VMDisconnectedExceptionWrapper e) {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_disconnected"));

@@ -197,6 +197,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             return ReferenceTypeWrapper.name(LocationWrapper.declaringType(l));
         } catch (InternalExceptionWrapper ex) {
             return "";
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return "";
         } catch (VMDisconnectedExceptionWrapper ex) {
             return "";
         } catch (InvalidStackFrameExceptionWrapper ex) {
@@ -236,6 +238,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return "";
         } catch (VMDisconnectedExceptionWrapper ex) {
             return "";
         } catch (InternalExceptionWrapper ex) {
@@ -256,6 +260,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
+            return Collections.emptyList();
+        } catch (ObjectCollectedExceptionWrapper ex) {
             return Collections.emptyList();
         } catch (VMDisconnectedExceptionWrapper ex) {
             return Collections.emptyList();
@@ -282,6 +288,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
+            return null;
+        } catch (ObjectCollectedExceptionWrapper ex) {
             return null;
         } catch (VMDisconnectedExceptionWrapper ex) {
             return null;
@@ -371,6 +379,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             throw new AbsentInformationException ("native method");
         } catch (InvalidStackFrameExceptionWrapper ex) {
             throw new AbsentInformationException ("thread is running");
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw new AbsentInformationException ("frame class is collected");
         } catch (VMDisconnectedExceptionWrapper ex) {
             return new LocalVariable [0];
         } catch (InternalExceptionWrapper ex) {
@@ -415,6 +425,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             throw new AbsentInformationException ("native method");
         } catch (InvalidStackFrameExceptionWrapper ex) {
             throw new AbsentInformationException ("thread is running");
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw new AbsentInformationException ("frame class is collected");
         } catch (VMDisconnectedExceptionWrapper ex) {
             return null;
         } catch (InternalExceptionWrapper ex) {
@@ -454,6 +466,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (InvalidStackFrameExceptionWrapper e) {
             return new LocalVariable[0];
         } catch (InternalExceptionWrapper e) {
+            return new LocalVariable[0];
+        } catch (ObjectCollectedExceptionWrapper e) {
             return new LocalVariable[0];
         } catch (VMDisconnectedExceptionWrapper e) {
             return new LocalVariable[0];

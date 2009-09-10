@@ -117,7 +117,7 @@ public class TreeEvaluator {
      * @throws IncompatibleThreadStateException if the context thread is in an
      * incompatible state (running, dead)
      */
-    public Value evaluate() throws EvaluationException, IncompatibleThreadStateException, InvalidExpressionException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper
+    public Value evaluate() throws EvaluationException, IncompatibleThreadStateException, InvalidExpressionException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper
     {
         frame = evaluationContext.getFrame();
         vm = MirrorWrapper.virtualMachine(evaluationContext.getFrame());

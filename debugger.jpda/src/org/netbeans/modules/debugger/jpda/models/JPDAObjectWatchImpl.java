@@ -229,6 +229,8 @@ ObjectVariable {
         }
         } catch (InternalExceptionWrapper ex) {
             throw new InvalidExpressionException (ex);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw new InvalidExpressionException(ex);
         } catch (VMDisconnectedExceptionWrapper ex) {
             // Ignore
         } catch (ClassNotPreparedExceptionWrapper ex) {
