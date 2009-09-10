@@ -4,29 +4,35 @@
 
 /*
  * Previous vtimestamp the thread was seen on CPU
- * Emulate self-> (thread-local variable) with an array
- * because self-> does not work for sched::: probes correctly.
  */
-uint64_t vprev[id_t];
+self uint64_t vprev;
 
 /* Current vtimestamp */
 this uint64_t vcurr;
 
-profile-100hz, sched:::sleep, sched:::on-cpu, sched:::off-cpu
+profile-100hz
 /pid == $1 && !vprev[curlwpsinfo->pr_addr]/
 {
     vprev[curlwpsinfo->pr_addr] = vtimestamp;
 }
 
-/* sched probes should catch thread in states other than running */
-profile-100hz, sched:::sleep, sched:::on-cpu, sched:::off-cpu
+profile-100hz
 /pid == $1/
 {
     this->vcurr = vtimestamp;
-    printf("%d %d %d %d %d %d", timestamp, cpu, tid, curthread->t_state, curthread->t_mstate, this->vcurr - vprev[curlwpsinfo->pr_addr]);
+    printf("%d %d %d %d %d %d", timestamp, cpu, tid, curthread->t_state, curthread->t_mstate, this->vcurr - self->vprev);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
-    vprev[curlwpsinfo->pr_addr] = this->vcurr;
+    self->vprev = this->vcurr;
+}
+
+/* sched probes should catch thread in states other than running */
+sched:::sleep, sched:::on-cpu, sched:::off-cpu
+/pid == $1/
+{
+    printf("%d %d %d %d %d %d", timestamp, cpu, tid, curthread->t_state, curthread->t_mstate, 0);
+    ustack();
+    printf("\n"); /* empty line indicates end of ustack */
 }
 
 /* forge thread state to 0x10 (TS_STOPPED) to indicate thread start */
