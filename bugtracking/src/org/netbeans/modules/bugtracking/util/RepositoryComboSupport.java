@@ -232,6 +232,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      */
     private void activate(Component triggerComponent) {
         assert EventQueue.isDispatchThread();
+        LOG.finer("activate(Component)");                               //NOI18N
 
         if (triggerComponent != null) {
             setupDisplayabilityTrigger(triggerComponent);
@@ -242,12 +243,14 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     private void start() {
         assert EventQueue.isDispatchThread();
+        LOG.finer("start()");                                           //NOI18N
 
         RequestProcessor.getDefault().post(this);
     }
 
     private void shutdown() {
         assert EventQueue.isDispatchThread();
+        LOG.finer("shutdown()");                                        //NOI18N
 
         shutdownDisplayabilityTrigger();
         comboBox.removeItemListener(this);
@@ -257,6 +260,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     private void setupDisplayabilityTrigger(final Component triggerComponent) {
         assert EventQueue.isDispatchThread();
+        LOG.finer("setupDisplayabilityTrigger(Component)");             //NOI18N
 
         if (triggerComponent.isDisplayable()) {
             throw new IllegalStateException(
@@ -269,6 +273,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     private void shutdownDisplayabilityTrigger() {
         assert EventQueue.isDispatchThread();
+        LOG.finer("shutdownDisplayabilityTrigger()");                   //NOI18N
 
         if (displayabilityListener != null) {
             displayabilityListener.dispose();
@@ -289,10 +294,10 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             assert e.getChanged() == triggerComponent;
 
             if (triggerComponent.isDisplayable()) {
-                LOG.finer("triggerComponentDisplayed()");               //NOI18N
+                LOG.finer("trigger component became displayable");      //NOI18N
                 RepositoryComboSupport.this.start();
             } else {
-                LOG.finer("triggerComponentClosed()");                  //NOI18N
+                LOG.finer("trigger component became non-displayable");  //NOI18N
                 RepositoryComboSupport.this.shutdown();
             }
         }
