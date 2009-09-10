@@ -43,8 +43,10 @@ package org.netbeans.modules.db.dataview.output;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
+import java.awt.Rectangle;
 import org.netbeans.modules.db.dataview.table.JXTableRowHeader;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -78,6 +80,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 /**
@@ -151,8 +154,22 @@ class InsertRecordDialog extends javax.swing.JDialog {
         getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N
         getRootPane().getActionMap().put("ENTER", enterAction); // NOI18N
 
-        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds((screenSize.width - 50) / 2, (screenSize.height - 200) / 2, (screenSize.width - 50) / 2, (screenSize.height - 50) / 2);
+        Rectangle screenBounds = Utilities.getUsableScreenBounds();
+        Dimension prefSize = getPreferredSize();
+
+        if (prefSize.width > screenBounds.width - 100
+                || prefSize.height > screenBounds.height - 100) {
+            Dimension sz = new Dimension(prefSize);
+            if (sz.width > screenBounds.width - 100) {
+                sz.width = screenBounds.width * 3 / 4;
+            }
+            if (sz.height > screenBounds.height - 100) {
+                sz.height = screenBounds.height * 3 / 4;
+            }
+            setPreferredSize(sz);
+        }
+        pack();
+        setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
     }
 
     /** This method is called from within the constructor to
