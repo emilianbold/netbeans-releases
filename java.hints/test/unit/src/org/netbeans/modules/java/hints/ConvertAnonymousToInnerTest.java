@@ -548,6 +548,40 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                     "}\n");
     }
     
+    public void test171386() throws Exception {
+        performTest("package hierbas.del.litoral;\n\n" +
+                    "public class TestClass {\n" +
+                    "    public static void method() {\n" +
+                    "        new Runnable() {\n" +
+                    "            //aslkdjflakjdsflkjaskldfj\n" +
+                    "            public void run() {" +
+                    "                //adsfadsfaasdf\n" +
+                    "                return ;\n" +
+                    "                //alskjdflkasjdlfkasdf\n" +
+                    "            }\n" +
+                    "            //dddddddddddd\n" +
+                    "        };\n" +
+                    "    }\n" +
+                    "}\n",
+                    "package hierbas.del.litoral;\n\n" +
+                    "public class TestClass {\n" +
+                    "    public static void method() {\n" +
+                    "        new RunnableImpl();\n" +
+                    "    }\n" +
+                    "    private static class RunnableImpl implements Runnable {\n" +
+                    "        public RunnableImpl() {\n" +
+                    "        }\n" +
+                    "        //aslkdjflakjdsflkjaskldfj\n" +
+                    "        public void run() {" +
+                    "            //adsfadsfaasdf\n" +
+                    "            return ;\n" +
+                    "            //alskjdflkasjdlfkasdf\n" +
+                    "        }\n" +
+                    "        //dddddddddddd\n" +
+                    "    }\n" +
+                    "}\n");
+    }
+
     private void performTest(String test, String golden) throws Exception {
         clearWorkDir();
 

@@ -510,7 +510,10 @@ public final class GeneratorUtilities {
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq);
-            return (T) translator.translate(original);            
+            
+            translator.translate(original);
+
+            return original;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

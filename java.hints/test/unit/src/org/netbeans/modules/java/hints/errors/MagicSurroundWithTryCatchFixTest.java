@@ -141,6 +141,13 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test { { try { int h; throw new Exception(); } catch (Exception ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } }");
     }
 
+    public void testComments171262() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {\n /*zbytek*/\nSystem.out.println(\"\"); /*obycej*/\n/*bystry*/\n|new java.io.FileInputStream(\"\"); /*bylina*/\n}}",
+                       "FixImpl",
+                       "package test; import java.io.FileNotFoundException; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test() { try { /*zbytek*/ System.out.println(\"\"); /*obycej*/ /*bystry*/ new java.io.FileInputStream(\"\"); /*bylina*/ } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } }}");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new UncaughtException().run(info, null, pos, path, null);
     }
