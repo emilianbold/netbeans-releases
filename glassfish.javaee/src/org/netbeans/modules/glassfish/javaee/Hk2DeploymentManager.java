@@ -59,6 +59,8 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
@@ -121,36 +123,47 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws java.lang.IllegalStateException
      */
-    public ProgressObject distribute(Target [] targetList, File moduleArchive, File deploymentPlan) 
+    public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
             throws IllegalStateException {
         // compute the ModuleID
-        String t =  moduleArchive.getName();
+        String t = moduleArchive.getName();
         final String moduleName = t.substring(0, t.length() - 4);
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleName,
                 null, moduleArchive.getAbsolutePath());
-        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId, false);
-        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId, false);
-        GlassfishModule commonSupport = this.getCommonServerSupport();
-        // FIXME -- broken for remote deploy of web apps
-        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId, getServerInstance(), false));
+        final MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
+        final MonitorProgressObject updateCRProgress = new MonitorProgressObject(this, moduleId);
+        deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress, moduleId, getServerInstance(), true));
+        MonitorProgressObject restartProgress = new MonitorProgressObject(this, moduleId);
+        final GlassfishModule commonSupport = this.getCommonServerSupport();
 
+        boolean restart = false;
         try {
-            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+            restart = HttpMonitorHelper.synchronizeMonitor(
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
                     Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
                     "modules/org-netbeans-modules-schema2beans.jar");
-            if (restart) {
-                commonSupport.restartServer(deployProgress);
-            }
         } catch (IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
-        commonSupport.deploy(deployProgress, moduleArchive, moduleName);
-
-        return returnProgress;
+        if (restart) {
+            restartProgress.addProgressListener(new ProgressListener() {
+                public void handleProgressEvent(ProgressEvent event) {
+                    if (event.getDeploymentStatus().isCompleted()) {
+                        commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+                    } else {
+                        deployProgress.fireHandleProgressEvent(event.getDeploymentStatus());
+                    }
+                }
+            });
+            commonSupport.restartServer(restartProgress);
+            return updateCRProgress;
+        } else {
+            commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+            return updateCRProgress;
+        }
     }
 
     /**
@@ -195,8 +208,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
             throws UnsupportedOperationException, IllegalStateException {
         final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
         final String moduleName = moduleId.getModuleID();
-        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId, false);
-        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId, false);
+        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
+        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
         GlassfishModule commonSupport = this.getCommonServerSupport();
         // FIXME -- broken for remote deploy of web apps
         deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId,getServerInstance(), false));
@@ -246,7 +259,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         if(targetModuleIDs != null && targetModuleIDs.length > 0) {
             GlassfishModule commonSupport = getCommonServerSupport();
             MonitorProgressObject progressObject = new MonitorProgressObject(
-                    this, (Hk2TargetModuleID) targetModuleIDs[0], CommandType.UNDEPLOY, false);
+                    this, (Hk2TargetModuleID) targetModuleIDs[0], CommandType.UNDEPLOY);
             commonSupport.undeploy(progressObject, targetModuleIDs[0].getModuleID());
             return progressObject;
         } else {

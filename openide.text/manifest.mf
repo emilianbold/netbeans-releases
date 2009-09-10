@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.text
+OpenIDE-Module-Install: org/netbeans/modules/openide/text/Installer.class
 OpenIDE-Module-Specification-Version: 6.24
 OpenIDE-Module-Localizing-Bundle: org/openide/text/Bundle.properties
 AutoUpdate-Essential-Module: true

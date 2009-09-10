@@ -88,7 +88,7 @@ public final class DataTableMetadata {
     private DataTableMetadata(String name, List<Column> columns, List<Column> indexedColumns, String statement, List<DataTableMetadata> sourceTables) {
         this.name = name;
         this.columns = columns;
-        this.indexedColumns = indexedColumns == null? Collections.<Column>emptyList() : indexedColumns;
+        this.indexedColumns = indexedColumns == null ? Collections.<Column>emptyList() : indexedColumns;
         this.statement = statement;
         this.sourceTables = sourceTables;
         columnNames = new ArrayList<String>(columns.size());
@@ -213,7 +213,7 @@ public final class DataTableMetadata {
         final String name;
         final Class columnClass;
         final String shortUName;
-        final String longUName;;
+        final String longUName;
         final String expression;
 
         /**
@@ -273,7 +273,7 @@ public final class DataTableMetadata {
          * Long column displayed name, in terms of UI this is a tooltip
          * @return  long column displayed name
          */
-        public String getColumnLongUName(){
+        public String getColumnLongUName() {
             return longUName;
         }
 
@@ -298,6 +298,5 @@ public final class DataTableMetadata {
             return name + " : (" + getColumnClass().getName() + ")"; //NOI18N
         }
     }
-
 }
 

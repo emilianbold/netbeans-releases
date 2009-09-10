@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
 import java.util.Collections;
 import javax.swing.text.Document;
@@ -51,8 +52,8 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -322,19 +323,24 @@ public class HtmlCompletionQuery extends UserTask {
                 }
 
                 DTD.Attribute arg = tag.getAttribute(argName);
-                if (arg == null /*|| arg.getType() != DTD.Attribute.TYPE_SET*/) {
-                    return null;
-                }
 
                 result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {
                     anchor = offset;
-                    result.addAll(translateValues(anchor, arg.getValueList("")));
-                    AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
-                    if (valuesCompletion != null) {
-                        result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                    if (arg != null) {
+                        result.addAll(translateValues(anchor, arg.getValueList("")));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        if (valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                        }
                     }
+
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, "", itemText, node, argName, false);
+                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                        result.addAll(e.completeAttributeValue(context));
+                    }
+
                 } else {
                     String quotationChar = null;
                     if (preText != null && preText.length() > 0) {
@@ -349,11 +355,19 @@ public class HtmlCompletionQuery extends UserTask {
 
                     anchor = documentItemOffset + (quotationChar != null ? 1 : 0);
 
-                    result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
-                    AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
-                    if (valuesCompletion != null) {
-                        result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                    if (arg != null) {
+                        result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        if (valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                        }
                     }
+
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node, argName, quotationChar != null);
+                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                        result.addAll(e.completeAttributeValue(context));
+                    }
+
                 }
             }
         } else if (id == HTMLTokenId.SCRIPT) {

@@ -88,15 +88,20 @@
                 <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
+                <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.indicators</friend>
                 <friend>org.netbeans.modules.dlight.management</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
+                <friend>org.netbeans.modules.dlight.msa</friend>
+                <friend>org.netbeans.modules.dlight.msa.support</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.procfs</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.threads</friend>
+                <friend>org.netbeans.modules.dlight.timeline.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.toolsui</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
@@ -112,6 +117,7 @@
                 <package>org.netbeans.modules.dlight.api.tool</package>
                 <package>org.netbeans.modules.dlight.api.visualizer</package>
                 <package>org.netbeans.modules.dlight.spi.collector</package>
+                <package>org.netbeans.modules.dlight.spi.datafilter</package>
                 <package>org.netbeans.modules.dlight.spi.dataprovider</package>
                 <package>org.netbeans.modules.dlight.spi.indicator</package>
                 <package>org.netbeans.modules.dlight.spi.storage</package>

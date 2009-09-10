@@ -70,7 +70,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             String args, Map<String, String> env, PrintWriter out, Reader userInput) {
         super(execEnv);
 
-        log.fine("RNES<Init>: Running [" + cmd + "] on " + executionEnvironment);
+        RemoteUtil.LOGGER.fine("RNES<Init>: Running [" + cmd + "] on " + executionEnvironment);
         Process process;
         try {
             //String cmd = makeCommand(dirf, exe, args, envp);
@@ -90,8 +90,8 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             String path = null;
             if (dirf != null) {
                 path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath(),true);
-                if (log.isLoggable(Level.FINEST) && path.contains(" ")) { // NOI18N
-                    log.finest("A PATH WITH A SPACE\n");
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST) && path.contains(" ")) { // NOI18N
+                    RemoteUtil.LOGGER.finest("A PATH WITH A SPACE\n");
                 }
                 pb = pb.setWorkingDirectory(path);
             }
@@ -120,19 +120,19 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 //            } while (!channel.isClosed());
 
             int rc = process.waitFor();            
-            if (rc != 0 && log.isLoggable(Level.FINEST)) {
-                    log.finest("RNES: " + cmd + " on " + executionEnvironment + " in " + path + " finished; rc=" + rc);
+            if (rc != 0 && RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
+                    RemoteUtil.LOGGER.finest("RNES: " + cmd + " on " + executionEnvironment + " in " + path + " finished; rc=" + rc);
                     if (env == null) {
-                        log.finest("RNES: env == null");
+                        RemoteUtil.LOGGER.finest("RNES: env == null");
                     } else {
                         for (Map.Entry<String, String> entry : env.entrySet()) {
-                            log.finest("\tRNES: " + entry.getKey() + "=" + entry.getValue());
+                            RemoteUtil.LOGGER.finest("\tRNES: " + entry.getKey() + "=" + entry.getValue());
                         }
                     }
                     String errMsg;
                     final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                     while ((errMsg = reader.readLine()) != null) {
-                        log.finest("RNES ERROR: " + errMsg);
+                        RemoteUtil.LOGGER.finest("RNES ERROR: " + errMsg);
                     }
             }
             setExitStatus(rc);
@@ -145,11 +145,11 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         } catch (InterruptedIOException ie) {
             // this occurs, for example, when user stops running program - need no report
         } catch (IOException ioe) {
-            log.log(Level.WARNING, ioe.getMessage(), ioe);
+            RemoteUtil.LOGGER.log(Level.WARNING, ioe.getMessage(), ioe);
         } catch (Exception ex) {
-            log.log(Level.WARNING, ex.getMessage(), ex);
+            RemoteUtil.LOGGER.log(Level.WARNING, ex.getMessage(), ex);
         } finally {
-            log.finest("RNES return value: " + getExitStatus());
+            RemoteUtil.LOGGER.finest("RNES return value: " + getExitStatus());
 //            disconnect();
         }
     }

@@ -91,7 +91,7 @@ public class SchemaImportPasteType extends PasteType {
         DataObject dObj = ActionHelper.getDataObject(schemaModel);
         Project project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
         DnDImportPanel panel = new DnDImportPanel();
-        panel.setNamespace(schemaModel.getSchema().getTargetNamespace());
+        panel.setNamespace(Utility.getTargetNamespace(schemaModel));
         panel.setProject(project);
         panel.setPrefix(prefix);
         panel.setFileName(dObj.getPrimaryFile());
@@ -145,7 +145,7 @@ public class SchemaImportPasteType extends PasteType {
         }
         //For wsdl, imported schema's should have a namespace.
 
-        String tns = model.getSchema().getTargetNamespace();
+        String tns = Utility.getTargetNamespace(model);
         if (tns == null) {
             return NbBundle.getMessage(SchemaImportPasteType.class,
                     "ERRMSG_NoNamespace");
@@ -177,7 +177,7 @@ public class SchemaImportPasteType extends PasteType {
         for (WSDLSchema wSchema : wsdlSchemas) {
             SchemaModel sm = wSchema.getSchemaModel();
             Collection<SchemaModelReference> references =
-                    sm.getSchema().getSchemaReferences();
+                sm.getSchema().getSchemaReferences();
             // Ensure the selected document is not already among the
             // set that have been included.
             for (SchemaModelReference ref : references) {

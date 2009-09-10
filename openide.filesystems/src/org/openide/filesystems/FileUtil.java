@@ -112,6 +112,8 @@ public final class FileUtil extends Object {
         transientAttributes.add("SystemFileSystem.localizingBundle"); // NOI18N
         transientAttributes.add("SystemFileSystem.icon"); // NOI18N
         transientAttributes.add("SystemFileSystem.icon32"); // NOI18N
+        transientAttributes.add("displayName"); // NOI18N
+        transientAttributes.add("iconBase"); // NOI18N
         transientAttributes.add("position"); // NOI18N
     }
 
@@ -840,9 +842,11 @@ public final class FileUtil extends Object {
             if ((fileURL != null) && "file".equals(fileURL.getProtocol())) {
                 retVal = new File(URI.create(fileURL.toExternalForm()));
             }
+            if (retVal != null) {
+                retVal = normalizeFile(retVal);
+            }
         }
-
-        return (retVal != null) ? normalizeFile(retVal) : null;
+        return retVal;
     }
 
     /**

@@ -67,8 +67,7 @@ class ModelElementFactory {
 
     @CheckForNull
     static IncludeElementImpl create(IncludeInfo info, ModelBuilder context) {
-        FileObject includeFile = info.getIncludeFile(context.getCurrentScope().getFileObject());
-        return includeFile != null ? new IncludeElementImpl(context.getCurrentScope(), includeFile, info) : null;
+        return new IncludeElementImpl(context.getCurrentScope(), info);
     }
 
     static ClassScopeImpl create(ClassDeclarationInfo nodeInfo, ModelBuilder context) {

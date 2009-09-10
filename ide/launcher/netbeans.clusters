@@ -1,11 +1,11 @@
 # platform cluster first
-platform10
+platform11
 # application cluster second
-nb6.7
+nb6.8
 # ergonomics cluster if present
 ergonomics1
 # and now the rest
-ide11
+ide12
 java2
 xml2
 apisupport1

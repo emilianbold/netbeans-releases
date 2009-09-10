@@ -55,6 +55,8 @@ import org.openide.util.RequestProcessor;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Central part of CVS status management, deduces and caches statuses of files under version control.
@@ -210,6 +212,10 @@ public class FileStatusCache {
      * @see FileInformation
      */ 
     public FileInformation getStatus(File file) {
+        if (file == null) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "File shouldn't be null"); //NOI18N
+            return FILE_INFORMATION_NOTMANAGED;
+        }
         if (file.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {

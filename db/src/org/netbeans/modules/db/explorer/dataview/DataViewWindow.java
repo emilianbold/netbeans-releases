@@ -120,11 +120,7 @@ public class DataViewWindow extends TopComponent {
 
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (DataViewWindow.class, "ACS_DataViewWindowA11yDesc")); //NOI18N
 
-        //DatabaseNodeInfo tempInfo = info;
-        //while(!(tempInfo instanceof ConnectionNodeInfo))
-        //    tempInfo = tempInfo.getParent();
-
-        String title = connection.getName(); //tempInfo.getDisplayName();
+        String title = connection.getDisplayName();
         int idx = title.indexOf(" ["); //NOI18N
         title = title.substring(0, idx);
         setName(title);

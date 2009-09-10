@@ -41,12 +41,12 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -76,8 +76,6 @@ public class RemoteServerRecord implements ServerRecord {
     private String reason;
     private String displayName;
     private RemoteSyncFactory syncFactory;
-    
-    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -118,7 +116,7 @@ public class RemoteServerRecord implements ServerRecord {
         if (isOnline()) {
             return;
         }
-        log.fine("RSR.validate2: Validating " + toString());
+        RemoteUtil.LOGGER.fine("RSR.validate2: Validating " + toString());
         if (force) {
             ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getDisplayName())); // NOI18N
             ph.start();
@@ -154,7 +152,7 @@ public class RemoteServerRecord implements ServerRecord {
                 state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                RemotePathMap.getRemotePathMapInstance(getExecutionEnvironment()).init();
+                RemotePathMap.getPathMap(getExecutionEnvironment()).init();
                 state = State.ONLINE;
             }
         }

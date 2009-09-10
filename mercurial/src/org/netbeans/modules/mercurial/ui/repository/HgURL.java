@@ -45,7 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.netbeans.modules.mercurial.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;

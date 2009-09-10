@@ -33,8 +33,9 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Mikhail Vaysman
  */
-public class TestInstallerAndUninstallerCPP extends NbTestCase {
+public class TestInstallerAndUninstallerCPP extends Installer {
 
+    /*
     public TestInstallerAndUninstallerCPP() {
         super("Installer test");
     }
@@ -44,21 +45,38 @@ public class TestInstallerAndUninstallerCPP extends NbTestCase {
 
         return suite;
     }
+    */
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
 
-        Utils.phaseOne(this, data, "cpp");
+        Utils.phaseOne(data, "cpp");
 
-        Utils.phaseTwo(data);
+        // Pages
+        // Welcome
+        Utils.stepWelcome();
+        // Agreement
+        Utils.stepLicense();
+        // Location
+        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
+        // Summary
+        Utils.stepInstall(data);
+        //Installation
+        //finish
+        Utils.stepFinish();
+
+
+        //Utils.phaseTwo(data);
 
         Utils.phaseFour(data);
+
+        Utils.phaseFive( data );
 
         //TODO Dir removed test
         //TODO Clean up work dir
     }
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+    //public static void main(String[] args) {
+    //    junit.textui.TestRunner.run(suite());
+    //}
 }

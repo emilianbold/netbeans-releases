@@ -202,6 +202,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         int range[] = new int[2];
         OutputListener l = out.getLines().getListener(pos, range);
         if (l != null) {
+            int size = out.getLines().getCharCount();
+            assert range[1] < size : "Size: " + size + " range: " + range[0] + " " + range[1];
             ControllerOutputEvent oe = new ControllerOutputEvent(io, out, line);
             l.outputLineAction(oe);
             //Select the text on click

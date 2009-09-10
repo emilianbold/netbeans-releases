@@ -42,6 +42,7 @@ package org.netbeans.modules.dlight.api.execution;
 /**
  *
  */
+// TODO: change to PropertyChangeListener (use of PropertyChangeSupport)...
 public interface ValidationListener {
     public void validationStateChanged(Validateable source, 
             ValidationStatus oldStatus, ValidationStatus newStatus);

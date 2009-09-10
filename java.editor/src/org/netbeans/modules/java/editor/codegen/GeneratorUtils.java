@@ -65,6 +65,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -122,6 +123,23 @@ public class GeneratorUtils {
             idx++;
         }
         return copy.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), idx, member);        
+    }
+
+    public static ClassTree insertMethodAfter(WorkingCopy copy, TreePath path, MethodTree member, MethodTree precedingMethod) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TreeUtilities tu = copy.getTreeUtilities();
+        int idx = 0;
+        for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+            if (tree == precedingMethod) {
+                idx++;
+                break;
+            }
+
+            if (!tu.isSynthetic(new TreePath(path, tree)) && ClassMemberComparator.compare(member, tree) < 0)
+                break;
+            idx++;
+        }
+        return copy.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), idx, member);
     }
     
     public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {
@@ -440,19 +458,38 @@ public class GeneratorUtils {
         return result;
     }
 
+    /**
+     * @param file tested file
+     * @return true if file's sourcelevel supports Override
+     * @deprecated please use {@link #supportsOverride(org.​netbeans.​api.​java.​source.CompilationInfo)} instead.
+     */
+    @Deprecated
     public static boolean supportsOverride(FileObject file) {
         return SUPPORTS_OVERRIDE_SOURCE_LEVELS.contains(SourceLevelQuery.getSourceLevel(file));
     }
+
+    /**
+     * @param info tested file's info
+     * @return true if SourceVersion of source represented by provided info supports Override
+     */
+    public static boolean supportsOverride(CompilationInfo info) {
+        return SUPPORTS_OVERRIDE_SOURCE_VERSIONS.contains(info.getSourceVersion());
+    }
     
     private static final Set<String> SUPPORTS_OVERRIDE_SOURCE_LEVELS;
+    private static final Set<SourceVersion> SUPPORTS_OVERRIDE_SOURCE_VERSIONS;
     
     static {
-        SUPPORTS_OVERRIDE_SOURCE_LEVELS = new HashSet();
+        SUPPORTS_OVERRIDE_SOURCE_LEVELS = new HashSet<String>();
+        SUPPORTS_OVERRIDE_SOURCE_VERSIONS = new HashSet<SourceVersion>(2);
         
         SUPPORTS_OVERRIDE_SOURCE_LEVELS.add("1.5");
         SUPPORTS_OVERRIDE_SOURCE_LEVELS.add("1.6");
+
+        SUPPORTS_OVERRIDE_SOURCE_VERSIONS.add(SourceVersion.RELEASE_5);
+        SUPPORTS_OVERRIDE_SOURCE_VERSIONS.add(SourceVersion.RELEASE_6);
     }
-    
+
     private static List<TypeElement> getAllClasses(TypeElement of) {
         List<TypeElement> result = new ArrayList<TypeElement>();
         TypeMirror sup = of.getSuperclass();

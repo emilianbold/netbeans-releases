@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -88,9 +87,6 @@ public class RunProfile implements ConfigurationAuxObject {
     private PropertyChangeSupport pcs = null;
     
     private boolean needSave = false;
-    
-    // Auxiliary info objects (debugger, ...)
-    private Vector auxObjects;
     
     // Where this profile is keept
     //private Profiles parent;
@@ -128,6 +124,17 @@ public class RunProfile implements ConfigurationAuxObject {
     private HashMap<String, String> termPaths;
     private HashMap<String, String> termOptions;
     private final int platform;
+
+    public static final int REMOVE_INSTRUMENTATION_ASK = 0;
+    public static final int REMOVE_INSTRUMENTATION_YES = 1;
+    public static final int REMOVE_INSTRUMENTATION_NO = 2;
+
+    private static final String[] removeInstrumentationNames = {
+        getString("RemoveInstrumentation_Ask"), // NOI18N
+        getString("RemoveInstrumentation_Yes"), // NOI18N
+        getString("RemoveInstrumentation_No"), // NOI18N
+    };
+    private IntConfiguration removeInstrumentation;
     
     // constructor for SS compatibility, only for localhost usage
     @Deprecated
@@ -163,6 +170,7 @@ public class RunProfile implements ConfigurationAuxObject {
         termOptions = new HashMap<String, String>();
         consoleType = new IntConfiguration(null, CONSOLE_TYPE_DEFAULT, consoleTypeNames, null);
         terminalType = new IntConfiguration(null, 0, setTerminalTypeNames(), null);
+        removeInstrumentation = new IntConfiguration(null, REMOVE_INSTRUMENTATION_ASK, removeInstrumentationNames, null);
         clearChanged();
     }
 
@@ -553,6 +561,13 @@ public class RunProfile implements ConfigurationAuxObject {
         this.terminalType = terminalType;
     }
     
+    public IntConfiguration getRemoveInstrumentation() {
+        return removeInstrumentation;
+    }
+
+    public void setRemoveInstrumentation(IntConfiguration removeInstrumentation) {
+        this.removeInstrumentation = removeInstrumentation;
+    }
     
     // Misc...
     
@@ -660,6 +675,7 @@ public class RunProfile implements ConfigurationAuxObject {
         getEnvironment().assign(p.getEnvironment());
         getConsoleType().assign(p.getConsoleType());
         getTerminalType().assign(p.getTerminalType());
+        getRemoveInstrumentation().assign(p.getRemoveInstrumentation());
     }
     
     /**
@@ -679,6 +695,7 @@ public class RunProfile implements ConfigurationAuxObject {
         p.setEnvironment(getEnvironment().clone());
         p.setConsoleType(getConsoleType().clone());
         p.setTerminalType(getTerminalType().clone());
+        p.setRemoveInstrumentation(getRemoveInstrumentation().clone());
         return p;
     }
     
@@ -722,8 +739,9 @@ public class RunProfile implements ConfigurationAuxObject {
             // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
             updateTerminalTypeState(terminalTypeNP, consoleTypeNames[(Integer) consoleTypeNP.getValue()]);
         }
+        set.put(new IntNodeProp(getRemoveInstrumentation(), true, null,
+                getString("RemoveInstrumentation_LBL"), getString("RemoveInstrumentation_HINT"))); // NOI18N
         sheet.put(set);
-
 
         return sheet;
     }

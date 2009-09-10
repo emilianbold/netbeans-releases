@@ -110,7 +110,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
         hintSep.setVisible(false);
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
-        jList1.setCellRenderer(new SearchResultRender(comboBar, this));
+        jList1.setCellRenderer(new SearchResultRenderer(comboBar, this));
         rp = new RequestProcessor("Bugtracking quick issue search", 1, true); // NOI18N
         setVisible(false);
         updateStatusPanel();

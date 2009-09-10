@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.project.refactoring;
 
+import java.io.IOException;
 import org.netbeans.modules.javacard.constants.XmlTagNames;
 import org.openide.util.Exceptions;
 import org.w3c.dom.*;
@@ -47,11 +48,18 @@ import org.w3c.dom.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.xml.sax.SAXException;
 
 public class WebXMLRefactoringSupport {
 
@@ -62,17 +70,27 @@ public class WebXMLRefactoringSupport {
 
     public static WebXMLRefactoringSupport fromFile(File file) {
         try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(false);
+            factory.setIgnoringElementContentWhitespace(true);
+            DocumentBuilder docBuilder;
+            docBuilder = factory.newDocumentBuilder();
             return new WebXMLRefactoringSupport(docBuilder.parse(file));
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new IllegalStateException (ex);
+        } catch (SAXException ex) {
+            throw new IllegalStateException (ex);
+        } catch (IOException ex) {
+            throw new IllegalStateException (ex);
         }
-        return null;
     }
 
     public NodeList getServletClassElements() {
         try {
             return (NodeList) servletClassXPression.evaluate(doc, XPathConstants.NODESET);
         } catch (XPathExpressionException ex) {
+            Logger.getLogger(WebXMLRefactoringSupport.class.getName()).log(
+                    Level.WARNING, null, ex);
             return null;
         }
     }
@@ -81,6 +99,8 @@ public class WebXMLRefactoringSupport {
         try {
             return (NodeList) listenerClassXPression.evaluate(doc, XPathConstants.NODESET);
         } catch (XPathExpressionException ex) {
+            Logger.getLogger(WebXMLRefactoringSupport.class.getName()).log(
+                    Level.WARNING, null, ex);
             return null;
         }
     }
@@ -89,6 +109,8 @@ public class WebXMLRefactoringSupport {
         try {
             return (NodeList) filterClassXPression.evaluate(doc, XPathConstants.NODESET);
         } catch (XPathExpressionException ex) {
+            Logger.getLogger(WebXMLRefactoringSupport.class.getName()).log(
+                    Level.WARNING, null, ex);
             return null;
         }
     }
@@ -204,20 +226,7 @@ public class WebXMLRefactoringSupport {
         return new String[]{};
     }
     protected Document doc;
-    protected static DocumentBuilder docBuilder;
-    
 
-    {
-        DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setIgnoringElementContentWhitespace(true);
-        try {
-            docBuilder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Internal error: failed to obtain" + " DocumentBuilder instance.", e);
-        }
-    }
     private XPathFactory xpFactory = XPathFactory.newInstance();
     private XPath xPath = xpFactory.newXPath();
     private XPathExpression servletClassXPression;
@@ -237,7 +246,7 @@ public class WebXMLRefactoringSupport {
             servletNameXPression =
                     xPath.compile("/web-app/servlet/servlet-name/text()");
         } catch (XPathExpressionException e) {
-            throw new RuntimeException("Internal initialization failure", e);
+            throw new IllegalStateException("Internal initialization failure", e);
         }
     }
 }

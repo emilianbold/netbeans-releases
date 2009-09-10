@@ -41,10 +41,9 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.beans.PropertyChangeEvent;
-import java.io.IOException;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
-import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.openide.util.NbBundle;
 
 import javax.swing.event.AncestorListener;
@@ -419,11 +418,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                     final Issue issue = in.getLookup().lookup(Issue.class);
                     BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                         public void run() {
-                            try {
-                                issue.setSeen(!issue.wasSeen());
-                            } catch (IOException ex) {
-                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                            }
+                            IssueCacheUtils.switchSeen(issue);
                         }
                     });
                 }
@@ -441,7 +436,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                 }
             }
         }
-    }
+    }   
 
     public void keyTyped(KeyEvent e) {
         if (e.getKeyChar() == '\n') {
@@ -489,13 +484,13 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     private class SeenDescriptor extends ColumnDescriptor<Boolean> {
         public SeenDescriptor() {
-            super(Issue.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc")); // NOI18N
+            super(IssueNode.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc")); // NOI18N
         }
     }
 
     private class RecentChangesDescriptor extends ColumnDescriptor<String> {
         public RecentChangesDescriptor() {
-            super(Issue.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent_Desc")); // NOI18N
+            super(IssueNode.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent_Desc")); // NOI18N
         }
     }
 

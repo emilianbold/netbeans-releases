@@ -127,6 +127,34 @@ public class YamlParser extends Parser {
 
     // for test package private
     YamlParserResult parse(String source, Snapshot snapshot) {
+        // TODO
+        // this is a hack. The right solution would be to create a toplevel language, which
+        // will have embeded yaml and php.
+        // This code replaces php fragments with space, because jruby parser fails
+        // on this.
+        int startReplace = source.indexOf("<?");
+        while (startReplace > -1) {
+            int endReplace = source.indexOf("?>", startReplace);
+            if (endReplace > -1) {
+                endReplace = endReplace + 1;
+                String replaceString = "";
+                for (int i = 0; i < source.length(); i++) {
+                    if (startReplace <= i && i <= endReplace) {
+                        replaceString = replaceString + ' ';
+                    }
+                    else {
+                        replaceString = replaceString + source.charAt(i);
+                    }
+                }
+                source = replaceString;
+                startReplace = source.indexOf("<?", endReplace);
+            }
+            else {
+                startReplace = -1;
+            }
+        }
+
+        // end of the hack
         try {
             if (isTooLarge(source)) {
                 return resultForTooLargeFile(snapshot);

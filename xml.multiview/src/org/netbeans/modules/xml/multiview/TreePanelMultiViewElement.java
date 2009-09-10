@@ -67,6 +67,8 @@ public abstract class TreePanelMultiViewElement extends AbstractMultiViewElement
                 Utils.runInAwtDispatchThread(new Runnable() {
                     public void run() {
                         callback.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                        callback.getTopComponent().setHtmlDisplayName(dObj.getEditorSupport().messageHtmlName());
+                        callback.getTopComponent().setToolTipText(dObj.getEditorSupport().messageToolTip());
                     }
                 });
             }

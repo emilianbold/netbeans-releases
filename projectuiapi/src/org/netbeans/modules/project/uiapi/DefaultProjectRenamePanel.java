@@ -193,6 +193,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         add(errorMessage, gridBagConstraints);
 
         jTextArea1.setColumns(20);
+        jTextArea1.setEditable(false);
         jTextArea1.setForeground(UIManager.getColor("nb.errorForeground"));
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);

@@ -52,13 +52,6 @@ public class NbReaderProviderTest extends TestBase {
         super(NbReaderProviderTest.class.getName());
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        NbReaderProvider.setupReaders();
-        super.setUp();
-    }
-
-
     public void testHTML32() {
         assertNotNull(Registry.getDTD("-//W3C//DTD HTML 3.2 Final//EN", null));
     }

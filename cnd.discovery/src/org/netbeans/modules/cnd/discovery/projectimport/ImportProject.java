@@ -589,10 +589,16 @@ public class ImportProject implements PropertyChangeListener {
         if (buildCommand != null){
             arguments = getArguments(buildCommand);
         }
-        if (TRACE) {
-            logger.log(Level.INFO, "#make "+arguments+" > " + makeLog.getAbsolutePath()); // NOI18N
+        ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+        if (ses != null) {
+            try {
+                ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
-        MakeAction.execute(node, arguments, listener, outputListener, makeProject, ImportUtils.parseEnvironment(configureArguments)); // NOI18N
+        MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars); // NOI18N
     }
 
     private String getArguments(String command){

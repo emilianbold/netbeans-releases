@@ -17,10 +17,11 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>An entity bean is an enterprise bean that represents data that is typically 
   stored in a database. Entity beans are part of the EJB 2.1 specification and are 
-  used in J2EE 1.4 enterprise applications. In Java EE 5 enterprise applications,
+  used in J2EE 1.4 enterprise applications.
+  In Java EE enterprise applications,
   you use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_about.html">Java Persistence API</a> 
   to interact with databases.</p>
-<p>Each entity bean represents a set of data, such as the fields in a database 
+<!--<p>Each entity bean represents a set of data, such as the fields in a database
   record. Each instance of the entity bean contains one element of that data, 
   such as a row from a database table.</p>
 <p>There are two types of persistence for entity beans:</p>
@@ -47,19 +48,12 @@
 <h3>Why Use Entity Beans?</h3>
 <p>You should probably use an entity bean (rather than a session bean) under the following conditions: </p>
 <ul>
-<li>The bean represents a business entity, not a procedure. For example, <tt>CreditCardEJB</tt> would be an entity bean, but <tt>CreditCardVerifierEJB</tt> would probably be a session bean. </li>
-<li>The bean's state must be persistent. If the bean instance terminates or if the J2EE server is shut down, the bean's state still exists in persistent storage (a database). </li>
+    <li>The bean represents a business entity, not a procedure. For example, <tt>CreditCardEJB</tt> would be an entity bean, but <tt>CreditCardVerifierEJB</tt> would probably be a session bean. </li>
+    <li>The bean's state must be persistent. If the bean instance terminates or if the J2EE server is shut down, the bean's state still exists in persistent storage (a database). </li>
 </ul>
 
-<p>For more about EJB 2.1 Entity Beans, see Chapter 23: Enterprise Beans in the J2EE Tutorial.</p>
-<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://java.sun.com/j2ee/1.4/docs/tutorial/doc/">
-    <param name="text" value="<html><u>http://java.sun.com/j2ee/1.4/docs/tutorial/doc/</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
-</p>
 
+-->
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

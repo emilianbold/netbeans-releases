@@ -95,6 +95,13 @@ public final class DataModelScheme {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.id != null ? this.id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public String toString() {
         return id;
     }

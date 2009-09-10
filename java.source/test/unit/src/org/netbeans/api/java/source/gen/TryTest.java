@@ -73,10 +73,10 @@ public class TryTest extends GeneratorTestMDRCompat {
 
     /**
      * Renames variable in try body.
-     */ 
+     */
     public void testRenameInTryBody() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.*;\n" +
@@ -92,7 +92,7 @@ public class TryTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        String golden = 
+        String golden =
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.*;\n" +
@@ -113,27 +113,27 @@ public class TryTest extends GeneratorTestMDRCompat {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                
+
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 TryTree tt = (TryTree) method.getBody().getStatements().get(0);
                 VariableTree var = (VariableTree) tt.getBlock().getStatements().get(1);
                 workingCopy.rewrite(var, make.setLabel(var, "input"));
             }
-            
+
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     /**
      * #96551: Incorrectly formatted catch
-     */ 
+     */
     public void testInsertCatchClause() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.*;\n" +
@@ -148,7 +148,7 @@ public class TryTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        String golden = 
+        String golden =
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.*;\n" +
@@ -169,33 +169,33 @@ public class TryTest extends GeneratorTestMDRCompat {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                
+
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 TryTree tt = (TryTree) method.getBody().getStatements().get(0);
                 CatchTree njuKec = make.Catch(make.Variable(
-                        make.Modifiers(Collections.<Modifier>emptySet()), 
-                        "npe", 
-                        make.Identifier("NullPointerException"), 
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "npe",
+                        make.Identifier("NullPointerException"),
                         null),
                     make.Block(Collections.<StatementTree>emptyList(), false)
                 );
                 workingCopy.rewrite(tt, make.insertTryCatch(tt, 0, njuKec));
             }
-            
+
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     /**
      * #96551: Incorrectly formatted catch
-     */ 
+     */
     public void testAddCatchClause() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.*;\n" +
@@ -210,7 +210,7 @@ public class TryTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        String golden = 
+        String golden =
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.*;\n" +
@@ -231,20 +231,20 @@ public class TryTest extends GeneratorTestMDRCompat {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                
+
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 TryTree tt = (TryTree) method.getBody().getStatements().get(0);
                 CatchTree njuKec = make.Catch(make.Variable(
-                        make.Modifiers(Collections.<Modifier>emptySet()), 
-                        "npe", 
-                        make.Identifier("NullPointerException"), 
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "npe",
+                        make.Identifier("NullPointerException"),
                         null),
                     make.Block(Collections.<StatementTree>emptyList(), false)
                 );
                 workingCopy.rewrite(tt, make.addTryCatch(tt, njuKec));
             }
-            
+
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -252,6 +252,57 @@ public class TryTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testFF() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "            System.err.println(0);\n" +
+            "        } catch (FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "            System.err.println(0);\n" +
+            "        } catch (FileNotFoundException ex) {\n" +
+            "        } finally {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TryTree tt = (TryTree) method.getBody().getStatements().get(0);
+                TryTree nue = make.Try(tt.getBlock(), tt.getCatches(), make.Block(Collections.<StatementTree>emptyList(), false));
+                workingCopy.rewrite(tt, nue);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

@@ -49,6 +49,7 @@ import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCreator;
@@ -135,7 +136,7 @@ public class ImportSchemaCustomizer extends ExternalReferenceCreator<Schema> {
     }
 
     protected String getTargetNamespace(Model model) {
-        return ((SchemaModel) model).getSchema().getTargetNamespace();
+        return Utility.getTargetNamespace((SchemaModel) model);
     }
 
     protected Map<String, String> getPrefixes(Model model) {

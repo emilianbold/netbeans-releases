@@ -43,6 +43,6 @@ import java.util.List;
 
 public interface DataFilterListener {
 
-    public void dataFiltersChanged(List<DataFilter> newSet);
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting);
 
 }

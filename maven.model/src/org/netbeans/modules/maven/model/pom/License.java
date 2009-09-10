@@ -68,4 +68,11 @@ public interface License extends POMComponent {
     String getName();
     void setName(String name);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getComments();
+    void setComments(String comments);
+
 }

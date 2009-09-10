@@ -44,7 +44,6 @@ package org.netbeans.spi.project.support;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +57,7 @@ import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.ErrorManager;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -282,9 +282,13 @@ public final class LookupProviderSupport {
             assert delegates != null;
             Collection<SourceGroup> result = new ArrayList<SourceGroup>();
             for (Sources ns : delegates.allInstances()) {
-                SourceGroup[] grps = ns.getSourceGroups(type);
-                if (grps != null) {
-                    result.addAll(Arrays.asList(grps));
+                SourceGroup[] sourceGroups = ns.getSourceGroups(type);
+                if (sourceGroups != null) {
+                    for (SourceGroup sourceGroup : sourceGroups)
+                        if (sourceGroup == null)
+                            Exceptions.printStackTrace (new NullPointerException (ns + " returns null source group!"));//NOI18N
+                        else
+                            result.add (sourceGroup);
                 }
             }
             return result.toArray(new SourceGroup[result.size()]);

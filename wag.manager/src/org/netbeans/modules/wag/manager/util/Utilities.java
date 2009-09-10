@@ -36,17 +36,28 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.wag.manager.util;
 
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.SSLSocketFactory;
+
 
 /**
  *
  * @author peterliu
  */
 public class Utilities {
+
+    private static SSLSocketFactory defaultSSLSocketFactory =
+            HttpsURLConnection.getDefaultSSLSocketFactory();
 
     public static String convertToCallableName(String name) {
         if (name.startsWith("/")) {
@@ -63,5 +74,42 @@ public class Utilities {
         //ex.printStackTrace();
         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
         DialogDisplayer.getDefault().notify(msg);
+    }
+
+    public static void trustZemblyCertificate() {
+        SSLContext context;
+        TrustManager[] trustManagers = new TrustManager[]{new ZemblyX509TrustManager()};
+
+        try {
+            context = SSLContext.getInstance("SSL");
+            context.init(null, trustManagers, new SecureRandom());
+        } catch (GeneralSecurityException gse) {
+            throw new IllegalStateException(gse.getMessage());
+        } // catch
+
+
+        HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+    }
+
+    public static void untrustZemblyCertificate() {
+        HttpsURLConnection.setDefaultSSLSocketFactory(defaultSSLSocketFactory);
+    }
+
+    private static class ZemblyX509TrustManager implements X509TrustManager {
+
+       private static final X509Certificate[] acceptedIssuers =
+           new X509Certificate[] {};
+
+       public void checkClientTrusted(X509Certificate[] chain,
+           String authType) {
+       }
+
+       public void checkServerTrusted(X509Certificate[] chain,
+           String authType) {
+       }
+
+       public X509Certificate[] getAcceptedIssuers() {
+           return(acceptedIssuers);
+       }
     }
 }

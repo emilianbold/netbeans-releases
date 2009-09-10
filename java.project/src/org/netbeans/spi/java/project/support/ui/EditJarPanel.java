@@ -45,12 +45,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
-import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -141,7 +141,12 @@ class EditJarPanel extends javax.swing.JPanel {
         }
         boolean archiveFile = false;
         if (FileUtil.isArchiveFile(fo)) {
-            fo = FileUtil.getArchiveRoot(fo);
+            FileObject afo = FileUtil.getArchiveRoot(fo);
+            if (afo == null) {
+                Logger.getLogger(EditJarPanel.class.getName()).warning("Cannot open archive: " + FileUtil.getFileDisplayName(fo));  //NOI18N
+                return val;
+            }
+            fo = afo;
             archiveFile = true;
         }
         FileObject root;

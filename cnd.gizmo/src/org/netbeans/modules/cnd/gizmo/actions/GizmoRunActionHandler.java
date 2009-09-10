@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
-import org.netbeans.modules.cnd.gizmo.GizmoToolsController;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -75,6 +74,7 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -116,7 +116,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         String runDirectory = pae.getProfile().getRunDirectory();
         if (execEnv.isRemote()) {
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            executable = mapper.getLocalPath(executable);
+            executable = RemoteBinaryService.getRemoteBinary(execEnv, executable);
             runDirectory = mapper.getRemotePath(runDirectory, true);
         }
 
@@ -287,12 +287,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             l.executionFinished(exitCode);
         }
 
-        // TODO: hack!!! fix me!
-        // see THAActionProvider .... we need a way to diable THA tool...
-        // Should we do this after run???
-        // Need to think-over
-
-        GizmoToolsController.getDefault().disableTool(pae.getProject(), "dlight.tool.tha"); // NOI18N
     }
 
     private static String formatTime(long millis) {

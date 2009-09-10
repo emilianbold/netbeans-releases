@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.plaf.TextUI;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.mercurial.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -146,7 +146,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     if(author != null && !author.equals("")) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
                             KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(author);
-                            kenaiUsersMap.put(author, kenaiUser);
+                            if(kenaiUser != null) {
+                                kenaiUsersMap.put(author, kenaiUser);
+                            }
                         }
                     }
                 }

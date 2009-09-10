@@ -50,6 +50,7 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -94,6 +95,17 @@ public final class FileIndexer extends CustomIndexer {
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             // no need to do anything, we are not indexing anythong from inside of the file
+        }
+
+        @Override
+        public boolean scanStarted (final Context ctx) {
+            try {
+                final IndexingSupport is = IndexingSupport.getInstance(ctx);
+                return is.isValid();
+            } catch (final IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+                return false;
+            }
         }
 
         @Override

@@ -78,7 +78,7 @@ public class UserServiceRetriever {
                         {ITEM_TYPE_PARAM, ITEM_TYPE_VALUE},
                         {SHOW_DRAFTS_PARAM, SHOW_DRAFTS_VALUE}
                     });
-            System.out.println("your domains: " + result);
+            //System.out.println("your domains: " + result);
 
             return parseYourServices(result, username);
         } catch (Exception ex) {

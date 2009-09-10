@@ -38,18 +38,19 @@
  */
 package org.netbeans.modules.dlight.threadmap.support.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.threadmap.dataprovider.ThreadMapDataProviderImpl;
-import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataScheme;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -58,17 +59,20 @@ import org.openide.util.lookup.ServiceProviders;
  * @author Alexander Simon
  */
 @ServiceProviders({@ServiceProvider(service = DataProviderFactory.class)})
-public class ThreadMapDataProviderFactory implements DataProviderFactory {
+public final class ThreadMapDataProviderFactory implements DataProviderFactory {
 
-    private final List<DataStorageType> supportedStorageTypes;
+    private final DataStorageType supportedStorageType;
     private final List<DataModelScheme> providedSchemas;
+    private final List<DataTableMetadata> requiredTables;
 
     public ThreadMapDataProviderFactory() {
-        supportedStorageTypes = new ArrayList<DataStorageType>(1);
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(ThreadMapDataStorage.THREAD_MAP_STORAGE_TYPE_ID)); //NOI18N
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-        providedSchemas = new ArrayList<DataModelScheme>(1);
-        providedSchemas.add(DataModelSchemeProvider.getInstance().getScheme("model:threadmap")); //NOI18N
+        // This factory creates dataproviders that provide information
+        // about ThreadMap (ThreadMapDataScheme) ...
+        providedSchemas = Collections.singletonList(ThreadMapDataScheme.getScheme());
+        // ... as a source of information use SQL database ...
+        supportedStorageType = SQLDataStorage.getStorageType();
+        // ... with tables ...
+        requiredTables = Collections.singletonList(MSASQLTables.msa.tableMetadata);
     }
 
     public ThreadMapDataProvider create() {
@@ -80,10 +84,20 @@ public class ThreadMapDataProviderFactory implements DataProviderFactory {
     }
 
     public boolean provides(DataModelScheme dataModel) {
-        return getProvidedDataModelScheme().contains(dataModel);
+        return providedSchemas.contains(dataModel);
     }
 
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
-        return supportedStorageTypes;
+    public boolean validate(DataStorage storage) {
+        if (!storage.supportsType(supportedStorageType)) {
+            return false;
+        }
+
+        for (DataTableMetadata requiredTable : requiredTables) {
+            if (!storage.hasData(requiredTable)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

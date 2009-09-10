@@ -1518,6 +1518,17 @@ public class RADComponent {
     protected void changePropertiesExplicitly(List<RADProperty> prefProps,
                                               List<RADProperty> normalProps,
                                               List<RADProperty> expertProps) {
+        // Issue 171445 - missing cursor property
+        if ((getBeanInstance() instanceof java.awt.Component) && (nameToProperty.get("cursor") == null)) { // NOI18N
+            try {
+                PropertyDescriptor pd = new PropertyDescriptor("cursor", java.awt.Component.class); // NOI18N
+                RADProperty prop = createBeanProperty(pd, null, null);
+                nameToProperty.put("cursor", prop); // NOI18N
+                normalProps.add(prop);
+            } catch (IntrospectionException ex) {
+                ex.printStackTrace();
+            }
+        }
          // hack for buttons - add fake property for ButtonGroup
         if (getBeanInstance() instanceof javax.swing.AbstractButton) {
             try {

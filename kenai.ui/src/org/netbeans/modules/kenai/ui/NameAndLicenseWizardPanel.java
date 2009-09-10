@@ -40,13 +40,11 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Component;
+import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
@@ -61,18 +59,15 @@ public class NameAndLicenseWizardPanel implements WizardDescriptor.Panel,
     private WizardDescriptor settings;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private Node activeNode;
-    private boolean isShareExistingProject;
+    private final List<SharedItem> initialItems;
 
-    NameAndLicenseWizardPanel(Node activeNode) {
-        this.activeNode = activeNode;
-        this.isShareExistingProject = true;
+    public NameAndLicenseWizardPanel(List<SharedItem> items) {
+        this.initialItems = items;
     }
 
-    public NameAndLicenseWizardPanel() {
-        this.isShareExistingProject = false;
+    List<SharedItem> getInitialItems() {
+        return initialItems;
     }
-
 
     public Component getComponent() {
         if (component == null) {
@@ -82,9 +77,7 @@ public class NameAndLicenseWizardPanel implements WizardDescriptor.Panel,
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(isShareExistingProject?
-            NameAndLicenseWizardPanel.class.getPackage().getName()+".ShareOnKenai": // NOI18N
-            NameAndLicenseWizardPanel.class.getName());
+        return new HelpCtx(NameAndLicenseWizardPanel.class.getName());
     }
 
     public void readSettings(Object settings) {
@@ -117,14 +110,6 @@ public class NameAndLicenseWizardPanel implements WizardDescriptor.Panel,
     }
 
     public boolean isFinishPanel() {
-        return isShareExistingProject;
+        return true;
     }
-
-    public FileObject getLocalFolder() {
-        if (activeNode==null) {
-            return null;
-        }
-        return activeNode.getLookup().lookup(Project.class).getProjectDirectory();
-    }
-
 }

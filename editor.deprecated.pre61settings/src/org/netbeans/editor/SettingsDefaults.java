@@ -48,7 +48,7 @@ import java.awt.Dimension;
 import javax.swing.UIManager;
 import java.util.Map;
 import java.util.HashMap;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 
 /**
 * Default values for the settings. They are used
@@ -156,8 +156,8 @@ public class SettingsDefaults {
     public static final Color defaultTextLimitLineColor = new Color(255, 235, 235);
     public static final Integer defaultTextLimitWidth = EditorPreferencesDefaults.defaultTextLimitWidth;
 
-    public static final Acceptor defaultIdentifierAcceptor = EditorPreferencesDefaults.defaultIdentifierAcceptor;
-    public static final Acceptor defaultWhitespaceAcceptor = EditorPreferencesDefaults.defaultWhitespaceAcceptor;
+//    public static final Acceptor defaultIdentifierAcceptor = EditorPreferencesDefaults.defaultIdentifierAcceptor;
+//    public static final Acceptor defaultWhitespaceAcceptor = EditorPreferencesDefaults.defaultWhitespaceAcceptor;
 
     public static final Float defaultLineHeightCorrection = EditorPreferencesDefaults.defaultLineHeightCorrection;
 

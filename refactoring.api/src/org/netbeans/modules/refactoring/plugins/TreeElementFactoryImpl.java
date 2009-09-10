@@ -46,7 +46,6 @@ import java.util.WeakHashMap;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
-import org.openide.filesystems.FileObject;
 
 
 /**
@@ -56,7 +55,7 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class)
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {
 
-    private Map<Object, TreeElement> map = new WeakHashMap();
+    private Map<Object, TreeElement> map = new WeakHashMap<Object, TreeElement>();
 
     public TreeElement getTreeElement(Object o) {
         TreeElement result = map.get(o);

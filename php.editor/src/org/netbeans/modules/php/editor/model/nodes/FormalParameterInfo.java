@@ -86,7 +86,8 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
 
     @Override
     public QualifiedName getQualifiedName() {
-        return QualifiedName.createUnqualifiedName(getName());
+        QualifiedName qName = QualifiedName.create(getOriginalNode().getParameterName());
+        return qName != null ? qName : QualifiedName.createUnqualifiedName(getName());
     }
 
     @Override

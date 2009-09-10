@@ -9,6 +9,8 @@ import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 
 public class NamespaceIndexFilter<T extends ElementHandle> {
@@ -71,7 +73,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
         return filter(originalElems, getName().trim().length() == 0);
     }
 
-    public List<? extends ModelElement> filterModelElements(final List<? extends ModelElement> originalElems, boolean strictCCOption) {
+    public Collection<? extends ModelElement> filterModelElements(final Collection<? extends ModelElement> originalElems, boolean strictCCOption) {
         if (getKind().isUnqualified()) {
             return originalElems;
         }
@@ -82,6 +84,12 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
             namespaneNameLCaseSlashed += "\\";
         }
         for (ModelElement elem : originalElems) {
+            final Scope inScope = elem.getInScope();
+            ModelElement originalElem = null;
+            if (inScope instanceof TypeScope) {
+                originalElem = elem;
+                elem = inScope;
+            }
             String fqn = elem.getNamespaceName().append(elem.getName()).toFullyQualified().toString();
             final int indexOf = fqn.toLowerCase().indexOf(namespaneNameLCaseSlashed);
             final boolean fullyQualified = getKind().isFullyQualified();
@@ -96,7 +104,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
                         continue;
                     }
                 }
-                retval.add(elem);
+                retval.add(originalElem != null ? originalElem : elem);
             }
         }
         return retval;

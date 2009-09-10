@@ -123,7 +123,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
             
             if (varName != null && !context.variableStack.isVariableDefined(varName)) {
                 // check the globals from included files
-                Collection<IndexedVariable> topLevelVars = context.index.getTopLevelVariables((PHPParseResult) context.parserResult,
+                Collection<IndexedVariable> topLevelVars = context.getIndex().getTopLevelVariables((PHPParseResult) context.parserResult,
                         "$" + varName, QuerySupport.Kind.EXACT); //NOI18N
                 
                 for (IndexedConstant topLevelVar : topLevelVars) {

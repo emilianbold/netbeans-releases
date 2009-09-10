@@ -36,11 +36,11 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.tool;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -48,90 +48,129 @@ import org.openide.filesystems.FileUtil;
  * This class is manager for DLight Configuration
  */
 public final class DLightConfigurationManager {
-  private static DLightConfigurationManager instance = null;
-  private String selectedConfigurationName = null;
 
-
-  private  DLightConfigurationManager() {
-  }
-  
-  private final FileObject getToolsFSRoot() {
-    FileObject fsRoot  = FileUtil.getConfigRoot();
-    return fsRoot.getFileObject(getToolsFSRootPath());
-  }
-
-  private final String getToolsFSRootPath() {
-    return "DLight/Configurations"; // NOI18N
-  }
-
-  void selectConfiguration(String configurationName){
-    this.selectedConfigurationName = configurationName;
-  }
-
-  /**
-   * Returns DLightConfiguration by name if exists, <code>null</code> otherwise
-   * @param configurationName configuration name
-   * @return DLightConfiguration by name if exists, <code>null</code> otherwise
-   */
-  public DLightConfiguration getConfigurationByName(String configurationName){
-    List<DLightConfiguration> toolConfigurations = getDLightConfigurations();
-    for (DLightConfiguration conf : toolConfigurations){
-      if (conf.getConfigurationName().equals(configurationName)){
-        return conf;
-      }
+    static{
+        DLightConfigurationManagerAccessor.setDefault(new DLightConfigurationManagerAccessorImpl());
     }
-    return null;
-  }
-  
-  public List<DLightConfiguration> getDLightConfigurations(){
-    List<DLightConfiguration> result = new ArrayList<DLightConfiguration>();
-    FileObject configurationsFolder = getToolsFSRoot();
+    private static DLightConfigurationManager instance = null;
+    private String selectedConfigurationName = null;
 
-    if (configurationsFolder == null) {
-      return result;
+    private DLightConfigurationManager() {
     }
 
-    FileObject[] configurations = configurationsFolder.getChildren();
-
-    if (configurations == null || configurations.length == 0) {
-      return result;
+    private final FileObject getToolsFSRoot() {
+        FileObject fsRoot = FileUtil.getConfigRoot();
+        return fsRoot.getFileObject(getToolsFSRootPath());
     }
 
-    for (FileObject conf : configurations) {
-      result.add(DLightConfiguration.create(conf));
+    private final String getToolsFSRootPath() {
+        return "DLight/Configurations"; // NOI18N
     }
-    return result;
-  }
 
-  DLightConfiguration getSelectedDLightConfiguration(){
-    if (selectedConfigurationName != null){
-      return getConfigurationByName(selectedConfigurationName);
+    void selectConfiguration(String configurationName) {
+        this.selectedConfigurationName = configurationName;
     }
-    List<DLightConfiguration> tools = getDLightConfigurations();
-    if (tools == null || tools.size() == 0){
-      return DLightConfiguration.createDefault();
+
+    /**
+     * Returns DLightConfiguration by name if exists, <code>null</code> otherwise
+     * @param configurationName configuration name
+     * @return DLightConfiguration by name if exists, <code>null</code> otherwise
+     */
+    public DLightConfiguration getConfigurationByName(String configurationName) {
+        List<DLightConfiguration> toolConfigurations = getDLightConfigurations();
+        for (DLightConfiguration conf : toolConfigurations) {
+            if (conf.getConfigurationName().equals(configurationName)) {
+                return conf;
+            }
+        }
+        return null;
     }
-    return tools.get(0);
-  }
 
-  /**
-   * This method returns the default configuration (all tools)
-   */
-  public final DLightConfiguration getDefaultConfiguration() {
-      return DLightConfiguration.createDefault();
-  }
+    List<DLightConfiguration> getDLightConfigurations() {
+        List<DLightConfiguration> result = new ArrayList<DLightConfiguration>();
+        FileObject configurationsFolder = getToolsFSRoot();
 
-  /**
-   * 
-   * @return
-   */
-  public static synchronized  final DLightConfigurationManager getInstance(){
-    if (instance == null){
-      instance = new DLightConfigurationManager();
+        if (configurationsFolder == null) {
+            return result;
+        }
+
+        FileObject[] configurations = configurationsFolder.getChildren();
+
+        if (configurations == null || configurations.length == 0) {
+            return result;
+        }
+
+        for (FileObject conf : configurations) {
+            result.add(DLightConfiguration.create(conf));
+        }
+        return result;
     }
-    return instance;
-  }
 
-  
+    DLightConfiguration getSelectedDLightConfiguration() {
+        if (selectedConfigurationName != null) {
+            return getConfigurationByName(selectedConfigurationName);
+        }
+        List<DLightConfiguration> tools = getDLightConfigurations();
+        if (tools == null || tools.size() == 0) {
+            return DLightConfiguration.createDefault();
+        }
+        return tools.get(0);
+    }
 
+    /**
+     * This method returns the default configuration (all tools)
+     */
+    final DLightConfiguration getDefaultConfiguration() {
+        return DLightConfiguration.createDefault();
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static synchronized final DLightConfigurationManager getInstance() {
+        if (instance == null) {
+            instance = new DLightConfigurationManager();
+        }
+        return instance;
+    }
+
+    final boolean registerTool(String configurationName, DLightTool tool){
+        //should find the tool by ID
+        DLightConfiguration configurationToRegister = getConfigurationByName(configurationName);
+        DLightConfiguration defaultConfiguration = getDefaultConfiguration();
+        ToolsConfiguration toolsConfiguration  = configurationToRegister.getToolsConfiguration();
+        return toolsConfiguration.register(defaultConfiguration.getToolsConfiguration().getFileObject(tool.getID()), tool.isEnabled());
+    }
+
+    final boolean deleteTool(String configurationName, DLightTool tool){
+        return getConfigurationByName(configurationName).getToolsConfiguration().remove(tool.getID());
+    }
+
+    private static class DLightConfigurationManagerAccessorImpl extends DLightConfigurationManagerAccessor{
+
+        @Override
+        public DLightConfiguration getDefaultConfiguration(DLightConfigurationManager manager) {
+            return manager.getDefaultConfiguration();
+        }
+
+        @Override
+        public List<DLightConfiguration> getDLightConfigurations(DLightConfigurationManager manager) {
+            return manager.getDLightConfigurations();
+        }
+
+        @Override
+        public boolean registerTool(DLightConfigurationManager manager, String configurationName, DLightTool tool) {
+            return manager.registerTool(configurationName, tool);
+        }
+
+        @Override
+        public boolean deleteTool(DLightConfigurationManager manager, String configurationName, DLightTool tool) {
+            return manager.deleteTool(configurationName, tool);
+        }
+
+        
+        
+    }
+   
 }

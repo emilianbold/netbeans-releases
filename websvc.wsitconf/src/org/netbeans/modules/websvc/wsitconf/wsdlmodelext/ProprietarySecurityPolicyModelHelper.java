@@ -92,6 +92,7 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static final String DEFAULT_LIFETIME = "300000";                     //NOI18N
     public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.security.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
+    public static final String DEFAULT_CONTRACT_CLASS_METRO13 = "com.sun.xml.ws.security.trust.impl.WSTRustContractImpl"; //NOI18N
     public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
@@ -309,6 +310,15 @@ public class ProprietarySecurityPolicyModelHelper {
         return null;
     }
     
+    public static boolean isPreSTSShareToken(Binding b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        PreconfiguredSTS ps = getPreconfiguredSTS(p);
+        if (ps != null) {
+            return ps.isShareToken();
+        }
+        return false;
+    }
+
     public static String getPreSTSWstVersion(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
@@ -644,7 +654,11 @@ public class ProprietarySecurityPolicyModelHelper {
     
     public void enableSTS(Binding b, boolean enable) {
         if (enable) {
-            setSTSContractClass(b, DEFAULT_CONTRACT_CLASS);
+            if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
+                setSTSContractClass(b, DEFAULT_CONTRACT_CLASS_METRO13);
+            } else {
+                setSTSContractClass(b, DEFAULT_CONTRACT_CLASS);
+            }
             setSTSLifeTime(b, DEFAULT_LIFETIME);
             Collection<BindingOperation> bOperations = b.getBindingOperations();
             WSDLModel model = b.getModel();
@@ -1482,6 +1496,26 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
+    public static void setPreSTSShareToken(Binding b, boolean value) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        PreconfiguredSTS ps = getPreconfiguredSTS(p);
+        if ((ps == null) || (p == null)) {
+            ps = createPreconfiguredSTS(b);
+        }
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            ps.setShareToken(value);
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+
     public static void setPreSTSWsdlLocation(Binding b, String value) {
         WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);

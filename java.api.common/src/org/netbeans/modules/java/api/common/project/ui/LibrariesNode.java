@@ -801,20 +801,36 @@ public final class LibrariesNode extends AbstractNode {
 
         private String description;
 
+        private final Set<String> extensions;
+
 
         public SimpleFileFilter (String description) {
             this.description = description;
+            this.extensions = new HashSet<String>();
+            this.extensions.addAll(FileUtil.getMIMETypeExtensions("application/x-java-archive"));    //NOI18N
         }
 
-        public boolean accept(File f) {
-            if (f.isDirectory())
-                return true;            
-            try {
-                return FileUtil.isArchiveFile(f.toURI().toURL());
-            } catch (MalformedURLException mue) {
-                Exceptions.printStackTrace(mue);
-                return false;
+        public boolean accept(final File f) {
+            if (f.isDirectory()) {
+                return true;
             }
+            try {
+                //Can use FileUtil.getMIMEType(fo, withinMIMETypes), but this should be even faster no FO is created
+                if (!this.extensions.isEmpty()) {
+                    final String fileName = f.getName();
+                    int index = fileName.lastIndexOf('.');  //NOI18N
+                    if (index > 0 && index < fileName.length()-1) {
+                        return extensions.contains(fileName.substring(index+1));
+                    }
+                }
+                else {
+                    //No MimeResolver fallback
+                    return FileUtil.isArchiveFile(f.toURI().toURL());
+                }
+            } catch (MalformedURLException mue) {
+                Exceptions.printStackTrace(mue);                
+            }
+            return false;
         }
 
         public String getDescription() {
