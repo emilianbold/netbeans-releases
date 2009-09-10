@@ -66,8 +66,12 @@ function classpath() {
 			    if [ -d "${nbdist}/ide11" ]; then
 				ide="${nbdist}/ide11"
 			    else 
-				echo "Can not find ide subdirectory in Netbeans"
-				return
+				    if [ -d "${nbdist}/ide12" ]; then
+					ide="${nbdist}/ide12"
+				    else 
+					echo "Can not find ide subdirectory in Netbeans"
+					return
+				    fi
 			    fi
 		    fi
             fi
@@ -87,8 +91,12 @@ function classpath() {
 		    if [ -d "${nbdist}/platform10" ]; then
 			platform="${nbdist}/platform10"
 		    else
-			echo "Can not find platform subdirectory in Netbeans"
-			return
+			    if [ -d "${nbdist}/platform11" ]; then
+				platform="${nbdist}/platform11"
+			    else
+				echo "Can not find platform subdirectory in Netbeans"
+				return
+			    fi
 		    fi
 		fi
 	fi

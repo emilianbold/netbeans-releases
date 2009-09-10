@@ -48,13 +48,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * Reponsible for copying files from remote host
@@ -112,6 +116,7 @@ public class RemoteFileSupport {
     }
 
     public void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
+        checkConnection(execEnv);
         Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
         try {
             int rc = task.get().intValue();
@@ -151,6 +156,7 @@ public class RemoteFileSupport {
 
     /*package-local for test purposes*/
     void syncDirStruct(File dir, String remotePath) throws IOException {
+        checkConnection(execEnv);
         if (dir.exists()) {
             assert dir.isDirectory();
         } else {
@@ -193,5 +199,34 @@ public class RemoteFileSupport {
 
     /*package-local test method*/ int getFileCopyCount() {
         return fileCopyCount;
+    }
+
+    private final Map<ExecutionEnvironment, Boolean> cancels = new HashMap<ExecutionEnvironment, Boolean>();
+
+    private void checkConnection(ExecutionEnvironment execEnv) throws IOException, CancellationException {
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            synchronized (cancels) {
+                Boolean cancel = cancels.get(execEnv);
+                if (cancel != null && cancel.booleanValue()) {
+                    throw new CancellationException();
+                }
+            }
+            if (SwingUtilities.isEventDispatchThread()) {
+                CndUtils.assertNonUiThread();
+                throw new IOException("Should never be called from AWT thread"); //NOI18N
+            }
+            try {
+                if (!ConnectionManager.getInstance().connectTo(execEnv)) {
+                    throw new IOException("Can not connect to " + execEnv); //NOI18N
+                }
+            } catch (CancellationException ex) {
+                synchronized(cancels) {
+                    cancels.put(execEnv, Boolean.TRUE);
+                }
+                throw ex;
+            } catch (IOException ex) {
+                throw ex;
+            }
+        }
     }
 }

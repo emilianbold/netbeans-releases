@@ -63,7 +63,7 @@ import org.netbeans.modules.db.metadata.model.api.View;
  *
  * @author Andrei Badea
  */
-public class JDBCMetadataDerbyTest extends JDBCMetadataTest {
+public class JDBCMetadataDerbyTest extends JDBCMetadataTestBase {
 
     private Connection conn;
     private JDBCMetadata metadata;

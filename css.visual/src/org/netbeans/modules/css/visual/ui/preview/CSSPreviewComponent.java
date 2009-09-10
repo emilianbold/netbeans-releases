@@ -37,52 +37,17 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.css.visual.ui.preview;
 
-import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
-import org.netbeans.modules.cnd.ui.options.ServerListDisplayerEx;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.InputStream;
+import javax.swing.JComponent;
 
 /**
- * ServerListDisplayer implementation
- * @author Vladimir Kvashin
+ *
+ * @author Milan Kubec
  */
-@ServiceProvider(service = ServerListDisplayer.class)
-public class RemoteServerListDisplayer extends ServerListDisplayerEx {
-
-    @Override
-    protected boolean showServerListDialogImpl() {
-        ToolsCacheManager cacheManager = new ToolsCacheManager();
-        if (showServerListDialog(cacheManager)) {
-            cacheManager.applyChanges();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(getClass(), "TITLE_EditServerList"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHosts(dlg.getHosts());
-            cacheManager.setDefaultRecord(dlg.getDefaultRecord());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
+interface CssPreviewComponent {
+    JComponent getComponent();
+    void setDocument(InputStream is, String url) throws Exception;
+    void dispose();
 }
