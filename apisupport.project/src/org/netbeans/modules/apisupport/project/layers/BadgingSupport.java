@@ -50,7 +50,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -75,6 +77,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
@@ -87,6 +90,8 @@ import org.openide.util.actions.Presenter;
  */
 final class BadgingSupport implements FileSystem.Status, FileChangeListener {
 
+    static final RequestProcessor RP = new RequestProcessor(BadgingSupport.class.getName());
+
     /** for branding/localization like "_f4j_ce_ja"; never null, but may be "" */
     private String suffix = "";
     /** classpath in which to look up resources; may be null but then nothing will be found... */
@@ -94,6 +99,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     private final FileSystem fs;
     private final FileChangeListener fileChangeListener;
     private final List<FileStatusListener> listeners = new ArrayList<FileStatusListener>();
+    // #171204: compute badged information asynch since it can be quite slow
+    private final Map<String,String> names = new HashMap<String,String>();
+    private final Map<String,Image> smallIcons = new HashMap<String,Image>();
+    private final Map<String,Image> bigIcons = new HashMap<String,Image>();
     
     public BadgingSupport(FileSystem fs) {
         this.fs = fs;
@@ -123,8 +132,27 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         }
     }
     
-    public String annotateName(String name, Set<? extends FileObject> files) {
-        return annotateNameGeneral(name, files, suffix, fileChangeListener, classpath);
+    public String annotateName(final String name, final Set<? extends FileObject> files) {
+        synchronized (names) {
+            for (FileObject f : files) {
+                String path = f.getPath();
+                if (names.containsKey(path)) {
+                    return names.get(path);
+                }
+            }
+        }
+        RP.post(new Runnable() {
+            public void run() {
+                String r = annotateNameGeneral(name, files, suffix, fileChangeListener, classpath);
+                synchronized (names) {
+                    for (FileObject f : files) {
+                        names.put(f.getPath(), r);
+                    }
+                }
+                fireFileStatusChanged(new FileStatusEvent(fs, files, false, true));
+            }
+        });
+        return name;
     }
     
     private static String annotateNameGeneral(String name, Set<? extends FileObject> files,
@@ -206,7 +234,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             // First try to load it in current IDE, as this handles most platform cases OK.
             InstanceCookie ic = DataObject.find(fo).getLookup().lookup(InstanceCookie.class);
             if (ic != null) {
-                Object o;
+                final Object o;
                 Logger fslogger = Logger.getLogger("org.openide.filesystems"); // NOI18N
                 Logger cachelogger = Logger.getLogger("org.netbeans.core.startup.layers.BinaryFS"); // NOI18N
                 Level fsLevel = fslogger.getLevel();
@@ -216,14 +244,22 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                 try {
                     o = ic.instanceCreate();
                     if (o instanceof Action) {
-                        String name = (String) ((Action) o).getValue(Action.NAME);
+                        String name = Mutex.EVENT.readAccess(new Mutex.ExceptionAction<String>() {
+                            public String run() throws Exception {
+                                return (String) ((Action) o).getValue(Action.NAME);
+                            }
+                        });
                         if (name != null) {
                             return Actions.cutAmpersand(name);
                         } else {
                             return toStringOf(o);
                         }
                     } else if (o instanceof Presenter.Menu) {
-                        return ((Presenter.Menu) o).getMenuPresenter().getText();
+                        return Mutex.EVENT.readAccess(new Mutex.ExceptionAction<String>() {
+                            public String run() throws Exception {
+                                return ((Presenter.Menu) o).getMenuPresenter().getText();
+                            }
+                        });
                     } else if (o instanceof JSeparator) {
                         return NbBundle.getMessage(BadgingSupport.class, "LBL_separator");
                     } else {
@@ -265,22 +301,40 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         }
     }
     
-    public Image annotateIcon(Image icon, int type, Set<? extends FileObject> files) {
-        return annotateIconGeneral(icon, type, files, suffix, fileChangeListener, classpath);
-    }
-    
-    private static Image annotateIconGeneral(Image icon, int type, Set<? extends FileObject> files, String suffix,
-            FileChangeListener fileChangeListener, ClassPath cp) {
-        String attr;
+    public Image annotateIcon(final Image icon, int type, final Set<? extends FileObject> files) {
+        final boolean big;
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            attr = "SystemFileSystem.icon"; // NOI18N
+            big = false;
         } else if (type == BeanInfo.ICON_COLOR_32x32) {
-            attr = "SystemFileSystem.icon32"; // NOI18N
+            big = true;
         } else {
             return icon;
         }
+        final Map<String,Image> icons = big ? bigIcons : smallIcons;
+        synchronized (icons) {
+            for (FileObject f : files) {
+                String path = f.getPath();
+                if (icons.containsKey(path)) {
+                    return icons.get(path);
+                }
+            }
+        }
+        RP.post(new Runnable() {
+            public void run() {
+                Image r = annotateIconGeneral(icon, big, files);
+                synchronized (icons) {
+                    for (FileObject f : files) {
+                        icons.put(f.getPath(), r);
+                    }
+                }
+                fireFileStatusChanged(new FileStatusEvent(fs, files, true, false));
+            }
+        });
+        return icon;
+    }
+    private Image annotateIconGeneral(Image icon, boolean big, Set<? extends FileObject> files) {
         for (FileObject fo : files) {
-            Object value = fo.getAttribute(attr);
+            Object value = fo.getAttribute(big ? "SystemFileSystem.icon32" : "SystemFileSystem.icon"); // NOI18N
             if (value instanceof Image) {
                 // #18832
                 return (Image)value;
@@ -297,7 +351,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
             if (value != null) {
                 try {
-                    URL[] u = LayerUtils.currentify((URL) value, suffix, cp);
+                    URL[] u = LayerUtils.currentify((URL) value, suffix, classpath);
                     FileObject ufo = URLMapper.findFileObject(u[0]);
                     if (ufo != null) {
                         ufo.removeFileChangeListener(fileChangeListener);
@@ -341,7 +395,16 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         someFileChange();
     }
     private void someFileChange() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        synchronized (names) {
+            names.clear();
+        }
+        synchronized (smallIcons) {
+            smallIcons.clear();
+        }
+        synchronized (bigIcons) {
+            bigIcons.clear();
+        }
+        RP.post(new Runnable() {
             public void run() {
                 // If used as nbres: annotation, fire status change.
                 fireFileStatusChanged(new FileStatusEvent(fs, true, true));
