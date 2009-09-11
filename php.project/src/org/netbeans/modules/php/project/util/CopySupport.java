@@ -78,7 +78,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
     private ProxyOperationFactory operationFactory;
     private FileSystem fileSystem;
     private FileChangeListener weakFileChangeListener;
-    private static final RequestProcessor RP = new RequestProcessor("PHP file change handler"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("PHP file change handler (copy support)"); // NOI18N
     private static final Queue<Callable<Boolean>> operationsQueue = new ConcurrentLinkedQueue<Callable<Boolean>>();
     private static final RequestProcessor.Task processingTask = createProcessingTask();
     private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
@@ -326,63 +326,95 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
             return createHandler(localFactory.createRenameHandler(source, oldName), remoteFactory.createRenameHandler(source, oldName));
         }
 
-        private Callable<Boolean> createHandler(final Callable<Boolean> localHandler, final Callable<Boolean> remoteHandler) {
-            return (localHandler != null || remoteHandler != null) ? new Callable<Boolean>() {
+        private Callable<Boolean> createHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
+            if (localHandler == null && remoteHandler == null) {
+                LOGGER.fine("No handler given");
+                return null;
+            }
+            return new ProxyHandler(localHandler, remoteHandler);
+        }
 
-                public Boolean call() throws Exception {
-                    boolean localRetval = true;
-                    boolean remoteRetval = true;
-                    Exception localExc = null;
-                    Exception remoteExc = null;
+        private final class ProxyHandler implements Callable<Boolean> {
+            private final Callable<Boolean> localHandler;
+            private final Callable<Boolean> remoteHandler;
 
-                    if (!localFactoryError && localHandler != null) {
-                        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_LocalSynchronization"));
-                        progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
-                        try {
-                            progress.start();
-                            localRetval = localHandler.call();
-                        } catch (Exception exc) {
-                            LOGGER.log(Level.INFO, "Copy Support Fail: ", exc);
-                            localRetval = false;
-                            localExc = exc;
-                        } finally {
-                            progress.finish();
-                        }
-                    }
-                    if (!localRetval) {
-                        String message = NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail");
-                        Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
-                        if (!continueCopying.equals(JOptionPane.YES_OPTION)) {
-                            localFactoryError = true;
-                            LOGGER.log(Level.INFO, "Copy Support Disabled By User", localExc);
-                        }
-                    }
+            public ProxyHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
+                this.localHandler = localHandler;
+                this.remoteHandler = remoteHandler;
+            }
 
-                    if (!remoteFactoryError && remoteHandler != null) {
-                        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_RemoteSynchronization"));
-                        progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
-                        try {
-                            progress.start();
-                            remoteRetval = remoteHandler.call();
-                        } catch (Exception exc) {
-                            LOGGER.log(Level.INFO, "Remote On Save Fail: ", exc);
-                            remoteRetval = false;
-                            remoteExc = exc;
-                        } finally {
-                            progress.finish();
-                        }
-                        if (!remoteRetval) {
-                            String message = NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail");
-                            Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
-                            if (continueCopying.equals(JOptionPane.YES_OPTION)) {
-                                remoteFactoryError = true;
-                                LOGGER.log(Level.INFO, "Remote On Save  Disabled By User", remoteExc);
-                            }
-                        }
-                    }
-                    return remoteRetval && localRetval;
+            public Boolean call() throws Exception {
+                Boolean localRetval = callLocal();
+                Boolean remoteRetval = callRemote();
+                if (localRetval == null && remoteRetval == null) {
+                    return null;
                 }
-            } : null;
+                if (localRetval != null && !localRetval) {
+                    return false;
+                }
+                if (remoteRetval != null && !remoteRetval) {
+                    return false;
+                }
+                return true;
+            }
+
+            private Boolean callLocal() {
+                Boolean localRetval = null;
+                Exception localExc = null;
+
+                if (!localFactoryError && localHandler != null) {
+                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_LocalSynchronization"));
+                    progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
+                    try {
+                        progress.start();
+                        localRetval = localHandler.call();
+                    } catch (Exception exc) {
+                        LOGGER.log(Level.INFO, "Copy Support Fail: ", exc);
+                        localRetval = false;
+                        localExc = exc;
+                    } finally {
+                        progress.finish();
+                    }
+                }
+                if (localRetval != null && !localRetval) {
+                    String message = NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail");
+                    Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
+                    if (!continueCopying.equals(JOptionPane.YES_OPTION)) {
+                        localFactoryError = true;
+                        LOGGER.log(Level.INFO, "Copy Support Disabled By User", localExc);
+                    }
+                }
+                return localRetval;
+            }
+
+            private Boolean callRemote() {
+                Boolean remoteRetval = null;
+                Exception remoteExc = null;
+
+                if (!remoteFactoryError && remoteHandler != null) {
+                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_RemoteSynchronization"));
+                    progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
+                    try {
+                        progress.start();
+                        remoteRetval = remoteHandler.call();
+                    } catch (Exception exc) {
+                        LOGGER.log(Level.INFO, "Remote On Save Fail: ", exc);
+                        remoteRetval = false;
+                        remoteExc = exc;
+                    } finally {
+                        progress.finish();
+                    }
+                    if (remoteRetval != null && !remoteRetval) {
+                        String message = NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail");
+                        Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
+                        if (continueCopying.equals(JOptionPane.YES_OPTION)) {
+                            remoteFactoryError = true;
+                            LOGGER.log(Level.INFO, "Remote On Save  Disabled By User", remoteExc);
+                        }
+                    }
+                }
+                return remoteRetval;
+            }
         }
     }
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.util;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -66,6 +67,7 @@ abstract class FileOperationFactory {
     protected final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
         return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && phpVisibilityQuery.isVisible(source);
     }
+
     static boolean isNbProjectMetadata(FileObject fo) {
         final String metadataName = "nbproject";//NOI18N
         if (fo.getPath().indexOf(metadataName) != -1) {
@@ -81,5 +83,11 @@ abstract class FileOperationFactory {
         return false;
     }
 
+    protected FileObject getSources() {
+        return ProjectPropertiesSupport.getSourcesDirectory(project);
+    }
 
+    protected String getPath(FileObject fo) {
+        return FileUtil.getFileDisplayName(fo);
+    }
 }
