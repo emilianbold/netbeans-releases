@@ -616,10 +616,12 @@ public abstract class BaseFileObj extends FileObject {
                 }
             }
         } finally {
-            if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-            setValid(false);
+            if (mutexPrivileged != null) {
+                mutexPrivileged.exitWriteAccess();
+            }
         }
 
+        setValid(false);
         fireFileDeletedEvent(false);
 
     }

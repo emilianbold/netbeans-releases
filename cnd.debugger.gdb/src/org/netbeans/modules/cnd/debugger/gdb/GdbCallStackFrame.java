@@ -48,7 +48,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.debugger.common.CallStackFrame;
-import org.netbeans.modules.cnd.debugger.common.utils.AutosProvider;
+import org.netbeans.modules.cnd.debugger.common.utils.Autos;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbLocalVariable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -258,7 +258,7 @@ public class GdbCallStackFrame extends CallStackFrame {
 
     public AbstractVariable[] getAutos() {
         if (cachedAutos == null) {
-            Set<String> res = AutosProvider.getAutos(getDocument(), getOffset());
+            Set<String> res = Autos.get(getDocument(), getOffset());
             cachedAutos = new AbstractVariable[res.size()];
             int i = 0;
             for (String name : res) {

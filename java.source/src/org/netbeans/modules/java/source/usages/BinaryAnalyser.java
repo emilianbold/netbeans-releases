@@ -97,9 +97,7 @@ import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.NestedElementValue;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
@@ -241,16 +239,7 @@ public class BinaryAnalyser implements LowMemoryListener {
         }
         return time;
     }
-    
-    public void clear () throws IOException {
-        if (cont != null) {
-            cont.finish();
-            cont = null;
-        }
-        index.clear();
-    }
-    
-    
+                
         /** Analyses a folder 
      *  @param folder to analyze
      *  @param rootURL the url of root, it would be nicer to pass an URL type,
@@ -375,10 +364,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     
     //Cleans up usages of deleted class
     private final void delete (final String className) throws IOException {
-        assert className != null;
-        if (!this.index.isValid(false)) {
-            return;
-        }
+        assert className != null;        
         this.toDelete.add(Pair.<String,String>of(className,null));
     }
     

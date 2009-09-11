@@ -124,7 +124,10 @@ public class AutoupdateSettings {
         if (! newIdeIdentity.equals (oldIdeIdentity) || ! existsSuperIdentity () || getPreferences ().get (PROP_QUALIFIED_IDENTITY, null) == null) {
             err.log (Level.FINE, "Put new value of PROP_IDE_IDENTITY to " + newIdeIdentity);
             getPreferences ().put (PROP_IDE_IDENTITY, newIdeIdentity);
-            getPreferences ().put (PROP_SUPER_IDENTITY, getSuperIdentity ());
+            String sid = getSuperIdentity ();
+            if(sid!=null) {
+                getPreferences ().put (PROP_SUPER_IDENTITY, sid);
+            }
             getPreferences ().put (PROP_QUALIFIED_IDENTITY, getQualifiedIdentity (newIdeIdentity));
         }
         return;

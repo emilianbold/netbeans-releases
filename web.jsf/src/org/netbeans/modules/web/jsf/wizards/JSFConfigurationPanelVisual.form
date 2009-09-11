@@ -15,13 +15,16 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-9,0,0,1,-21"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-41,0,0,1,-21"/>
   </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
   <SubComponents>
     <Container class="javax.swing.JTabbedPane" name="jsfTabbedPane">
       <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[106, 62]"/>
+        </Property>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[483, 210]"/>
         </Property>
@@ -58,28 +61,28 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rbNoneLibrary" pref="433" max="32767" attributes="0"/>
+                          <Component id="rbNoneLibrary" pref="459" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="255" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="289" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="146" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="146" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="213" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="213" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
-                          <Component id="rbNewLibrary" alignment="1" pref="433" max="32767" attributes="0"/>
+                          <Component id="rbNewLibrary" alignment="1" pref="459" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lVersion" alignment="1" pref="411" max="32767" attributes="0"/>
-                                  <Component id="lDirectory" alignment="0" pref="411" max="32767" attributes="0"/>
+                                  <Component id="lVersion" alignment="1" pref="437" max="32767" attributes="0"/>
+                                  <Component id="lDirectory" alignment="0" pref="437" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -90,7 +93,7 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace pref="16" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="rbNoneLibrary" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -277,8 +280,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="tServletName" alignment="0" pref="291" max="32767" attributes="0"/>
-                                  <Component id="tURLPattern" alignment="0" pref="291" max="32767" attributes="0"/>
+                                  <Component id="tServletName" alignment="0" pref="314" max="32767" attributes="0"/>
+                                  <Component id="tURLPattern" alignment="0" pref="314" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -316,7 +319,7 @@
                           <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbPreferredLang" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

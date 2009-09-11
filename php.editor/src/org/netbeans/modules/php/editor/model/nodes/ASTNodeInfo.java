@@ -95,30 +95,37 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
 
     public QualifiedName getQualifiedName() {
-        return toQualifiedName(node);
+        return toQualifiedName(node, false);
     }
 
-    private static QualifiedName toQualifiedName(ASTNode node) {
+    public static QualifiedName toQualifiedName(ASTNode node, boolean type) {
+        QualifiedName retval = null;
         if (node instanceof FunctionInvocation) {
             FunctionInvocation fi = (FunctionInvocation) node;
-            return QualifiedName.create(fi.getFunctionName().getName());
+            retval = QualifiedName.create(fi.getFunctionName().getName());
         } else if (node instanceof ClassName) {
             ClassName cname = (ClassName) node;
-            return QualifiedName.create(cname.getName());
+            retval = QualifiedName.create(cname.getName());
         } else if (node instanceof Identifier) {
             Identifier cname = (Identifier) node;
-            return QualifiedName.createUnqualifiedName(cname);
+            retval = QualifiedName.createUnqualifiedName(cname);
         } else if (node instanceof NamespaceName) {
-            return QualifiedName.create((NamespaceName)node);
+            retval = QualifiedName.create((NamespaceName)node);
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
-            return QualifiedName.create(instanceCreation.getClassName().getName());
+            retval = QualifiedName.create(instanceCreation.getClassName().getName());
         } else if (node instanceof UseStatementPart) {
             UseStatementPart statementPart = (UseStatementPart) node;
-            return QualifiedName.create(statementPart.getName());
+            retval = QualifiedName.create(statementPart.getName());
+        } else if (type && node instanceof StaticDispatch) {
+            StaticDispatch staticDispatch = (StaticDispatch) node;
+            retval = QualifiedName.create(staticDispatch.getClassName());
         }
-        String toName = toName(node);
-        return QualifiedName.createUnqualifiedName(toName);
+        if (retval == null) {
+            String toName = toName(node);
+            retval = QualifiedName.createUnqualifiedName(toName);
+        }
+        return retval;
     }
 
     public Kind getKind() {
@@ -295,7 +302,7 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (node instanceof Reference) {
             return toName(((Reference)node).getExpression());
         } else if (node instanceof UseStatementPart) {
-            return toQualifiedName(node).toString();
+            return toQualifiedName(node, false).toString();
         }
         throw new IllegalStateException(node.getClass().toString());
     }

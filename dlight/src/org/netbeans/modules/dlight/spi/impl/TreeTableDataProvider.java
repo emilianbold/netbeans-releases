@@ -64,7 +64,7 @@ public interface TreeTableDataProvider<T extends TreeTableNode> extends DataProv
    * @param path
    * @return
    */
-  public abstract List<T> getChildren(List<T> path);
+   public abstract List<T> getChildren(List<T> path, List<Column> columns, List<Column> orderBy);
 
   /**
    * Returns tree column value here

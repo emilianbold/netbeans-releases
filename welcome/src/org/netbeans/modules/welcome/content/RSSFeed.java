@@ -469,7 +469,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                 reload();
             } else {
                 reloadTimer = RequestProcessor.getDefault().post( new Reload(),
-                        (int)(RSS_FEED_TIMER_RELOAD_MILLIS - (System.currentTimeMillis() - lastReload)) );
+                        Math.max(1, (int)(RSS_FEED_TIMER_RELOAD_MILLIS - (System.currentTimeMillis() - lastReload))) );
             }
         }
     }

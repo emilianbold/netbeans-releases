@@ -230,7 +230,8 @@ public class ElCompletionProvider implements CompletionProvider {
                 case ELExpression.EL_START:
                     // implicit objects
                     for (ELImplicitObject implOb : 
-                        ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) 
+                        ELImplicitObjects.getELImplicitObjects(
+                                elExpr.getReplace(), elExpr)) 
                     {
                         result.addItem(ElCompletionItem.createELImplicitObject(
                                 implOb.getName(), anchor, implOb.getType()));

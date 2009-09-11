@@ -48,7 +48,6 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -56,13 +55,11 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 
 
@@ -70,8 +67,20 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author ehucka, Revision Petr Cyhelsky
  */
-public class MethodBreakpointsTest extends JellyTestCase {
+public class MethodBreakpointsTest extends DebuggerTestCase {
 
+    private static String[] tests = new String[]{
+        "testMethodBreakpointCreation",
+       /* "testMethodBreakpointPrefilledConstructor",
+        "testMethodBreakpointPrefilledMethod",
+        "testMethodBreakpointFunctionalityInPrimaryClass",
+        "testMethodBreakpointFunctionalityInSecondClass",*/
+        "testMethodBreakpointFunctionalityOnAllMethods",
+        /*"testMethodBreakpointFunctionalityOnExit",
+        "testConditionalMethodBreakpointFunctionality",
+        "testMethodBreakpointsValidation"*/
+    };
+    
     //MainWindowOperator.StatusTextTracer stt = null;
     /**
      *
@@ -94,19 +103,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
      * @return
      */
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MethodBreakpointsTest.class).addTest(
-                    "testMethodBreakpointCreation",
-                    "testMethodBreakpointPrefilledConstructor",
-                    "testMethodBreakpointPrefilledMethod",
-                    "testMethodBreakpointFunctionalityInPrimaryClass",
-                    "testMethodBreakpointFunctionalityInSecondClass",
-                    "testMethodBreakpointFunctionalityOnAllMethods",
-                    "testMethodBreakpointFunctionalityOnExit",
-                    "testConditionalMethodBreakpointFunctionality",
-                    "testMethodBreakpointsValidation"
-                )
-            .enableModules(".*").clusters(".*"));
+        return createModuleTest(MethodBreakpointsTest.class, tests);
     }
 
     /**
@@ -114,18 +111,8 @@ public class MethodBreakpointsTest extends JellyTestCase {
      */
     @Override
     public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  ####### ");
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
     }
 
     /**
@@ -243,11 +230,11 @@ public class MethodBreakpointsTest extends JellyTestCase {
             new ContinueAction().perform();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:51");
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");            
             new ContinueAction().perform();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:121");
+            new ContinueAction().perform();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:32");
             new ContinueAction().perform();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
             new ContinueAction().perform();

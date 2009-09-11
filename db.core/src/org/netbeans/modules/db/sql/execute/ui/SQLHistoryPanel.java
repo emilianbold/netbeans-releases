@@ -56,12 +56,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -82,6 +85,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.netbeans.modules.db.sql.history.SQLHistoryException;
@@ -110,17 +115,21 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private static final FileObject historyRoot = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
     private static String historyFilePath;
     private static Object[][] data;
-    private List<String> currentUrlList;
-    private Object[] comboData;
+    private Set<String> currentConnections = new HashSet<String>();
     private SQLHistoryView view;
     private JEditorPane editorPane;
-    private String currentUrl;
+    private Map<String,String> urlAliasMap = new HashMap<String, String>();
+    private Map<String,String> aliasUrlMap = new HashMap<String, String>();
 
     /** Creates new form SQLHistoryPanel */
     public SQLHistoryPanel(final JEditorPane editorPane) {
         this.editorPane = editorPane;
         historyFilePath = FileUtil.getFileDisplayName(historyRoot) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
         view = new SQLHistoryView(new SQLHistoryModelImpl());
+        for (DatabaseConnection existingConnection : ConnectionManager.getDefault().getConnections()) {
+            urlAliasMap.put(existingConnection.getDatabaseURL(), existingConnection.getDisplayName());
+            aliasUrlMap.put(existingConnection.getDisplayName(), existingConnection.getDatabaseURL());
+        }
         initSQLHistoryTableData();
         initComponents();
         initComponentData();
@@ -173,19 +182,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
 
         // Initialize sql column data
         connectionUrlComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
-        currentUrlList = new ArrayList<String>();
-        List<String> urlList = view.getUrlList();
-        String defaultUrlItem = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
-        urlList.add(defaultUrlItem);
-        comboData = new Object[urlList.size()];
-        int row = 0;    
-        for (String url : urlList) {
-            comboData[row] = url;
-            row++;
-        }
-        // set the current url
-        currentUrl = defaultUrlItem;
-        connectionUrlComboBox.setSelectedItem(defaultUrlItem);
+        view.updateConnectionUrl();
     }
     
     private void initSQLHistoryTableData() {
@@ -243,7 +240,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Connection")); // NOI18N
 
-        connectionUrlComboBox.setModel(new UrlComboBoxModel());
         connectionUrlComboBox.setRenderer(new ConnectionUrlRenderer());
 
         jLabel2.setLabelFor(searchTextField);
@@ -292,11 +288,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 610, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jLabel1)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionUrlComboBox, 0, 212, Short.MAX_VALUE)
+                                .add(connectionUrlComboBox, 0, 306, Short.MAX_VALUE)
                                 .add(18, 18, 18)
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -305,7 +301,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                         .add(insertSQLButton)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                        .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
                         .add(493, 493, 493))
                     .add(layout.createSequentialGroup()
                         .add(sqlLimitLabel)
@@ -562,17 +558,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             return buffer.toString();
         }
              
-        public List<String> getUrlList() {
-            List<String> urlList = new ArrayList<String>();
-            for (SQLHistory sqlHistory : sqlHistoryList) {
-                String url = sqlHistory.getUrl();
-                if (!urlList.contains(url)) {
-                    urlList.add(url);
-                }
-            }
-            return urlList;
-        }
-
         public List<String> getSQLList(List<SQLHistory> sqlHistoryList) {
             List<String> sqlList = new ArrayList<String>();
             if (sqlHistoryList == null) {
@@ -609,32 +594,24 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
         public void updateConnectionUrl() {
             // Initialize combo box data
-            currentUrlList.clear();
-            String historyFilePath = FileUtil.getFileDisplayName(historyRoot) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            try {
-                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
-            } catch (ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SQLHistoryException ex) {
-                handleSQLHistoryException();
-            }
+            currentConnections.clear();
             // Set default item in the combo box
             String defaultSelectedItem = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
-            currentUrlList.add(defaultSelectedItem);
-            connectionUrlComboBox.setSelectedItem(defaultSelectedItem);
+            currentConnections.add(defaultSelectedItem);
 
             for (SQLHistory sqlHistory : sqlHistoryList) {
-                if (!currentUrlList.contains(sqlHistory.getUrl())) {
-                    currentUrlList.add(sqlHistory.getUrl());
+                String url = sqlHistory.getUrl();
+                if (urlAliasMap.containsKey(url)) {
+                    // add connection display name
+                    currentConnections.add(urlAliasMap.get(url));
+                } else {
+                    // add URL
+                    currentConnections.add(url);
                 }
             }
-            // Initialize combo data
-            comboData = null;
-            comboData = new Object[currentUrlList.size()];
-            int row = 0;
-            for (String url : currentUrlList) {
-                comboData[row++] = url;
-            }
+            // Initialize combo box
+            connectionUrlComboBox.setModel(new DefaultComboBoxModel(currentConnections.toArray()));
+            connectionUrlComboBox.setSelectedItem(defaultSelectedItem);
             connectionUrlComboBox.revalidate();
         }
 
@@ -642,9 +619,12 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             List<SQLHistory> filteredSqlHistoryList = new ArrayList<SQLHistory>();
             String match = searchTextField.getText();
             String url = (String)connectionUrlComboBox.getSelectedItem();
+            if (aliasUrlMap.containsKey(url)) {
+                url = aliasUrlMap.get(url);
+            }
             // modify list of SQL to reflect a selection from the Connection dropdown or if a match text entered
             for (SQLHistory sqlHistory : sqlHistoryList) {
-                if (sqlHistory.getUrl().equals(url) || url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ConnectionCombo"))) {
+                if (sqlHistory.getUrl().equals(url) || url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem"))) {
                     if (!match.equals(MATCH_EMPTY)) {
                         if (sqlHistory.getSql().toLowerCase().indexOf(match.toLowerCase()) != -1) {
                             filteredSqlHistoryList.add(sqlHistory);
@@ -659,39 +639,12 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
     }
 
-    private final class UrlComboBoxModel extends DefaultComboBoxModel implements ActionListener {
-
-        @Override
-        public void setSelectedItem(Object item) {
-            super.setSelectedItem(item);
-        }
-
-        @Override
-        public Object getSelectedItem() {
-            return super.getSelectedItem();
-        }
-
-        @Override
-        public int getSize() {
-            return comboData.length;
-        }
-
-        @Override
-        public Object getElementAt(int index) {
-            return comboData[index];
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            currentUrl = ((JComboBox) evt.getSource()).getSelectedItem().toString();
-        }
-    }
-
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
         List<String> sqlList;
         List<String> dateList;
         int sortCol = 1;
         boolean sortAsc = false;
-            
+
         @Override
         public int getRowCount() {
             if (sqlHistoryTable.getSelectedRow() == -1) {
@@ -778,6 +731,9 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             // Get the connection url from the combo box
             if (sqlHistoryList.size() > 0) {
                 url = connectionUrlComboBox.getSelectedItem().toString();
+                if (aliasUrlMap.containsKey(url)) {
+                    url = aliasUrlMap.get(url);
+                }
             } else {
                 url = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
             }

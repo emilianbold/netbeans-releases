@@ -40,13 +40,8 @@
  */
 package org.netbeans.jellytools;
 
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -56,14 +51,6 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.project.ui.actions.TestSupport;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /** Test DocumentsDialogOperator.
  *

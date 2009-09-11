@@ -38,27 +38,30 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
-import javax.swing.AbstractAction;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.module.dlight.threads.api.OpenInEditor;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -76,10 +79,10 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private JPanel emptyPanel;
     private final CardLayout cardLayout = new CardLayout();
 
-    ThreadStackVisualizer(ThreadDump descriptor, long startTime) {
+    ThreadStackVisualizer(StackDataProvider sourceFileInfo, ThreadDump descriptor, long startTime) {
         this.descriptor = descriptor;
         this.startTime = startTime;
-        stackPanel = MultipleCallStackPanel.createInstance();
+        stackPanel = MultipleCallStackPanel.createInstance(sourceFileInfo);
         setLayout(cardLayout);
         emptyPanel = new JPanel();
         add(emptyPanel, "empty");//NOI18N
@@ -97,7 +100,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
         long time = 0;
         if (descriptor != null){
-            time = descriptor.getTimestamp();
+            time =  ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - startTime;
         }
         String timeString = TimeLineUtils.getMillisValue(time);
         String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerNoStackAt", timeString); //NOI18N
@@ -113,11 +116,24 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         String timeString = TimeLineUtils.getMillisValue(time);
         String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
         stackPanel.setRootVisible(rootName);
-        for (ThreadSnapshot stack : descriptor.getThreadStates()) {
+        for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
             MSAState msa = stack.getState();
             ThreadStateResources res = ThreadStateResources.forState(msa);
             if (res != null) {
-                stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), stack.getStack()); // NOI18N
+                Future<List<FunctionCall>> task = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
+
+                    public List<FunctionCall> call() throws Exception {
+                        return stack.getStack();
+                    }
+                }, "Ask for a stack");//NOI18N
+                try {
+                    //NOI18N
+                    stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), task.get()); // NOI18N
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
 
         }
@@ -137,7 +153,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     public String getDisplayName() {
-        if (!descriptor.getThreadStates().isEmpty()) {
+        if (descriptor != null && !descriptor.getThreadStates().isEmpty()) {
             return descriptor.getThreadStates().get(0).getThreadInfo().getThreadName();
         }
         return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
@@ -169,19 +185,5 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     public void refresh() {
-    }
-
-    private static final class OpenAction extends AbstractAction {
-
-        private final FunctionCall call;
-
-        private OpenAction(FunctionCall call) {
-            super(call.getDisplayedName());
-            this.call = call;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            OpenInEditor.open(call);
-        }
     }
 }

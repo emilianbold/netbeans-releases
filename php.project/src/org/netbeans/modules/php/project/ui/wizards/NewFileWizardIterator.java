@@ -49,10 +49,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -85,7 +85,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         String ext = FileUtil.getExtension(fname);
 
         FileObject foo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), fname);
-        if (foo == null || !CommandUtils.isPhpFile(foo)) {
+        if (foo == null || !FileUtils.isPhpFile(foo)) {
             if (!StringUtils.hasText(ext)) {
                 Templates.setTargetName(wizard, fname + ".php"); // NOI18N
                 fname = Templates.getTargetName(wizard);

@@ -97,6 +97,22 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public boolean isSource () {
         return this.isSource;
     }
+
+    public boolean isEmpty () {
+        try {
+            return ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException, InterruptedException {
+                    return !PersistentClassIndex.this.index.exists();
+                }
+            }).booleanValue();
+        } catch (InterruptedException ie) {
+            //Not thrown but declared
+            return false;
+        } catch (IOException ioe) {
+            //Not thrown but declared
+            return false;
+        }
+    }
     
     public FileObject[] getSourceRoots () {
         FileObject[] rootFos;

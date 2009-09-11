@@ -90,7 +90,6 @@ import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.JarPackagingRunChecker;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
@@ -899,7 +898,6 @@ public final class NbMavenProjectImpl implements Project {
                     new RecommendedTemplatesImpl(this),
                     new MavenSourceLevelImpl(this),
                     problemReporter,
-                    new UserActionGoalProvider(this),
                     watcher,
                     new MavenFileEncodingQueryImpl(this),
                     new TemplateAttrProvider(this),

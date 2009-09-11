@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.Calendar;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -102,7 +103,7 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
                           "OpenIDE-Module=\"{0}\" " +
                           "OpenIDE-Module-Implementation-Version=\"090527\" " +
                           "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
-                          "OpenIDE-Module-Long-Description=\"Bugzilla Support (Early Access)\" " +
+                          "OpenIDE-Module-Long-Description=\"Bugzilla Support to version 3.2.3 \" " +
                           "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
                                                                "org.netbeans.api.progress/1 > 1.13, " +
                                                                "org.netbeans.libs.bugtracking > 1.0, " +
@@ -181,6 +182,24 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
         assertFalse(jau.wasCheckedToday(c.getTime().getTime()));
 
         assertTrue(jau.wasCheckedToday(System.currentTimeMillis()));    // now
+    }
+
+    public void testGetVersion() {
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+
+        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
+        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
+        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1").toString());
+        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("version 1.1.1").toString());
+        assertEquals(new BugzillaVersion("1.1").toString(), jau.getVersion("version 1.1").toString());
+    }
+    
+    public void testGotVersion() {
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        String desc = NbBundle.getBundle("org/netbeans/modules/bugzilla/Bundle").getString("OpenIDE-Module-Long-Description");
+        BugzillaVersion version = jau.getVersion(desc);
+        assertNotNull(version);
+        assertEquals(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString(), version.toString());
     }
 
     private void populateCatalog(String contents) throws FileNotFoundException, IOException {

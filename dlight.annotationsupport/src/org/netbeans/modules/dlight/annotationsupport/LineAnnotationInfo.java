@@ -40,6 +40,8 @@ package org.netbeans.modules.dlight.annotationsupport;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 
@@ -52,8 +54,13 @@ public class LineAnnotationInfo {
     private FileAnnotationInfo fileAnnotationInfo;
     private int line;
     private long offset;
+    private long lineOffset = -1;
     private String annotation;
+    private String tooltip;
     private String columns[];
+    private Position position;
+    private int y1;
+    private int y2;
 
     public LineAnnotationInfo(FileAnnotationInfo fileAnnotationInfo) {
         this.fileAnnotationInfo = fileAnnotationInfo;
@@ -65,20 +72,45 @@ public class LineAnnotationInfo {
      */
     public int getLine() {
         if (line < 0) {
-            setLine(getFileAnnotationInfo().getEditorPane());
+            try {
+                line = Utilities.getLineOffset((BaseDocument) getFileAnnotationInfo().getEditorPane().getDocument(), (int) offset);
+                line++;
+            } catch (BadLocationException ble) {
+            }
         }
         return line;
     }
-
-    private void setLine(JEditorPane editorPane) {
-        int sourceLine = -1;
-        try {
-            sourceLine = Utilities.getLineOffset((BaseDocument) editorPane.getDocument(), (int) offset);
-            sourceLine++;
-        } catch (BadLocationException ble) {
-            sourceLine = -1;
+    
+    /**
+     * @return the offset
+     */
+    public long getOffset() {
+        if (offset < 0) {
+            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(line-1);
+            offset = el.getStartOffset();
         }
-        setLine(sourceLine);
+        return offset;
+    }
+
+    public long getLineOffset() {
+        if (lineOffset <= 0) {
+            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(getLine()-1);
+            lineOffset = el.getStartOffset();
+
+        }
+        return lineOffset;
+    }
+
+    public Position getPosition() {
+        if (position == null) {
+            try {
+                position = fileAnnotationInfo.getEditorPane().getDocument().createPosition((int)getLineOffset());
+            }
+            catch (BadLocationException ble) {
+
+            }
+        }
+        return position;
     }
 
     /**
@@ -106,13 +138,6 @@ public class LineAnnotationInfo {
             }
         }
         return annotation;
-    }
-
-    /**
-     * @return the offset
-     */
-    public long getOffset() {
-        return offset;
     }
 
     /**
@@ -149,4 +174,47 @@ public class LineAnnotationInfo {
     public void setColumns(String[] columns) {
         this.columns = columns;
     }
+
+    /**
+     * @return the tooltip
+     */
+    public String getTooltip() {
+        if (tooltip == null) {
+            String tt = "";
+            int i = 0;
+            for (String col : getFileAnnotationInfo().getColumnNames()) {
+                if (tt.length() > 0) {
+                    tt += " "; // NOI18N
+                }
+                tt += col + ':' + columns[i];
+                i++;
+            }
+            tooltip = tt;
+        }
+        return tooltip;
+    }
+
+    /**
+     * @return the y1
+     */
+    public int getY1() {
+        return y1;
+    }
+    
+    /**
+     * @return the y2
+     */
+    public int getY2() {
+        return y2;
+    }
+
+    /**
+     * @param y1 the y1 to set
+     */
+    public void setY(int y1, int y2) {
+        this.y1 = y1;
+        this.y2 = y2;
+    }
+
+
 }

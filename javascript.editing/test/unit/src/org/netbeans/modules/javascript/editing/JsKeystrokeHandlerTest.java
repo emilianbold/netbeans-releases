@@ -91,8 +91,8 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     }
 
     public void testNoMatchInComments() throws Exception {
-        insertChar("// Hello^", '\'', "// Hello'^");
-        insertChar("// Hello^", '"', "// Hello\"^");
+        insertChar("// Hello^", '\'', "// Hello'^'");
+        insertChar("// Hello^", '"', "// Hello\"^\"");
         insertChar("// Hello^", '[', "// Hello[^");
         insertChar("// Hello^", '(', "// Hello(^");
         insertChar("/* Hello^*/", '\'', "/* Hello'^*/");
@@ -550,8 +550,8 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     }
 
     public void testDeleteContComment() throws Exception {
-        deleteChar("// ^", "^");
-        deleteChar("\n// ^", "\n^");
+        deleteChar("// ^", "//^");
+        deleteChar("\n// ^", "\n//^");
     }
 
     public void testDeleteContComment2() throws Exception {
@@ -561,7 +561,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
 
     public void testNoDeleteContComment() throws Exception {
         deleteChar("//  ^", "// ^");
-        deleteChar("//^", "^");
+        deleteChar("//^", "/^");
         deleteChar("puts ('// ^')", "puts ('//^')");
     }
 
@@ -616,7 +616,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     }
 
     public void testdeleteWord2() throws Exception {
-        deleteWord("foo_bar_baz ^", "foo_bar_baz^");
+        deleteWord("foo_bar_baz ^", "^");
         deleteWord("foo_bar_^", "foo_^");
     }
 

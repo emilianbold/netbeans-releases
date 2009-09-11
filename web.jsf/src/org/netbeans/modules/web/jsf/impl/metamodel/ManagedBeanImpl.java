@@ -115,7 +115,7 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
         myClass = type.getQualifiedName().toString();
         myName = parseResult.get("name", String.class);                 // NOI18N
         if ( myName== null || myName.length() == 0 ){
-            myName = myClass.substring( myClass.lastIndexOf(".") +1 ).toLowerCase();
+            myName = getConvertedClassName( myClass );
         }
         
         setScope( types , type );
@@ -194,6 +194,18 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
                 myStringScope = myScope.toString();
             }
         }
+    }
+    
+    public static String getConvertedClassName( String className ){
+        String result = className.substring( className.lastIndexOf(".") +1 );
+        if ( result.length() >1 ){
+            StringBuilder builder = new StringBuilder();
+            builder.append(  
+                    Character.toLowerCase(result.charAt(0)));
+            builder.append( result.substring(1));
+            result = builder.toString();
+        }
+        return result;
     }
     
     private final static Map<String , ManagedBean.Scope> SCOPES 

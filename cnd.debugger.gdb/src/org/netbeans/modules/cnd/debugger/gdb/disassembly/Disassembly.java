@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisProgressPanel;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;

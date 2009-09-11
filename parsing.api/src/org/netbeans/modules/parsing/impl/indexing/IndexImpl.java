@@ -54,6 +54,8 @@ public interface IndexImpl {
 
     public void removeDocument (String relativePath);
 
+    public boolean isValid() throws IOException;
+
     public void store () throws IOException;
 
     public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException;

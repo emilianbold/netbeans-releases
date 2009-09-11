@@ -74,6 +74,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHan
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.InitiatorToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -286,4 +287,7 @@ public class SAMLHolderOfKeyProfile extends ProfileBase
         ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).setSecureConversation(component, enable);
     }
 
+    public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
+        return true;
+    }
 }

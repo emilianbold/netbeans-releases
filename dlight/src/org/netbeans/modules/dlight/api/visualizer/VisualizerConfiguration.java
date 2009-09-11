@@ -36,12 +36,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.visualizer;
 
-import org.netbeans.modules.dlight.api.*;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 
 /**
  * Represents visualizer configuration.
@@ -50,21 +47,17 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
  * be implemented to return table description to
  */
 public interface VisualizerConfiguration {
-  /**
-   * Returns {@link org.netbeans.modules.dlight.api.dataprovider.DataModelScheme} the
-   * VisualizerConfiguration supports
-   * @return scheme supported by VisualizerConfiguration
-   */
-  DataModelScheme getSupportedDataScheme();
-  /**
-   * Returns {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata} which is
-   * used to create Visualizer on the base of 
-   * @return table description
-   */
-  DataTableMetadata getMetadata();
-  /**
-   * Unqiue id
-   * @return unque id
-   */
-  String getID();
+
+    /**
+     * Returns {@link org.netbeans.modules.dlight.api.dataprovider.DataModelScheme} the
+     * VisualizerConfiguration supports
+     * @return scheme supported by VisualizerConfiguration
+     */
+    DataModelScheme getSupportedDataScheme();
+
+    /**
+     * Unqiue id
+     * @return unque id
+     */
+    String getID();
 }

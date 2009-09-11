@@ -58,19 +58,14 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
     static final String LIBRARIES = "Libraries";
     
     private static final String BUILD = "Build";
-//    private static final String BUILD_TESTS = "BuildTests";
     private static final String JAR = "Jar";
     private static final String JAVADOC = "Javadoc";
     public static final String RUN = "Run";
-//    private static final String RUN_TESTS = "RunTests";
     private static final String APPLICATION = "Application";
-
-    private static final String WEBSERVICE_CATEGORY = "WebServiceCategory";
 
     private String name;
     
-    /** Creates a new instance of J2SECompositePanelProvider */
-    public J2SECompositePanelProvider(String name) {
+    private J2SECompositePanelProvider(String name) {
         this.name = name;
     }
 
@@ -106,11 +101,6 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
             toReturn = ProjectCustomizer.Category.create(
                     RUN,
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
-                    null);
-        } else if (APPLICATION.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    APPLICATION,
-                    bundle.getString( "LBL_Config_Application" ), // NOI18N,
                     null);
         }
         assert toReturn != null : "No category for name:" + name;

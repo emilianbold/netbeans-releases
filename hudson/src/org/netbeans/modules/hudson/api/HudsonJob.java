@@ -49,7 +49,7 @@ import org.openide.nodes.AbstractNode;
  * Instance of the Hudson Job in specified instance
  */
 public interface HudsonJob extends Comparable<HudsonJob> {
-    
+
     /**
      * Describes state of the Hudson Job
      */
@@ -202,5 +202,7 @@ public interface HudsonJob extends Comparable<HudsonJob> {
      * Normally true, but may be false if a job is not considered interesting on this server.
      */
     boolean isSalient();
+
+    void setSalient(boolean b);
 
 }

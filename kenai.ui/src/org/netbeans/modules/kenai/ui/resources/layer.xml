@@ -152,7 +152,7 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-collab-chat-ChatAction.instance"/>
                 <attr name="position" intvalue="918"/>
             </file>
-        </folder>
+            </folder>
         <folder name="File">
             <file name="org-netbeans-modules-kenai-ui-OpenKenaiProjectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-OpenKenaiProjectAction.instance"/>
@@ -164,8 +164,12 @@
         <folder name="Components">
             <file name="KenaiTopComponent.settings" url="KenaiTopComponentSettings.xml"/>
             <file name="ChatTopComponent.settings" url="ChatTopComponentSettings.xml"/>
+            <file name="kenaiProjectTopComponent.settings" url="kenaiProjectTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
+            <folder name="editor">
+                <file name="kenaiProjectTopComponent.wstcref" url="kenaiProjectTopComponentWstcref.xml"/>
+            </folder>
             <folder name="explorer">
                 <file name="KenaiTopComponent.wstcref" url="KenaiTopComponentWstcref.xml">
                     <attr name="position" intvalue="455"/>

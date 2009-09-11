@@ -74,21 +74,22 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -97,8 +98,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.kenai.collab.chat.ChatTopComponent.*;
 
@@ -130,7 +131,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private CompoundUndoManager undo;
     private MessageHistoryManager history = new MessageHistoryManager();
 
-    private static final String ISSUE_REPORT_STRING = "(issue|bug) #?([A-Z_]+-)*([0-9]+)"; //NOI18N
+    private static final String ISSUE_REPORT_STRING = "(issue |bug |ISSUE:)#?([A-Z_]+-)*([0-9]+)"; //NOI18N
     /**
      * Pattern for matching issue references in the form "issue 123", "issue #123", "bug 123" and "bug #123"
      */
@@ -163,7 +164,7 @@ public class ChatPanel extends javax.swing.JPanel {
     EXCEPTION_MESSAGE_STRING); 
 
     private static final String CLASSPATH_RESOURCE_STRING = 
-            "(([a-zA-Z_$][a-zA-Z0-9_$]*/)+)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
+            "FILE:(([a-zA-Z_$][a-zA-Z0-9_$]*/)+)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
     /**
      * group(5) is line
      * group(1) is folder
@@ -172,7 +173,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private static final Pattern CLASSPATH_RESOURCE = Pattern.compile(CLASSPATH_RESOURCE_STRING);
 
     private static final String ABSOLUTE_RESOURCE_STRING = 
-            "/(([a-zA-Z_$][a-zA-Z0-9_$]*/)+)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
+            "FILE:/(([a-zA-Z_$][a-zA-Z0-9_$]*/)+)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
     /**
      * group(5) is line
      * group(1) is folder
@@ -181,7 +182,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private static final Pattern ABSOLUTE_RESOURCE = Pattern.compile(ABSOLUTE_RESOURCE_STRING);
 
     private static final String PROJECT_RESOURCE_STRING = 
-            "\\{\\$([a-zA-Z_$][\\.a-zA-Z0-9_$]*)\\}/(([a-zA-Z_$][a-zA-Z0-9_$]*/)*)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
+            "FILE:\\{\\$([a-zA-Z_$][\\.a-zA-Z0-9_$]*)\\}/(([a-zA-Z_$][a-zA-Z0-9_$]*/)*)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
 
     /**
      * group(6) is line
@@ -195,29 +196,8 @@ public class ChatPanel extends javax.swing.JPanel {
             Pattern.compile("("+STACK_TRACE_STRING+")|("+CLASSPATH_RESOURCE_STRING +")|("+PROJECT_RESOURCE_STRING +")|("+ABSOLUTE_RESOURCE_STRING + ")");//NOI18N
 
     private void insertLinkToEditor() {
-        JTextComponent component = EditorRegistry.lastFocusedComponent();
-        if (component != null) {
-            Document document = component.getDocument();
-            FileObject fo = NbEditorUtilities.getFileObject(document);
-            int line = NbDocument.findLineNumber((StyledDocument) document, component.getCaretPosition()) + 1;
-            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            String outText = ""; //NOI18N
-            if (cp != null) {
-                outText = cp.getResourceName(fo);
-            } else {
-                Project p = FileOwnerQuery.getOwner(fo);
-                if (p != null) {
-                    outText = "{$" + ProjectUtils.getInformation(p).getName() + "}/" + FileUtil.getRelativePath(p.getProjectDirectory(), fo); //NOI18N
-                } else {
-                    outText = fo.getPath();
-                }
-            }
-            outText += ":" + line; //NOI18N
-            try {
-                outbox.getDocument().insertString(outbox.getCaretPosition(), outText, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        if (EditorRegistry.lastFocusedComponent() != null) {
+            new InsertLinkAction(EditorRegistry.lastFocusedComponent(), outbox, true).actionPerformed(null);
         }
     }
     private void selectIssueReport(Matcher m) {
@@ -368,6 +348,15 @@ public class ChatPanel extends javax.swing.JPanel {
     
     private void init() {
         initComponents();
+        online.setHorizontalTextPosition(JLabel.LEFT);
+        if (isPrivate()) {
+            topPanel.remove(online);
+            online = new KenaiUserUI(getPrivateName()).createUserWidget();
+            online.setText(null);
+            online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
+            topPanel.add(online, java.awt.BorderLayout.EAST);
+            topPanel.validate();
+        }
         editorKit= (HTMLEditorKit) inbox.getEditorKit();
 
         Font font = UIManager.getFont("Label.font"); // NOI18N
@@ -396,8 +385,9 @@ public class ChatPanel extends javax.swing.JPanel {
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if (e.getURL()!=null) {
-                        URLDisplayer.getDefault().showURL(e.getURL());
+                    URL url = e.getURL();
+                    if (url!=null && !(url.getProtocol().equals("file") || url.getProtocol().equals("issue")) ) {
+                        URLDisplayer.getDefault().showURL(url);
                     } else {
                         String link = e.getDescription();
                         Matcher m = STACK_TRACE.matcher(link);
@@ -558,7 +548,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void refreshOnlineStatus() throws MissingResourceException {
         if (muc!=null) {
-        online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));  //NOI18N
+        online.setText(muc.getOccupantsCount()+"");  //NOI18N
         Iterator<String> string = muc.getOccupants();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<html><body>"); // NOI18N
@@ -596,12 +586,13 @@ public class ChatPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        dropDownMenu = new javax.swing.JPopupMenu();
+        temp = new javax.swing.JMenuItem();
         splitter = new javax.swing.JSplitPane();
         outboxPanel = new javax.swing.JPanel();
         buttons = new javax.swing.JPanel();
+        sendLinkButton = DropDownButtonFactory.createDropDownButton(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", true), dropDownMenu);
         sendButton = new javax.swing.JButton();
-        toolbar = new javax.swing.JToolBar();
-        sendLinkButton = new javax.swing.JButton();
         outboxScrollPane = new javax.swing.JScrollPane();
         outbox = new javax.swing.JTextPane();
         inboxPanel = new javax.swing.JPanel();
@@ -616,22 +607,23 @@ public class ChatPanel extends javax.swing.JPanel {
         online = new javax.swing.JLabel();
         statusLine = new javax.swing.JLabel();
 
+        dropDownMenu.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            }
+            public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
+                dropDownMenuPopupMenuWillBecomeInvisible(evt);
+            }
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+                dropDownMenuPopupMenuWillBecomeVisible(evt);
+            }
+        });
+        dropDownMenu.add(temp);
+
         splitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         outboxPanel.setLayout(new java.awt.BorderLayout());
 
         buttons.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
-
-        sendButton.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.sendButton.text", new Object[] {})); // NOI18N
-        sendButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sendButtonActionPerformed(evt);
-            }
-        });
-
-        toolbar.setBorder(null);
-        toolbar.setFloatable(false);
-        toolbar.setRollover(true);
 
         sendLinkButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/insertlink.png"))); // NOI18N
         sendLinkButton.setFocusable(false);
@@ -642,22 +634,27 @@ public class ChatPanel extends javax.swing.JPanel {
                 sendLinkButtonActionPerformed(evt);
             }
         });
-        toolbar.add(sendLinkButton);
+
+        sendButton.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.sendButton.text", new Object[] {})); // NOI18N
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout buttonsLayout = new org.jdesktop.layout.GroupLayout(buttons);
         buttons.setLayout(buttonsLayout);
         buttonsLayout.setHorizontalGroup(
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
-                .add(toolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 183, Short.MAX_VALUE)
+                .add(sendLinkButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 197, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                .add(sendButton)
-                .add(toolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE))
+            .add(sendButton)
+            .add(sendLinkButton)
         );
 
         outboxPanel.add(buttons, java.awt.BorderLayout.SOUTH);
@@ -704,7 +701,7 @@ public class ChatPanel extends javax.swing.JPanel {
         online.setBackground(java.awt.Color.white);
         online.setForeground(java.awt.Color.blue);
         online.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        online.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.online.text", new Object[] {})); // NOI18N
+        online.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/collab/resources/user_online.png"))); // NOI18N
         online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
         topPanel.add(online, java.awt.BorderLayout.EAST);
         topPanel.add(statusLine, java.awt.BorderLayout.CENTER);
@@ -721,7 +718,7 @@ public class ChatPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -821,7 +818,7 @@ public class ChatPanel extends javax.swing.JPanel {
                 return;
             }
         }
-        if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_P) {
+        if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_L) {
             insertLinkToEditor();
         }
     }//GEN-LAST:event_outboxKeyPressed
@@ -831,11 +828,6 @@ public class ChatPanel extends javax.swing.JPanel {
         keyTyped(e);
         outbox.requestFocus();
     }//GEN-LAST:event_sendButtonActionPerformed
-
-    private void sendLinkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendLinkButtonActionPerformed
-        insertLinkToEditor();
-        outbox.requestFocus();
-    }//GEN-LAST:event_sendLinkButtonActionPerformed
 
     private void inboxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_inboxFocusGained
         // Workaround for MacOS - even non-editable components show caret whenever
@@ -848,8 +840,59 @@ public class ChatPanel extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_inboxFocusGained
 
+    private void dropDownMenuPopupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_dropDownMenuPopupMenuWillBecomeVisible
+        dropDownMenu.removeAll();
+        
+        JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
+        if (lastFocused!=null) {
+            dropDownMenu.add(new InsertLinkAction(lastFocused, outbox, true));
+            dropDownMenu.add(new JSeparator());
+        }
+        
+        for (JTextComponent comp:EditorRegistry.componentList()) {
+            dropDownMenu.add(new InsertLinkAction(comp, outbox, false));
+        }
+        if (lastFocused!=null) {
+            dropDownMenu.add(new JSeparator());
+        }
+
+        IssueHandle[] issues;
+        if (muc==null) {
+            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+        } else {
+            try {
+                issues = KenaiIssueAccessor.getDefault().getRecentIssues(Kenai.getDefault().getProject(StringUtils.parseName(muc.getRoom())));
+            } catch (KenaiException ex) {
+                issues = new IssueHandle[0];
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+
+        for (int i=0;i<3 && i< issues.length;i++) {
+            dropDownMenu.add(new InsertLinkAction(issues[i], outbox));
+        }
+        if (issues.length>0) {
+            dropDownMenu.add(new JSeparator());
+        }
+
+        dropDownMenu.add(new LinkOtherFileAction(outbox));
+        dropDownMenu.add(new LinkOtherIssue(outbox));
+    }//GEN-LAST:event_dropDownMenuPopupMenuWillBecomeVisible
+
+    private void dropDownMenuPopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_dropDownMenuPopupMenuWillBecomeInvisible
+        dropDownMenu.removeAll();
+        dropDownMenu.add(temp);
+    }//GEN-LAST:event_dropDownMenuPopupMenuWillBecomeInvisible
+
+    private void sendLinkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendLinkButtonActionPerformed
+        insertLinkToEditor();
+        outbox.requestFocus();
+}//GEN-LAST:event_sendLinkButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttons;
+    private javax.swing.JPopupMenu dropDownMenu;
     private javax.swing.JTextPane inbox;
     private javax.swing.JPanel inboxPanel;
     private javax.swing.JScrollPane inboxScrollPane;
@@ -861,7 +904,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private javax.swing.JButton sendLinkButton;
     private javax.swing.JSplitPane splitter;
     private javax.swing.JLabel statusLine;
-    private javax.swing.JToolBar toolbar;
+    private javax.swing.JMenuItem temp;
     private javax.swing.JPanel topPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -871,12 +914,33 @@ public class ChatPanel extends javax.swing.JPanel {
     private String lastNickPrinted = null;
     private String rgb = null;
 
+    private String getMessageBody(Message m) {
+        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", "jabber:client");
+        if (ne==null) {
+            return m.getBody();
+        }
+        KenaiNotification n = ne.getNotification();
+        if (n.getType() != KenaiService.Type.SOURCE) {
+            return m.getBody();
+        }
+        String author = n.getAuthor();
+        String body = m.getBody().substring(m.getBody().indexOf(']')+2);
+        String id = n.getModifications().get(0).getId();
+        String projectName = StringUtils.parseName(m.getFrom());
+        if (projectName.contains("@")) {
+            projectName = StringUtils.parseName(projectName);
+        }
+        String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id;
+        return author + ": " + body + "\n" + url;
+    }
+
     protected void insertMessage(Message message) {
         try {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
             String fromRes = suc==null?StringUtils.parseResource(message.getFrom()):StringUtils.parseName(message.getFrom());
-            history.addMessage(message.getBody()); //Store the message to the history
+            String messageBody = getMessageBody(message);
+            history.addMessage(messageBody); //Store the message to the history
             Random random = new Random(fromRes.hashCode());
             float randNum = random.nextFloat();
             Color headerColor = Color.getHSBColor(randNum, 0.1F, 0.95F);
@@ -905,7 +969,7 @@ public class ChatPanel extends javax.swing.JPanel {
                         DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
             }
             rgb = messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue(); // NOI18N
-            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceSmileys(replaceLinks(removeTags(message.getBody()))) + "</div>"; // NOI18N
+            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceSmileys(replaceLinks(removeTags(messageBody))) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
             inbox.revalidate();

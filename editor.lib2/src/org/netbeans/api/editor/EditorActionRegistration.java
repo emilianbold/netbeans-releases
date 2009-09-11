@@ -134,4 +134,45 @@ public @interface EditorActionRegistration {
      */
     String popupText() default "";
 
+    /**
+     * Path of this action in main menu e.g. "Edit".
+     */
+    String menuPath() default "";
+
+    /**
+     * Integer position of the main menu item among the other menu items.
+     * <br/>
+     * The default Integer.MAX_VALUE value means no menu representation.
+     */
+    int menuPosition() default Integer.MAX_VALUE;
+
+    /**
+     * Path of this action in popup menu e.g. "" for appearance right in the context menu
+     * or a corresponding path for nested submenu appearance.
+     */
+    String popupPath() default "";
+
+    /**
+     * Integer position of the popup menu item among the other popup menu (or submenu) items.
+     * <br/>
+     * The default Integer.MAX_VALUE value means no popup menu representation.
+     */
+    int popupPosition() default Integer.MAX_VALUE;
+
+    /**
+     * Integer position of this action in editor toolbar.
+     * <br/>
+     * The default Integer.MAX_VALUE value means no toolbar representation.
+     */
+    int toolBarPosition() default Integer.MAX_VALUE;
+
+    /**
+     * Boolean key in preferences that corresponds to action's selected state.
+     * <br/>
+     * If set to non-empty string the action will be represented by a check-box
+     * in menu and popup menu and the corresponding key will be set in
+     * global mime-lookup <code>MimeLookup.getLookup(MimePath.EMPTY)</code>.
+     */
+    String preferencesKey() default "";
+
 }

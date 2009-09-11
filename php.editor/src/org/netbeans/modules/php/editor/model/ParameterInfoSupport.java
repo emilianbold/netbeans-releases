@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -374,7 +375,7 @@ public class ParameterInfoSupport {
                             }
                         }
                     }
-                    final Model model = ModelFactory.getModel(info);
+                    final Model model = ((PHPParseResult)info).getModel();
                     OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
                     Occurence occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {

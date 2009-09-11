@@ -53,6 +53,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.kenai.api.KenaiProject;
 
@@ -106,6 +107,16 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
 
     }
 
+    public void testIsKenai() throws Throwable {
+        KenaiProject prj = KenaiProject.forRepository("https://testkenai.com/svn/golden-project-1~source-code-repository-svn ");
+        assertNotNull(prj);
+
+        KenaiSupportImpl support = new KenaiSupportImpl();
+        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
+        assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
+    }
+
     public void testOneProductAfterConfigurationRefresh() throws Throwable {
         KenaiProject prj = KenaiProject.forRepository("https://testkenai.com/svn/golden-project-1~source-code-repository-svn ");
         assertNotNull(prj);
@@ -115,7 +126,8 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
         assertNotNull(repo);
         List<String> products = repo.getConfiguration().getProducts();
         assertEquals(1, products.size());
-
+        assertTrue(KenaiUtil.isKenai(repo));
+        
         repo.refreshConfiguration();
         products = repo.getConfiguration().getProducts();
         assertEquals(1, products.size());

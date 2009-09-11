@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 
 /**
  *
@@ -431,9 +432,14 @@ public class DwarfEntry {
         if (getKind().equals(TAG.DW_TAG_typedef)) {
             return getType();
         }
-        
-        Integer typeRefIdx = (Integer)getAttributeValue(ATTR.DW_AT_type);
-        DwarfEntry typeRef = compilationUnit.getTypedefFor(typeRefIdx);
+
+        Object typeRefIdx = getAttributeValue(ATTR.DW_AT_type);
+        DwarfEntry typeRef = null;
+        if (typeRefIdx instanceof Integer) {
+            typeRef = compilationUnit.getTypedefFor((Integer)typeRefIdx);
+        } else if (typeRefIdx instanceof Long) {
+            typeRef = compilationUnit.getTypedefFor((Long)typeRefIdx);
+        }
         
         return (typeRef == null) ? getType() : typeRef.getType();
     }
@@ -441,5 +447,35 @@ public class DwarfEntry {
     ArrayList<Object> getValues() {
         return values;
     }
-    
+
+    public long getLowAddress() throws IOException{
+        byte[] bytes = (byte[])getAttributeValue(ATTR.DW_AT_low_pc);
+        if (bytes != null) {
+            return getAddress(bytes);
+        }
+        return 0;
+    }
+
+    public long getHighAddress() throws IOException{
+        byte[] bytes = (byte[])getAttributeValue(ATTR.DW_AT_high_pc);
+        if (bytes != null) {
+            return getAddress(bytes);
+        }
+        return 0;
+    }
+
+    public long getAddress(byte[] bytes){
+        long n = 0;
+        int size = bytes.length;
+        for (int i = 0; i < size; i++) {
+            long u = 0;
+            if (compilationUnit.getDataEncoding() == ByteStreamReader.LSB) {
+                u = (0xff & bytes[i]);
+            } else {
+                u = (0xff & bytes[size - i - 1]);
+            }
+            n |= (u << (i * 8));
+        }
+        return n;
+    }
 }

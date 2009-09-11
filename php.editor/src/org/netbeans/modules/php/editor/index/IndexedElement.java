@@ -283,13 +283,19 @@ public abstract class IndexedElement extends PHPElement {
             return false;
         }
         final IndexedElement other = (IndexedElement) obj;
-        if (!getSignature().equals(other.getSignature())) {
+        if (this.kind != other.kind) {
             return false;
         }
-//        if (this.flags != other.flags) {
-//            return false;
-//        }
-        if (!getKind().equals(other.getKind())) {
+        if ((this.in == null) ? (other.in != null) : !this.in.equals(other.in)) {
+            return false;
+        }
+        if ((this.fileUrl == null) ? (other.fileUrl != null) : !this.fileUrl.equals(other.fileUrl)) {
+            return false;
+        }
+        if ((this.textSignature == null) ? (other.textSignature != null) : !this.textSignature.equals(other.textSignature)) {
+            return false;
+        }
+        if (this.offset != other.offset) {
             return false;
         }
         return true;
@@ -298,9 +304,10 @@ public abstract class IndexedElement extends PHPElement {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 53 * hash + getSignature().hashCode();
-//        hash = 53 * hash + flags;
-        hash = 53 * hash + getKind().hashCode();
+        hash = 29 * hash + this.kind.hashCode();
+        hash = 29 * hash + (this.in != null ? this.in.hashCode() : 0);
+        hash = 29 * hash + (this.textSignature != null ? this.textSignature.hashCode() : 0);
+        hash = 29 * hash + this.offset;
         return hash;
     }
 

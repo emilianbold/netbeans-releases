@@ -43,8 +43,8 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 
 import javax.swing.Icon;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.netbeans.modules.refactoring.spi.ui.*;
 
 /**
  *

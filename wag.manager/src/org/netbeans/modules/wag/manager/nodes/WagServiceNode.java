@@ -42,6 +42,7 @@ import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import javax.swing.Action;
+import org.netbeans.modules.wag.manager.actions.TestDriveAction;
 import org.netbeans.modules.wag.manager.actions.ViewApiDocAction;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.util.WagTransferable;
@@ -86,12 +87,13 @@ public class WagServiceNode extends AbstractNode {
 
     @Override
     public String getShortDescription() {
-        return service.getDescription();
+        return service.toString();
     }
 
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
+            SystemAction.get(TestDriveAction.class),
             SystemAction.get(ViewApiDocAction.class)
         };
 

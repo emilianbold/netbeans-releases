@@ -491,7 +491,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 if (fo.isData()) {
                     fo = FileUtil.getArchiveRoot(fo);
                 }
-                FileObject root = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+                FileObject root = fo == null ? null : JavadocAndSourceRootDetection.findJavadocRoot(fo);
                 if (root == null) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()), //NOI18N
@@ -506,7 +506,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 if (fo.isData()) {
                     fo = FileUtil.getArchiveRoot(fo);
                 }
-                FileObject root = JavadocAndSourceRootDetection.findSourceRoot(fo);
+                FileObject root = fo == null ? null : JavadocAndSourceRootDetection.findSourceRoot(fo);
                 if (root == null) {
                     // TODO: warn user that no source root was found
                     return null;

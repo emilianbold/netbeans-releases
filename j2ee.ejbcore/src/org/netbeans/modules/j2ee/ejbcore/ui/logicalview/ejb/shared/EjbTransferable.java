@@ -52,37 +52,36 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
  * @author  Chris Webster
  */
 public class EjbTransferable implements Transferable {
-    private static final DataFlavor TEXT_FLAVOR =
-        new DataFlavor("text/plain; charset=unicode", null);
+//    private static final DataFlavor TEXT_FLAVOR =
+//        new DataFlavor("text/plain; charset=unicode", null);
     public static final DataFlavor EJB_FLAVOR =
         new DataFlavor(EjbReference.class, "ejb ref");
     
-    private final String stringRep;
+//    private final String stringRep;
     private final EjbReference ref;
     
     public EjbTransferable(String stringRep, EjbReference ref) {
-        this.stringRep = stringRep;
+//        this.stringRep = stringRep;
         this.ref = ref;
     }
     
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-        if (TEXT_FLAVOR.equals(flavor)) {
-            return stringRep;
-        } else if (EJB_FLAVOR.equals(flavor)) {
+        if (EJB_FLAVOR.equals(flavor)) {
             return ref;
-        }
+//        } else if (TEXT_FLAVOR.equals(flavor)) {
+//            return stringRep;
+        } 
         throw new UnsupportedFlavorException(flavor);
     }
     
     public DataFlavor[] getTransferDataFlavors() {
         return new DataFlavor[] {
-            TEXT_FLAVOR,
+//            TEXT_FLAVOR,
             EJB_FLAVOR
         };
     }
     
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-        return TEXT_FLAVOR.equals(flavor) ||
-        EJB_FLAVOR.equals(flavor);
+        return /*TEXT_FLAVOR.equals(flavor) ||*/ EJB_FLAVOR.equals(flavor);
     }
 }

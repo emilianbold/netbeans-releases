@@ -96,11 +96,15 @@ public class JCProjectProperties {
     public DefaultListModel classPathModel;
     public ToggleButtonModel COMPILE_ON_SAVE_BUTTON_MODEL;
     public Document ADDITIONAL_COMPILER_OPTIONS_DOCUMENT;
+    public Document KEYSTORE_ALIAS_DOCUMENT;
+    public Document KEYSTORE_PASSWORD_DOCUMENT;
+    public Document KEYSTORE_ALIAS_PASSWORD_DOCUMENT;
     public ToggleButtonModel GENERATE_DEBUG_INFO_BUTTON_MODEL;
     public ToggleButtonModel ENABLE_DEPRECATION_BUTTON_MODEL;
     public ToggleButtonModel SIGN_JAR_BUTTON_MODEL;
     public Document KEYSTORE_DOCUMENT;
     private StoreGroup group = new StoreGroup();
+    private StoreGroup passwordsGroup = new StoreGroup();
 
     public JCProjectProperties(JCProject project) {
         this.project = project;
@@ -129,6 +133,9 @@ public class JCProjectProperties {
         ENABLE_DEPRECATION_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_JAVAC_DEPRECATION);
         SIGN_JAR_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_SIGN_JAR);
         KEYSTORE_DOCUMENT = group.createStringDocument(eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PATH);
+        KEYSTORE_ALIAS_DOCUMENT = group.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS);
+        KEYSTORE_PASSWORD_DOCUMENT = passwordsGroup.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD);
+        KEYSTORE_ALIAS_PASSWORD_DOCUMENT = passwordsGroup.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD);
         sourceEncoding = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_SOURCE_ENCODING);
         javacSourceLevel = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_JAVAC_SOURCE);
         javacTargetLevel = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_JAVAC_TARGET);
@@ -217,13 +224,22 @@ public class JCProjectProperties {
                                     project.getAntProjectHelper().
                                     getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            storeCommonProperties(props);
+                            EditableProperties priv =
+                                    project.getAntProjectHelper().
+                                    getProperties(
+                                    AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            storeCommonProperties(props, priv);
                             Boolean result = onStoreProperties(props);
                             if (result) {
                                 project.getAntProjectHelper().
                                         putProperties(
                                         AntProjectHelper.PROJECT_PROPERTIES_PATH,
                                         props);
+                                project.getAntProjectHelper().
+                                        putProperties(
+                                        AntProjectHelper.PRIVATE_PROPERTIES_PATH,
+                                        priv);
+
                             }
                             storeDependencies();
                             return result;
@@ -242,13 +258,9 @@ public class JCProjectProperties {
         synchronized (this) {
             d = this.deps;
         }
-        System.err.println("store dependencies: " + d);
         if (d != null && d.isModified()) {
-            System.err.println("deps modified - saving");
             d.save();
             legacyStoreDependencies(d);
-        } else {
-            System.err.println("not saving dependencies");
         }
     }
 
@@ -264,7 +276,7 @@ public class JCProjectProperties {
     protected void onBeforeStoreProperties() throws IOException {
     }
 
-    private void storeCommonProperties(EditableProperties props) throws IOException {
+    private void storeCommonProperties(EditableProperties props, EditableProperties priv) throws IOException {
         props.put(ProjectPropertyNames.PROJECT_PROP_SOURCE_ENCODING, sourceEncoding);
         props.put(ProjectPropertyNames.PROJECT_PROP_JAVAC_SOURCE, javacSourceLevel);
         props.put(ProjectPropertyNames.PROJECT_PROP_JAVAC_TARGET, javacTargetLevel);
@@ -278,6 +290,7 @@ public class JCProjectProperties {
             sb.append(o);
         }
         props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH, sb.toString());
+        passwordsGroup.store(priv);
         storeRoots(project.getRoots(), SOURCE_ROOTS_MODEL, props);
         group.store(props);
         if (!SIGN_JAR_BUTTON_MODEL.isSelected()) {
@@ -440,8 +453,6 @@ public class JCProjectProperties {
                     d = JCProjectProperties.this.deps;
                 }
             }
-            System.err.println("Project Properties deps loaded as " + d);
-            System.err.println("Passing " + d + " to " + r);
             r.receive(d);
         }
 

@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.netbeans.modules.cnd.debugger.dbx/1
+OpenIDE-Module: org.netbeans.modules.cnd.debugger.dbx
+OpenIDE-Module-Layer: org/netbeans/modules/cnd/debugger/dbx/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/debugger/dbx/Bundle.properties
-OpenIDE-Module-Implementation-Version: 2
+OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 

@@ -52,7 +52,6 @@ import java.util.Properties;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
@@ -74,6 +73,8 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     private final String id;
     private List<String> profiles;
     private final NbMavenProjectImpl project;
+    static final String FILENAME = "nbactions.xml"; //NOI18N
+
     static final String FILENAME_PREFIX = "nbactions-"; //NOI18N
     static final String FILENAME_SUFFIX = ".xml"; //NOI18N
     private Date lastModified = new Date();
@@ -112,7 +113,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     
     public static String getFileNameExt(String id) {
         if (DEFAULT.equals(id)) {
-            return UserActionGoalProvider.FILENAME;
+            return FILENAME;
         }
         return FILENAME_PREFIX + id + FILENAME_SUFFIX;
     }
@@ -140,10 +141,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     }
 
     public InputStream getActionDefinitionStream() {
-        if (DEFAULT.equals(id)) {
-            return null;
-        }
-        FileObject fo = project.getProjectDirectory().getFileObject(FILENAME_PREFIX + id + FILENAME_SUFFIX);
+        FileObject fo = project.getProjectDirectory().getFileObject(getFileNameExt(id));
         lastTimeExists = fo != null;
         if (fo != null) {
             try {
@@ -193,7 +191,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     
     @Override
     protected boolean reloadStream() {
-        FileObject fo = project.getProjectDirectory().getFileObject(FILENAME_PREFIX + id + FILENAME_SUFFIX);
+        FileObject fo = project.getProjectDirectory().getFileObject(getFileNameExt(id));
         boolean prevExists = lastTimeExists;
         lastTimeExists = fo != null;
         return ((fo == null && prevExists) || (fo != null && fo.lastModified().after(lastModified)));

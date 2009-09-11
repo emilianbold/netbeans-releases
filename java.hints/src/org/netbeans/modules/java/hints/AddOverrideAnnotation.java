@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,6 +53,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -98,7 +100,7 @@ public class AddOverrideAnnotation extends AbstractHint {
                                       TreePath treePath) {
         TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Override"); //NOI18N
 
-        if (el == null || !GeneratorUtils.supportsOverride(compilationInfo.getFileObject()))
+        if (el == null || !GeneratorUtils.supportsOverride(compilationInfo))
             return null;
 
         Element e = compilationInfo.getTrees().getElement(treePath);
@@ -201,7 +203,10 @@ public class AddOverrideAnnotation extends AbstractHint {
                     copy.toPhase(Phase.RESOLVED); //XXX: performance
                     TreePath path = handle.resolve(copy);
 
-                    assert path != null;
+                    if (path == null) {
+                        Logger.getLogger(AddOverrideAnnotation.class.getName()).log(Level.FINE, "Cannot resolve TreePathHandle in the fix.");
+                        return ;
+                    }
 
                     while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(path.getLeaf().getKind())) {
                         path = path.getParentPath();

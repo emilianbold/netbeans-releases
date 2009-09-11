@@ -49,12 +49,13 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
@@ -68,8 +69,10 @@ public class InstantRenamerImpl implements InstantRenamer {
     private List<Occurence> allOccurences = Collections.emptyList();
 
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
-        allOccurences.clear();
-        OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
+        allOccurences.clear();        
+        PHPParseResult result = (PHPParseResult) info;
+        final Model model = result.getModel();
+        OccurencesSupport occurencesSupport = model.getOccurencesSupport(caretOffset);
         Occurence caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
             if (IS_RENAME_REFACTORING_ENABLED) {

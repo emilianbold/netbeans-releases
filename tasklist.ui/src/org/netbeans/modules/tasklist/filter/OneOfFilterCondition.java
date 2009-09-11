@@ -77,10 +77,11 @@ abstract class OneOfFilterCondition extends FilterCondition {
     
     protected OneOfFilterCondition(String [] opts) {
         this.options = opts;
-        this.id = -1;
+        this.id = 0;
     }
     
     
+    @Override
     public boolean sameType(FilterCondition fc) {
         return super.sameType(fc) && this.id == ((OneOfFilterCondition)fc).id;
     }
@@ -92,7 +93,7 @@ abstract class OneOfFilterCondition extends FilterCondition {
     protected int getId() { return id;}
     
     void load( Preferences prefs, String prefix ) throws BackingStoreException {
-        id = prefs.getInt( prefix+"_optionId", -1 ); //NOI18N
+        id = prefs.getInt( prefix+"_optionId", 0 ); //NOI18N
     }
     
     void save( Preferences prefs, String prefix ) throws BackingStoreException {

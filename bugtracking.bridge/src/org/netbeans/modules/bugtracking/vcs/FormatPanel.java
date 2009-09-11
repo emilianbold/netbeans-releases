@@ -100,7 +100,7 @@ public class FormatPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
 
         issueInfoTextArea.setColumns(20);
-        issueInfoTextArea.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        issueInfoTextArea.setFont(new java.awt.Font("Monospaced", 0, 13));
         issueInfoTextArea.setRows(5);
         issueInfoTextArea.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.issueInfoTextArea.toolTipText")); // NOI18N
         jScrollPane1.setViewportView(issueInfoTextArea);
@@ -157,15 +157,15 @@ public class FormatPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(aboveCommitRadio)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(resetCommitButton)
+                                .add(resetIssueButton)
                                 .add(belowCommitRadio)))
-                        .add(89, 89, 89)
-                        .add(resetIssueButton))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 89, Short.MAX_VALUE)
+                        .add(resetCommitButton))
                     .add(jLabel4)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(jLabel3, 0, 0, Short.MAX_VALUE)
@@ -175,7 +175,7 @@ public class FormatPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
+                .addContainerGap()
                 .add(jLabel4)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -187,7 +187,6 @@ public class FormatPanel extends javax.swing.JPanel {
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(resetIssueButton)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel2)
@@ -195,8 +194,8 @@ public class FormatPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(belowCommitRadio)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(resetCommitButton)))
-                .add(33, 33, 33))
+                        .add(resetIssueButton))
+                    .add(resetCommitButton)))
         );
 
         aboveCommitRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.AccessibleContext.accessibleDescription")); // NOI18N

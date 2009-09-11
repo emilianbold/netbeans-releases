@@ -33,15 +33,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.api.model</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.api.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -60,43 +51,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.completion</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.lexer</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.makeproject</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.model.services</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.modelutil</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -241,11 +196,13 @@
             <friend-packages>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
+                <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <package>org.netbeans.modules.cnd.debugger.common</package>
                 <package>org.netbeans.modules.cnd.debugger.common.actions</package>
                 <package>org.netbeans.modules.cnd.debugger.common.breakpoints</package>
                 <package>org.netbeans.modules.cnd.debugger.common.disassembly</package>
                 <package>org.netbeans.modules.cnd.debugger.common.models</package>
+                <package>org.netbeans.modules.cnd.debugger.common.spi</package>
                 <package>org.netbeans.modules.cnd.debugger.common.ui</package>
                 <package>org.netbeans.modules.cnd.debugger.common.utils</package>
             </friend-packages>

@@ -101,13 +101,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private final String nodeColumnName;
     private final String nodeRowColumnID;
     private final ExplorerManager explorerManager;
-    private Future task;
+    private Future<Boolean> task;
     private final Object queryLock = new Object();
     private final Object uiLock = new Object();
     private final String iconColumnID;
     private String resourceID;
     private final boolean dualPaneMode;
-    private final DualPaneSupport dualPaneSupport;
+    private final DualPaneSupport<DataRow> dualPaneSupport;
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
@@ -127,7 +127,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());//do not display  icon
         }
 
-        resourceID = iconColumnID == null ? null : accessor.getIconColumnID(configuration);
+        resourceID = iconColumnID == null ? null : accessor.getIconPath(configuration);
         List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
         List<Property> result = new ArrayList<Property>();
         List<Column> columns = new ArrayList<Column>();
@@ -151,6 +151,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         }
         outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
         outlineView.setProperties(result.toArray(new Property[0]));
+        outlineView.setPopupAllowed(false);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         this.dualPaneMode = accessor.isDualPaneMode(configuration);

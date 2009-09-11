@@ -100,29 +100,37 @@ made subject to such option by the copyright holder.
                 <package>com.sun.grizzly.util.net.jsse</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jackson-lgpl-0.9.4.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-client.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-core.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-json.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-server.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/rest/jsr311-api.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/wadl2java.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/asm-3.1.jar</runtime-relative-path>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/grizzly-servlet-webserver-1.9.9.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jackson-core-asl-1.1.1.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-client-1.1.2-ea.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-core-1.1.2-ea.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-json-1.1.2-ea.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-server-1.1.2-ea.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-spring-1.0.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jettison-1.1.jar/</runtime-relative-path>
+            </class-path-extension>
+
+            <!--
             <class-path-extension>
                 <runtime-relative-path>ext/rest/http.jar</runtime-relative-path>
             </class-path-extension>
@@ -133,14 +141,8 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/jdom-1.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jettison-1.1.jar/</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/grizzly-servlet-webserver-1.7.3.2.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-spring.jar</runtime-relative-path>
-            </class-path-extension>
+                <runtime-relative-path>ext/rest/wadl2java.jar</runtime-relative-path>
+            </class-path-extension>-->
         </data>
     </configuration>
 </project>

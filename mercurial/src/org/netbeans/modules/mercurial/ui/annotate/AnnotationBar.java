@@ -72,7 +72,7 @@ import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import org.netbeans.modules.mercurial.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 

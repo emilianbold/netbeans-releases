@@ -40,21 +40,16 @@
 package org.netbeans.modules.php.editor.index;
 
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.nav.TestUtilities;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,7 +74,7 @@ public class PHPIndexTest extends NbTestCase {
             f.delete();
         }
         
-        FileUtil.setMIMEType("php", PHPLanguage.PHP_MIME_TYPE);
+        FileUtil.setMIMEType("php", FileUtils.PHP_MIME_TYPE);
         Logger.global.setFilter(new Filter() {
             public boolean isLoggable(LogRecord record) {
                 Throwable t = record.getThrown();

@@ -331,7 +331,7 @@ public class CallbackPanel extends SectionInnerPanel {
             boolean trustStoreConfigRequired = true;
             boolean keyStoreConfigRequired = true;
             boolean kerberosConfigRequired = false;
-            boolean validatorsConfigRequired = (ConfigVersion.CONFIG_1_3 != cfgVersion);
+            boolean validatorsConfigRequired = (ConfigVersion.CONFIG_1_0 == cfgVersion);
             
             if (ComboConstants.PROF_USERNAME.equals(profile)) {
                     keyStoreConfigRequired = false;

@@ -433,6 +433,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         while(en.hasMoreElements()) {
             TopComponent tc = (TopComponent)en.nextElement();
             tc.setDisplayName(displayName);
+            // XXX also probably need messageHtmlName, messageToolTip
         }
     }
     
@@ -963,6 +964,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                 return jes.messageName();
             }
         }
+        // XXX may also need htmlDisplayName, toolTipText
         
         private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
         

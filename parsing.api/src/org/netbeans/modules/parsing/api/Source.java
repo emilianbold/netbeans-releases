@@ -61,12 +61,13 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -157,8 +158,8 @@ public final class Source {
         Document            document
     ) {
         Parameters.notNull("document", document); //NOI18N
-        
-        String mimeType = NbEditorUtilities.getMimeType(document);
+
+        String mimeType = DocumentUtilities.getMimeType(document);
         if (mimeType == null) {
             throw new NullPointerException("Netbeans documents must have 'mimeType' property: " //NOI18N
                 + document.getClass() + "@" + Integer.toHexString(System.identityHashCode(document))); //NOI18N
@@ -175,7 +176,7 @@ public final class Source {
             }
             
             if (source == null) {
-                FileObject fileObject = NbEditorUtilities.getFileObject(document);
+                FileObject fileObject = Util.getFileObject(document);
                 if (fileObject != null) {
                     source = Source._get(mimeType, fileObject);
                 } else {
@@ -184,7 +185,7 @@ public final class Source {
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
                         Document doc = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
                         if (doc != null) {
-                            fileObject = NbEditorUtilities.getFileObject(doc);
+                            fileObject = Util.getFileObject(doc);
                         } else {
                             fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
                         }
@@ -356,7 +357,7 @@ public final class Source {
                         try {
                             int length = d.getLength ();
                             if (length < 0)
-                                text[0] = "";
+                                text[0] = ""; //NOI18N
                             else
                                 text[0] = d.getText (0, length);
                         } catch (BadLocationException ble) {
@@ -366,22 +367,12 @@ public final class Source {
                 });
             }
         } catch (OutOfMemoryError oome) {
-            // Diagnostics and workaround for issues such as #170290
-            LOG.log(Level.INFO, null, oome);
-
             // Use empty snapshot
             text[0] = ""; //NOI18N
 
-            // Help JVM to reclaim the memory occupied by the partially loaded snapshot
-            for (int i = 0; i < 3; i++) {
-                System.gc(); System.runFinalization();
-                try {
-                    Thread.sleep(123);
-                } catch (InterruptedException ex) {
-                    break;
-                }
-            }
-            
+            // Diagnostics and workaround for issues such as #170290
+            LOG.log(Level.INFO, null, oome);
+
             if (doc != null) {
                 LOG.warning("Can't create snapshot of " + doc + ", size=" + doc.getLength() + ", mimeType=" + mimeType); //NOI18N
             } else {

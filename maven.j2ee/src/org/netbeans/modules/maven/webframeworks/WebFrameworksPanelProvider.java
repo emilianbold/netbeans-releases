@@ -50,6 +50,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -78,10 +79,10 @@ public class WebFrameworksPanelProvider implements ProjectCustomizer.CompositeCa
         ModelHandle handle = context.lookup(ModelHandle.class);
         final Project prj = context.lookup(Project.class);
         final WebFrameworksPanel panel = new WebFrameworksPanel(category, handle, prj);
-        category.setOkButtonListener(new ActionListener() {
+        category.setStoreListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                    RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
                             panel.applyChanges();
                         }
