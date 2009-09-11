@@ -63,10 +63,10 @@ import org.openide.util.NbBundle;
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(
-        name = "goto-declaration",
-        menuPath = "GoTo",
+        name = "goto-declaration", // NOI18N
+        menuPath = "GoTo", // NOI18N
         menuPosition = 900,
-        menuText = "#goto-identifier-declaration"
+        menuText = "#goto-identifier-declaration" // NOI18N
     )
 })
 public class CCGoToDeclarationAction extends BaseAction {
