@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui.project;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
@@ -451,11 +452,11 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         loadingImageTask = SingleImageRequestProcessor.post(new Runnable() {
 
             public void run() {
-                proj.cacheProjectImage();
+                final Icon projectIcon = proj.getProjectIcon(true);
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        projectImage.setIcon(proj.getProjectIcon(false));
+                        projectImage.setIcon(projectIcon);
                     }
                 });
             }
