@@ -72,7 +72,9 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.paralleladviser.codemodel.CodeModelUtils;
+import org.netbeans.modules.cnd.paralleladviser.hints.ParallelAdviserFileTaskFactory;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.ParallelAdviserTopComponent;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -98,6 +100,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -172,6 +175,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             for (Advice advice : notificationTips) {
                 advice.addNotification(io.getErr());
             }
+
+            ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
+            hints.propertyChange(null);
         }
     }
 
