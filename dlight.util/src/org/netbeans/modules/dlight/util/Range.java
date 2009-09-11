@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.dlight.util;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Range of numeric values.
  *
@@ -67,6 +70,147 @@ public final class Range<T extends Number & Comparable<? super T>> {
     public T getEnd() {
         return end;
     }
+
+    public boolean cotains(T t){
+        return t.longValue() >= start.longValue() && t.longValue() <= end.longValue();
+    }
+
+    public boolean intersects(Range<T> timeInterval) {
+        return !(timeInterval.end.longValue() < start.longValue() ||
+                timeInterval.start.longValue() > end.longValue());
+    }
+
+    // Assume that list is sorted! (Use if union() guaranties this)
+    // Function changes list's content!
+    public void union(final List<Range<T>> intervals/*, final Range<T> interval*/) {
+        int idx = 0;
+        boolean consumed = false;
+        final Range<T> interval = this;
+        T start_time = interval.start;
+        T end_time = interval.end;
+
+        int size = intervals.size();
+        while (idx < size && !consumed) {
+            Range<T> i = intervals.get(idx);
+
+            if (i.start.longValue() <= start_time.longValue() && i.end.longValue() >= end_time.longValue()) {
+                return;
+            }
+
+            if (i.start.longValue() > end_time.longValue()) {
+                intervals.add(idx, new Range<T>(start_time, end_time));
+                return;
+            }
+
+            if (i.start.longValue() >= start_time.longValue() && i.end.longValue() <= end_time.longValue()) {
+                intervals.remove(idx);
+                size--;
+                continue;
+            }
+
+            if (i.end.longValue() > end_time.longValue()) {
+                intervals.set(idx, new Range<T>(start_time, i.end));
+                return;
+            }
+
+            if (i.end.longValue() < start_time.longValue()) {
+                idx++;
+                continue;
+            }
+
+            if (i.start.longValue() > end_time.longValue()) {
+                consumed = true;
+                intervals.add(idx, new Range<T>(start_time, end_time));
+                break;
+            }
+
+            int idx2 = idx + 1;
+            while (idx2 < size && intervals.get(idx2).end.longValue() <= end_time.longValue()) {
+                intervals.remove(idx2);
+                size--;
+            }
+
+            if (idx2 < size && intervals.get(idx2).start.longValue() <= interval.end.longValue()) {
+                end_time = intervals.get(idx2).end;
+                intervals.remove(idx2);
+                size--;
+            }
+
+            if (idx < size) {
+                intervals.set(idx, new Range<T>(i.start, end_time));
+            } else {
+                intervals.add(new Range<T>(i.start, end_time));
+            }
+
+            consumed = true;
+        }
+
+        if (!consumed) {
+            intervals.add(new Range<T>(start_time, end_time));
+        }
+    }
+
+    public List<Range<T>> subtract(/*final Range<T> interval_param,*/ final List<Range<T>> intervals_subtract_from) {
+        int idx = 0;
+        final Range<T> interval_param = this;
+        T intervalStart = interval_param.start;
+        T intervalEnd = interval_param.end;
+        LinkedList<Range<T>> result = new LinkedList<Range<T>>();
+        boolean consumed = false;
+
+        while (idx < intervals_subtract_from.size()) {
+            Range<T> i = intervals_subtract_from.get(idx);
+
+            if (i.start.longValue() <= intervalStart.longValue() && i.end.longValue() >= intervalEnd.longValue()) {
+                consumed = true;
+                break;
+            }
+
+            if (i.start.longValue() > intervalEnd.longValue()) {
+                consumed = true;
+                result.add(new Range<T>(intervalStart, intervalEnd));
+                break;
+            }
+
+            if (i.start.longValue() > intervalStart.longValue()) {
+                result.add(new Range<T>(intervalStart, i.start));
+                intervalStart = i.start;
+                continue;
+            }
+
+            if (i.end.longValue() <= intervalStart.longValue()) {
+                idx++;
+                continue;
+            }
+
+            if (i.start.longValue() >= intervalEnd.longValue()) {
+                result.add(new Range<T>(intervalStart, intervalEnd));
+                consumed = true;
+                break;
+            }
+
+            if (i.end.longValue() >= intervalEnd.longValue()) {
+                intervalEnd = i.start;
+                result.add(new Range<T>(intervalStart, intervalEnd));
+                consumed = true;
+                break;
+            } else if (i.end.longValue() > intervalStart.longValue()) {
+                intervalStart = i.end;
+                idx++;
+            } else {
+                result.add(new Range<T>(intervalStart, i.start));
+                intervalStart = i.end;
+                idx++;
+            }
+        }
+
+        if (!consumed) {
+            result.addLast(new Range<T>(intervalStart, intervalEnd));
+        }
+
+        return result;
+    }
+
 
     /**
      * Extend current range to cover given range.

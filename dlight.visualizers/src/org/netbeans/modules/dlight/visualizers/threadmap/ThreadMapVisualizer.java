@@ -174,7 +174,7 @@ public class ThreadMapVisualizer extends JPanel implements
     }
 
     private final void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters){
-        //TODO: gray out
+        threadsPanel.setTimeIntervalSelection(timeFilters);
     }
 
     public void init() {
