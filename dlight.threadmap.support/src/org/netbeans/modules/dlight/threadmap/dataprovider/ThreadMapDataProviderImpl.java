@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
@@ -66,6 +67,7 @@ import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDataQuery;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -250,5 +252,9 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             }
         }
         return lwpInfo;
+    }
+
+    public ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }
