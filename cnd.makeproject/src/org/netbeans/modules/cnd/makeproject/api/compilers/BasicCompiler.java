@@ -70,7 +70,7 @@ public abstract class BasicCompiler extends Tool {
 
     // FIXUP: still a fixup. Think over, who is responsible for this
     public static String getIncludeFileBase() {
-        return System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/"; //NOI18N
+        return System.getProperty("netbeans.user") + "/var/cache/cnd3/includes-cache/"; //NOI18N
     }
 
     @Override
