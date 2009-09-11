@@ -370,6 +370,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Add")); // NOI18N
+        addButton.setEnabled(false);
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -380,6 +381,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         buttonPanel.add(addButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Remove")); // NOI18N
+        removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -393,6 +395,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         buttonPanel.add(removeButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(addAllButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_AddAll")); // NOI18N
+        addAllButton.setEnabled(false);
         addAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addAllButtonActionPerformed(evt);
@@ -406,6 +409,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         buttonPanel.add(addAllButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeAllButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_RemoveAll")); // NOI18N
+        removeAllButton.setEnabled(false);
         removeAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeAllButtonActionPerformed(evt);
@@ -460,9 +464,9 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cmbDatabaseConn, 0, 409, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                .add(cmbDatabaseConn, 0, 427, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
