@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
@@ -192,6 +194,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JToolBar buttonsToolBar;
     private ThreadsDataManager manager;
     private ThreadsDetailsCallback detailsCallback;
+    private Collection<TimeIntervalDataFilter> timeFilters;
     private boolean internalChange = false; // prevents cycles in event handling
     private boolean internalScrollbarChange = false;
     private boolean scaleToFit = false;
@@ -1253,6 +1256,17 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     long getInterval() {
         return manager.getInterval();
     }
+
+    void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
+        this.timeFilters = timeFilters;
+        updateUI();
+    }
+
+    Collection<TimeIntervalDataFilter> getTimeIntervalSelection(){
+        return timeFilters;
+    }
+
+
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
 
     /** A callback interface - implemented by provider of additional details of a set of threads */
