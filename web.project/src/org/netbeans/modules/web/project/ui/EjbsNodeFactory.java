@@ -84,6 +84,8 @@ public class EjbsNodeFactory implements NodeFactory {
         private static final String KEY_EJBS = "ejbKey"; //NOI18N
         private final WebProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private Node view = null;
+        private boolean isViewEmpty = true;
 
         EjbNodeList(WebProject proj) {
             this.project = proj;
@@ -91,7 +93,8 @@ public class EjbsNodeFactory implements NodeFactory {
 
         public List<String> keys() {
             J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
-            if (projectCap.isEjb31LiteSupported() && !isViewEmpty()){
+            checkView();
+            if (projectCap.isEjb31LiteSupported() && !isViewEmpty){
                 return Collections.singletonList(KEY_EJBS);
             }else{
                 return Collections.EMPTY_LIST;
@@ -108,13 +111,14 @@ public class EjbsNodeFactory implements NodeFactory {
 
         public Node node(String key) {
             if (KEY_EJBS.equals(key)) {
-                EjbJar ejbModule = project.getAPIEjbJar();
-                return J2eeProjectView.createEjbsView(ejbModule, project);
+                return view;
             }
             return null;
         }
 
         public void addNotify() {
+            EjbJar ejbModule = project.getAPIEjbJar();
+            view = J2eeProjectView.createEjbsView(ejbModule, project);
             project.evaluator().addPropertyChangeListener(this);
         }
 
@@ -125,15 +129,50 @@ public class EjbsNodeFactory implements NodeFactory {
         public void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
             if (p != null && (p.equals(WebProjectProperties.J2EE_PLATFORM) || p.startsWith("/EnterpriseBeans/"))){ //NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        changeSupport.fireChange();
-                    }
-                });
+                fireChange();
             }
         }
 
-        private boolean isViewEmpty(){
+        private void fireChange(){
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    changeSupport.fireChange();
+                }
+            });
+        }
+
+        private void checkView(){
+            new Thread(new Runnable(){
+                public void run() {
+                    Boolean isEmpty = Boolean.TRUE;
+                    try {
+                        isEmpty = project.getAPIEjbJar().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                            public Boolean run(EjbJarMetadata metadata) {
+                                org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
+                                if (ejbJar != null) {
+                                    EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                                    if (enterpriseBeans != null) {
+                                        enterpriseBeans.removePropertyChangeListener(EjbNodeList.this);
+                                        enterpriseBeans.addPropertyChangeListener(EjbNodeList.this);
+                                        if (enterpriseBeans.getEjbs().length > 0){
+                                            return Boolean.FALSE;
+                                        }
+                                    }
+                                }
+                                return Boolean.TRUE;
+                            }
+                        });
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                            
+                    if (isEmpty^isViewEmpty){
+                        isViewEmpty = isEmpty;
+                        fireChange();
+                    }
+                }
+            }).start();
+/*
             Boolean isEmpty = Boolean.TRUE;
             try {
                 isEmpty = project.getAPIEjbJar().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
@@ -156,6 +195,7 @@ public class EjbsNodeFactory implements NodeFactory {
                 Exceptions.printStackTrace(ioe);
             }
             return isEmpty;
+ */
         }
     }
 }
