@@ -131,7 +131,7 @@ public class LineAnnotationInfo {
                 int maxColumnWith = getFileAnnotationInfo().getMaxColumnWidth()[col];
                 String formattedMetric = SPACES.substring(0, maxColumnWith - metric.length()) + metric;
                 if (annotation.length() > 0) {
-                    annotation += " "; // NOI18N
+                    annotation += " | "; // NOI18N
                 }
                 annotation += formattedMetric;
                 col++;
@@ -184,7 +184,7 @@ public class LineAnnotationInfo {
             int i = 0;
             for (String col : getFileAnnotationInfo().getColumnNames()) {
                 if (tt.length() > 0) {
-                    tt += " "; // NOI18N
+                    tt += " | "; // NOI18N
                 }
                 tt += col + ':' + columns[i];
                 i++;
