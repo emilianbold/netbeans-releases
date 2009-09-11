@@ -351,11 +351,23 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLineOffset(offset);
         if (lineAnnotationInfo != null) {
             Rectangle clip = g.getClipBounds();
+            int x1 = clip.x;
+            int x2 = clip.width-1;
+            int y1 = yBase;
+            int y2 = editorUI.getLineHeight();
+            // paint background
             g.setColor(backgroundColor());
-            g.fillRect(clip.x, yBase, clip.width-1, editorUI.getLineHeight()-1);
+            g.fillRect(x1, y1, x2, y2);
+            // paint box
             g.setColor(BOX_COLOR);
-            g.drawRect(clip.x, yBase, clip.width-1, editorUI.getLineHeight());
-
+            g.drawRect(x1, y1, x2, y2);
+            // make corners round
+            g.setColor(backgroundColor());
+            g.drawLine(x1, y1, x1, y1);
+            g.drawLine(x1+x2, y1, x1+x2, y1);
+            g.drawLine(x1, y1+y2, x1, y1+y2);
+            g.drawLine(x1+x2, y1+y2, x1+x2, y1+y2);
+            // paint text
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
             g.setColor(foregroundColor());
