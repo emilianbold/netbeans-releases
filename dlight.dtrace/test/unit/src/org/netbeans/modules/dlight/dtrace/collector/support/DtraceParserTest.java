@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -169,7 +170,7 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+        public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters) {
             fail("Parser is not expected to call this method");
             return null;
         }
