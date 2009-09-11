@@ -41,7 +41,9 @@ package org.netbeans.modules.parsing.api.indexing;
 
 import java.net.URL;
 import java.util.Collection;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 
@@ -163,6 +165,11 @@ public final class IndexingManager {
      * @since 1.16
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            //Prevent AWT deadlock refreshIndexAndWait posted by SwingUtilities.invokeLater
+            //in between completion-active = true and completion-active = false.
+            EventSupport.releaseCompletionCondition();
+        }
         RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan);
     }
 

@@ -425,26 +425,24 @@ public class TaskProcessor {
         return r;
     }
     
-    //DO NOT CALL DIRECTLY - called by Source
+    //DO NOT CALL DIRECTLY - called by EventSupport
     public static void resetStateImpl (final Source source) {
-        assert source != null;
-        Request r;
-        synchronized (rst) {
-            r = rst.getAndSet(null);
-        }
+        final Request r = rst.getAndSet(null);
         currentRequest.cancelCompleted(r);
-        synchronized (INTERNAL_LOCK) {
-            final boolean reschedule = SourceAccessor.getINSTANCE().testAndCleanFlags(source,SourceFlags.RESCHEDULE_FINISHED_TASKS,
-                        EnumSet.of(SourceFlags.RESCHEDULE_FINISHED_TASKS, SourceFlags.CHANGE_EXPECTED));
+        if (source != null) {
+            synchronized (INTERNAL_LOCK) {
+                final boolean reschedule = SourceAccessor.getINSTANCE().testAndCleanFlags(source,SourceFlags.RESCHEDULE_FINISHED_TASKS,
+                            EnumSet.of(SourceFlags.RESCHEDULE_FINISHED_TASKS, SourceFlags.CHANGE_EXPECTED));
 
-            Collection<Request> cr;
-            if (reschedule) {
-                if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
+                Collection<Request> cr;
+                if (reschedule) {
+                    if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
+                        requests.addAll(cr);
+                    }
+                }
+                if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
                     requests.addAll(cr);
                 }
-            }
-            if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
-                requests.addAll(cr);
             }
         }
     }
