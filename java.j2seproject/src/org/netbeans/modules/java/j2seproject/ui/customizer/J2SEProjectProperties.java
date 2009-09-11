@@ -48,6 +48,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -625,12 +626,19 @@ public class J2SEProjectProperties {
         Vector data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
         String []rootLabels = new String[data.size()];
+        Set<URL> oldRootURLs = new HashSet<URL> (Arrays.asList (roots.getRootURLs ()));
+        boolean rootsAreSame = true;
         for (int i=0; i<data.size();i++) {
             File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
-            rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);            
+            rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);
+            rootsAreSame &= oldRootURLs.remove (rootURLs[i]);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
-        roots.putRoots(rootURLs,rootLabels);
+        if (
+            !rootsAreSame ||
+            !oldRootURLs.isEmpty ()
+        )
+            roots.putRoots(rootURLs,rootLabels);
     }
     
     /* This is used by CustomizerWSServiceHost */

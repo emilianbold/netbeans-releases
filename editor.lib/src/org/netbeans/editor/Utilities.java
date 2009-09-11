@@ -355,18 +355,38 @@ public class Utilities {
         int best = findBestSpan(c, start, end, x);
         
         if (best<c.getDocument().getLength()){
-            // #56056
-            int tmp = best + 1;
-            int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-                    tmp, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
+			// #56056
+			int tmp = best + 1;
+			int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
+					tmp, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
             if (nextVisualPosition<best && nextVisualPosition >= 0){
-                return nextVisualPosition;
-            }
+				// #164820
+				// We are in the collapsed fold, now try to find which position
+				// is the best, whether foldEnd or foldStart
+				tempRect = c.modelToView(nextVisualPosition);
+				if (tempRect == null) {
+					return nextVisualPosition;
+				}
+				int leftX = tempRect.x;
+				int nextVisualPositionRight = c.getUI().getNextVisualPositionFrom(c,
+						nextVisualPosition, javax.swing.text.Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
+				tempRect = c.modelToView(nextVisualPositionRight);
+				if (tempRect == null) {
+					return nextVisualPosition;
+				}
+				int rightX = tempRect.x;
+
+				if (Math.abs(leftX - x) < Math.abs(rightX - x)) {
+					return nextVisualPosition;
+				} else {
+					return nextVisualPositionRight;
+				}
+			}
         }
-        
+
         return best;
-    }    
-    
+    }
+
     /** Get the position that is one line above and visually at some
     * x-coordinate value.
     * @param c text component to operate on

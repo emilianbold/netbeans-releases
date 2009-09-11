@@ -64,6 +64,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -84,7 +85,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -858,21 +858,20 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }
 
     public void testAWTIndexAndWaitDeadlock() throws Exception {
-        final Class<EventSupport> esc = EventSupport.class;
-        final Field k24Field = esc.getDeclaredField("k24");   //NOI18N
+        final Class<EventSupport.EditorRegistryListener> erlc = EventSupport.EditorRegistryListener.class;        
+        final Field k24Field = erlc.getDeclaredField("k24");   //NOI18N
         assertNotNull (k24Field);
         k24Field.setAccessible(true);
-
+        final AtomicBoolean cond = (AtomicBoolean) k24Field.get(null);
+        
         final Source source = Source.create(f3);
         assertNotNull(source);
 
-        final TaskProcessor.Request[] request = new TaskProcessor.Request[1];
         Runnable action = new Runnable() {
             public void run() {
                 try {
-                    request[0] = TaskProcessor.resetState(source, false, false);
-                    final EventSupport es = SourceAccessor.getINSTANCE().getEventSupport(source);
-                    k24Field.setBoolean(es, true);
+                    TaskProcessor.resetState(source, false, true);
+                    cond.set(true);
                 } catch (/*ReflectiveOperation*/Exception e) {
                     Exceptions.printStackTrace(e);
                 }
@@ -887,12 +886,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         action = new Runnable() {
             public void run() {
-//Uncomment this to test the deadlock
-//                try {
-//                    IndexingManager.getDefault().refreshIndexAndWait(srcRootWithFiles1.getURL(), null);
-//                } catch (FileStateInvalidException e) {
-//                    Exceptions.printStackTrace(e);
-//                }
+                try {
+                    IndexingManager.getDefault().refreshIndexAndWait(srcRootWithFiles1.getURL(), null);
+                } catch (FileStateInvalidException e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -906,9 +904,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         action = new Runnable() {
             public void run() {
                 try {
-                    final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                    k24Field.setBoolean(support, false);
-                    TaskProcessor.resetStateImplAsync(request[0]);
+                    cond.set(false);
+                    TaskProcessor.resetStateImpl(source);
                 } catch (/*ReflectiveOperation*/Exception e) {
                     Exceptions.printStackTrace(e);
                 }

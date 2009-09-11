@@ -55,6 +55,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -104,8 +105,11 @@ class OrigSurroundWithTryCatchFix implements Fix {
                 if (p == null) {
                     return ; //XXX: log
                 }
-                
+
                 StatementTree leaf = (StatementTree) p.getLeaf();
+
+                leaf = GeneratorUtilities.get(parameter).importComments(leaf, parameter.getCompilationUnit());
+
                 TreeMaker make = parameter.getTreeMaker();
                 
                 if (leaf.getKind() == Kind.VARIABLE) {

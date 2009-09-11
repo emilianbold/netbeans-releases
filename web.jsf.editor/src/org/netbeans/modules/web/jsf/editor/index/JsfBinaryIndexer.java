@@ -43,8 +43,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -123,6 +131,50 @@ public class JsfBinaryIndexer extends BinaryIndexer {
     private void processFaceletsCompositeLibraries(Context context) {
         //look for /META-INF/resources/<folder>/*.xhtml
         //...and index as normal composite library
+        FileObject resourcesFolder = context.getRoot().getFileObject("META-INF/resources"); //NOI18N //can it be stored in META-INF.* ????
+        if(resourcesFolder != null) {
+            try {
+                Enumeration<? extends FileObject> folders = resourcesFolder.getFolders(false);
+                final IndexingSupport sup = IndexingSupport.getInstance(context);
+                final JsfPageModelFactory compositeComponentModelFactory = JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
+                while (folders.hasMoreElements()) {
+                    FileObject folder = folders.nextElement();
+                    //process all xhtml files
+                    for (final FileObject file : folder.getChildren()) {
+                        if (file.getExt().equalsIgnoreCase("xhtml")) {
+                            //NOI18N
+                            //parse && index the html content of the file
+                            Source source = Source.create(file);
+                            try {
+                                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                                    @Override
+                                    public void run(ResultIterator resultIterator) throws Exception {
+                                        for (Embedding e : resultIterator.getEmbeddings()) {
+                                            if (e.getMimeType().equals("text/html")) {
+                                                //NOI18N
+                                                HtmlParserResult result = (HtmlParserResult) resultIterator.getResultIterator(e).getParserResult();
+                                                CompositeComponentModel ccmodel = (CompositeComponentModel) compositeComponentModelFactory.getModel(result);
+                                                if (ccmodel != null) {
+                                                    //looks like a composite component
+                                                    IndexDocument doc = sup.createDocument(file);
+                                                    ccmodel.storeToIndex(doc);
+                                                    sup.addDocument(doc);
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            } catch (ParseException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
     }
 
     private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {

@@ -52,6 +52,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
@@ -894,5 +895,38 @@ import org.netbeans.lib.editor.view.GapDocumentView;
         }
         
     } // End of FragmentView class
-    
+
+	// #164820
+	@Override
+	public int getNextVisualPositionFrom(int pos, Bias b, Shape a, int direction, Bias[] biasRet) throws BadLocationException {
+		
+		switch (direction) {
+		case WEST:
+			{
+				pos = super.getNextVisualPositionFrom(pos, b, a, direction, biasRet);
+				if (Character.isLowSurrogate(org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(getDocument()).charAt(pos))) {
+					// Supplementary character
+					return super.getNextVisualPositionFrom(pos, b, a, direction, biasRet);
+				}
+			}
+			break;
+
+		case EAST:
+			{
+				pos = super.getNextVisualPositionFrom(pos, b, a, direction, biasRet);
+				if (Character.isLowSurrogate(org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(getDocument()).charAt(pos))) {
+					// Supplementary character
+					return super.getNextVisualPositionFrom(pos, b, a, direction, biasRet);
+				}
+			}
+			break;
+
+		default:
+			pos = super.getNextVisualPositionFrom(pos, b, a, direction, biasRet);
+			break;
+		}
+
+		return pos;
+	}
+	
 }
