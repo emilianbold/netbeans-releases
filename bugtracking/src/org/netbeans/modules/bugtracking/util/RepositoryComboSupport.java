@@ -285,7 +285,7 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
                     public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                         comboBox.removePopupMenuListener(this);
                         if (comboBox.getSelectedItem() != SELECT_REPOSITORY) {
-                            comboBoxModel.removeFirstItem();
+                            comboBoxModel.removeElementAt(0);
                         } else {
                             /* Restore the item selection listener: */
                             comboBox.addItemListener(RepositoryComboSupport.this);
@@ -293,7 +293,7 @@ public final class RepositoryComboSupport implements HierarchyListener, ItemList
                     }
                 });
             } else {
-                comboBoxModel.removeFirstItem();
+                comboBoxModel.removeElementAt(0);
                 comboBox.removeItemListener(this);
             }
         }

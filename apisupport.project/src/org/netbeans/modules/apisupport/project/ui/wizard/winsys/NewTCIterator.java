@@ -330,7 +330,7 @@ final class NewTCIterator extends BasicWizardIterator {
                         path,
                         null,
                         null,
-                        NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name), // NOI18N
+                        null,
                         attrs
                     )
                 );

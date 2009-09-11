@@ -59,7 +59,6 @@ import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -199,7 +198,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            FileLock lock = null;
             OutputStream stream = null;
             InputStream instream = null;
             
@@ -213,8 +211,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 } else {
                     manifest.removeAttribute(attrName, null);
                 }
-                lock = parentFile.lock();
-                stream = parentFile.getOutputStream(lock);
+                stream = parentFile.getOutputStream();
                 manifest.write(stream);
             } catch (FileNotFoundException ex) {
                 //TODO
@@ -240,9 +237,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                     } catch (IOException ex) {
                         LOG.log(Level.WARNING, "Exception during refactoring", ex);    // NOI18N
                     }
-                }
-                if (lock != null) {
-                    lock.releaseLock();
                 }
             }
         }

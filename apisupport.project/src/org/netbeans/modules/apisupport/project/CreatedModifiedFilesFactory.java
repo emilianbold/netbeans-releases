@@ -77,7 +77,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -488,23 +487,20 @@ public final class CreatedModifiedFilesFactory {
                 serviceIS.close();
             }
             
-            FileLock lock = service.lock();
+            OutputStream os = service.getOutputStream();
             try {
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(service.getOutputStream(lock), "UTF-8")); // NOI18N
-                try {
-                    Iterator<String> it = lines.iterator();
-                    while (it.hasNext()) {
-                        String line = it.next();
-                        if (it.hasNext() || !line.trim().equals("")) {
-                            pw.println(line);
-                        }
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+                Iterator<String> it = lines.iterator();
+                while (it.hasNext()) {
+                    String line = it.next();
+                    if (it.hasNext() || !line.trim().equals("")) {
+                        pw.println(line);
                     }
-                    pw.println(implClass);
-                } finally {
-                    pw.close();
                 }
+                pw.println(implClass);
+                pw.flush();
             } finally {
-                lock.releaseLock();
+                os.close();
             }
             
         }
