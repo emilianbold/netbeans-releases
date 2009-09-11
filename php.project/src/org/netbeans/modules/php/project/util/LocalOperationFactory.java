@@ -254,45 +254,41 @@ final class LocalOperationFactory extends FileOperationFactory {
         return FileUtil.normalizeFile(new File(targetRoot, relativePath));
     }
 
-    private static boolean doCopy(FileObject source, File target) throws IOException {
+    private boolean doCopy(FileObject source, File target) throws IOException {
+        LOGGER.log(Level.FINE, "Copying file {0} -> {1}", new Object[] {getPath(source), target});
         File targetParent = target.getParentFile();
-        if (FileOperationFactory.isNbProjectMetadata(source)) return true;
         if (source.isData()) {
             doDelete(target);
             FileObject parent = FileUtil.createFolder(targetParent);
             FileUtil.copyFile(source, parent, source.getName(), source.getExt());
+            LOGGER.log(Level.FINE, "File {0} copied to {1}", new Object[] {getPath(source), target});
         } else {
             String[] childs = target.list();
             if (childs == null || childs.length == 0) {
                 doDelete(target);
             }
             FileUtil.createFolder(target);
-        }
-        if (IS_FINE_LOGGABLE) {
-            LOGGER.fine((target.exists() ? "file copied: " : "!file not copied: ") + target.getAbsolutePath());//NOI18N
-        } else if ((IS_WARNING_LOGGABLE && !target.exists())) {
-            LOGGER.warning("!file not copied: " + target.getAbsolutePath());//NOI18N
+            LOGGER.log(Level.FINE, "Folder {0} created", target);
         }
         return target.exists();
     }
 
-    private static boolean doDelete(File target) throws IOException {
-        if (target.exists()) {
-            FileObject targetFo = FileUtil.toFileObject(target);
-            if (targetFo != null && targetFo.isValid()) {
-                targetFo.delete();
-            } else {
-                target.delete();
-            }
-            if (IS_FINE_LOGGABLE) {
-                LOGGER.fine((!target.exists() ? "file deleted: " : "!file not deleted: ") + target.getAbsolutePath());//NOI18N
-            } else if ((IS_WARNING_LOGGABLE && target.exists())) {
-                LOGGER.warning("!file not deleted: " + target.getAbsolutePath());//NOI18N
-            }
-
-            return !target.exists();
+    private boolean doDelete(File target) throws IOException {
+        LOGGER.log(Level.FINE, "Deleting file {0}", target);
+        if (!target.exists()) {
+            // nothing to do, no error
+            LOGGER.log(Level.FINE, "File {0} does not exists, nothing to delete", target);
+            return true;
         }
-        return true;
+        FileObject targetFo = FileUtil.toFileObject(target);
+        assert targetFo != null : "FileObject must be found for " + target;
+        if (!targetFo.isValid()) {
+            LOGGER.log(Level.FINE, "FileObject {0} is not valid, nothing to delete", getPath(targetFo));
+        } else {
+            targetFo.delete();
+            LOGGER.log(Level.FINE, "File {0} deleted", getPath(targetFo));
+        }
+        return !target.exists();
     }
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {

@@ -50,12 +50,16 @@ import org.openide.filesystems.FileUtil;
  */
 abstract class FileOperationFactory {
     protected final PhpProject project;
+    private final FileObject nbprojectDir;
     private final PhpVisibilityQuery phpVisibilityQuery;
 
     public FileOperationFactory(PhpProject project) {
         assert project != null;
         this.project = project;
         phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
+        nbprojectDir = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        assert nbprojectDir != null : "No nbproject directory found for " + project;
+        assert nbprojectDir.isFolder() && nbprojectDir.isValid() : "Not valid nbproject directory found for " + project;
     }
 
     abstract Callable<Boolean> createCopyHandler(FileObject source);
@@ -65,29 +69,20 @@ abstract class FileOperationFactory {
     abstract void invalidate();
 
     protected final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
-        return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && phpVisibilityQuery.isVisible(source);
+        return (FileUtil.isParentOf(sourceRoot, source) || source.equals(sourceRoot))
+                && !isNbProjectMetadata(source)
+                && phpVisibilityQuery.isVisible(source);
     }
 
-    static boolean isNbProjectMetadata(FileObject fo) {
-        final String metadataName = "nbproject";//NOI18N
-        if (fo.getPath().indexOf(metadataName) != -1) {
-            while (fo != null) {
-                if (fo.isFolder()) {
-                    if (metadataName.equals(fo.getNameExt())) {
-                        return true;
-                    }
-                }
-                fo = fo.getParent();
-            }
-        }
-        return false;
+    boolean isNbProjectMetadata(FileObject fo) {
+        return FileUtil.isParentOf(nbprojectDir, fo) || nbprojectDir.equals(fo);
     }
 
     protected FileObject getSources() {
         return ProjectPropertiesSupport.getSourcesDirectory(project);
     }
 
-    protected String getPath(FileObject fo) {
+    protected static String getPath(FileObject fo) {
         return FileUtil.getFileDisplayName(fo);
     }
 }
