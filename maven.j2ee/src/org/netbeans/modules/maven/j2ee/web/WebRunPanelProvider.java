@@ -54,11 +54,8 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=301)
 public class WebRunPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of WebRunPanelProvider */
-    public WebRunPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -67,8 +64,7 @@ public class WebRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
             return ProjectCustomizer.Category.create(
                     ModelHandle.PANEL_RUN,
                     NbBundle.getMessage(WebRunPanelProvider.class, "PNL_Run"),
-                    null,
-                    (ProjectCustomizer.Category[])null);
+                    null);
         }
         return null;
     }
