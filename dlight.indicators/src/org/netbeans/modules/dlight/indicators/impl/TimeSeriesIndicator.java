@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -65,6 +67,7 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 
@@ -77,6 +80,7 @@ public final class TimeSeriesIndicator
         extends Indicator<TimeSeriesIndicatorConfiguration>
         implements ViewportAware, DataFilterListener {
 
+    private final static Logger log = DLightLogger.getLogger(TimeSeriesIndicator.class);
     private final DataRowToTimeSeries dataRowHandler;
     private final GraphPanel<TimeSeriesPlot, Legend> panel;
     private final TimeSeriesPlot graph;
@@ -125,6 +129,7 @@ public final class TimeSeriesIndicator
         if (needed) {
             final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus());
             repairPanel.addActionListener(new ActionListener() {
+
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> repairResult = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
@@ -149,6 +154,7 @@ public final class TimeSeriesIndicator
                 }
             });
             UIThread.invoke(new Runnable() {
+
                 public void run() {
                     panel.setOverlay(repairPanel);
                 }
@@ -156,6 +162,7 @@ public final class TimeSeriesIndicator
         } else {
             final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), false, GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
+
                 public void run() {
                     panel.setOverlay(label);
                 }
@@ -185,7 +192,13 @@ public final class TimeSeriesIndicator
     @Override
     public void updated(List<DataRow> data) {
         for (DataRow row : data) {
-            dataRowHandler.addDataRow(row);
+            try {
+                dataRowHandler.addDataRow(row);
+            } catch (Exception ex) {
+                if (log.isLoggable(Level.WARNING)) {
+                    log.log(Level.WARNING, "Exception while updating indicator", ex); // NOI18N
+                }
+            }
         }
     }
 

@@ -38,9 +38,6 @@
  */
 package org.netbeans.modules.dlight.procfs.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -53,6 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
@@ -66,14 +66,21 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables.msa;
 import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
+import org.netbeans.modules.dlight.procfs.api.LWPUsage;
+import org.netbeans.modules.dlight.procfs.api.PStatus;
+import org.netbeans.modules.dlight.procfs.api.PStatus.ThreadsInfo;
+import org.netbeans.modules.dlight.procfs.api.PUsage;
+import org.netbeans.modules.dlight.procfs.api.SamplingData;
+import org.netbeans.modules.dlight.procfs.reader.api.ProcReader;
+import org.netbeans.modules.dlight.procfs.reader.api.ProcReaderFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TasksCachedProcessor;
-import org.openide.util.Exceptions;
 
 public class ProcFSDataCollector
         extends IndicatorDataProvider<ProcFSDCConfiguration>
@@ -85,9 +92,11 @@ public class ProcFSDataCollector
     private TasksCachedProcessor<DLightTarget, ValidationStatus> validator =
             new TasksCachedProcessor<DLightTarget, ValidationStatus>(new ProcFSDataCollectorValidator(), false);
     private DLightTarget target;
+    private volatile Future mainLoop;
     private final boolean msaEnabled, prstatEnabled;
     private final List<DataTableMetadata> providedDataTables;
     private SQLDataStorage sqlStorage;
+    private PreparedStatement insertMSAStatement = null;
 
     public ProcFSDataCollector(ProcFSDCConfiguration configuration) {
         this.configuration = configuration;
@@ -135,14 +144,14 @@ public class ProcFSDataCollector
         }
     }
 
-    public ValidationStatus validate(DLightTarget target) {
+    public ValidationStatus validate(final DLightTarget target) {
         this.target = target;
         ValidationStatus result = ValidationStatus.initialStatus();
 
         try {
             result = validator.compute(target);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            result = ValidationStatus.invalidStatus(ex.getMessage());
         }
 
         notifyStatusChanged(null, result);
@@ -201,8 +210,11 @@ public class ProcFSDataCollector
         // TODO: make it better...
         for (DataStorage ds : storages.values()) {
             if (ds instanceof SQLDataStorage) {
-                sqlStorage = (SQLDataStorage) ds;
-                break;
+                SQLDataStorage storage = (SQLDataStorage) ds;
+                if (prepareStatements(storage)) {
+                    sqlStorage = storage;
+                    break;
+                }
             }
         }
     }
@@ -218,300 +230,227 @@ public class ProcFSDataCollector
     public String[] getArgs() {
         throw new UnsupportedOperationException("Not supported operation."); // NOI18N
     }
-    Thread t;
 
-    private void targetStarted(DLightTarget target) {
-        if (this.target == target) {
-
-            final int pid = ((AttachableTarget) target).getPID();
-            final File lwp = new File("/proc/" + pid + "/lwp"); // NOI18N
-            final File statusFile = new File("/proc/" + pid + "/status"); // NOI18N
-
-            try {
-                PStatus.PIDInfo pidinfo = PStatus.getPIDInfo(new FileInputStream(statusFile));
-
-                System.err.println("PID from file: " + pidinfo.pr_pid + "; Read pid: " + pid);
-
-                if (pidinfo.pr_pid != pid) {
-                    DataReader.switchEndian();
-                }
-            } catch (IOException ex) {
-                //Exceptions.printStackTrace(ex);
+    private void targetStarted(final DLightTarget target) {
+        if (this.target != target) {
+            if (log.isLoggable(Level.FINE)) {
+                log.fine(String.format("Got UNEXPECTED targetStarted() notification. " + // NOI18N
+                        "Validation was performed against %s, but notified about %s", // NOI18N
+                        getName(), this.target.toString(), target.toString()));
             }
-
-            PreparedStatement _stmt = null;
-
-            try {
-                _stmt = sqlStorage.prepareStatement(
-                        String.format("insert into %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " + // NOI18N
-                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", // NOI18N
-                        msa.tableMetadata.getName(),
-                        msa.TIMESTAMP.getColumnName(), msa.SAMPLE.getColumnName(), msa.LWP_ID.getColumnName(),
-                        msa.LWP_MSA_USR.getColumnName(), msa.LWP_MSA_SYS.getColumnName(), msa.LWP_MSA_TRP.getColumnName(),
-                        msa.LWP_MSA_TFL.getColumnName(), msa.LWP_MSA_DFL.getColumnName(), msa.LWP_MSA_KFL.getColumnName(),
-                        msa.LWP_MSA_LCK.getColumnName(), msa.LWP_MSA_SLP.getColumnName(), msa.LWP_MSA_LAT.getColumnName(),
-                        msa.LWP_MSA_STP.getColumnName()));
-
-            } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            final PreparedStatement stmt = _stmt;
-
-            t = new Thread(new Runnable() {
-
-                long ts, sample;
-                // normalized MSA details
-                float futd, fstd, fttd, ftftd, fdftd, fkftd, fltd, fslptd, fwtd, fstoptd;
-                final HashMap<String, UsageStatistics> lwpsStat = new HashMap<String, UsageStatistics>();
-                final HashMap<String, Long> lastTimestamps = new HashMap<String, Long>();
-                // threadID => threadRefID
-                final HashSet<String> liveLWPs = new HashSet<String>();
-
-                // TODO: need less synchronization
-                public synchronized void run() {
-                    try {
-                        while (true) {
-                            Thread.sleep(1000);
-                            int lwps_lcount = 0; //lwp.list().length;
-                            int lwps_zcount = 0;
-
-                            PStatus.ThreadsInfo threadsInfo;
-
-                            try {
-                                threadsInfo = PStatus.getThreadsInfo(new FileInputStream(statusFile));
-                                lwps_lcount = threadsInfo.pr_nlwp;
-                                lwps_zcount = threadsInfo.pr_nzomb;
-                            } catch (IOException ex) {
-                                // process is gone
-                            }
-
-                            if (lwps_lcount == 0) {
-                                continue; // could break, actually...
-                            }
-
-                            getMSA("0", lwps_lcount); // NOI18N
-
-                            ProcFSDataCollector.this.notifyIndicators(Arrays.asList(
-                                    new DataRow(MSASQLTables.prstat.tableMetadata.getColumnNames(),
-                                    Arrays.asList(
-                                    ts, // timestamp
-                                    sample, // sample
-                                    lwps_lcount, // live lwps
-                                    lwps_zcount, // zombie lwps
-                                    futd + fstd + fttd, // run
-                                    fltd, // blocked
-                                    ftftd + fdftd + fkftd + fwtd + fstoptd, // wait
-                                    fslptd // sleep
-                                    ))));
-
-                            if (sqlStorage != null && msaEnabled) {
-                                try {
-                                    // Query information about each thread and store
-                                    // in in the database..
-
-                                    final String[] lwps = lwp.list();
-
-                                    // It could happen that some threads are gone
-                                    // while we were between updates...
-                                    Set<String> deadLWPIDs = new HashSet<String>(liveLWPs);
-                                    deadLWPIDs.removeAll(Arrays.asList(lwps));
-
-                                    // Remove them...
-                                    for (String deadLWPID : deadLWPIDs) {
-                                        setLWPEndTime(deadLWPID);
-                                    }
-
-                                    for (String id : lwps) {
-                                        boolean result = getMSA(id, 1);
-
-                                        if (!result) {
-                                            // either LWP is gone or it is a zombie LWP...
-                                            // In case when LWP is clearly finished - set end timestamp
-                                            // Otherwise - just skip it!
-
-                                            // LWP is gone...
-                                            if (!new File(lwp, id).exists()) {
-                                                log.info("LWP " + id + " is gone! " + Arrays.toString(liveLWPs.toArray()));
-                                                setLWPEndTime(id);
-                                                log.info("LWP      " + Arrays.toString(liveLWPs.toArray()));
-                                            } else {
-                                                if (!liveLWPs.contains(id)) {
-                                                    // It was really "quick" thread -
-                                                    // it died even before we registered it!
-
-                                                    // TODO: here the problem is with non-zombie threads:
-                                                    // if their execution time was less than sampling - we
-                                                    // just will not notice it ...
-                                                    setLWPStartTime(id, System.nanoTime());
-                                                }
-                                                log.info("LWP " + id + " is a ZOMBIE!");
-                                            }
-                                            continue;
-                                        }
-
-                                        if (!liveLWPs.contains(id)) {
-                                            setLWPStartTime(id);
-                                        }
-
-                                        stmt.setLong(1, ts);
-                                        stmt.setLong(2, sample);
-                                        stmt.setInt(3, Integer.parseInt(id));
-                                        stmt.setFloat(4, futd);
-                                        stmt.setFloat(5, fstd);
-                                        stmt.setFloat(6, fttd);
-                                        stmt.setFloat(7, ftftd);
-                                        stmt.setFloat(8, fdftd);
-                                        stmt.setFloat(9, fkftd);
-                                        stmt.setFloat(10, fltd);
-                                        stmt.setFloat(11, fslptd);
-                                        stmt.setFloat(12, fwtd);
-                                        stmt.setFloat(13, fstoptd);
-
-                                        stmt.executeUpdate();
-                                    }
-                                } catch (SQLException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        }
-                    } catch (InterruptedException ex) {
-                    } finally {
-                        // Mark all live LWPs as finished
-                        for (String id : liveLWPs.toArray(new String[0])) {
-                            setLWPEndTime(id);
-                        }
-                    }
-
-                }
-
-                /**
-                 * returns false if lwp / process is gone...
-                 */
-                private boolean getMSA(final String thrID, final int lwpscount) {
-                    final File usageFile = "0".equals(thrID) ? new File("/proc/" + pid + "/usage") : new File("/proc/" + pid + "/lwp/" + thrID + "/lwpusage"); // NOI18N
-
-                    // MSA deltas
-                    long utd, std, ttd, tftd, dftd, kftd, ltd, slptd, wtd, stoptd;
-
-                    UsageStatistics usage = null;
-
-                    try {
-                        if (usageFile.exists()) {
-                            usage = UsageStatistics.get(new FileInputStream(usageFile));
-                        }
-                    } catch (IOException ex) {
-                    }
-
-                    if (usage == null) {
-                        return false;
-                    }
-
-                    ts = usage.pr_tstamp.time;
-                    long lastTS = lastTimestamps.containsKey(thrID) ? lastTimestamps.get(thrID) : 0;
-
-                    if (lastTS == 0) {
-                        lastTS = usage.pr_create.time;
-                    }
-
-                    sample = ts - lastTS;
-                    lastTimestamps.put(thrID, ts);
-
-                    UsageStatistics prevUsage = lwpsStat.get(thrID);
-
-                    if (prevUsage == null) {
-                        utd = usage.pr_utime.time;
-                        std = usage.pr_stime.time;
-                        ttd = usage.pr_ttime.time;
-                        tftd = usage.pr_tftime.time;
-                        dftd = usage.pr_dftime.time;
-                        kftd = usage.pr_kftime.time;
-                        ltd = usage.pr_ltime.time;
-                        slptd = usage.pr_slptime.time;
-                        wtd = usage.pr_wtime.time;
-                        stoptd = usage.pr_stoptime.time;
-                    } else {
-                        utd = usage.pr_utime.time - prevUsage.pr_utime.time;
-                        std = usage.pr_stime.time - prevUsage.pr_stime.time;
-                        ttd = usage.pr_ttime.time - prevUsage.pr_ttime.time;
-                        tftd = usage.pr_tftime.time - prevUsage.pr_tftime.time;
-                        dftd = usage.pr_dftime.time - prevUsage.pr_dftime.time;
-                        kftd = usage.pr_kftime.time - prevUsage.pr_kftime.time;
-                        ltd = usage.pr_ltime.time - prevUsage.pr_ltime.time;
-                        slptd = usage.pr_slptime.time - prevUsage.pr_slptime.time;
-                        wtd = usage.pr_wtime.time - prevUsage.pr_wtime.time;
-                        stoptd = usage.pr_stoptime.time - prevUsage.pr_stoptime.time;
-                    }
-
-                    long sum = utd + std + ttd + tftd + dftd + kftd + ltd + slptd + wtd + stoptd;
-
-                    // normalize results ...
-                    futd = (float) utd * lwpscount / sum;
-                    fstd = (float) std * lwpscount / sum;
-                    fttd = (float) ttd * lwpscount / sum;
-                    ftftd = (float) tftd * lwpscount / sum;
-                    fdftd = (float) dftd * lwpscount / sum;
-                    fkftd = (float) kftd * lwpscount / sum;
-                    fltd = (float) ltd * lwpscount / sum;
-                    fslptd = (float) slptd * lwpscount / sum;
-                    fwtd = (float) wtd * lwpscount / sum;
-                    fstoptd = (float) stoptd * lwpscount / sum;
-                    lwpsStat.put(thrID, usage);
-
-                    return true;
-                }
-
-                private void setLWPStartTime(final String id, final long timestamp) {
-                    liveLWPs.add(id);
-
-                    String insertQuery = String.format("insert into %s (%s, %s, %s) values (%s, %d, null)", // NOI18N
-                            MSASQLTables.lwps.tableMetadata.getName(),
-                            MSASQLTables.lwps.LWP_ID.getColumnName(),
-                            MSASQLTables.lwps.LWP_START.getColumnName(),
-                            MSASQLTables.lwps.LWP_END.getColumnName(),
-                            id,
-                            timestamp);
-
-                    try {
-                        sqlStorage.executeUpdate(insertQuery);
-                    } catch (SQLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-
-                private void setLWPStartTime(final String id) {
-                    final UsageStatistics lwpStat = lwpsStat.get(id);
-                    log.info("LWP " + id + " started! " + lwpStat.pr_create.nano);
-                    setLWPStartTime(id, lwpStat.pr_create.time);
-                }
-
-                private void setLWPEndTime(final String id) {
-                    final long timestamp = System.nanoTime(); // TODO: not very accurate time
-                    log.info("LWP " + id + " finished! " + timestamp);
-                    liveLWPs.remove(id);
-
-                    String updateQuery = String.format("update %s set %s = %d where %s = %s", // NOI18N
-                            MSASQLTables.lwps.tableMetadata.getName(),
-                            MSASQLTables.lwps.LWP_END.getColumnName(),
-                            timestamp,
-                            MSASQLTables.lwps.LWP_ID.getColumnName(),
-                            id);
-                    try {
-                        sqlStorage.executeUpdate(updateQuery);
-                    } catch (SQLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-
-            t.start();
+            return;
         }
+
+        if (!prstatEnabled && !msaEnabled) {
+            // Nothing to do...
+            return;
+        }
+
+        final ProcReader reader = ProcReaderFactory.getReader(target.getExecEnv(), (AttachableTarget) target);
+
+        mainLoop = DLightExecutorService.scheduleAtFixedRate(
+                new FetchAndUpdateTask(reader),
+                1, TimeUnit.SECONDS,
+                "ProcFSDataCollector data fetching loop"); // NOI18N
     }
 
     private void targetFinished(DLightTarget target) {
-        if (this.target == target) {
-            log.info(target.toString() + " finished!");
-            t.interrupt();
+        if (this.target == target && mainLoop != null) {
+            mainLoop.cancel(true);
+        }
+    }
+
+    private boolean prepareStatements(SQLDataStorage storage) {
+        boolean result = false;
+        try {
+            insertMSAStatement = storage.prepareStatement(
+                    String.format("insert into %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " + // NOI18N
+                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", // NOI18N
+                    msa.tableMetadata.getName(),
+                    msa.TIMESTAMP.getColumnName(), msa.SAMPLE.getColumnName(), msa.LWP_ID.getColumnName(),
+                    msa.LWP_MSA_USR.getColumnName(), msa.LWP_MSA_SYS.getColumnName(), msa.LWP_MSA_TRP.getColumnName(),
+                    msa.LWP_MSA_TFL.getColumnName(), msa.LWP_MSA_DFL.getColumnName(), msa.LWP_MSA_KFL.getColumnName(),
+                    msa.LWP_MSA_LCK.getColumnName(), msa.LWP_MSA_SLP.getColumnName(), msa.LWP_MSA_LAT.getColumnName(),
+                    msa.LWP_MSA_STP.getColumnName()));
+            result = true;
+        } catch (SQLException ex) {
+            log.warning(String.format("Exception while preparing insert statement (%s)", ex.getMessage())); // NOI18N
+        }
+        return result;
+    }
+
+    private class FetchAndUpdateTask implements Runnable {
+
+        private final ProcReader reader;
+        private final LWPsTracker lwpsTracker = new LWPsTracker();
+
+        public FetchAndUpdateTask(final ProcReader reader) {
+            this.reader = reader;
+        }
+
+        public void run() {
+            try {
+                if (prstatEnabled) {
+                    PStatus processStatus = reader.getProcessStatus();
+                    PUsage processUsage = reader.getProcessUsage();
+
+                    if (processStatus == null || processUsage == null) {
+                        // Cannot get even this data...
+                        // No sense to continue..
+                        return;
+                    }
+
+                    ThreadsInfo tinfo = processStatus.getThreadInfo();
+                    SamplingData p_samplingInfo = processUsage.getSamplingData();
+                    PUsage.MSAInfo p_msaInfo = processUsage.getMSAInfo();
+                    float normCoef = (float) tinfo.pr_nlwp / p_msaInfo.sum_states;
+
+                    ProcFSDataCollector.this.notifyIndicators(Arrays.asList(
+                            new DataRow(MSASQLTables.prstat.tableMetadata.getColumnNames(),
+                            Arrays.asList(
+                            p_samplingInfo.timestamp,
+                            p_samplingInfo.sample,
+                            tinfo.pr_nlwp,
+                            tinfo.pr_nzomb,
+                            normCoef * (p_msaInfo.pr_utime + p_msaInfo.pr_stime + p_msaInfo.pr_ttime), // run
+                            normCoef * (p_msaInfo.pr_ltime), // blocked
+                            normCoef * (p_msaInfo.pr_tftime + p_msaInfo.pr_dftime + p_msaInfo.pr_kftime + p_msaInfo.pr_wtime + p_msaInfo.pr_stoptime), // wait
+                            normCoef * (p_msaInfo.pr_slptime) // sleep
+                            ))));
+
+                }
+
+                if (sqlStorage != null && msaEnabled) {
+                    // Query information about each thread and store
+                    // in in the database..
+
+                    List<LWPUsage> lwpUsageData = reader.getThreadsInfo();
+                    if (lwpUsageData != null) {
+                        for (LWPUsage lwpUsage : lwpUsageData) {
+                            try {
+                                SamplingData lwp_samplingInfo = lwpUsage.getSamplingData();
+                                LWPUsage.UsageInfo lwp_usageInfo = lwpUsage.getUsageInfo();
+                                LWPUsage.MSAInfo lwp_msaInfo = lwpUsage.getMSAInfo();
+
+                                lwpsTracker.update(lwpUsage);
+
+                                float normCoef = (float) 1.0 / lwp_msaInfo.sum_states;
+
+                                insertMSAStatement.setLong(1, lwp_samplingInfo.timestamp);
+                                insertMSAStatement.setLong(2, lwp_samplingInfo.sample);
+                                insertMSAStatement.setInt(3, lwp_usageInfo.pr_lwpid);
+                                insertMSAStatement.setFloat(4, normCoef * lwp_msaInfo.pr_utime);
+                                insertMSAStatement.setFloat(5, normCoef * lwp_msaInfo.pr_stime);
+                                insertMSAStatement.setFloat(6, normCoef * lwp_msaInfo.pr_ttime);
+                                insertMSAStatement.setFloat(7, normCoef * lwp_msaInfo.pr_tftime);
+                                insertMSAStatement.setFloat(8, normCoef * lwp_msaInfo.pr_dftime);
+                                insertMSAStatement.setFloat(9, normCoef * lwp_msaInfo.pr_kftime);
+                                insertMSAStatement.setFloat(10, normCoef * lwp_msaInfo.pr_ltime);
+                                insertMSAStatement.setFloat(11, normCoef * lwp_msaInfo.pr_slptime);
+                                insertMSAStatement.setFloat(12, normCoef * lwp_msaInfo.pr_wtime);
+                                insertMSAStatement.setFloat(13, normCoef * lwp_msaInfo.pr_stoptime);
+
+                                insertMSAStatement.executeUpdate();
+                            } catch (SQLException ex) {
+                                if (log.isLoggable(Level.FINE)) {
+                                    log.log(Level.FINE, "SQL exception", ex);
+                                }
+                            }
+                        }
+                        lwpsTracker.endOfUpdate();
+                    }
+                }
+            } catch (Throwable th) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "Unhandled exception!", th); // NOI18N
+                }
+            }
+        }
+    }
+
+    private final class LWPsTracker {
+
+        private final Object lock = new String(LWPsTracker.class.getName());
+        private final HashMap<Integer, LWPUsage> lastReportedLWPs = new HashMap<Integer, LWPUsage>();
+        private final HashMap<Integer, LWPUsage> newReportedLWPs = new HashMap<Integer, LWPUsage>();
+        private PreparedStatement insertStatement = null;
+        private PreparedStatement updateStatement = null;
+
+        public LWPsTracker() {
+            try {
+                insertStatement = sqlStorage.prepareStatement(
+                        String.format("insert into %s (%s, %s, %s) values (?, ?, null)", // NOI18N
+                        MSASQLTables.lwps.tableMetadata.getName(),
+                        MSASQLTables.lwps.LWP_ID.getColumnName(),
+                        MSASQLTables.lwps.LWP_START.getColumnName(),
+                        MSASQLTables.lwps.LWP_END.getColumnName()));
+                updateStatement = sqlStorage.prepareStatement(
+                        String.format("update %s set %s = ? where %s = ?", // NOI18N
+                        MSASQLTables.lwps.tableMetadata.getName(),
+                        MSASQLTables.lwps.LWP_END.getColumnName(),
+                        MSASQLTables.lwps.LWP_ID.getColumnName()));
+            } catch (Throwable th) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "will not provide data...", th); // NOI18N
+                }
+
+            }
+        }
+
+        private void update(LWPUsage lwp_usageInfo) {
+            if (insertStatement == null || updateStatement == null) {
+                return;
+            }
+
+            boolean thread_started = false;
+            int id = lwp_usageInfo.getUsageInfo().pr_lwpid;
+
+            synchronized (lock) {
+                newReportedLWPs.put(id, lwp_usageInfo);
+                if (!lastReportedLWPs.containsKey(id)) {
+                    thread_started = true;
+                }
+            }
+
+            if (thread_started) {
+                try {
+                    insertStatement.setInt(1, id);
+                    insertStatement.setLong(2, lwp_usageInfo.getUsageInfo().pr_create);
+                    insertStatement.executeUpdate();
+                } catch (SQLException ex) {
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "", ex);
+                    }
+                }
+            }
+        }
+
+        private void endOfUpdate() {
+            Set<LWPUsage> deadThreads = new HashSet<LWPUsage>();
+
+            synchronized (lock) {
+                for (Integer id : lastReportedLWPs.keySet()) {
+                    if (!newReportedLWPs.containsKey(id)) {
+                        deadThreads.add(lastReportedLWPs.get(id));
+                    }
+                }
+
+                lastReportedLWPs.clear();
+                lastReportedLWPs.putAll(newReportedLWPs);
+                newReportedLWPs.clear();
+            }
+
+            for (LWPUsage deadThreadUsage : deadThreads) {
+                try {
+                    updateStatement.setLong(1, deadThreadUsage.getSamplingData().timestamp);
+                    updateStatement.setInt(2, deadThreadUsage.getUsageInfo().pr_lwpid);
+                    updateStatement.executeUpdate();
+                } catch (SQLException ex) {
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "", ex);
+                    }
+                }
+            }
         }
     }
 }

@@ -36,62 +36,54 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.dlight.procfs.reader.impl;
 
+import java.util.List;
+import org.netbeans.modules.dlight.procfs.api.LWPUsage;
+import org.netbeans.modules.dlight.procfs.api.PStatus;
+import org.netbeans.modules.dlight.procfs.api.PUsage;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 
-public final class UsageStatistics {
+public class LocalProcReader extends ProcReaderImpl {
 
-//    private static final int s_int = 4;
-//    private static final int s_timestruc_t = s_int * 2;
-//    private static final int s_total = s_int * 2 + s_timestruc_t * 14;
-//    private static final byte[] sharedBuffer = new byte[s_total];
-//    private static final DataReader reader = new DataReader(sharedBuffer);
-//    public final int pr_lwpid;
-//    public final int pr_count;
-//    public final Timestruc pr_tstamp;
-//    public final Timestruc pr_create;
-//    public final Timestruc pr_term;
-//    public final Timestruc pr_rtime;
-//    public final Timestruc pr_utime;
-//    public final Timestruc pr_stime;
-//    public final Timestruc pr_ttime;
-//    public final Timestruc pr_tftime;
-//    public final Timestruc pr_dftime;
-//    public final Timestruc pr_kftime;
-//    public final Timestruc pr_ltime;
-//    public final Timestruc pr_slptime;
-//    public final Timestruc pr_wtime;
-//    public final Timestruc pr_stoptime;
-//
-//    private UsageStatistics() {
-//        reader.seek(0);
-//        pr_lwpid = reader._int();
-//        pr_count = reader._int();
-//        pr_tstamp = reader._time();
-//        pr_create = reader._time();
-//        pr_term = reader._time();
-//        pr_rtime = reader._time();
-//        pr_utime = reader._time();
-//        pr_stime = reader._time();
-//        pr_ttime = reader._time();
-//        pr_tftime = reader._time();
-//        pr_dftime = reader._time();
-//        pr_kftime = reader._time();
-//        pr_ltime = reader._time();
-//        pr_slptime = reader._time();
-//        pr_wtime = reader._time();
-//        pr_stoptime = reader._time();
-//    }
+    private final File usageFile;
+    private final File statusFile;
+    private final File lwpDir;
 
-    static synchronized UsageStatistics get(final InputStream inputStream) throws IOException {
-        try {
-//            int read = inputStream.read(sharedBuffer, 0, s_total);
-        } finally {
-            inputStream.close();
+    public LocalProcReader(int pid) {
+        usageFile = new File("/proc/" + pid + "/usage"); // NOI18N
+        statusFile = new File("/proc/" + pid + "/status"); // NOI18N
+        lwpDir = new File("/proc/" + pid + "/lwp"); // NOI18N
+    }
+
+    public PStatus getProcessStatus() throws IOException {
+        return getProcessStatus(new FileInputStream(statusFile));
+    }
+
+    public PUsage getProcessUsage() throws IOException {
+        return getProcessUsage(new FileInputStream(usageFile));
+    }
+
+    public List<LWPUsage> getThreadsInfo() throws IOException {
+        List<LWPUsage> result = new ArrayList<LWPUsage>();
+
+        String[] lwps = lwpDir.list();
+
+        if (lwps == null) {
+            return result;
         }
 
-        return new UsageStatistics();
+        for (String lwp : lwps) {
+            try {
+                result.add(getProcessUsage(new FileInputStream(new File(lwpDir, lwp + "/lwpusage")))); // NOI18N
+            } catch (IOException ex) {
+                // ignore...
+            }
+        }
+
+        return result;
     }
 }
