@@ -37,34 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.api.palette;
+package org.netbeans.modules.dlight.api.datafilter.support;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.web.jsf.palette.items.JsfForm;
-import org.netbeans.modules.web.jsf.palette.items.JsfFormFromEntity;
-import org.netbeans.modules.web.jsf.palette.items.JsfTable;
-import org.netbeans.modules.web.jsf.palette.items.JsfTableFromEntity;
-import org.netbeans.modules.web.jsf.palette.items.MetaData;
+import org.netbeans.modules.dlight.api.datafilter.support.NumericDataFilter;
+import org.netbeans.modules.dlight.util.Range;
 
 /**
  *
- * @author marekfukala
+ * @author mt154047
  */
-public final class PaletteItemsProvider {
+public final class TimeIntervalDataFilter implements NumericDataFilter{
+    private Range<Long> timeInterval;
 
-    private static Collection<PaletteItem> ITEMS;
-
-    public static final synchronized Collection<PaletteItem> getPaletteItems() {
-        if(ITEMS == null) {
-            ITEMS = new ArrayList<PaletteItem>();
-            ITEMS.add(new MetaData());
-            ITEMS.add(new JsfForm());
-            ITEMS.add(new JsfFormFromEntity());
-            ITEMS.add(new JsfTable());
-            ITEMS.add(new JsfTableFromEntity());
-        }
-        return ITEMS;
+    TimeIntervalDataFilter(Range<Long> timeInterval) {
+        this.timeInterval = timeInterval;
     }
 
+    public Range<Long> getInterval(){
+        return timeInterval;
+    }
+    
 }

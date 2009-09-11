@@ -51,8 +51,8 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
-import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
-import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilterFactory;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.util.Range;
 
 /**
