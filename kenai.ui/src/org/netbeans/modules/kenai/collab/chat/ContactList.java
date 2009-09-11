@@ -105,7 +105,8 @@ public class ContactList extends javax.swing.JPanel {
     public void updateContacts() {
         if (filterCombo.getSelectedIndex()!=0) {
             oldFilter = (FilterItem) filterCombo.getSelectedItem();
-            filterCombo.setSelectedIndex(0);
+            if (filterModel.getSize()>0)
+                filterCombo.setSelectedIndex(0);
         }
         listModel.clear();
         for (FakeRosterGroup group : roster.getGroups()) {

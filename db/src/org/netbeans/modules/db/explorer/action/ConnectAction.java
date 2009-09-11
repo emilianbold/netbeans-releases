@@ -258,8 +258,9 @@ public class ConnectAction extends BaseAction {
                             }
 
                             dbcon.fireConnectionComplete();
-                        } else
+                        } else {
                             okPressed = false;
+                        }
                     }
                 };
 
@@ -297,9 +298,9 @@ public class ConnectAction extends BaseAction {
                                 }
                                 dbcon.setRememberPassword(basePanel.rememberPassword());
 
-                                if (dlg != null)
+                                if (dlg != null) {
                                     dlg.close();
-
+                                }
                                 dbcon.fireConnectionComplete();
                             }
                             return;
@@ -313,8 +314,9 @@ public class ConnectAction extends BaseAction {
                             advancedPanel = true;
                             dbcon.setUser(basePanel.getUser());
                             dbcon.setPassword(basePanel.getPassword());
-                        } else
+                        } else {
                             advancedPanel = false;
+                        }
                     }
                 };
 
@@ -406,20 +408,14 @@ public class ConnectAction extends BaseAction {
             Vector<String> schemas = new Vector<String> ();
             try {
                 ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
-                if (rs != null)
-                    while (rs.next())
+                if (rs != null) {
+                    while (rs.next()) {
                         schemas.add(rs.getString(1).trim());
+                    }
+                }
             } catch (SQLException exc) {
-//commented out for 3.6 release, need to solve for next Studio release
-            // hack for Pointbase Network Server
-//            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
-//                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
-                    String message = NbBundle.getMessage (ConnectAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
-//                    message = MessageFormat.format(bundle().getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-//                    schema will be set to null
-//                    return true;
-//                }
+                String message = NbBundle.getMessage(ConnectAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             }
 
             return schemaPanel.setSchemas(schemas, defaultSchema);

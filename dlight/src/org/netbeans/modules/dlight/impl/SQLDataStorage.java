@@ -57,11 +57,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.Range;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,6 +74,29 @@ public abstract class SQLDataStorage implements DataStorage {
 
     public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
     private final static DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE);
+    private LinkedBlockingQueue<Request> requestQueue;
+    private final Object insertPreparedStatmentsLock = new Object();
+    private final Map<String, PreparedStatement> insertPreparedStatments;
+    private static final int WAIT_INTERVALS = 100;
+    private static final int MAX_BULK_SIZE = 10000;
+    private static final int BUFFER_COUNT = 6;
+    private static final Logger logger = DLightLogger.getLogger(SQLDataStorage.class);
+    protected Connection connection;
+    protected HashMap<String, DataTableMetadata> tables = new HashMap<String, DataTableMetadata>();
+    protected static final HashMap<Class, String> classToType = new HashMap<Class, String>();
+    private boolean enabled = false;
+    private AsyncThread asyncThread = null;
+
+    static {
+        classToType.put(Byte.class, "tinyint"); // NOI18N
+        classToType.put(Short.class, "smallint"); // NOI18N
+        classToType.put(Integer.class, "int"); //NOI18N
+        classToType.put(Long.class, "bigint"); //NOI18N
+        classToType.put(Double.class, "double"); //NOI18N
+        classToType.put(Float.class, "real"); //NOI18N
+        classToType.put(String.class, "varchar"); //NOI18N
+        classToType.put(Time.class, "bigint"); //NOI18N
+    }
 
     private interface Request {
 
@@ -146,28 +172,6 @@ public abstract class SQLDataStorage implements DataStorage {
             return "insert into " + tableName + ": " + dataRow.toString(); // NOI18N
         }
     }
-    private LinkedBlockingQueue<Request> requestQueue;
-    private final Object insertPreparedStatmentsLock = new Object();
-    private final Map<String, PreparedStatement> insertPreparedStatments;
-    private static final int WAIT_INTERVALS = 100;
-    private static final int MAX_BULK_SIZE = 10000;
-    private static final int BUFFER_COUNT = 6;
-    private static final Logger logger = DLightLogger.getLogger(SQLDataStorage.class);
-    protected Connection connection;
-    protected HashMap<String, DataTableMetadata> tables = new HashMap<String, DataTableMetadata>();
-    protected static final HashMap<Class, String> classToType = new HashMap<Class, String>();
-    private boolean enabled = false;
-    private AsyncThread asyncThread = null;
-
-    static {
-        classToType.put(Byte.class, "tinyint"); // NOI18N
-        classToType.put(Short.class, "smallint"); // NOI18N
-        classToType.put(Integer.class, "int"); //NOI18N
-        classToType.put(Long.class, "bigint"); //NOI18N
-        classToType.put(Double.class, "double"); //NOI18N
-        classToType.put(Float.class, "real"); //NOI18N
-        classToType.put(String.class, "varchar"); //NOI18N
-    }
 
     protected SQLDataStorage() {
         insertPreparedStatments = new HashMap<String, PreparedStatement>();
@@ -216,6 +220,60 @@ public abstract class SQLDataStorage implements DataStorage {
 
     protected String classToType(Class clazz) {
         return classToType.get(clazz);
+    }
+
+
+    /**
+     *
+     * @param filters
+     * @param tableName
+     * @param columns
+     * @return <code>null</code> if the view was not created
+     */
+    protected final String createView(Collection<DataTableMetadataFilter> filters, String tableName, List<Column> columns) {
+        if (filters == null || filters.isEmpty()){
+            return tableName;
+        }
+        String viewName = tableName + "_DLIGHT_VIEW";
+        String dropViewQuery = new String("DROP VIEW IF EXISTS " + viewName);
+        ResultSet rs = null;
+        try {
+            rs = connection.createStatement().executeQuery(dropViewQuery);
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        StringBuilder createViewQuery = new StringBuilder("CREATE  VIEW " + viewName + " AS "); //NOI18N
+        createViewQuery.append("SELECT ");
+        createViewQuery.append(new EnumStringConstructor<Column>().constructEnumString(columns,
+                new Convertor<Column>() {
+
+                    public String toString(Column item) {
+                        return (item.getExpression() == null) ? item.getColumnName() : item.getExpression();
+                    }
+                }));
+        createViewQuery.append(" FROM " + tableName);
+        //check if we can create WHERE expression
+        boolean hasWhereExpression = false;
+        StringBuilder whereBuilder = new StringBuilder(" WHERE ");
+        for (DataTableMetadataFilter filter : filters){
+            Column filterColumn = filter.getFilteredColumn();
+            if (columns.contains(filterColumn)){
+                Range range = filter.getNumericDataFilter().getInterval();
+                hasWhereExpression = true;
+                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn + "<=" + range.getEnd());
+            }
+        }
+        if (hasWhereExpression){
+            createViewQuery.append(whereBuilder);
+        }else{
+            return tableName;
+        }
+        try {
+            rs = connection.createStatement().executeQuery(createViewQuery.toString());
+        } catch (SQLException ex) {
+            return tableName;
+        }
+        return viewName;
     }
 
     protected final boolean createTable(final DataTableMetadata metadata) {
@@ -316,7 +374,25 @@ public abstract class SQLDataStorage implements DataStorage {
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE));
     }
 
-    public ResultSet select(String tableName, List<Column> columns, String sqlQuery) {
+    public final ResultSet select(DataTableMetadata metadata, Collection<DataTableMetadataFilter> filters) {
+        //if we have filters for the column we should create view First
+        String tableName = metadata.getName();
+        String sqlQuery = metadata.getViewStatement();
+        List<Column> columns = metadata.getColumns();
+        //find 
+        String viewName = createView(filters, tableName, columns);
+        if (viewName != null || viewName.equals(tableName)){
+            return select(tableName, columns, sqlQuery);
+        }
+        if (sqlQuery == null){
+            return select(viewName, columns, sqlQuery);
+        }
+        String changedSQLQuery = sqlQuery.replaceAll(tableName, viewName);
+        return select(viewName, columns, changedSQLQuery);
+
+    }
+
+    public final ResultSet select(String tableName, List<Column> columns, String sqlQuery) {
 
         if (sqlQuery == null) {
             StringBuilder query = new StringBuilder("select "); //NOI18N

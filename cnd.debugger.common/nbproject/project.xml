@@ -195,8 +195,8 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
-                <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <package>org.netbeans.modules.cnd.debugger.common</package>
                 <package>org.netbeans.modules.cnd.debugger.common.actions</package>
                 <package>org.netbeans.modules.cnd.debugger.common.breakpoints</package>

@@ -99,7 +99,15 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                 for (File f : files) {
                     if (HgUtils.isIgnored(f, true)) {
                         // refresh status for this file
-                        refreshFileStatus(f, f.isDirectory() ? new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true) : FILE_INFORMATION_EXCLUDED, Collections.EMPTY_MAP, true);
+                        boolean isDirectory = f.isDirectory();
+                        boolean exists = f.exists();
+                        if (!exists) {
+                            // remove from cache
+                            refreshFileStatus(f, FILE_INFORMATION_UNKNOWN, Collections.EMPTY_MAP, true);
+                        } else {
+                            // add to cache as ignored
+                            refreshFileStatus(f, isDirectory ? new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true) : FILE_INFORMATION_EXCLUDED, Collections.EMPTY_MAP, true);
+                        }
                     }
                 }
             }
@@ -230,7 +238,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         // must lock, so possibly elsewhere-created information is not overwritten
         synchronized (cachedFiles) {
             info = getInfo(folder);
-            if (info == null) {
+            if (info == null || !info.isDirectory()) { // not yet in cache or is stored as a file
                 // create an uptodate directory
                 info = fi == null ? new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, true) : fi;
                 setInfo(folder, info);
@@ -258,12 +266,17 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     }
 
     private Map<File, FileInformation> getModifiedFiles (File root, int includeStatus) {
+        boolean check = false;
+        assert check = true;
         Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
         FileInformation info = getCachedStatus(root);
         if ((info.getStatus() & includeStatus) != 0) {
             modifiedFiles.put(root, info);
         }
         for (File child : info.getModifiedChildren(false)) {
+            if (check) {
+                checkIsParentOf(root, child);
+            }
             modifiedFiles.putAll(getModifiedFiles(child, includeStatus));
         }
         return modifiedFiles;
@@ -357,7 +370,8 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         synchronized (this) {
             // XXX the question here is: do we want to keep ignored files in the cache (i mean those ignored by hg, not by SQ)?
             // if yes, add equivalent(FILE_INFORMATION_UNKNOWN, fi) into the following test
-            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && HgUtils.isIgnored(file)) {
+            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && (HgUtils.isIgnored(file) 
+                    || (getCachedStatus(file.getParentFile()).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0)) {
                 // Sharebility query recognized this file as ignored
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                 fi = file.isDirectory() ? new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true) : FILE_INFORMATION_EXCLUDED;
@@ -397,23 +411,29 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      * @param newInfo
      */
     private void updateParentInformation (File file, FileInformation oldInfo, FileInformation newInfo) {
+        boolean check = false;
+        assert check = true;
         File parent = file;
         FileInformation info;
         // update all managed parents
         File child = file;
         while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            boolean exists = parent.exists();
-            if (exists) {
-                if (!info.isDirectory()) {
-                    info = createFolderFileInformation(parent, null);
-                }
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "updateParentInformation: updating {0} with {1} triggered by {2}", new Object[] {parent, newInfo, file});
-                }
-                if (!info.setModifiedChild(child, newInfo)) {
-                    // do not notify parent
-                    break;
-                }
+            if (!info.isDirectory()) {
+                info = createFolderFileInformation(parent, null);
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "updateParentInformation: updating {0} with {1} triggered by {2}", new Object[]{parent, newInfo, file});
+            }
+            if (check) {
+                checkIsParentOf(parent, child);
+                if (info == FILE_INFORMATION_EXCLUDED || info == FILE_INFORMATION_UPTODATE || info == FILE_INFORMATION_NOTMANAGED
+                        || info == FILE_INFORMATION_NOTMANAGED_DIRECTORY || info == FILE_INFORMATION_UNKNOWN || info == FILE_INFORMATION_NEWLOCALLY) {
+                    throw new IllegalStateException("Wrong info, expected an own instance for " + parent + ", " + info.getStatusText() + " - " + info.getStatus()); //NOI18N
+                    }
+            }
+            if (!info.setModifiedChild(child, newInfo)) {
+                // do not notify parent
+                break;
             }
             child = parent;
         }
@@ -498,9 +518,14 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         return false;
     }
 
-    private boolean containsFileOfStatus (File root, int includeStatus, boolean checkExclusions, boolean recursive) {
+    private boolean containsFileOfStatus(File root, int includeStatus, boolean checkExclusions, boolean recursive) {
+        boolean check = false;
+        assert check = true;
         FileInformation info = getCachedStatus(root);
         for (File child : info.getModifiedChildren(includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            if (check) {
+                checkIsParentOf(root, child);
+            }
             if (hasStatus(child, includeStatus, checkExclusions)) {
                 return true;
             } else if (recursive && containsFileOfStatus(child, includeStatus, checkExclusions, recursive)) {
@@ -619,5 +644,11 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     @Override
     public void notifyFileChanged(File file) {
         fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
+    }
+
+    private void checkIsParentOf(File parent, File child) {
+        if (!parent.equals(child.getParentFile())) {
+            throw new IllegalStateException(parent.getAbsolutePath() + " is not parent of " + child.getAbsolutePath());
+        }
     }
 }
