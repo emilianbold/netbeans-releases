@@ -41,6 +41,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import java.io.*;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -894,6 +895,60 @@ public class CommentsTest extends GeneratorTest {
                 MethodTree nue = gu.importComments(mt, cut);
                 workingCopy.rewrite(topLevel, make.addClassMember(topLevel, nue));
                 workingCopy.rewrite(inner, make.removeClassMember(inner, mt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testDuplicatedComment171262() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "public abstract class Test {\n" +
+            "    public Test() {\n" +
+            "        //pribytek\n" +
+            "        FileInputStream fis = new FileInputStream(new File(\"\"));\n" +
+            "    }\n" +
+            "}\n");
+        String golden = "package test;\n" +
+                        "import java.io.File;\n" +
+                        "import java.io.FileInputStream;\n" +
+                        "import java.io.FileNotFoundException;\n" +
+                        "public abstract class Test {\n" +
+                        "    public Test() {\n" +
+                        "        try {\n" +
+                        "            //pribytek\n" +
+                        "            FileInputStream fis = new FileInputStream(new File(\"\"));\n" +
+                        "        } catch (FileNotFoundException ex) {\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree constr = (MethodTree) topLevel.getMembers().get(0);
+                StatementTree toSurround = constr.getBody().getStatements().get(1);
+                toSurround = gu.importComments(toSurround, cut);
+                ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                VariableTree vt = make.Variable(mt, "ex", make.Identifier("FileNotFoundException"), null);
+                BlockTree empty = make.Block(Collections.<StatementTree>emptyList(), false);
+                TryTree tt = make.Try(make.Block(Collections.singletonList(toSurround), false), Collections.singletonList(make.Catch(vt, empty)), null);
+                workingCopy.rewrite(toSurround, tt);
             }
 
         };

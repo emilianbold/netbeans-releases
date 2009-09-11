@@ -56,7 +56,7 @@ disabled.clusters=\
     gsf1,\
     harness,\
     ide12,\
-    java2,\
+    java3,\
     profiler3,\
     visualweb2,\
     webcommon1,\
