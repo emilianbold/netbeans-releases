@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import java.beans.PropertyChangeEvent;
@@ -61,12 +62,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Ejbs contained within a module
@@ -105,6 +106,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     @Override
     protected void addNotify() {
         super.addNotify();
+        setKeys(new Key[]{Key.SCANNING});
         updateKeys();
     }
 
@@ -189,6 +191,11 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         if (key.ejbType == Key.EjbType.MESSAGE_DRIVEN && nodeFactory != null) {
             node = nodeFactory.createMessageNode(key.ejbClass, ejbModule, project);
         }
+        if (key == Key.SCANNING){
+            node = new AbstractNode(Children.LEAF);
+            node.setDisplayName(NbBundle.getMessage(EjbContainerChildren.class, "MSG_Scanning_EJBs")); //NOI18N
+            ((AbstractNode)node).setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbjar/project/ui/wait.gif"); //NOI18N
+        }
         return node == null ? new Node[0] : new Node[] { node };
     }
 
@@ -197,7 +204,8 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     }
 
     final static class Key {
-        
+        public static final Key SCANNING = new Key(null, null, null, null, false);
+
         private enum EjbType { SESSION, ENTITY, MESSAGE_DRIVEN }
         
         private final EjbType ejbType;
