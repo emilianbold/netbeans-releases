@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.util.Collection;
+import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -50,7 +50,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
-import org.netbeans.modules.web.jsf.editor.index.JsfBinariesIndex;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
@@ -150,10 +149,12 @@ public class JsfSupport {
     }
 
     public JsfIndex getIndex() {
-        return JsfIndex.get(wm);
+        try {
+            return JsfIndex.get(wm);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
-    public JsfBinariesIndex getBinariesIndex() {
-        return JsfBinariesIndex.get(wm);
-    }
 }
