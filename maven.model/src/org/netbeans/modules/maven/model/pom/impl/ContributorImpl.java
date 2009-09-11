@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.Collections;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
@@ -115,6 +116,45 @@ public class ContributorImpl extends POMComponentImpl implements Contributor {
     public void setTimezone(String zone) {
         setChildElementText(getModel().getPOMQNames().TIMEZONE.getName(), zone,
                 getModel().getPOMQNames().TIMEZONE.getQName());
+    }
+
+    public java.util.List<String> getRoles() {
+        StringList list = getRolesList();
+        return list != null ? list.getListChildren() : null;
+    }
+
+    public void addRole(String role) {
+        StringList list = getRolesList();
+        if (list != null) {
+            list.addListChild(role);
+            return;
+        }
+        setChild(StringListImpl.class,
+                 getModel().getPOMQNames().ROLES.getName(),
+                 getModel().getFactory().create(this, getModel().getPOMQNames().ROLES.getQName()),
+                 Collections.EMPTY_LIST);
+        list = getRolesList();
+        if (list != null) {
+            list.addListChild(role);
+            return;
+        }
+    }
+
+    public void removeRole(String role) {
+        StringList list = getRolesList();
+        if (list != null) {
+            list.removeListChild(role);
+        }
+    }
+
+    private StringList getRolesList() {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().ROLES.getName().equals(list.getPeer().getLocalName())) {
+                return list;
+            }
+        }
+        return null;
     }
 
     public static class List extends ListImpl<Contributor> {
