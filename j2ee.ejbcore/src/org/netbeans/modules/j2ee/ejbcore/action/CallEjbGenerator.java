@@ -235,7 +235,7 @@ public class CallEjbGenerator {
         ElementHandle<? extends Element> result = null;
         
         try {
-            if (!generateGlobalJNDI && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
+            if (InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
                 if (isTargetEjb2x) {
                     result = generateInjectionEjb21FromEE5(
                             fileObject,
