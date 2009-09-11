@@ -97,6 +97,25 @@ public class QualifiedName {
         }        
         return namesProposals;
     }
+    public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
+        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        if (!name.getKind().isFullyQualified()) {
+            QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
+            if (proposedName != null) {
+                namesProposals.add(proposedName);
+            }
+            for (UseElement useElement : declaredUses) {
+                proposedName = QualifiedName.create(useElement.getName()).toNamespaceName().append(name).toFullyQualified();
+                if (proposedName != null) {
+                    namesProposals.add(proposedName);
+                }
+            }
+        } else {
+            namesProposals.add(name);
+        }
+        return namesProposals;
+    }
 
     /**
      * @return prefix name or null

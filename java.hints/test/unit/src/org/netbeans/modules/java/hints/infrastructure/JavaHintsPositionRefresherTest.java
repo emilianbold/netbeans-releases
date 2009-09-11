@@ -41,10 +41,12 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -61,6 +63,10 @@ import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -84,6 +90,8 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
+    private File cache;
+    private FileObject cacheFO;
 
     public JavaHintsPositionRefresherTest(String name) {
         super(name);
@@ -93,12 +101,12 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml"},
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml", "org/netbeans/modules/java/hints/resources/layer.xml"},
                 new Object[]{JavaDataLoader.class,
                 new MimeDataProvider() {
                 public Lookup getLookup(MimePath mimePath) {
                     return Lookups.fixed(new Object[] {
-                        new JavaKit(),
+                        new JavaKit(), new JavacParserFactory(), new JavaCustomIndexer.Factory()
                     });
                 }
             },
@@ -114,6 +122,17 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
                 }
             }
         });
+
+        if (cache == null) {
+            cache = FileUtil.normalizeFile(TestUtil.createWorkFolder());
+            cacheFO = FileUtil.toFileObject(cache);
+
+            cache.deleteOnExit();
+
+            IndexUtil.setCacheFolder(cache);
+
+            TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
+        }
     }
 
     private void prepareTest(String fileName, String code) throws Exception {
@@ -126,7 +145,6 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         sourceRoot = workFO.createFolder("src");
 
         FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
 
         FileObject data = FileUtil.createData(sourceRoot, fileName);
         File dataFile = FileUtil.toFile(data);
@@ -135,9 +153,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
         TestUtilities.copyStringToFile(dataFile, code);
 
-//        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
-//                    new JavaCustomIndexer.Factory()});
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO);
 
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -173,16 +189,32 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         return ctx;
     }
 
+    public void testEmpty() throws Exception {
+        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "1:20-1:32:verifier:Empty statement after 'while'");
+    }
+
     public void testErrorHint0() throws Exception {
-        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:0-1:14:error:illegal start of expression1:6-1:9:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
+        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
+    }
+
+    public void testWrongpackage() throws Exception {
+        performTest("test/Test.java", "|\npublic class Test {\n }", "0:0-1:0:error:Incorrect Package");
     }
 
     private void performTest(String fileName , String code, String expected) throws Exception {
-        prepareTest(fileName, code);
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
-        Context ctx = prepareContext(caretPosition[0]);
-        Map<String, List<ErrorDescription>> errorDescriptionsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+        prepareTest(fileName, code);
+        final Context ctx = prepareContext(caretPosition[0]);
+        final Map<String, List<ErrorDescription>> errorDescriptionsAt = new HashMap<String, List<ErrorDescription>>();
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                Map<String, List<ErrorDescription>> eds = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+                errorDescriptionsAt.putAll(eds);
+            }
+        });
+
         StringBuffer buf = new StringBuffer();
         for (Entry<String, List<ErrorDescription>> e : errorDescriptionsAt.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {

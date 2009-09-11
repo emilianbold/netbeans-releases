@@ -236,6 +236,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(EMIME, f4.getMIMEType());
         embeddedFiles = new URL[] {f3.getURL(), f4.getURL()};
 
+
         waitForRepositoryUpdaterInit();
     }
 
@@ -809,6 +810,45 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, eindexerFactory.scanFinishedFor.size());
         assertEquals(srcRoot1.getURL(), eindexerFactory.scanFinishedFor.get(0));
         assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanFinishedFor.get(1));        
+    }
+
+    public void testIssue171719() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        
+        File root = FileUtil.toFile(srcRootWithFiles1);
+        File fdf = new File (root, "direct.emb");   //NOI18N
+        eindexerFactory.indexer.setExpectedFile(new URL[]{fdf.toURI().toURL()}, new URL[0], new URL[0]);
+        FileObject df = FileUtil.createData(fdf);
+        assertNotNull(df);
+        assertEquals(EMIME, df.getMIMEType());
+        eindexerFactory.indexer.awaitIndex();
+
+        File newfdf = new File (root, "new_direct.emb");   //NOI18N
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newfdf.toURI().toURL()}, new URL[]{fdf.toURI().toURL()}, new URL[0]);
+        FileLock lock = df.lock();
+        try {
+            df.rename(lock, "new_direct", "emb");
+        } finally {
+            lock.releaseLock();
+        }
+        eindexerFactory.indexer.awaitIndex();
+        eindexerFactory.indexer.awaitDeleted();
+        assertFalse(eindexerFactory.indexer.broken);
     }
 
     public static class TestHandler extends Handler {
@@ -1411,6 +1451,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 //System.out.println("EmbIndexerFactory.filesDeleted: " + i.getURL());
                 indexer.deletedCounter++;
                 if (indexer.expectedDeleted.remove(i.getURL())) {
+                    final String relPath = i.getRelativePath();
+                    if (relPath.charAt(0) == '/') {
+                        indexer.broken = true;
+                    }
                     indexer.deletedFilesLatch.countDown();
                 }
             }
@@ -1455,8 +1499,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private volatile int dirtyCounter;
         private Set<URL> expectedDeleted = new HashSet<URL>();
         private Set<URL> expectedDirty = new HashSet<URL>();
+        private boolean broken;
 
         public void setExpectedFile (URL[] files, URL[] deleted, URL[] dirty) {
+            broken = false;
             expectedIndex.clear();
             expectedIndex.addAll(Arrays.asList(files));
             expectedDeleted.clear();

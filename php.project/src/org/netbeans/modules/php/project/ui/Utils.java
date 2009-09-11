@@ -62,7 +62,9 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -650,4 +652,12 @@ public final class Utils {
             throw new UnsupportedOperationException();
         }
     }
+
+    /**
+     * Display Options dialog with PHP > General panel preselected.
+     */
+    public static void showGeneralOptionsPanel() {
+        OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH + "/General"); // NOI18N
+    }
+
 }

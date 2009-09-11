@@ -44,8 +44,10 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 
 /**
@@ -66,8 +68,9 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
         if (projectCap.isEjb31LiteSupported()){
-            if (!projectCap.isEjb31Supported()){
-                remoteCheckBox.setVisible(false); // EJB 3.1 Lite supports only local and no interface views
+            boolean serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL);
+            if (!projectCap.isEjb31Supported() && !serverSupportsEJB31){
+                remoteCheckBox.setVisible(false);
                 remoteCheckBox.setEnabled(false);
             }
         } else {

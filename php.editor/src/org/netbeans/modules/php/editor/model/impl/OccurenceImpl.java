@@ -65,10 +65,6 @@ class OccurenceImpl implements Occurence {
     public OccurenceImpl(Collection<? extends ModelElement> allDeclarations, ModelElement declaration, OffsetRange occurenceRange,FileScopeImpl fileScope) {
         this.allDeclarations = allDeclarations;
         this.declaration = declaration;
-        //TODO: wrong bugfix when sometimes is offered just one declaration
-        if (this.allDeclarations.size() == 1) {
-            this.allDeclarations = null;
-        }
         this.occurenceRange = occurenceRange;
         this.fileScope = fileScope;
     }

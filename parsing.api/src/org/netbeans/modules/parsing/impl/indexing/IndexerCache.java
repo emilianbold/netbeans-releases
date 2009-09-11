@@ -287,6 +287,7 @@ public abstract class IndexerCache <T> {
     private final Tracker tracker = new Tracker();
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
+    private boolean firstGetData = true;
     private Map<String, Set<IndexerInfo<T>>> infosByName = null;
     private Map<String, Set<IndexerInfo<T>>> infosByMimeType = null;
     private List<IndexerInfo<T>> orderedInfos = null;
@@ -319,9 +320,8 @@ public abstract class IndexerCache <T> {
      * Lookup.Result.allInstances which can block.
      * @param factories - non null map for collecting results
      */
-    private void collectIndexerFactoriesRegisteredForEachParticularLanguage(Map<T, Set<String>> factories) {
-        Set<String> mimeTypes = Util.getAllMimeTypes();
-        for (String mimeType : mimeTypes) {
+    private void collectIndexerFactoriesRegisteredForEachParticularLanguage(Map<T, Set<String>> factories, Set<String> mimeTypesToCheck) {
+        for (String mimeType : mimeTypesToCheck) {
             Lookup.Result<T> r = tracker.getLookupData(mimeType);
             for (T factory : r.allInstances()) {
                 Set<String> factoryMimeTypes = factories.get(factory);
@@ -341,9 +341,30 @@ public abstract class IndexerCache <T> {
 
         synchronized (this) {
             if (infosByName == null) {
+                Map<String, IndexerInfo<T>> lastKnownInfos = readLastKnownIndexers();
+                Set<String> mimeTypesToCheck = null;
+                if (firstGetData) {
+                    firstGetData = false;
+                    if (changedIndexers != null) {
+                        mimeTypesToCheck = new HashSet<String>();
+                        for(IndexerInfo<T> ii : lastKnownInfos.values()) {
+                            mimeTypesToCheck.addAll(ii.getMimeTypes());
+                        }
+                        mimeTypesToCheck.remove(ALL_MIME_TYPES);
+                    }
+                }
+
+                final boolean fastTrackOnly;
+                if (mimeTypesToCheck == null || mimeTypesToCheck.size() == 0) {
+                    mimeTypesToCheck = Util.getAllMimeTypes();
+                    fastTrackOnly = false;
+                } else {
+                    fastTrackOnly = true;
+                }
+
                 Map<T, Set<String>> factories = new LinkedHashMap<T, Set<String>>();
                 collectIndexerFactoriesRegisteredForAllLanguages(factories);
-                collectIndexerFactoriesRegisteredForEachParticularLanguage(factories);
+                collectIndexerFactoriesRegisteredForEachParticularLanguage(factories, mimeTypesToCheck);
 
                 Map<String, Set<IndexerInfo<T>>> _infosByName = new HashMap<String, Set<IndexerInfo<T>>>();
                 Map<String, Set<IndexerInfo<T>>> _infosByMimeType = new HashMap<String, Set<IndexerInfo<T>>>();
@@ -383,17 +404,16 @@ public abstract class IndexerCache <T> {
                 infosByMimeType = Collections.unmodifiableMap(_infosByMimeType);
                 orderedInfos = Collections.unmodifiableList(_orderedInfos);
 
-                Map<String, IndexerInfo<T>> lastKnownInfos = readLastKnownIndexers();
                 writeLastKnownIndexers(infosByName);
                 
                 Map<String, Set<IndexerInfo<T>>> addedOrChangedInfosMap = new HashMap<String, Set<IndexerInfo<T>>>();
                 diff(lastKnownInfos, infosByName, addedOrChangedInfosMap);
                 
-                if (changedIndexers == null) {
-                    fire = true;
-                    changedIndexers = new HashSet<IndexerInfo<T>>();
-                }
                 for(Set<IndexerInfo<T>> addedOrChangedInfos : addedOrChangedInfosMap.values()) {
+                    if (changedIndexers == null) {
+                        fire = true;
+                        changedIndexers = new HashSet<IndexerInfo<T>>();
+                    }
                     changedIndexers.addAll(addedOrChangedInfos);
                 }
 
@@ -406,13 +426,31 @@ public abstract class IndexerCache <T> {
                             ii.getMimeTypes()});
                     }
                 }
+
+                if (fastTrackOnly) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            resetCache();
+                            getData(null);
+                        }
+                    }, 321);
+                }
             }
 
-            if (fire) {
+            if (fire && changedIndexers.size() > 0) {
                 pcs.firePropertyChange(type.getName(), null, changedIndexers);
             }
 
             return new Object [] { infosByName, infosByMimeType, orderedInfos };
+        }
+    }
+
+    private void resetCache() {
+        synchronized (IndexerCache.this) {
+            IndexerCache.this.infosByName = null;
+            IndexerCache.this.infosByMimeType = null;
+            IndexerCache.this.orderedInfos = null;
+            LOG.log(Level.FINE, "{0}: resetting indexer cache", type.getName()); //NOI18N
         }
     }
 
@@ -571,7 +609,7 @@ public abstract class IndexerCache <T> {
                 r = MimeLookup.getLookup(mimeType).lookupResult(type);
                 r.addLookupListener(this);
                 results.put(mimeType, r);
-                LOG.log(Level.FINE, "{0}: listening on MimeLookup for {1}", new Object [] { type.getName(), mimeType }); //NOI18N
+                LOG.log(Level.FINER, "{0}: listening on MimeLookup for {1}", new Object [] { type.getName(), mimeType }); //NOI18N
             }
             return r;
         }
@@ -599,12 +637,7 @@ public abstract class IndexerCache <T> {
         // --------------------------------------------------------------------
 
         public void run() {
-            synchronized (IndexerCache.this) {
-                IndexerCache.this.infosByName = null;
-                IndexerCache.this.infosByMimeType = null;
-                IndexerCache.this.orderedInfos = null;
-                LOG.log(Level.FINE, "{0}: resetting indexer cache", type.getName());
-            }
+            resetCache();
         }
 
         // --------------------------------------------------------------------

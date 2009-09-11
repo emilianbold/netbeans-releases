@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 public enum ProprietarySecurityPolicyAttribute implements Attribute {
         VISIBILITY("visibility"),                   //NOI18N
         WSTVERSION("wstVersion"),                   //NOI18N
+        SHARETOKEN("shareToken"),                   //NOI18N
         TIMESTAMPTIMEOUT("timestampTimeout"),       //NOI18N
         MAXCLOCKSKEW("maxClockSkew"),               //NOI18N
         TIMESTAMPFRESHNESS("timestampFreshnessLimit"),  //NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.parsing.impl;
@@ -68,9 +68,13 @@ public class SelectedNodesScheduler extends Scheduler {
     public SelectedNodesScheduler () {
         TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
     }
-    
+
+    private RequestProcessor requestProcessor;
+
     private void refresh () {
-        RequestProcessor.getDefault ().post (new Runnable () {
+        if (requestProcessor == null)
+            requestProcessor = new RequestProcessor ("SelectedNodesScheduler");
+        requestProcessor.post (new Runnable () {
             public void run () {
                 final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
                 if (nodes.length == 1) {
@@ -85,6 +89,9 @@ public class SelectedNodesScheduler extends Scheduler {
                         }
                     }
                 }
+
+                source = null;
+                schedule(null, null);
             }
         });
     }

@@ -38,25 +38,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.spi.jsp.lexer;
 
 import java.util.Map;
-
 
 /** Holds data relevant to the JSP coloring for one JSP page. 
  *
  * @author Marek Fukala
  */
 public final class JspParseData {
-    
+
     private Map<String, String> prefixMap;
     private boolean isELIgnored, isXMLSyntax;
-
     private boolean initialized;
 
-    public JspParseData(Map<String,String> prefixMap, boolean isELIgnored, boolean isXMLSyntax, boolean isInitialized) {
+    public JspParseData(Map<String, String> prefixMap, boolean isELIgnored, boolean isXMLSyntax, boolean isInitialized) {
         this.prefixMap = prefixMap;
         this.isELIgnored = isELIgnored;
         this.isXMLSyntax = isXMLSyntax;
@@ -74,32 +70,54 @@ public final class JspParseData {
     }
 
     /** Updates coloring data. The update is initiated by parser successfuly finished parsing. */
-    public void updateParseData(Map<String,String> prefixMap, boolean isELIgnored, boolean isXMLSyntax) {
+    public void updateParseData(Map<String, String> prefixMap, boolean isELIgnored, boolean isXMLSyntax) {
         this.prefixMap = prefixMap;
         this.isELIgnored = isELIgnored;
         this.isXMLSyntax = isXMLSyntax;
     }
-    
+
     /** Returns true if the given tag library prefix is known in this page.
      */
     public boolean isTagLibRegistered(CharSequence prefix) {
         if (prefixMap == null) {
             return false;
         }
-        return prefixMap.containsKey(prefix);
+        return prefixMap.containsKey(prefix.toString());
     }
-    
+
     /** Returns true if the EL is ignored in this page.
      */
     public boolean isELIgnored() {
         return isELIgnored;
     }
-    
+
     /** Returns true if the page is in xml syntax (JSP Documnet). 
      * If the page is in standard syntax, returns false.
      */
-    public boolean isXMLSyntax(){
+    public boolean isXMLSyntax() {
         return isXMLSyntax;
     }
-    
+
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("JspParseData[prefixes=");
+        if (prefixMap != null) {
+            for (String prefix : prefixMap.keySet()) {
+                buf.append(prefix);
+                buf.append('-');
+                buf.append(prefixMap.get(prefix));
+                buf.append(',');
+            }
+        } else {
+            buf.append("null");
+        }
+        buf.append("; isELIgnored=");
+        buf.append(isELIgnored());
+        buf.append("; isXMLSyntax=");
+        buf.append(isXMLSyntax());
+        buf.append(')');
+
+        return buf.toString();
+    }
 }

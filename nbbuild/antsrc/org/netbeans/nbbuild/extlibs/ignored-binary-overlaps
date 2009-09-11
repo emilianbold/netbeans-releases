@@ -15,7 +15,7 @@ java2/modules/ext/jdom-1.0.jar mobility8/modules/ext/jdom-1.0.jar
 
 # Struts framework needs to bundle the official Struts release together
 # for well maintained and assure the compatibility issue. 
-enterprise5/modules/ext/struts/oro-2.0.8.jar ide11/modules/ext/jakarta-oro-2.0.8.jar
+enterprise5/modules/ext/struts/oro-2.0.8.jar ide12/modules/ext/jakarta-oro-2.0.8.jar
 enterprise5/modules/ext/struts/bsf-2.3.0.jar ruby2/jruby-1.2.0/lib/bsf.jar
 
 # More maintainable to have Cobertura libs separately than to modify its Ant scripts

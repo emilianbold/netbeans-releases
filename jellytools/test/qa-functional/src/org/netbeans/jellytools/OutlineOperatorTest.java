@@ -39,7 +39,6 @@
 
 package org.netbeans.jellytools;
 
-import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.Action;
@@ -50,6 +49,7 @@ import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.openide.nodes.Node.Property;
 
 /**
  *
@@ -157,17 +157,38 @@ public class OutlineOperatorTest extends JellyTestCase {
                 Bundle.getString("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view"));
 
         Thread.sleep(5000);
-        OutlineOperator lrOVO = new OutlineOperator(tco);
 
-        lrOVO.getRootNode("test").expand();
+        OutlineOperator lrOO = new OutlineOperator(tco);
 
-        lrOVO.getRootNode("test", 1).expand();
+        lrOO.getRootNode("test").expand();
 
-        OutlineNode node = lrOVO.getRootNode("test", 2);
+        lrOO.getRootNode("test", 1).expand();
 
-        OutlineNode newNode = new OutlineNode(node, "test");
+        OutlineNode lrNode = lrOO.getRootNode("test",2);
 
-        newNode.callPopup();
+        lrNode.expand();
+
+        OutlineNode lrNewNode = new OutlineNode(lrNode, "test");
+
+        new Action(null,Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.actions.Bundle",
+                "CTL_CreateVariable")).performPopup(lrNewNode);
+
+        OutlineNode lrFixedWatch = lrOO.getRootNode("test");
+
+        Thread.sleep(20000);
+        int lnNodeRow = lrOO.getLocationForPath(lrNewNode.getTreePath()).y;
+        int lnFixedRow = lrOO.getLocationForPath(lrFixedWatch.getTreePath()).y;
+
+        Property lrNodeProperty = (Property) lrOO.getValueAt(lnNodeRow, 2);
+        Property lrFixedProperty = (Property) lrOO.getValueAt(lnFixedRow, 2);
+        assertTrue("Values of the original node and the fixed watch do not match!",
+                lrNodeProperty.getValue().toString().equals(lrFixedProperty.getValue().toString()));
+
+        lrNodeProperty = (Property) lrOO.getValueAt(6, 2);
+        lrFixedProperty = (Property) lrOO.getValueAt(0, 2);
+
+        assertTrue("Values of the original node and the fixed watch do not match! (absolute row values)",
+                lrNodeProperty.getValue().toString().equals(lrFixedProperty.getValue().toString()));
 
     }
 }

@@ -60,6 +60,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
+import org.netbeans.modules.kenai.ui.dashboard.MyProjectNode;
+import org.netbeans.modules.kenai.ui.dashboard.CategoryNode;
 import org.openide.explorer.propertysheet.PropertySheet;
 
 /**
@@ -112,9 +114,11 @@ final class RendererPanel extends JPanel {
     }
 
     public void configure( Color foreground, Color background, boolean isSelected, boolean hasFocus, int nestingDepth, int rowHeight ) {
-        if( isRoot && node.isExpandable() ) {
+        if( isRoot && node.isExpandable() || node instanceof MyProjectNode) {
             foreground = isSelected ? expandableRootSelectedForeground : expandableRootForeground;
             background = isSelected ? expandableRootSelectedBackground : expandableRootBackground;
+        } else if (node instanceof CategoryNode) {
+            background = isSelected ? expandableRootSelectedBackground : ColorManager.getDefault().getDisabledColor();
         }
 
         JComponent inner = node.getComponent(foreground, background, isSelected, hasFocus);

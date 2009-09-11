@@ -86,7 +86,7 @@ import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.StatusLineFactories;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;

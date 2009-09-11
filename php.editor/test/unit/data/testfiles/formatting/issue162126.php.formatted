@@ -1,7 +1,8 @@
 <?php
 if ($a > $b) {
   echo "a is bigger than b";
-} elseif ($a == $b) {
+} 
+elseif ($a == $b) {
   echo "a is equal to b";
 }
 

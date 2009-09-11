@@ -95,22 +95,8 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
     public JComponent createComponent() {
         assert files != null;
         panel = new AttachPanel(this);
-        panel.descriptionTextField.getDocument().addDocumentListener(this);
-        
-        Repository[] repos = BugtrackingUtil.getKnownRepositories();
-        Repository repoToSelect = null;
-        if(files.length > 0) {
-            for (File file : files) {
-                repoToSelect = support.getRepository(file, false);
-                if(repoToSelect == null) {
-                    LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
-                } else {
-                    LOG.log(Level.FINE, " found issue tracker " + repoToSelect + " for " + file);  // NOI18N
-                    break;
-                }
-            }
-        }
-        panel.init(repos, repoToSelect);
+        panel.descriptionTextField.getDocument().addDocumentListener(this);        
+        panel.init(files.length > 0 ? files[0] : null);
         return panel;
     }
 

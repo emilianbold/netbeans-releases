@@ -46,9 +46,9 @@ import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
-import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -106,9 +106,20 @@ public class ConflictResolvedAction extends ContextAction {
 
 
     /** Marks as resolved or shows error dialog. */
-    public static void perform(File file) throws SVNClientException {
-        SvnClient client = Subversion.getInstance().getClient(file);
-        perform(file, client);        
+    public static void perform(final File file) throws SVNClientException {
+        SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
+            protected void perform() {
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(file);
+                    ConflictResolvedAction.perform(file, client);
+                } catch (SVNClientException ex){
+                    annotate(ex);
+                }
+            }
+        };
+        SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
+        support.start(Subversion.getInstance().getRequestProcessor(url), url, NbBundle.getMessage(ConflictResolvedAction.class, "LBL_ResolvingConflicts")); //NOI18N
     }
 
     private static void perform(File file, SvnClient client) throws SVNClientException {

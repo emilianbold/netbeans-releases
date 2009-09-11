@@ -23,37 +23,32 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="projectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="locationLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="jpaPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jsfPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="localizationBundleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="locationComboBox" alignment="1" pref="518" max="32767" attributes="1"/>
-                          <Component id="projectTextField" alignment="0" pref="518" max="32767" attributes="1"/>
+                          <Component id="projectTextField" alignment="0" pref="330" max="32767" attributes="1"/>
+                          <Component id="locationComboBox" alignment="0" pref="330" max="32767" attributes="1"/>
+                          <Component id="jpaPackageComboBox" alignment="0" pref="330" max="32767" attributes="0"/>
+                          <Component id="jsfPackageComboBox" alignment="0" pref="330" max="32767" attributes="0"/>
+                          <Component id="jsfFolder" alignment="0" pref="330" max="32767" attributes="1"/>
+                          <Component id="localizationBundleTextField" alignment="0" pref="330" max="32767" attributes="0"/>
                       </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jpaPackageLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jpaPackageComboBox" pref="428" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jsfPackageLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jsfPackageComboBox" pref="442" max="32767" attributes="0"/>
-                  </Group>
-                  <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jsfFolder" pref="387" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseFolderButton" min="-2" max="-2" attributes="1"/>
                   </Group>
+                  <Component id="customizeTemplatesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="overrideExistingCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="ajaxifyCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -93,9 +88,17 @@
                       <Component id="jsfFolder" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="localizationBundleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="localizationBundleTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="ajaxifyCheckbox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="32" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="overrideExistingCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="27" max="32767" attributes="0"/>
+              <Component id="customizeTemplatesLabel" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -132,7 +135,7 @@
     <Component class="javax.swing.JButton" name="browseFolderButton">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MNE_Browse2" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MNE_Browse" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_Browse" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -313,6 +316,34 @@
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="overrideExistingCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Override existing files"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="overrideExistingCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="customizeTemplatesLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;u&gt;Customize Template&lt;/u&gt;"/>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="customizeTemplatesLabelMouseClicked"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="localizationBundleLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="localizationBundleTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.localizationBundle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="localizationBundleTextField">
     </Component>
   </SubComponents>
 </Form>

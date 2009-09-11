@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
@@ -58,6 +59,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -128,6 +133,79 @@ public class BugtrackingOwnerSupport {
         }
     }
 
+    public Repository getRepository(Node[] nodes) {
+        if (nodes == null) {
+            return null;
+        }
+        if (nodes.length == 0) {
+            return null;
+        }
+        if (nodes.length == 1) {
+            return getRepository(nodes[0]);
+        }
+
+        Repository chosenRepo = null;
+        for (Node node : nodes) {
+            Repository repo = getRepository(node);
+            if (repo == null) {
+                continue;
+            }
+            if (chosenRepo == null) {
+                chosenRepo = repo;
+            } else if (repo != chosenRepo) {    //various repositories assigned
+                return null;
+            }
+        }
+        return chosenRepo;
+    }
+
+    private Repository getRepository(Node node) {
+        final Lookup nodeLookup = node.getLookup();
+
+        Project project = nodeLookup.lookup(Project.class);
+        if (project != null) {
+            return getRepository(project, false);
+        }
+
+        DataObject dataObj = nodeLookup.lookup(DataObject.class);
+        if (dataObj != null) {
+            return getRepository(dataObj);
+        }
+
+        return null;
+    }
+
+    private Repository getRepository(DataObject dataObj) {
+        FileObject fileObj = dataObj.getPrimaryFile();
+        if (fileObj == null) {
+            return null;
+        }
+
+        Project project = FileOwnerQuery.getOwner(fileObj);
+        if (project != null) {
+            return getRepository(project, false);
+        }
+
+        Repository repo;
+
+        File file = FileUtil.toFile(fileObj);
+        if (file != null) {
+            repo = fileToRepo.get(file);
+            if (repo != null) {
+                return repo;
+            }
+        }
+
+        try {
+            repo = getKenaiBugtrackingRepository(fileObj);
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+            repo = null;
+        }
+
+        return repo;
+    }
+
     public Repository getRepository(Project[] projects) {
         if (projects.length == 0) {
             return null;
@@ -145,7 +223,7 @@ public class BugtrackingOwnerSupport {
             if (chosenRepo == null) {
                 chosenRepo = repo;
             } else if (repo != chosenRepo) {
-                break;        //the projects have various repositories assigned
+                return null;   //the projects have various repositories assigned
             }
         }
         return chosenRepo;
@@ -165,7 +243,11 @@ public class BugtrackingOwnerSupport {
         }
 
         File context = BugtrackingUtil.getLargerContext(project);
-        return getRepositoryForContext(context, null, askIfUnknown);
+        if (context != null) {
+            return getRepositoryForContext(context, null, askIfUnknown);
+        } else {
+            return askUserToSpecifyRepository(null, null);
+        }
     }
 
     public Repository getRepository(File file, boolean askIfUnknown) {

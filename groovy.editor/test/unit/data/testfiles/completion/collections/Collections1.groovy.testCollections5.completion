@@ -22,7 +22,7 @@ METHOD     combinations()                             List
 METHOD     contains(Object)                [PUBLIC]   boolean
 METHOD     containsAll(Collection<?>)      [PUBLIC]   boolean
 METHOD     containsWithinBounds(Object)    [PUBLIC]   boolean
-METHOD     count(Object)                              int
+METHOD     count(Object)                              Number
 METHOD     disjoint(Collection)                       boolean
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
@@ -38,7 +38,7 @@ METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
-METHOD     findIndexValues(int, Closure)              List
+METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     first()                                    Object

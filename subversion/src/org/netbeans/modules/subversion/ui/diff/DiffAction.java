@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.*;
 import java.io.File;
 import org.openide.nodes.Node;
 import org.openide.util.*;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 
 /**
  * Diff action shows local changes
@@ -82,7 +83,15 @@ public class DiffAction extends ContextAction {
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
         tc.open();
-        tc.requestActive();        
+        tc.requestActive();
+    }
+
+    public static void diff(File file, ISVNStatus status) {
+        MultiDiffPanel panel = new MultiDiffPanel(file, status);
+        DiffTopComponent tc = new DiffTopComponent(panel);
+        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
+        tc.open();
+        tc.requestActive();
     }
     
     protected void performContextAction(Node[] nodes) {

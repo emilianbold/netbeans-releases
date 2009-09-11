@@ -60,10 +60,9 @@
              <h3>Persistence Provider</h3>    
              <p>A persistence provider refers to an implementation of the Java Persistence API.
              The persistence provider is a library that provides the functionality to persist objects in the application.</p>
-    <p>The IDE is bundled with the TopLink Essentials persistence provider. 
-    TopLink Essentials is the reference implementation and the default Java Persistence provider in the Sun Java System Application Server Platform Edition 9 and GlassFish.
-    The TopLink Essentials persistence provider is a library consisting of <tt>toplink-essentials.jar</tt> and <tt>toplink-essentials-agent.jar</tt>.
-    You can use TopLink Essentials as your provider, or specify a different persistence provider.
+    <p>The IDE is bundled with the EclipseLink persistence provider.
+    EclipseLink is the reference implementation and the default Java Persistence provider in the GlassFish v3 application server.
+    You can use EclipseLink as your provider, or specify a different persistence provider.
              </p>
              
              <a name="data"></a>
@@ -86,11 +85,11 @@
                 </p>
         <ul>
     <li><b>Container-managed transactions (JTA transactions).</b><br>
-        Container-managed transactions are handled by the container using the Java Transaction API.
+        Container-managed transactions are handled by the container using the Java Transaction API (JTA).
         To use the Java Transaction API, you must deploy your application to a Java EE container
         and your data source needs to support JTA transactions.
         <p>In <tt>persistence.xml</tt>, the transaction type for the persistence unit is set to <tt>JTA</tt>.
-        If you are deploying to the Sun Java System Application Server/GlassFish, when you create the persistence unit this option is selected by default.</p>
+        If you are deploying to the GlassFish application server, this option is selected by default when you create the persistence unit.</p>
     </li>
     <li><b>Application-managed transactions (resource-local transactions).</b><br>
         Application-managed transactions are handled by the application.

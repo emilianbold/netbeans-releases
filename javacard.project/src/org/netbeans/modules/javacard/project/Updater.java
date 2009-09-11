@@ -55,15 +55,21 @@ import org.w3c.dom.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
+import org.netbeans.modules.javacard.project.deps.Dependencies;
 import org.netbeans.modules.javacard.project.deps.Dependency;
 import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.xml.sax.InputSource;
 
 /**
  *
@@ -120,7 +126,6 @@ public class Updater implements UpdateImplementation {
 
     public void save() throws IOException {
         saveUpdate(null);
-        ProjectManager.getDefault().saveProject(project);
     }
 
     public void saveUpdate(EditableProperties props) throws IOException {
@@ -149,7 +154,9 @@ public class Updater implements UpdateImplementation {
             EditableProperties updatedProperties = getUpdatedProjectProperties();
             this.helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, updatedProperties);
             namespaceVersion = CURRENT_VERSION;
-            ProjectManager.getDefault().saveProject(project);
+            if (project != null) { //unit test
+                ProjectManager.getDefault().saveProject(project);
+            }
         }
     }
 
@@ -191,6 +198,14 @@ public class Updater implements UpdateImplementation {
             return newRoot;
         }
         return null;
+    }
+
+    private ResolvedDependencies getResolvedDependencies() throws Exception {
+        if (project != null) {
+            return project.createResolvedDependencies();
+        } else { //unit test
+            return null;
+        }
     }
 
     Element updateToV3(Element element) {
@@ -279,11 +294,20 @@ public class Updater implements UpdateImplementation {
         }
     }
 
+    private ProjectKind getProjectKind() {
+        if (project != null) {
+            return project.kind();
+        } else {
+            return ProjectKind.kindForProject(helper);
+        }
+    }
+
     public EditableProperties getUpdatedProjectProperties() {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ProjectKind kind = getProjectKind();
         EditableProperties result = new EditableProperties(true);
         Replacement[] changes = replacements();
-        String displayName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
+        String displayName = project == null ? props.getProperty("display.name") : project.getLookup().lookup(ProjectInformation.class).getDisplayName();
         for (Map.Entry<String, String> entry : props.entrySet()) {
             String key = entry.getKey();
             String val = entry.getValue();
@@ -311,12 +335,12 @@ public class Updater implements UpdateImplementation {
             }
             result.setProperty(key, val);
         }
-        result.setProperty ("dist.bundle.name", "${display.name}." + project.kind().getBundleFileExtension());//NOI18N
+        result.setProperty ("dist.bundle.name", "${display.name}." + getProjectKind().getBundleFileExtension());//NOI18N
         result.setProperty ("dist.bundle.sig.name", "${display.name}.signature");//NOI18N
         result.setProperty ("dist.bundle.sig", "${dist.dir}/${dist.bundle.sig.name}");//NOI18N
         result.setProperty ("dist.bundle", "${dist.dir}/${dist.bundle.name}");//NOI18N
         result.setProperty ("meta.inf.dir", "META-INF");//NOI18N
-        if (project.kind().isApplet()) {
+        if (kind.isApplet()) {
             result.setProperty ("applet.inf.dir", "APPLET-INF");//NOI18N
             result.setProperty ("scripts.dir", "scripts");
         }
@@ -329,7 +353,7 @@ public class Updater implements UpdateImplementation {
         result.remove ("mainscript"); //NOI18N
         result.remove ("dest.eeprom.name"); //NOI18N
         result.remove("application.free.form.name"); //NOI18N
-        if (project.kind() != ProjectKind.WEB) {
+        if (kind != ProjectKind.WEB) {
             result.remove ("launch.external.browser");//NOI18N
         }
 

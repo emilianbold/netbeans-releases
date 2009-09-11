@@ -51,7 +51,6 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.openide.cookies.EditorCookie;

@@ -51,6 +51,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.dlight.toolsui.api.DLightConfigurationUIWrapper;
+import org.netbeans.modules.dlight.toolsui.api.DLightToolUIWrapper;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -59,11 +61,12 @@ import org.openide.util.ImageUtilities;
  */
 public class ToolsTable extends JTable {
 
-    private List<DLightToolWrapper> allDLightTools = null;
+    private final List<DLightToolUIWrapper> allDLightTools;
+    private final DLightConfigurationUIWrapper dlightConfigurationUIWrapper;
 
-    public ToolsTable(List<DLightToolWrapper> allDLightTools, ListSelectionListener listSelectionListener) {
+    public ToolsTable(DLightConfigurationUIWrapper dlightConfigurationUIWrapper, List<DLightToolUIWrapper> allDLightTools, ListSelectionListener listSelectionListener) {
         this.allDLightTools = allDLightTools;
-
+        this.dlightConfigurationUIWrapper = dlightConfigurationUIWrapper;
         if (getRowHeight() < 20) {
             setRowHeight(20);
         }
@@ -84,7 +87,7 @@ public class ToolsTable extends JTable {
 
     public void initSelection() {
         int i = 0;
-        for (DLightToolWrapper dlightTool : allDLightTools) {
+        for (DLightToolUIWrapper dlightTool : allDLightTools) {
             if (dlightTool.isEnabled()) {
                 getSelectionModel().setSelectionInterval(i, i);
                 return;
@@ -111,7 +114,7 @@ public class ToolsTable extends JTable {
     @Override
     public TableCellEditor getCellEditor(int row, int col) {
         if (col == 0) {
-            DLightToolWrapper dlightTool = allDLightTools.get(row);
+            DLightToolUIWrapper dlightTool = allDLightTools.get(row);
             JCheckBox checkBox = new JCheckBox();
             checkBox.setSelected(dlightTool.isEnabled());
             return new DefaultCellEditor(checkBox);
@@ -127,17 +130,17 @@ public class ToolsTable extends JTable {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            final DLightToolWrapper dlightTool = allDLightTools.get(row);
+            final DLightToolUIWrapper dlightTool = allDLightTools.get(row);
             if (col == 0) {
                 JCheckBox checkBox = new JCheckBox();
                 checkBox.setSelected(dlightTool.isEnabled());
                 checkBox.setBackground(label.getBackground());
                 return checkBox;
             } else {
-                label.setText(dlightTool.getdLightTool().getName()); // NOI18N
+                label.setText(dlightTool.getDLightTool().getName()); // NOI18N
                 Image image = null;
-                if (dlightTool.getdLightTool().hasIcon()) {
-                    image = ImageUtilities.loadImage(dlightTool.getdLightTool().getIconPath());
+                if (dlightTool.getDLightTool().hasIcon()) {
+                    image = ImageUtilities.loadImage(dlightTool.getDLightTool().getIconPath());
                 }
                 if (image == null) {
                     image = emptyImage;
@@ -178,8 +181,8 @@ public class ToolsTable extends JTable {
         @Override
         public void setValueAt(Object value, int row, int col) {
             if (col == 0) {
-                DLightToolWrapper dlightTool = allDLightTools.get(row);
-                dlightTool.setEnabled(!dlightTool.isEnabled());
+                DLightToolUIWrapper dlightTool = allDLightTools.get(row);
+                ToolsTable.this.dlightConfigurationUIWrapper.setToolEnabled(dlightTool, !dlightTool.isEnabled());
             }
         }
     }

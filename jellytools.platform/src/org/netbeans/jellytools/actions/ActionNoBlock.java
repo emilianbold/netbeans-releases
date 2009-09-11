@@ -44,17 +44,15 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import javax.swing.KeyStroke;
-import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.util.EmptyVisualizer;
 import org.openide.util.actions.SystemAction;
 
 /** Ancestor class for all non-blocking actions.<p>
@@ -181,6 +179,18 @@ public class ActionNoBlock extends Action {
      * @throws UnsupportedOperationException when action does not support popup mode */    
     public void performPopup(Node[] nodes) {
         callPopup(nodes).pushMenuNoBlock(popupPath, "|");
+        try {
+            Thread.sleep(AFTER_ACTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
+    }
+
+    /** performs action through popup menu
+     * @param node node to be action performed on
+     * @throws UnsupportedOperationException when action does not support popup mode */
+    public void performPopup(OutlineNode node) {
+        node.callPopup().pushMenuNoBlock(popupPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {

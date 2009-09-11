@@ -65,7 +65,6 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
-import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
@@ -167,7 +166,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
                     }
                     boolean[] main = new boolean[1];
-                    if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing() || context.isAllFilesIndexing() || TasklistSettings.getDependencyTracking() == TasklistSettings.DependencyTracking.DISABLED) {
+                    if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                         javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
                     } else {
                         final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();

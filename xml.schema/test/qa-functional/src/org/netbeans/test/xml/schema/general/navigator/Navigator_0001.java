@@ -54,6 +54,8 @@ import junit.framework.Test;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 /**
  *

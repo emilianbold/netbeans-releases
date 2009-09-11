@@ -257,10 +257,10 @@ public class JavaEESamplesPanelVisual extends JPanel implements DocumentListener
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        
+
         if (!isJavaEECapableServerRegistered()){
             wizardDescriptor.putProperty(WizardProperties.WIZARD_ERROR_MSG,
-                    NbBundle.getMessage(JavaEESamplesPanelVisual.class, "ERR_MissingJavaEE6AppServer"));
+                    NbBundle.getMessage(JavaEESamplesPanelVisual.class, "ERR_MissingJavaEE5AppServer"));
             
             return false;
         }
@@ -431,11 +431,11 @@ public class JavaEESamplesPanelVisual extends JPanel implements DocumentListener
             try {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
 
-                if (j2eePlatform.getSupportedProfiles().contains(Profile.JAVA_EE_6_FULL)){
+                if (j2eePlatform.getSupportedProfiles().contains(Profile.JAVA_EE_5)){
                     return true;
                 }
             } catch (InstanceRemovedException ex) {
-                Logger.getLogger(JavaEESamplesPanelVisual.class.getName()).log(Level.INFO, "Cannot find registerred JavaEE6 server", ex);
+                Logger.getLogger(JavaEESamplesPanelVisual.class.getName()).log(Level.INFO, "Cannot find registerred JavaEE 5/JavaEE 6  server", ex);
             }
         }
         

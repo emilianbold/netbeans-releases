@@ -990,16 +990,11 @@ public class GoToSupportTest extends NbTestCase {
         if (tooltip)
             return GoToSupport.getGoToElementTooltip(doc, offset, false);
         else
-            GoToSupport.goToImpl(doc, offset, false);
+            GoToSupport.goTo(doc, offset, false);
         
         return null;
     }
 
-    @Override
-    protected boolean runInEQ() {
-        return true;
-    }
-    
     /**Copied from org.netbeans.api.project.
      * Create a scratch directory for tests.
      * Will be in /tmp or whatever, and will be empty.

@@ -52,6 +52,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
+import org.netbeans.modules.openide.text.Installer;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.*;
@@ -568,14 +569,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     @Override
     protected void componentOpened() {
         super.componentOpened();
-
+        
         CloneableEditorSupport ces = cloneableEditorSupport();
-
+        
         if (ces != null) {
             ces.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
+            Document d = ces.getDocument();
+            if (d != null) {
+                String mimeType = (String) d.getProperty("mimeType"); //NOI18N
+                Installer.add(mimeType);
+            }
         }
     }
-
+    
     /** Descendants overriding this method must either call
      * this implementation or fire the
      * {@link org.openide.cookies.EditorCookie.Observable#PROP_OPENED_PANES}

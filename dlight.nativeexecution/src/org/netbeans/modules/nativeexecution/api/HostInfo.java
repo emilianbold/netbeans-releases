@@ -111,6 +111,8 @@ public interface HostInfo {
 
     public String getShell();
 
+    public String getPath();
+
     public String getTempDir();
 
     public File getTempDirFile();

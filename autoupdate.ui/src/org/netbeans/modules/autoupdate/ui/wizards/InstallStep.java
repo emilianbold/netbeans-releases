@@ -551,12 +551,13 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (installException == null) {
             component.setHeadAndContent (getBundle (HEAD_INSTALL_DONE), getBundle (CONTENT_INSTALL_DONE));
             panel.setBody (getBundle ("InstallStep_InstallDone_Text"),
-                    InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                    model.getAllVisibleUpdateElements ());
         } else {
             component.setHeadAndContent (getBundle (HEAD_INSTALL_UNSUCCESSFUL), getBundle (CONTENT_INSTALL_UNSUCCESSFUL));
             panel.setBody (getBundle ("InstallStep_InstallUnsuccessful_Text", installException.getLocalizedMessage ()),
-                    InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                    model.getAllVisibleUpdateElements ());
         }
+
         panel.hideRunInBackground ();
     }
     
@@ -565,7 +566,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         model.modifyOptionsForDoClose (wd, true);
         restarter = r;
         panel.setRestartButtonsVisible (true);
-        panel.setBody (getBundle ("InstallStep_InstallDone_Text"), InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+        panel.setBody (getBundle ("InstallStep_InstallDone_Text"), model.getAllVisibleUpdateElements ());
         panel.hideRunInBackground ();
         if (runInBackground ()) {
             InstallSupport support = model.getInstallSupport ();

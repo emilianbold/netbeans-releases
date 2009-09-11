@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.ui.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -147,6 +148,7 @@ public class AutoupdateCheckScheduler {
                             pluginManagerUI.updateUnitsChanged();
                         }
                     }
+                    Utilities.showProviderNotification(p);
                 } catch (IOException ioe) {
                     err.log (Level.INFO, ioe.getMessage (), ioe);
                     if (problems != null) {
@@ -209,12 +211,27 @@ public class AutoupdateCheckScheduler {
         OperationContainer<InstallSupport> container = handleUpdates ?
             OperationContainer.createForUpdate () :
             OperationContainer.createForInstall ();
+
+
+        List<UpdateElement> elements = new ArrayList<UpdateElement>();
+
         for (UnitCategory cat : cats) {
-            for (Unit u : cat.getUnits ()) {
-                UpdateElement element = handleUpdates ?
-                    ((Unit.Update) u).getRelevantElement () :
-                    ((Unit.Available) u).getRelevantElement ();
-                if (container.canBeAdded (element.getUpdateUnit (), element) && ! somePendingElements) {
+            for (Unit u : cat.getUnits ()) {        
+                if(u instanceof Unit.Available) {
+                    elements.add(((Unit.Available) u).getRelevantElement ());
+                } else if (u instanceof Unit.InternalUpdate) {
+                    for(UpdateUnit uu :((Unit.InternalUpdate) u).getUpdateUnits()) {
+                        elements.add(uu.getAvailableUpdates().get(0));
+                    }
+                } else if (u instanceof Unit.Update) {
+                    elements.add(((Unit.Update) u).getRelevantElement ());
+                }
+
+            }
+        }
+        for(UpdateElement element : elements) {
+            if (! somePendingElements) {
+                if(container.canBeAdded (element.getUpdateUnit (), element)) {
                     OperationInfo<InstallSupport> operationInfo = container.add (element);
                     if (operationInfo == null) {
                         updates.add (element);
@@ -251,14 +268,11 @@ public class AutoupdateCheckScheduler {
         if (! somePendingElements && someBrokenDependencies) {
             // 2. if some problem then try one by one
             updates = new HashSet<UpdateElement> ();
-            for (UnitCategory cat : cats) {
-                for (Unit u : cat.getUnits ()) {
+           for(UpdateElement element : elements) {
                     OperationContainer<InstallSupport> oc = handleUpdates ?
                         OperationContainer.createForUpdate () :
                         OperationContainer.createForInstall ();
-                    UpdateElement element = handleUpdates ?
-                        ((Unit.Update) u).getRelevantElement () :
-                        ((Unit.Available) u).getRelevantElement ();
+                    
                     UpdateUnit unit = element.getUpdateUnit ();
                     if (oc.canBeAdded (unit, element)) {
                         OperationInfo<InstallSupport> operationInfo = oc.add (element);
@@ -295,8 +309,7 @@ public class AutoupdateCheckScheduler {
                                         " cannot be installed, Install Container contains invalid elements " + oc.listInvalid ()); // NOI18N
                             }
                         }
-                    }
-                }
+                    }                
             }
         }
 
@@ -430,6 +443,9 @@ public class AutoupdateCheckScheduler {
             if (! hasUpdates) {
                 Collection<LazyUnit> newUnits = LazyUnit.loadLazyUnits (OperationType.INSTALL);
                 notifyAvailable (newUnits, OperationType.INSTALL);
+            }
+            for(UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(true)) {
+                Utilities.showProviderNotification(p);
             }
         }
     };

@@ -45,7 +45,6 @@ import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -64,7 +63,6 @@ import org.openide.util.NbBundle;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
-    protected final Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
         this.localDir = localDir;
@@ -115,8 +113,8 @@ import org.openide.util.NbBundle;
             } catch (InterruptedException e) {
                 return false;
             }
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + localDir.getAbsolutePath() + //NOI18N
+            if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
+                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + localDir.getAbsolutePath() + //NOI18N
                         (same ? " are same - skipping" : " arent same - copying")); //NOI18N
             }
             if (!same) {
@@ -125,24 +123,24 @@ import org.openide.util.NbBundle;
                             remoteDir, ServerList.get(executionEnvironment).toString()));
                 }
                 synchronizeImpl(remoteDir);
-                RemotePathMap mapper = RemotePathMap.getRemotePathMapInstance(executionEnvironment);
+                RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
                 mapper.addMapping(localDir.getParentFile().getAbsolutePath(), remoteParent);
             }
             success = true;
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
-            logger.finest(ex.getMessage());
+            RemoteUtil.LOGGER.finest(ex.getMessage());
         } catch (InterruptedIOException ex) {
             // reporting does not make sense, just return false
-            logger.finest(ex.getMessage());
+            RemoteUtil.LOGGER.finest(ex.getMessage());
         } catch (ExecutionException ex) {
-            logger.log(Level.FINE, null, ex);
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         } catch (IOException ex) {
-            logger.log(Level.FINE, null, ex);
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));

@@ -45,30 +45,21 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
-import org.openide.util.NbBundle;
-import static java.util.logging.Level.FINER;
 
 /**
  *
@@ -78,8 +69,6 @@ import static java.util.logging.Level.FINER;
 public class HookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
 
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
-
-    private static final String LOADING_REPOSITORIES = "loading";       //NOI18N
 
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
@@ -114,127 +103,8 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         issuePanel.add(qs, BorderLayout.NORTH);
         issueLabel.setLabelFor(qs.getIssueComponent());
 
-        repositoryComboBox.setModel(new DefaultComboBoxModel(new Object[] {LOADING_REPOSITORIES}));
-        repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
-            private final String loadingReposText = NbBundle.getMessage(
-                                    HookPanel.class,
-                                    "HookPanel.loadingRepositories");   //NOI18N
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                String text;
-                if (value == null) {
-                    text = null;
-                } else if (value == LOADING_REPOSITORIES) {
-                    text = loadingReposText;
-                } else {
-                    text = ((Repository) value).getDisplayName();
-                }
-                Component result = super.getListCellRendererComponent(list,
-                                                                      text,
-                                                                      index,
-                                                                      isSelected,
-                                                                      cellHasFocus);
-                if ((value == LOADING_REPOSITORIES) && (result instanceof JLabel)) {
-                    JLabel label = (JLabel) result;
-                    Font font = label.getFont();
-                    label.setFont(new Font(font.getName(),
-                                           font.getStyle() | Font.ITALIC,
-                                           font.getSize()));
-                }
-                return result;
-            }
-        });
-
         repositoryComboBox.addItemListener(this);
         enableFields();        
-    }
-
-    void setRepositories(Repository[] repos) {
-        Repository[] comboData;
-        if (repos == null) {
-            comboData = new Repository[1];
-            comboData[0] = null;
-        } else {
-            comboData = new Repository[repos.length + 1];
-            comboData[0] = null;
-            if (repos.length != 0) {
-                System.arraycopy(repos, 0, comboData, 1, repos.length);
-            }
-        }
-        repositoryComboBox.setModel(new DefaultComboBoxModel(comboData));
-    }
-
-    /**
-     * Selects the given repository in the combo-box if no repository has been
-     * selected yet by the user.
-     * If the user had already selected some repository before this method
-     * was called, this method does nothing. If this method is called at
-     * the moment the popup of the combo-box is opened, the operation of
-     * pre-selecting the repository is deferred until the popup is closed. If
-     * the popup had been displayed at the moment this method was called
-     * and the user selects some repository during the period since the
-     * call of this method until the deferred selection takes place, the
-     * deferred selection operation is cancelled.
-     * 
-     * @param  repoToPreselect  repository to preselect
-     */
-    void preselectRepository(final Repository repoToPreselect) {
-        assert EventQueue.isDispatchThread();
-
-        if (repoToPreselect == null) {
-            LOG.finer("preselectRepository(null)");                     //NOI18N
-            return;
-        }
-
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("preselectRepository(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
-        }
-
-        if (isRepositorySelected()) {
-            LOG.finest(" - cancelled - already selected by the user");  //NOI18N
-            return;
-        }
-
-        if (repositoryComboBox.isPopupVisible()) {
-            LOG.finest(" - the popup is visible - deferred");           //NOI18N
-            repositoryComboBox.addPopupMenuListener(new PopupMenuListener() {
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    LOG.finer("popupMenuWillBecomeInvisible()");        //NOI18N
-                    repositoryComboBox.removePopupMenuListener(this);
-                }
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                    LOG.finer("popupMenuCanceled()");                   //NOI18N
-                    repositoryComboBox.removePopupMenuListener(this);
-                    LOG.finest(" - processing deferred selection");     //NOI18N
-                    preselectRepositoryUnconditionally(repoToPreselect);
-                }
-            });
-        } else {
-            preselectRepositoryUnconditionally(repoToPreselect);
-        }
-    }
-
-    private void preselectRepositoryUnconditionally(Repository repoToPreselect) {
-        assert !isRepositorySelected();
-
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("preselectRepositoryUnconditionally(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
-        }
-
-        repositoryComboBox.setSelectedItem(repoToPreselect);
-    }
-
-    /** 
-     * Determines whether some bug-tracking repository is selected in the
-     * Issue Tracker combo-box.
-     * 
-     * @return  {@code true} if some repository is selected,
-     *          {@code false} otherwise
-     */
-    private boolean isRepositorySelected() {
-        Object selectedItem = repositoryComboBox.getSelectedItem();
-        return (selectedItem != null) && (selectedItem != LOADING_REPOSITORIES);
     }
 
     Issue getIssue() {
@@ -265,6 +135,11 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         qs.enableFields(repoSelected);
     }
 
+    private boolean isRepositorySelected() {
+        Object selectedItem = repositoryComboBox.getSelectedItem();
+        return selectedItem instanceof Repository;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -275,14 +150,15 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        issuePanel = new javax.swing.JPanel();
         repositoryLabel = new javax.swing.JLabel();
         jButton2 = createDoubleWidthButton();
         issueLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        issuePanel = new javax.swing.JPanel();
 
         setFocusable(false);
+
+        issuePanel.setLayout(new java.awt.BorderLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(resolveCheckBox, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.resolveCheckBox.text")); // NOI18N
         resolveCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -313,6 +189,11 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.issueLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(changeFormatButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeFormatButton.text")); // NOI18N
+        changeFormatButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeFormatButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(commitRadioButton);
         commitRadioButton.setSelected(true);
@@ -325,49 +206,36 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.jLabel2.text")); // NOI18N
 
-        issuePanel.setLayout(new java.awt.BorderLayout());
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
-            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2))
-        );
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(resolveCheckBox)
-                    .add(linkCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(changeFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 196, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(commitRadioButton)
-                    .add(pushRadioButton))
-                .add(125, 125, 125))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(repositoryLabel)
                     .add(issueLabel))
-                .add(5, 5, 5)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, repositoryComboBox, 0, 561, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton2)
+                .add(11, 11, 11)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(resolveCheckBox)
+                            .add(linkCheckBox))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(changeFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(65, 65, 65)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(commitRadioButton)
+                            .add(pushRadioButton)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                                    .add(repositoryComboBox, 0, 463, Short.MAX_VALUE))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButton2)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -375,12 +243,14 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(repositoryLabel)
-                    .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jButton2))
+                    .add(jButton2)
+                    .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(issueLabel)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                    .add(issueLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(9, 9, 9)
+                .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -438,6 +308,10 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         // TODO add your handling code here:
     }//GEN-LAST:event_resolveCheckBoxActionPerformed
 
+    private void changeFormatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeFormatButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_changeFormatButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
@@ -447,7 +321,6 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     private javax.swing.JPanel issuePanel;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
     final javax.swing.JCheckBox linkCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JRadioButton pushRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JComboBox repositoryComboBox = new javax.swing.JComboBox();
@@ -456,14 +329,13 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     // End of variables declaration//GEN-END:variables
 
     public void itemStateChanged(ItemEvent e) {
-        if (LOG.isLoggable(FINER)) {
+        if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("itemStateChanged() - selected item: " + e.getItem()); //NOI18N
         }
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
             Object item = e.getItem();
-            Repository repo = (item != LOADING_REPOSITORIES) ? (Repository) item
-                                                             : null;
+            Repository repo = (item instanceof Repository) ? (Repository) item : null;
             selectedRepository = repo;
             if(repo != null) {
                 qs.setRepository(repo);

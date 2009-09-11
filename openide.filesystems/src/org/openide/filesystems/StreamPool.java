@@ -45,6 +45,8 @@ import org.openide.util.*;
 import java.io.*;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -59,6 +61,7 @@ final class StreamPool extends Object {
     private static final boolean ANNOTATE_UNCLOSED_STREAMS = Boolean.getBoolean(
             "org.openide.filesystems.annotateUnclosedStreams"
         ); // NOI18N
+    static final Logger LOG = Logger.getLogger(StreamPool.class.getName());
     private static Map<FileObject, StreamPool> fo2StreamPool = new WeakHashMap<FileObject, StreamPool>();
     private static Map<FileSystem, StreamPool> fs2StreamPool = new WeakHashMap<FileSystem, StreamPool>();
     private Set<InputStream> iStreams;
@@ -85,13 +88,12 @@ final class StreamPool extends Object {
 
         synchronized (StreamPool.class) {
             try {
-                get(fo).waitForOutputStreamsClosed(2000);
+                get(fo).waitForOutputStreamsClosed(fo, 2000);
                 retVal = new NotifyInputStream(fo);
                 get(fo).iStream().add(retVal);
                 get(fo.getFileSystem()).iStream().add(retVal);
             } catch (InterruptedException e) {
-                ExternalUtil.annotate(e, fo.getPath());
-                ExternalUtil.exception(e);
+                LOG.log(Level.INFO, null, e);
             }
         }
 
@@ -129,15 +131,14 @@ final class StreamPool extends Object {
 
         synchronized (StreamPool.class) {
             try {
-                get(fo).waitForInputStreamsClosed(2000);
-                get(fo).waitForOutputStreamsClosed(2000);
+                get(fo).waitForInputStreamsClosed(fo, 2000);
+                get(fo).waitForOutputStreamsClosed(fo, 2000);
 
                 retVal = new NotifyOutputStream(fo, fireFileChanged);
                 get(fo).oStream().add(retVal);
                 get(fo.getFileSystem()).oStream().add(retVal);
             } catch (InterruptedException e) {
-                ExternalUtil.annotate(e, fo.getPath());
-                ExternalUtil.exception(e);
+                LOG.log(Level.INFO, null, e);
             }
         }
 
@@ -222,27 +223,27 @@ final class StreamPool extends Object {
         return (iStreams != null) && !iStreams.isEmpty();
     }
 
-    private void waitForInputStreamsClosed(int timeInMs)
+    private void waitForInputStreamsClosed(FileObject fo, int timeInMs)
     throws InterruptedException {
         synchronized (StreamPool.class) {
             if (isInputStreamOpen()) {
                 StreamPool.class.wait(timeInMs);
 
                 if (isInputStreamOpen()) {
-                    throw new InterruptedException();
+                    throw new InterruptedException(fo.getPath());
                 }
             }
         }
     }
 
-    private void waitForOutputStreamsClosed(int timeInMs)
+    private void waitForOutputStreamsClosed(FileObject fo, int timeInMs)
     throws InterruptedException {
         synchronized (StreamPool.class) {
             if (isOutputStreamOpen()) {
                 StreamPool.class.wait(timeInMs);
 
                 if (isOutputStreamOpen()) {
-                    throw new InterruptedException();
+                    throw new InterruptedException(fo.getPath());
                 }
             }
         }

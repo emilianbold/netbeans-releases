@@ -41,9 +41,12 @@
 
 package org.netbeans.core.output2;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import junit.framework.TestCase;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,16 +60,39 @@ public class StorageTest extends TestCase {
 
     Storage filemap = null;
     Storage heap = null;
+    @Override
     protected void setUp() throws Exception {
         filemap = new FileMapStorage();
         heap = new HeapStorage();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         filemap.dispose();
         heap.dispose();
     }
-    
+
+    // #85050
+    public void testMMappedFileCanBeDeleted() throws Exception {
+        write(filemap, "Test text");
+        ByteBuffer b = filemap.getReadBuffer(0, 10);
+        String s = b.asCharBuffer().toString();
+        File f = ((FileMapStorage) filemap).getOutputFile();
+        assertTrue("Memory mapped file should be created", f.exists());
+        filemap.dispose();
+        for (int i = 0; i < 500; i++) {
+            if (!f.exists()) {
+                break;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        assertFalse("Memory mapped file should be deleted", f.exists());
+    }
+
     public void testIsClosed() throws Exception {
         doTestIsClosed(heap);
         doTestIsClosed(filemap);

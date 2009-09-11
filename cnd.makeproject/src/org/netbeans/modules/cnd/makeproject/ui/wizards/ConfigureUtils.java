@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,6 +58,9 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public final class ConfigureUtils {
+    private static final String PREDEFINED_FLAGS_GNU = "\"-g3 -gdwarf-2\""; // NOI18N
+    private static final String PREDEFINED_FLAGS_SUN = "-g"; // NOI18N
+
     private ConfigureUtils() {
     }
 
@@ -153,75 +157,30 @@ public final class ConfigureUtils {
         return null;
     }
 
-    public static String getDefaultC(){
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
-        String cCompiler = "gcc"; // NOI18N
-        if (def != null) {
-            CompilerFlavor flavor = def.getCompilerFlavor();
-            if (flavor.isSunStudioCompiler()) {
-                cCompiler = "cc"; // NOI18N
-            }
-        }
-        return cCompiler;
-    }
-
-    public static String getDefaultCpp(){
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
-        String cppCompiler = "g++"; // NOI18N
-        if (def != null) {
-            CompilerFlavor flavor = def.getCompilerFlavor();
-            if (flavor.isSunStudioCompiler()) {
-                cppCompiler = "CC"; // NOI18N
-            }
-        }
-        return cppCompiler;
-    }
-
-    private static final String PREDEFINED_FLAGS_GNU = "\"-g3 -gdwarf-2\""; // NOI18N
-    private static final String PREDEFINED_FLAGS_SUN = "-g"; // NOI18N
     public static String getConfigureArguments(String configure, String flags) {
         String cCompiler = ConfigureUtils.getDefaultC();
         String cppCompiler = ConfigureUtils.getDefaultCpp();
         StringBuilder buf = new StringBuilder(flags);
-        String cCompilerFlags;
-        if ("cc".equals(cCompiler)) { // NOI18N
-            cCompilerFlags = PREDEFINED_FLAGS_SUN;
-        } else {
-            cCompilerFlags = PREDEFINED_FLAGS_GNU;
-        }
-        String cppCompilerFlags;
-        if ("CC".equals(cppCompiler)) { // NOI18N
-            cppCompilerFlags = PREDEFINED_FLAGS_SUN;
-        } else {
-            cppCompilerFlags = PREDEFINED_FLAGS_GNU;
-        }
+        String cCompilerFlags = getCompilerFlags();
+        String cppCompilerFlags = getCompilerFlags();
         if (configure.endsWith("CMakeLists.txt")){ // NOI18N
             appendIfNeed("-G ", flags, buf, "\"Unix Makefiles\""); // NOI18N
             appendIfNeed("-DCMAKE_BUILD_TYPE=", flags, buf, "Debug"); // NOI18N
-            if ("cc".equals(cCompiler)) { // NOI18N
-                appendIfNeed("-DCMAKE_C_COMPILER=", flags, buf, "cc"); // NOI18N
-            }
-            if ("CC".equals(cppCompiler)) { // NOI18N
-                appendIfNeed("-DCMAKE_CXX_COMPILER=", flags, buf, "CC"); // NOI18N
-            }
+            appendIfNeed("-DCMAKE_C_COMPILER=", flags, buf, cCompiler); // NOI18N
+            appendIfNeed("-DCMAKE_CXX_COMPILER=", flags, buf, cppCompiler); // NOI18N
             appendIfNeed("-DCMAKE_C_FLAGS_DEBUG=", flags, buf, cCompilerFlags); // NOI18N
             appendIfNeed("-DCMAKE_CXX_FLAGS_DEBUG=", flags, buf, cppCompilerFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
-            if ("CC".equals(cppCompiler) && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+            if (isSunStodio() && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
                 appendIfNeed("-spec ", flags, buf, "solaris-cc"); // NOI18N
-                appendIfNeed("QMAKE_CC=", flags, buf, "cc"); // NOI18N
-                appendIfNeed("QMAKE_CXX=", flags, buf, "CC"); // NOI18N
-            } else {
-                appendIfNeed("QMAKE_CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
-                appendIfNeed("QMAKE_CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
             }
+            appendIfNeed("QMAKE_CC=", flags, buf, cCompiler); // NOI18N
+            appendIfNeed("QMAKE_CXX=", flags, buf, cppCompiler); // NOI18N
+            appendIfNeed("QMAKE_CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
+            appendIfNeed("QMAKE_CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
         } else {
-            if ("cc".equals(cCompiler)) { // NOI18N
-                appendIfNeed("CC=", flags, buf, "cc"); // NOI18N
-            }
-            if ("CC".equals(cppCompiler)) { // NOI18N
-                appendIfNeed("CXX=", flags, buf, "CC"); // NOI18N
-            }
+            appendIfNeed("CC=", flags, buf, cCompiler); // NOI18N
+            appendIfNeed("CXX=", flags, buf, cppCompiler); // NOI18N
             appendIfNeed("CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
             appendIfNeed("CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
         }
@@ -235,5 +194,77 @@ public final class ConfigureUtils {
             }
             buf.append(key + flag);
         }
+    }
+
+    private static boolean isSunStodio(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String getDefaultC(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        String cCompiler = getToolPath(def, Tool.CCompiler);
+        if (cCompiler != null) {
+            return cCompiler;
+        }
+        cCompiler = "gcc"; // NOI18N
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                cCompiler = "cc"; // NOI18N
+            }
+        }
+        return cCompiler;
+    }
+
+    private static String getDefaultCpp(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        String cppCompiler = getToolPath(def, Tool.CCCompiler);
+        if (cppCompiler != null) {
+            return cppCompiler;
+        }
+        cppCompiler = "g++"; // NOI18N
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                cppCompiler = "CC"; // NOI18N
+            }
+        }
+        return cppCompiler;
+    }
+
+    private static String getToolPath(CompilerSet compilerSet, int tool){
+        if (compilerSet == null) {
+            return null;
+        }
+        Tool compiler = compilerSet.findTool(tool);
+        if (compiler == null) {
+            return null;
+        }
+        return escapeFlags(compiler.getPath());
+    }
+
+    private static String escapeFlags(String flags) {
+        if ((flags.indexOf(' ') > 0 || flags.indexOf('=') > 0)&& !flags.startsWith("\"")) { // NOI18N
+            flags = "\""+flags+"\""; // NOI18N
+        }
+        return flags;
+    }
+
+    private static String getCompilerFlags(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                return PREDEFINED_FLAGS_SUN;
+            }
+        }
+        return PREDEFINED_FLAGS_GNU;
     }
 }

@@ -49,6 +49,8 @@ import org.openide.util.Exceptions;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton.AntProjectHelperCallback;
+import org.openide.filesystems.FileObject;
 
 public class JCProjectType {
 

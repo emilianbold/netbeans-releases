@@ -61,7 +61,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;

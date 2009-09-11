@@ -458,7 +458,8 @@ public final class J2SEProject implements Project, AntProjectListener {
                     if (nl.getLength() == 1) {
                         nl = nl.item(0).getChildNodes();
                         if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                            return ((Text) nl.item(0)).getNodeValue();
+                            String val = ((Text) nl.item(0)).getNodeValue();
+                            return val != null ? val : "???";   //NOI18N
                         }
                     }
                     return "???"; // NOI18N
@@ -721,6 +722,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N
+            "servlet-types-j2se-only",// NOI18N
             "web-service-clients",  // NOI18N
             "wsdl",                 // NOI18N
             // "web-types",         // NOI18N

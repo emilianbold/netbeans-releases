@@ -45,7 +45,7 @@ import java.util.Collection;
  *
  * @author Radek Matous
  */
-public interface FieldElement extends ClassMemberElement {
+public interface FieldElement extends ClassMemberElement, TypeAssignments {
+    Collection<? extends String> getDefaultTypeNames();
     PhpModifiers getPhpModifiers();
-    Collection<? extends TypeScope> getTypes(int offset);
 }

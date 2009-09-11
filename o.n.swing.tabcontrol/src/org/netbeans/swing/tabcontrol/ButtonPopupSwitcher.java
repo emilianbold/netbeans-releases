@@ -93,6 +93,8 @@ final class ButtonPopupSwitcher
     
     private int x;
     private int y;
+
+    private boolean isDragging = true;
     
     /**
      * Creates and shows the popup with given <code>items</code>. When user
@@ -186,22 +188,26 @@ final class ButtonPopupSwitcher
     
     public void mouseMoved(MouseEvent e) {
         e.consume();
-        Point p = e.getPoint();
-        // It may have occured on the button that invoked the tabtable
-        if (e.getSource() != this) {
-            p = SwingUtilities.convertPoint((Component) e.getSource(), p, pTable);
-        }
-        if (pTable.contains(p)) {
-            int row = pTable.rowAtPoint(p);
-            int col = pTable.columnAtPoint(p);
-            pTable.changeSelection(row, col, false, false);
-        } else {
-            pTable.clearSelection();
-        }
+        changeSelection(e);
+        isDragging = false;
     }
     
     public void mousePressed(MouseEvent e) {
         e.consume();
+    }
+    
+    public void mouseReleased(MouseEvent e) {
+        if (e.getSource() == invokingComponent) {
+            long time = System.currentTimeMillis();
+            if (time - invocationTime > 500 && isDragging) {
+                mouseClicked(e);
+            }
+        }
+        isDragging = false;
+        e.consume();
+    }
+    
+    public void mouseClicked(MouseEvent e) {
         Point p = e.getPoint();
         p = SwingUtilities.convertPoint((Component) e.getSource(), p, pTable);
         if (pTable.contains(p)) {
@@ -211,19 +217,7 @@ final class ButtonPopupSwitcher
                 hideCurrentPopup();
             }
         }
-    }
-    
-    public void mouseReleased(MouseEvent e) {
-        if (e.getSource() == invokingComponent) {
-            long time = System.currentTimeMillis();
-            if (time - invocationTime > 500) {
-                mousePressed(e);
-            }
-        }
-        e.consume();
-    }
-    
-    public void mouseClicked(MouseEvent e) {
+        isDragging = false;
         e.consume();
     }
     
@@ -239,8 +233,23 @@ final class ButtonPopupSwitcher
     
     //MouseMotionListener
     public void mouseDragged(MouseEvent e) {
-        mouseMoved(e);
+        changeSelection( e );
         e.consume();
+    }
+
+    private void changeSelection( MouseEvent e ) {
+        Point p = e.getPoint();
+        // It may have occured on the button that invoked the tabtable
+        if (e.getSource() != this) {
+            p = SwingUtilities.convertPoint((Component) e.getSource(), p, pTable);
+        }
+        if (pTable.contains(p)) {
+            int row = pTable.rowAtPoint(p);
+            int col = pTable.columnAtPoint(p);
+            pTable.changeSelection(row, col, false, false);
+        } else {
+            pTable.clearSelection();
+        }
     }
     
     /**

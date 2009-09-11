@@ -55,6 +55,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
+import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.openide.util.RequestProcessor;
@@ -89,11 +90,12 @@ public class Jira {
         BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
     }
 
-    public static Jira getInstance() {
+    public static synchronized Jira getInstance() {
         if(instance == null) {
             instance = new Jira();
             REPOSITORIES_STORE = BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath() + "/jira/repositories";
             new File(REPOSITORIES_STORE).getParentFile().mkdirs();
+            JiraIssueProvider.getInstance();
         }
         return instance;
     }
@@ -126,7 +128,7 @@ public class Jira {
             if(!(repository instanceof KenaiRepository)) {
                 // we don't store kenai repositories - XXX  shouldn't be even called
                 getStoredRepositories().add(repository);
-                JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
+                JiraConfig.getInstance().putRepository(repository.getID(), repository);
             }
             BugtrackingRuntime
                     .getInstance()
@@ -138,10 +140,11 @@ public class Jira {
     public void removeRepository(JiraRepository repository) {
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
-            JiraConfig.getInstance().removeRepository(repository.getDisplayName());
+            JiraConfig.getInstance().removeRepository(repository.getID());
             BugtrackingRuntime br = BugtrackingRuntime.getInstance();
             br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
+        JiraIssueProvider.getInstance().removeAllFor(repository);
     }
 
     public JiraRepository[] getRepositories() {

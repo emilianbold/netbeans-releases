@@ -45,6 +45,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.net.PasswordAuthentication;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +76,6 @@ public class ChatTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/chat.png"; // NOI18N
     static final String PLUS = "org/netbeans/modules/kenai/collab/resources/plus.png"; // NOI18N
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
 
     private static final String PREFERRED_ID = "ChatTopComponent"; // NOI18N
 
@@ -309,7 +309,7 @@ public class ChatTopComponent extends TopComponent {
         ChatNotifications.getDefault().removePrivate(name);
         int indexOfTab = getTab(createPrivateName(name));
         if (indexOfTab < 0) {
-            ChatPanel chatPanel = new ChatPanel(name + '@' + XMPP_SERVER);
+            ChatPanel chatPanel = new ChatPanel(name + '@' + Kenai.getDefault().getName());
             addChat(chatPanel);
             indexOfTab = chats.getTabCount() - 1;
             chats.setSelectedComponent(chatPanel);
@@ -365,52 +365,6 @@ public class ChatTopComponent extends TopComponent {
         int i=chats.indexOfComponent(panel);
         chats.setForegroundAt(i, Color.BLUE);
     }
-
-    void showPopup(MouseEvent evt) {
-        JPopupMenu menu = new JPopupMenu();
-        HashSet<String> projectNames = new HashSet<String>();
-        try {
-            for (KenaiProject prj : Kenai.getDefault().getMyProjects()) {
-                projectNames.add(prj.getName());
-            }
-        } catch (KenaiException kenaiException) {
-            Exceptions.printStackTrace(kenaiException);
-        }
-        ArrayList<Action> tree = new ArrayList<Action>();
-
-        for (KenaiFeature prj : kec.getMyChats()) {
-            projectNames.remove(prj.getName());
-            if (!open.contains(prj.getName())) {
-                tree.add(new OpenChatAction(prj));
-            }
-        }
-        for (String name:projectNames) {
-            tree.add(new CreateChatAction(name));
-        }
-        
-        Collections.sort(tree, new Comparator<Action>() {
-            public int compare(Action o1, Action o2) {
-                return ((String) o1.getValue(Action.NAME)).compareTo((String) o2.getValue(Action.NAME));
-            }
-        });
-
-        for (Action a:tree) {
-            menu.add(a);
-        }
-        if (menu.getComponentCount()==0) {
-            final JMenuItem jMenuItem = new JMenuItem(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "CTL_NoMoreChats")); // NOI18N
-            jMenuItem.setEnabled(false);
-            menu.add(jMenuItem);
-        }
-
-        menu.add(new CreatePrivateChatAction());
-        if (evt!=null) {
-            menu.show((Component) evt.getSource(),evt.getX(), evt.getY());
-        } else {
-            menu.show(chats, 0, 0);
-        }
-    }
-
 
     public static boolean isGroupInitedAndVisible(String name) {
         return instance==null?false:instance.isShowing()&&instance.isOpened()&&instance.open.contains(name) && name.equals(instance.chats.getSelectedComponent().getName());
@@ -603,7 +557,22 @@ public class ChatTopComponent extends TopComponent {
 }//GEN-LAST:event_loginLinkMouseEntered
 
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
-        UIUtils.showLogin();
+        final Kenai kenai = Kenai.getDefault();
+        if (kenai.getStatus() == Kenai.Status.OFFLINE) {
+            UIUtils.showLogin();
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    try {
+                        PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
+                        kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), true);
+                    } catch (KenaiException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
 }//GEN-LAST:event_loginLinkMouseClicked
 
     private void chatsMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chatsMousePressed
@@ -726,6 +695,12 @@ public class ChatTopComponent extends TopComponent {
 
         public void propertyChange(final PropertyChangeEvent e) {
             if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        loginLink.setText(NbBundle.getMessage(ChatTopComponent.class, e.getNewValue()==null?"ChatTopComponent.loginLink.text":"ChatTopComponent.loginLink.startChat"));
+                    }
+                });
+            } else if (Kenai.PROP_XMPP_LOGIN.equals(e.getPropertyName())) {
                 if (e.getNewValue() == null) {
                     putLoginScreen();
                 } else {
@@ -740,9 +715,9 @@ public class ChatTopComponent extends TopComponent {
                         }
                     });
                 }
-            } else if (Kenai.PROP_LOGIN_STARTED.equals(e.getPropertyName())) {
+            } else if (Kenai.PROP_XMPP_LOGIN_STARTED.equals(e.getPropertyName())) {
                 putConnectingScreen();
-            } else if (Kenai.PROP_LOGIN_FAILED.equals(e.getPropertyName())) {
+            } else if (Kenai.PROP_XMPP_LOGIN_FAILED.equals(e.getPropertyName())) {
                 putLoginScreen();
             }
         }

@@ -113,13 +113,19 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         if (idx != -1) {//NOI18N
             value = value.substring(0, idx);
         }
-
+        if (getKind().equals(Kind.CLASS)) {
+            QualifiedName qn = QualifiedName.create(value);
+            value = qn.toName().toString();
+        }
         return value;
     }
 
     @Override
     public QualifiedName getQualifiedName() {
-        return QualifiedName.createUnqualifiedName(getTypeName());
+        if (Kind.VARIABLE.equals(getKind()) || Kind.FIELD.equals(getKind())) {
+            QualifiedName.createUnqualifiedName(getName());
+        }
+        return QualifiedName.create(getTypeName());
     }
 
     @Override
@@ -128,7 +134,10 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         if (Kind.VARIABLE.equals(getKind()) || Kind.FIELD.equals(getKind())) {
             return new OffsetRange(node.getStartOffset()+1, node.getStartOffset()+getName().length());
         }
-        return new OffsetRange(node.getStartOffset(), node.getStartOffset()+getName().length());
+        QualifiedName typeQN = QualifiedName.create(typeName);
+        final int nsNameLength = typeQN.toNamespaceName(typeQN.getKind().isFullyQualified()).toString().length();
+        final int startOffset = node.getStartOffset() + (nsNameLength > 0 ? (nsNameLength+1) : 0);
+        return new OffsetRange(startOffset, startOffset+typeQN.toName().toString().length());
     }
 
     public PhpModifiers getAccessModifiers() {

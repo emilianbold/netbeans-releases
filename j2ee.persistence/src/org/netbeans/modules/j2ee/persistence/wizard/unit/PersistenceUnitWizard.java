@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -141,30 +142,14 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         Library lib = null;
         if (descriptor.isContainerManaged()) {
             if (descriptor.isNonDefaultProviderEnabled()) {
-                String providerClass = descriptor.getNonDefaultProvider();
-                //Only add library for Hibernate in NB 6.5
-                if(providerClass.equals("org.hibernate.ejb.HibernatePersistence")){//NOI18N
-                    lib =  LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
-                    if (lib != null) {
-                        Util.addLibraryToProject(project, lib);
-                    }
-                }
-                else if(providerClass.equals("org.eclipse.persistence.jpa.PersistenceProvider"))//NOI18N
-                {
-                    //fix #170046
-                    //TODO: find some common approach what libraries to add and what do not need to be added
-                    lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
-                    if (lib != null) {
-                        Util.addLibraryToProject(project, lib);
-                    }
-                }
-                else
-                {
-                    lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
+                Provider selectedProvider=descriptor.getSelectedProvider();
+                lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
+                if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
+                    Util.addLibraryToProject(project, lib);
                 }
             }
         } else {
-             lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
+            lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
             if (lib != null){
                 Util.addLibraryToProject(project, lib);
             }

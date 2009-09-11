@@ -39,7 +39,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
@@ -50,7 +50,7 @@ public abstract class HtmlParserResultAccessor {
     public static synchronized HtmlParserResultAccessor get() {
         if (INSTANCE == null) {
             try {
-                Class.forName("org.netbeans.modules.html.editor.gsf.api.HtmlParserResult", true, HtmlParserResultAccessor.class.getClassLoader());   //NOI18N
+                Class.forName("org.netbeans.modules.html.editor.api.gsf.HtmlParserResult", true, HtmlParserResultAccessor.class.getClassLoader());   //NOI18N
                 assert INSTANCE != null;
             } catch (ClassNotFoundException e) {
                 Exceptions.printStackTrace(e);

@@ -155,7 +155,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
         for (AstElement e : elements) {
-            itemList.add(new RubyStructureItem(e, result));
+            if (!e.isHidden()) {
+                itemList.add(new RubyStructureItem(e, result));
+            }
         }
 
         return itemList;
@@ -294,25 +296,19 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                     boolean found = false;
 
-                    // commented out to fix #168745 - the field needs
-                    // to be added as a child to the class that contains it
-                    // even if there is an attribute_accessor for it.
-                    // (leaving this code here as i don't know what was the original
-                    // reason for excluding it - possibly something i can't think of now)
-                    /**
                     for (AstElement member : clz.getChildren()) {
                         if ((member.getKind() == ElementKind.ATTRIBUTE) &&
                                 member.getName().equals(fieldName)) {
                             found = true;
-
                             break;
                         }
                     }
-                    */
 
-                    if (!found) {
-                        clz.addChild(co);
+                    // hide from the navigator view if there was attr_accessor for this field
+                    if (found) {
+                        co.setHidden(true);
                     }
+                    clz.addChild(co);
                 }
 
                 names.clear();
@@ -757,7 +753,15 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 attributes.put((AstClassElement)parent, attrsInClass);
                             }
 
+                            // hide duplicates from navigator, e.g. in case when there are both
+                            // attr_reader and attr_writer for a field
+                            for (AstAttributeElement attr : attrsInClass) {
+                                if (attr.getName().equals(s.getName())) {
+                                    co.setHidden(true);
+                                }
+                            }
                             attrsInClass.add(co);
+
                         }
                         
                         if (parent != null) {
@@ -1168,8 +1172,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
             if ((nested != null) && (nested.size() > 0)) {
                 List<RubyStructureItem> children = new ArrayList<RubyStructureItem>(nested.size());
 
-                for (Element co : nested) {
-                    children.add(new RubyStructureItem((AstElement)co, result));
+                for (AstElement co : nested) {
+                    if (!co.isHidden()) {
+                        children.add(new RubyStructureItem(co, result));
+                    }
                 }
 
                 return children;

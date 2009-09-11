@@ -121,6 +121,10 @@ public class BindingGenerator implements Command {
     }
     
     public void execute() {
+        if (mPortType == null) {
+            return;
+        }
+
         //binding
         String bindingName = (String) this.mConfigurationMap.get(WSDLWizardConstants.BINDING_NAME);
         if (bindingName == null) {

@@ -229,6 +229,9 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
             if (constructorCount != 1) {
                 throw new LayerGenerationException("Must have exactly one public constructor optionally taking Project and/or Lookup", e);
             }
+            if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
+                throw new LayerGenerationException("Class must be public", e);
+            }
             return new String[] {processingEnv.getElementUtils().getBinaryName(clazz).toString(), null};
         } else {
             ExecutableElement meth = (ExecutableElement) e;
@@ -252,6 +255,9 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
                         !param.asType().equals(processingEnv.getElementUtils().getTypeElement(Lookup.class.getCanonicalName()).asType())) {
                     throw new LayerGenerationException("Method parameters may be either Lookup or Project", e);
                 }
+            }
+            if (!meth.getEnclosingElement().getModifiers().contains(Modifier.PUBLIC)) {
+                throw new LayerGenerationException("Class must be public", e);
             }
             return new String[] {
                 processingEnv.getElementUtils().getBinaryName((TypeElement) meth.getEnclosingElement()).toString(),

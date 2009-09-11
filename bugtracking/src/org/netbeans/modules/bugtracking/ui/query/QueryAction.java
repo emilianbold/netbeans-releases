@@ -78,10 +78,10 @@ public class QueryAction extends SystemAction {
     }
 
     public static void openQuery(Query query) {
-        Repository repository = BugtrackingOwnerSupport.getInstance()
-                                .getRepository(BugtrackingOwnerSupport.ContextType
-                                               .SELECTED_FILE_AND_ALL_PROJECTS) ;
-        openQuery(query, repository);
+//        Repository repository = BugtrackingOwnerSupport.getInstance()
+//                                .getRepository(BugtrackingOwnerSupport.ContextType
+//                                               .SELECTED_FILE_AND_ALL_PROJECTS) ;
+        openQuery(query, null);
     }
 
     public static void openQuery(final Query query, final Repository repositoryToSelect) {

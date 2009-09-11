@@ -95,7 +95,7 @@ public class JsPretty {
     private final int indentSize;
     private final int continuationIndentSize;
     private final int tabSize;
-    
+
     public JsPretty(JsParseResult info, BaseDocument document, int begin, int end, int indentSize, int continuationIndentSize) {
         this.info = info;
         this.doc = document;
@@ -242,8 +242,14 @@ public class JsPretty {
                         positionedTs.movePrevious();
                         org.netbeans.api.lexer.Token<? extends JsTokenId> previous = LexUtilities.findPrevious(positionedTs, 
                                 Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
-                        if (previous.id() != JsTokenId.EOL) {
-                            addDiff(child.getSourceStart(), child.getSourceStart(), "\n" + getIndent(), "visitObjectLit");
+                        int start = child.getSourceStart();
+                        if (previous.id() == JsTokenId.STRING_BEGIN && start > 0) {
+                            start --;
+                            previous = LexUtilities.findPrevious(positionedTs,
+                                Arrays.asList(JsTokenId.STRING_BEGIN, JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                        }
+                        if (previous != null && previous.id() != JsTokenId.EOL) {
+                            addDiff(start, start, "\n" + getIndent(), "visitObjectLit");
                         }
                     }
                 }
@@ -534,6 +540,57 @@ public class JsPretty {
                 }
                 return;
             }
+            if (token.id() == JsTokenId.SEMI) {
+                Node parent = node.getParentNode();
+                // don't create new line after ; when it's in a LOOP
+                if (parent != null && parent.getType() != Token.LOOP) {
+                    TokenSequence<? extends JsTokenId> positionedTs = LexUtilities.getPositionedSequence(doc, tokenOffset);
+                    positionedTs.moveNext();
+                    
+                    org.netbeans.api.lexer.Token<? extends JsTokenId> next = LexUtilities.findNext(positionedTs,
+                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    int offset = positionedTs.offset();
+                    positionedTs.movePrevious();
+                    org.netbeans.api.lexer.Token<? extends JsTokenId> possibleRemove = positionedTs.token();
+                    if (possibleRemove.id() == JsTokenId.WHITESPACE) {
+                        remove(positionedTs.offset(), positionedTs.offset() + possibleRemove.length(), "handleToken SEMI");
+                    }
+                    if (next.id() != JsTokenId.EOL && next.id() != JsTokenId.RBRACE) {
+                        addDiff(offset, offset, "\n" + getIndent(), "handleToken SEMI");
+                    }
+                }
+            }
+            if (token.id() == JsTokenId.COLON) {
+                Node parent = node.getParentNode();
+                if (parent != null) {
+                    parent = parent.getParentNode();
+                    if (parent != null && (parent.getType() == Token.CASE || parent.getType() == Token.DEFAULT)) {
+                        TokenSequence<? extends JsTokenId> positionedTs = LexUtilities.getPositionedSequence(doc, tokenOffset);
+                        positionedTs.moveNext();
+
+                        org.netbeans.api.lexer.Token<? extends JsTokenId> next = LexUtilities.findNext(positionedTs,
+                                Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.LBRACE));
+                        int offset = positionedTs.offset();
+                        positionedTs.movePrevious();
+                        org.netbeans.api.lexer.Token<? extends JsTokenId> possibleRemove = positionedTs.token();
+                        if (possibleRemove.id() == JsTokenId.WHITESPACE) {
+                            remove(positionedTs.offset(), positionedTs.offset() + possibleRemove.length(), "handleToken SEMI");
+                        }
+                        if (next.id() != JsTokenId.EOL) {
+                            addDiff(offset, offset, "\n" + getIndent(), "handleToken COLON");
+                        }
+                        else {
+                            if (next.text().charAt(0) == ' ') {
+                                int length = 1;
+                                while (next.text().charAt(length) ==  ' ') {
+                                    length++;
+                                }
+                                remove(offset, offset + length, "handleToken COLON");
+                            }
+                        }
+                    }
+                }
+            }
             handleToken(token, "2 acceptToken(" + node + ")");
         } while (ts.moveNext());
     }
@@ -635,10 +692,19 @@ public class JsPretty {
             case LBRACE:
                 TokenSequence<? extends JsTokenId> positionedTs = LexUtilities.getPositionedSequence(doc, tokenOffset);
                 positionedTs.moveNext();
-                org.netbeans.api.lexer.Token<? extends JsTokenId> next = LexUtilities.findNext(positionedTs, 
+                org.netbeans.api.lexer.Token<? extends JsTokenId> next = positionedTs.token();
+                offset = positionedTs.offset();
+                
+                next = LexUtilities.findNext(positionedTs, 
                         Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
                 offset = positionedTs.offset();
                 if (next.id() != JsTokenId.EOL && next.id() != JsTokenId.RBRACE) {
+                    positionedTs.movePrevious();
+                    org.netbeans.api.lexer.Token<? extends JsTokenId> possibleToRemove = positionedTs.token();
+                    if (possibleToRemove.id() == JsTokenId.WHITESPACE) {
+                        // remove whitespace if there is at the end of line after LBRACE
+                        remove(positionedTs.offset(), positionedTs.offset() + possibleToRemove.length(), "handleToken SEMI");
+                    }
                     addDiff(offset, offset, "\n" + getIndent(), "handleToken LBRACE");
                     newLine("handleToken LBRACE");
                 }
@@ -648,20 +714,67 @@ public class JsPretty {
                 positionedTs = LexUtilities.getPositionedSequence(doc, tokenOffset);
                 offset = positionedTs.offset();
                 positionedTs.movePrevious();
-                org.netbeans.api.lexer.Token<? extends JsTokenId> previous = LexUtilities.findPrevious(positionedTs, 
+                // if the previous token is a whitespace, then should be removed
+                org.netbeans.api.lexer.Token<? extends JsTokenId> possibleToRemove = positionedTs.token();
+                org.netbeans.api.lexer.Token<? extends JsTokenId> previous = LexUtilities.findPrevious(positionedTs,
                         Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
-                if (previous.id() != JsTokenId.EOL && previous.id() != JsTokenId.LBRACE) {
+                if (previous.id() != JsTokenId.EOL && previous.id() != JsTokenId.LBRACE && previous.id() != JsTokenId.RBRACE ) {
                     boolean decreased = false;
                         addDiff(offset, offset, "\n" + getIndent(), "handleToken RBRACE");
                         newLine("handleToken RBRACE");
                     if (decreased) {
                         increaseIndent("handleToken RBRACE");
                     }
+                    // remove whitespace before RBRACE
+                    if (possibleToRemove.id() == JsTokenId.WHITESPACE) {
+                        remove(offset - possibleToRemove.length(), offset , "handleToken RBRACE");
+                    }
                 }
+
+                // add new line after
+                positionedTs = LexUtilities.getPositionedSequence(doc, tokenOffset);
+                positionedTs.moveNext();
+                // the semicolong handle here the case, when a class is declarad like var a = function() {};
+                next = LexUtilities.findNext(positionedTs,
+                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.SEMI));
+                offset = positionedTs.offset();
+                // check whether there is a whitespace at the end of line
+                positionedTs.movePrevious();
+                previous = positionedTs.token();
+
+                if (previous.id() == JsTokenId.WHITESPACE) {
+                    int whiteOffset = positionedTs.offset();
+                    int keep = 0;
+                    if (isNonFormattedAfterRBrace(next)) {
+                        keep = 1;
+                    }
+                    remove(whiteOffset, whiteOffset + previous.length() - keep, "handleToken RBRACE");
+                }
+
+                if (next.id() != JsTokenId.EOL && !isNonFormattedAfterRBrace(next)) {
+                    if (next.id() == JsTokenId.RBRACE) {
+                        decreaseIndent("handleToken RBRACE");
+                    }
+                    addDiff(offset, offset, "\n" + getIndent(), "handleToken RBRACE");
+                }
+                
                 break;
         }
     }
-     
+
+    // it would be better to have special tokens for them
+    private final String NON_FORMATTED_KEYWORD_AFTER_RBRACE = "catch finally"; // NOI18N
+
+    private boolean isNonFormattedAfterRBrace(final org.netbeans.api.lexer.Token<? extends JsTokenId> token) {
+        String text = token.text().toString();
+        final JsTokenId id = token.id();
+        return id == JsTokenId.ELSE || id == JsTokenId.RPAREN || id == JsTokenId.WHILE
+                || id == JsTokenId.NONUNARY_OP || id == JsTokenId.LPAREN
+                || id == JsTokenId.DOT || id == JsTokenId.COLON || id == JsTokenId.RBRACKET
+                || (id == JsTokenId.ANY_KEYWORD && NON_FORMATTED_KEYWORD_AFTER_RBRACE.contains(text))
+                || (id == JsTokenId.ANY_OPERATOR && ",".equals(text));
+    }
+
     private boolean isWithoutBlock(Node node) {
         boolean result = false;
         if (node.getType() == Token.BLOCK) {
@@ -765,6 +878,10 @@ public class JsPretty {
         if (end < doc.getLength()) {
             diffs.add(new Diff(start, end, text));
         }
+    }
+
+    private void remove(int start, int end, String caller) {
+        diffs.add(new Diff(start, end, ""));
     }
 
     ArrayList<Diff> getReverseDiffs() {

@@ -45,9 +45,9 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 
 /**
  * @author Alexey Vladykin
@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescr
 public interface StackDataStorage {//extends StackSupport {
 
     public static final String STACK_DATA_STORAGE_TYPE_ID = "stack"; //NOI18N
+    public static final DataStorageType STACK_DATA_STORAGE_TYPE = DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID);
     public static final String STACK_METADATA_VIEW_NAME = "DtraceStack"; //NOI18N
     public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
             FunctionMetric.CpuTimeExclusiveMetric, FunctionMetric.CpuTimeInclusiveMetric);
@@ -67,23 +68,17 @@ public interface StackDataStorage {//extends StackSupport {
      * @param sampleDuration  number of nanoseconds the program spent in this stack
      * @return
      */
-    int putStack(List<CharSequence> stack, long sampleDuration);
+    long putStack(List<CharSequence> stack, long sampleDuration);
 
-    List<FunctionCall> getCallStack(int stackId);
+    List<FunctionCall> getCallStack(long stackId);
 
     List<FunctionMetric> getMetricsList();
 
-    List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate);
+    List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
 
-    List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate);
+    List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
 
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
-
-    /**
-     * Returns stack trace on the base of the query
-
-     */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
 }

@@ -43,7 +43,6 @@ package org.netbeans.test.ide;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -99,8 +98,7 @@ public class MemoryValidationTest extends IDEValidation {
 //        conf = conf.addTest("testWindowSystem");
 
         conf = conf.addTest("testGCDocuments");
-
-//        conf = conf.addTest("testGCProjects");
+        conf = conf.addTest("testGCProjects");
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
         return NbModuleSuite.create(conf);

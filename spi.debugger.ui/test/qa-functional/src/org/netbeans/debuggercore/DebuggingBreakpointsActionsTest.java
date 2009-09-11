@@ -45,20 +45,22 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author Filip Zamboj
  */
-public class DebuggingBreakpointsActionsTest extends JellyTestCase{
+public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
+
+    private static String[] tests = new String[]{
+        "testToggleBreakpoints",
+        "testRemoveBreakpoint"
+    };
 
      public DebuggingBreakpointsActionsTest(String name) {
         super(name);
@@ -69,31 +71,17 @@ public class DebuggingBreakpointsActionsTest extends JellyTestCase{
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(DebuggingBreakpointsActionsTest.class).addTest(
-            "testToggleBreakpoints",
-            "testRemoveBreakpoint"
-            ).enableModules(".*").clusters(".*"));
+        return createModuleTest(DebuggingBreakpointsActionsTest.class, tests);
     }
 
     /** setUp method  */
     public void setUp() throws IOException {
-
-
-
-        openDataProjects(Utilities.testProjectName);
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");
     }
 
-    public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        Utilities.endAllSessions();
-        Utilities.deleteAllBreakpoints();
-    }
-
     public void testToggleBreakpoints() throws Throwable {
-        try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+        try {            
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new Action(null, Utilities.setMainProjectAction) {}.perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
@@ -113,8 +101,7 @@ public class DebuggingBreakpointsActionsTest extends JellyTestCase{
 
 
     public void testRemoveBreakpoint() throws Throwable {
-        try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+        try {           
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));

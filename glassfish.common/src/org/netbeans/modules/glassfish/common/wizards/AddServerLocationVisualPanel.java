@@ -404,7 +404,7 @@ private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             retriever = new Retriever(new File(hk2HomeTextField.getText()), 
                     wizardIterator.getIndirect(), V3_DOWNLOAD_PREFIX,
                     wizardIterator.getDirect(),
-                    this, "glassfishv3"); // NOI18N
+                    this, "glassfish"); // NOI18N
             new Thread(retriever).start();
             setDownloadState(DownloadState.DOWNLOADING);
         } else {

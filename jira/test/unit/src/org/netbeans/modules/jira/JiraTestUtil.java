@@ -82,9 +82,9 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 public class JiraTestUtil {
 
     public static final String TEST_PROJECT = "TESTPROJECT";
-    public static final String REPO_PASSWD  = "dilino";
-    public static final String REPO_URL     = "http://localhost:8888";
-    public static final String REPO_USER    = "tomas";
+    public static final String REPO_PASSWD  = "unittest";
+    public static final String REPO_URL     = "http://kenai-test.czech.sun.com:8090";
+    public static final String REPO_USER    = "unittest";
 
     public static NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     private static JiraClient client;
@@ -291,7 +291,7 @@ public class JiraTestUtil {
 
     public static JiraRepository getRepository() {
         if(repository == null) {
-            repository = new JiraRepository("jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
+            repository = new JiraRepository("jira", "jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
         }
         return repository;
     }
