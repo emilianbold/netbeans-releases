@@ -170,9 +170,9 @@ final class LocalOperationFactory extends FileOperationFactory {
                 }
 
                 if (source.isFolder()) {
-                    // XXX deep copy should be performed
-                    FileObject[] children = source.getChildren();
-                    for (FileObject child : children) {
+                    Enumeration<? extends FileObject> children = source.getChildren(true);
+                    while (children.hasMoreElements()) {
+                        FileObject child = children.nextElement();
                         final File childTarget = getTarget(child, false);
                         if (childTarget != null
                                 && !doCopy(child, childTarget)) {
@@ -184,11 +184,11 @@ final class LocalOperationFactory extends FileOperationFactory {
                         return false;
                     }
                 }
-                // delete the old directory
+                // delete the old file/directory
                 File parent = target.getParentFile();
                 if (parent != null) {
-                    File newTarget = new File(parent, oldName);
-                    return doDelete(newTarget);
+                    File oldTarget = new File(parent, oldName);
+                    return doDelete(oldTarget);
                 }
                 return true;
             }
@@ -292,7 +292,7 @@ final class LocalOperationFactory extends FileOperationFactory {
 
             return !target.exists();
         }
-        return false;
+        return true;
     }
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {
