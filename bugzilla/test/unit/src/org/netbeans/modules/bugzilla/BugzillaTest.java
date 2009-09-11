@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
@@ -60,7 +59,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskAttachmentHandler;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
@@ -68,15 +67,12 @@ import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
@@ -151,6 +147,8 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
 
             // read comments
             readComment(data, brc, repository, comment);
+
+            changeProduct(data, brc, repository);
 
             // resolve
             closeIssue(data, brc, repository);
@@ -250,6 +248,56 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
 
         TaskAttribute attrModification2 = data.getRoot().getMappedAttribute(TaskAttribute.DATE_MODIFICATION);
         assertNotSame(attrModification1, attrModification2);
+
+    }
+
+    private void changeProduct(TaskData data, BugzillaRepositoryConnector brc, TaskRepository repository) throws CoreException {
+        data = brc.getTaskData(repository, data.getTaskId(), nullProgressMonitor);
+
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.PRODUCT);
+
+        BugzillaClient client = brc.getClientManager().getClient(repository, NULL_PROGRESS_MONITOR);
+        
+        List<String> products = client.getRepositoryConfiguration().getProducts();
+        String newProject = null;
+        for (String product : products) {
+            if(!TEST_PROJECT.equals(product)) {
+                newProject = product;
+            }
+        }
+        assertNotNull(newProject);
+        ta.setValue(newProject);
+
+        String version = client.getRepositoryConfiguration().getVersions(newProject).get(0);
+        ta = rta.getMappedAttribute(BugzillaAttribute.VERSION.getKey());
+        ta.setValue(version);
+
+        String component = client.getRepositoryConfiguration().getComponents(newProject).get(0);
+        ta = rta.getMappedAttribute(BugzillaAttribute.COMPONENT.getKey());
+        ta.setValue(component);
+
+        String milestone = client.getRepositoryConfiguration().getTargetMilestones(newProject).get(0);
+        ta = rta.getMappedAttribute(BugzillaAttribute.TARGET_MILESTONE.getKey());
+        ta.setValue(milestone);
+
+        ta = rta.getMappedAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey());
+        if (ta != null) {
+            ta.setValue("1"); 
+        }
+
+        ta = rta.getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
+        if (ta == null) {
+            ta = BugzillaTaskDataHandler.createAttribute(rta, BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
+        }
+
+        if (ta != null) {
+            ta.setValue("1");
+        }
+
+        RepositoryResponse rr = brc.getTaskDataHandler().postTaskData(repository, data, null, new NullProgressMonitor());
+        assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
+
 
     }
 
