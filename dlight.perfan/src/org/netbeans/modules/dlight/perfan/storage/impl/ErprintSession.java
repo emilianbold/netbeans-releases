@@ -114,7 +114,7 @@ public class ErprintSession {
 
         // IZ165095: RUN FAILED on remote host (problem description is in the IZ)
         // Submit a task that will set readyness flag when experiment directory is ready
-        
+
         DLightExecutorService.submit(r, "ErprintSession: session warmup"); // NOI18N
 
         return session;
@@ -156,21 +156,24 @@ public class ErprintSession {
             }
         }
 
-        if (er_print == null || restart) {
-            stop_er_print();
-            er_print = new Erprint(npb, id);
+        try {
+            if (er_print == null || restart) {
+                stop_er_print();
+                er_print = new Erprint(npb, id);
 
-            er_print.addLock();
-            applyFilters();
-        } else {
-            try {
                 er_print.addLock();
-            } catch (IllegalStateException ex) {
-                // OK... it is termineted. so don't add lock
-                // TODO: review
+                applyFilters();
+            } else {
+                try {
+                    er_print.addLock();
+                } catch (IllegalStateException ex) {
+                    // OK... it is termineted. so don't add lock
+                    // TODO: review
+                }
             }
+        } catch (Throwable ex) {
+            // failed to start er_print ?
         }
-
         return er_print;
     }
 

@@ -69,7 +69,6 @@ import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
 
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
@@ -109,7 +108,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
             while (!rs.isLast()) {
                 rs.next();
-                if (rs.getRow() == 0){
+                if (rs.getRow() == 0) {
                     break;
                 }
 
@@ -160,11 +159,13 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 stateValues[11] = (int) (rs.getFloat(MSASQLTables.msa.LWP_MSA_LCK.getColumnName()) * 100);
                 stateValues[12] = (int) (rs.getFloat(MSASQLTables.msa.LWP_MSA_SLP.getColumnName()) * 100);
 
-                ThreadState threadState = new ThreadStateImpl(ts / 10, sample, stateValues);
+                ThreadState threadState = new ThreadStateImpl(ts, sample, stateValues);
                 states.add(threadState);
             }
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("SQLException: " + ex.getMessage()); // NOI18N
+            }
         }
 
         ThreadMapData tmd = new ThreadMapData() {
@@ -214,7 +215,9 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 stmt = sqlStorage.prepareStatement(sqlQuery.toString());
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("SQLException: " + ex.getMessage()); // NOI18N
+                }
             }
             ti.clear();
         }
@@ -242,7 +245,9 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             lwpInfo = new ThreadInfoImpl(lwpID, "Thread " + lwpID, startts); // NOI18N
 
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("SQLException: " + ex.getMessage()); // NOI18N
+            }
         }
         return lwpInfo;
     }
