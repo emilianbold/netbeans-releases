@@ -51,7 +51,9 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.project.WebAppMetadataHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -198,12 +200,19 @@ public final class SetExecutionUriAction extends NodeAction {
         }
         
         try {
-            List<ServletInfo> servlets =
-                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
-            for (ServletInfo si : servlets) {
-                if (className.equals(si.getServletClass())) {
-                    return true;
+            MetadataModel<WebAppMetadata> metadataModel = webModule
+                    .getMetadataModel();
+            if (metadataModel.isReady()) {
+                List<ServletInfo> servlets = WebAppMetadataHelper
+                        .getServlets(metadataModel);
+                for (ServletInfo si : servlets) {
+                    if (className.equals(si.getServletClass())) {
+                        return true;
+                    }
                 }
+            }
+            else {
+                return false;
             }
         } catch (java.io.IOException ex) {
             ex.printStackTrace();
