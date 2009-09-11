@@ -2065,11 +2065,11 @@ public final class WebProject implements Project, AntProjectListener {
 
     private class EnterpriseBeansListener implements PropertyChangeListener{
         public void propertyChange(final PropertyChangeEvent evt) {
-            SwingUtilities.invokeLater(new Runnable() {
+            new Thread(new Runnable() {
                 public void run() {
                     WebProjectUtilities.upgradeJ2EEProfile(WebProject.this);
                 }
-            });
+            }).start();
         }
     }
 }

@@ -41,63 +41,67 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
-
-import java.util.logging.Logger;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-/** Class that implements browsing.
- *  It starts new process whenever it is asked to display URL.
+/**
+ * @author Petr Jiricka
  */
-public class SimpleExtBrowserImpl extends ExtBrowserImpl {
+public class SafariBrowser extends ExtWebBrowser {
 
-    public SimpleExtBrowserImpl(ExtWebBrowser extBrowserFactory) {
-        super();
-        this.extBrowserFactory = extBrowserFactory;
-        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "SimpleExtBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
-        }
+    private static final long serialVersionUID = -1L;
+
+    /** Creates new ExtWebBrowser */
+    public SafariBrowser() {
     }
 
-    /** Given URL is displayed. 
-      *  Configured process is started to satisfy this request. 
-      */
-    public void setURL(URL url) {
-        if (url == null) {
-            return;
+    /** Determines whether the browser should be visible or not
+     *  @return true when OS is Windows.
+     *          false in all other cases.
+     */
+    public static Boolean isHidden () {
+        return (Utilities.isMac()) ? Boolean.FALSE : Boolean.TRUE;
+    }
+    
+    /** Getter for browser name
+     *  @return name of browser
+     */
+    public String getName () {
+        if (name == null) {
+            this.name = NbBundle.getMessage(SafariBrowser.class, "CTL_SafariBrowserName");
+        }
+        return name;
+    }
+    
+    /**
+     * Returns a new instance of BrowserImpl implementation.
+     * @throws UnsupportedOperationException when method is called and OS is not Windows.
+     * @return browserImpl implementation of browser.
+     */
+    public HtmlBrowser.Impl createHtmlBrowserImpl() {
+        ExtBrowserImpl impl = null;
+
+        if (Utilities.isMac()) {
+            impl = new MacBrowserImpl(this);
+        } else {
+            throw new UnsupportedOperationException (NbBundle.getMessage(SafariBrowser.class, "MSG_CannotUseBrowser"));
         }
         
-        try {
-            url = URLUtil.createExternalURL(url, false);
-            URI uri = url.toURI();
-            
-            NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
-            if (np != null) {
-                np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
-            }
-            this.url = url;
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            logInfo(ex);
-            org.openide.DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(SimpleExtBrowserImpl.class, "EXC_Invalid_Processor"), 
-                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE
-                )
-            );
-        }
+        return impl;
+    }
+    
+    /** Default command for browser execution.
+     * Can be overriden to return browser that suits to platform and settings.
+     *
+     * @return process descriptor that allows to start browser.
+     */
+    protected NbProcessDescriptor defaultBrowserExecutable () {
+
+        return new NbProcessDescriptor ("/usr/bin/open", // NOI18N
+                "-a safari {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}",
+                ExtWebBrowser.UnixBrowserFormat.getHint()); // NOI18N
     }
 
-    private static void logInfo(Exception ex) {
-        Logger logger = Logger.getLogger(SimpleExtBrowserImpl.class.getName());
-        logger.log(Level.INFO, null, ex);
-    }
 }

@@ -1,11 +1,11 @@
 Name: Java CUP
 Version: 11
 Description: LALR Parser Generator in Java
-License: GPL - compatible
+License: Based on Standard ML of New Jersey
 Origin: http://www2.cs.tum.edu/projects/cup/
 Files: java-cup-11a.jar
 Source: http://www2.cs.tum.edu/projects/cup/
-OSR: 8446
+OSR: 11673
 
 CUP Parser Generator Copyright Notice, License, and Disclaimer
 Copyright 1996-1999 by Scott Hudson, Frank Flannery, C. Scott Ananian

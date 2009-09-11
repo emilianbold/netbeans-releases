@@ -41,63 +41,45 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
-
-import java.util.logging.Logger;
-import org.openide.NotifyDescriptor;
+import java.awt.Image;
+import java.beans.*;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.execution.NbProcessDescriptor;
 
-/** Class that implements browsing.
- *  It starts new process whenever it is asked to display URL.
- */
-public class SimpleExtBrowserImpl extends ExtBrowserImpl {
+public class SafariBrowserBeanInfo extends SimpleBeanInfo {
 
-    public SimpleExtBrowserImpl(ExtWebBrowser extBrowserFactory) {
-        super();
-        this.extBrowserFactory = extBrowserFactory;
-        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "SimpleExtBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
-        }
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor descr = new BeanDescriptor (SafariBrowser.class);
+        descr.setDisplayName (NbBundle.getMessage (SafariBrowserBeanInfo.class, "CTL_SafariBrowserName"));
+        descr.setShortDescription (NbBundle.getMessage (SafariBrowserBeanInfo.class, "HINT_SafariBrowserName"));
+
+        descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N //TODO
+	return descr;
     }
 
-    /** Given URL is displayed. 
-      *  Configured process is started to satisfy this request. 
-      */
-    public void setURL(URL url) {
-        if (url == null) {
-            return;
-        }
-        
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        return new PropertyDescriptor [0];
+    }
+
+    /**
+    * Returns the IceBrowserSettings' icon. 
+    */
+    public Image getIcon (int type) {
+        return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
+    }
+    
+    /**
+     * Claim there are no other relevant BeanInfo objects.  You
+     * may override this if you want to (for example) return a
+     * BeanInfo for a base class.
+     */
+    public BeanInfo[] getAdditionalBeanInfo () {
         try {
-            url = URLUtil.createExternalURL(url, false);
-            URI uri = url.toURI();
-            
-            NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
-            if (np != null) {
-                np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
-            }
-            this.url = url;
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            logInfo(ex);
-            org.openide.DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(SimpleExtBrowserImpl.class, "EXC_Invalid_Processor"), 
-                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE
-                )
-            );
+            return new BeanInfo[] { Introspector.getBeanInfo (ExtWebBrowser.class) };
+        } catch (IntrospectionException ie) {
+            Exceptions.printStackTrace(ie);
+            return null;
         }
     }
-
-    private static void logInfo(Exception ex) {
-        Logger logger = Logger.getLogger(SimpleExtBrowserImpl.class.getName());
-        logger.log(Level.INFO, null, ex);
-    }
+    
 }

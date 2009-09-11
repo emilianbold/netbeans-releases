@@ -212,7 +212,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //to scan again, just use the files from index
 //        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
         final Collection<URL> urls = new ArrayList<URL>();
-        for (FileObject file : getJsfSupport().getBinariesIndex().getAllFaceletsLibraryDescriptors()) {
+        for (FileObject file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
             urls.add(URLMapper.findURL(file, URLMapper.EXTERNAL));
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {

@@ -41,8 +41,9 @@ package org.netbeans.modules.web.jsf.editor.index;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -50,50 +51,56 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
+ * Generic index mining data from both embedded and binary indexes
  *
  * @author marekfukala
  */
 public class JsfIndex {
 
-    private final QuerySupport index;
+    public static JsfIndex get(WebModule wm) throws IOException {
+        FileObject[] sourceRoots = (ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.SOURCE).getRoots());
+        FileObject[] binaryRoots = (ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE).getRoots());
+        QuerySupport embeddingQS = QuerySupport.forRoots(JsfIndexer.Factory.NAME, JsfIndexer.Factory.VERSION, sourceRoots);
+        QuerySupport binaryQS = QuerySupport.forRoots(JsfBinaryIndexer.INDEXER_NAME, JsfBinaryIndexer.INDEX_VERSION, binaryRoots);
+        return new JsfIndex(embeddingQS, binaryQS);
+    }
+    
+    private final QuerySupport embeddingIndex;
+    private final QuerySupport binaryIndex;
 
     /** Creates a new instance of JsIndex */
-    private JsfIndex(QuerySupport index) {
-        this.index = index;
+    private JsfIndex(QuerySupport embeddingIndex, QuerySupport binaryIndex) {
+        this.embeddingIndex = embeddingIndex;
+        this.binaryIndex = binaryIndex;
     }
 
-    private static JsfIndex get(FileObject[] roots) {
-        try {
-            return new JsfIndex(QuerySupport.forRoots(JsfIndexer.Factory.NAME,
-                    JsfIndexer.Factory.VERSION,
-                    roots));
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            return new JsfIndex(null);
-        }
-
+    private QuerySupport getEmbeddingIndex() {
+        return embeddingIndex;
     }
 
-    public static JsfIndex get(WebModule wm) {
-        return get(wm.getDocumentBase());
+    private QuerySupport getBinaryIndex() {
+        return binaryIndex;
     }
 
-    public static JsfIndex get(HtmlParserResult result) {
-        FileObject file = result.getSnapshot().getSource().getFileObject();
-        return get(file);
-
-    }
-    public static JsfIndex get(FileObject file) {
-        return get(ClassPath.getClassPath(file, ClassPath.SOURCE).getRoots());
-    }
+    // --------------- BOTH EMBEDDING && BINARY INDEXES ------------------
 
     public Collection<String> getAllCompositeLibraryNames() {
+        //aggregate data from both indexes
+        Collection<String> col = new ArrayList<String>();
+        col.addAll(getAllCompositeLibraryNames(getBinaryIndex()));
+        col.addAll(getAllCompositeLibraryNames(getEmbeddingIndex()));
+        return col;
+    }
+
+    private Collection<String> getAllCompositeLibraryNames(QuerySupport index) {
         Collection<String> libNames = new ArrayList<String>();
         try {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, "", QuerySupport.Kind.PREFIX, CompositeComponentModel.LIBRARY_NAME_KEY);
             for (IndexResult result : results) {
                 String libraryName = result.getValue(CompositeComponentModel.LIBRARY_NAME_KEY);
-                libNames.add(libraryName);
+                if(libraryName != null) {
+                    libNames.add(libraryName);
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -102,6 +109,14 @@ public class JsfIndex {
     }
 
     public Collection<String> getCompositeLibraryComponents(String libraryName) {
+        //aggregate data from both indexes
+        Collection<String> col = new ArrayList<String>();
+        col.addAll(getCompositeLibraryComponents(getBinaryIndex(), libraryName));
+        col.addAll(getCompositeLibraryComponents(getEmbeddingIndex(), libraryName));
+        return col;
+    }
+
+    private Collection<String> getCompositeLibraryComponents(QuerySupport index, String libraryName) {
         Collection<String> components = new ArrayList<String>();
         try {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT, CompositeComponentModel.LIBRARY_NAME_KEY);
@@ -114,10 +129,16 @@ public class JsfIndex {
         }
         return components;
     }
-    
+
     public CompositeComponentModel getCompositeComponentModel(String libraryName, String componentName) {
+        //try both indexes, the embedding one first
+        CompositeComponentModel model = getCompositeComponentModel(getEmbeddingIndex(), libraryName, componentName);
+        return model != null ? model : getCompositeComponentModel(getBinaryIndex(), libraryName, componentName);
+    }
+
+    private CompositeComponentModel getCompositeComponentModel(QuerySupport index, String libraryName, String componentName) {
         try {
-            Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT, 
+            Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT,
                     CompositeComponentModel.LIBRARY_NAME_KEY,
                     CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
                     CompositeComponentModel.HAS_IMPLEMENTATION_KEY);
@@ -125,8 +146,8 @@ public class JsfIndex {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
                 String fileName = file.getName();
                 //the filename w/o extenstion is the component name
-                if(fileName.equals(componentName)) {
-                    return (CompositeComponentModel)JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).loadFromIndex(result);
+                if (fileName.equals(componentName)) {
+                    return (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).loadFromIndex(result);
                 }
 
             }
@@ -135,5 +156,55 @@ public class JsfIndex {
         }
         return null;
     }
+    
+
+    //--------------- BINARY INDEX ---------------------
+     public Map<String, FileObject> getAllTldLibraries() {
+        Map<String, FileObject> map = new HashMap<String, FileObject>();
+        try {
+            Collection<? extends IndexResult> results = getBinaryIndex().query(JsfBinaryIndexer.LIB_NAMESPACE_KEY, "", QuerySupport.Kind.PREFIX, JsfBinaryIndexer.LIB_NAMESPACE_KEY);
+
+            for (IndexResult result : results) {
+                FileObject file = result.getFile(); //expensive? use result.getRelativePath?
+                map.put(result.getValue(JsfBinaryIndexer.LIB_NAMESPACE_KEY), file);
+
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return map;
+    }
+
+    public FileObject getTldFile(String namespace) {
+        try {
+            Collection<? extends IndexResult> results =
+                    getBinaryIndex().query(JsfBinaryIndexer.LIB_NAMESPACE_KEY, namespace, QuerySupport.Kind.EXACT, JsfBinaryIndexer.LIB_NAMESPACE_KEY);
+            if (results.size() == 0) {
+                return null;
+            }
+            IndexResult result = results.iterator().next(); //get first occurance
+            return result.getFile();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    public Collection<FileObject> getAllFaceletsLibraryDescriptors() {
+        Collection<FileObject> files = new ArrayList<FileObject>();
+        try {
+            Collection<? extends IndexResult> results = getBinaryIndex().query(JsfBinaryIndexer.LIB_FACELETS_KEY, "true", QuerySupport.Kind.EXACT, JsfBinaryIndexer.LIB_FACELETS_KEY);
+
+            for (IndexResult result : results) {
+                FileObject file = result.getFile();
+                files.add(file);
+
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return files;
+    }
+
 
 }
