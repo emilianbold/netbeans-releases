@@ -46,7 +46,9 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -60,6 +62,7 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
@@ -151,17 +154,45 @@ public final class EventSupport {
         SourceAccessor.getINSTANCE().setFlags(this.source, flags);
         TaskProcessor.resetState (this.source,invalidate,true);
 
-        if (!editorRegistryListener.k24) {
+        if (!editorRegistryListener.k24.get()) {
             resetTask.schedule(TaskProcessor.reparseDelay);
         }
     }
-    
+
+    /**
+     * Expert: Called by {@link IndexingManager#refreshIndexAndWait} to prevent
+     * AWT deadlock. Never call this method in other cases.
+     */
+    public static void releaseCompletionCondition() {
+        assert SwingUtilities.isEventDispatchThread();
+        assert validRCCCaller();
+        final boolean wask24 = editorRegistryListener.k24.getAndSet(false);
+        if (wask24) {
+            TaskProcessor.resetStateImpl(null);
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Private implementation">
+
+
+    private static boolean validRCCCaller() {
+        final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        for (int i = 0; i<stackTrace.length; i++) {
+            if (EventSupport.class.getName().equals(stackTrace[i].getClassName()) &&
+                "releaseCompletionCondition".equals(stackTrace[i].getMethodName())) {   //NOI18N
+                return IndexingManager.class.getName().equals(stackTrace[i+1].getClassName()) &&
+                       "refreshIndexAndWait".equals(stackTrace[i+1].getMethodName());  //NOI18N
+            }
+        }
+        return false;
+    }
+
     /**
      * Not synchronized, only sets the atomic state and clears the listeners
      *
      */
     private void resetStateImpl() {
-        if (!editorRegistryListener.k24) {
+        if (!editorRegistryListener.k24.get()) {
             //todo: threading flags cleaned in the TaskProcessor.resetStateImpl
             final boolean reschedule = SourceAccessor.getINSTANCE().testFlag (source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
             if (reschedule) {
@@ -169,6 +200,7 @@ public final class EventSupport {
                 SourceAccessor.getINSTANCE ().getCache (source).sourceModified ();
                 //S ystem.out.println("reschedule end");
             }
+            assert this.source != null;
             TaskProcessor.resetStateImpl (this.source);
         }
     }
@@ -299,7 +331,7 @@ public final class EventSupport {
     //Public because of test
     public static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
 
-        private static volatile boolean k24;
+        private static final AtomicBoolean k24 = new AtomicBoolean();
                         
         private Reference<JTextComponent> lastEditorRef;
         
@@ -319,17 +351,7 @@ public final class EventSupport {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
                     lastEditor.removePropertyChangeListener(this);
-                    final Document document = lastEditor.getDocument();
-                    Source source = null;
-                    if (document != null) {
-                        String mimeType = DocumentUtilities.getMimeType (document);
-                        if (mimeType != null)
-                            source = Source.create (document);
-                    }
-                    if (source != null) {
-                        EventSupport support = SourceAccessor.getINSTANCE ().getEventSupport (source);
-                        k24 = false;
-                    }
+                    k24.set(false);
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
                 if (editor != null) {
@@ -377,10 +399,10 @@ public final class EventSupport {
                     Object rawValue = evt.getNewValue();
                     if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
                         TaskProcessor.resetState(source, false, true);
-                        k24 = true;
+                        k24.set(true);
                     } else {
                         final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                        k24 = false;
+                        k24.set(false);
                         support.resetTask.schedule(0);
                     }
                 }
@@ -388,4 +410,5 @@ public final class EventSupport {
         }        
     }
 
+    // </editor-fold>
 }
