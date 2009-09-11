@@ -126,7 +126,7 @@ import org.w3c.dom.Text;
     sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public class PhpProject implements Project, AntProjectListener {
+public class PhpProject implements Project {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
@@ -152,6 +152,7 @@ public class PhpProject implements Project, AntProjectListener {
     volatile FileObject seleniumDirectory;
     // @GuardedBy(ProjectManager.mutex())
     volatile String name;
+    private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
 
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
@@ -180,7 +181,7 @@ public class PhpProject implements Project, AntProjectListener {
         lookup = createLookup(configuration);
 
         addWeakPropertyEvaluatorListener(ignoredFoldersListener);
-        helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, helper));
+        helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, phpAntProjectListener, helper));
     }
 
     public Lookup getLookup() {
@@ -582,13 +583,6 @@ public class PhpProject implements Project, AntProjectListener {
         return refHelper;
     }
 
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        name = null;
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
-    }
-
     private final class Info implements ProjectInformation {
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -780,6 +774,16 @@ public class PhpProject implements Project, AntProjectListener {
         public void resultChanged(LookupEvent ev) {
             LOGGER.fine("frameworks change, frameworks back to null");
             frameworks = null;
+        }
+    }
+
+    private final class PhpAntProjectListener implements AntProjectListener {
+
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            name = null;
+        }
+
+        public void propertiesChanged(AntProjectEvent ev) {
         }
     }
 }
