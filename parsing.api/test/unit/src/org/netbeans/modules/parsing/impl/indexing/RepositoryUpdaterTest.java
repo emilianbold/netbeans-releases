@@ -64,6 +64,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -861,7 +862,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final Field k24Field = erlc.getDeclaredField("k24");   //NOI18N
         assertNotNull (k24Field);
         k24Field.setAccessible(true);
-
+        final AtomicBoolean cond = (AtomicBoolean) k24Field.get(null);
+        
         final Source source = Source.create(f3);
         assertNotNull(source);
 
@@ -869,7 +871,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             public void run() {
                 try {
                     TaskProcessor.resetState(source, false, true);
-                    k24Field.setBoolean(null, true);
+                    cond.set(true);
                 } catch (/*ReflectiveOperation*/Exception e) {
                     Exceptions.printStackTrace(e);
                 }
@@ -884,12 +886,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         action = new Runnable() {
             public void run() {
-//Uncomment this to test the deadlock
-//                try {
-//                    IndexingManager.getDefault().refreshIndexAndWait(srcRootWithFiles1.getURL(), null);
-//                } catch (FileStateInvalidException e) {
-//                    Exceptions.printStackTrace(e);
-//                }
+                try {
+                    IndexingManager.getDefault().refreshIndexAndWait(srcRootWithFiles1.getURL(), null);
+                } catch (FileStateInvalidException e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -903,7 +904,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         action = new Runnable() {
             public void run() {
                 try {
-                    k24Field.setBoolean(null, false);
+                    cond.set(false);
                     TaskProcessor.resetStateImpl(source);
                 } catch (/*ReflectiveOperation*/Exception e) {
                     Exceptions.printStackTrace(e);
