@@ -176,6 +176,9 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     private void annotateCurrentSourceFiles() {
+        if (activeAnnotations == null) {
+            return;
+        }
         Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
         if (nodes == null) {
             return;
