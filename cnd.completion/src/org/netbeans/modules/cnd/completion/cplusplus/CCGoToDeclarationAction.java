@@ -67,21 +67,21 @@ import org.openide.util.NbBundle;
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-c"
+        mimeType = "text/x-c" // NOI18N
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-c++"
+        mimeType = "text/x-c++" // NOI18N
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-h"
+        mimeType = "text/x-h" // NOI18N
     )
 })
 public class CCGoToDeclarationAction extends BaseAction {
