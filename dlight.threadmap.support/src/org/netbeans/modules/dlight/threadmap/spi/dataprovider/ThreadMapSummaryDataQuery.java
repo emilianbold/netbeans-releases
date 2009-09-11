@@ -38,35 +38,38 @@
  */
 package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface ThreadMapDataProvider extends DataProvider {
+public final class ThreadMapSummaryDataQuery {
+
+    private final Collection<TimeIntervalDataFilter> intervals;
+    private final boolean fullState;
 
     /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
+     * @param intervals
+     * @param fullState
      */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+    private ThreadMapSummaryDataQuery(Collection<TimeIntervalDataFilter> intervals, boolean fullState) {
+        this.intervals = intervals;
+        this.fullState = fullState;
+    }
 
     /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
+     * @return
      */
-    ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query);
+    public Collection<TimeIntervalDataFilter> getIntervals() {
+        return intervals;
+    }
 
     /**
-     * Returns stack thread dump on the base of the query passed
-     * @param query query to be used to get ThreadDump
-     * @return returns thread dump on the base of the query requested
+     * @return state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
      */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
-
+    public boolean isFullState() {
+        return fullState;
+    }
 }

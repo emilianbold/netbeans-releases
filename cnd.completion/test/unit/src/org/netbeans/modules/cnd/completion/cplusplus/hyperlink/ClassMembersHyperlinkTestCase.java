@@ -870,6 +870,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz169305.cc", 24, 15, "iz169305.cc", 3, 5);
     }
 
+    public void testIZ151583() throws Exception {
+        // IZ#151583 : nested classes should resolve containing class context
+        performTest("iz151583.cc", 15, 6, "iz151583.cc", 5, 5);
+        performTest("iz151583.cc", 14, 5, "iz151583.cc", 8, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

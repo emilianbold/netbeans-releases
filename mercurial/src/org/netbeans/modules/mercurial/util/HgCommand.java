@@ -70,7 +70,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
@@ -212,6 +211,7 @@ public class HgCommand {
     private static final String HG_MERGE_CMD = "merge"; // NOI18N
     private static final String HG_MERGE_FORCE_CMD = "-f"; // NOI18N
     private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s"; // NOI18N
+    private static final String HG_MERGE_SIMPLE_TOOL = "ui.merge=internal:merge"; //NOI18N
 
     public static final String HG_HGK_PATH_SOLARIS10 = "/usr/demo/mercurial"; // NOI18N
     private static final String HG_HGK_PATH_SOLARIS10_ENV = "PATH=/usr/bin/:/usr/sbin:/bin:"+ HG_HGK_PATH_SOLARIS10; // NOI18N
@@ -366,6 +366,10 @@ public class HgCommand {
         command.add(HG_MERGE_FORCE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+            command.add(HG_CONFIG_OPTION_CMD);
+            command.add(HG_MERGE_SIMPLE_TOOL);
+        }
         if(revStr != null)
              command.add(revStr);
         env.add(HG_MERGE_ENV);
@@ -866,6 +870,10 @@ public class HgCommand {
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
         command.additionalOptions.add(HG_FETCH_EXT_CMD);
+        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+            command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
+            command.additionalOptions.add(HG_MERGE_SIMPLE_TOOL);
+        }
         command.showSaveOption = true;
 
         List<String> retval = command.invoke();

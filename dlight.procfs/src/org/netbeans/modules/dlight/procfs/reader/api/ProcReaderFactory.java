@@ -36,62 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.dlight.procfs.reader.api;
 
-import java.io.IOException;
-import java.io.InputStream;
+import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
+import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
+import org.netbeans.modules.dlight.api.execution.AttachableTarget;
+import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public final class PStatus {
+public final class ProcReaderFactory {
 
-    public static class ThreadsInfo {
+    private ProcReaderFactory() {
+    }
 
-        public final int pr_nlwp;
-        public final int pr_nzomb;
+    public static ProcReader getReader(ExecutionEnvironment execEnv, AttachableTarget target) {
+        final ProcReaderImpl reader;
+        final int pid = target.getPID();
 
-        private ThreadsInfo() {
-            reader.seek(4);
-            pr_nlwp = reader._int();
-            reader.seek(268); // TODO
-            pr_nzomb = reader._int();
+        if (execEnv.isLocal()) {
+            reader = new LocalProcReader(pid);
+        } else {
+            reader = new RemoteProcReader(execEnv, pid);
         }
-    }
 
-    public static class PIDInfo {
+        // TODO: fixme (this is to switch endian if required... but now bad
+        // method is used)
+        reader.init(pid);
 
-        public final int pr_pid;
-
-        private PIDInfo() {
-            reader.seek(8);
-            pr_pid = reader._int();
-        }
-    }
-    private final static int s_total = 272; // x64... TODO: other platforms...
-    private final static byte[] buffer = new byte[s_total];
-    private final static DataReader reader = new DataReader(buffer);
-
-    private PStatus() {
-    }
-
-    private static synchronized void readData(InputStream inputStream) throws IOException {
-        try {
-            inputStream.read(buffer, 0, s_total);
-        } finally {
-            inputStream.close();
-        }
-    }
-
-    static synchronized PStatus get(InputStream inputStream) throws IOException {
-        readData(inputStream);
-        return new PStatus();
-    }
-
-    static synchronized ThreadsInfo getThreadsInfo(InputStream inputStream) throws IOException {
-        readData(inputStream);
-        return new ThreadsInfo();
-    }
-
-    static synchronized PIDInfo getPIDInfo(InputStream inputStream) throws IOException {
-        readData(inputStream);
-        return new PIDInfo();
+        return reader;
     }
 }
