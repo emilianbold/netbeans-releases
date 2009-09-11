@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Color;
 import java.util.List;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
@@ -50,14 +49,10 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
@@ -68,19 +63,20 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteConnectionRenderer;
+import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteUploadRenderer;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_CONFIG;
+import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_REMOTE_CONFIGURATION;
 
 /**
  * @author Tomas Mysik
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5592669886554191271L;
-    private static final String NO_CONFIG = "no-config"; // NOI18N
-    static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
-            new RemoteConfiguration.Empty(NO_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -586,71 +582,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             RunAsRemoteWeb.this.putValue(propName, value);
             RunAsRemoteWeb.this.markAsModified(label, propName, value);
             validateFields();
-        }
-    }
-
-    private static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 93621381917558630L;
-
-        public RemoteConnectionRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof RemoteConfiguration;
-            setName("ComboBox.listRenderer"); // NOI18N
-            RemoteConfiguration remoteConfig = (RemoteConfiguration) value;
-            setText(remoteConfig.getDisplayName());
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-            } else {
-                setBackground(list.getBackground());
-            }
-            setForeground(getForeground(remoteConfig, list, isSelected));
-            return this;
-        }
-
-        private Color getForeground(RemoteConfiguration remoteConfig, JList list, boolean isSelected) {
-            if (remoteConfig == NO_REMOTE_CONFIGURATION) {
-                return UIManager.getColor("nb.errorForeground"); // NOI18N
-            }
-            return isSelected ? list.getSelectionForeground() : list.getForeground();
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
-    }
-
-    private static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 86192358777523629L;
-
-        public RemoteUploadRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof UploadFiles;
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(((UploadFiles) value).getLabel());
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
         }
     }
 }
