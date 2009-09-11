@@ -301,7 +301,7 @@ public class HgCommand {
     private static final char HG_STATUS_CODE_DELETED = '!' + ' ';    // NOI18N // STATUS_VERSIONED_DELETEDLOCALLY - still tracked, hg update will recover, hg commit no effect
     private static final char HG_STATUS_CODE_NOTTRACKED = '?' + ' '; // NOI18N // STATUS_NOTVERSIONED_NEWLOCALLY - not tracked
     private static final char HG_STATUS_CODE_IGNORED = 'I' + ' ';     // NOI18N // STATUS_NOTVERSIONED_EXCLUDE - not shown by default
-    private static final char HG_STATUS_CODE_CONFLICT = 'X' + ' ';    // NOI18N // STATUS_VERSIONED_CONFLICT - TODO when Hg status supports conflict markers
+    private static final char HG_STATUS_CODE_CONFLICT = 'U' + ' ';    // NOI18N // STATUS_VERSIONED_CONFLICT - TODO when Hg status supports conflict markers
 
     private static final char HG_STATUS_CODE_ABORT = 'a' + 'b';    // NOI18N
     public static final String HG_STR_CONFLICT_EXT = ".conflict~"; // NOI18N
@@ -2659,7 +2659,45 @@ public class HgCommand {
             } finally {
                 logger.closeLog();
             }
+        } else if (HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+            try {
+                List<String> unresolved = getUnresolvedFiles(repository, dir == null ? repository : dir);
+                list.addAll(unresolved);
+            } catch (HgException ex) {
+                //
+            }
         }
+
+        return list;
+    }
+
+    /**
+     * Gets unresolved files from a previous merge
+     */
+    private static List<String> getUnresolvedFiles (File repository, File dir) throws HgException {
+        assert dir != null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_RESOLVE_CMD);
+
+        command.add("-l");                                              //NOI18N
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(dir.getAbsolutePath());
+        
+        List<String> list =  exec(command);
+        // filter out resolved files - they could be wrongly considered as removed - common R status
+        // also removes error lines
+        for (ListIterator<String> it = list.listIterator(); it.hasNext(); ) {
+            String line = it.next();
+            if (line.length() < 2 || line.charAt(0) + line.charAt(1) != HG_STATUS_CODE_CONFLICT) {
+                it.remove();
+            }
+        }
+
         return list;
     }
 

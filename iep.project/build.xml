@@ -25,7 +25,7 @@
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
-                <pathelement location="${netbeans.dest.dir}/java2/ant/lib/ant.jar"/>
+                <pathelement location="${netbeans.dest.dir}/java3/ant/lib/ant.jar"/>
                 <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>

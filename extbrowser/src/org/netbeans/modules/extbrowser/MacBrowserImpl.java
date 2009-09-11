@@ -56,13 +56,13 @@ import org.openide.execution.NbProcessDescriptor;
 /** Class that implements browsing.
  *  It starts new process whenever it is asked to display URL.
  */
-public class SimpleExtBrowserImpl extends ExtBrowserImpl {
+public class MacBrowserImpl extends ExtBrowserImpl {
 
-    public SimpleExtBrowserImpl(ExtWebBrowser extBrowserFactory) {
+    public MacBrowserImpl(ExtWebBrowser extBrowserFactory) {
         super();
         this.extBrowserFactory = extBrowserFactory;
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "SimpleExtBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
+            ExtWebBrowser.getEM().log(Level.FINE, "MacBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
         }
     }
 
@@ -89,7 +89,7 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
             logInfo(ex);
             org.openide.DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(SimpleExtBrowserImpl.class, "EXC_Invalid_Processor"), 
+                    NbBundle.getMessage(MacBrowserImpl.class, "EXC_Invalid_Processor"), 
                     NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE
                 )
             );
@@ -97,7 +97,7 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
     }
 
     private static void logInfo(Exception ex) {
-        Logger logger = Logger.getLogger(SimpleExtBrowserImpl.class.getName());
+        Logger logger = Logger.getLogger(MacBrowserImpl.class.getName());
         logger.log(Level.INFO, null, ex);
     }
 }

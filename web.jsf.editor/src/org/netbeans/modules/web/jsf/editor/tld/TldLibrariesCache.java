@@ -70,7 +70,7 @@ public class TldLibrariesCache {
     public synchronized TldLibrary getLibrary(String namespace) throws TldLibraryException {
         TldLibrary lib = LIBRARIES.get(namespace);
         if(lib == null) {
-            FileObject file = support.getBinariesIndex().getTldFile(namespace);
+            FileObject file = support.getIndex().getTldFile(namespace);
             if(file != null) {
                 lib = TldLibrary.create(file);
                 LIBRARIES.put(namespace, lib);
