@@ -234,8 +234,8 @@ public abstract class SQLDataStorage implements DataStorage {
         if (filters == null || filters.isEmpty()){
             return tableName;
         }
-        String viewName = tableName + "_DLIGHT_VIEW";
-        String dropViewQuery = new String("DROP VIEW IF EXISTS " + viewName);
+        String viewName = tableName + "_DLIGHT_VIEW"; // NOI18N
+        String dropViewQuery = new String("DROP VIEW IF EXISTS " + viewName); // NOI18N
         ResultSet rs = null;
         try {
             rs = connection.createStatement().executeQuery(dropViewQuery);
@@ -243,7 +243,7 @@ public abstract class SQLDataStorage implements DataStorage {
             logger.log(Level.SEVERE, null, ex);
         }
         StringBuilder createViewQuery = new StringBuilder("CREATE  VIEW " + viewName + " AS "); //NOI18N
-        createViewQuery.append("SELECT ");
+        createViewQuery.append("SELECT "); // NOI18N
         createViewQuery.append(new EnumStringConstructor<Column>().constructEnumString(columns,
                 new Convertor<Column>() {
 
@@ -251,16 +251,16 @@ public abstract class SQLDataStorage implements DataStorage {
                         return (item.getExpression() == null) ? item.getColumnName() : item.getExpression();
                     }
                 }));
-        createViewQuery.append(" FROM " + tableName);
+        createViewQuery.append(" FROM " + tableName); // NOI18N
         //check if we can create WHERE expression
         boolean hasWhereExpression = false;
-        StringBuilder whereBuilder = new StringBuilder(" WHERE ");
+        StringBuilder whereBuilder = new StringBuilder(" WHERE "); // NOI18N
         for (DataTableMetadataFilter filter : filters){
             Column filterColumn = filter.getFilteredColumn();
             if (columns.contains(filterColumn)){
                 Range range = filter.getNumericDataFilter().getInterval();
                 hasWhereExpression = true;
-                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn + "<=" + range.getEnd());
+                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn + "<=" + range.getEnd()); // NOI18N
             }
         }
         if (hasWhereExpression){
