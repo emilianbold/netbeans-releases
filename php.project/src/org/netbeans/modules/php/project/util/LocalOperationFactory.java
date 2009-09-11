@@ -110,6 +110,11 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
+    Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Override
     Callable<Boolean> createInitHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
@@ -233,9 +238,7 @@ final class LocalOperationFactory extends FileOperationFactory {
 
     private File getTarget(FileObject source, boolean deepCheck) {
         LOGGER.log(Level.FINE, "Getting target for {0} (project {1}, deep check: {2})", new Object[] {getPath(source), project.getName(), deepCheck});
-        FileObject sources = getSources();
         Pair<FileObject, File> cfgPair = getConfigPair();
-
         if (deepCheck) {
             if (!isEnabledAndValidConfig()) {
                 LOGGER.fine("\t-> null (invalid config)");
@@ -246,7 +249,7 @@ final class LocalOperationFactory extends FileOperationFactory {
                 return null;
             }
         }
-        if (!isSourceFileValid(sources, source)) {
+        if (!isSourceFileValid(source)) {
             LOGGER.fine("\t-> null (invalid source)");
             return null;
         }

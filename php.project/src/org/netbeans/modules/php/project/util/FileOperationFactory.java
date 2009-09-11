@@ -57,8 +57,6 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 abstract class FileOperationFactory {
-    private static final Logger LOGGER = Logger.getLogger(FileOperationFactory.class.getName());
-
     protected final PhpProject project;
 
     private final FileObject nbprojectDir;
@@ -75,42 +73,43 @@ abstract class FileOperationFactory {
         assert nbprojectDir.isFolder() && nbprojectDir.isValid() : "Not valid nbproject directory found for " + project;
     }
 
-    final Callable<Boolean> createCopyHandler(FileObject source) {
-        if (isInvalid()) {
-            LOGGER.log(Level.FINE, "No CREATE handler, File Operation Factory invalid for project {0}", project.getName());
-            return null;
-        }
-        return createCopyHandlerInternal(source);
-    }
-
-    final Callable<Boolean> createDeleteHandler(FileObject source) {
-        if (isInvalid()) {
-            LOGGER.log(Level.FINE, "No DELETE handler, File Operation Factory invalid for project {0}", project.getName());
-            return null;
-        }
-        return createDeleteHandlerInternal(source);
-    }
-
     final Callable<Boolean> createInitHandler(FileObject source) {
         if (isInvalid()) {
-            LOGGER.log(Level.FINE, "No INIT handler, File Operation Factory invalid for project {0}", project.getName());
+            getLogger().log(Level.FINE, "No INIT handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
         return createInitHandlerInternal(source);
     }
 
+    final Callable<Boolean> createCopyHandler(FileObject source) {
+        if (isInvalid()) {
+            getLogger().log(Level.FINE, "No CREATE handler, File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createCopyHandlerInternal(source);
+    }
+
     final Callable<Boolean> createRenameHandler(FileObject source, String oldName) {
         if (isInvalid()) {
-            LOGGER.log(Level.FINE, "No RENAME handler, File Operation Factory invalid for project {0}", project.getName());
+            getLogger().log(Level.FINE, "No RENAME handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
         return createRenameHandlerInternal(source, oldName);
     }
 
-    abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
-    abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
+    final Callable<Boolean> createDeleteHandler(FileObject source) {
+        if (isInvalid()) {
+            getLogger().log(Level.FINE, "No DELETE handler, File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createDeleteHandlerInternal(source);
+    }
+
+    abstract Logger getLogger();
     abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
+    abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
     abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
+    abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
 
     void reset() {
         factoryError = false;
@@ -124,7 +123,8 @@ abstract class FileOperationFactory {
         return factoryError;
     }
 
-    protected final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
+    protected final boolean isSourceFileValid(FileObject source) {
+        FileObject sourceRoot = getSources();
         return (FileUtil.isParentOf(sourceRoot, source) || source.equals(sourceRoot))
                 && !isNbProjectMetadata(source)
                 && phpVisibilityQuery.isVisible(source);

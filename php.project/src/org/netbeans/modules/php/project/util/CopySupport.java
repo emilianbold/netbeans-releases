@@ -299,13 +299,8 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         }
 
         @Override
-        Callable<Boolean> createCopyHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createCopyHandler(source), remoteFactory.createCopyHandler(source));
-        }
-
-        @Override
-        Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createDeleteHandler(source), remoteFactory.createDeleteHandler(source));
+        Logger getLogger() {
+            return LOGGER;
         }
 
         @Override
@@ -314,8 +309,18 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         }
 
         @Override
+        Callable<Boolean> createCopyHandlerInternal(FileObject source) {
+            return createHandler(localFactory.createCopyHandler(source), remoteFactory.createCopyHandler(source));
+        }
+
+        @Override
         Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName) {
             return createHandler(localFactory.createRenameHandler(source, oldName), remoteFactory.createRenameHandler(source, oldName));
+        }
+
+        @Override
+        Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
+            return createHandler(localFactory.createDeleteHandler(source), remoteFactory.createDeleteHandler(source));
         }
 
         private Callable<Boolean> createHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
@@ -420,5 +425,3 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         }
     }
 }
-
-
