@@ -36,22 +36,45 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.dlight.procfs.reader.impl;
 
-public class Timestruc {
+import java.util.concurrent.atomic.AtomicInteger;
 
-    public final int sec;
-    public final int nano;
-    public final long time;
+class DataReader {
 
-    public Timestruc(int sec, int nano) {
-        this.sec = sec;
-        this.nano = nano;
-        time = (long) (sec * 10e9 + nano);
+    private static volatile int bigendian = 0;
+    private final AtomicInteger data_offset;
+    private final ReusableByteBuffer buffer;
+    private final int buffer_offset;
+
+    DataReader(final ReusableByteBuffer buffer, final int offset) {
+        this.buffer = buffer;
+        buffer_offset = offset;
+        data_offset = new AtomicInteger(0);
     }
 
-    @Override
-    public String toString() {
-        return String.format("%d", time); // NOI18N
+    void releaseBuffer() {
+        buffer.unlock(buffer_offset);
+    }
+
+    static void switchEndian() {
+        bigendian = 1 - bigendian;
+    }
+
+    void seek(int pos) {
+        data_offset.set(buffer_offset + pos);
+    }
+
+    int _int() {
+        int b1 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
+        int b2 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
+        int b3 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
+        int b4 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
+
+        return bigendian == 0 ? (b4 << 24 | b3 << 16 | b2 << 8 | b1) : (b1 << 24 | b2 << 16 | b3 << 8 | b4);
+    }
+
+    long _time() {
+        return (long) (_int() * 1e9 + _int());
     }
 }

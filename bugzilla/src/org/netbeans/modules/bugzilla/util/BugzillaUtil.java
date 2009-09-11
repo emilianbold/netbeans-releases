@@ -157,4 +157,21 @@ public class BugzillaUtil {
         assert retval = true;
         return retval;
     }
+
+    /**
+     * Determines wheter the given {@link Repository} is the
+     * netbeans bugtracking repository or not
+     *
+     * @param repo
+     * @return true if the given repository is the netbenas bugzille, otherwise false
+     */
+    public static boolean isNbRepository(BugzillaRepository repo) {
+        // XXX dummy implementation
+        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
+        if(nbUrl == null || nbUrl.equals("")) {
+            return false;
+        }
+        String url = repo.getUrl();
+        return url.startsWith(nbUrl);
+    }
 }

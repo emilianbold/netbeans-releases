@@ -36,37 +36,11 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
+package org.netbeans.modules.dlight.threadmap.api;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+import java.util.List;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadMapDataProvider extends DataProvider {
+public interface ThreadMapSummaryData {
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapData queryData(ThreadMapDataQuery query);
-
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query);
-
-    /**
-     * Returns stack thread dump on the base of the query passed
-     * @param query query to be used to get ThreadDump
-     * @return returns thread dump on the base of the query requested
-     */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
-
+    List<ThreadSummaryData> getThreadsData();
 }

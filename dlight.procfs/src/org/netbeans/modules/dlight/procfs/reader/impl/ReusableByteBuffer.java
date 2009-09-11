@@ -36,39 +36,62 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.dlight.procfs.reader.impl;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
-class DataReader {
+final class ReusableByteBuffer {
 
-    private static volatile int bigendian = 0;
-    private final byte[] buffer;
-    private final AtomicInteger offset;
+    private final static Logger log = DLightLogger.getLogger(ReusableByteBuffer.class);
+    private final static boolean TRACE = Boolean.getBoolean("TraceReusableByteBuffer"); // NOI18N
+    public final byte[] buffer;
+    private final int size;
+    private final int count;
+    private final ConcurrentHashMap<Integer, Integer> marks;
+    private final AtomicInteger idx = new AtomicInteger(0);
 
-    DataReader(final byte[] buffer) {
-        this.buffer = buffer;
-        offset = new AtomicInteger(0);
+    public ReusableByteBuffer(int chunksize, int chunkcount) {
+        if (chunksize > 0xFFFF && chunkcount > 0xFFFF) {
+            throw new IllegalArgumentException();
+        }
+
+        this.size = chunksize;
+        this.count = chunkcount;
+        buffer = new byte[(0xFFFF & count) * (0xFFFF & size)];
+        marks = new ConcurrentHashMap<Integer, Integer>(count);
     }
 
-    static void switchEndian() {
-        bigendian = 1 - bigendian;
+    public int getAndLockOffset() {
+        while (true) {
+            if (marks.size() == count) {
+                if (TRACE) {
+                    log.info("All chuncks are locked!"); // NOI18N
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ex) {
+                }
+            }
+
+            int offset = (0xFFFF & idx.getAndIncrement() % count) * size;
+            Integer marker = marks.get(offset);
+
+            if (marker != null) {
+                continue;
+            }
+
+            if (marks.putIfAbsent(offset, offset) != null) {
+                continue;
+            }
+
+            return offset;
+        }
     }
 
-    void seek(int pos) {
-        offset.set(pos);
-    }
-
-    int _int() {
-        int b1 = 0xFF & buffer[offset.getAndIncrement()];
-        int b2 = 0xFF & buffer[offset.getAndIncrement()];
-        int b3 = 0xFF & buffer[offset.getAndIncrement()];
-        int b4 = 0xFF & buffer[offset.getAndIncrement()];
-
-        return bigendian == 0 ? (b4 << 24 | b3 << 16 | b2 << 8 | b1) : (b1 << 24 | b2 << 16 | b3 << 8 | b4);
-    }
-
-    Timestruc _time() {
-        return new Timestruc(_int(), _int());
+    public void unlock(int offset) {
+        marks.remove(offset);
     }
 }

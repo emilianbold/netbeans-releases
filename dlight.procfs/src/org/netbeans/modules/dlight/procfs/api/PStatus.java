@@ -36,37 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
+package org.netbeans.modules.dlight.procfs.api;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+public interface PStatus {
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadMapDataProvider extends DataProvider {
+    public ThreadsInfo getThreadInfo();
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+    public PIDInfo getPIDInfo();
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query);
+    public abstract class ThreadsInfo {
 
-    /**
-     * Returns stack thread dump on the base of the query passed
-     * @param query query to be used to get ThreadDump
-     * @return returns thread dump on the base of the query requested
-     */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
+        public final int pr_nlwp;
+        public final int pr_nzomb;
 
+        public ThreadsInfo(int pr_nlwp, int pr_nzomb) {
+            this.pr_nlwp = pr_nlwp;
+            this.pr_nzomb = pr_nzomb;
+        }
+    }
+
+    public abstract class PIDInfo {
+
+        public final int pr_pid;
+
+        public PIDInfo(int pr_pid) {
+            this.pr_pid = pr_pid;
+        }
+    }
 }

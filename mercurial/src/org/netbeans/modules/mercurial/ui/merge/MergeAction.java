@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.openide.util.Utilities;
-import org.openide.windows.OutputWriter;
 
 /**
  * Merge action for mercurial:

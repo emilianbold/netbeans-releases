@@ -43,51 +43,51 @@ import java.io.InputStream;
 
 public final class UsageStatistics {
 
-    private static final int s_int = 4;
-    private static final int s_timestruc_t = s_int * 2;
-    private static final int s_total = s_int * 2 + s_timestruc_t * 14;
-    private static final byte[] sharedBuffer = new byte[s_total];
-    private static final DataReader reader = new DataReader(sharedBuffer);
-    public final int pr_lwpid;
-    public final int pr_count;
-    public final Timestruc pr_tstamp;
-    public final Timestruc pr_create;
-    public final Timestruc pr_term;
-    public final Timestruc pr_rtime;
-    public final Timestruc pr_utime;
-    public final Timestruc pr_stime;
-    public final Timestruc pr_ttime;
-    public final Timestruc pr_tftime;
-    public final Timestruc pr_dftime;
-    public final Timestruc pr_kftime;
-    public final Timestruc pr_ltime;
-    public final Timestruc pr_slptime;
-    public final Timestruc pr_wtime;
-    public final Timestruc pr_stoptime;
-
-    private UsageStatistics() {
-        reader.seek(0);
-        pr_lwpid = reader._int();
-        pr_count = reader._int();
-        pr_tstamp = reader._time();
-        pr_create = reader._time();
-        pr_term = reader._time();
-        pr_rtime = reader._time();
-        pr_utime = reader._time();
-        pr_stime = reader._time();
-        pr_ttime = reader._time();
-        pr_tftime = reader._time();
-        pr_dftime = reader._time();
-        pr_kftime = reader._time();
-        pr_ltime = reader._time();
-        pr_slptime = reader._time();
-        pr_wtime = reader._time();
-        pr_stoptime = reader._time();
-    }
+//    private static final int s_int = 4;
+//    private static final int s_timestruc_t = s_int * 2;
+//    private static final int s_total = s_int * 2 + s_timestruc_t * 14;
+//    private static final byte[] sharedBuffer = new byte[s_total];
+//    private static final DataReader reader = new DataReader(sharedBuffer);
+//    public final int pr_lwpid;
+//    public final int pr_count;
+//    public final Timestruc pr_tstamp;
+//    public final Timestruc pr_create;
+//    public final Timestruc pr_term;
+//    public final Timestruc pr_rtime;
+//    public final Timestruc pr_utime;
+//    public final Timestruc pr_stime;
+//    public final Timestruc pr_ttime;
+//    public final Timestruc pr_tftime;
+//    public final Timestruc pr_dftime;
+//    public final Timestruc pr_kftime;
+//    public final Timestruc pr_ltime;
+//    public final Timestruc pr_slptime;
+//    public final Timestruc pr_wtime;
+//    public final Timestruc pr_stoptime;
+//
+//    private UsageStatistics() {
+//        reader.seek(0);
+//        pr_lwpid = reader._int();
+//        pr_count = reader._int();
+//        pr_tstamp = reader._time();
+//        pr_create = reader._time();
+//        pr_term = reader._time();
+//        pr_rtime = reader._time();
+//        pr_utime = reader._time();
+//        pr_stime = reader._time();
+//        pr_ttime = reader._time();
+//        pr_tftime = reader._time();
+//        pr_dftime = reader._time();
+//        pr_kftime = reader._time();
+//        pr_ltime = reader._time();
+//        pr_slptime = reader._time();
+//        pr_wtime = reader._time();
+//        pr_stoptime = reader._time();
+//    }
 
     static synchronized UsageStatistics get(final InputStream inputStream) throws IOException {
         try {
-            int read = inputStream.read(sharedBuffer, 0, s_total);
+//            int read = inputStream.read(sharedBuffer, 0, s_total);
         } finally {
             inputStream.close();
         }

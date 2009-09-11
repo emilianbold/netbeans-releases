@@ -36,37 +36,20 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+package org.netbeans.modules.dlight.procfs.reader.api;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadMapDataProvider extends DataProvider {
+import java.io.IOException;
+import java.util.List;
+import org.netbeans.modules.dlight.procfs.api.LWPUsage;
+import org.netbeans.modules.dlight.procfs.api.PStatus;
+import org.netbeans.modules.dlight.procfs.api.PUsage;
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+public interface ProcReader {
+    public abstract PStatus getProcessStatus() throws IOException;
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query);
+    public abstract PUsage getProcessUsage() throws IOException;
 
-    /**
-     * Returns stack thread dump on the base of the query passed
-     * @param query query to be used to get ThreadDump
-     * @return returns thread dump on the base of the query requested
-     */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
+    public abstract List<LWPUsage> getThreadsInfo() throws IOException;
 
 }

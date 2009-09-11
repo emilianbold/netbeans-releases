@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
@@ -66,10 +67,10 @@ import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDataQuery;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
 
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
@@ -109,7 +110,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
             while (!rs.isLast()) {
                 rs.next();
-                if (rs.getRow() == 0){
+                if (rs.getRow() == 0) {
                     break;
                 }
 
@@ -160,11 +161,13 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 stateValues[11] = (int) (rs.getFloat(MSASQLTables.msa.LWP_MSA_LCK.getColumnName()) * 100);
                 stateValues[12] = (int) (rs.getFloat(MSASQLTables.msa.LWP_MSA_SLP.getColumnName()) * 100);
 
-                ThreadState threadState = new ThreadStateImpl(ts / 10, sample, stateValues);
+                ThreadState threadState = new ThreadStateImpl(ts, sample, stateValues);
                 states.add(threadState);
             }
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("SQLException: " + ex.getMessage()); // NOI18N
+            }
         }
 
         ThreadMapData tmd = new ThreadMapData() {
@@ -214,7 +217,9 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 stmt = sqlStorage.prepareStatement(sqlQuery.toString());
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("SQLException: " + ex.getMessage()); // NOI18N
+                }
             }
             ti.clear();
         }
@@ -242,8 +247,14 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             lwpInfo = new ThreadInfoImpl(lwpID, "Thread " + lwpID, startts); // NOI18N
 
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("SQLException: " + ex.getMessage()); // NOI18N
+            }
         }
         return lwpInfo;
+    }
+
+    public ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }
