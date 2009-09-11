@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -407,10 +408,13 @@ public class ConnectAction extends BaseAction {
             fireConnectionStep(NbBundle.getMessage (ConnectAction.class, "ConnectionProgress_Schemas")); // NOI18N
             Vector<String> schemas = new Vector<String> ();
             try {
-                ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
-                if (rs != null) {
-                    while (rs.next()) {
-                        schemas.add(rs.getString(1).trim());
+                DatabaseMetaData dbMetaData = dbcon.getConnection().getMetaData();
+                if (dbMetaData.supportsSchemasInTableDefinitions()) {
+                    ResultSet rs = dbMetaData.getSchemas();
+                    if (rs != null) {
+                        while (rs.next()) {
+                            schemas.add(rs.getString(1).trim());
+                        }
                     }
                 }
             } catch (SQLException exc) {
