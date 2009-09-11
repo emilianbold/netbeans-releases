@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+@ProjectCustomizer.CompositeCategoryProvider.Registration(
+    projectType="org-netbeans-modules-java-j2seproject",
+    category="BuildCategory",
+    position=300,
+    categoryLabel="#LBL_Config_BuildCategory"
+)
+package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-package org.netbeans.modules.maven.format.checkstyle;
-
-import javax.swing.JComponent;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-
-/**
- *
- * @author mkleint
- */
-@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", category="Formatting", position=100)
-public class CheckstyleCustomizerPanel implements ProjectCustomizer.CompositeCategoryProvider {
-
-    public ProjectCustomizer.Category createCategory(Lookup look) {
-        return ProjectCustomizer.Category.create(
-                "checkstyle",
-                NbBundle.getMessage(CheckstyleCustomizerPanel.class, "TIT_CheckStyle"),
-                null);
-    }
-
-    public JComponent createComponent(ProjectCustomizer.Category cat, Lookup look) {
-        ModelHandle handle = look.lookup(ModelHandle.class);
-        return new CheckstylePanel(handle, cat);
-    }
-
-
-}

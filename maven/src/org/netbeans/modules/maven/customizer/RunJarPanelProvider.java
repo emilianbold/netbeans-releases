@@ -52,11 +52,8 @@ import org.openide.util.Lookup;
  *
  * @author Milos Kleint 
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=300)
 public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of RunJarPanelProvider */
-    public RunJarPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
@@ -66,8 +63,7 @@ public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryP
             return ProjectCustomizer.Category.create(
                     ModelHandle.PANEL_RUN,
                     org.openide.util.NbBundle.getMessage(RunJarPanelProvider.class, "TIT_Run"),
-                    null,
-                    (ProjectCustomizer.Category[])null);
+                    null);
         }
         return null;
     }
