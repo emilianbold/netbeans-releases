@@ -57,7 +57,6 @@ public final class TimeMarksProvider implements AxisMarksProvider {
 
     private TimeMarksProvider() {
     }
-
     private static final int[] INTERVALS = {1, 5, 10, 30, 60, 300, 600};
     private static final String LABEL_TEXT = "99:99"; // NOI18N
 
@@ -101,6 +100,6 @@ public final class TimeMarksProvider implements AxisMarksProvider {
     }
 
     private String formatTime(int seconds) {
-        return String.format("%d:%02d", seconds / 60, seconds % 60);
+        return String.format("%d:%02d", seconds / 60, seconds % 60); // NOI18N
     }
 }
