@@ -231,7 +231,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 }
             }
 
-            query = String.format("select %s, sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s) from %s where %s >= ? and %s < ? group by %s",
+            query = String.format("select %s, sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s) from %s where %s >= ? and %s < ? group by %s", // NOI18N
                     MSASQLTables.msa.LWP_ID.getColumnName(),
                     MSASQLTables.msa.LWP_MSA_USR.getColumnName(),
                     MSASQLTables.msa.LWP_MSA_SYS.getColumnName(),
@@ -308,7 +308,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         Collection<TimeIntervalDataFilter> intervals = query.getIntervals();
 
-        System.out.println("Intervals size: " + intervals.size());
+        System.out.println("Intervals size: " + intervals.size()); // NOI18N
 
         if (intervals.isEmpty()) {
             return null;
