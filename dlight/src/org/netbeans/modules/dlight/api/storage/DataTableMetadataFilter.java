@@ -37,24 +37,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.timeline;
+package org.netbeans.modules.dlight.api.storage;
 
-import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.util.Range;
+import org.netbeans.modules.dlight.api.datafilter.support.NumericDataFilter;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 
 /**
- *
- * @author mt154047
+ * This class will represent 
  */
-public final class TimeIntervalDataFilter implements DataFilter{
-    private Range<Long> timeInterval;
+public final class DataTableMetadataFilter {
+    private final Column column;
+    private final NumericDataFilter filter;
 
-    TimeIntervalDataFilter(Range<Long> timeInterval) {
-        this.timeInterval = timeInterval;
+    public DataTableMetadataFilter(Column column, NumericDataFilter filter){
+        this.column = column;
+        this.filter = filter;
     }
 
-    public Range<Long> getInterval(){
-        return timeInterval;
+    public final Column getFilteredColumn(){
+        return column;
     }
-    
+
+    public final NumericDataFilter getNumericDataFilter(){
+        return filter;
+    }
+
+
 }

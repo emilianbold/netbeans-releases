@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.storage.impl;
 
 import java.io.BufferedReader;
@@ -57,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -77,6 +77,8 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescr
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -133,6 +135,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
+    private final <T extends DataFilter> Collection<T> getDataFilters(List<DataFilter> filters, Class<T> clazz) {
+        Collection<T> result = new ArrayList<T>();
+        for (DataFilter f : filters) {
+            if (f.getClass() == clazz) {
+                result.add(clazz.cast(f));
+            }
+        }
+        return result;
+    }
+
     public boolean hasData(DataTableMetadata data) {
         return data.isProvidedBy(tableMetadatas);
     }
@@ -166,9 +178,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         stmtCache.clear();
         return true;
     }
-
 ////////////////////////////////////////////////////////////////////////////////
-
     private final Map<CharSequence, Long> funcCache;
     private final Map<NodeCacheKey, Long> nodeCache;
     private long funcIdSequence;
@@ -303,7 +313,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
-            List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+            List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters) {
         try {
             Collection<FunctionMetric> metrics = new ArrayList<FunctionMetric>();
             for (Column metricColumn : metricsColumn) {
@@ -314,13 +324,23 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
+            Collection<TimeIntervalDataFilter> timeFilters = getDataFilters(filters, TimeIntervalDataFilter.class);
+            //create list of DataTableMetadataFilter
+            //if we hvae Time column create filter
+            Collection<DataTableMetadataFilter> tableFilters = null;
+         //   for (Column c :)
+            for (TimeIntervalDataFilter timeFilter : timeFilters){
+                
+            }
             ResultSet rs = null;
-            if (metadata.getViewStatement() != null){
+
+            if (metadata.getViewStatement() != null) {
                 PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
                 rs = select.executeQuery();
-            }else{
+            } else {
                 rs = sqlStorage.select(metadata.getName(), metricsColumn);
             }
+          //  rs = sqlStorage.select(metadata.getName(), metricsColumn, metadata.getViewStatement(), tableFilters);
             while (rs.next()) {
                 Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
                 for (FunctionMetric m : metrics) {
@@ -626,7 +646,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             threadAndTimestampResult.close();
 
             //get leaf_id's
-            for (Map.Entry<Integer, Long> entry : idToTime.entrySet()){
+            for (Map.Entry<Integer, Long> entry : idToTime.entrySet()) {
                 int thread_id = entry.getKey();
                 long t = entry.getValue();
                 statement = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
@@ -715,9 +735,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
         @Override
         public int hashCode() {
-            return 13 * ((int) (callerId >> 32) | (int) callerId)
-                    + 17 * ((int) (funcId >> 32) | (int) funcId)
-                    + ((int) (offset >> 32) | (int) offset);
+            return 13 * ((int) (callerId >> 32) | (int) callerId) + 17 * ((int) (funcId >> 32) | (int) funcId) + ((int) (offset >> 32) | (int) offset);
         }
     }
 
@@ -994,5 +1012,4 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
         }
     }
-
 }

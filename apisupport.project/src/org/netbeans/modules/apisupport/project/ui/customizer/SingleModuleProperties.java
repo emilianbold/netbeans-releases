@@ -60,7 +60,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -180,6 +179,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private FriendListModel friendListModel;
     private RequiredTokenListModel requiredTokensListModel;
     private DefaultListModel wrappedJarsListModel;
+    private boolean wrappedJarsChanged; // #171125
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
@@ -221,6 +221,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         friendListModel = null;
         requiredTokensListModel = null;
         wrappedJarsListModel = null;
+        wrappedJarsChanged = false;
         projectXMLManager = null;
         if (isSuiteComponent()) {
             if (getSuiteDirectory() != null) {
@@ -685,7 +686,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             ClassPathSupport.Callback cback = new ClassPathSupport.Callback() {
 
                 public void readAdditionalProperties(List<Item> items, String projectXMLElement) {
-                    if (CPEXT.equals(projectXMLElement)) {
+                    if (wrappedJarsChanged && CPEXT.equals(projectXMLElement)) {
                         for (Item item : items) {
                             // file ref properties for <cp-e> jars so that CPS can handle src&javadoc
                             String ref = getRefHelper().createForeignFileReferenceAsIs(item.getFilePath(), null);
@@ -696,7 +697,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 }
 
                 public void storeAdditionalProperties(List<Item> items, String projectXMLElement) {
-                    if (CPEXT.equals(projectXMLElement)) {
+                    if (wrappedJarsChanged && CPEXT.equals(projectXMLElement)) {
                         for (Item item : items) {
                             // remove file ref properties for <cp-e> jars, keep only src&javadoc
                             if (item.getReference() != null) {
@@ -723,6 +724,24 @@ public final class SingleModuleProperties extends ModuleProperties {
     DefaultListModel getWrappedJarsListModel() {
         if (wrappedJarsListModel == null) {
             wrappedJarsListModel = ClassPathUiSupport.createListModel(getCPExtIterator());
+            wrappedJarsListModel.addListDataListener(new ListDataListener() {
+                private void process(ListDataEvent e) {
+                    wrappedJarsChanged = true;
+                    availablePublicPackages = null;
+                    if (publicPackagesModel != null) {
+                        publicPackagesModel.reloadData(loadPublicPackages(publicPackagesModel.getSelectedPackages()));
+                    }
+                }
+                public void intervalAdded(ListDataEvent e) {
+                    process(e);
+                }
+                public void intervalRemoved(ListDataEvent e) {
+                    process(e);
+                }
+                public void contentsChanged(ListDataEvent e) {
+                    process(e);
+                }
+            });
         }
         return wrappedJarsListModel;
     }
@@ -792,8 +811,6 @@ public final class SingleModuleProperties extends ModuleProperties {
         return sPackages;
     }
 
-    private ListDataListener wrappedJarsListener;
-
     /**
      * Returns set of all available public packages for the project.
      */
@@ -805,28 +822,6 @@ public final class SingleModuleProperties extends ModuleProperties {
                     it.hasNext();) {
                 Item item = it.next();
                 Util.scanJarForPackageNames(availablePublicPackages, item.getResolvedFile());
-            }
-            if (wrappedJarsListener == null) {
-                wrappedJarsListener = new ListDataListener() {
-                    private void process(ListDataEvent e) {
-                        availablePublicPackages = null;
-                        if (publicPackagesModel != null) {
-                            publicPackagesModel.reloadData(loadPublicPackages(publicPackagesModel.getSelectedPackages()));
-                        }
-                    }
-                    public void intervalAdded(ListDataEvent e) {
-                        process(e);
-                    }
-
-                    public void intervalRemoved(ListDataEvent e) {
-                        process(e);
-                    }
-
-                    public void contentsChanged(ListDataEvent e) {
-                        process(e);
-                    }
-                };
-                getWrappedJarsListModel().addListDataListener(wrappedJarsListener);
             }
         }
         return availablePublicPackages;
@@ -869,7 +864,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
 
         // store class-path-extensions + its src & javadoc
-        if (cps != null && wrappedJarsListModel != null) {
+        if (cps != null && wrappedJarsListModel != null && wrappedJarsChanged) {
             final List<Item> cpExtList = ClassPathUiSupport.getList(wrappedJarsListModel);
             Map<String, String> newCpExt = new HashMap<String, String>();
 
@@ -903,6 +898,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
             cps.encodeToStrings(cpExtList, CPEXT);
             pxm.replaceClassPathExtensions(newCpExt);
+            wrappedJarsChanged = false;
         }
 
         if (isStandalone()) {
