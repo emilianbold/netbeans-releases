@@ -39,9 +39,17 @@
 package org.netbeans.modules.php.project.util;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -49,9 +57,14 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 abstract class FileOperationFactory {
+    private static final Logger LOGGER = Logger.getLogger(FileOperationFactory.class.getName());
+
     protected final PhpProject project;
+
     private final FileObject nbprojectDir;
     private final PhpVisibilityQuery phpVisibilityQuery;
+
+    volatile boolean factoryError = false;
 
     public FileOperationFactory(PhpProject project) {
         assert project != null;
@@ -62,11 +75,54 @@ abstract class FileOperationFactory {
         assert nbprojectDir.isFolder() && nbprojectDir.isValid() : "Not valid nbproject directory found for " + project;
     }
 
-    abstract Callable<Boolean> createCopyHandler(FileObject source);
-    abstract Callable<Boolean> createDeleteHandler(FileObject source);
-    abstract Callable<Boolean> createInitHandler(FileObject source);
-    abstract Callable<Boolean> createRenameHandler(FileObject source, String oldName);
-    abstract void invalidate();
+    final Callable<Boolean> createCopyHandler(FileObject source) {
+        if (isInvalid()) {
+            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createCopyHandlerInternal(source);
+    }
+
+    final Callable<Boolean> createDeleteHandler(FileObject source) {
+        if (isInvalid()) {
+            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createDeleteHandlerInternal(source);
+    }
+
+    final Callable<Boolean> createInitHandler(FileObject source) {
+                if (isInvalid()) {
+            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createInitHandlerInternal(source);
+    }
+
+    final Callable<Boolean> createRenameHandler(FileObject source, String oldName) {
+                if (isInvalid()) {
+            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createRenameHandlerInternal(source, oldName);
+    }
+
+    abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
+    abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
+    abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
+    abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
+
+    void reset() {
+        factoryError = false;
+    }
+
+    void invalidate() {
+        factoryError = true;
+    }
+
+    boolean isInvalid() {
+        return factoryError;
+    }
 
     protected final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
         return (FileUtil.isParentOf(sourceRoot, source) || source.equals(sourceRoot))
@@ -84,5 +140,18 @@ abstract class FileOperationFactory {
 
     protected static String getPath(FileObject fo) {
         return FileUtil.getFileDisplayName(fo);
+    }
+
+    protected boolean askUser(String message) {
+        Object openProperties = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, project.getName(), JOptionPane.YES_NO_OPTION));
+        return openProperties.equals(JOptionPane.YES_OPTION);
+    }
+
+    protected void showCustomizer() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.SOURCES);
+            }
+        });
     }
 }

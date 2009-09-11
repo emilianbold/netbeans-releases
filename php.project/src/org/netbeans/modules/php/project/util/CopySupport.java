@@ -45,15 +45,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -165,9 +162,9 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         if (this.project == null) {
             this.project = project;
             ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
-            this.operationFactory = new ProxyOperationFactory(project);
+            operationFactory = new ProxyOperationFactory(project);
         }
-        this.operationFactory.init();
+        operationFactory.reset();
         init(true);
     }
 
@@ -265,7 +262,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         final String propertyName = propertyChangeEvent.getPropertyName();
         if (isProjectOpened) {
             // invalidate factories, e.g. remote client (it's better to simply create a new client)
-            operationFactory.invalidate();
+            operationFactory.reset();
             if (propertyName.equals(PhpProjectProperties.COPY_SRC_TARGET) ||
                     propertyName.equals(PhpProjectProperties.SRC_DIR) ||
                     propertyName.equals(PhpProjectProperties.COPY_SRC_FILES)) {
@@ -287,8 +284,6 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
 
         final FileOperationFactory localFactory;
         final FileOperationFactory remoteFactory;
-        boolean localFactoryError;
-        boolean remoteFactoryError;
 
         ProxyOperationFactory(PhpProject project) {
             super(project);
@@ -296,33 +291,30 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
             this.remoteFactory = new RemoteOperationFactory(project);
         }
 
-        void init() {
-            this.localFactoryError = false;
-            this.remoteFactoryError = false;
-        }
-
-        void invalidate() {
-            localFactory.invalidate();
-            remoteFactory.invalidate();
+        @Override
+        void reset() {
+            super.reset();
+            localFactory.reset();
+            remoteFactory.reset();
         }
 
         @Override
-        Callable<Boolean> createCopyHandler(FileObject source) {
+        Callable<Boolean> createCopyHandlerInternal(FileObject source) {
             return createHandler(localFactory.createCopyHandler(source), remoteFactory.createCopyHandler(source));
         }
 
         @Override
-        Callable<Boolean> createDeleteHandler(FileObject source) {
+        Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
             return createHandler(localFactory.createDeleteHandler(source), remoteFactory.createDeleteHandler(source));
         }
 
         @Override
-        Callable<Boolean> createInitHandler(FileObject source) {
+        Callable<Boolean> createInitHandlerInternal(FileObject source) {
             return createHandler(localFactory.createInitHandler(source), remoteFactory.createInitHandler(source));
         }
 
         @Override
-        Callable<Boolean> createRenameHandler(FileObject source, String oldName) {
+        Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName) {
             return createHandler(localFactory.createRenameHandler(source, oldName), remoteFactory.createRenameHandler(source, oldName));
         }
 
@@ -359,10 +351,17 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
             }
 
             private Boolean callLocal() {
+                if (localFactory.isInvalid()) {
+                    LOGGER.log(Level.FINE, "Copy support invalid for project {0}", project.getName());
+                    return null;
+                }
+
                 Boolean localRetval = null;
                 Exception localExc = null;
 
-                if (!localFactoryError && localHandler != null) {
+                if (localHandler != null) {
+                    LOGGER.log(Level.FINE, "Processing Copy Support handler for project {0}", project.getName());
+
                     ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_LocalSynchronization"));
                     progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
                     try {
@@ -377,21 +376,26 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                     }
                 }
                 if (localRetval != null && !localRetval) {
-                    String message = NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail");
-                    Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
-                    if (!continueCopying.equals(JOptionPane.YES_OPTION)) {
-                        localFactoryError = true;
-                        LOGGER.log(Level.INFO, "Copy Support Disabled By User", localExc);
+                    if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail", project.getName()))) {
+                        localFactory.invalidate();
+                        LOGGER.log(Level.INFO, String.format("Copy Support for project %s disabled by user", project.getName()), localExc);
                     }
                 }
                 return localRetval;
             }
 
             private Boolean callRemote() {
+                if (remoteFactory.isInvalid()) {
+                    LOGGER.log(Level.FINE, "Upload On Save invalid for project {0}", project.getName());
+                    return null;
+                }
+
                 Boolean remoteRetval = null;
                 Exception remoteExc = null;
 
-                if (!remoteFactoryError && remoteHandler != null) {
+                if (remoteHandler != null) {
+                    LOGGER.log(Level.FINE, "Processing Upload On Save handler for project {0}", project.getName());
+
                     ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_RemoteSynchronization"));
                     progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
                     try {
@@ -405,11 +409,9 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                         progress.finish();
                     }
                     if (remoteRetval != null && !remoteRetval) {
-                        String message = NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail");
-                        Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
-                        if (continueCopying.equals(JOptionPane.YES_OPTION)) {
-                            remoteFactoryError = true;
-                            LOGGER.log(Level.INFO, "Remote On Save  Disabled By User", remoteExc);
+                        if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail", project.getName()))) {
+                            remoteFactory.invalidate();
+                            LOGGER.log(Level.INFO, String.format("Remote On Save for project %s disabled by user", project.getName()), remoteExc);
                         }
                     }
                 }

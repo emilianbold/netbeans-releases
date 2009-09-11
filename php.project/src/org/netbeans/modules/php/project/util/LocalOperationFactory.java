@@ -50,6 +50,7 @@ import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
@@ -57,31 +58,35 @@ import org.openide.filesystems.FileUtil;
 final class LocalOperationFactory extends FileOperationFactory {
 
     private static final Logger LOGGER = Logger.getLogger(LocalOperationFactory.class.getName());
-    private static final boolean IS_WARNING_LOGGABLE = LOGGER.isLoggable(Level.WARNING);
-    private static final boolean IS_FINE_LOGGABLE = LOGGER.isLoggable(Level.FINE);
 
     LocalOperationFactory(PhpProject project) {
         super(project);
     }
 
     private boolean isEnabledAndValidConfig() {
+        if (isInvalid()) {
+            LOGGER.log(Level.FINE, "Copy support invalid for project {0}", project.getName());
+            return false;
+        }
         boolean copySourcesEnabled = ProjectPropertiesSupport.isCopySourcesEnabled(project);
         if (!copySourcesEnabled) {
+            LOGGER.log(Level.FINE, "Copy support disabled for project {0}", project.getName());
             return false;
         }
 
         if (getSources() == null) {
-            if (IS_WARNING_LOGGABLE) {
-                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "source root is null"));
-            }
+            LOGGER.log(Level.WARNING, "Copy support disabled for project {0}. Reason: source root is null", project.getName());
             return false;
         }
 
         File targetRoot = getTargetRoot();
         if (targetRoot == null) {
-            if (IS_WARNING_LOGGABLE) {
-                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root is null"));
+            LOGGER.log(Level.INFO, "Copy support disabled for project {0}. Reason: target folder is null", project.getName());
+
+            if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_NoTargetFolder", project.getName()))) {
+                showCustomizer();
             }
+            invalidate();
             return false;
         }
 
@@ -92,9 +97,12 @@ final class LocalOperationFactory extends FileOperationFactory {
 
         boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
         if (!isWritable) {
-            if (IS_WARNING_LOGGABLE) {
-                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root isn't writable"));
+            LOGGER.log(Level.INFO, "Copy support disabled for project {0}. Reason: target folder {1} is not writable", new Object[] {project.getName(), writableFolder});
+
+            if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_TargetFolderNotWritable", project.getName(), writableFolder))) {
+                showCustomizer();
             }
+            invalidate();
             return false;
         }
 
@@ -102,7 +110,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createInitHandler(final FileObject source) {
+    Callable<Boolean> createInitHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -142,7 +150,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createCopyHandler(final FileObject source) {
+    Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -158,7 +166,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createRenameHandler(final FileObject source, final String oldName) {
+    Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -196,7 +204,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createDeleteHandler(final FileObject source) {
+    Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -293,10 +301,5 @@ final class LocalOperationFactory extends FileOperationFactory {
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {
         return pair != null && pair.first != null && pair.second != null;
-    }
-
-    @Override
-    void invalidate() {
-        // ignored
     }
 }

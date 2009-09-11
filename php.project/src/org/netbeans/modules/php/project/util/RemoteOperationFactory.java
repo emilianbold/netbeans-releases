@@ -73,7 +73,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createCopyHandler(final FileObject source) {
+    Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
         return (isEnabled()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
@@ -103,7 +103,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createDeleteHandler(final FileObject source) {
+    Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
         return (isEnabled()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
@@ -138,12 +138,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createInitHandler(final FileObject source) {
+    Callable<Boolean> createInitHandlerInternal(final FileObject source) {
         return null;
     }
 
     @Override
-    Callable<Boolean> createRenameHandler(final FileObject source, final String oldName) {
+    Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
                 return (isEnabled()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
@@ -229,7 +229,8 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    synchronized void invalidate() {
+    synchronized void reset() {
+        super.reset();
         remoteClient = null;
     }
 
