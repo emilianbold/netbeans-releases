@@ -77,7 +77,7 @@ abstract class FileOperationFactory {
 
     final Callable<Boolean> createCopyHandler(FileObject source) {
         if (isInvalid()) {
-            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+            LOGGER.log(Level.FINE, "No CREATE handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
         return createCopyHandlerInternal(source);
@@ -85,23 +85,23 @@ abstract class FileOperationFactory {
 
     final Callable<Boolean> createDeleteHandler(FileObject source) {
         if (isInvalid()) {
-            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+            LOGGER.log(Level.FINE, "No DELETE handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
         return createDeleteHandlerInternal(source);
     }
 
     final Callable<Boolean> createInitHandler(FileObject source) {
-                if (isInvalid()) {
-            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+        if (isInvalid()) {
+            LOGGER.log(Level.FINE, "No INIT handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
         return createInitHandlerInternal(source);
     }
 
     final Callable<Boolean> createRenameHandler(FileObject source, String oldName) {
-                if (isInvalid()) {
-            LOGGER.log(Level.FINE, "File Operation Factory invalid for project {0}", project.getName());
+        if (isInvalid()) {
+            LOGGER.log(Level.FINE, "No RENAME handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
         return createRenameHandlerInternal(source, oldName);
