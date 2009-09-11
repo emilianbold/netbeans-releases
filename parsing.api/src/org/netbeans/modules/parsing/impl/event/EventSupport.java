@@ -91,7 +91,6 @@ public final class EventSupport {
 
     private final Source source;
     private volatile boolean initialized;
-    private volatile boolean k24;
     private DocListener docListener;
     private FileChangeListener fileChangeListener;
     private DataObjectListener dobjListener;
@@ -151,8 +150,8 @@ public final class EventSupport {
         }
         SourceAccessor.getINSTANCE().setFlags(this.source, flags);
         TaskProcessor.resetState (this.source,invalidate,true);
-        
-        if (!k24) {
+
+        if (!editorRegistryListener.k24) {
             resetTask.schedule(TaskProcessor.reparseDelay);
         }
     }
@@ -162,7 +161,7 @@ public final class EventSupport {
      *
      */
     private void resetStateImpl() {
-        if (!k24) {
+        if (!editorRegistryListener.k24) {
             //todo: threading flags cleaned in the TaskProcessor.resetStateImpl
             final boolean reschedule = SourceAccessor.getINSTANCE().testFlag (source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
             if (reschedule) {
@@ -296,13 +295,15 @@ public final class EventSupport {
             }
         }        
     }
-    
-    private static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
+
+    //Public because of test
+    public static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
+
+        private static volatile boolean k24;
                         
-        private TaskProcessor.Request request;
         private Reference<JTextComponent> lastEditorRef;
         
-        public EditorRegistryListener () {
+        private EditorRegistryListener () {
             EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     editorRegistryChanged();
@@ -311,7 +312,7 @@ public final class EventSupport {
             editorRegistryChanged();
         }
                 
-        public void editorRegistryChanged() {
+        private void editorRegistryChanged() {
             final JTextComponent editor = EditorRegistry.lastFocusedComponent();
             final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != editor) {
@@ -326,14 +327,8 @@ public final class EventSupport {
                             source = Source.create (document);
                     }
                     if (source != null) {
-                        TaskProcessor.Request _request = request;
-                        request = null;
                         EventSupport support = SourceAccessor.getINSTANCE ().getEventSupport (source);
-                        support.k24 = false;
-                        if (_request != null) {
-                            support.resetTask.schedule (TaskProcessor.reparseDelay);
-                            TaskProcessor.resetStateImplAsync (_request);
-                        }
+                        k24 = false;
                     }
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
@@ -381,17 +376,12 @@ public final class EventSupport {
                 if (source != null) {
                     Object rawValue = evt.getNewValue();
                     if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
-                        if (this.request != null)
-                            TaskProcessor.resetStateImplAsync(this.request);
-                        this.request = TaskProcessor.resetState(source, false, false);
-                        SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
+                        TaskProcessor.resetState(source, false, true);
+                        k24 = true;
                     } else {
-                        TaskProcessor.Request _request = this.request;
-                        this.request = null;
                         final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                        support.k24 = false;
-                        support.resetTask.schedule(TaskProcessor.reparseDelay);
-                        TaskProcessor.resetStateImplAsync(_request);
+                        k24 = false;
+                        support.resetTask.schedule(0);
                     }
                 }
             }

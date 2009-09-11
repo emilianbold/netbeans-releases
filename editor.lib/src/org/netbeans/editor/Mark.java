@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 
 /**
 * Marks hold the relative position in the document.
@@ -109,9 +110,25 @@ public class Mark {
                 + ", class=" + this.getClass()); // NOI18N
             }
 
-            if (offset < 0 || offset > ldoc.getLength() + 1) { // doc.getEndPosition() is valid
-                throw new BadLocationException("Invalid offset", offset); // NOI18N
-            }
+			if (offset < 0 || offset > ldoc.getLength() + 1) { // doc.getEndPosition() is valid
+				throw new BadLocationException("Invalid offset", offset); // NOI18N
+			}
+
+			// Deal with supplementary characters #164820
+
+			if (offset <= ldoc.getLength() && Character.isLowSurrogate(org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(ldoc).charAt(offset))) {
+				if (bias == Bias.Forward && offset < ldoc.getLength()) {
+					offset++;
+
+				} else if (bias == Bias.Backward && offset > 0) {
+					offset--;
+				}
+				
+				// If there is still a low surrogate after recalculating,
+				// treat it as an invalid document, just ignore and pass through.
+				// Since there should be a surrogate pair in Java and Unicode to
+				// represent a supplementary character.
+			}
 
             multiMark = doc.marksStorage.createBiasMark(offset, bias);
             doc.marksStorage.insert(multiMark);

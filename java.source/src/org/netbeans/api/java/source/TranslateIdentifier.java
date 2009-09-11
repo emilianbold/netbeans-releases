@@ -960,6 +960,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         attachComments(cc, tree, commentService, CommentSet.RelativePosition.PRECEDING);
         seq.move(reset);
         seq.moveNext();
+        tokenIndexAlreadyAdded = seq.index();
     }
 
     /**

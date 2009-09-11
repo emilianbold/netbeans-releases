@@ -41,11 +41,11 @@ package org.netbeans.modules.parsing.impl;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -62,6 +62,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -403,7 +404,7 @@ public class TaskProcessor {
     
     //Changes handling
     
-    private final static Map<Source,Request> rst = new HashMap<Source, Request>();
+    private final static AtomicReference<Request> rst = new AtomicReference<Request>();
     
     //DO NOT CALL DIRECTLY - called by Source
     public static Request resetState (final Source source,
@@ -416,11 +417,7 @@ public class TaskProcessor {
                 r.task.cancel();
             } finally {
                 if (sync) {
-                    Request oldR;
-                    synchronized (rst) {
-                        oldR = rst.get(source);
-                        rst.put(source,r);
-                    }
+                    Request oldR = rst.getAndSet(r);
                     assert oldR == null;
                 }
             }
@@ -433,7 +430,7 @@ public class TaskProcessor {
         assert source != null;
         Request r;
         synchronized (rst) {
-            r = rst.remove(source);
+            r = rst.getAndSet(null);
         }
         currentRequest.cancelCompleted(r);
         synchronized (INTERNAL_LOCK) {
@@ -451,12 +448,7 @@ public class TaskProcessor {
             }
         }
     }
-    
-    //DO NOT CALL DIRECTLY - called by Source
-    public static void resetStateImplAsync (final Request request) {
-        currentRequest.cancelCompleted(request);
-    }
-    
+            
     //Package private methods needed by the Utilities accessor
     static void acquireParserLock () {
         parserLock.lock();
@@ -867,7 +859,7 @@ public class TaskProcessor {
      */
     //@ThreadSafe
     private static final class CurrentRequestReference {                        
-                
+
         
         private Request reference;
         private Request canceledReference;
@@ -922,7 +914,7 @@ public class TaskProcessor {
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
-                        this.cancelTime = System.currentTimeMillis();
+                        this.cancelTime = System.currentTimeMillis();                        
                     }
                 }
             }
