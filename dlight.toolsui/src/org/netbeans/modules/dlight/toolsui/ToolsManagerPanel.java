@@ -81,7 +81,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
         allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
         initDialog(DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers());
-        toolNameTextField.setBackground(getBackground());
         setPreferredSize(new Dimension(700, 400));
     }
 
@@ -138,7 +137,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         public void valueChanged(ListSelectionEvent e) {
             DLightToolUIWrapper tool = getSelectedDLightToolWrapper();
-            toolNameTextField.setText(tool.getDLightTool().getName());
+            toolNameLabelField.setText(tool.getDLightTool().getName());
             onByDefaultCheckBox.setSelected(tool.isOnByDefault());
             detailsLabel.setText(tool.getDLightTool().getDetailedName());
         }
@@ -169,9 +168,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolsLabel = new javax.swing.JLabel();
         toolPropertyPanel = new javax.swing.JPanel();
         toolNameLabel = new javax.swing.JLabel();
-        toolNameTextField = new javax.swing.JTextField();
         onByDefaultCheckBox = new javax.swing.JCheckBox();
         detailsLabel = new javax.swing.JLabel();
+        toolNameLabelField = new javax.swing.JLabel();
         updateButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
@@ -249,15 +248,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         toolPropertyPanel.add(toolNameLabel, gridBagConstraints);
 
-        toolNameTextField.setEditable(false);
-        toolNameTextField.setBorder(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 6);
-        toolPropertyPanel.add(toolNameTextField, gridBagConstraints);
-
         onByDefaultCheckBox.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.onByDefaultCheckBox.text")); // NOI18N
         onByDefaultCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -279,6 +269,14 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         toolPropertyPanel.add(detailsLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 6);
+        toolPropertyPanel.add(toolNameLabelField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -423,7 +421,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     private javax.swing.JLabel profileConfigurationLabel;
     private javax.swing.JCheckBox profileOnRunCheckBox;
     private javax.swing.JLabel toolNameLabel;
-    private javax.swing.JTextField toolNameTextField;
+    private javax.swing.JLabel toolNameLabelField;
     private javax.swing.JPanel toolPropertyPanel;
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;
