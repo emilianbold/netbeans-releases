@@ -346,10 +346,12 @@ public class BugzillaIssue extends Issue {
 
     public Date getLastModifyDate() {
         String value = getFieldValue(IssueField.MODIFICATION);
-        try {
-            return MODIFIED_DATE_FORMAT.parse(value);
-        } catch (ParseException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        if(value != null && !value.equals("")) {
+            try {
+                return MODIFIED_DATE_FORMAT.parse(value);
+            } catch (ParseException ex) {
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
         }
         return null;
     }
@@ -365,10 +367,12 @@ public class BugzillaIssue extends Issue {
 
     public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATION);
-        try {
-            return CREATED_DATE_FORMAT.parse(value);
-        } catch (ParseException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        if(value != null && !value.equals("")) {
+            try {
+                return CREATED_DATE_FORMAT.parse(value);
+            } catch (ParseException ex) {
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
         }
         return null;
     }
