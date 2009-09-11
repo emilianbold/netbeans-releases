@@ -66,7 +66,22 @@ import org.openide.util.NbBundle;
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
-        menuText = "#goto-identifier-declaration" // NOI18N
+        menuText = "#goto-identifier-declaration", // NOI18N
+        mimeType = "text/x-c"
+    ),
+    @EditorActionRegistration(
+        name = "goto-declaration", // NOI18N
+        menuPath = "GoTo", // NOI18N
+        menuPosition = 900,
+        menuText = "#goto-identifier-declaration", // NOI18N
+        mimeType = "text/x-c++"
+    ),
+    @EditorActionRegistration(
+        name = "goto-declaration", // NOI18N
+        menuPath = "GoTo", // NOI18N
+        menuPosition = 900,
+        menuText = "#goto-identifier-declaration", // NOI18N
+        mimeType = "text/x-h"
     )
 })
 public class CCGoToDeclarationAction extends BaseAction {
