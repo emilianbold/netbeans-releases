@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
@@ -86,7 +87,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final String TOOL_DESCRIPTION = loc("SyncTool.ToolDescription");//NOI18N
     private static final Column timestampColumn =
-        new Column("timestamp", Long.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
+        new Column("timestamp", Time.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
     private static final Column waiterColumn =
         new Column("waiter", Integer.class, loc("SyncTool.ColumnName.waiter"), null); // NOI18N
     private static final Column mutexColumn =
