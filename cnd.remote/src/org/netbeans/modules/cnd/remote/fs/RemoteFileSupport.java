@@ -55,6 +55,7 @@ import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
 import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -224,6 +225,9 @@ public class RemoteFileSupport {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             // a workaround for #171731 IDE hangs after start
             if (true) { // fool javac
+                if (Boolean.getBoolean("cnd.remote.fs.notify")) {
+                    RemoteFileSystemNotifier.show(execEnv);
+                }
                 throw new CancellationException();
             }
             synchronized (cancels) {
