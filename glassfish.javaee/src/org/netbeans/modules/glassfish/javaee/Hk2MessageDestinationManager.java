@@ -49,10 +49,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -97,19 +95,9 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
     }
 
     public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
-        Set<File> resourceDirList = new TreeSet<File>();
-        for(MessageDestination dest: destinations) {
-            if(dest instanceof SunMessageDestination) {
-                File resourceDir = ((SunMessageDestination) dest).getResourceDir();
-                if(resourceDir != null) {
-                    resourceDirList.add(resourceDir);
-                }
-            }
-        }
-
-        for (File resourceDir : resourceDirList) {
-            ResourcesHelper.registerResourceDir(resourceDir, dm);
-        }
+        // since a connection pool is not a Datasource, all resource deployment has to
+        // happen in a different part of the deploy processing...  so this should remain
+        // empty to prevent redundant processing.
     }
 
     // ------------------------------------------------------------------------
