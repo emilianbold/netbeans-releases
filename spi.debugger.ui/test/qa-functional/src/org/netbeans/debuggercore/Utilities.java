@@ -508,6 +508,20 @@ public class Utilities {
         }
     }
 
+    public static void waitStatusOrConsoleText(String text) throws Throwable
+    {
+        try {
+                Utilities.waitStatusText(text);
+            }
+        catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText(text)) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+
+    }
+
     static class ConsoleChooser implements ComponentChooser {
 
         int lastIndex = 0;
