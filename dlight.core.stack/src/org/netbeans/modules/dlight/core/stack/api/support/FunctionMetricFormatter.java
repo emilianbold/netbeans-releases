@@ -41,17 +41,34 @@ package org.netbeans.modules.dlight.core.stack.api.support;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
 /**
  *
  * @author mt154047
  */
 public final class FunctionMetricFormatter {
+    private static NumberFormat format = null;
+
+    private static String formatValue(Object value) {
+        // format with three decimals (including 0s)
+        if (format == null) {
+            format = NumberFormat.getNumberInstance();
+            format.setGroupingUsed(false);
+            format.setMinimumIntegerDigits(1);
+            format.setMinimumFractionDigits(3);
+            format.setMaximumFractionDigits(3);
+        }
+        return format.format(value);
+    }
 
     public static final String getFormattedValue(FunctionCallWithMetric functionCall, String metricID){
         Object value = functionCall.getMetricValue(metricID);
+        if (value instanceof Double || value instanceof Float) {
+            return formatValue(value);
+        }
         PropertyEditor editor = value == null ? null : PropertyEditorManager.findEditor(value.getClass());
         if (editor != null){
             editor.setValue(value);
