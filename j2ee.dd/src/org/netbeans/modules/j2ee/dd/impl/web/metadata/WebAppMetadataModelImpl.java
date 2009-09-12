@@ -65,7 +65,7 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
 
     private final MetadataUnit metadataUnit;
     private AnnotationModelHelper helper;
-    private final WebAppMetadata metadata;
+    private WebAppMetadata metadata;
     private final Object myLock = new Object();
     private AtomicBoolean isReady = new AtomicBoolean(false);
 
@@ -87,6 +87,7 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
                 synchronized (myLock) {
                     metadata = new WebAppMetadataImpl(metadataUnit, 
                             WebAppMetadataModelImpl.this);
+                    myLock.notifyAll();
                     isReady.set( true);
                 }
             }
@@ -97,6 +98,17 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
     
     private WebAppMetadata getMetadata(){
         synchronized (myLock) {
+            while ( metadata == null ){
+                try {
+                    myLock.wait();
+                }
+                catch(InterruptedException e){
+                    /*
+                     *  Still need not null metadata.
+                     *  Ignore exception and go to next iteration. 
+                     */
+                }
+            }
             return metadata;
         }
     }
