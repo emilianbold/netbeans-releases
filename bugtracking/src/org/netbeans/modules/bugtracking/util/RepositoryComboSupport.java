@@ -83,16 +83,16 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private static final Logger LOG = Logger.getLogger(RepositoryComboSupport.class.getName());
 
     private final JComboBox comboBox;
-    private final RepositoryComboModel comboBoxModel;
     private final File refFile;
-    private final Node[] selectedNodes;
+    private final boolean preselectSingleRepo;
+    private RepositoryComboModel comboBoxModel;
     private DisplayabilityListener displayabilityListener;
     private boolean shutdown;
     private boolean repositoriesDisplayed = false;
     private boolean defaultRepoSelected = false;
+    private volatile Node[] selectedNodes;
     private volatile Repository[] repositories;
     private volatile boolean defaultRepoComputationPending;
-    private boolean preselectSingleRepo = false;
     private volatile Repository defaultRepo;
 
     /**
@@ -107,18 +107,10 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, boolean selectRepoIfSingle) {
-        assert EventQueue.isDispatchThread();
-
-        Node[] selectedNodes = TopComponent.getRegistry().getCurrentNodes();
-        if (selectedNodes == null) {
-            selectedNodes = new Node[0];
-        }
-
         RepositoryComboSupport repositoryComboSupport
                 = new RepositoryComboSupport(comboBox, (Repository) null,
                                                        (File) null,
-                                                       selectedNodes);
-        repositoryComboSupport.preselectSingleRepo = selectRepoIfSingle;
+                                                       selectRepoIfSingle);
         repositoryComboSupport.activate(component);
         return repositoryComboSupport;
     }
@@ -141,7 +133,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         RepositoryComboSupport repositoryComboSupport
                 = new RepositoryComboSupport(comboBox, defaultRepo,
                                                        (File) null,
-                                                       (Node[]) null);
+                                                       false);
         repositoryComboSupport.activate(component);
         return repositoryComboSupport;
     }
@@ -164,30 +156,26 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         RepositoryComboSupport repositoryComboSupport
                 = new RepositoryComboSupport(comboBox, (Repository) null,
                                                        referenceFile,
-                                                       (Node[]) null);
+                                                       false);
         repositoryComboSupport.activate(component);
         return repositoryComboSupport;
     }
 
     private RepositoryComboSupport(JComboBox comboBox, Repository defaultRepo,
                                                        File refFile,
-                                                       Node[] selectedNodes) {
-        assert EventQueue.isDispatchThread();
+                                                       boolean preselectSingleRepo) {
+        if (comboBox == null) {
+            throw new IllegalArgumentException("combo-box must be specified"); //NOI18N
+        }
 
-        checkJustOneSpecified(defaultRepo, refFile, selectedNodes);
-
-        checkOldComboBoxModel(comboBox);
+        checkAtMostOneSpecified(defaultRepo, refFile);
 
         this.comboBox = comboBox;
-        this.comboBox.setModel(comboBoxModel = new RepositoryComboModel());
-        this.comboBox.setRenderer(new RepositoryComboRenderer());
         this.defaultRepo = defaultRepo;
         this.refFile = refFile;
-        this.selectedNodes = selectedNodes;
+        this.preselectSingleRepo = preselectSingleRepo;
 
         defaultRepoComputationPending = (defaultRepo == null);
-
-        setComboBoxData(new Object[] {LOADING_REPOSITORIES});
     }
 
     private void checkOldComboBoxModel(JComboBox comboBox) {
@@ -202,7 +190,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         comboBoxModel.setData(data);
     }
 
-    private void checkJustOneSpecified(Object... items) {
+    private void checkAtMostOneSpecified(Object... items) {
         boolean oneSpecifed = false;
         for (Object item : items) {
             if (item == null) {
@@ -212,9 +200,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                 throw new IllegalArgumentException("At most one item may be specified."); //NOI18N
             }
             oneSpecifed = true;
-        }
-        if (!oneSpecifed) {
-            throw new IllegalArgumentException("At least one item must be specified."); //NOI18N
         }
     }
 
@@ -230,20 +215,45 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @exception  java.lang.IllegalStateException
      *             if the given component is already displayable
      */
-    private void activate(Component triggerComponent) {
-        assert EventQueue.isDispatchThread();
+    private void activate(final Component triggerComponent) {
         LOG.finer("activate(Component)");                               //NOI18N
 
         if (triggerComponent != null) {
             setupDisplayabilityTrigger(triggerComponent);
         } else {
-            start();
+            if (EventQueue.isDispatchThread()) {
+                start();
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        start();
+                    }
+                });
+            }
         }
     }
 
     private void start() {
         assert EventQueue.isDispatchThread();
         LOG.finer("start()");                                           //NOI18N
+
+        /* This is the right time to get information about selected nodes: */
+        if ((defaultRepo == null) && (refFile == null)) {
+            Node[] currNodes = TopComponent.getRegistry().getCurrentNodes();
+            if (currNodes == null) {
+                currNodes = new Node[0];
+            }
+            this.selectedNodes = currNodes;
+        }
+
+        /*
+         * As this method should be running in the event-dispatching thread,
+         * this is also the right time for manipulation with GUI:
+         */
+        checkOldComboBoxModel(comboBox);
+        this.comboBox.setModel(comboBoxModel = new RepositoryComboModel());
+        this.comboBox.setRenderer(new RepositoryComboRenderer());
+        setComboBoxData(new Object[] {LOADING_REPOSITORIES});
 
         RequestProcessor.getDefault().post(this);
     }
