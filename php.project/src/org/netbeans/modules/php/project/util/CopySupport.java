@@ -47,9 +47,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -59,7 +60,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -68,99 +68,54 @@ import org.openide.util.RequestProcessor;
  * @author Radek Matous
  */
 public class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener {
+    private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor("PHP file change handler (copy support)"); // NOI18N
     private static final int PROGRESS_INITIAL_DELAY = 1000;
 
-    private volatile PhpProject project;
-    private volatile boolean isProjectOpened;
+    static final Queue<Callable<Boolean>> OPERATIONS_QUEUE = new ConcurrentLinkedQueue<Callable<Boolean>>();
+    static final RequestProcessor.Task PROCESSING_TASK = createProcessingTask();
+
+    final PhpProject project;
+
+    private volatile boolean projectOpened;
+    // @GuardedBy(this)
     private ProxyOperationFactory operationFactory;
+    // @GuardedBy(this)
     private FileSystem fileSystem;
+    // @GuardedBy(this)
     private FileChangeListener weakFileChangeListener;
-    private static final RequestProcessor RP = new RequestProcessor("PHP file change handler (copy support)"); // NOI18N
-    private static final Queue<Callable<Boolean>> operationsQueue = new ConcurrentLinkedQueue<Callable<Boolean>>();
-    private static final RequestProcessor.Task processingTask = createProcessingTask();
-    private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
-    private static final boolean IS_FINE_LOGGABLE = LOGGER.isLoggable(Level.FINE);
 
-
-    public static CopySupport getInstance() {
-        return new CopySupport();
+    public CopySupport(PhpProject project) {
+        assert project != null;
+        this.project = project;
     }
 
-    @Override
-    public void fileFolderCreated(FileEvent fe) {
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject source = fe.getFile();
-        if (sourcesDirectory != null && isHandled(sourcesDirectory, source))  {
-            if (IS_FINE_LOGGABLE) {
-                String format = "processing fileFolderCreated event \"%s\" from project \"%s\"";//NOI18N
-                LOGGER.fine(String.format(format, fe.toString(), project.getName()));
+    public static CopySupport getInstance(PhpProject project) {
+        return new CopySupport(project);
+    }
+
+    private static RequestProcessor.Task createProcessingTask() {
+        return RP.create(new Runnable() {
+            public void run() {
+                Callable<Boolean> operation = OPERATIONS_QUEUE.poll();
+                while (operation != null) {
+                    try {
+                        operation.call();
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.WARNING, null, ex);
+                    }
+                    operation = OPERATIONS_QUEUE.poll();
+                }
             }
-            prepareOperation(getOperationFactory().createCopyHandler(source));
-        }
+        });
     }
 
-    @Override
-    public void fileDataCreated(FileEvent fe) {
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject source = fe.getFile();
-        if (sourcesDirectory != null && isHandled(sourcesDirectory, source))  {
-            if (IS_FINE_LOGGABLE) {
-                String format = "processing fileDataCreated event \"%s\" from project \"%s\"";//NOI18N
-                LOGGER.fine(String.format(format, fe.toString(), project.getName()));
-            }
-            prepareOperation(getOperationFactory().createCopyHandler(source));
-        }
-    }
+    public synchronized void projectOpened() {
+        LOGGER.log(Level.FINE, "Opening Copy support for project {0}", project.getName());
+        assert !projectOpened : "Copy Support already opened for project " + project.getName();
 
-    @Override
-    public void fileChanged(FileEvent fe) {
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject source = fe.getFile();
-        if (sourcesDirectory != null && isHandled(sourcesDirectory, source))  {
-            if (IS_FINE_LOGGABLE) {
-                String format = "processing fileChanged event \"%s\" from project \"%s\"";//NOI18N
-                LOGGER.fine(String.format(format, fe.toString(), project.getName()));
-            }
-            prepareOperation(getOperationFactory().createCopyHandler(source));
-        }
-    }
-
-    @Override
-    public void fileDeleted(FileEvent fe) {
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject source = fe.getFile();
-        if (sourcesDirectory != null && isHandled(sourcesDirectory, source))  {
-            if (IS_FINE_LOGGABLE) {
-                String format = "processing fileDeleted event \"%s\" from project \"%s\"";//NOI18N
-                LOGGER.fine(String.format(format, fe.toString(), project.getName()));
-            }
-            prepareOperation(getOperationFactory().createDeleteHandler(source));
-        }
-    }
-
-    @Override
-    public void fileRenamed(FileRenameEvent fe) {
-        String originalName = fe.getName();
-        String ext = fe.getExt();
-        if (ext != null && ext.trim().length() > 0) {
-            originalName += "." + ext;//NOI18N
-        }
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject source = fe.getFile();
-        if (sourcesDirectory != null && isHandled(sourcesDirectory, source))  {
-            if (IS_FINE_LOGGABLE) {
-                String format = "processing fileRenamed event \"%s\" from project \"%s\"";//NOI18N
-                LOGGER.fine(String.format(format, fe.toString(), project.getName()));
-            }
-            prepareOperation(getOperationFactory().createRenameHandler(source, originalName));
-        }
-    }
-
-
-    public void projectOpened(PhpProject project) {
-        isProjectOpened = true;
-        if (this.project == null) {
-            this.project = project;
+        projectOpened = true;
+        if (operationFactory == null) {
             ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
             operationFactory = new ProxyOperationFactory(project);
         }
@@ -168,116 +123,150 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         init(true);
     }
 
-    public void projectClosed(PhpProject project) {
-        isProjectOpened = false;
+    public void projectClosed() {
+        LOGGER.log(Level.FINE, "Closing Copy support for project {0}", project.getName());
+        assert projectOpened : "Copy Support already closed for project " + project.getName();
+
+        projectOpened = false;
         unregisterFileChangeListener();
-    }
-
-    PhpProject getProject() {
-        return project;
-    }
-
-    private static RequestProcessor.Task createProcessingTask() {
-        return RP.create(new Runnable() {
-            public void run() {
-                Callable<Boolean> operation = operationsQueue.poll();
-                while (operation != null) {
-                    try {
-                        operation.call();
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    operation = operationsQueue.poll();
-                }
-            }
-        });
     }
 
     private synchronized FileOperationFactory getOperationFactory() {
         assert operationFactory != null;
-        return operationFactory;
-    }
-
-    private static boolean isHandled(FileObject sourcesDirectory, FileObject source) {
-        return FileUtil.isParentOf(sourcesDirectory, source) || sourcesDirectory == source;
+        FileOperationFactory operationFactoryCopy = operationFactory;
+        return operationFactoryCopy;
     }
 
     private void prepareOperation(Callable<Boolean> callable) {
         if (callable != null) {
-            operationsQueue.offer(callable);
-            processingTask.schedule(300);
+            OPERATIONS_QUEUE.offer(callable);
+            PROCESSING_TASK.schedule(300);
         }
     }
 
+    private synchronized void init(boolean initCopy) {
+        LOGGER.log(Level.FINE, "Copy support INIT for project {0}", project.getName());
+        unregisterFileChangeListener();
+        if (initCopy) {
+            prepareOperation(getOperationFactory().createInitHandler(getSources()));
+        }
+        registerFileChangeListener();
+    }
 
-    private void registerFileChangeListener(FileObject sourcesDirectory) {
-        if (weakFileChangeListener == null) {
-            try {
-                fileSystem = sourcesDirectory.getFileSystem();
-                weakFileChangeListener = FileUtil.weakFileChangeListener(this, fileSystem);
-                if (IS_FINE_LOGGABLE) {
-                    String format = "+Copy support for project \"%s\" registers FS listener: \"%s\"";//NOI18N
-                    LOGGER.fine(String.format(format, project.getName(), fileSystem.getDisplayName()));
-                }
-                fileSystem.addFileChangeListener(weakFileChangeListener);
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+    private void registerFileChangeListener() {
+        LOGGER.log(Level.FINE, "Copy support REGISTERING FS listener for project {0}", project.getName());
+        assert Thread.holdsLock(this);
+        assert weakFileChangeListener == null : "FS listener cannot be set yet for project " + project.getName();
+        try {
+            fileSystem = getSources().getFileSystem();
+            weakFileChangeListener = FileUtil.weakFileChangeListener(this, fileSystem);
+            fileSystem.addFileChangeListener(weakFileChangeListener);
+            LOGGER.log(Level.FINE, "\t-> registered for {0}", fileSystem.getDisplayName());
+        } catch (FileStateInvalidException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
-    synchronized private void unregisterFileChangeListener() {
+    private synchronized void unregisterFileChangeListener() {
         if (weakFileChangeListener != null) {
-            if (IS_FINE_LOGGABLE) {
-                String format = "-Copy support for project \"%s\" unregisters FS listener: \"%s\"";//NOI18N
-                LOGGER.fine(String.format(format, project.getName(), fileSystem.getDisplayName()));
-            }
+            LOGGER.log(Level.FINE, "Copy support UNREGISTER FS listener for project {0} for {1}", new Object[] {project.getName(), fileSystem.getDisplayName()});
             fileSystem.removeFileChangeListener(weakFileChangeListener);
             fileSystem = null;
             weakFileChangeListener = null;
         }
     }
 
-    synchronized void init(boolean initCopy) {
-        if (IS_FINE_LOGGABLE) {
-                String format = "Copy support for project \"%s\" INIT";//NOI18N
-                LOGGER.fine(String.format(format, project.getName()));
-        }
-        unregisterFileChangeListener();
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        if (sourcesDirectory != null) {
-            if (initCopy) {
-                prepareOperation(getOperationFactory().createInitHandler(sourcesDirectory));
-            }
-            registerFileChangeListener(sourcesDirectory);
-        }
+    public void waitFinished() {
+        PROCESSING_TASK.schedule(0);
+        PROCESSING_TASK.waitFinished();
     }
 
-    public void waitFinished() {
-        processingTask.schedule(0);
-        processingTask.waitFinished();
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+        FileObject source = getValidProjectSource(fe);
+        if (source == null) {
+            return;
+        }
+        LOGGER.log(Level.FINE, "Processing event FOLDER CREATED for project {0}", project.getName());
+        prepareOperation(getOperationFactory().createCopyHandler(source));
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        FileObject source = getValidProjectSource(fe);
+        if (source == null) {
+            return;
+        }
+        LOGGER.log(Level.FINE, "Processing event DATA CREATED for project {0}", project.getName());
+        prepareOperation(getOperationFactory().createCopyHandler(source));
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        FileObject source = getValidProjectSource(fe);
+        if (source == null) {
+            return;
+        }
+        LOGGER.log(Level.FINE, "Processing event FILE CHANGED for project {0}", project.getName());
+        prepareOperation(getOperationFactory().createCopyHandler(source));
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        FileObject source = getValidProjectSource(fe);
+        if (source == null) {
+            return;
+        }
+        LOGGER.log(Level.FINE, "Processing event FILE DELETED for project {0}", project.getName());
+        prepareOperation(getOperationFactory().createDeleteHandler(source));
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        FileObject source = getValidProjectSource(fe);
+        if (source == null) {
+            return;
+        }
+        LOGGER.log(Level.FINE, "Processing event FILE RENAMED for project {0}", project.getName());
+        String originalName = fe.getName();
+        String ext = fe.getExt();
+        if (StringUtils.hasText(ext)) {
+            originalName += "." + ext; // NOI18N
+        }
+        prepareOperation(getOperationFactory().createRenameHandler(source, originalName));
     }
 
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
-        final String propertyName = propertyChangeEvent.getPropertyName();
-        if (isProjectOpened) {
-            // invalidate factories, e.g. remote client (it's better to simply create a new client)
-            operationFactory.reset();
-            if (propertyName.equals(PhpProjectProperties.COPY_SRC_TARGET) ||
-                    propertyName.equals(PhpProjectProperties.SRC_DIR) ||
-                    propertyName.equals(PhpProjectProperties.COPY_SRC_FILES)) {
-                ProjectManager.mutex().readAccess(new Runnable() {
+        if (projectOpened) {
+            LOGGER.log(Level.FINE, "Processing event PROPERTY CHANGE for project {0}", project.getName());
+            final String propertyName = propertyChangeEvent.getPropertyName();
 
-                    public void run() {
-                        if (IS_FINE_LOGGABLE) {
-                            String format = "Copy support for project \"%s\" propertyChange processing...";//NOI18N
-                            LOGGER.fine(String.format(format, project.getName()));
-                        }
-                        init(true);
-                    }
-                });
+            // invalidate factories, e.g. remote client (it's better to simply create a new client)
+            synchronized (this) {
+                operationFactory.reset();
+            }
+            if (PhpProjectProperties.COPY_SRC_TARGET.equals(propertyName)
+                    || PhpProjectProperties.SRC_DIR.equals(propertyName)
+                    || PhpProjectProperties.COPY_SRC_FILES.equals(propertyName)) {
+                LOGGER.log(Level.FINE, "\t-> change in {0} property", propertyName);
+                init(true);
             }
         }
+    }
+
+    private FileObject getValidProjectSource(FileEvent fileEvent) {
+        LOGGER.log(Level.FINEST, "Getting source file for project {0} from {1}", new Object[] {project.getName(), fileEvent});
+        FileObject source = fileEvent.getFile();
+        if (!CommandUtils.isUnderSources(project, source)) {
+            LOGGER.finest("\t-> null (invalid source)");
+            return null;
+        }
+        LOGGER.log(Level.FINE, "Got source file for project {0} from {1}", new Object[] {project.getName(), fileEvent});
+        return source;
+    }
+
+    FileObject getSources() {
+        return ProjectPropertiesSupport.getSourcesDirectory(project);
     }
 
     private static class ProxyOperationFactory extends FileOperationFactory {
@@ -304,22 +293,22 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         }
 
         @Override
-        Callable<Boolean> createInitHandlerInternal(FileObject source) {
+        protected Callable<Boolean> createInitHandlerInternal(FileObject source) {
             return createHandler(localFactory.createInitHandler(source), remoteFactory.createInitHandler(source));
         }
 
         @Override
-        Callable<Boolean> createCopyHandlerInternal(FileObject source) {
+        protected Callable<Boolean> createCopyHandlerInternal(FileObject source) {
             return createHandler(localFactory.createCopyHandler(source), remoteFactory.createCopyHandler(source));
         }
 
         @Override
-        Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName) {
+        protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName) {
             return createHandler(localFactory.createRenameHandler(source, oldName), remoteFactory.createRenameHandler(source, oldName));
         }
 
         @Override
-        Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
+        protected Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
             return createHandler(localFactory.createDeleteHandler(source), remoteFactory.createDeleteHandler(source));
         }
 
@@ -357,7 +346,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
 
             private Boolean callLocal() {
                 if (localFactory.isInvalid()) {
-                    LOGGER.log(Level.FINE, "Copy support invalid for project {0}", project.getName());
+                    LOGGER.log(Level.FINE, "LOCAL copying invalid for project {0}", project.getName());
                     return null;
                 }
 
@@ -365,7 +354,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                 Exception localExc = null;
 
                 if (localHandler != null) {
-                    LOGGER.log(Level.FINE, "Processing Copy Support handler for project {0}", project.getName());
+                    LOGGER.log(Level.FINE, "Processing LOCAL copying handler for project {0}", project.getName());
 
                     ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_LocalSynchronization"));
                     progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
@@ -373,7 +362,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                         progress.start();
                         localRetval = localHandler.call();
                     } catch (Exception exc) {
-                        LOGGER.log(Level.INFO, "Copy Support Fail: ", exc);
+                        LOGGER.log(Level.INFO, "LOCAL copying fail: ", exc);
                         localRetval = false;
                         localExc = exc;
                     } finally {
@@ -383,7 +372,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                 if (localRetval != null && !localRetval) {
                     if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail", project.getName()))) {
                         localFactory.invalidate();
-                        LOGGER.log(Level.INFO, String.format("Copy Support for project %s disabled by user", project.getName()), localExc);
+                        LOGGER.log(Level.INFO, String.format("LOCAL copying for project %s disabled by user", project.getName()), localExc);
                     }
                 }
                 return localRetval;
@@ -391,7 +380,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
 
             private Boolean callRemote() {
                 if (remoteFactory.isInvalid()) {
-                    LOGGER.log(Level.FINE, "Upload On Save invalid for project {0}", project.getName());
+                    LOGGER.log(Level.FINE, "REMOTE copying invalid for project {0}", project.getName());
                     return null;
                 }
 
@@ -399,7 +388,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                 Exception remoteExc = null;
 
                 if (remoteHandler != null) {
-                    LOGGER.log(Level.FINE, "Processing Upload On Save handler for project {0}", project.getName());
+                    LOGGER.log(Level.FINE, "Processing REMOTE copying handler for project {0}", project.getName());
 
                     ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_RemoteSynchronization"));
                     progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
@@ -407,7 +396,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                         progress.start();
                         remoteRetval = remoteHandler.call();
                     } catch (Exception exc) {
-                        LOGGER.log(Level.INFO, "Remote On Save Fail: ", exc);
+                        LOGGER.log(Level.INFO, "REMOTE copying fail: ", exc);
                         remoteRetval = false;
                         remoteExc = exc;
                     } finally {
@@ -416,7 +405,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                     if (remoteRetval != null && !remoteRetval) {
                         if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail", project.getName()))) {
                             remoteFactory.invalidate();
-                            LOGGER.log(Level.INFO, String.format("Remote On Save for project %s disabled by user", project.getName()), remoteExc);
+                            LOGGER.log(Level.INFO, String.format("REMOTE copying for project %s disabled by user", project.getName()), remoteExc);
                         }
                     }
                 }

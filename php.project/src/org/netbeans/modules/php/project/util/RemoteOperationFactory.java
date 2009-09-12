@@ -78,13 +78,13 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createInitHandlerInternal(final FileObject source) {
-        LOGGER.log(Level.FINE, "No INIT handler needed project {1}", project.getName());
+    protected Callable<Boolean> createInitHandlerInternal(final FileObject source) {
+        LOGGER.log(Level.FINE, "No INIT handler needed project {0}", project.getName());
         return null;
     }
 
     @Override
-    Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -104,7 +104,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
+    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -124,7 +124,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -158,23 +158,23 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     protected boolean isRemoteConfigValid() {
         if (isInvalid()) {
-            LOGGER.log(Level.FINE, "Upload on save invalid for project {0}", project.getName());
+            LOGGER.log(Level.FINE, "REMOTE copying invalid for project {0}", project.getName());
             return false;
         }
         if (getSources() == null) {
-            LOGGER.log(Level.WARNING, "Upload on save disabled for project {0}. Reason: source root is null", project.getName());
+            LOGGER.log(Level.WARNING, "REMOTE copying disabled for project {0}. Reason: source root is null", project.getName());
             return false;
         }
         if (!isRemoteConfigSelected()) {
-            LOGGER.log(Level.FINE, "Upload on save disabled for project {0}. Reason: remote config not selected", project.getName());
+            LOGGER.log(Level.FINE, "REMOTE copying disabled for project {0}. Reason: remote config not selected", project.getName());
             return false;
         }
         if (!isUploadOnSave()) {
-            LOGGER.log(Level.FINE, "Upload on save disabled for project {0}. Reason: upload on save not selected", project.getName());
+            LOGGER.log(Level.FINE, "REMOTE copying disabled for project {0}. Reason: REMOTE copying not selected", project.getName());
             return false;
         }
         if (getRemoteConfiguration() == null) {
-            LOGGER.log(Level.INFO, "Upload on save disabled for project {0}. Reason: remote config not found", project.getName());
+            LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: remote config not found", project.getName());
 
             if (askUser(NbBundle.getMessage(RemoteOperationFactory.class, "MSG_RemoteConfigNotFound", project.getName()))) {
                 showCustomizer();

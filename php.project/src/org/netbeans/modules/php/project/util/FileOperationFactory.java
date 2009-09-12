@@ -46,6 +46,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.openide.DialogDisplayer;
@@ -106,10 +107,10 @@ abstract class FileOperationFactory {
     }
 
     abstract Logger getLogger();
-    abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
-    abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
-    abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
-    abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
+    protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
 
     void reset() {
         factoryError = false;
@@ -124,10 +125,8 @@ abstract class FileOperationFactory {
     }
 
     protected final boolean isSourceFileValid(FileObject source) {
-        FileObject sourceRoot = getSources();
-        return (FileUtil.isParentOf(sourceRoot, source) || source.equals(sourceRoot))
-                && !isNbProjectMetadata(source)
-                && phpVisibilityQuery.isVisible(source);
+        assert CommandUtils.isUnderSources(project, source) : String.format("File %s not underneath sources of project %s", getPath(source), project.getName());
+        return !isNbProjectMetadata(source) && phpVisibilityQuery.isVisible(source);
     }
 
     boolean isNbProjectMetadata(FileObject fo) {

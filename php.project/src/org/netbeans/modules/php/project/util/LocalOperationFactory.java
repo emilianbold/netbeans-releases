@@ -65,23 +65,23 @@ final class LocalOperationFactory extends FileOperationFactory {
 
     private boolean isEnabledAndValidConfig() {
         if (isInvalid()) {
-            LOGGER.log(Level.FINE, "Copy support invalid for project {0}", project.getName());
+            LOGGER.log(Level.FINE, "LOCAL copying invalid for project {0}", project.getName());
             return false;
         }
         boolean copySourcesEnabled = ProjectPropertiesSupport.isCopySourcesEnabled(project);
         if (!copySourcesEnabled) {
-            LOGGER.log(Level.FINE, "Copy support disabled for project {0}", project.getName());
+            LOGGER.log(Level.FINE, "LOCAL copying disabled for project {0}", project.getName());
             return false;
         }
 
         if (getSources() == null) {
-            LOGGER.log(Level.WARNING, "Copy support disabled for project {0}. Reason: source root is null", project.getName());
+            LOGGER.log(Level.WARNING, "LOCAL copying disabled for project {0}. Reason: source root is null", project.getName());
             return false;
         }
 
         File targetRoot = getTargetRoot();
         if (targetRoot == null) {
-            LOGGER.log(Level.INFO, "Copy support disabled for project {0}. Reason: target folder is null", project.getName());
+            LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder is null", project.getName());
 
             if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_NoTargetFolder", project.getName()))) {
                 showCustomizer();
@@ -97,7 +97,7 @@ final class LocalOperationFactory extends FileOperationFactory {
 
         boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
         if (!isWritable) {
-            LOGGER.log(Level.INFO, "Copy support disabled for project {0}. Reason: target folder {1} is not writable", new Object[] {project.getName(), writableFolder});
+            LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder {1} is not writable", new Object[] {project.getName(), writableFolder});
 
             if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_TargetFolderNotWritable", project.getName(), writableFolder))) {
                 showCustomizer();
@@ -115,7 +115,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createInitHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createInitHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -155,7 +155,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -171,7 +171,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
+    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -209,7 +209,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
