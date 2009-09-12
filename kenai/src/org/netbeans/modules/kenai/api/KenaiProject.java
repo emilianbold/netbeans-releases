@@ -186,7 +186,7 @@ public final class KenaiProject {
      * remote image loading on AWT thread. Do not call this method from AWT thread...
      * @param forceReload Forces reloading image from the server (in case that image for a Kenai project was already cached)
      */
-    public synchronized void fetchProjectImage(boolean forceReload) {
+    public void fetchProjectImage(boolean forceReload) {
         if (projectIcon == null || forceReload) {
             try {
                 BufferedImage img = ImageIO.read(new URL(getImageUrl()));
