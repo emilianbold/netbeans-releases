@@ -149,6 +149,7 @@ public class ContactList extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 3, 0, 3));
         setFocusCycleRoot(true);
+        setOpaque(false);
 
         filterCombo.setNextFocusableComponent(contactJList);
         filterCombo.addItemListener(new java.awt.event.ItemListener() {
@@ -181,6 +182,7 @@ public class ContactList extends javax.swing.JPanel {
         contactListScrollPane.setViewportView(contactJList);
 
         searchPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 3, 5, 3));
+        searchPanel.setOpaque(false);
 
         searchField.setNextFocusableComponent(filterCombo);
         searchField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -203,7 +205,7 @@ public class ContactList extends javax.swing.JPanel {
             .add(searchPanelLayout.createSequentialGroup()
                 .add(searchLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
+                .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
         );
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
