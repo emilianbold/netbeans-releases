@@ -147,9 +147,9 @@ public class ContactList extends javax.swing.JPanel {
         searchField = new javax.swing.JTextField();
         searchLabel = new javax.swing.JLabel();
 
+        setBackground(java.awt.SystemColor.control);
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 3, 0, 3));
         setFocusCycleRoot(true);
-        setOpaque(false);
 
         filterCombo.setNextFocusableComponent(contactJList);
         filterCombo.addItemListener(new java.awt.event.ItemListener() {
