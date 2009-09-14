@@ -111,7 +111,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                 = new RepositoryComboSupport(comboBox, (Repository) null,
                                                        (File) null,
                                                        selectRepoIfSingle);
-        repositoryComboSupport.activate(component);
+        if (component != null) {
+            repositoryComboSupport.setupDisplayabilityTrigger(component);
+        }
         return repositoryComboSupport;
     }
 
@@ -134,7 +136,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                 = new RepositoryComboSupport(comboBox, defaultRepo,
                                                        (File) null,
                                                        false);
-        repositoryComboSupport.activate(component);
+        if (component != null) {
+            repositoryComboSupport.setupDisplayabilityTrigger(component);
+        }
         return repositoryComboSupport;
     }
 
@@ -157,7 +161,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                 = new RepositoryComboSupport(comboBox, (Repository) null,
                                                        referenceFile,
                                                        false);
-        repositoryComboSupport.activate(component);
+        if (component != null) {
+            repositoryComboSupport.setupDisplayabilityTrigger(component);
+        }
         return repositoryComboSupport;
     }
 
@@ -203,36 +209,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         }
     }
 
-    /**
-     * Activates the mechanism of the bugtracking repository combo-box.
-     * If a non-null component is passed as an argument, a trigger is set up
-     * such that loading of bugtracking repositories is started as soon as
-     * the given component becomes displayable. Otherwise, loading is started
-     * immediately.
-     *
-     * @param  triggerComponent  component whose displayability should activate
-     *                           the combo-box, or {@code null}
-     * @exception  java.lang.IllegalStateException
-     *             if the given component is already displayable
-     */
-    private void activate(final Component triggerComponent) {
-        LOG.finer("activate(Component)");                               //NOI18N
-
-        if (triggerComponent != null) {
-            setupDisplayabilityTrigger(triggerComponent);
-        } else {
-            if (EventQueue.isDispatchThread()) {
-                start();
-            } else {
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        start();
-                    }
-                });
-            }
-        }
-    }
-
     private void start() {
         assert EventQueue.isDispatchThread();
         LOG.finer("start()");                                           //NOI18N
@@ -268,6 +244,17 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         shutdown = true;
     }
 
+    /**
+     * Activates the mechanism of the bugtracking repository combo-box.
+     * If a non-null component is passed as an argument, a trigger is set up
+     * such that loading of bugtracking repositories is started as soon as
+     * the given component becomes displayable.
+     *
+     * @param  triggerComponent  component whose displayability should activate
+     *                           the combo-box
+     * @exception  java.lang.IllegalStateException
+     *             if the given component is already displayable
+     */
     private void setupDisplayabilityTrigger(final Component triggerComponent) {
         assert EventQueue.isDispatchThread();
         LOG.finer("setupDisplayabilityTrigger(Component)");             //NOI18N
