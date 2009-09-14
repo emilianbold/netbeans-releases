@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,6 +57,8 @@ public class ExecSupport {
 
     private String lookFor;
     private OutputCopier[] copyMakers;
+    private Thread t;
+    private Connect connect;
 
     /** Creates a new instance of ExecSupport */
     public ExecSupport() {
@@ -97,6 +99,7 @@ public class ExecSupport {
         (copyMakers[1] = new OutputCopier(new InputStreamReader(child.getErrorStream()), io.getErr(), true, lookFor)).start();
         (copyMakers[2] = new OutputCopier(io.getIn(), new OutputStreamWriter(child.getOutputStream()), true)).start();
         new Thread() {
+            @Override
             public void run() {
                 try {
                     int ret = child.waitFor();
@@ -148,6 +151,7 @@ public class ExecSupport {
         }
         
         /* Makes copy. */
+        @Override
         public void run() {
             int read;
             int stringFoundChars = 0;
@@ -171,6 +175,7 @@ public class ExecSupport {
             }
         }
         
+        @Override
         public void interrupt() {
             super.interrupt();
             done = true;
@@ -186,14 +191,13 @@ public class ExecSupport {
     }
 
     /** Waits for startup of a server, waits until the message set through the setStringToLookFor() method. 
-     *  @param progressMessage message to be displayed in the progress bar. If null, no progress bar is shown.
      *  @param timeout timeout
      *  @return true if the connection was successfully established, false if timed out
      */ 
     public boolean waitForMessage(int timeout) {
         int retryTime = 10;
-        Connect connect = new Connect(retryTime); 
-        Thread t = new Thread(connect);
+        connect = new Connect(retryTime); 
+        t = new Thread(connect);
         t.start();
         try {
             t.join(timeout);
@@ -204,6 +208,20 @@ public class ExecSupport {
             t.interrupt();//for thread deadlock
         }
         return connect.getStatus();
+    }
+
+    public boolean interruptWaiting() {
+        if (t == null) {
+            return false;
+        } else {
+            if (t.isAlive()) {
+                connect.finishLoop();
+                t.interrupt();
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
     
     private class Connect implements Runnable  {
@@ -227,7 +245,7 @@ public class ExecSupport {
                     break;
                 }
                 try {
-                    Thread.currentThread().sleep(retryTime);
+                    Thread.sleep(retryTime);
                 } catch(InterruptedException ie) {
                 }
             }

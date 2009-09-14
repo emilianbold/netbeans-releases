@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -57,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.glassfish.javaee.ResourceRegistrationHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -118,6 +118,7 @@ public class FastDeploy extends IncrementalDeployment {
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
+        ResourceRegistrationHelper.deployResources(dir,dm); 
         if (restart) {
             restartProgress.addProgressListener(new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent event) {
@@ -170,6 +171,12 @@ public class FastDeploy extends IncrementalDeployment {
                 appChangeDescriptor.ejbsChanged() ||
                 appChangeDescriptor.manifestChanged() ||
                 appChangeDescriptor.serverDescriptorChanged();
+        
+        // this will not be a 100% catch.. but should help..
+        File[] changedFiles = appChangeDescriptor.getChangedFiles();
+        if (null != changedFiles && changedFiles.length > 0 && null != changedFiles[0])
+            ResourceRegistrationHelper.deployResources(changedFiles[0],dm);
+
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 

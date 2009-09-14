@@ -334,21 +334,19 @@ public class ProcFSDataCollector
 
                                 lwpsTracker.update(lwpUsage);
 
-                                float normCoef = (float) 1.0 / lwp_msaInfo.sum_states;
-
                                 insertMSAStatement.setLong(1, lwp_samplingInfo.timestamp);
                                 insertMSAStatement.setLong(2, lwp_samplingInfo.sample);
                                 insertMSAStatement.setInt(3, lwp_usageInfo.pr_lwpid);
-                                insertMSAStatement.setFloat(4, normCoef * lwp_msaInfo.pr_utime);
-                                insertMSAStatement.setFloat(5, normCoef * lwp_msaInfo.pr_stime);
-                                insertMSAStatement.setFloat(6, normCoef * lwp_msaInfo.pr_ttime);
-                                insertMSAStatement.setFloat(7, normCoef * lwp_msaInfo.pr_tftime);
-                                insertMSAStatement.setFloat(8, normCoef * lwp_msaInfo.pr_dftime);
-                                insertMSAStatement.setFloat(9, normCoef * lwp_msaInfo.pr_kftime);
-                                insertMSAStatement.setFloat(10, normCoef * lwp_msaInfo.pr_ltime);
-                                insertMSAStatement.setFloat(11, normCoef * lwp_msaInfo.pr_slptime);
-                                insertMSAStatement.setFloat(12, normCoef * lwp_msaInfo.pr_wtime);
-                                insertMSAStatement.setFloat(13, normCoef * lwp_msaInfo.pr_stoptime);
+                                insertMSAStatement.setLong(4, lwp_msaInfo.pr_utime);
+                                insertMSAStatement.setLong(5, lwp_msaInfo.pr_stime);
+                                insertMSAStatement.setLong(6, lwp_msaInfo.pr_ttime);
+                                insertMSAStatement.setLong(7, lwp_msaInfo.pr_tftime);
+                                insertMSAStatement.setLong(8, lwp_msaInfo.pr_dftime);
+                                insertMSAStatement.setLong(9, lwp_msaInfo.pr_kftime);
+                                insertMSAStatement.setLong(10, lwp_msaInfo.pr_ltime);
+                                insertMSAStatement.setLong(11, lwp_msaInfo.pr_slptime);
+                                insertMSAStatement.setLong(12, lwp_msaInfo.pr_wtime);
+                                insertMSAStatement.setLong(13, lwp_msaInfo.pr_stoptime);
 
                                 insertMSAStatement.executeUpdate();
                             } catch (SQLException ex) {

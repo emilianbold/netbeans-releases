@@ -47,7 +47,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -154,7 +154,7 @@ public final class WatchProjects {
     
 
     public static void assertTextDocuments() throws Exception {
-        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+        for (TopComponent tc : new ArrayList<TopComponent>(TopComponent.getRegistry().getOpened())) {
             final EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
                 ec.close();
@@ -257,7 +257,7 @@ public final class WatchProjects {
      * #124061 workaround - close navigator before tests
      */
     private static void tryCloseNavigator() throws Exception {
-        for (TopComponent c : TopComponent.getRegistry().getOpened()) {
+        for (TopComponent c : new ArrayList<TopComponent>(TopComponent.getRegistry().getOpened())) {
             LOG.fine("Processing TC " + c.getDisplayName() + "class " + c.getClass().getName());
             if (c.getClass().getName().equals("org.netbeans.modules.navigator.NavigatorTC")) {
                 final TopComponent navigator = c;
