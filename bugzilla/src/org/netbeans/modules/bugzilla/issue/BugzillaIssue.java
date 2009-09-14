@@ -674,6 +674,9 @@ public class BugzillaIssue extends Issue {
 
     void setProduct(String value) {
         TaskAttribute ta = data.getRoot().getMappedAttribute(IssueField.PRODUCT.key);
+        if(ta == null) {
+            ta = new TaskAttribute(data.getRoot(), IssueField.PRODUCT.key);
+        }
         ta.setValue(value);
 
         ta = data.getRoot().getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
