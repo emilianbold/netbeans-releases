@@ -40,7 +40,10 @@ package org.netbeans.modules.php.project.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +53,7 @@ import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
@@ -57,31 +61,35 @@ import org.openide.filesystems.FileUtil;
 final class LocalOperationFactory extends FileOperationFactory {
 
     private static final Logger LOGGER = Logger.getLogger(LocalOperationFactory.class.getName());
-    private static final boolean IS_WARNING_LOGGABLE = LOGGER.isLoggable(Level.WARNING);
-    private static final boolean IS_FINE_LOGGABLE = LOGGER.isLoggable(Level.FINE);
 
     LocalOperationFactory(PhpProject project) {
         super(project);
     }
 
     private boolean isEnabledAndValidConfig() {
-        assert project != null;
+        if (isInvalid()) {
+            LOGGER.log(Level.FINE, "LOCAL copying invalid for project {0}", project.getName());
+            return false;
+        }
         boolean copySourcesEnabled = ProjectPropertiesSupport.isCopySourcesEnabled(project);
-        if (!copySourcesEnabled) return false;
-
-        FileObject sourceRoot = ProjectPropertiesSupport.getSourcesDirectory(project);
-        if (sourceRoot == null) {
-            if (IS_WARNING_LOGGABLE) {
-                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "source root is null"));//NOI18N
-            }
+        if (!copySourcesEnabled) {
+            LOGGER.log(Level.FINE, "LOCAL copying disabled for project {0}", project.getName());
             return false;
         }
 
-        File targetRoot = getTargetRoot(project);
+        if (getSources() == null) {
+            LOGGER.log(Level.WARNING, "LOCAL copying disabled for project {0}. Reason: source root is null", project.getName());
+            return false;
+        }
+
+        File targetRoot = getTargetRoot();
         if (targetRoot == null) {
-            if (IS_WARNING_LOGGABLE) {
-                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root is null"));//NOI18N
+            LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder is null", project.getName());
+
+            if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_NoTargetFolder", project.getName()))) {
+                showCustomizer();
             }
+            invalidate();
             return false;
         }
 
@@ -92,9 +100,12 @@ final class LocalOperationFactory extends FileOperationFactory {
 
         boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
         if (!isWritable) {
-            if (IS_WARNING_LOGGABLE) {
-                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root isn't writable"));//NOI18N
+            LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder {1} is not writable", new Object[] {project.getName(), writableFolder});
+
+            if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_TargetFolderNotWritable", project.getName(), writableFolder))) {
+                showCustomizer();
             }
+            invalidate();
             return false;
         }
 
@@ -102,190 +113,223 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    Callable<Boolean> createCopyHandler(final FileObject source) {
-        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
-            public Boolean call() throws Exception {
-                FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-                Pair<FileObject, File> cfgPair = Pair.of(sourcesDirectory, getTargetRoot(project));
-                boolean sourceFileValid = isPairValid(cfgPair) && isSourceFileValid(cfgPair.first, source);
-                final File target = sourceFileValid ? getTarget(cfgPair, source) : null;
-                return (target != null) ? doCopy(source, target) : false;
-            }
-        } : null;
-        if (IS_FINE_LOGGABLE) {
-            String format = retval != null ? "Copying file \"%s\" from project \"%s\" is scheduled." ://NOI18N
-                "!Copying file \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
-            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
-        }
-        return retval;
+    Logger getLogger() {
+        return LOGGER;
     }
 
     @Override
-    Callable<Boolean> createDeleteHandler(final FileObject source) {
-        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
-
+    protected Callable<Boolean> createInitHandlerInternal(final FileObject source) {
+        LOGGER.log(Level.FINE, "Creating INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+        return new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-                Pair<FileObject, File> cfgPair = Pair.of(sourcesDirectory, getTargetRoot(project));
-                boolean sourceFileValid = isPairValid(cfgPair) && isSourceFileValid(cfgPair.first, source);
-                final File target = sourceFileValid ? getTarget(cfgPair, source) : null;
-                return (target != null) ? doDelete(target) : false;
-            }
-        } : null;
-        if (IS_FINE_LOGGABLE) {
-            String format = retval != null ? "Deleting file \"%s\" from project \"%s\" is scheduled." ://NOI18N
-                "!Deleting file \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
-            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
-        }
-        return retval;
-    }
+                LOGGER.log(Level.FINE, "Running INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+                File target = getTarget(source);
+                if (target == null) {
+                    LOGGER.log(Level.FINE, "Ignored for {0} (no target)", getPath(source));
+                    return null;
+                }
 
-    @Override
-    Callable<Boolean> createInitHandler(final FileObject source) {
-        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
-            public Boolean call() throws Exception {
-                FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-                Pair<FileObject, File> cfgPair = Pair.of(sourcesDirectory, getTargetRoot(project));
-                boolean sourceFileValid = isPairValid(cfgPair) && isSourceFileValid(cfgPair.first, source);
-                if (sourceFileValid) {
-                    File target = getTarget(cfgPair, source);
-                    if (target != null && !target.exists()) {
-                        FileUtil.createFolder(target);
+                if (!target.exists()) {
+                    FileUtil.createFolder(target);
+                    if (!target.isDirectory()) {
+                        LOGGER.log(Level.FINE, "Failed for {0}, cannot create directory {1}", new Object[] {getPath(source), target});
+                        return false;
                     }
-                    if (target != null && target.exists() && target.list().length == 0) {
-                        Enumeration<? extends FileObject> children = source.getChildren(true);
-                        while (children.hasMoreElements()) {
-                            FileObject chld = children.nextElement();
-                            target = getTarget(cfgPair, chld);
-                            if (target != null) {
-                                if (!doCopy(chld, target)) {
-                                    return false;
-                                }
-                            }
+                    LOGGER.log(Level.FINE, "Directory {0} created", target);
+                }
+                String[] list = target.list();
+                if (list != null && target.list().length == 0) {
+                    for (FileObject child : getAllChildren(source)) {
+                        target = getTarget(child, false);
+                        if (target == null) {
+                            LOGGER.log(Level.FINE, "Ignored for {0} (no target)", getPath(child));
+                            continue;
                         }
-                        return true;
+                        if (!doCopy(child, target)) {
+                            return false;
+                        }
                     }
                 }
-                return false;
+                return true;
             }
-        } : null;
-        if (IS_FINE_LOGGABLE) {
-            String format = retval != null ? "Initialization of folder \"%s\" from project \"%s\" is scheduled." ://NOI18N
-                "!Initialization of folder \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
-            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
-        }
-        return retval;
+        };
     }
 
     @Override
-    Callable<Boolean> createRenameHandler(final FileObject source, final String oldName) {
-        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
-
+    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
+        LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+        return new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-                Pair<FileObject, File> cfgPair = Pair.of(sourcesDirectory, getTargetRoot(project));
-                boolean sourceFileValid = isPairValid(cfgPair) && isSourceFileValid(cfgPair.first, source);
-                File target = sourceFileValid && isPairValid(cfgPair) ? getTarget(cfgPair, source) : null;
-                if (target != null) {
-                    if (source.isFolder()) {
-                        FileObject[] children = source.getChildren();
-                        for (FileObject child : children) {
-                            final File childTarget = sourceFileValid && isPairValid(cfgPair) ? getTarget(cfgPair, child) : null;
-                            if (childTarget != null) {
-                                if (!doCopy(child, childTarget)) {
-                                    return false;
-                                }
-                            }
-                        }
-                    } else {
-                        if (target != null) {
-                            if (!doCopy(source, target)) {
-                                return false;
-                            }
-                        }
-                    }
-                    target = target.getParentFile();
-                    if (target != null) {
-                        target = new File(target, oldName);
-                        return (target.exists()) ? doDelete(target) : false;
-                    }
+                LOGGER.log(Level.FINE, "Running COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+                File target = getTarget(source);
+                if (target == null) {
+                    LOGGER.log(Level.FINE, "Ignored for {0} (no target)", getPath(source));
+                    return null;
                 }
-                return false;
+                return doCopy(source, target);
             }
-        } : null;
-        if (IS_FINE_LOGGABLE) {
-            String format = retval != null ? "Renaming file \"%s\" from project \"%s\" is scheduled." ://NOI18N
-                "!Renaming file \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
-            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
-        }
-        return retval;
+        };
     }
 
-    private static File getTargetRoot(PhpProject project) {
+    @Override
+    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
+        LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+        return new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                LOGGER.log(Level.FINE, "Running RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+                File target = getTarget(source);
+                if (target == null) {
+                    LOGGER.log(Level.FINE, "Ignored for {0} (no target)", getPath(source));
+                    return null;
+                }
+
+                if (source.isFolder()) {
+                    for (FileObject child : getAllChildren(source)) {
+                        final File childTarget = getTarget(child, false);
+                        if (childTarget != null
+                                && !doCopy(child, childTarget)) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if (!doCopy(source, target)) {
+                        return false;
+                    }
+                }
+                // delete the old file/directory
+                File parent = target.getParentFile();
+                if (parent != null) {
+                    File oldTarget = new File(parent, oldName);
+                    return doDelete(oldTarget);
+                }
+                return true;
+            }
+        };
+    }
+
+    @Override
+    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
+        LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+        return new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                LOGGER.log(Level.FINE, "Running DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+                File target = getTarget(source);
+                if (target == null) {
+                    LOGGER.log(Level.FINE, "Ignored for {0} (no target)", getPath(source));
+                    return null;
+                }
+                return doDelete(target);
+            }
+        };
+    }
+
+    private File getTargetRoot() {
         return ProjectPropertiesSupport.getCopySourcesTarget(project);
     }
 
-    private static File getTarget(Pair<FileObject, File> cfgPair, FileObject source) {
-        FileObject sourceRoot = cfgPair.first;
-        File targetRoot = cfgPair.second;
-        File target = null;
-        if (sourceRoot != null && targetRoot != null) {
-            String relativePath = FileUtil.getRelativePath(sourceRoot, source);
-            if (relativePath != null) {
-                assert targetRoot != null;
-                target = FileUtil.normalizeFile(new File(targetRoot, relativePath));
-            }
-        }
-        return target;
+    private Pair<FileObject, File> getConfigPair() {
+        return Pair.of(getSources(), getTargetRoot());
     }
 
-    private static boolean doCopy(FileObject source, File target) throws IOException {
+    private File getTarget(FileObject source) {
+        return getTarget(source, true);
+    }
+
+    private File getTarget(FileObject source, boolean deepCheck) {
+        LOGGER.log(Level.FINE, "Getting target for {0} (project {1}, deep check: {2})", new Object[] {getPath(source), project.getName(), deepCheck});
+        Pair<FileObject, File> cfgPair = getConfigPair();
+        if (deepCheck) {
+            if (!isEnabledAndValidConfig()) {
+                LOGGER.fine("\t-> null (invalid config)");
+                return null;
+            }
+            if (!isPairValid(cfgPair)) {
+                LOGGER.fine("\t-> null (invalid config pair)");
+                return null;
+            }
+        }
+        if (!isSourceFileValid(source)) {
+            LOGGER.fine("\t-> null (invalid source)");
+            return null;
+        }
+
+        FileObject sourceRoot = cfgPair.first;
+        File targetRoot = cfgPair.second;
+        assert sourceRoot != null;
+        assert targetRoot != null;
+
+        String relativePath = FileUtil.getRelativePath(sourceRoot, source);
+        assert relativePath != null : String.format("Relative path be found because isSourceFileValid() was already called for %s", getPath(source));
+        LOGGER.fine("\t-> found");
+        return FileUtil.normalizeFile(new File(targetRoot, relativePath));
+    }
+
+    private boolean doCopy(FileObject source, File target) throws IOException {
+        LOGGER.log(Level.FINE, "Copying file {0} -> {1}", new Object[] {getPath(source), target});
         File targetParent = target.getParentFile();
-        if (FileOperationFactory.isNbProjectMetadata(source)) return true;
         if (source.isData()) {
             doDelete(target);
             FileObject parent = FileUtil.createFolder(targetParent);
             FileUtil.copyFile(source, parent, source.getName(), source.getExt());
+            LOGGER.log(Level.FINE, "File {0} copied to {1}", new Object[] {getPath(source), target});
         } else {
             String[] childs = target.list();
             if (childs == null || childs.length == 0) {
                 doDelete(target);
             }
             FileUtil.createFolder(target);
-        }
-        if (IS_FINE_LOGGABLE) {
-            LOGGER.fine((target.exists() ? "file copied: " : "!file not copied: ") + target.getAbsolutePath());//NOI18N
-        } else if ((IS_WARNING_LOGGABLE && !target.exists())) {
-            LOGGER.warning("!file not copied: " + target.getAbsolutePath());//NOI18N
+            LOGGER.log(Level.FINE, "Folder {0} created", target);
         }
         return target.exists();
     }
 
-    private static boolean doDelete(File target) throws IOException {
-        if (target.exists()) {
-            FileObject targetFo = FileUtil.toFileObject(target);
-            if (targetFo != null && targetFo.isValid()) {
-                targetFo.delete();
-            } else {
-                target.delete();
-            }
-            if (IS_FINE_LOGGABLE) {
-                LOGGER.fine((!target.exists() ? "file deleted: " : "!file not deleted: ") + target.getAbsolutePath());//NOI18N
-            } else if ((IS_WARNING_LOGGABLE && target.exists())) {
-                LOGGER.warning("!file not deleted: " + target.getAbsolutePath());//NOI18N
-            }
-
-            return !target.exists();
+    private boolean doDelete(File target) throws IOException {
+        LOGGER.log(Level.FINE, "Deleting file {0}", target);
+        if (!target.exists()) {
+            // nothing to do, no error
+            LOGGER.log(Level.FINE, "File {0} does not exists, nothing to delete", target);
+            return true;
         }
-        return false;
+        FileObject targetFo = FileUtil.toFileObject(target);
+        assert targetFo != null : "FileObject must be found for " + target;
+        if (!targetFo.isValid()) {
+            LOGGER.log(Level.FINE, "FileObject {0} is not valid, nothing to delete", getPath(targetFo));
+        } else {
+            targetFo.delete();
+            LOGGER.log(Level.FINE, "File {0} deleted", getPath(targetFo));
+        }
+        return !target.exists();
     }
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {
         return pair != null && pair.first != null && pair.second != null;
     }
 
-    @Override
-    void invalidate() {
-        // ignored
+    private Collection<FileObject> getAllChildren(FileObject source) {
+        LOGGER.log(Level.FINE, "Getting all valid children for {0}", getPath(source));
+        assert source.isFolder() : "Only folders allowed but file given: " + getPath(source);
+        Queue<FileObject> queue = new LinkedList<FileObject>();
+        queue.offer(source);
+
+        List<FileObject> children = new LinkedList<FileObject>();
+        while (!queue.isEmpty()) {
+            FileObject file = queue.poll();
+            if (file.isFolder()) {
+                for (FileObject child : file.getChildren()) {
+                    if (isSourceFileValid(child)) {
+                        assert !children.contains(child) : String.format("File %s already in children %s", child, children);
+                        LOGGER.log(Level.FINEST, "\t-> file {0} added", getPath(child));
+                        children.add(child);
+
+                        queue.offer(child);
+                    } else {
+                        LOGGER.log(Level.FINEST, "\t-> file {0} ignored (not valid)", getPath(child));
+                    }
+                }
+            }
+        }
+        LOGGER.log(Level.FINEST, "Children of folder {0}: {1}", new Object[] {source, children});
+        LOGGER.log(Level.FINE, "\t-> got {0} children", children.size());
+        return children;
     }
 }

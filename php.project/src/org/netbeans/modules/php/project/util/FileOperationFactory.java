@@ -39,8 +39,18 @@
 package org.netbeans.modules.php.project.util;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -49,37 +59,98 @@ import org.openide.filesystems.FileUtil;
  */
 abstract class FileOperationFactory {
     protected final PhpProject project;
+
+    private final FileObject nbprojectDir;
     private final PhpVisibilityQuery phpVisibilityQuery;
+
+    volatile boolean factoryError = false;
 
     public FileOperationFactory(PhpProject project) {
         assert project != null;
         this.project = project;
         phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
+        nbprojectDir = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        assert nbprojectDir != null : "No nbproject directory found for " + project;
+        assert nbprojectDir.isFolder() && nbprojectDir.isValid() : "Not valid nbproject directory found for " + project;
     }
 
-    abstract Callable<Boolean> createCopyHandler(FileObject source);
-    abstract Callable<Boolean> createDeleteHandler(FileObject source);
-    abstract Callable<Boolean> createInitHandler(FileObject source);
-    abstract Callable<Boolean> createRenameHandler(FileObject source, String oldName);
-    abstract void invalidate();
-
-    protected final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
-        return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && phpVisibilityQuery.isVisible(source);
-    }
-    static boolean isNbProjectMetadata(FileObject fo) {
-        final String metadataName = "nbproject";//NOI18N
-        if (fo.getPath().indexOf(metadataName) != -1) {
-            while (fo != null) {
-                if (fo.isFolder()) {
-                    if (metadataName.equals(fo.getNameExt())) {
-                        return true;
-                    }
-                }
-                fo = fo.getParent();
-            }
+    final Callable<Boolean> createInitHandler(FileObject source) {
+        if (isInvalid()) {
+            getLogger().log(Level.FINE, "No INIT handler, File Operation Factory invalid for project {0}", project.getName());
+            return null;
         }
-        return false;
+        return createInitHandlerInternal(source);
     }
 
+    final Callable<Boolean> createCopyHandler(FileObject source) {
+        if (isInvalid()) {
+            getLogger().log(Level.FINE, "No CREATE handler, File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createCopyHandlerInternal(source);
+    }
 
+    final Callable<Boolean> createRenameHandler(FileObject source, String oldName) {
+        if (isInvalid()) {
+            getLogger().log(Level.FINE, "No RENAME handler, File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createRenameHandlerInternal(source, oldName);
+    }
+
+    final Callable<Boolean> createDeleteHandler(FileObject source) {
+        if (isInvalid()) {
+            getLogger().log(Level.FINE, "No DELETE handler, File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createDeleteHandlerInternal(source);
+    }
+
+    abstract Logger getLogger();
+    protected abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
+    protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
+
+    void reset() {
+        factoryError = false;
+    }
+
+    void invalidate() {
+        factoryError = true;
+    }
+
+    boolean isInvalid() {
+        return factoryError;
+    }
+
+    protected final boolean isSourceFileValid(FileObject source) {
+        assert CommandUtils.isUnderSources(project, source) : String.format("File %s not underneath sources of project %s", getPath(source), project.getName());
+        return !isNbProjectMetadata(source) && phpVisibilityQuery.isVisible(source);
+    }
+
+    boolean isNbProjectMetadata(FileObject fo) {
+        return FileUtil.isParentOf(nbprojectDir, fo) || nbprojectDir.equals(fo);
+    }
+
+    protected FileObject getSources() {
+        return ProjectPropertiesSupport.getSourcesDirectory(project);
+    }
+
+    protected static String getPath(FileObject fo) {
+        return FileUtil.getFileDisplayName(fo);
+    }
+
+    protected boolean askUser(String message) {
+        Object openProperties = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, project.getName(), JOptionPane.YES_NO_OPTION));
+        return openProperties.equals(JOptionPane.YES_OPTION);
+    }
+
+    protected void showCustomizer() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.SOURCES);
+            }
+        });
+    }
 }
