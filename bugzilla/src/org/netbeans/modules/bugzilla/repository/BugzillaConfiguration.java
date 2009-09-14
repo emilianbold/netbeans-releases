@@ -235,6 +235,26 @@ public class BugzillaConfiguration {
     }
 
     /**
+     * Returns all issue types defined in the given repository.
+     * WARNING - works only for the bugzilla hosting netbeans
+     * 
+     * @param repository
+     * @return
+     */
+    public List<String> getIssueTypes() {
+        if(rc == null) {
+            return Collections.emptyList();
+        }
+        List<BugzillaCustomField> fields = rc.getCustomFields();
+        for (BugzillaCustomField field : fields) {
+            if(field.getName().equals("cf_bug_type")) {                          // NOI18N
+                return field.getOptions();
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * Returns all custom fields defined in the given repository
      * @param repository
      * @return

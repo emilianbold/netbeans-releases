@@ -135,9 +135,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         
         summaryComboBox.setRenderer(new ParameterValueCellRenderer());
         commentComboBox.setRenderer(new ParameterValueCellRenderer());
+        whiteboardComboBox.setRenderer(new ParameterValueCellRenderer());
         keywordsComboBox.setRenderer(new ParameterValueCellRenderer());
         peopleComboBox.setRenderer(new ParameterValueCellRenderer());
         severityList.setCellRenderer(new ParameterValueCellRenderer());
+        issueTypeList.setCellRenderer(new ParameterValueCellRenderer());
         productList.setCellRenderer(new ParameterValueCellRenderer());
         componentList.setCellRenderer(new ParameterValueCellRenderer());
         versionList.setCellRenderer(new ParameterValueCellRenderer());
@@ -161,6 +163,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         changedToTextField.addFocusListener(this);
         commentComboBox.addFocusListener(this);
         commentTextField.addFocusListener(this);
+        whiteboardComboBox.addFocusListener(this);
+        whiteboardTextField.addFocusListener(this);
         commenterCheckBox.addFocusListener(this);
         componentList.addFocusListener(this);
         filterComboBox.addFocusListener(this);
@@ -186,6 +190,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         searchButton.addFocusListener(this);
         refreshButton.addFocusListener(this);
         severityList.addFocusListener(this);
+        issueTypeList.addFocusListener(this);
         statusList.addFocusListener(this);
         summaryComboBox.addFocusListener(this);
         summaryTextField.addFocusListener(this);
@@ -492,7 +497,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         severityLabel.setLabelFor(severityList);
         org.openide.awt.Mnemonics.setLocalizedText(severityLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.severityLabel.text")); // NOI18N
 
-        jScrollPane8.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        severityScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         severityList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -500,8 +505,22 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             public Object getElementAt(int i) { return strings[i]; }
         });
         severityList.setMinimumSize(new java.awt.Dimension(100, 2));
-        jScrollPane8.setViewportView(severityList);
+        severityScrollPane.setViewportView(severityList);
         severityList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.severityList.AccessibleContext.accessibleDescription")); // NOI18N
+
+        issueTypeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        issueTypeLabel.setLabelFor(severityList);
+        org.openide.awt.Mnemonics.setLocalizedText(issueTypeLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.issueTypeLabel.text")); // NOI18N
+
+        issueTypeScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        issueTypeList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        issueTypeList.setMinimumSize(new java.awt.Dimension(100, 2));
+        issueTypeScrollPane.setViewportView(issueTypeList);
 
         org.jdesktop.layout.GroupLayout byDetailsPanelLayout = new org.jdesktop.layout.GroupLayout(byDetailsPanel);
         byDetailsPanel.setLayout(byDetailsPanelLayout);
@@ -535,31 +554,41 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(severityLabel)
-                    .add(jScrollPane8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .add(severityScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(issueTypeLabel)
+                    .add(issueTypeScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(99, Short.MAX_VALUE))
         );
         byDetailsPanelLayout.setVerticalGroup(
             byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, byDetailsPanelLayout.createSequentialGroup()
+            .add(byDetailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(productLabel)
-                    .add(componentLabel)
-                    .add(versionLabel)
-                    .add(statusLabel)
-                    .add(resolutionLabel)
-                    .add(priorityLabel)
-                    .add(severityLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(jScrollPane8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(byDetailsPanelLayout.createSequentialGroup()
+                        .add(issueTypeLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(issueTypeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                    .add(byDetailsPanelLayout.createSequentialGroup()
+                        .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(productLabel)
+                            .add(componentLabel)
+                            .add(versionLabel)
+                            .add(statusLabel)
+                            .add(resolutionLabel)
+                            .add(priorityLabel)
+                            .add(severityLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(severityScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))))
+                .addContainerGap())
         );
 
         byTextPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -1242,6 +1271,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JButton gotoIssueButton = new javax.swing.JButton();
     final javax.swing.JPanel gotoPanel = new javax.swing.JPanel();
     final javax.swing.JTextField idTextField = new javax.swing.JTextField();
+    final javax.swing.JLabel issueTypeLabel = new javax.swing.JLabel();
+    final javax.swing.JList issueTypeList = new javax.swing.JList();
+    final javax.swing.JScrollPane issueTypeScrollPane = new HackedScrollPane();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1256,7 +1288,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JScrollPane jScrollPane5 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane6 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane7 = new javax.swing.JScrollPane();
-    final javax.swing.JScrollPane jScrollPane8 = new HackedScrollPane();
     final javax.swing.JButton keywordsButton = new javax.swing.JButton();
     final javax.swing.JComboBox keywordsComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel keywordsLabel = new javax.swing.JLabel();
@@ -1296,6 +1327,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel separatorLabel3;
     final javax.swing.JLabel severityLabel = new javax.swing.JLabel();
     final javax.swing.JList severityList = new javax.swing.JList();
+    final javax.swing.JScrollPane severityScrollPane = new HackedScrollPane();
     final javax.swing.JLabel statusLabel = new javax.swing.JLabel();
     final javax.swing.JList statusList = new javax.swing.JList();
     final javax.swing.JComboBox summaryComboBox = new javax.swing.JComboBox();
@@ -1328,9 +1360,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 //        commentTextField.setEnabled(enable);
 //        keywordsTextField.setEnabled(enable);
         summaryLabel.setEnabled(enable);
+        whiteboardLabel.setEnabled(enable);
         commentLabel.setEnabled(enable);
         keywordsLabel.setEnabled(enable);
-
+        keywordsButton.setEnabled(enable);
+        
         productLabel.setEnabled(enable);
 //        productList.setEnabled(enable);
         componentLabel.setEnabled(enable);
@@ -1456,6 +1490,13 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         whiteboardLabel.setVisible(visible);
         whiteboardComboBox.setVisible(visible);
         whiteboardTextField.setVisible(visible);
+
+        issueTypeLabel.setVisible(visible);
+        issueTypeList.setVisible(visible);
+        issueTypeScrollPane.setVisible(visible);
+        severityLabel.setVisible(!visible);
+        severityList.setVisible(!visible);
+        severityScrollPane.setVisible(!visible);
     }
 
     public void focusGained(FocusEvent e) {
