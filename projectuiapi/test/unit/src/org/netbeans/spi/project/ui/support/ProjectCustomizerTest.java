@@ -57,7 +57,6 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.DelegateCategoryPro
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.InstanceDataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -107,16 +106,6 @@ public class ProjectCustomizerTest extends NbTestCase {
         //   - Three     | three
         // + Category #2 |
         //   - Four      | four
-        InstanceDataObject.create(DataFolder.findFolder(customizerFO), null, TestCCP1.class).getPrimaryFile().setAttribute("position", 100);
-        FileObject catFO = customizerFO.createFolder("Category1");
-        catFO.setAttribute("displayName", "Category #1");
-        catFO.setAttribute("position", 200);
-        InstanceDataObject.create(DataFolder.findFolder(catFO), "Self", TestCCP2.class);
-        InstanceDataObject.create(DataFolder.findFolder(catFO), null, TestCCP3.class);
-        catFO = customizerFO.createFolder("Category2");
-        catFO.setAttribute("displayName", "Category #2");
-        catFO.setAttribute("position", 300);
-        InstanceDataObject.create(DataFolder.findFolder(catFO), null, TestCCP4.class);
         DelegateCategoryProvider dcp = new DelegateCategoryProvider(DataFolder.findFolder(customizerFO), null);
         Category categories[] = dcp.readCategories(DataFolder.findFolder(customizerFO));
         assertNotNull(categories);
@@ -152,6 +141,9 @@ public class ProjectCustomizerTest extends NbTestCase {
             return c;
         }
     }
+    @CompositeCategoryProvider.Registration(
+        projectType="test",
+        position=100)
     public static class TestCCP1 extends TestCCP {
         public TestCCP1() {
             super("one");
@@ -160,6 +152,11 @@ public class ProjectCustomizerTest extends NbTestCase {
             return Category.create("one", "One", null);
         }
     }
+    @CompositeCategoryProvider.Registration(
+        projectType="test",
+        category="Category1",
+        categoryLabel="Category #1",
+        position=200)
     public static class TestCCP2 extends TestCCP {
         public TestCCP2() {
             super("two");
@@ -168,6 +165,10 @@ public class ProjectCustomizerTest extends NbTestCase {
             throw new AssertionError("Self");
         }
     }
+    @CompositeCategoryProvider.Registration(
+        projectType="test",
+        category="Category1",
+        position=100)
     public static class TestCCP3 extends TestCCP {
         public TestCCP3() {
             super("three");
@@ -176,6 +177,10 @@ public class ProjectCustomizerTest extends NbTestCase {
             return Category.create("three", "Three", null);
         }
     }
+    @CompositeCategoryProvider.Registration(
+        projectType="test",
+        category="Category2",
+        position=100)
     public static class TestCCP4 extends TestCCP {
         public TestCCP4() {
             super("four");

@@ -1,32 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-web-project">
-            <folder name="Customizer">
-                <file name="JSLib.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.libraries.ui.customizer.JSLibraryCustomizerProvider.createJSLibraries"/>
-                    <attr name="position" intvalue="310"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="org-netbeans-modules-ruby-railsprojects">
-            <folder name="Customizer">
-                <file name="JSLib.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.libraries.ui.customizer.JSLibraryCustomizerProvider.createJSLibraries"/>
-                    <attr name="position" intvalue="251"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="org-netbeans-modules-php-project">
-            <folder name="Customizer">
-                <file name="JSLib.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.libraries.ui.customizer.JSLibraryCustomizerProvider.createJSLibraries"/>
-                    <attr name="position" intvalue="375"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="LibraryTypeProviders">
             <file name="javascript_library_provider.instance">

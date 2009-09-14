@@ -57,23 +57,23 @@ public enum Platform {
         String osname = System.getProperty("os.name"); //NOI18N
         if ("Mac OS X".equals(osname)) { //NOI18N
             platform = Platform.OSX;
-            codeNameBase = "org.netbeans.core.browser.macosx"; //NOI18N
+            codeNameBase = "org.netbeans.core.browser.xulrunner.macosx"; //NOI18N
             xulRunnerHome = "modules/lib/native/macosx/xulrunner"; //NOI18N
         } else if ("Linux".equals(osname)) { //NOI18N
             platform = Platform.Linux;
-            codeNameBase = "org.netbeans.core.browser.linux"; //NOI18N
+            codeNameBase = "org.netbeans.core.browser.xulrunner.linux"; //NOI18N
             xulRunnerHome = "modules/lib/native/linux/xulrunner"; //NOI18N
         } else if ("SunOS".equals(osname)) { //NOI18N
             platform = Platform.Solaris;
-            codeNameBase = "org.netbeans.core.browser.solaris"; //NOI18N
+            codeNameBase = "org.netbeans.core.browser.xulrunner.solaris"; //NOI18N
             xulRunnerHome = "modules/lib/native/solaris-x86/xulrunner"; //NOI18N
         } else if (osname.contains("Windows")) {
             platform = Platform.Win32;
-            codeNameBase = "org.netbeans.core.browser.win"; //NOI18N
+            codeNameBase = "org.netbeans.core.browser.xulrunner.win"; //NOI18N
             xulRunnerHome = "modules/lib/native/win32/xulrunner"; //NOI18N
         } else {
             platform = Platform.Unsupported;
-            codeNameBase = "org.netbeans.core.browser.unsupported"; //NOI18N
+            codeNameBase = "org.netbeans.core.browser.xulrunner.unsupported"; //NOI18N
             xulRunnerHome = "modules/lib/native/unsupported/xulrunner"; //NOI18N
         }
 
