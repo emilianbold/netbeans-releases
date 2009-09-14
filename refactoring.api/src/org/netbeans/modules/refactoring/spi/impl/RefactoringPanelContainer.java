@@ -113,7 +113,7 @@ public class RefactoringPanelContainer extends TopComponent {
         } else {
             Component comp = getComponent(0);
             if (comp instanceof JTabbedPane) {
-                ((JTabbedPane) comp).addTab(panel.getName() + "  ", null, panel, panel.getToolTipText()); //NOI18N
+                ((JTabbedPane) comp).addTab(panel.getName(), null, panel, panel.getToolTipText());
                 ((JTabbedPane) comp).setSelectedComponent(panel);
                 comp.validate();
             } else if (comp instanceof JLabel) {
@@ -125,8 +125,8 @@ public class RefactoringPanelContainer extends TopComponent {
                 pane.addMouseListener(listener);
                 pane.addPropertyChangeListener(closeL);
                 add(pane, BorderLayout.CENTER);
-                pane.addTab(comp.getName() + "  ", null, comp, ((JPanel) comp).getToolTipText()); //NOI18N
-                pane.addTab(panel.getName() + "  ", null, panel, panel.getToolTipText()); //NOI18N
+                pane.addTab(comp.getName(), null, comp, ((JPanel) comp).getToolTipText());
+                pane.addTab(panel.getName(), null, panel, panel.getToolTipText());
                 pane.setSelectedComponent(panel);
                 pane.validate();
             }
