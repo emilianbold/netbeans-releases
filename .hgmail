@@ -74,5 +74,4 @@ mpetras@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/
 jstola@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*,jira/*,libs.jira/*
 ovrabec@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*,jira/*,libs.jira/*
 mkleint@netbeans.org=hudson.maven/*,maven*/*
-pslechta@netbeans.org=web*/*,j2ee*/*
 tboudreau@netbeans.org=javacard*/*,properties.based.dataobjects/*,simple.project.templates/*,swing.customizerlayout/*,swing.validation/*
