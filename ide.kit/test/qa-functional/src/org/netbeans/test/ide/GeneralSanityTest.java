@@ -43,18 +43,12 @@ package org.netbeans.test.ide;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 import junit.framework.Test;
-import org.netbeans.Module;
-import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.permanentUI.utils.Utilities;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.windows.WindowManager;
@@ -81,8 +75,7 @@ public class GeneralSanityTest extends NbTestCase {
                 "testWaitForUIReady",
                 "testNoWrites",
                 "testBlacklistedClassesHandler",
-                "testDeprecatedModulesAreDisabled",
-                "testInstalledPlugins"
+                "testDeprecatedModulesAreDisabled"
             )
         ));
         return s;
@@ -167,144 +160,6 @@ public class GeneralSanityTest extends NbTestCase {
             }
         }
         System.out.println("Deprecated modules all correctly disabled: " + cnbs);
-    }
-
-    public void testInstalledPlugins() throws IOException {
-        TreeSet<MyModule> idePlugins = new TreeSet<MyModule>();
-
-        // plugins installed in the IDE
-        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            assertTrue(m instanceof Module);
-            Module mm = (Module)m;
-            if ("false".equals(m.getAttribute("AutoUpdate-Show-In-Client"))) {
-                continue;
-            }
-            if (mm.isAutoload() || mm.isEager() || mm.isFixed()) {
-                continue;
-            }
-            idePlugins.add(new MyModule(
-                    mm.getCodeNameBase(),
-                    mm.getDisplayName(),
-                    "" + mm.getLocalizedAttribute("OpenIDE-Module-Display-Category"),
-                    getCluster(mm)));
-        }
-
-        // add plugins that were not built during this particular build
-        idePlugins.addAll(getAbsentModulesFromGoldenFile());
-
-        final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
-        final String idePluginsLogFile = getWorkDirPath() + File.separator + getName() + "_ide.txt";
-
-
-        try {
-            PrintStream ideFile = getLog(getName() + "_ide.txt");
-            
-            //make a diff
-            printPlugins(ideFile, idePlugins);
-            Manager.getSystemDiff().diff(idePluginsLogFile, getPluginsGoldenFile(), diffFile);
-            //assert
-            String message = 
-                    "The list of visible plugins under Tools -> Plugins -> Installed has changed. \n" +
-                    "Please make sure that your plugins correctly declare AutoUpdate-Show-In-Client \n" +
-                    "property in their manifest file. If your change to the list of plugins is intentional, \n" +
-                    "please follow the UI review process: http://wiki.netbeans.org/UIReviewProcess and change \n" +
-                    "the golden file in ide.kit/test/qa-functional/data/permanentUI/plugins/installed-plugins.txt.\n" +
-                    Utilities.readFileToString(diffFile);
-
-            assertFile(message, getPluginsGoldenFile() , idePluginsLogFile, diffFile);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private static void printPlugins(PrintStream out, Set<MyModule> plugins) {
-
-        out.println("||Codebase||Display name||Category||Cluster");
-
-        for (MyModule m : plugins) {
-            out.println(m.toString());
-        }
-    }
-
-    private static String getCluster(Module m) {
-        File cluster = m.getJarFile().getParentFile().getParentFile();
-        return stripClusterNumber(cluster.getName());
-    }
-
-    private static String stripClusterNumber(String cluster) {
-        return Pattern.compile("[0-9]+").split(cluster)[0];
-    }
-    /**
-     * constructs the relative path to the golden file to Installed Plugins permanent UI spec
-     * @return
-     */
-    private String getPluginsGoldenFile() {
-        String dataDir = "";
-        try {
-            dataDir = getDataDir().getCanonicalPath();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return dataDir + File.separator + "permanentUI" + File.separator + "plugins" + File.separator + "installed-plugins.txt";
-    }
-
-    private Set<MyModule> getAbsentModulesFromGoldenFile() throws IOException {
-        TreeSet<MyModule> result = new TreeSet<MyModule>();
-        Set<String> presentClusters = getAllClusters();
-        Scanner scanner = new Scanner(new File(getPluginsGoldenFile()));
-        scanner.nextLine(); // header row, ignore
-        while (scanner.hasNext()) {
-            String moduleRow = scanner.nextLine();
-            Scanner scanner2 = new Scanner (moduleRow);
-            scanner2.useDelimiter("\\x7C"); // | character
-            MyModule m = new MyModule(scanner2.next(), scanner2.next(), scanner2.next(), scanner2.next());
-            getAllClusters();
-            if (!presentClusters.contains(m.cluster)) {
-                result.add(m);
-            }
-        }
-        return result;
-    }
-
-    private Set<String> getAllClusters() {
-        String dirs = System.getProperty("netbeans.dirs");
-        String[] dirsArray = Pattern.compile(File.pathSeparator).split(dirs);
-        TreeSet<String> result = new TreeSet<String>();
-        for (int i = 0; i < dirsArray.length; i++) {
-            result.add(stripClusterNumber(new File(dirsArray[i]).getName()));
-        }
-        return result;
-    }
-
-
-    static class MyModule implements Comparable<MyModule> {
-        String codeNameBase;
-        String displayName;
-        String displayCategory;
-        String cluster;
-
-        public MyModule(String codeNameBase, String displayName, String displayCategory, String cluster) {
-            this.codeNameBase    = codeNameBase;
-            this.displayName     = displayName;
-            this.displayCategory = displayCategory;
-            this.cluster         = cluster;
-        }
-
-        public int compareTo(MyModule m2) {
-            String s = displayCategory + " " + displayName;
-            return s.compareToIgnoreCase(m2.displayCategory + " " + m2.displayName);
-        }
-
-        @Override
-        public String toString() {
-            String output = "";
-            output += "|" + codeNameBase;
-            output += "|" + displayName;
-            output += "|" + displayCategory;
-            output += "|" + cluster;
-            return output;
-        }
-
     }
 
 }
