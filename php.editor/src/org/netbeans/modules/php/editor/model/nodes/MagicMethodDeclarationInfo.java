@@ -73,7 +73,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
     @CheckForNull
     public static MagicMethodDeclarationInfo create(PHPDocTag node) {
         MagicMethodDeclarationInfo retval = new MagicMethodDeclarationInfo(node);
-        return (retval.getName() != null) ? retval : null;
+        return (retval.methodName != null && retval.returnType != null) ? retval : null;
     }
 
     @Override

@@ -96,7 +96,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static final Logger LOGGER = Logger.getLogger(JSFFrameworkProvider.class.getName());
 
     private static String HANDLER = "com.sun.facelets.FaceletViewHandler";                          //NOI18N
-    
+
+    private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
     private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
@@ -238,6 +239,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         if (webModule != null) {
             Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+            if (preferences.get(PREFERRED_LANGUAGE, "").equals("")) { //NOI18N
+                ClassPath cp  = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+                boolean faceletsPresent = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
+                                          cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
+                                          cp.findResource("com/sun/faces/facelets/Facelet.class") !=null; //NOI18N
+                if (faceletsPresent) {
+                    preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
+                }
+            }
             panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences);
         } else {
             panel = new JSFConfigurationPanel(this, controller, !defaultValue);
@@ -299,15 +309,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private class  CreateFacesConfig implements FileSystem.AtomicAction{
         private static final String FACES_SERVLET_CLASS = "javax.faces.webapp.FacesServlet";  //NOI18N
         private static final String FACES_SERVLET_NAME = "Faces Servlet";                     //NOI18N  
-        private static final String FALSE = "false";                                          //NOI18N  
-        private static final String INITPARAM_BEAN_NAME = "InitParam";                        //NOI18N  
         private static final String MYFACES_STARTUP_LISTENER_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener";//NOI18N
-        private static final String SAVINGMETHOD_PARAM_NAME = "javax.faces.STATE_SAVING_METHOD";//NOI18N
-        private static final String TRUE = "true";                                            //NOI18N
-        private static final String VALIDATEXML_PARAM_NAME = "com.sun.faces.validateXml";     //NOI18N  
-        private static final String VERIFYOBJECTS_PARAM_NAME = "com.sun.faces.verifyObjects"; //NOI18N
 
-//        private static final String FACELETS_SERVLET_MAPPING="*.jsf"; //NOI18N
         WebModule webModule;
         boolean isMyFaces;
         
