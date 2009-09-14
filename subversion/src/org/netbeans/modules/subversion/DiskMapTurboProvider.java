@@ -84,7 +84,7 @@ class DiskMapTurboProvider implements TurboProvider {
         return index.getAllValues();
     }
 
-    public synchronized void computeIndex() {
+    public void computeIndex() {
         long ts = System.currentTimeMillis();
         long entriesCount = 0;
         long failedReadCount = 0;
@@ -92,71 +92,79 @@ class DiskMapTurboProvider implements TurboProvider {
             if (!cacheStore.isDirectory()) {
                 cacheStore.mkdirs();
             }
-            File [] files = cacheStore.listFiles();
+            
+            File [] files;
+            synchronized(this) {
+                files = cacheStore.listFiles();
+            }
+
             if(files == null) {
                 return;
             }
+
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                if (file.getName().endsWith(".bin") == false) { // NOI18N
-                    // on windows list returns already deleted .new files
-                    continue;
-                }
-                boolean readFailed = false;
-                int itemIndex = -1;
-                DataInputStream dis = null;
-                try {
-                    int retry = 0;
-                    while (true) {
-                        try {
-                            dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-                            break;
-                        } catch (IOException ioex) {
-                            retry++;
-                            if (retry > 7) {
-                                throw ioex;
-                            }
-                            Thread.sleep(retry * 30);
-                        }
+                synchronized(this) {
+                    if (file.getName().endsWith(".bin") == false) { // NOI18N
+                        // on windows list returns already deleted .new files
+                        continue;
                     }
+                    boolean readFailed = false;
+                    int itemIndex = -1;
+                    DataInputStream dis = null;
+                    try {
+                        int retry = 0;
+                        while (true) {
+                            try {
+                                dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                                break;
+                            } catch (IOException ioex) {
+                                retry++;
+                                if (retry > 7) {
+                                    throw ioex;
+                                }
+                                Thread.sleep(retry * 30);
+                            }
+                        }
 
-                    itemIndex = 0;
-                    for (;;) {
-                        ++itemIndex;
-                        int pathLen;
-                        try {
-                            pathLen = dis.readInt();
-                        } catch (EOFException e) {
-                            // reached EOF, no entry for this key
-                            break;
-                        }
-                        dis.readInt();
-                        String path = readChars(dis, pathLen);
-                        Map value = readValue(dis, path);
-                        for (Iterator j = value.keySet().iterator(); j.hasNext();) {
-                            entriesCount++;
-                            File f = (File) j.next();
-                            FileInformation info = (FileInformation) value.get(f);
-                            if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                                conflictedIndex.add(f);
+                        itemIndex = 0;
+                        for (;;) {
+                            ++itemIndex;
+                            int pathLen;
+                            try {
+                                pathLen = dis.readInt();
+                            } catch (EOFException e) {
+                                // reached EOF, no entry for this key
+                                break;
                             }
-                            if ((info.getStatus() & STATUS_VALUABLE) != 0) {
-                                index.add(f);
+                            dis.readInt();
+                            String path = readChars(dis, pathLen);
+                            Map value = readValue(dis, path);
+                            for (Iterator j = value.keySet().iterator(); j.hasNext();) {
+                                entriesCount++;
+                                File f = (File) j.next();
+                                FileInformation info = (FileInformation) value.get(f);
+                                if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                    conflictedIndex.add(f);
+                                }
+                                if ((info.getStatus() & STATUS_VALUABLE) != 0) {
+                                    index.add(f);
+                                }
                             }
                         }
+                    } catch (EOFException e) {
+                        logCorruptedCacheFile(file, itemIndex, e);
+                        readFailed = true;
+                    } catch (Exception e) {
+                        Subversion.LOG.log(Level.SEVERE, null, e);
+                    } finally {
+                        if (dis != null) try { dis.close(); } catch (IOException e) {}
                     }
-                } catch (EOFException e) {
-                    logCorruptedCacheFile(file, itemIndex, e);
-                    readFailed = true;
-                } catch (Exception e) {
-                    Subversion.LOG.log(Level.SEVERE, null, e);
-                } finally {
-                    if (dis != null) try { dis.close(); } catch (IOException e) {}
-                }
-                if (readFailed) {
-                    // cache file is corrupted, delete it (will be recreated on-demand later)
-                    file.delete();
-                    failedReadCount++;
+                    if (readFailed) {
+                        // cache file is corrupted, delete it (will be recreated on-demand later)
+                        file.delete();
+                        failedReadCount++;
+                    }
                 }
             }
         } finally {

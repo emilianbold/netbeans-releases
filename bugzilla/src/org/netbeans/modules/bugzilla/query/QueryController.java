@@ -123,6 +123,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final ListParameter priorityParameter;
     private final ListParameter changedFieldsParameter;
     private final ListParameter severityParameter;
+    private final ListParameter issueTypeParameter;
 
     private final Map<String, QueryParameter> parameters;
 
@@ -203,7 +204,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
         changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
-        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
+        if(isNetbeans) {
+            issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, "cf_bug_type");     // NOI18N
+            severityParameter = null;
+        } else {
+            severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");      // NOI18N
+            issueTypeParameter = null;
+        }
 
         createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
@@ -364,7 +371,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         panel.productList.setSelectedIndex(0);
                         populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
                     }
-                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
+                    if(isNetbeans) {
+                        issueTypeParameter.setParameterValues(toParameterValues(bc.getIssueTypes()));
+                    } else {
+                        severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
+                    }
                     statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
                     resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
                     priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));

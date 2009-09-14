@@ -127,9 +127,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private RequestProcessor.Task   refreshDiffTask;
     private VersioningSystem ownerVersioningSystem;
 
-    public DiffSidebar(JTextComponent target, File file) {
+    public DiffSidebar(JTextComponent target, FileObject file) {
         this.textComponent = target;
-        this.fileObject = FileUtil.toFileObject(file);
+        this.fileObject = file;
         this.editorUI = Utilities.getEditorUI(target);
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.document = editorUI.getDocument();

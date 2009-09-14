@@ -60,7 +60,6 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
     public FilterRenderer() {
         initComponents();
         setOpaque(true);
-        groupLabel.setOpaque(true);
     }
 
     /** This method is called from within the constructor to
@@ -75,6 +74,8 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         groupLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridLayout(1, 0));
+
+        groupLabel.setOpaque(true);
         add(groupLabel);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -84,17 +85,18 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
             int index,
             boolean isSelected,
             boolean cellHasFocus) {
-            groupLabel.setText(value.toString());
-            FilterItem item = (FilterItem) value;
-            groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
-            groupLabel.setIcon(item.getIcon());
-            if (isSelected) {
-                groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground"));
-                groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground"));
-            } else {
-                groupLabel.setBackground(UIManager.getColor("ComboBox.background"));
-                groupLabel.setForeground(UIManager.getColor("ComboBox.foreground"));
-            }
+        groupLabel.setText(value.toString());
+        FilterItem item = (FilterItem) value;
+        groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
+        groupLabel.setIcon(item.getIcon());
+        groupLabel.setOpaque(isSelected);
+        if (isSelected) {
+            groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground"));
+            groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground"));
+        } else {
+            groupLabel.setBackground(UIManager.getColor("ComboBox.background"));
+            groupLabel.setForeground(UIManager.getColor("ComboBox.foreground"));
+        }
         return this;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
