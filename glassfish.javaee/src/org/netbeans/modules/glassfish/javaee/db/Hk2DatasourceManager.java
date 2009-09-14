@@ -56,11 +56,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -69,8 +64,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -86,9 +79,6 @@ import org.netbeans.modules.glassfish.eecommon.api.UrlData;
  * @author Peter Williams
  */
 public class Hk2DatasourceManager implements DatasourceManager {
-
-    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
-    private static final int TIMEOUT = 2000;
     
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     
@@ -126,56 +116,11 @@ public class Hk2DatasourceManager implements DatasourceManager {
      */
     public void deployDatasources(Set<Datasource> datasources) 
             throws ConfigurationException, DatasourceAlreadyExistsException {
-        Set<File> resourceDirList = new TreeSet<File>();
-        for(Datasource ds: datasources) {
-            if(ds instanceof SunDatasource) {
-                File resourceDir = ((SunDatasource) ds).getResourceDir();
-                if(resourceDir != null) {
-                    resourceDirList.add(resourceDir);
-                }
-            }
-        }
-        
-        // !PW FIXME needs to throw exception when conflicting resources are found.
-        
-        for(File resourceDir: resourceDirList) {
-            registerResourceDir(resourceDir);
-        }
+        // since a connection pool is not a Datasource, the deploy has to
+        // happen in a different part of the deploy processing...
     }
     
-    private boolean registerResourceDir(File resourceDir) throws ConfigurationException {
-        boolean succeeded = false;
-        File sunResourcesXml = new File(resourceDir, "sun-resources.xml");
-        if(sunResourcesXml.exists()) {
-            GlassfishModule commonSupport = dm.getCommonServerSupport();
-            AddResourcesCommand cmd = new AddResourcesCommand(sunResourcesXml.getAbsolutePath());
-            Future<OperationState> result = commonSupport.execute(cmd);
-            try {
-                if(result.get(TIMEOUT, TIMEOUT_UNIT) == OperationState.COMPLETED) {
-                    succeeded = true;
-                }
-            } catch (TimeoutException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
-            } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
-            }
-        }
-        return succeeded;
-    }
-    
-    public static final class AddResourcesCommand extends ServerCommand {
 
-        public AddResourcesCommand(String sunResourcesXmlPath) {
-            super("add-resources"); // NOI18N
-            query = "xml_file_name=" + sunResourcesXmlPath; // NOI18N
-        }
-        
-    }
     
     // ------------------------------------------------------------------------
     //  Used by ModuleConfigurationImpl since 

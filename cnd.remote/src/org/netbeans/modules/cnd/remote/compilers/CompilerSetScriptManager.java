@@ -104,7 +104,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
         }
     }
 
-    public static final String SCRIPT = ".netbeans/6.7/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+    public static final String SCRIPT = ".netbeans/6.8/cnd3/scripts/getCompilerSets.bash"; // NOI18N
 
     public String getPlatform() {
         return platform;

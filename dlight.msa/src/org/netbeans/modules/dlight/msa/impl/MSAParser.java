@@ -56,6 +56,12 @@ import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
 
+// !!!!!!!
+// !!!!!!! ThreadStateImpl changed... these changes to make code compilable, but data is not correct !!!!!!
+// (class is not used)
+//
+
+@Deprecated
 public final class MSAParser extends DtraceParser {
 
     private static final List<String> COLUMN_NAMES = Arrays.asList(
@@ -73,7 +79,7 @@ public final class MSAParser extends DtraceParser {
 
     private static final TimeUnit dtraceTimeUnits = TimeUnit.NANOSECONDS;
     // Thread ID to states map
-    private final HashMap<Integer, int[]> accumulatedData = new HashMap<Integer, int[]>();
+    private final HashMap<Integer, long[]> accumulatedData = new HashMap<Integer, long[]>();
     private final HashMap<Integer,Long> finished = new HashMap<Integer,Long>();
     private final Set<Integer> lastReportedThreadIDs = new HashSet<Integer>();
     private final HashMap<Integer,Long> lastReportedFinished = new HashMap<Integer,Long>();
@@ -132,10 +138,10 @@ public final class MSAParser extends DtraceParser {
         }
 
         if (!accumulatedData.containsKey(threadID)) {
-            accumulatedData.put(threadID, new int[20]);
+            accumulatedData.put(threadID, new long[20]);
         }
 
-        int[] threadStates = accumulatedData.get(threadID);
+        long[] threadStates = accumulatedData.get(threadID);
 
         //                     r_u    r_s  r_o  utf  udf   kf  wcpu st ulock sleep sobjs...
         // 0 1 2                   3    4    5    6    7    8    9   10   11   12   13   14   15  16    17   18   19
@@ -173,8 +179,8 @@ public final class MSAParser extends DtraceParser {
     private DataRow createDataRow() {
 //            System.out.println("Adding info about " + accumulatedData.size() + " threads");
         int[] aggregatedStates = new int[10];
-        for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
-            int[] states = entry.getValue();
+        for (Map.Entry<Integer, long[]> entry : accumulatedData.entrySet()) {
+            long[] states = entry.getValue();
             ThreadStateImpl state = new ThreadStateImpl(periodFirstTimestamp, deltaTime, states);
             //System.err.println(state);
             storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);

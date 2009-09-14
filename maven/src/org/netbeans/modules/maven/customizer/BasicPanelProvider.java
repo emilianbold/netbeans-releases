@@ -49,18 +49,14 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint 
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=100)
 public class BasicPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of BasicPanelProvider */
-    public BasicPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 ModelHandle.PANEL_BASIC, 
                 NbBundle.getMessage(BasicPanelProvider.class, "TIT_Basic"), 
-                null,
-                (ProjectCustomizer.Category[])null);
+                null);
     }
     
     public JComponent createComponent(Category category, Lookup context) {
