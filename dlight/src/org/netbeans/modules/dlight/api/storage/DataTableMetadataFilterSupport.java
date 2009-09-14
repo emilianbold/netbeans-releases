@@ -36,28 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.api.storage;
 
-package org.netbeans.modules.dlight.spi.storage;
-
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 
 /**
- * This interface is intended to keep service information about DLightSession
- * This SPI will be used to
+ *
+ * @author mt154047
  */
-public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
-    static final String HOST_NAME = "service.storage.hostname";//NOI18N
-    static final String USER_NAME = "service.storage.username";//NOI18N
-    static final String PORT = "service.storage.port";//NOI18N
-    static final String TOOL_NAMES  = "service.storage.tools";//NOI18N
-    static final String COLLECTOR_NAMES  = "service.storage.collector.names";//NOI18N
-    static final String IDP_NAMES  = "service.storage.idp.names";//NOI18N
-    static final String DELIMITER  = ":";//NOI18N
-    static final String CONFIFURATION_NAME  = "service.storage.configuration.name";//NOI18N
-    static final String START_TIME_NANOSECONDS  = "service.storage.session_start_time.nanoseconds";//NOI18N
-    
-    Map<String, String> getInfo();
-    String getValue(String name);
-    String put(String name, String value);
+public final class DataTableMetadataFilterSupport {
+
+    private static DataTableMetadataFilterSupport instance;
+
+    private DataTableMetadataFilterSupport() {
+    }
+
+    public static final synchronized DataTableMetadataFilterSupport getInstance() {
+        if (instance == null) {
+            instance = new DataTableMetadataFilterSupport();
+        }
+        return instance;
+    }
+
+    private final Collection<DataTableMetadataFilter> createFilters(List<Column> columns, TimeIntervalDataFilter filter) {
+        Collection<DataTableMetadataFilter> result = new ArrayList<DataTableMetadataFilter>();
+        for (Column c : columns) {
+            try {
+                c.getColumnClass().asSubclass(Time.class);
+                //if we are here it is time, create
+                result.add(new DataTableMetadataFilter(c, filter));
+            } catch (ClassCastException e) {
+            }
+        }
+        return result;
+    }
+
+    public final Collection<DataTableMetadataFilter> createFilters(DataTableMetadata metadata, TimeIntervalDataFilter filter) {
+        Collection<DataTableMetadataFilter> result = new ArrayList<DataTableMetadataFilter>();
+        List<DataTableMetadata> sourceTables = metadata.getSourceTables();
+        if (sourceTables == null) {
+            List<Column> columns = metadata.getColumns();
+            result.addAll(createFilters(columns, filter));
+            return result;
+        }
+        for (DataTableMetadata table : sourceTables){
+            result.addAll(createFilters(table.getColumns(), filter));
+        }
+        return result;
+    }
 }
