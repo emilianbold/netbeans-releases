@@ -608,7 +608,7 @@ public class ModelSupport implements PropertyChangeListener {
                 }
 
                 // now remove these files from bufres map
-                for (Iterator iter = toDelete.iterator(); iter.hasNext();) {
+                for (Iterator<DataObject> iter = toDelete.iterator(); iter.hasNext();) {
                     buffers.remove(iter.next());
                 }
 
