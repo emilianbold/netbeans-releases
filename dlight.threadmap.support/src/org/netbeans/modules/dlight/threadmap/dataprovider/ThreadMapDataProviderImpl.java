@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.threadmap.api.ThreadData;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
@@ -83,10 +84,28 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
     private final static Logger log = DLightLogger.getLogger(ThreadMapDataProviderImpl.class);
     private SQLDataStorage sqlStorage;
     private PreparedStatement queryDataStatement;
+    private final static String[] summaryColNames;
     private PreparedStatement querySummaryStatement;
     private PreparedStatement queryLWPInfo;
     private final HashMap<Integer, ThreadInfo> ti = new HashMap<Integer, ThreadInfo>();
     private ThreadDumpProvider threadDumpProvider;
+
+    static {
+        summaryColNames = new String[]{
+                    "", // Index 0 is not used in SQL queries/result sets...
+                    MSASQLTables.msa.LWP_ID.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_USR.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_SYS.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_TRP.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_TFL.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_DFL.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_KFL.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_LCK.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_SLP.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_LAT.getColumnName(),
+                    MSASQLTables.msa.LWP_MSA_STP.getColumnName(),};
+
+    }
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         DLightSession session = DLightManager.getDefault().getActiveSession();
@@ -232,17 +251,17 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             }
 
             query = String.format("select %s, sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s) from %s where %s >= ? and %s < ? group by %s", // NOI18N
-                    MSASQLTables.msa.LWP_ID.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_USR.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_SYS.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_TRP.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_TFL.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_DFL.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_KFL.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_LCK.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_SLP.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_LAT.getColumnName(),
-                    MSASQLTables.msa.LWP_MSA_STP.getColumnName(),
+                    summaryColNames[1],
+                    summaryColNames[2],
+                    summaryColNames[3],
+                    summaryColNames[4],
+                    summaryColNames[5],
+                    summaryColNames[6],
+                    summaryColNames[7],
+                    summaryColNames[8],
+                    summaryColNames[9],
+                    summaryColNames[10],
+                    summaryColNames[11],
                     MSASQLTables.msa.tableMetadata.getName(),
                     MSASQLTables.msa.TIMESTAMP.getColumnName(),
                     MSASQLTables.msa.TIMESTAMP.getColumnName(),
@@ -297,7 +316,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return lwpInfo;
     }
 
-    public ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query) {
+    public synchronized ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query) {
         if (log.isLoggable(Level.FINEST)) {
             log.finest(String.format("DataQuery: [%s], fullstate: %s", query.getIntervals().toArray(), query.isFullState() ? "yes" : "no")); // NOI18N
         }
@@ -316,6 +335,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         final List<ThreadSummaryData> result = new ArrayList<ThreadSummaryData>();
 
+        // TODO: for now take the first one...
         Range<Long> interval = intervals.iterator().next().getInterval();
 
         try {
@@ -335,17 +355,22 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 final ThreadInfo lwpInfo = getLWPInfo(threadID);
                 final List<StateDuration> states = new ArrayList<StateDuration>();
 
-//                stateValues[3] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_USR.getColumnName()) * 100);
-//                stateValues[4] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_SYS.getColumnName()) * 100);
-//                stateValues[5] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_TRP.getColumnName()) * 100);
-//                stateValues[6] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_TFL.getColumnName()) * 100);
-//                stateValues[7] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_DFL.getColumnName()) * 100);
-//                stateValues[8] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_KFL.getColumnName()) * 100);
-//                stateValues[9] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_LAT.getColumnName()) * 100);
-//                stateValues[10] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_STP.getColumnName()) * 100);
-//                stateValues[11] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_LCK.getColumnName()) * 100);
-//                stateValues[12] = (int) (rset.getLong(MSASQLTables.msa.LWP_MSA_SLP.getColumnName()) * 100);
+                for (int colNum = 2; colNum < 12; colNum++) {
+                    final long stateDuration = rset.getLong(colNum);
+                    if (stateDuration > 0) {
+                        final MSAState state = MSAState.fromCode(colNum - 2, query.isFullState());
+                        states.add(new StateDuration() {
 
+                            public MSAState getState() {
+                                return state;
+                            }
+
+                            public long getDuration() {
+                                return stateDuration;
+                            }
+                        });
+                    }
+                }
 
                 result.add(new ThreadSummaryData() {
 
