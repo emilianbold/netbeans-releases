@@ -197,6 +197,7 @@
     <target name=   "do-ide">
         <antcall target="do-module"><param name="module" value="print"/></antcall>
         <antcall target="do-module"><param name="module" value="print.editor"/></antcall>
+        <antcall target="do-module"><param name="module" value="schema2beans"/></antcall>
     </target>
 
     <!-- xml -->
