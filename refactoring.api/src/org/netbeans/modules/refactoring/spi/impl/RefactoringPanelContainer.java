@@ -177,9 +177,10 @@ public class RefactoringPanelContainer extends TopComponent {
         if (comp instanceof JTabbedPane) {
             JTabbedPane tabs = (JTabbedPane) comp;
             Component current = tabs.getSelectedComponent();
+            int tabCount = tabs.getTabCount();
             // #172039: do not use tabs.getComponents()
-            Component[] c = new Component[tabs.getTabCount() - 1];
-            for (int i = 0, j = 0; i < c.length; i++) {
+            Component[] c = new Component[tabCount - 1];
+            for (int i = 0, j = 0; i < tabCount; i++) {
                 Component tab = tabs.getComponentAt(i);
                 if (tab != current) {
                     c[j++] = tab;
