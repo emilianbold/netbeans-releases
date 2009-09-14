@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public final class THAInstrumentationSupport {
@@ -103,9 +102,9 @@ public final class THAInstrumentationSupport {
         return result;
     }
 
-    public boolean isInstrumentationNeeded(ExecutionEnvironment env){
+    public boolean isInstrumentationNeeded(ExecutionEnvironment env, THAConfiguration configuration){
         try {
-            if (HostInfoUtils.getHostInfo(env).getCpuFamily().equals(CpuFamily.SPARC)) {
+            if (!configuration.collectDataRaces() && configuration.collectDeadlocks() && HostInfoUtils.getHostInfo(env).getCpuFamily().equals(CpuFamily.SPARC)) {
                 return false;
             }
             return true;
