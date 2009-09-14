@@ -43,9 +43,12 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
@@ -62,54 +65,44 @@ import org.openide.util.RequestProcessor;
  */
 public class RemoteFileSystemNotifier {
 
-    //
-    // Static stuff
-    //
-    private static final Map<ExecutionEnvironment, RemoteFileSystemNotifier> notifiers =
-            new HashMap<ExecutionEnvironment, RemoteFileSystemNotifier>();
+    public interface Callback {
+        /**
+         * Is called as soon as the host has been connected.
+         * It is always called in a specially created thread
+         */
+        void connected();
 
-    public static void show(ExecutionEnvironment execEnv) {
-        System.err.printf("111\n");
-        RemoteFileSystemNotifier notifier = getNotifier(execEnv);
-        notifier.showIfNeed();
+        List<String> getPendingFiles();
     }
-
-    private static synchronized RemoteFileSystemNotifier getNotifier(ExecutionEnvironment execEnv) {
-        RemoteFileSystemNotifier notifier = notifiers.get(execEnv);
-        if (notifier == null) {
-            notifier = new RemoteFileSystemNotifier(execEnv);
-            notifiers.put(execEnv, notifier);
-        }
-        return notifier;
-    }
-
-    private static synchronized void removeNotifier(ExecutionEnvironment execEnv) {
-        notifiers.remove(execEnv);
-    }
-
-    //
-    // Instance stuff
-    //
 
     private final ExecutionEnvironment env;
+    private final Callback callback;
     private boolean shown;
     private Notification notification;
 
-    private RemoteFileSystemNotifier(ExecutionEnvironment execEnv) {
+    public RemoteFileSystemNotifier(ExecutionEnvironment execEnv, Callback callback) {
         this.env = execEnv;
+        this.callback = callback;
         shown = false;
     }
 
-    private void showIfNeed() {
+    public void showIfNeed() {
         synchronized(this) {
             if (shown) {
-                System.err.printf("222\n");
                 return;
             } else {
                 shown = true;
-                System.err.printf("333\n");
                 show();
             }
+        }
+    }
+
+    public static String getDisplayName(ExecutionEnvironment execEnv) {
+        ServerRecord rec = ServerList.get(execEnv);
+        if (rec == null) {
+            return execEnv.getDisplayName();
+        } else {
+            return rec.getDisplayName();
         }
     }
 
@@ -119,10 +112,11 @@ public class RemoteFileSystemNotifier {
                 showConnectDialog();
             }
         };
+        String envString = getDisplayName(env);
         notification = NotificationDisplayer.getDefault().notify(
-                NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE"),
+                NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE", envString),
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.png", false), // NOI18N
-                NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.DETAILS"),
+                NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.DETAILS", envString),
                 onClickAction,
                 NotificationDisplayer.Priority.HIGH);
 
@@ -134,7 +128,8 @@ public class RemoteFileSystemNotifier {
     }
 
     private void showConnectDialog() {
-        final NotifierPanel panel = new NotifierPanel();
+        final NotifierPanel panel = new NotifierPanel(env);
+        panel.setPendingFiles(callback.getPendingFiles());
         String caption = NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE");
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true,
                 new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
@@ -142,8 +137,8 @@ public class RemoteFileSystemNotifier {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {            
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
+            RequestProcessor.getDefault().post(new NamedRunnable("Pending files synchronizer for " + env.getDisplayName()) { //NOI18N
+                protected void runImpl() {
                     connect(panel.getPassword(), panel.isRememberPassword());
                 }
             });
@@ -161,14 +156,14 @@ public class RemoteFileSystemNotifier {
                 ConnectionManager.getInstance().connectTo(env, password, rememberPassword);
             }
             connected = true;
+            RemoteServerListUI.revalidate(env, password, rememberPassword);
+            callback.connected();
         } catch (IOException ex) {
             ex.printStackTrace();
         } catch (CancellationException ex) {
             // don't log cancellation exception
         }
-        if (connected) {
-            removeNotifier(env);
-        } else {
+        if (!connected) {
             reShow();
         }
     }
