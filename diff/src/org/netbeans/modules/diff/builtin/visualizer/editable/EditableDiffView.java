@@ -266,11 +266,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
         
         jSplitPane1.addAncestorListener(this);
-        
-        refreshDiff(0);
-        
+
         manager = new DiffViewManager(this);
         manager.init();
+        refreshDiff(0);
     }
 
     private void adjustPreferredSizes() {
@@ -1018,7 +1017,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         refreshDividerSize();
                         jSplitPane1.repaint();
                         diffMarkprovider.refresh();
-                        if (diffs.length > 0) {
+                        if (diffs.length > 0 && getCurrentDifference() == -1) {
                             setCurrentDifference(0);
                         }
                     }
