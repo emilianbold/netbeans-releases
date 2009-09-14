@@ -250,7 +250,6 @@ public final class SQLExecuteHelper {
                     case STATE_LINE_COMMENT:
                         if (ch == '\n') {
                             state = STATE_MEANINGFUL_TEXT;
-                            continue;
                         } 
                         break;
                         

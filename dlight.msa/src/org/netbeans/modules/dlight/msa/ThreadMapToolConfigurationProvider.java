@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -54,12 +56,14 @@ import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 public class ThreadMapToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private final static Logger log = DLightLogger.getLogger(ThreadMapToolConfigurationProvider.class);
     public static final int INDICATOR_POSITION = 10;
     private static final String ID = "dlight.tool.threadmap"; // NOI18N
     private static final String TOOL_NAME = loc("ThreadMapTool.ToolName"); // NOI18N
@@ -162,7 +166,6 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 //        return new DataTableMetadata("MSA", // NOI18N
 //                Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null);
 //    }
-
     private static class IndicatorDataHandler implements DataRowToTimeSeries {
 
         private final static Object lock = new String(IndicatorDataHandler.class.getName());
@@ -184,7 +187,16 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 
             synchronized (lock) {
                 for (String cn : colNames) {
-                    data[idx++] = row.getFloatValue(cn);
+                    float f = 0;
+                    try {
+                        f = row.getFloatValue(cn);
+                    } catch (NumberFormatException ex) {
+                        if (log.isLoggable(Level.FINE)) {
+                            log.log(Level.FINE, "Will not add this entry", ex); // NOI18N
+                        }
+
+                    }
+                    data[idx++] = f;
                 }
             }
         }

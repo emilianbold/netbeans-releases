@@ -50,16 +50,17 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.DetailDescriptor;
-import org.netbeans.modules.dlight.util.ValueFormatter;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
+import org.netbeans.modules.dlight.util.ValueFormatter;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,7 +97,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         Column fileCountColumn = new Column("file_count", Long.class, getMessage("Column.FileCount"), null); // NOI18N
 
         List<Column> fopsColumns = Arrays.asList(
-                new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
+                new Column("timestamp", Time.class, getMessage("Column.Timestamp"), null), // NOI18N
                 opColumn,
                 new Column("sid", Integer.class, getMessage("Column.SID"), null), // NOI18N
                 fileColumn,

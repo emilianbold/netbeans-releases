@@ -267,6 +267,7 @@ public abstract class Unit {
         private UpdateElement backupEl = null;
         private boolean uninstallationAllowed;
         private boolean deactivationAllowed;
+        private boolean activationAllowed;
         
         public static boolean isOperationAllowed (UpdateUnit uUnit, UpdateElement element, OperationContainer<OperationSupport> container) {
             return container.canBeAdded (uUnit, element);
@@ -291,6 +292,7 @@ public abstract class Unit {
             }
             uninstallationAllowed = isOperationAllowed (this.updateUnit, installEl, container);
             deactivationAllowed = isOperationAllowed (this.updateUnit, installEl, Containers.forDisable());
+            activationAllowed   = isOperationAllowed (this.updateUnit, installEl, Containers.forEnable());
                 
             initState();
         }
@@ -300,6 +302,9 @@ public abstract class Unit {
         }
         public boolean isDeactivationAllowed() {
             return deactivationAllowed;
+        }
+        public boolean isActivationAllowed() {
+            return activationAllowed;
         }
         
         public boolean isMarked () {
@@ -312,7 +317,8 @@ public abstract class Unit {
             }
             uninstallMarked = container.contains (installEl);
             boolean deactivateMarked = Containers.forDisable().contains (installEl);
-            return deactivateMarked || uninstallMarked;
+            boolean activateMarked = Containers.forEnable().contains (installEl);
+            return deactivateMarked || uninstallMarked || activateMarked;
         }
         
         public void setMarked (boolean marked) {
@@ -332,6 +338,13 @@ public abstract class Unit {
             }
             if (isDeactivationAllowed()) {
                 OperationContainer container = Containers.forDisable();
+                if (marked) {
+                    container.add (updateUnit, installEl);
+                } else {
+                    container.remove (installEl);
+                }
+            } else if (isActivationAllowed()) {
+                OperationContainer container = Containers.forEnable();
                 if (marked) {
                     container.add (updateUnit, installEl);
                 } else {
@@ -370,7 +383,7 @@ public abstract class Unit {
 
         @Override
         public boolean canBeMarked () {
-            return super.canBeMarked () && (isDeactivationAllowed() || isUninstallAllowed());
+            return super.canBeMarked () && (isDeactivationAllowed() || isUninstallAllowed() || isActivationAllowed());
         }
         
         public String getInstalledVersion () {

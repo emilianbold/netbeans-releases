@@ -38,23 +38,32 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.awt.AlphaComposite;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Composite;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.util.Range;
 
 /**
  * @author Jiri Sedlacek
@@ -71,9 +80,14 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     private long viewEnd;
     private long viewStart;
     private TimeLine timeLine;
+    private Collection<TimeIntervalDataFilter> timeFilters;
     private EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
     private JTable table;
     private boolean isShiftCounted;
+    private float BorderDarkerFactor = 0.9f;
+    private float AlphaCompositeConstant = 0.5f;
+    private Color TIME_SELECTION_BORDER = new Color(255, 150, 150);
+
 
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadStateCellRenderer(ThreadsPanel viewManager) {
@@ -145,6 +159,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         dataStart = viewManager.getDataStart();
         dataEnd = viewManager.getDataEnd();
         timeLine = viewManager.getTimeLine();
+        timeFilters = viewManager.getTimeIntervalSelection();
         this.table = table;
 
         return this;
@@ -286,6 +301,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                     }
                 }
             }
+            paintGray(g);
         }
         paintTimeLine(g);
     }
@@ -358,6 +374,21 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         return -1;
     }
 
+    private List<Range<Long>> getGray(){
+        Collection<TimeIntervalDataFilter> aTimeFilters = timeFilters;
+        if (aTimeFilters == null || aTimeFilters.isEmpty()) {
+            return Collections.<Range<Long>>emptyList();
+        }
+        Range<Long> range = new Range<Long>((viewStart - dataStart)*1000*1000, (viewEnd - dataStart)*1000*1000);
+        //System.err.println("Interval ["+range.getStart()/1000/1000+","+range.getEnd()/1000/1000+"]");
+        ArrayList<Range<Long>> ranges = new ArrayList<Range<Long>>(timeFilters.size());
+        for(TimeIntervalDataFilter filter : aTimeFilters) {
+            //System.err.println("Selection ["+filter.getInterval().getStart()/1000/1000+","+filter.getInterval().getEnd()/1000/1000+"]");
+            ranges.add(filter.getInterval());
+        }
+        return range.subtract(ranges);
+    }
+
     private void paintThreadState(Graphics g, int index, ThreadState threadStateColor, float factor, int width) {
         int x; // Begin of rectangle
         int xx; // End of rectangle
@@ -400,6 +431,32 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor.getMSAState(threadStateColor.getSamplingStateIndex(viewManager.isFullMode()), viewManager.isFullMode()));
             g.setColor(c);
             g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, xx - x, delta);
+        }
+    }
+
+    private void paintGray(Graphics g) {
+        if ((viewEnd - viewStart) > 0) {
+            int width = getWidth();
+            float factor = (float) width / (float) (viewEnd - viewStart);
+            long firstValue = viewStart - dataStart;
+            int i = 0;
+            for (Range<Long> range : getGray()) {
+                g.setColor(UIUtils.getDarker(getBackground(), BorderDarkerFactor));
+                int x1 = (int) ((float) (range.getStart() / 1000 / 1000 - firstValue) * factor);
+                int x2 = (int) ((float) (range.getEnd() / 1000 / 1000 - firstValue) * factor);
+                Composite composite = ((Graphics2D) g).getComposite();
+                ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, AlphaCompositeConstant));
+                g.fillRect(x1, 0, x2, getHeight() - 1);
+                ((Graphics2D) g).setComposite(composite);
+                g.setColor(TIME_SELECTION_BORDER);
+                if (x1 > 0) {
+                    g.drawLine(x1, 0, x1, getHeight() - 1);
+                }
+                if (x2 < width) {
+                    g.drawLine(x2, 0, x2, getHeight() - 1);
+                }
+                i++;
+            }
         }
     }
 

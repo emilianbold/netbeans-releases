@@ -67,18 +67,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
-    <folder name="Projects">
-        <!-- Web Service References node in J2SE Project -->
-        <folder name="org-netbeans-modules-java-j2seproject">
-            <folder name="Customizer">
-                <file name="Client.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.websvc.jaxrpc.project.customizer.JaxRpcCompositePanelProvider.createJaxRpcClients"/>
-                    <attr name="position" intvalue="600"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="jaxrpc-config-1-1">

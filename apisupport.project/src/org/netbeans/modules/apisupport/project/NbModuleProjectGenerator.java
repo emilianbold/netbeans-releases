@@ -47,14 +47,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -67,8 +64,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -294,16 +289,11 @@ public class NbModuleProjectGenerator {
         prjEl.appendChild(el);
         
         // store document to disk
-        FileLock lock = buildScript.lock();
+        OutputStream os = buildScript.getOutputStream();
         try {
-            OutputStream os = buildScript.getOutputStream(lock);
-            try {
-                XMLUtil.write(prjDoc, os, "UTF-8"); // NOI18N
-            } finally {
-                os.close();
-            }
+            XMLUtil.write(prjDoc, os, "UTF-8"); // NOI18N
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
     
@@ -423,21 +413,16 @@ public class NbModuleProjectGenerator {
     
     public static FileObject createLayer(FileObject projectDir, String layerPath) throws IOException {
         FileObject layerFO = createFileObject(projectDir, layerPath); // NOI18N
-        FileLock lock = layerFO.lock();
+        InputStream is = NbModuleProjectGenerator.class.getResourceAsStream("ui/resources/layer_template.xml"); // NOI18N
         try {
-            InputStream is = NbModuleProjectGenerator.class.getResourceAsStream("ui/resources/layer_template.xml"); // NOI18N
+            OutputStream os = layerFO.getOutputStream();
             try {
-                OutputStream os = layerFO.getOutputStream(lock);
-                try {
-                    FileUtil.copy(is, os);
-                } finally {
-                    os.close();
-                }
+                FileUtil.copy(is, os);
             } finally {
-                is.close();
+                os.close();
             }
         } finally {
-            lock.releaseLock();
+            is.close();
         }
         return layerFO;
     }

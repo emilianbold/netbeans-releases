@@ -61,7 +61,6 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
@@ -1032,16 +1031,11 @@ public final class ProjectXMLManager {
     }
 
     private static void safelyWrite(FileObject projectXml, Document prjDoc) throws IOException {
-        FileLock lock = projectXml.lock();
+        OutputStream os = projectXml.getOutputStream();
         try {
-            OutputStream os = projectXml.getOutputStream(lock);
-            try {
-                XMLUtil.write(prjDoc, os, "UTF-8"); // NOI18N
-            } finally {
-                os.close();
-            }
+            XMLUtil.write(prjDoc, os, "UTF-8"); // NOI18N
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
 

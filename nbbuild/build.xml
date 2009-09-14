@@ -1623,7 +1623,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <incrspecvers nbroot=".." modules="${allmodules}" branch="${branch}"/>
   </target>
 
-  <target name="build-test-dist" depends="init" description="Built test distribution">
+  <target name="init-test-dist" depends="init">
       <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
@@ -1633,6 +1633,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <mapper type="identity" />
       </pathconvert>
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
+  </target>
+  <target name="build-test-dist" depends="init-test-dist" description="Build test distribution">
       <mkdir dir="build"/>
       <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->

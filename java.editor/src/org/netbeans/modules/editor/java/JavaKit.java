@@ -67,7 +67,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -99,6 +98,8 @@ public class JavaKit extends NbEditorKit {
 
     private static final Logger LOGGER = Logger.getLogger(JavaKit.class.getName());
 
+    private static final Object sourceLevelKey = new Object();
+
     public JavaKit(){
     }
     
@@ -111,7 +112,14 @@ public class JavaKit extends NbEditorKit {
     *   creation is not related to the particular document
     */
     public Syntax createSyntax(Document doc) {
-        return new JavaSyntax(getSourceLevel((BaseDocument)doc));
+        // XXX: sourcelevel can be subject of changes, ignored by this cache
+        // Should not be a problem here however. Covered by #171330.
+        String sourceLevel = (String) doc.getProperty(sourceLevelKey);
+        if (sourceLevel == null) {
+            sourceLevel = getSourceLevel((BaseDocument) doc);
+            doc.putProperty(sourceLevelKey, sourceLevel);
+        }
+        return new JavaSyntax(sourceLevel);
     }
 
     public String getSourceLevel(BaseDocument doc) {

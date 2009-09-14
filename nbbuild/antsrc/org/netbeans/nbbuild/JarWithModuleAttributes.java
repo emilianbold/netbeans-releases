@@ -244,7 +244,7 @@ public class JarWithModuleAttributes extends Jar {
                 boolean edited = false;
                 if (implVers != null) {
                     try {
-                        Integer.parseInt(implVers);
+                        parseInt(implVers);
                         specVersBase += "." + implVers;
                         edited = true;
                     } catch (NumberFormatException e) {
@@ -260,11 +260,7 @@ public class JarWithModuleAttributes extends Jar {
                             String cnb = m.group(1);
                             String version = m.group(3);
                             try {
-                                if (version.length() > 1 && version.charAt(0) == '0') {
-                                    // Could be interpreted as an integer, but not here - e.g. "050123" is a date.
-                                    throw new NumberFormatException(version);
-                                }
-                                additions.put(cnb, Integer.valueOf(version));
+                                additions.put(cnb, parseInt(version));
                             } catch (NumberFormatException e) {
                                 // OK, ignore this one, not numeric.
                                 specVersBaseWarning(manifestFile,
@@ -301,7 +297,7 @@ public class JarWithModuleAttributes extends Jar {
                             "not using spec.version.base, yet declaring implementation version; may lead to problems with Auto Update");
                 } else {
                     try {
-                        Integer.parseInt(implVers);
+                        parseInt(implVers);
                     } catch (NumberFormatException e) {
                         specVersBaseWarning(manifestFile,
                         "use of non-integer OpenIDE-Module-Implementation-Version may be problematic for clients trying to use spec.version.base");
@@ -354,9 +350,15 @@ public class JarWithModuleAttributes extends Jar {
         String[] segments = trim.split("\\.");
         int[] arr = new int[segments.length > max ? max : segments.length];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = Integer.parseInt(segments[i]);
+            arr[i] = parseInt(segments[i]);
         }
         return arr;
+    }
+    private static int parseInt(String v) throws NumberFormatException {
+        if (!v.matches("0|[1-9][0-9]*")) { // 050123 is a date, -12 is illegal, etc.
+            throw new NumberFormatException(v);
+        }
+        return Integer.parseInt(v);
     }
 
     private void specVersBaseWarning(File manifestFile, String message) throws BuildException {

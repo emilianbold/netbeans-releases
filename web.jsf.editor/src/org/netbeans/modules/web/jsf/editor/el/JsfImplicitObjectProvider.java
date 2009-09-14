@@ -40,11 +40,14 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -54,12 +57,24 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ImplicitObjectProvider.class)
 public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
-
+    
+    private static final String TEXT_XHTML = "text/xhtml";          // NOI18N
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider#getImplicitObjects()
      */
     public Collection<ELImplicitObject> getImplicitObjects() {
-        return Arrays.asList(new ELImplicitObject[]{new FacesContextObject(), new CompositeComponentObject()});
+        List<ELImplicitObject> result = new ArrayList<ELImplicitObject>(9);
+        result.add( new FacesContextObject());
+        result.add(new CompositeComponentObject());
+        result.add( new ApplicationObject());
+        result.add(new ComponentObject());
+        result.add( new FlashObject());
+        result.add( new ResourceObject());
+        result.add( new SessionObject());
+        result.add( new ViewObject() );
+        result.add( new ViewScopeObject());
+        return result;
     }
     
     static class FacesContextObject extends ELImplicitObject{
@@ -67,6 +82,75 @@ public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
             super("facesContext");                        //NOI18N
             setType(OBJECT_TYPE);
             setClazz("javax.faces.context.FacesContext"); //NOI18N
+        }
+    }
+    
+    static abstract class FaceletContextObject extends ELImplicitObject{
+        FaceletContextObject(String name ){
+            super( name );
+        }
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.core.syntax.spi.ELImplicitObject#isApplicable(org.netbeans.modules.web.core.syntax.completion.api.ELExpression)
+         */
+        @Override
+        public boolean isApplicable( ELExpression expression ) {
+            FileObject fileObject = expression.getFileObject();
+            return fileObject.getMIMEType().equals(TEXT_XHTML);
+        }
+    }
+    
+    static class ApplicationObject extends FaceletContextObject {
+        public ApplicationObject(){
+            super("application");                         //NOI18N
+            setType(OBJECT_TYPE);
+            setClazz( Object.class.getCanonicalName());
+        }
+    }
+    
+    static class ComponentObject extends FaceletContextObject {
+        public ComponentObject(){
+            super("component");                                   //NOI18N
+            setType(OBJECT_TYPE);
+            setClazz( "javax.faces.component.UIComponent" );      //NOI18N
+        }
+    }
+    
+    static class FlashObject extends FaceletContextObject {
+        public FlashObject(){
+            super("flash");                                       //NOI18N
+            setType(OBJECT_TYPE);
+            setClazz( "javax.faces.context.Flash" );              //NOI18N
+        }
+    }
+    
+    static class ResourceObject extends FaceletContextObject {
+        public ResourceObject(){
+            super("resource");                                    //NOI18N
+            setType(OBJECT_TYPE);
+            setClazz( "javax.faces.application.ResourceHandler" );//NOI18N
+        }
+    }
+    
+    static class SessionObject extends FaceletContextObject {
+        public SessionObject(){
+            super("session");                                    //NOI18N
+            setType(OBJECT_TYPE);
+            setClazz( Object.class.getCanonicalName() );
+        }
+    }
+    
+    static class ViewObject extends FaceletContextObject {
+        public ViewObject(){
+            super("view");                                       //NOI18N
+            setType(OBJECT_TYPE);
+            setClazz( "javax.faces.component.UIViewRoot" );      //NOI18N
+        }
+    }
+    
+    static class ViewScopeObject extends FaceletContextObject {
+        public ViewScopeObject(){
+            super("viewScope");                                       //NOI18N
         }
     }
 
