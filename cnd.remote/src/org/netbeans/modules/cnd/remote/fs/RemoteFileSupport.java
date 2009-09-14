@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
 import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -153,7 +154,7 @@ public class RemoteFileSupport {
      * @param remoteChild - used only in the case connection is needed,
      * to inform user, which file are we going to synchronize
      */
-    public void ensureDirSync(File dir, String remoteDir, String remoteChild) throws IOException, CancellationException {
+    public void ensureDirSync(File dir, String remoteDir, String remoteChild) throws IOException, CancellationException {        
         // TODO: synchronization
         if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
             synchronized (getLock(dir)) {
@@ -169,7 +170,7 @@ public class RemoteFileSupport {
     private void syncDirStruct(File dir, String remoteDir, String remoteChild) throws IOException, CancellationException {
         checkConnection(execEnv, remoteChild);
         if (dir.exists()) {
-            assert dir.isDirectory();
+            CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         } else {
             if( !dir.mkdirs()) {
                 throw new IOException("Can not create directory " + dir.getAbsolutePath()); //NOI18N
