@@ -81,9 +81,7 @@ public class GeneralSanityTest extends NbTestCase {
                 "testWaitForUIReady",
                 "testNoWrites",
                 "testBlacklistedClassesHandler",
-                "testOrgOpenideOptionsIsDisabledAutoload",
-                "testOrgNetBeansModulesLanguagesIsDisabledAutoload",
-                "testOrgNetBeansModulesGsfIsDisabledAutoload",
+                "testDeprecatedModulesAreDisabled",
                 "testInstalledPlugins"
             )
         ));
@@ -159,45 +157,16 @@ public class GeneralSanityTest extends NbTestCase {
         }
     }
 
-    public void testOrgOpenideOptionsIsDisabledAutoload() {
+    public void testDeprecatedModulesAreDisabled() {
+        Set<String> cnbs = new TreeSet<String>();
         for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (m.getCodeNameBase().equals("org.openide.options")) {
-                assertFalse("org.openide.options shall not be enabled", m.isEnabled());
-                return;
+            if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
+                String cnb = m.getCodeNameBase();
+                cnbs.add(cnb);
+                assertFalse(cnb + " is deprecated and should not be enabled", m.isEnabled());
             }
         }
-        fail("No org.openide.options module found, it should be present, but disabled");
-    }
-
-    public void testOrgNetBeansModulesLanguagesIsDisabledAutoload() {
-        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (m.getCodeNameBase().equals("org.netbeans.modules.languages")) {
-                assertFalse("org.netbeans.modules.languages shall not be enabled", m.isEnabled());
-                return;
-            }
-        }
-        fail("No org.netbeans.modules.languages module found, it should be present, but disabled");
-    }
-    
-    public void testOrgNetBeansModulesGsfIsDisabledAutoload() {
-        boolean gsfapi = false, gsf = false, gsfpath = false;
-        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (m.getCodeNameBase().equals("org.netbeans.modules.gsf.api")) {
-                assertFalse("org.netbeans.modules.gsf.api should not be enabled", m.isEnabled());
-                gsfapi = true;
-            }
-            if (m.getCodeNameBase().equals("org.netbeans.modules.gsf")) {
-                assertFalse("org.netbeans.modules.gsf should not be enabled", m.isEnabled());
-                gsf = true;
-            }
-            if (m.getCodeNameBase().equals("org.netbeans.modules.gsfpath.api")) {
-                assertFalse("org.netbeans.modules.gsfpath.api should not be enabled", m.isEnabled());
-                gsfpath = true;
-            }
-        }
-        assertTrue("No org.netbeans.modules.gsf.api module found, it should be present, but disabled", gsfapi);
-        assertTrue("No org.netbeans.modules.gsf module found, it should be present, but disabled", gsf);
-        assertTrue("No org.netbeans.modules.gsfpath.api module found, it should be present, but disabled", gsfpath);
+        System.out.println("Deprecated modules all correctly disabled: " + cnbs);
     }
 
     public void testInstalledPlugins() throws IOException {
