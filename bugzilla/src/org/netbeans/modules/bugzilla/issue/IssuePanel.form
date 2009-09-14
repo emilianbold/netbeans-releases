@@ -42,7 +42,7 @@
     </Property>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,70,0,0,1,-49"/>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,70,0,0,1,-50"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -133,37 +133,29 @@
                                   <Component id="productCombo" alignment="0" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Group type="102" alignment="0" attributes="1">
-                                      <Component id="productWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="reportedLabel" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="1" attributes="1">
-                                      <Component id="keywordsWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="blocksLabel" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="urlWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="milestoneWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="severityWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="versionWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="componentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="osWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="resolutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="duplicateLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="componentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="productWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="versionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="osWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="severityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="milestoneWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="urlWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="statusWhiteboardWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="reportedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="blocksLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="resolutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="duplicateLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -298,6 +290,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="issueTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="issueTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="issueTypeWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="dummyLabel1" linkSize="8" min="-2" max="-2" attributes="0"/>
@@ -353,6 +346,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="statusWhiteboardLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="statusWhiteboardField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusWhiteboardWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -1073,6 +1067,10 @@
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="componentWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="statusWhiteboardWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="issueTypeWarning">
     </Component>
   </SubComponents>
 </Form>
