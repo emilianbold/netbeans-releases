@@ -395,6 +395,17 @@ public final class Kenai {
         return result;
     }
 
+    void joinProject(KenaiProject project) throws KenaiException {
+        if (getStatus()==Status.OFFLINE) {
+            throw new KenaiException("Cannot join project. You must be logged in");
+        }
+        impl.joinProject(project.getName(), auth.getUserName());
+        synchronized(this) {
+            if (myProjects!=null)
+                myProjects.add(project);
+        }
+    }
+
     /**
      * 
      * @param projectName

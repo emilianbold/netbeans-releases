@@ -45,12 +45,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
@@ -65,6 +67,8 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
     private long threadTime;
     private long threadRunningTime;
     private long threadRunningRatio;
+    private Collection<TimeIntervalDataFilter> timeFilters;
+    private long dataStart;
     private EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
 
     /** Creates a new instance of ThreadStateCellRenderer */
@@ -131,6 +135,8 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         if (value instanceof ThreadStateColumnImpl) {
             threadData = (ThreadStateColumnImpl) value;
         }
+        timeFilters = viewManager.getTimeIntervalSelection();
+        dataStart = viewManager.getDataStart();
 
         return this;
     }
@@ -233,11 +239,27 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         return super.getToolTipText();
     }
 
+    private boolean isSelected(long ts){
+        Collection<TimeIntervalDataFilter> aTimeFilters = timeFilters;
+        if (aTimeFilters == null || aTimeFilters.isEmpty()) {
+            return true;
+        }
+        for(TimeIntervalDataFilter filter : aTimeFilters) {
+            if (filter.getInterval().cotains(ts - dataStart*1000*1000)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private int countSum(EnumMap<MSAState, AtomicInteger> aMap) {
         int count = 0;
         for (int i = 0; i < threadData.size(); i++) {
+            ThreadState state = threadData.getThreadStateAt(i);
+            if (!isSelected(state.getTimeStamp())) {
+                continue;
+            }
             if (threadData.isAlive(i)) {
-                ThreadState state = threadData.getThreadStateAt(i);
                 int delta = 0; // interval in 10 ms
                 if (i + 1 < threadData.size()) {
                     ThreadState next = threadData.getThreadStateAt(i+1);

@@ -70,7 +70,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
@@ -212,6 +211,7 @@ public class HgCommand {
     private static final String HG_MERGE_CMD = "merge"; // NOI18N
     private static final String HG_MERGE_FORCE_CMD = "-f"; // NOI18N
     private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s"; // NOI18N
+    private static final String HG_MERGE_SIMPLE_TOOL = "ui.merge=internal:merge"; //NOI18N
 
     public static final String HG_HGK_PATH_SOLARIS10 = "/usr/demo/mercurial"; // NOI18N
     private static final String HG_HGK_PATH_SOLARIS10_ENV = "PATH=/usr/bin/:/usr/sbin:/bin:"+ HG_HGK_PATH_SOLARIS10; // NOI18N
@@ -301,7 +301,7 @@ public class HgCommand {
     private static final char HG_STATUS_CODE_DELETED = '!' + ' ';    // NOI18N // STATUS_VERSIONED_DELETEDLOCALLY - still tracked, hg update will recover, hg commit no effect
     private static final char HG_STATUS_CODE_NOTTRACKED = '?' + ' '; // NOI18N // STATUS_NOTVERSIONED_NEWLOCALLY - not tracked
     private static final char HG_STATUS_CODE_IGNORED = 'I' + ' ';     // NOI18N // STATUS_NOTVERSIONED_EXCLUDE - not shown by default
-    private static final char HG_STATUS_CODE_CONFLICT = 'X' + ' ';    // NOI18N // STATUS_VERSIONED_CONFLICT - TODO when Hg status supports conflict markers
+    private static final char HG_STATUS_CODE_CONFLICT = 'U' + ' ';    // NOI18N // STATUS_VERSIONED_CONFLICT - TODO when Hg status supports conflict markers
 
     private static final char HG_STATUS_CODE_ABORT = 'a' + 'b';    // NOI18N
     public static final String HG_STR_CONFLICT_EXT = ".conflict~"; // NOI18N
@@ -366,6 +366,10 @@ public class HgCommand {
         command.add(HG_MERGE_FORCE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+            command.add(HG_CONFIG_OPTION_CMD);
+            command.add(HG_MERGE_SIMPLE_TOOL);
+        }
         if(revStr != null)
              command.add(revStr);
         env.add(HG_MERGE_ENV);
@@ -866,6 +870,10 @@ public class HgCommand {
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
         command.additionalOptions.add(HG_FETCH_EXT_CMD);
+        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+            command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
+            command.additionalOptions.add(HG_MERGE_SIMPLE_TOOL);
+        }
         command.showSaveOption = true;
 
         List<String> retval = command.invoke();
@@ -2651,7 +2659,45 @@ public class HgCommand {
             } finally {
                 logger.closeLog();
             }
+        } else if (HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+            try {
+                List<String> unresolved = getUnresolvedFiles(repository, dir == null ? repository : dir);
+                list.addAll(unresolved);
+            } catch (HgException ex) {
+                //
+            }
         }
+
+        return list;
+    }
+
+    /**
+     * Gets unresolved files from a previous merge
+     */
+    private static List<String> getUnresolvedFiles (File repository, File dir) throws HgException {
+        assert dir != null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_RESOLVE_CMD);
+
+        command.add("-l");                                              //NOI18N
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(dir.getAbsolutePath());
+        
+        List<String> list =  exec(command);
+        // filter out resolved files - they could be wrongly considered as removed - common R status
+        // also removes error lines
+        for (ListIterator<String> it = list.listIterator(); it.hasNext(); ) {
+            String line = it.next();
+            if (line.length() < 2 || line.charAt(0) + line.charAt(1) != HG_STATUS_CODE_CONFLICT) {
+                it.remove();
+            }
+        }
+
         return list;
     }
 
@@ -2673,7 +2719,7 @@ public class HgCommand {
         if(logUsage) {
             Utils.logVCSClientEvent("HG", "CLI");
         }
-        final List<String> list = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         BufferedReader error = null;
         Process proc = null;
@@ -2709,12 +2755,13 @@ public class HgCommand {
             input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
             final BufferedReader errorReader = error;
+            final LinkedList<String> errorOutput = new LinkedList<String>();
             Thread errorThread = new Thread(new Runnable () {
                 public void run() {
                     try {
                         String line;
                         while ((line = errorReader.readLine()) != null) {
-                            list.add(line);
+                            errorOutput.add(line);
                         }
                     } catch (IOException ex) {
                         // not interested
@@ -2733,6 +2780,7 @@ public class HgCommand {
             } catch (InterruptedException ex) {
                 // not interested
             }
+            list.addAll(errorOutput); // appending error output
             error.close();
             error = null;
             try {

@@ -39,7 +39,9 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
@@ -47,12 +49,15 @@ import org.netbeans.modules.dlight.visualizers.*;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
@@ -76,7 +81,7 @@ import org.openide.util.Exceptions;
  * @author Alexander Simon
  */
 public class ThreadMapVisualizer extends JPanel implements
-        Visualizer<ThreadMapVisualizerConfiguration>, ActionListener, SessionStateListener {
+        Visualizer<ThreadMapVisualizerConfiguration>, ActionListener, SessionStateListener, DataFilterListener {
 
     private boolean isEmptyContent;
 
@@ -156,6 +161,20 @@ public class ThreadMapVisualizer extends JPanel implements
 
         setLayout(new BorderLayout());
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);
+    }
+
+
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        //filter out with the time
+        if (session != null){
+            Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
+            setTimeIntervalSelection(timeFilters);
+        }
+
+    }
+
+    private final void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters){
+        threadsPanel.setTimeIntervalSelection(timeFilters);
     }
 
     public void init() {
@@ -290,7 +309,9 @@ public class ThreadMapVisualizer extends JPanel implements
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         this.session = session;
-
+        if (session != null){
+            session.addDataFilterListener(this);
+        }
         switch (newState) {
             case CLOSED:
             case PAUSED:

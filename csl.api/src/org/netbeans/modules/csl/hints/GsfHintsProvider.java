@@ -64,6 +64,7 @@ import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -313,8 +314,19 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
                                     errors = unhandled;
                                     boolean allowDisableEmpty = true;
                                     for (Hint hint : hints) {
-                                        ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
-                                        descriptions.add(errorDesc);
+                                        OffsetRange range = hint.getRange();
+                                        if (range != null &&
+                                                range.getStart() >= 0 && range.getStart() <= r.getSnapshot().getText().length() &&
+                                                range.getEnd() >= 0 && range.getEnd() <= r.getSnapshot().getText().length() &&
+                                                range.getStart() <= range.getEnd()
+                                        ) {
+                                            ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
+                                            descriptions.add(errorDesc);
+                                        } else {
+                                            String msg = provider + " supplied hint " + hint + " with invalid range " + range; //NOI18N
+                                            assert false : msg;
+                                            LOG.log(Level.INFO, msg);
+                                        }
                                     }
                                 }
                             }

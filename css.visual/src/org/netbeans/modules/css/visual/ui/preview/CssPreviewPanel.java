@@ -41,10 +41,12 @@
 package org.netbeans.modules.css.visual.ui.preview;
 
 import java.awt.Graphics;
+import java.io.InputStream;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import org.openide.awt.StatusDisplayer;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 
@@ -55,7 +57,7 @@ import org.xhtmlrenderer.simple.XHTMLPanel;
  *
  * @author  Marek Fukala
  */
-public class CssPreviewPanel extends javax.swing.JPanel {
+public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewComponent {
 
     private static final Logger LOGGER = Logger.getLogger(CssPreviewPanel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
@@ -88,7 +90,19 @@ public class CssPreviewPanel extends javax.swing.JPanel {
     public XHTMLPanel panel() {
         return xhtmlPanel;
     }
-    
+
+    public void setDocument(InputStream is, String url) throws Exception {
+        xhtmlPanel.setDocument(is, url);
+    }
+
+    public JComponent getComponent() {
+        return this;
+    }
+
+    public void dispose() {
+        // nothing to dispose here
+    }
+
     private void configureFlyingSaucerLoggers() {
         //remove potential flying saucer handlers
         Logger logger = Logger.getLogger("plumbing.exception");

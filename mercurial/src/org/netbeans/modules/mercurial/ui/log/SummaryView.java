@@ -78,6 +78,8 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
@@ -146,7 +148,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     if(author != null && !author.equals("")) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
                             KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(author);
-                            kenaiUsersMap.put(author, kenaiUser);
+                            if(kenaiUser != null) {
+                                kenaiUsersMap.put(author, kenaiUser);
+                            }
                         }
                     }
                 }
@@ -517,6 +521,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             try {
                 RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
                 File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
+
+                if (file == null) { // can be null if the file does not exist or is empty in the given revision
+                    file = File.createTempFile("tmp", "-" + drev.getFile().getName()); //NOI18N
+                    file.deleteOnExit();
+                }
 
                 final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 final String revision = drev.getLogInfoHeader().getLog().getRevision();

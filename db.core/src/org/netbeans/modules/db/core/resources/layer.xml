@@ -129,6 +129,7 @@ made subject to such option by the copyright holder.
         <folder name="Other">
             <file name="SQLTemplate.sql" url="SQLTemplate.sql">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.core.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/db/core/resources/SQLTemplate.html"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="50"/>
             </file>

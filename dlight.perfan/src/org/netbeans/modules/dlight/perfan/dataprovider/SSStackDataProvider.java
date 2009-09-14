@@ -67,7 +67,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
-import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.MemoryMetric;
 import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.TimeMetric;
@@ -134,7 +134,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         this.serviceInfoStorage = serviceInfoStorage;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         boolean hasTimeIntervalFilter = false;
         for (DataFilter f : newSet) {
             if (f instanceof HotSpotFunctionsFilter) {

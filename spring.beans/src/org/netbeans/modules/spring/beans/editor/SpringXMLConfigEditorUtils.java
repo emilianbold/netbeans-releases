@@ -151,7 +151,9 @@ public final class SpringXMLConfigEditorUtils {
                 || tag.getNodeName().equals(BeansElements.REPLACED_METHOD) 
                 || tag.getNodeName().equals(BeansElements.PROPERTY)) { 
             Node parent = tag.getParentNode();
-            if (parent.getNodeName().equals(BeansElements.BEAN)) { // NOI18N
+
+            if (parent!=null && // to prevent NPE in case the node has just been created and not yet added to the tree
+                    parent.getNodeName().equals(BeansElements.BEAN)) { // NOI18N
                 return parent;
             } else {
                 return null;

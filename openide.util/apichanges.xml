@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="ImageUtilities.createDisabled">
+        <api name="util"/>
+        <summary><code>ImageUtilities.createDisabledIcon</code> and <code>ImageUtilities.createDisabledImage</code> added.</summary>
+        <version major="7" minor="28"/>
+        <date day="10" month="9" year="2009"/>
+        <author login="t_h"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                <code>ImageUtilities.createDisabledIcon</code> now can be used
+                to create low color saturation icon for disabled buttons. Also
+                <code>ImageUtilities.createDisabledImage</code> was added.
+            </p>
+        </description>
+        <class package="org.openide.util" name="ImageUtilities"/>
+        <issue number="171400"/>
+    </change>
     <change id="NbBundle.varargs">
         <api name="util"/>
         <summary><code>NbBundle.getMessage</code> can take arbitrarily many format arguments</summary>

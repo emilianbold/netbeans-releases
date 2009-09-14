@@ -103,7 +103,7 @@
                 <include name="netbeans/etc/**"/>
                 <include name="netbeans/harness/**"/>
                 <include name="netbeans/ide11/**"/>
-                <include name="netbeans/java2/**"/>
+                <include name="netbeans/java3/**"/>
                 <include name="netbeans/nb6.7/**"/>
                 <include name="netbeans/platform10/**"/>
                 <include name="netbeans/soa2/**"/>

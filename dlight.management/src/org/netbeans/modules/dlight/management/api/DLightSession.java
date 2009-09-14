@@ -67,7 +67,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
-import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
@@ -244,7 +244,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     List<Visualizer> getVisualizers() {
         if (visualizers == null) {
-            return null;
+            return Collections.emptyList();
         }
         List<Visualizer> result = new ArrayList<Visualizer>();
         for (String toolName : visualizers.keySet()) {
@@ -361,6 +361,10 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         dataFiltersSupport.addDataFilterListener(listener);
     }
 
+   public void removeDataFilterListener(DataFilterListener listener) {
+        dataFiltersSupport.removeDataFilterListener(listener);
+    }
+
     public DLightSessionIOProvider getDLigthSessionIOProvider(){
         return this;
     }
@@ -372,12 +376,19 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return io;
     }
     
-    public void addDataFilter(DataFilter filter) {
+    public void addDataFilter(DataFilter filter, boolean isAdjusting) {
         //if the filter is TimeIntervalFilter: remove first
         if (filter instanceof TimeIntervalDataFilter){
-            dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class);
+            dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
-        dataFiltersSupport.addFilter(filter);
+        dataFiltersSupport.addFilter(filter, isAdjusting);
+        //if filter is added - refresh all visualizers
+        if (!isAdjusting){
+            for (Visualizer v : getVisualizers()){
+                v.refresh();
+            }
+        }
+        
     }
     
     public void cleanAllDataFilter() {
@@ -589,7 +600,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         for (String key : info.keySet()) {
             DataFilter filter = DataFiltersManager.getInstance().createFilter(key, info.get(key));
             if (filter != null) {
-                dataFiltersSupport.addFilter(filter);
+                dataFiltersSupport.addFilter(filter, false);
             }
         }
         //Do it at the very end to apply filters

@@ -74,7 +74,9 @@ public class HgKenaiSupport {
     }
 
     public void setFirmAssociations(File[] files, String url) {
-        kenaiSupport.setFirmAssociations(files, url);
+        if(kenaiSupport != null) {
+            kenaiSupport.setFirmAssociations(files, url);
+        }
     }
     
     public boolean isLoggedIntoKenai () {
@@ -82,32 +84,40 @@ public class HgKenaiSupport {
     }
 
     public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
-        if(forceRelogin && queriedUrls.contains(url)) {
-            // we already queried the authentication for this url, but it didn't
-            // seem to be accepted -> force a new login, the current user
-            // might not be authorized for the given kenai project (url).
-            if(!kenaiSupport.showLogin()) {
-                return null;
+        if(kenaiSupport != null) {
+            if(forceRelogin && queriedUrls.contains(url)) {
+                // we already queried the authentication for this url, but it didn't
+                // seem to be accepted -> force a new login, the current user
+                // might not be authorized for the given kenai project (url).
+                if(!kenaiSupport.showLogin()) {
+                    return null;
+                }
             }
+            queriedUrls.add(url);
+            return kenaiSupport.getPasswordAuthentication();
+        } else {
+            return null;
         }
-        queriedUrls.add(url);
-        return kenaiSupport.getPasswordAuthentication();
     }
 
     public boolean isUserOnline(String user) {
-        return kenaiSupport.isUserOnline(user);
+        return kenaiSupport != null ? kenaiSupport.isUserOnline(user) : false;
     }
 
     public KenaiUser forName(String user) {
-        return kenaiSupport.forName(user);
+        return kenaiSupport != null ? kenaiSupport.forName(user) : null;
     }
 
     public void removeVCSNoficationListener(PropertyChangeListener l) {
-        kenaiSupport.removeVCSNoficationListener(l);
+        if(kenaiSupport != null) {
+            kenaiSupport.removeVCSNoficationListener(l);
+        }
     }
 
     public void addVCSNoficationListener(PropertyChangeListener l) {
-        kenaiSupport.addVCSNoficationListener(l);
+        if(kenaiSupport != null) {
+            kenaiSupport.addVCSNoficationListener(l);
+        }
     }
 
     public void register() {

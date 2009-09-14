@@ -126,7 +126,7 @@ import org.w3c.dom.Text;
     sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public class PhpProject implements Project, AntProjectListener {
+public class PhpProject implements Project {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
@@ -152,6 +152,7 @@ public class PhpProject implements Project, AntProjectListener {
     volatile FileObject seleniumDirectory;
     // @GuardedBy(ProjectManager.mutex())
     volatile String name;
+    private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
 
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
@@ -180,7 +181,7 @@ public class PhpProject implements Project, AntProjectListener {
         lookup = createLookup(configuration);
 
         addWeakPropertyEvaluatorListener(ignoredFoldersListener);
-        helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, helper));
+        helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, phpAntProjectListener, helper));
     }
 
     public Lookup getLookup() {
@@ -550,7 +551,7 @@ public class PhpProject implements Project, AntProjectListener {
         PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
         return Lookups.fixed(new Object[] {
                 this,
-                CopySupport.getInstance(),
+                CopySupport.getInstance(this),
                 new SeleniumProvider(),
                 new PhpCoverageProvider(this),
                 new Info(),
@@ -580,13 +581,6 @@ public class PhpProject implements Project, AntProjectListener {
 
     public ReferenceHelper getRefHelper() {
         return refHelper;
-    }
-
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        name = null;
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
     }
 
     private final class Info implements ProjectInformation {
@@ -654,10 +648,7 @@ public class PhpProject implements Project, AntProjectListener {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
-            final CopySupport copySupport = getCopySupport();
-            if (copySupport != null) {
-                copySupport.projectOpened(PhpProject.this);
-            }
+            getCopySupport().projectOpened();
 
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
@@ -676,10 +667,7 @@ public class PhpProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
 
-            final CopySupport copySupport = getCopySupport();
-            if (copySupport != null) {
-                copySupport.projectClosed(PhpProject.this);
-            }
+            getCopySupport().projectClosed();
 
             try {
                 ProjectManager.getDefault().saveProject(PhpProject.this);
@@ -780,6 +768,16 @@ public class PhpProject implements Project, AntProjectListener {
         public void resultChanged(LookupEvent ev) {
             LOGGER.fine("frameworks change, frameworks back to null");
             frameworks = null;
+        }
+    }
+
+    private final class PhpAntProjectListener implements AntProjectListener {
+
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            name = null;
+        }
+
+        public void propertiesChanged(AntProjectEvent ev) {
         }
     }
 }

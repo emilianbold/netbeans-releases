@@ -60,7 +60,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -79,7 +78,7 @@ import org.openide.util.actions.SystemAction;
  */
 public final class TreeViewTest extends NbTestCase {
     
-    private TestTreeView treeView;
+    
     private ExplorerWindow testWindow;
     private volatile boolean isScrolledDown;
     private final Object semaphore = new Object();
@@ -99,10 +98,8 @@ public final class TreeViewTest extends NbTestCase {
         }
     }
 
-
-
 //    public static TreeViewTest suite() {
-//        return new TreeViewTest("testSetSelectedNodeIsSynchronizedLazy");
+//        return new TreeViewTest("test");
 //    }
 
     /**
@@ -113,16 +110,6 @@ public final class TreeViewTest extends NbTestCase {
     public void testAutoscrollOnOff() throws InterruptedException {
         assert !EventQueue.isDispatchThread();
         
-        testWindow = new ExplorerWindow();
-        testWindow.getContentPane().add(treeView = new TestTreeView());
-        
-        class WindowDisplayer implements Runnable {
-            public void run() {
-                testWindow.pack();
-                testWindow.setVisible(true);
-            }
-        }
-        
         class Detector implements Runnable {
             public void run() {
                 if (!EventQueue.isDispatchThread()) {
@@ -130,7 +117,7 @@ public final class TreeViewTest extends NbTestCase {
                     return;
                 }
                 
-                isScrolledDown = !treeView.isUp();
+                isScrolledDown = !testWindow.treeView.isUp();
                 
                 synchronized (semaphore) {
                     semaphore.notify();
@@ -148,26 +135,18 @@ public final class TreeViewTest extends NbTestCase {
             public void run() {
                 assert (part == 1) || (part == 2);
                 if (part == 1) {
-                    treeView.collapse();
-                    treeView.scrollUp();
-                    assert treeView.isUp();
+                    testWindow.treeView.collapse();
+                    testWindow.treeView.scrollUp();
+                    assert testWindow.treeView.isUp();
                 } else {
-                    treeView.setAutoscroll(autoscroll);
-                    treeView.expand(); //<-- posts a request to the RequestProcessor
+                    testWindow.treeView.setAutoscroll(autoscroll);
+                    testWindow.treeView.expand(); //<-- posts a request to the RequestProcessor
                     RequestProcessor.getDefault().post(new Detector(), 1000 /*ms*/);
                 }
             }
         }
-
-        try {
-            EventQueue.invokeAndWait(new WindowDisplayer());
-        } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
-        }
-        
-        //Wait for the AWT thread to actually display the dialog:
-        Thread.sleep(5000);
-        
+        testWindow = new ExplorerWindow();
+        testWindow.showWindow();
         EventQueue.invokeLater(new Tester(true, 1));
         Thread.sleep(2000);      //wait for update of the screen
         EventQueue.invokeLater(new Tester(true, 2));
@@ -282,21 +261,45 @@ public final class TreeViewTest extends NbTestCase {
     }
     
     
-    private static final class ExplorerWindow extends JFrame
-                               implements ExplorerManager.Provider {
+    private final class ExplorerWindow extends JFrame
+            implements ExplorerManager.Provider, Runnable {
         
         private final ExplorerManager explManager = new ExplorerManager();
+        TestTreeView treeView;
         
         ExplorerWindow() {
             super("TreeView test");                                     //NOI18N
+            getContentPane().add(treeView = new TestTreeView());
         }
         
         public ExplorerManager getExplorerManager() {
             return explManager;
         }
-        
+        public void run() {
+            pack();
+            setVisible(true);
+        }
+
+        void waitShown() throws InterruptedException {
+            while (!isShowing()) {
+                Thread.sleep(100);
+            }
+            Thread.sleep(500);
+        }
+
+        void showWindow() {
+            try {
+                EventQueue.invokeAndWait(this);
+                waitShown();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                ex.printStackTrace();
+            }
+            waitAWT();
+        }
     }
-    
+
     /**
      * Used as the preferred actions by the nodes below
      */
@@ -400,11 +403,17 @@ public final class TreeViewTest extends NbTestCase {
         assertEquals("The context lookup created by TreeView.takeAction() should contain the node only once.", 1, count);
     }
 
-    private void waitAWT() throws InterruptedException, InvocationTargetException {
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-            }
-        });
+    private static void waitAWT() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     private void setSelectedNodes(final Node[] arr) throws Exception {
         class R implements Runnable {
@@ -433,56 +442,13 @@ public final class TreeViewTest extends NbTestCase {
     private void doPreventGCOfVisibleNodes(boolean lazy) throws Exception {
         assert !EventQueue.isDispatchThread();
 
-        testWindow = new ExplorerWindow();
-        testWindow.getContentPane().add(treeView = new TestTreeView());
-
-        class WindowDisplayer implements Runnable {
-            public void run() {
-                testWindow.pack();
-                testWindow.setVisible(true);
-            }
-
-            void waitShown() throws InterruptedException {
-                while (!testWindow.isShowing()) {
-                    Thread.sleep(100);
-                }
-                Thread.sleep(500);
-            }
-        }
-
-        class Detector implements Runnable {
-            public void run() {
-                if (!EventQueue.isDispatchThread()) {
-                    EventQueue.invokeLater(this);
-                    return;
-                }
-
-                isScrolledDown = !treeView.isUp();
-
-                synchronized (semaphore) {
-                    semaphore.notify();
-                }
-            }
-        }
-
         Keys keys = new Keys(lazy, "A", "B", "C");
         AbstractNode node = new AbstractNode(keys);
         node.setName(getName());
         AbstractNode root = node;
 
-        try {
-            WindowDisplayer wd = new WindowDisplayer();
-
-            testWindow.getExplorerManager().setRootContext(root);
-
-
-            EventQueue.invokeAndWait(wd);
-            wd.waitShown();
-        } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
-        }
-
-        waitAWT();
+        testWindow = new ExplorerWindow();
+        testWindow.showWindow();
         testWindow.getExplorerManager().setRootContext(root);
         assertSame("Root is OK", root, testWindow.getExplorerManager().getRootContext());
 
@@ -509,6 +475,45 @@ public final class TreeViewTest extends NbTestCase {
         fail("Node shall not be GCed: " + ref.get());
     }
 
+    public void testNodesGCedAfterSetChildrenLazy() {
+        doTestNodesGCedAfterSetChildren(true);
+    }
+
+    public void testNodesGCedAfterSetChildrenEager() {
+        doTestNodesGCedAfterSetChildren(false);
+    }
+
+    void doTestNodesGCedAfterSetChildren(boolean lazy) {
+        Keys keys = new Keys(lazy, "A", "B", "C");
+        class MyNode extends AbstractNode {
+
+            public MyNode(Children children) {
+                super(children);
+            }
+            void callSetChildren(Children newCh) {
+                setChildren(newCh);
+            }
+        }
+        MyNode root = new MyNode(keys);
+        root.setName(getName());
+        testWindow = new ExplorerWindow();
+        testWindow.showWindow();
+        testWindow.getExplorerManager().setRootContext(root);
+        testWindow.getExplorerManager().setExploredContext(root);
+        Node[] nodes = root.getChildren().getNodes();
+        try {
+            testWindow.getExplorerManager().setSelectedNodes(nodes);
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        waitAWT();
+        Reference<Object> ref = new WeakReference<Object>(nodes[2]);
+        nodes = null;
+        root.callSetChildren(Children.LEAF);
+        waitAWT();
+        assertGC("should gc children", ref);
+    }
+
     public void testSetSelectedNodeIsSynchronizedEager() throws Exception {
         doSetSelectedNodeIsSynchronized(false);
     }
@@ -520,36 +525,14 @@ public final class TreeViewTest extends NbTestCase {
     private void doSetSelectedNodeIsSynchronized(boolean lazy) throws Exception {
         assert !EventQueue.isDispatchThread();
 
-        testWindow = new ExplorerWindow();
-        testWindow.getContentPane().add(treeView = new TestTreeView());
-
-        class WindowDisplayer implements Runnable {
-            public void run() {
-                testWindow.pack();
-                testWindow.setVisible(true);
-            }
-
-            void waitShown() throws InterruptedException {
-                while (!testWindow.isShowing()) {
-                    Thread.sleep(100);
-                }
-                Thread.sleep(500);
-            }
-        }
-
         final Keys keys = new Keys(lazy, "A", "B", "C");
         AbstractNode node = new AbstractNode(keys);
         node.setName(getName());
         final AbstractNode root = node;
 
-        try {
-            WindowDisplayer wd = new WindowDisplayer();
-            testWindow.getExplorerManager().setRootContext(root);
-            EventQueue.invokeAndWait(wd);
-            wd.waitShown();
-        } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
-        }
+        testWindow = new ExplorerWindow();
+        testWindow.getExplorerManager().setRootContext(root);
+        testWindow.showWindow();
 
         waitAWT();
         testWindow.getExplorerManager().setRootContext(root);
@@ -597,38 +580,14 @@ public final class TreeViewTest extends NbTestCase {
     private void doTestPartialNodeSelection(boolean lazy) throws Exception {
         assert !EventQueue.isDispatchThread();
 
-        testWindow = new ExplorerWindow();
-        testWindow.getContentPane().add(treeView = new TestTreeView());
-
-        class WindowDisplayer implements Runnable {
-            public void run() {
-                testWindow.pack();
-                testWindow.setVisible(true);
-            }
-
-            void waitShown() throws InterruptedException {
-                while (!testWindow.isShowing()) {
-                    Thread.sleep(100);
-                }
-                Thread.sleep(500);
-            }
-        }
-
         final Keys keys = new Keys(lazy, "A", "B", "-B", "C");
         AbstractNode node = new AbstractNode(keys);
         node.setName(getName());
         final AbstractNode root = node;
 
-        try {
-            WindowDisplayer wd = new WindowDisplayer();
-            testWindow.getExplorerManager().setRootContext(root);
-            EventQueue.invokeAndWait(wd);
-            wd.waitShown();
-        } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
-        }
-
-        waitAWT();
+        testWindow = new ExplorerWindow();
+        testWindow.getExplorerManager().setRootContext(root);
+        testWindow.showWindow();
         testWindow.getExplorerManager().setRootContext(root);
         assertSame("Root is OK", root, testWindow.getExplorerManager().getRootContext());
 

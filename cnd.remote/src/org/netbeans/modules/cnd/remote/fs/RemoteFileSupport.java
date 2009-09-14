@@ -46,15 +46,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
+import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.NbBundle;
 
 /**
  * Reponsible for copying files from remote host
@@ -72,6 +81,8 @@ public class RemoteFileSupport {
 
     private final Object mainLock = new Object();
     private Map<File, Object> locks = new HashMap<File, Object>();
+
+    private final Map<ExecutionEnvironment, Boolean> cancels = new HashMap<ExecutionEnvironment, Boolean>();
 
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
@@ -111,7 +122,8 @@ public class RemoteFileSupport {
         }
     }
 
-    public void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
+    public void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, CancellationException {
+        checkConnection(execEnv, remotePath);
         Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
         try {
             int rc = task.get().intValue();
@@ -136,21 +148,26 @@ public class RemoteFileSupport {
 
     }
 
-    public void ensureDirSync(File dir, String remotePath) throws IOException {
+    /**
+     * Ensured that the directory is synchronized
+     * @param remoteChild - used only in the case connection is needed,
+     * to inform user, which file are we going to synchronize
+     */
+    public void ensureDirSync(File dir, String remoteDir, String remoteChild) throws IOException, CancellationException {
         // TODO: synchronization
         if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
                 if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
-                    syncDirStruct(dir, remotePath);
+                    syncDirStruct(dir, remoteDir, remoteChild);
                     removeLock(dir);
                 }
             }
         }
     }
 
-    /*package-local for test purposes*/
-    void syncDirStruct(File dir, String remotePath) throws IOException {
+    private void syncDirStruct(File dir, String remoteDir, String remoteChild) throws IOException, CancellationException {
+        checkConnection(execEnv, remoteChild);
         if (dir.exists()) {
             assert dir.isDirectory();
         } else {
@@ -160,7 +177,7 @@ public class RemoteFileSupport {
         }
         NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
         // TODO: error processing
-        processBuilder.setWorkingDirectory(remotePath);
+        processBuilder.setWorkingDirectory(remoteDir);
         processBuilder.setCommandLine("ls -1F"); // NOI18N
         processBuilder.redirectError();
         NativeProcess process = processBuilder.call();
@@ -193,5 +210,56 @@ public class RemoteFileSupport {
 
     /*package-local test method*/ int getFileCopyCount() {
         return fileCopyCount;
+    }
+
+    private String toString(ExecutionEnvironment execEnv) {
+        ServerRecord rec = ServerList.get(execEnv);
+        if (rec == null) {
+            return execEnv.toString();
+        } else {
+            return rec.getDisplayName();
+        }
+    }
+
+    private void checkConnection(ExecutionEnvironment execEnv, String filePath) throws IOException, CancellationException {
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            // a workaround for #171731 IDE hangs after start
+            if (true) { // fool javac
+                if (Boolean.getBoolean("cnd.remote.fs.notify")) {
+                    RemoteFileSystemNotifier.show(execEnv);
+                }
+                throw new CancellationException();
+            }
+            synchronized (cancels) {
+                Boolean cancel = cancels.get(execEnv);
+                if (cancel != null && cancel.booleanValue()) {
+                    throw new CancellationException();
+                }
+            }
+            if (SwingUtilities.isEventDispatchThread()) {
+                // TODO: error processing
+                throw new CancellationException();
+            }
+            try {
+                String title = NbBundle.getMessage(getClass(), "DLG_TITLE_Connect");
+                String message = MessageFormat.format(
+                        NbBundle.getMessage(getClass(), "ERR_NeedToConnectToRemoteHost"),
+                        filePath, toString(execEnv));
+                if (RemoteServerListUI.showConfirmDialog(message, title)) {
+                    if (!ConnectionManager.getInstance().connectTo(execEnv)) {
+                        throw new IOException("Can not connect to " + execEnv); //NOI18N
+                    }
+                } else {
+                    throw new CancellationException();
+                }
+            } catch (CancellationException ex) {
+                synchronized(cancels) {
+                    cancels.put(execEnv, Boolean.TRUE);
+                }
+                throw ex;
+            } catch (IOException ex) {
+                throw ex;
+            }
+        }
     }
 }

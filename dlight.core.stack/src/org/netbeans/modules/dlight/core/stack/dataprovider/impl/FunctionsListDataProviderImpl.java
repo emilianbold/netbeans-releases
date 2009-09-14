@@ -65,6 +65,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
+    private final List<DataFilter> filters = new ArrayList<DataFilter>();
 
     FunctionsListDataProviderImpl() {
     }
@@ -88,11 +89,11 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
             return result;
         }
-        return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
+        return storage.getFunctionsList(metadata, metricsColumn, functionDescription, filters);
     }
 
     public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
-        return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
+        return  getFunctionsList(metadata, functionDescription, metricsColumn);
     }
 
     
@@ -111,6 +112,13 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         return null;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        //we should keep them here
+        if (isAdjusting){
+            return;
+        }
+        filters.clear();
+        filters.addAll(newSet);
+        //and now we should 
     }
 }

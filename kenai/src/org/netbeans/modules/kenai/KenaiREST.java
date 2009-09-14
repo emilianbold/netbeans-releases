@@ -203,6 +203,11 @@ public class KenaiREST extends KenaiImpl {
         return new LazyList(members, MembersListData.class);
     }
 
+    @Override
+    public void joinProject(String projectName, String userName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private class LazyList<COLLECTION extends ListData, ITEM> extends AbstractCollection<ITEM> {
 
         private COLLECTION col;
