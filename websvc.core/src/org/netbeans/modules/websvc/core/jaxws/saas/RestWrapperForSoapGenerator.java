@@ -127,6 +127,16 @@ public class RestWrapperForSoapGenerator {
             "   // TODO handle custom exceptions here\n" + //NOI18N
             "'}'\n"; //NOI18N
     static final String IF_PORT_NOT_NULL = "\nif(port != null)'{'\n"; //NOI18N
+
+    static final String RESPONSE_BLOCK =
+            "class {8}_1 extends {7}.{8} '{'\n" +
+            "    {8}_1({3} _return) '{'\n" +
+            "        this._return = _return;\n" +
+            "    '}'\n" +
+            "'}'\n" +
+            "{7}.{8} response = new {8}_1(result);\n" +
+            "return new {7}.ObjectFactory().create{8}(response);\n";
+
     static final String CLOSE_IF_PORT = "\n'}'\n";//NOI18N
     private String wsdlUrl;
 
@@ -210,6 +220,8 @@ public class RestWrapperForSoapGenerator {
                     break;
                 }
             }
+        } else if (isList(retType)) {
+            retType = wrapInJaxbElement(getPackageFromJava(port.getJavaName())+"."+getResponseType(operation.getName()));
         } else if (getPrimitiveType(retType) != null) {
             retType = "java.lang.String";
         } else {  //find out if need to be wrapped in JAXBElement
@@ -247,6 +259,7 @@ public class RestWrapperForSoapGenerator {
         List<String> types = new ArrayList<String>();
         for (WsdlParameter queryParam : queryParams) {
             String paramTypeName = queryParam.getTypeName();
+            System.out.println("paramType = "+paramTypeName);
             if (!queryParam.isHolder()) {
                 if (this.getPrimitiveType(paramTypeName) == null) {
                     types.add(wrapInJaxbElement(paramTypeName));
@@ -523,7 +536,7 @@ public class RestWrapperForSoapGenerator {
             serviceJavaName, portJavaName,
             portGetterMethod,
             returnTypeName, operationJavaName,
-            serviceFName, argumentDeclarationPart
+            serviceFName, argumentDeclarationPart, getPackageFromJava(portJavaName), getResponseType(operationJavaName)
         };
         if ("void".equals(returnTypeName)) { //NOI18N
             String body =
@@ -538,7 +551,7 @@ public class RestWrapperForSoapGenerator {
                     JAVA_TRY +
                     IF_PORT_NOT_NULL +
                     JAVA_RESULT +
-                    getReturnStatement(operation) +
+                    (isList(returnTypeName) ? RESPONSE_BLOCK : getReturnStatement(operation)) +
                     CLOSE_IF_PORT +
                     JAVA_CATCH;
             invocationBody = MessageFormat.format(body, args);
@@ -570,6 +583,13 @@ public class RestWrapperForSoapGenerator {
 
         }
         return primitiveTypes.get(typeName);
+    }
+
+    private boolean isList(String typeName) {
+        if (typeName.startsWith("java.util.List")) {
+            return true;
+        }
+        return false;
     }
 
     public static List<ClassPath> getClassPath(Project project) {
@@ -656,5 +676,14 @@ public class RestWrapperForSoapGenerator {
             }
         }
         return ANNOTATIONS_PUT;
+    }
+
+    private String getResponseType(String operationName) {
+        return operationName.substring(0,1).toUpperCase() + operationName.substring(1)+"Response"; //NOI18N
+    }
+
+    private String getPackageFromJava(String seiClass) {
+        int index = seiClass.lastIndexOf(".");
+        return index > 0 ? seiClass.substring(0,index) : "";
     }
 }
