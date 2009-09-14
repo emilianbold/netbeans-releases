@@ -251,7 +251,7 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
 
     }
 
-    private void changeProduct(TaskData data, BugzillaRepositoryConnector brc, TaskRepository repository) throws CoreException {
+    private void changeProduct(TaskData data, BugzillaRepositoryConnector brc, TaskRepository repository) throws CoreException, IOException {
         data = brc.getTaskData(repository, data.getTaskId(), nullProgressMonitor);
 
         TaskAttribute rta = data.getRoot();
@@ -260,24 +260,19 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         BugzillaClient client = brc.getClientManager().getClient(repository, NULL_PROGRESS_MONITOR);
         
         List<String> products = client.getRepositoryConfiguration().getProducts();
-        String newProject = null;
-        for (String product : products) {
-            if(!TEST_PROJECT.equals(product)) {
-                newProject = product;
-            }
-        }
+        String newProject = TEST_PROJECT2;
         assertNotNull(newProject);
         ta.setValue(newProject);
 
-        String version = client.getRepositoryConfiguration().getVersions(newProject).get(0);
+        String version = client.getRepositoryConfiguration(NULL_PROGRESS_MONITOR).getVersions(newProject).get(0);
         ta = rta.getMappedAttribute(BugzillaAttribute.VERSION.getKey());
         ta.setValue(version);
 
-        String component = client.getRepositoryConfiguration().getComponents(newProject).get(0);
+        String component = client.getRepositoryConfiguration(NULL_PROGRESS_MONITOR).getComponents(newProject).get(0);
         ta = rta.getMappedAttribute(BugzillaAttribute.COMPONENT.getKey());
         ta.setValue(component);
 
-        String milestone = client.getRepositoryConfiguration().getTargetMilestones(newProject).get(0);
+        String milestone = client.getRepositoryConfiguration(NULL_PROGRESS_MONITOR).getTargetMilestones(newProject).get(0);
         ta = rta.getMappedAttribute(BugzillaAttribute.TARGET_MILESTONE.getKey());
         ta.setValue(milestone);
 
