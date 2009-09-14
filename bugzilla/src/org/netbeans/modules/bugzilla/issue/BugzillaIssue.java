@@ -59,6 +59,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
@@ -612,6 +613,9 @@ public class BugzillaIssue extends Issue {
             assert false : "can't set value into IssueField " + f.name();       // NOI18N
             return;
         }
+        if(f == IssueField.PRODUCT) {
+            setProduct(value);
+        }
         TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
         if(a == null) {
             a = new TaskAttribute(data.getRoot(), f.key);
@@ -665,6 +669,18 @@ public class BugzillaIssue extends Issue {
 
     private IssueNode createNode() {
         return new BugzillaIssueNode(this);
+    }
+
+
+    void setProduct(String value) {
+        TaskAttribute ta = data.getRoot().getMappedAttribute(IssueField.PRODUCT.key);
+        ta.setValue(value);
+
+        ta = data.getRoot().getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
+        if (ta == null) {
+            ta = BugzillaTaskDataHandler.createAttribute(data.getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
+        }
+        ta.setValue("1");                                                       // NOI18N
     }
 
     void resolve(String resolution) {
