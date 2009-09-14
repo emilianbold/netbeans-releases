@@ -56,14 +56,16 @@ public class DatabaseModule extends ModuleInstall {
     public void close () {
         // XXX this method is called in the event thread and could take long
         // to execute
-        
-        DBConnection[] conns = ConnectionList.getDefault().getConnections();
-        for (int i = 0; i < conns.length; i++) {
-            try {
-                ((DatabaseConnection)conns[i]).disconnect();
-            } catch (Exception e) {
-                // cf. issue 64185 exceptions should only be logged
-                Logger.getLogger("global").log(Level.INFO, null, e);
+
+        if (ConnectionList.getDefault(false) != null) {
+            DBConnection[] conns = ConnectionList.getDefault().getConnections();
+            for (int i = 0; i < conns.length; i++) {
+                try {
+                    ((DatabaseConnection)conns[i]).disconnect();
+                } catch (Exception e) {
+                    // cf. issue 64185 exceptions should only be logged
+                    Logger.getLogger("global").log(Level.INFO, null, e);
+                }
             }
         }
         

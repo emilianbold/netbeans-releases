@@ -73,6 +73,14 @@ public class ConnectionList {
 
     private Lookup.Result<DatabaseConnection> result = getLookupResult();
 
+    public static ConnectionList getDefault(boolean initialize) {
+        if (initialize) {
+            return getDefault();
+        } else {
+            return DEFAULT;
+        }
+    }
+
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
             DEFAULT = new ConnectionList();
