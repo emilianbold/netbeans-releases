@@ -56,11 +56,8 @@ import org.openide.util.RequestProcessor;
  *
  * @author Milos Kleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=257)
 public class WebFrameworksPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of WebRunPanelProvider */
-    public WebFrameworksPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -69,8 +66,7 @@ public class WebFrameworksPanelProvider implements ProjectCustomizer.CompositeCa
             return ProjectCustomizer.Category.create(
                     "FRAMEWORKS", //NOI18N
                     NbBundle.getMessage(WebFrameworksPanelProvider.class, "PNL_Frameworks"),
-                    null,
-                    (ProjectCustomizer.Category[])null);
+                    null);
         }
         return null;
     }

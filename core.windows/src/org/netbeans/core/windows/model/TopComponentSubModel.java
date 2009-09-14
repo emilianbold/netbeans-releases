@@ -274,8 +274,7 @@ final class TopComponentSubModel {
             return;
         }
         
-        if( null != recentTc ) {
-            assert openedTopComponents.contains( recentTc );
+        if( null != recentTc && openedTopComponents.contains( recentTc ) ) {
             selectedTopComponentID = getID(recentTc);
         } else {
             if(index > openedTopComponents.size() - 1) {

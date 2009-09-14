@@ -148,6 +148,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
+        ResourceRegistrationHelper.deployResources(moduleArchive,this);
         if (restart) {
             restartProgress.addProgressListener(new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent event) {
@@ -227,6 +228,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
+        ResourceRegistrationHelper.deployResources(moduleArchive,this);
         commonSupport.deploy(deployProgress, moduleArchive, moduleName);
 
         return returnProgress;

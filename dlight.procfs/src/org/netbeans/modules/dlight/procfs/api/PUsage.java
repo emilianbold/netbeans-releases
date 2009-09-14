@@ -111,7 +111,7 @@ public interface PUsage {
 
         public void dump(PrintStream out) {
             out.println("USR SYS TRP TFL DFL KFL LCK SLP LAT STP"); // NOI18N
-            out.printf("%d  %d  %d  %d  %d  %d  %d  %d  %d  %d \n",
+            out.printf("%d  %d  %d  %d  %d  %d  %d  %d  %d  %d \n", // NOI18N
                     pr_utime,
                     pr_stime,
                     pr_ttime,
