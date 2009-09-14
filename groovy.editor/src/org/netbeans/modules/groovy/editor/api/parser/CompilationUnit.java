@@ -137,7 +137,10 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
                         TypeElement typeElement = controller.getElements().getTypeElement(name);
                         synchronized (cache) {
                             if (typeElement != null) {
-                                cache.put(name, createClassNode(name, typeElement));
+                                ClassNode node = createClassNode(name, typeElement);
+                                if (node != null) {
+                                    cache.put(name, node);
+                                }
                             } else {
                                 if (!cache.containsKey(name)) {
                                     cache.put(name, null);
@@ -165,6 +168,7 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             if (typeElement.getKind().isInterface()) {
                 if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
 // FIXME give it up and use classloader - annotations created in sources won't work
+// OTOH it will not resolve annotation coming from java source file :( 170517
                     return null;
 //                    modifiers |= Opcodes.ACC_ANNOTATION;
 //                    interfaces.add(ClassHelper.Annotation_TYPE);
