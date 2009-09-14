@@ -2139,7 +2139,7 @@ public class Reformatter implements ReformatTask {
                 int pos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                 do {
                     col += tokens.token().length();
-                } while (tokens.moveNext() && tokens.offset() < endPos);
+                } while (tokens.moveNext() && tokens.offset() < pos);
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
