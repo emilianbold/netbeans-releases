@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -55,6 +57,7 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.util.Range;
 import org.openide.util.Lookup;
 
 /**
@@ -63,6 +66,7 @@ import org.openide.util.Lookup;
  */
 class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
+    private final Object lock = new String("FunctionsListDataProviderImpl.lock");
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
@@ -89,7 +93,23 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
             return result;
         }
-        return storage.getFunctionsList(metadata, metricsColumn, functionDescription, filters);
+        List<DataFilter> changedFilters = new ArrayList<DataFilter>();
+        final long startTimeStamp = Long.valueOf(serviceInfoStorage.getValue(ServiceInfoDataStorage.START_TIME_NANOSECONDS));
+        synchronized(lock){
+            for (DataFilter f : filters){
+                if (f instanceof TimeIntervalDataFilter){
+                    //long startTs = f.
+                    Range<Long> interval  = ((TimeIntervalDataFilter)f).getInterval();
+                    Range<Long> newInterval = new Range<Long>(interval.getStart() + startTimeStamp, interval.getEnd() + startTimeStamp);
+                    TimeIntervalDataFilter newFilter  = TimeIntervalDataFilterFactory.create(newInterval);
+                    changedFilters.add(newFilter);
+                }else{
+                    changedFilters.add(f);
+                }
+            }
+        }
+        //in case we have TimeIntervalDataFilter here should change time
+        return storage.getFunctionsList(metadata, metricsColumn, functionDescription, changedFilters);
     }
 
     public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
@@ -117,8 +137,10 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         if (isAdjusting){
             return;
         }
-        filters.clear();
-        filters.addAll(newSet);
+        synchronized(lock){
+            filters.clear();
+            filters.addAll(newSet);
+        }
         //and now we should 
     }
 }
