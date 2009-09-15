@@ -28,9 +28,12 @@
  */
 
 #include <math.h>
+#include <stdio.h>
 
 #include "fft.h"
 #include "bmp.h"
+
+extern "C" double log2(double x);
 
 FastFourierTransform::FastFourierTransform() {
 }
