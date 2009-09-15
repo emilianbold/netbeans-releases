@@ -82,7 +82,11 @@ implements ActionListener, Runnable, Callable<JButton> {
     public UIHandler(boolean exceptionOnly) {
         setLevel(Level.FINEST);
         this.exceptionOnly = exceptionOnly;
-        this.reporter = new SlownessReporter();
+        if (exceptionOnly){
+            this.reporter = null;
+        } else {
+            this.reporter = new SlownessReporter();
+        }
     }
 
     public void publish(LogRecord record) {
@@ -106,7 +110,7 @@ implements ActionListener, Runnable, Callable<JButton> {
                 assert nps != null: "nps param should be not null";
                 assert nps.length > 0 : "nps param should not be empty";
                 assert time >= 1000 : "1s is minimal reportable time";
-                reporter.notifySlowness(Installer.getLogs(), nps, time);
+                reporter.notifySlowness(nps, time);
                 return;
             }
         }

@@ -13,6 +13,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -35,8 +36,8 @@
                   <Component id="datasourceComboBox" alignment="0" pref="387" max="32767" attributes="0"/>
               </Group>
           </Group>
-          <Component id="tablesPanel" alignment="1" pref="500" max="32767" attributes="0"/>
-          <Component id="jScrollPane3" alignment="1" pref="500" max="32767" attributes="0"/>
+          <Component id="tablesPanel" alignment="1" pref="536" max="32767" attributes="0"/>
+          <Component id="jScrollPane3" alignment="1" pref="536" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -291,9 +292,6 @@
               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
               </Border>
-            </Property>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
           <Events>
