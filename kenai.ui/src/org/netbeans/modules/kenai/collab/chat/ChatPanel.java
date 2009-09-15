@@ -88,6 +88,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -446,6 +447,8 @@ public class ChatPanel extends javax.swing.JPanel {
                 disableAutoScroll = ((vbar.getValue() + vbar.getVisibleAmount()) != vbar.getMaximum());
             }
         });
+
+        UIUtils.logKenaiUsage("CHAT", isPrivate() ? "PRIVATE_CHAT" : "CHATROOM"); // NOI18N
     }
 
     private class NotificationsEnabledAction extends MouseAdapter implements ActionListener {
@@ -770,6 +773,7 @@ public class ChatPanel extends javax.swing.JPanel {
                         suc.sendMessage(m);
                         insertMessage(m);
                     }
+                    UIUtils.logKenaiUsage("CHAT", "MESSAGE_SENT"); // NOI18N
                 }
             } catch (XMPPException ex) {
                 Exceptions.printStackTrace(ex);
