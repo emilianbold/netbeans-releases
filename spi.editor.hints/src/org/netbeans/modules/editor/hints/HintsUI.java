@@ -295,12 +295,16 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         ToolTipManager.sharedInstance().setEnabled(false);
         ToolTipManager.sharedInstance().setEnabled(true);
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
-        
+        Rectangle screen = getScreenBounds();
+        Dimension screenDim = new Dimension(screen.width, screen.height);
+
         errorTooltip = new JLabel("<html>" + translate(description)); // NOI18N
         errorTooltip.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Color.BLACK),
             BorderFactory.createEmptyBorder(0, 3, 0, 3)
         ));
+        Dimension pref = errorTooltip.getPreferredSize();
+        errorTooltip.setPreferredSize(new Dimension(Math.min(pref.width, screenDim.width), Math.min(pref.height, screenDim.height)));
         errorTooltip.addMouseListener(this);
         
         if (!fixes.isComputed() || fixes.getFixes().isEmpty()) {
@@ -311,14 +315,12 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                     comp, errorTooltip, p.x, p.y);
         } else {
             assert hintListComponent == null;
-
-            int rowHeight = 14; //default
             
-            hintListComponent =
-                    new ScrollCompletionPane(comp, fixes, null, null, comp.getPreferredSize());
+            int rowHeight = 14; //default
 
+            hintListComponent =
+                    new ScrollCompletionPane(comp, fixes, null, null, screenDim);
             final Dimension hintPopup = hintListComponent.getPreferredSize();
-            Rectangle screen = getScreenBounds();
             boolean exceedsHeight = p.y + hintPopup.height > screen.height;
 
             try {
