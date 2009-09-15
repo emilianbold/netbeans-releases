@@ -238,11 +238,9 @@ made subject to such option by the copyright holder.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.EditQueryStringAction"/>
       </file>
     </folder>
-    <!--<folder name="System">
-      <file name="View Servlet.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
-      </file>
-    </folder>-->
+    <folder name="Edit">
+        <file name="org-netbeans-modules-web-core-jsploader-EditServletAction.instance"/>
+    </folder>
       <folder name="Tools">
             <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>

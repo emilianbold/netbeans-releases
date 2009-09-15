@@ -77,7 +77,10 @@ import org.openide.util.actions.SystemAction;
  * @author  Marian Petras, Andrei Badea
  */
 public final class TreeViewTest extends NbTestCase {
-    
+
+    protected @Override int timeOut() {
+        return 500000;
+    }
     
     private ExplorerWindow testWindow;
     private volatile boolean isScrolledDown;

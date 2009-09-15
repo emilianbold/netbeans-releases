@@ -431,16 +431,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     // action included in some binary blob
                     continue;
                 }
-                if (
-                    fo.getPath().startsWith("Loaders/text/x-java/Actions/") ||
-                    fo.getPath().startsWith("Loaders/text/x-jsp/Actions/")
-                ) {
-                    // imho both java and jsp are doing something wrong, they
-                    // should refer to some standard action, not invent their
-                    // own
-                    continue;
-                }
-
                 if (Boolean.TRUE.equals(fo.getAttribute("misplaced.action.allowed"))) {
                     // it seems necessary some actions to stay outside
                     // of the Actions folder
