@@ -697,7 +697,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 if (slashIndex != -1) {
                     
                     // Find app dir, and build up a relative path to the view file in the process
-                    FileObject app = RubyUtils.getFileObject(info);
+                    FileObject app = RubyUtils.getFileObject(info).getParent();
 
                     while (app != null) {
                         if (app.getName().equals("views") && // NOI18N
@@ -722,7 +722,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     name = "_" + target.name.substring(slashIndex+1); // NOI18N
                     
                 } else {
-                    dir = RubyUtils.getFileObject(info);
+                    dir = RubyUtils.getFileObject(info).getParent();
                     name = "_" + target.name; // NOI18N
                 }
                 
