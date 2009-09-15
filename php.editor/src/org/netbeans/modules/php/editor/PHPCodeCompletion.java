@@ -96,6 +96,8 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -673,6 +675,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (PHPDocTypeTag.ORDINAL_TYPES.contains(typeName.toUpperCase())) {
                         continue;
                     }
+                    boolean staticAllowed = OptionsUtils.provideCodeCompletionWithStaticMethods();
+                    boolean nonstaticAllowed = OptionsUtils.provideCodeCompletionWithNonStaticMethods();
                     final QualifiedName qualifiedTypeName = typeScope.getNamespaceName().append(typeName);
                     if (!processedTypeNames.add(qualifiedTypeName)) continue;
                     Collection<IndexedClassMember<IndexedFunction>> methods =
@@ -680,7 +684,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                     for (IndexedClassMember<IndexedFunction> classMember: methods){
                         IndexedFunction method = classMember.getMember();
-                        if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext) {
+                        if ((staticContext && (method.isStatic() || nonstaticAllowed)) ||
+                                (instanceContext && (!method.isStatic() || staticAllowed))) {
                             for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                                 if (!invalidProposalsForClsMembers.contains(method.getName())) {
                                     proposals.add(new PHPCompletionItem.FunctionItem(classMember, request, i));
