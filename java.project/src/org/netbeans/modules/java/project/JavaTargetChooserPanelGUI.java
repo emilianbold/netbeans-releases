@@ -50,6 +50,7 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
@@ -599,9 +600,20 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            SourceGroup g = (SourceGroup) value;
-            super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
-            setIcon(g.getIcon(false));
+            String name;
+            Icon icon;
+            if (value == null) {
+                name = ""; //NOI18N
+                icon = null;
+            }
+            else {
+                assert value instanceof SourceGroup;
+                SourceGroup g = (SourceGroup) value;
+                name = g.getDisplayName();
+                icon = g.getIcon(false);
+            }
+            super.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+            setIcon(icon);
             return this;
         }
         

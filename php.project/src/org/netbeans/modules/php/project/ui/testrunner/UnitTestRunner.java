@@ -139,9 +139,9 @@ public final class UnitTestRunner {
             testSession.addSuite(testSuite);
 
             for (TestCaseVO kase : suite.getTestCases()) {
-                Testcase testcase = new Testcase(kase.getName(), "PHPUnit test case", testSession); // NOI18N
-                testcase.setTimeMillis(kase.getTime());
-                testcase.setStatus(kase.getStatus());
+                Testcase testCase = new Testcase(kase.getName(), "PHPUnit test case", testSession); // NOI18N
+                testCase.setTimeMillis(kase.getTime());
+                testCase.setStatus(kase.getStatus());
 
                 String[] stacktrace = kase.getStacktrace();
                 if (stacktrace.length > 0) {
@@ -151,7 +151,7 @@ public final class UnitTestRunner {
                     // XXX will be used with php unit 3.4+
 //                    Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure("abc\na", "abcd\na");
 //                    trouble.setComparisonFailure(failure);
-                    testcase.setTrouble(trouble);
+                    testCase.setTrouble(trouble);
                     MANAGER.displayOutput(testSession, suite.getName() + "::"  + kase.getName() + "()", isError); // NOI18N
                     testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
                     for (String s : stacktrace) {
@@ -161,7 +161,7 @@ public final class UnitTestRunner {
                     MANAGER.displayOutput(testSession, "", false); // NOI18N
                     testSession.addOutput(""); // NOI18N
                 }
-                testSession.addTestCase(testcase);
+                testSession.addTestCase(testCase);
             }
             MANAGER.displayReport(testSession, testSession.getReport(suite.getTime()));
         }
