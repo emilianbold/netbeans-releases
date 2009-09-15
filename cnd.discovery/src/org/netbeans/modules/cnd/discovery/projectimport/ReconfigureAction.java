@@ -164,7 +164,7 @@ public class ReconfigureAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
-            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getLinkerFlags(), panel.getOtherOptions());
+            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getLinkerFlags(), panel.getOtherOptions(), false);
         }
         running = false;
     }

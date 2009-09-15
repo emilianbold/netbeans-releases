@@ -53,6 +53,7 @@ public class ProjectActionEvent {
     public static enum Type {
         BUILD("Build"), // NOI18N
         CLEAN("Clean"), // NOI18N
+        CONFIGURE("Configure"), // NOI18N
         RUN("Run"), // NOI18N
         DEBUG("Debug"), // NOI18N
         DEBUG_STEPINTO("Debug"), // NOI18N
