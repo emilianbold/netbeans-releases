@@ -40,13 +40,43 @@
  */
 package org.netbeans.modules.java.source.util;
 
-import java.util.EventListener;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface LowMemoryListener extends EventListener {
+public final class LMListener {
 
-    public void lowMemory (LowMemoryEvent event);
+    private final MemoryMXBean memBean;
+
+
+    static float heapLimit = 0.8f;
+
+    public LMListener () {
+        this.memBean = ManagementFactory.getMemoryMXBean();
+        assert this.memBean != null;
+    }
+
+    public static float getHeapLimit () {
+        return heapLimit;
+    }
+
+    static void setHeapLimit(final float limit) {
+        heapLimit = limit;
+    }
+
+    public boolean isLowMemory () {
+        if (this.memBean != null) {
+            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
+            if (usage != null) {
+                long used = usage.getUsed();
+                long max = usage.getMax();
+                return used > max * heapLimit;
+            }
+        }
+        return false;
+    }
 }

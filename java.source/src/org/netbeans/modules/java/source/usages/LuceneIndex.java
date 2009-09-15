@@ -89,9 +89,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.modules.java.source.util.LowMemoryEvent;
-import org.netbeans.modules.java.source.util.LowMemoryListener;
-import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.java.source.util.LMListener;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -804,50 +802,44 @@ class LuceneIndex extends Index {
             out.setMaxMergeDocs(indexSettings.getMaxMergeDocs());
             out.setMaxBufferedDocs(indexSettings.getMaxBufferedDocs());
         }
-        LowMemoryNotifier lm = LowMemoryNotifier.getDefault();
-        LMListener lmListener = new LMListener ();
-        lm.addLowMemoryListener (lmListener);
+        final LMListener lmListener = new LMListener ();
         Directory memDir = null;
         IndexWriter activeOut = null;
-        if (lmListener.lowMemory.getAndSet(false)) {
+        if (lmListener.isLowMemory()) {
             activeOut = out;
         }
         else {
             memDir = new RAMDirectory ();
             activeOut = new IndexWriter (memDir, analyzer, true);
-        }
-        try {
-            activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
-            for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<Pair<String,String>,Object[]> refsEntry = it.next();
-                it.remove();
-                final Pair<String,String> pair = refsEntry.getKey();
-                final String cn = pair.first;
-                final String srcName = pair.second;
-                final Object[] data = refsEntry.getValue();
-                final List<String> cr = (List<String>) data[0];
-                final String fids = (String) data[1];
-                final String ids = (String) data[2];
-                final Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,fids,ids,srcName);
-                activeOut.addDocument(newDoc);
-                if (memDir != null && lmListener.lowMemory.getAndSet(false)) {
-                    activeOut.close();
-                    out.addIndexes(new Directory[] {memDir});
-                    memDir = new RAMDirectory ();
-                    activeOut = new IndexWriter (memDir, analyzer, true);
-                }
-            }
-            if (memDir != null) {
+        }        
+        activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
+        for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<Pair<String,String>,Object[]> refsEntry = it.next();
+            it.remove();
+            final Pair<String,String> pair = refsEntry.getKey();
+            final String cn = pair.first;
+            final String srcName = pair.second;
+            final Object[] data = refsEntry.getValue();
+            final List<String> cr = (List<String>) data[0];
+            final String fids = (String) data[1];
+            final String ids = (String) data[2];
+            final Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,fids,ids,srcName);
+            activeOut.addDocument(newDoc);
+            if (memDir != null && lmListener.isLowMemory()) {
                 activeOut.close();
                 out.addIndexes(new Directory[] {memDir});
-                activeOut = null;
-                memDir = null;
+                memDir = new RAMDirectory ();
+                activeOut = new IndexWriter (memDir, analyzer, true);
             }
-            synchronized (this) {
-                this.rootTimeStamp = new Long (timeStamp);
-            }
-        } finally {
-            lm.removeLowMemoryListener (lmListener);
+        }
+        if (memDir != null) {
+            activeOut.close();
+            out.addIndexes(new Directory[] {memDir});
+            activeOut = null;
+            memDir = null;
+        }
+        synchronized (this) {
+            this.rootTimeStamp = new Long (timeStamp);
         }
     }
 
@@ -1067,16 +1059,7 @@ class LuceneIndex extends Index {
         }
         return locks;
     }
-    
-    private static class LMListener implements LowMemoryListener {        
-        
-        private AtomicBoolean lowMemory = new AtomicBoolean (false);
-        
-        public void lowMemory(LowMemoryEvent event) {
-            lowMemory.set(true);
-        }        
-    }
-    
+            
     /**
      * Expert: Bypass read of norms 
      */
