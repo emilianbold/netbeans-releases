@@ -240,7 +240,7 @@ public class ModuleListParserTest extends NbTestCase {
         assertEquals(dashCnb + ".xml", arr[0]);
 
         Hashtable<String,String> properties = new Hashtable<String,String>();
-        properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform10")
+        properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform11")
                 + File.pathSeparator + getWorkDir());
         properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project"));
         properties.put("suite.dir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1"));
