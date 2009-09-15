@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -158,19 +159,24 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                                 }
                             }
                             if (fo == null) {
-                                final URL url = new URL(loc);
-                                RP.post(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            copyToCacheDir(url.openStream());
-                                            synchronized (AuxPropsImpl.this) {
-                                                recheck = true;
+                                try {
+                                    final URL url = new URL(loc);
+                                    RP.post(new Runnable() {
+                                        public void run() {
+                                            try {
+                                                copyToCacheDir(url.openStream());
+                                                synchronized (AuxPropsImpl.this) {
+                                                    recheck = true;
+                                                }
+                                            } catch (IOException ex) {
+                                                ex.printStackTrace();
                                             }
-                                        } catch (IOException ex) {
-                                            ex.printStackTrace();
                                         }
-                                    }
-                                });
+                                    });
+                                } catch (MalformedURLException ex) {
+                                    //#172067 ignore badly formed urls..
+                                    //probably a local relative file path, but not existing..
+                                }
                             }
                         }
                     }
