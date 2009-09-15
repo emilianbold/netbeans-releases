@@ -43,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ReconfigureProvider;
 import org.netbeans.modules.cnd.tha.THAServiceInfo;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
@@ -166,7 +168,8 @@ public final class THAProjectSupport implements PropertyChangeListener {
     public boolean isConfiguredForInstrumentation(THAConfiguration configuration) {
         THAInstrumentationSupport instrSupport = getInstrumentationSupport();
 
-        if (instrSupport == null || !instrSupport.isSupported()) {
+        if (instrSupport == null){// || !instrSupport.isSupported()) {
+            // should be be possible call method in UI thread
             return false;
         }
 
@@ -176,8 +179,10 @@ public final class THAProjectSupport implements PropertyChangeListener {
         if (mc.isMakefileConfiguration()){
             return isConfiguredForInstrumentationMakefile();
         }
-        if (!instrSupport.isInstrumentationNeeded(mc.getDevelopmentHost().getExecutionEnvironment(), configuration)){
-            return true;
+        if (configuration != null) {
+            if (!instrSupport.isInstrumentationNeeded(mc.getDevelopmentHost().getExecutionEnvironment(), configuration)){
+                return true;
+            }
         }
         if ((!mc.getCRequired().getValue() || (mc.getCRequired().getValue() &&  mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions())))  &&
                 (!mc.getCppRequired().getValue() || (mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) &&
@@ -231,6 +236,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         return result;
     }
+
 
     public boolean doInstrumentation() {
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
@@ -294,11 +300,11 @@ public final class THAProjectSupport implements PropertyChangeListener {
         return false;
     }
 
-    public boolean undoInstrumentation() {
+    public List<String> undoInstrumentation() {
         THAInstrumentationSupport instrSupport = getInstrumentationSupport();
 
-        if (instrSupport == null || !instrSupport.isSupported()) {
-            return false;
+        if (instrSupport == null){// || !instrSupport.isSupported()) {
+            return Collections.<String>emptyList();
         }
 
         boolean changed = false;
@@ -339,15 +345,25 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
 
         if (changed) {
+            RunProfile profile = (RunProfile) mc.getAuxObject(RunProfile.PROFILE_ID);
+            if (profile != null) {
+                profile.setBuildFirst(true);
+            }
             setModified();
         }
-
-        return changed;
+        if (changed) {
+            List<String> res = new ArrayList<String>(2);
+            res.add("clean"); // NOI18N
+            res.add("build"); // NOI18N
+            return res;
+        }
+        return Collections.<String>emptyList();
     }
 
-    private boolean undoInstrumentationMakefile() {
-        ReconfigureProvider.getDefault().reconfigure(project, "-g", "-g", ""); // NOI18N
-        return false;
+    private List<String> undoInstrumentationMakefile() {
+        List<String> res = new ArrayList<String>(1);
+        res.add("configure");
+        return res;
     }
 
     private static String loc(String key, String... params) {

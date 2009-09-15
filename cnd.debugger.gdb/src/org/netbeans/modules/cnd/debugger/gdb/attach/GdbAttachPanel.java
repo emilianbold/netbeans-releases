@@ -85,6 +85,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     private final Controller controller;
     private static String lastFilterValue = "";
     private static boolean showAll = false;
+    private boolean postInited = false;
     
     /** Creates new form GdbAttachPanel */
     public GdbAttachPanel() {
@@ -97,7 +98,6 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
                 filterTextChanged();
             }
         });
-        postComponentsInit();
     }
 
     private void initHostCombo() {
@@ -187,7 +187,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
      */
     public void processListCallback(List<String> list) {
         Pattern re = getFilterRE();
-        final Vector<Vector> rows = new Vector<Vector>();
+        final Vector<Vector<String>> rows = new Vector<Vector<String>>();
         for (String line : list) {
             Vector<String> row = new Vector<String>();
             StringTokenizer tok = new StringTokenizer(line);
@@ -210,6 +210,10 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (!postInited) {
+                    postComponentsInit();
+                    postInited = true;
+                }
                 processModel.setRowCount(0);
                 for (Vector obj : rows) {
                     processModel.addRow(obj);

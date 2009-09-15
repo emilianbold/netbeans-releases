@@ -73,12 +73,15 @@ final class ProcessList {
     }
 
     private PTYPE ptype = PTYPE.UNINITIALIZED;
-    private final String executable;
+    private String executable;
     private final List<String> argsSimple = new ArrayList<String>();
     private final ExecutionEnvironment exEnv;
 
     protected ProcessList(ExecutionEnvironment exEnv) {
         this.exEnv = exEnv;
+    }
+
+    private void init() throws IllegalStateException {
         String exec = "";
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
@@ -97,9 +100,11 @@ final class ProcessList {
                     ptype = PTYPE.NONE;
                 }
             } else {
-                if (HostInfoUtils.fileExists(exEnv, "/bin/ps")) { // NOI18N
+                if (HostInfoUtils.fileExists(exEnv, "/bin/ps")) {
+                    // NOI18N
                     exec = "/bin/ps"; // NOI18N
-                } else if (HostInfoUtils.fileExists(exEnv, "/usr/bin/ps")) { // NOI18N
+                } else if (HostInfoUtils.fileExists(exEnv, "/usr/bin/ps")) {
+                    // NOI18N
                     exec = "/usr/bin/ps"; // NOI18N
                 } else {
                     ptype = PTYPE.NONE;
@@ -126,11 +131,22 @@ final class ProcessList {
         executable = exec;
     }
 
-    private void request(final ProcessListReader plr, final List<String> args) {
-        if (executable.length() > 0) {
+    private void request(final ProcessListReader plr, final boolean full) {
+        if (executable == null || executable.length() > 0) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
+                        if (executable == null) {
+                            init();
+                        }
+                        List<String> args = new ArrayList<String>(argsSimple);
+                        if (full) {
+                            if (ptype == PTYPE.WINDOWS) {
+                                args.add("-W"); // NOI18N
+                            } else if (ptype == PTYPE.STD) {
+                                args.add("-A"); // NOI18N
+                            }
+                        }
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
                         npb.setExecutable(executable);
                         npb.setArguments(args.toArray(new String[args.size()]));
@@ -155,17 +171,11 @@ final class ProcessList {
     }
 
     void requestSimple(ProcessListReader plr) {
-        request(plr, argsSimple);
+        request(plr, false);
     }
 
     void requestFull(ProcessListReader plr) {
-        List<String> argsFull = new ArrayList<String>(argsSimple);
-        if (ptype == PTYPE.WINDOWS) {
-            argsFull.add("-W"); // NOI18N
-        } else if (ptype == PTYPE.STD) {
-            argsFull.add("-A"); // NOI18N
-        }
-        request(plr, argsFull);
+        request(plr, true);
     }
 
     protected boolean isStd() {
