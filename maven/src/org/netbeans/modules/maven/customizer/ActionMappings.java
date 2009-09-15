@@ -92,6 +92,7 @@ import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -216,7 +217,7 @@ public class ActionMappings extends javax.swing.JPanel {
         btnSetup.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnSetup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+                OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
             }
             
         });

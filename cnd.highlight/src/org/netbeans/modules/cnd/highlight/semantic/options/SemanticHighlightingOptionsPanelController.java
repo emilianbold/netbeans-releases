@@ -49,6 +49,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
+@OptionsPanelController.SubRegistration(
+    location="CPlusPlus",
+    displayName="#TAB_SemanticHighlightingTab",
+    position=500
+)
 public final class SemanticHighlightingOptionsPanelController extends OptionsPanelController {
 
     private SemanticHighlightingOptionsPanel panel = new SemanticHighlightingOptionsPanel();

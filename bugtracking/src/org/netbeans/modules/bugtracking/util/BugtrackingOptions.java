@@ -50,9 +50,9 @@ import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
+// XXX could use @ContainerRegistration were it not for special folder path & special GUI
 
 /**
  * Bugtracking options panel combined from panels for various settings.
@@ -60,29 +60,13 @@ import org.openide.util.lookup.Lookups;
  * @author Pavel Buzek
  * @author Tomas Stupka
  */
-public class BugtrackingOptions extends AdvancedOption {
-    public String getTooltip() {
-        return getDisplayName();
-    }
-    
-    public String getDisplayName() {
-        return NbBundle.getMessage(BugtrackingOptions.class, "LBL_IssueTracking"); // NOI18N
-    }
-    
-    public OptionsPanelController create() {
-        return new Controller();
-    }
-    
-    private static final class Controller extends OptionsPanelController {
+@OptionsPanelController.SubRegistration(displayName="#LBL_IssueTracking")
+public class BugtrackingOptions extends OptionsPanelController {
         private BugtrackingOptionsPanel panel;
         private boolean initialized = false;
         private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
 
-        public Controller() {
-            init();
-        }
-
-        private void init() {
+        public BugtrackingOptions() {
             if (initialized) return;
             initialized = true;
             panel = new BugtrackingOptionsPanel();
@@ -161,5 +145,4 @@ public class BugtrackingOptions extends AdvancedOption {
         public HelpCtx getHelpCtx() {
             return new HelpCtx(BugtrackingOptions.class);
         }
-    }
 }
