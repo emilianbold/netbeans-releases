@@ -52,7 +52,7 @@ def platform_properties = """\
 disabled.clusters=\
     apisupport1,\
     enterprise5,\
-    groovy1,\
+    groovy2,\
     gsf1,\
     harness,\
     ide12,\

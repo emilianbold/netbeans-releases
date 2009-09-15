@@ -52,6 +52,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -96,10 +97,8 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
-import org.netbeans.modules.web.jsf.impl.facesmodel.ResourceBundleImpl;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.palette.items.FromEntityBase;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -125,6 +124,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static final String CONVERTER_SUFFIX = "Converter";  //NOI18N
     private static final String JAVA_EXT = "java"; //NOI18N
     public static final String JSF2_GENERATOR_PROPERTY = "jsf2Generator"; // "true" if set otherwise undefined
+    private static final String CSS_FOLDER = "resources/css/";  //NOI18N
   
     private transient WebModuleExtender wme;
     
@@ -286,7 +286,21 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Controller_Converter_Pre"); //NOI18N"Preparing to generate JSF controllers and converters";
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);  
-        
+
+        //If faces-config not exist it should be created
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
+        FileObject fo;
+        if (configFiles.length == 0) {
+            FileObject dest = wm.getWebInf();
+            if (dest == null) {
+                dest = wm.getDocumentBase().createFolder("WEB-INF");
+            }
+            fo = FacesConfigIterator.createFacesConfig(project, dest, "faces-config", false);
+        } else {
+            fo = configFiles[0];
+        }
+
         int[] nameAttemptIndices = new int[entities.size()];
         FileObject[] controllerFileObjects = new FileObject[entities.size()];
         FileObject[] converterFileObjects = new FileObject[entities.size()];
@@ -426,9 +440,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
 
         Charset encoding = FileEncodingQuery.getEncoding(project.getProjectDirectory());
-        if (webRoot.getFileObject("resources/css/"+JSFClientGenerator.JSFCRUD_STYLESHEET) == null) {
+        if (webRoot.getFileObject(CSS_FOLDER+JSFClientGenerator.JSFCRUD_STYLESHEET) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(JSFClientGenerator.RESOURCE_FOLDER + JSFClientGenerator.JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
-            FileObject target = FileUtil.createData(webRoot, "resources/css/"+JSFClientGenerator.JSFCRUD_STYLESHEET);
+            FileObject target = FileUtil.createData(webRoot, CSS_FOLDER+JSFClientGenerator.JSFCRUD_STYLESHEET);
             JSFFrameworkProvider.createFile(target, content, encoding.name());
             progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", target.getNameExt()); //NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
@@ -473,7 +487,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params.put("controllerClassName", controllerClassName);
             expandSingleJSFTemplate("list.ftl", entityClass, jsfFolder, webRoot, "List", params, progressContributor, progressPanel, progressIndex++);
 
-            String styleAndScriptTags = "<h:outputStylesheet name=\"css/jsfcrud.css\"/>";
+            String styleAndScriptTags = "<h:outputStylesheet name=\"css/"+JSFClientGenerator.JSFCRUD_STYLESHEET+"\"/>"; //NOI18N
             JSFClientGenerator.addLinkToListJspIntoIndexJsp(WebModule.getWebModule(project.getProjectDirectory()),
                     simpleClassName, styleAndScriptTags, "UTF-8", "/"+getJsfFileName(entityClass, jsfFolder, "List"));
 
@@ -660,7 +674,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {
+        Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+        String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
+        if (preferredLanguage.equals("Facelets") && (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL))) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
         }
 
