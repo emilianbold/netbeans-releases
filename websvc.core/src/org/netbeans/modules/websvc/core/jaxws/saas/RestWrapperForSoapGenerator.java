@@ -259,15 +259,13 @@ public class RestWrapperForSoapGenerator {
         List<String> types = new ArrayList<String>();
         for (WsdlParameter queryParam : queryParams) {
             String paramTypeName = queryParam.getTypeName();
-            System.out.println("paramType = "+paramTypeName);
             if (!queryParam.isHolder()) {
                 if (this.getPrimitiveType(paramTypeName) == null) {
                     types.add(wrapInJaxbElement(paramTypeName));
+                } else {
+                    types.add(paramTypeName);
                 }
-
-                types.add(paramTypeName);
             }
-
         }
         return types.toArray(new String[types.size()]);
     }
