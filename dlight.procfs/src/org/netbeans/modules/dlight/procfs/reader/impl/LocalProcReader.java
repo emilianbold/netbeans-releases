@@ -59,15 +59,20 @@ public class LocalProcReader extends ProcReaderImpl {
         lwpDir = new File("/proc/" + pid + "/lwp"); // NOI18N
     }
 
-    public PStatus getProcessStatus() throws IOException {
-        return getProcessStatus(new FileInputStream(statusFile));
+    public PStatus getProcessStatus() {
+        PStatus status = null;
+        try {
+            status = getProcessStatus(new FileInputStream(statusFile));
+        } catch (IOException ex) {
+        }
+        return status;
     }
 
     public PUsage getProcessUsage() throws IOException {
         return getProcessUsage(new FileInputStream(usageFile));
     }
 
-    public List<LWPUsage> getThreadsInfo() throws IOException {
+    public List<LWPUsage> getThreadsInfo() {
         List<LWPUsage> result = new ArrayList<LWPUsage>();
 
         String[] lwps = lwpDir.list();
