@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
@@ -102,7 +103,8 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 return o1.compareTo(o2);
             }
         });
-        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(parameter.getSnapshot().getTokenHierarchy(), offset);
+        final TokenHierarchy<?> tokenHierarchy = parameter.getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, offset) : null;
         OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
             if (!cachedReferenceSpan.containsInclusive(offset)) {
