@@ -115,13 +115,14 @@ public final class PersistenceProviderComboboxHelper {
         initCombo(providerCombo);
         // handling of <ENTER> key event
         providerCombo.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
                 if (KeyEvent.VK_ENTER == keyCode) {
                     Object selectedItem = providerCombo.getSelectedItem();
                     if (selectedItem instanceof LibraryItem) {
+                        providerCombo.hidePopup();
                         ((LibraryItem) selectedItem).performAction();
-                        providerCombo.setPopupVisible(false);
                         e.consume();
                         initCombo(providerCombo);
                     }
@@ -150,8 +151,8 @@ public final class PersistenceProviderComboboxHelper {
                     // handling mouse click, see KeyEvent.getKeyModifiersText(e.getModifiers())
                 } else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
                     if (selectedItem instanceof LibraryItem) {
-                        ((LibraryItem) selectedItem).performAction();
                         providerCombo.setPopupVisible(false);
+                        ((LibraryItem) selectedItem).performAction();
                         initCombo(providerCombo);
                     }
                 } else {
