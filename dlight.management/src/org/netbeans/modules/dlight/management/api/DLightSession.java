@@ -128,7 +128,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
-                startTimestamp = System.nanoTime();
+                startTimestamp = 0;
                 serviceInfoDataStorage.put(ServiceInfoDataStorage.START_TIME_NANOSECONDS, startTimestamp + "");
                 targetStarted(event.target);
                 break;

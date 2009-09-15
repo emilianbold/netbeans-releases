@@ -37,16 +37,51 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.threadmap;
+package org.netbeans.modules.cnd.makeproject.api.wizards;
 
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
+import org.netbeans.api.project.Project;
+import org.openide.util.Lookup;
 
 /**
- * Represents thread state summary column
  *
  * @author Alexander Simon
  */
-public interface ThreadSummaryColumn {
-    List<StateDuration> getSummary();
+public abstract class ValidateInstrumentationProvider {
+
+    private static ValidateInstrumentationProvider DEFAULT = new Default();
+
+    public abstract List<String> validate(Project makeProject);
+
+    protected ValidateInstrumentationProvider() {
+    }
+
+    public static ValidateInstrumentationProvider getDefault() {
+        return DEFAULT;
+    }
+
+    private static final class Default extends ValidateInstrumentationProvider {
+        private final Lookup.Result<ValidateInstrumentationProvider> res;
+
+        private Default() {
+            res = Lookup.getDefault().lookupResult(ValidateInstrumentationProvider.class);
+        }
+
+        private ValidateInstrumentationProvider getService(){
+            for (ValidateInstrumentationProvider validator : res.allInstances()) {
+                return validator;
+            }
+            return null;
+        }
+
+        @Override
+        public List<String> validate(Project makeProject) {
+            ValidateInstrumentationProvider validator = getService();
+            if (validator != null) {
+                return validator.validate(makeProject);
+            }
+            return Collections.<String>emptyList();
+        }
+    }
 }

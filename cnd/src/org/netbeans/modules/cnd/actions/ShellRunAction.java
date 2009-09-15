@@ -52,7 +52,6 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -93,25 +92,26 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
 
     public static void performAction(Node node) {
-        performAction(node, null, null, null);
+        performAction(node, null, null, null, null);
     }
 
-    public static void performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project) {
+    public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    _performAction(node, listener, outputListener, project);
+                    _performAction(node, listener, outputListener, project, inputOutput);
                 }
             });
         } else {
-            _performAction(node, listener, outputListener, project);
+            return _performAction(node, listener, outputListener, project, inputOutput);
         }
+        return null;
     }
 
-    private static void _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+    private static Future<Integer> _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
-            return;
+            return null;
         }
         //Save file
         saveNode(node);
@@ -122,8 +122,6 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // Build directory
         String bdir = bes.getRunDirectory();
         File buildDir = getAbsoluteBuildDir(bdir, shellFile);
-        // Tab Name
-        String tabName = getString("RUN_LABEL", node.getName()); // NOI18N
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
@@ -164,14 +162,19 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         Map<String, String> envMap = getEnv(execEnv, node, null);
         traceExecutable(shellCommand, buildDir, argsFlat, envMap);
-        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
-        _tab.closeInputOutput(); // Close it...
-        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
-        try {
-            tab.getOut().reset();
-        } catch (IOException ioe) {
+        if (inputOutput == null) {
+            // Tab Name
+            String tabName = getString("RUN_LABEL", node.getName()); // NOI18N
+            InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+            _tab.closeInputOutput(); // Close it...
+            final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+            try {
+                tab.getOut().reset();
+            } catch (IOException ioe) {
+            }
+            inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "Run"); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Run"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
@@ -184,13 +187,13 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         .controllable(true)
         .frontWindow(true)
         .inputVisible(true)
-        .inputOutput(tab)
+        .inputOutput(inputOutput)
         .outLineBased(true)
         .showProgress(true)
         .postExecution(processChangeListener)
         .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
         // Execute the shellfile
-        final ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
-        Future<Integer> result = es.run();
+        ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
+        return es.run();
     }
 }

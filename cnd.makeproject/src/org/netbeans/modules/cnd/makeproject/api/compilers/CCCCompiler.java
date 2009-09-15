@@ -58,13 +58,14 @@ import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends BasicCompiler {
-    private Pair compilerDefinitions;
+    private volatile Pair compilerDefinitions;
     private static File tmpFile = null;
     
     protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
@@ -134,8 +135,27 @@ public abstract class CCCCompiler extends BasicCompiler {
         }
     }
 
+    /**
+     * Call this to check whether the compiler is initialized,
+     * i.e. whether include search path and redefined symbols are filled
+     * @return true in the case this compiler is ready, otherwise false
+     */
+    public boolean isReady() {
+        return compilerDefinitions != null;
+    }
+
+    /**
+     * Wait until this compiler is initialized,
+     * i.e. until include search path and redefined symbols are determined
+     */
+    public void waitReady() {
+        //CndUtils.assertNonUiThread();
+        getSystemIncludesAndDefines();
+    }
+
     private synchronized void getSystemIncludesAndDefines() {
         if (compilerDefinitions == null) {
+            //CndUtils.assertNonUiThread();
             restoreSystemIncludesAndDefines();
             if (compilerDefinitions == null) {
                 compilerDefinitions = getFreshSystemIncludesAndDefines();
@@ -145,6 +165,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
 
     public void resetSystemIncludesAndDefines() {
+        //CndUtils.assertNonUiThread();
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }

@@ -92,7 +92,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     parentFile = file.getParentFile();
                     parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
                 }
-                getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath, remoteAbsPath);
+                getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath);
             }
             if (! file.exists()) {
                 return null;

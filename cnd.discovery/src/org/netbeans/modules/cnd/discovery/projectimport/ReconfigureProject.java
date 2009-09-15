@@ -42,8 +42,13 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
@@ -64,7 +69,9 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -84,6 +91,9 @@ public class ReconfigureProject {
     private String cFlags;
     private String cxxFlags;
     private String linkerFlags;
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private Future<Integer> lastTask;
+    private Set<ExecutionListener> listeners = new WeakSet<ExecutionListener>();
 
     public ReconfigureProject(Project makeProject){
         if (TRACE) {
@@ -121,6 +131,14 @@ public class ReconfigureProject {
         }
     }
 
+    public void addExecutionListener(ExecutionListener listener){
+        listeners.add(listener);
+    }
+
+    public void removeExecutionListener(ExecutionListener listener){
+        listeners.remove(listener);
+    }
+
     private String escapeFlags(String flags) {
         if ((flags.indexOf(' ') > 0 || flags.indexOf('=') > 0)&& !flags.startsWith("\"")) { // NOI18N
             flags = "\""+flags+"\""; // NOI18N
@@ -128,11 +146,53 @@ public class ReconfigureProject {
         return flags;
     }
 
-    public void reconfigure(String cFlags, String cxxFlags, String linkerFlags){
-        reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions());
+    public void reconfigure(final String cFlags, final String cxxFlags, final String linkerFlags){
+        if (SwingUtilities.isEventDispatchThread()){
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true);
+                }
+            });
+        } else {
+            reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true);
+        }
     }
 
-    public void reconfigure(String cFlags, String cxxFlags, String linkerFlags, String otherOptions){
+    public void reconfigure(String cFlags, String cxxFlags, String linkerFlags, String otherOptions, boolean waitFinished){
+        if (waitFinished) {
+            final AtomicInteger res = new AtomicInteger();
+            final AtomicBoolean finished = new AtomicBoolean(false);
+            ExecutionListener listener = new ExecutionListener() {
+                public void executionStarted(int pid) {
+                }
+                public void executionFinished(int rc) {
+                    res.set(rc);
+                    finished.set(true);
+                    synchronized(finished) {
+                        finished.notifyAll();
+                    }
+                }
+            };
+            addExecutionListener(listener);
+            _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
+            synchronized(finished) {
+                while(true) {
+                    try {
+                        finished.wait();
+                        if (finished.get()) {
+                            return;
+                        }
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        } else {
+            _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
+        }
+    }
+
+    private void _reconfigure(String cFlags, String cxxFlags, String linkerFlags, String otherOptions){
         cFlags = escapeFlags(cFlags);
         cxxFlags = escapeFlags(cxxFlags);
         linkerFlags = escapeFlags(linkerFlags);
@@ -159,17 +219,28 @@ public class ReconfigureProject {
             }
             ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
+                    for(ExecutionListener listener : listeners){
+                        listener.executionStarted(pid);
+                    }
                 }
                 public void executionFinished(int rc) {
                     if (rc == 0) {
-                        postClean();
+                        postClean(false);
+                    } else {
+                        for(ExecutionListener listener : listeners){
+                            listener.executionFinished(rc);
+                        }
                     }
                 }
             };
             if (TRACE) {
                 logger.log(Level.INFO, "#" + cmake.getPrimaryFile().getPath() + " " + arguments); // NOI18N
             }
-            CMakeAction.performAction(cmake.getNodeDelegate(), listener, null, makeProject);
+            if (canceled.get()) {
+                listener.executionFinished(-1);
+            } else {
+                lastTask = CMakeAction.performAction(cmake.getNodeDelegate(), listener, null, makeProject, null);
+            }
         } else if (qmake != null && make != null){
             String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
             ExecutionSupport ses = qmake.getNodeDelegate().getCookie(ExecutionSupport.class);
@@ -182,17 +253,28 @@ public class ReconfigureProject {
             }
             ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
+                    for(ExecutionListener listener : listeners){
+                        listener.executionStarted(pid);
+                    }
                 }
                 public void executionFinished(int rc) {
                     if (rc == 0) {
-                        postClean();
+                        postClean(false);
+                    } else {
+                        for(ExecutionListener listener : listeners){
+                            listener.executionFinished(rc);
+                        }
                     }
                 }
             };
             if (TRACE) {
                 logger.log(Level.INFO, "#" + qmake.getPrimaryFile().getPath() + " " + arguments); // NOI18N
             }
-            QMakeAction.performAction(qmake.getNodeDelegate(), listener, null, makeProject);
+            if (canceled.get()) {
+                listener.executionFinished(-1);
+            } else {
+                lastTask = QMakeAction.performAction(qmake.getNodeDelegate(), listener, null, makeProject, null);
+            }
         } else if (configure != null && make != null) {
             String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
             ShellExecSupport ses = configure.getNodeDelegate().getCookie(ShellExecSupport.class);
@@ -207,27 +289,43 @@ public class ReconfigureProject {
             }
             ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
+                    for(ExecutionListener listener : listeners){
+                        listener.executionStarted(pid);
+                    }
                 }
                 public void executionFinished(int rc) {
                     if (rc == 0) {
-                        postClean();
+                        postClean(false);
+                    } else {
+                        for(ExecutionListener listener : listeners){
+                            listener.executionFinished(rc);
+                        }
                     }
                 }
             };
             if (TRACE) {
                 logger.log(Level.INFO, "#" + configure.getPrimaryFile().getPath() + " " + arguments); // NOI18N
             }
-            ShellRunAction.performAction(configure.getNodeDelegate(), listener, null, makeProject);
+            if (canceled.get()) {
+                listener.executionFinished(-1);
+            } else {
+                lastTask = ShellRunAction.performAction(configure.getNodeDelegate(), listener, null, makeProject, null);
+            }
         } else if (make != null && make != null) {
-            postClean();
+            postClean(true);
         } else {
             assert false;
         }
     }
 
-    private void postClean() {
+    private void postClean(final boolean notifyStart) {
         ExecutionListener listener = new ExecutionListener() {
             public void executionStarted(int pid) {
+                if (notifyStart) {
+                    for(ExecutionListener listener : listeners){
+                        listener.executionStarted(pid);
+                    }
+                }
             }
             public void executionFinished(int rc) {
                 postMake();
@@ -236,7 +334,11 @@ public class ReconfigureProject {
         if (TRACE) {
             logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath() + " clean"); // NOI18N
         }
-        MakeAction.execute(make.getNodeDelegate(), "clean", listener, null, makeProject, null); // NOI18N
+        if (canceled.get()) {
+            listener.executionFinished(-1);
+        } else {
+            lastTask = MakeAction.execute(make.getNodeDelegate(), "clean", listener, null, makeProject, null, null); // NOI18N
+        }
     }
 
     private void postMake(){
@@ -254,7 +356,28 @@ public class ReconfigureProject {
                 Exceptions.printStackTrace(ex);
             }
         }
-        MakeAction.execute(node, "", null, null, makeProject,vars); // NOI18N
+        ExecutionListener listener = new ExecutionListener() {
+            public void executionStarted(int pid) {
+            }
+            public void executionFinished(int rc) {
+                for(ExecutionListener listener : listeners){
+                    listener.executionFinished(rc);
+                }
+            }
+        };
+        if (canceled.get()) {
+            listener.executionFinished(-1);
+        } else {
+            lastTask = MakeAction.execute(node, "", listener, null, makeProject,vars, null); // NOI18N
+        }
+    }
+
+    public void cancel() {
+        canceled.set(true);
+        Future<Integer> task = lastTask;
+        if (task != null) {
+            task.cancel(true);
+        }
     }
 
     private String getConfigureArguments(String configure, String otherOptions, String cCompilerFlags, String cppCompilerFlags, String ldFlags, boolean isSunCompiler) {
