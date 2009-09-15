@@ -656,14 +656,17 @@ public class Annotator {
     private Image annotateFolderIcon(VCSContext context, Image icon) {
         List<File> filesToRefresh = new LinkedList<File>();
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
-            File file = (File) i.next();            
+            File file = (File) i.next();
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 filesToRefresh.add(file);
             }
+            if (file.isDirectory()) {
+                Utils.addFolderToLog(file);
+            }
         }
         cache.refreshAsync(filesToRefresh);
-        
+
         if(cache.ready()) {
             if(cache.containsFiles(context.getRootFiles(), FileInformation.STATUS_VERSIONED_CONFLICT, false)) {
                 return getBadge(badgeConflicts, icon, toolTipConflict);
