@@ -74,6 +74,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
 
 
@@ -108,7 +109,7 @@ public class ClassesTreeModel implements TreeModel {
     public Object[] getChildren (Object o, int from, int to) 
     throws UnknownTypeException {
         try {
-            Object[] r = null;
+            Object[] r;
             if (o.equals (ROOT)) {
                 r = getLoaders ();
             } else
@@ -122,7 +123,11 @@ public class ClassesTreeModel implements TreeModel {
                 r = getPackages (null);
             } else
             if (o instanceof ReferenceType) {
-                r = ReferenceTypeWrapper.nestedTypes((ReferenceType) o).toArray ();
+                try {
+                    r = ReferenceTypeWrapper.nestedTypes((ReferenceType) o).toArray();
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    r = new Object [0];
+                }
             } else
             throw new UnknownTypeException (o);
             to = Math.min(r.length, to);
@@ -240,6 +245,7 @@ public class ClassesTreeModel implements TreeModel {
                     names.add (ReferenceTypeWrapper.name (rt));
                     classes.add (rt);
                 } catch (InternalExceptionWrapper e) {
+                } catch (ObjectCollectedExceptionWrapper e) {
                 } catch (VMDisconnectedExceptionWrapper e) {
                 }
             }
@@ -287,7 +293,13 @@ public class ClassesTreeModel implements TreeModel {
         for (i = 0; i < k; i++) {
             String name = names.get (i);
             ReferenceType rt = classes.get (i);
-            if (ReferenceTypeWrapper.classLoader(rt) != clr) continue;
+            try {
+                if (ReferenceTypeWrapper.classLoader(rt) != clr) {
+                    continue;
+                }
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                continue;
+            }
             int end;
             if (flat) {
                 end = name.lastIndexOf ('.');
@@ -321,7 +333,15 @@ public class ClassesTreeModel implements TreeModel {
         for (i = 0; i < k; i++) {
             String name = names.get (i);
             ReferenceType rt = classes.get (i);
-            if (ReferenceTypeWrapper.classLoader(rt) != parent [1]) continue;
+            ClassLoaderReference cl;
+            try {
+                cl = ReferenceTypeWrapper.classLoader(rt);
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                continue;
+            }
+            if (cl != parent [1]) {
+                continue;
+            }
             String parentN = ((String) parent [0]) + '.';
             if (!name.startsWith (parentN)) continue;
             int start = (parentN).length ();
@@ -332,7 +352,7 @@ public class ClassesTreeModel implements TreeModel {
                     objects.add (rt);
                 }
             } else if (!flat) {
-                objects.add (new Object[] {name.substring (0, end), ReferenceTypeWrapper.classLoader(rt)});
+                objects.add (new Object[] { name.substring (0, end), cl });
             }
         }
         ch = objects.toArray ();

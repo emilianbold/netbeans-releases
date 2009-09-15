@@ -48,6 +48,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -88,6 +93,12 @@ public final class UIUtils {
     private final static String KENAI_USERNAME_PREF;
     public final static String ONLINE_STATUS_PREF;
     public final static String LOGIN_STATUS_PREF;
+
+    // Usage logging
+    private static Logger metricsLogger;
+    private static final String USG_KENAI = "USG_KENAI"; // NOI18N
+    private static Set<String> loggedParams; // to avoid logging same params more than once in a session
+
 
     public static void waitStartupFinished() {
         KenaiLoginTask.waitStartupFinished();
@@ -200,6 +211,7 @@ public final class UIUtils {
                 null, new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
                         if (event.getSource().equals(ctlLogin)) {
+                            UIUtils.logKenaiUsage("LOGIN"); // NOI18N
                         loginPanel.showProgress();
                         RequestProcessor.getDefault().post(new Runnable() {
 
@@ -301,6 +313,39 @@ public final class UIUtils {
         });
 
         return result;
+    }
+
+    public static synchronized void logKenaiUsage(Object... parameters) {
+        String paramStr = getParamString(parameters);
+        if (loggedParams == null || !loggedParams.contains(paramStr)) {
+            // not logged in this session yet
+            if (metricsLogger == null) {
+                metricsLogger = Logger.getLogger("org.netbeans.ui.metrics.kenai"); // NOI18N
+            }
+            LogRecord rec = new LogRecord(Level.INFO, USG_KENAI);
+            rec.setParameters(parameters);
+            rec.setLoggerName(metricsLogger.getName());
+            metricsLogger.log(rec);
+
+            if (loggedParams == null) {
+                loggedParams = new HashSet<String>();
+            }
+            loggedParams.add(paramStr);
+        }
+    }
+
+    private static String getParamString(Object... parameters) {
+        if (parameters == null || parameters.length == 0) {
+            return ""; // NOI18N
+        }
+        if (parameters.length == 1) {
+            return parameters[0].toString();
+        }
+        StringBuilder buf = new StringBuilder();
+        for (Object p : parameters) {
+            buf.append(p.toString());
+        }
+        return buf.toString();
     }
 
 }

@@ -134,6 +134,10 @@ public final class ConnectAction extends AbstractAction {
         }
         
         public void actionPerformed (ActionEvent e) {
+            if (dialog == null) {
+                // Already closed.
+                return ;
+            }
             boolean okPressed = bOk.equals (e.getSource ());
             boolean close = false;
             if (okPressed) {

@@ -5,5 +5,5 @@ ruby=nb-base, nb-webcommon, nb-ruby, glassfish-mod
 cpp=nb-base, nb-cnd
 php=nb-base, nb-webcommon, nb-php
 all=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-groovy, nb-php, nb-ergonomics, glassfish-mod, tomcat
-hidden=nb-base, nb-webcommon, nb-ergonomics
+hidden=nb-base, nb-webcommon, nb-ergonomics, nb-javafx
 

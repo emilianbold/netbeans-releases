@@ -178,6 +178,7 @@ public final class QueryTopComponent extends TopComponent
             repositoryComboBox.addFocusListener(this);
             queriesPanel.setVisible(false);
         }
+        BugtrackingUtil.logBugtrackingUsage(query != null ? query.getRepository() : defaultRepository, "ISSUE_QUERY"); // NOI18N
     }
 
     /** This method is called from within the constructor to

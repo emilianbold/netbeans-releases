@@ -94,7 +94,12 @@ public class JPDAUtils {
             preferredType = null;
             try {
                 for (ReferenceType referenceType : referenceTypes) {
-                    ClassLoaderReference clr = ReferenceTypeWrapper.classLoader(referenceType);
+                    ClassLoaderReference clr;
+                    try {
+                        clr = ReferenceTypeWrapper.classLoader(referenceType);
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        continue;
+                    }
                     if (clr == null) { // Preffered without the class loader.
                         if (preferredType != null) {
                             preferredType = null; // More preferred class loaders => no preferred
