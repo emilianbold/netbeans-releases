@@ -254,7 +254,7 @@ public class GeneralPHP extends JellyTestCase {
 
     String sProjectPath = GetWorkDir( ) + File.separator + jtName.getText( );
 
-    JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
+    JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 1 );
 
     int iSleeps = 0;
     while( !jcPath.isEnabled( ) )
