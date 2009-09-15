@@ -156,8 +156,8 @@ public class RefactoringPanelContainer extends TopComponent {
                 panel = (JPanel) tabs.getSelectedComponent();
             }
             tabs.remove(panel);
-            if (tabs.getComponentCount() == 1) {
-                Component c = tabs.getComponent(0);
+            if (tabs.getTabCount() == 1) {
+                Component c = tabs.getComponentAt(0);
                 tabs.removeMouseListener(listener);
                 tabs.removePropertyChangeListener(closeL);
                 remove(tabs);
@@ -177,11 +177,16 @@ public class RefactoringPanelContainer extends TopComponent {
         if (comp instanceof JTabbedPane) {
             JTabbedPane tabs = (JTabbedPane) comp;
             Component current = tabs.getSelectedComponent();
-            Component[] c =  tabs.getComponents();
-            for (int i = 0; i< c.length; i++) {
-                if (c[i]!=current) {
-                    ((RefactoringPanel) c[i]).close();
+            // #172039: do not use tabs.getComponents()
+            Component[] c = new Component[tabs.getTabCount() - 1];
+            for (int i = 0, j = 0; i < c.length; i++) {
+                Component tab = tabs.getComponentAt(i);
+                if (tab != current) {
+                    c[j++] = tab;
                 }
+            }
+            for (int i = 0; i < c.length; i++) {
+                ((RefactoringPanel) c[i]).close();
             }
         }
     }
@@ -229,8 +234,12 @@ public class RefactoringPanelContainer extends TopComponent {
         Component comp = getComponent(0);
         if (comp instanceof JTabbedPane) {
             JTabbedPane pane = (JTabbedPane) comp;
-            Component[] c =  pane.getComponents();
-            for (int i = 0; i< c.length; i++) {
+            // #172039: do not use tabs.getComponents()
+            Component[] c = new Component[pane.getTabCount()];
+            for (int i = 0; i < c.length; i++) {
+                c[i] = pane.getComponentAt(i);
+            }
+            for (int i = 0; i < c.length; i++) {
                 ((RefactoringPanel) c[i]).close();
             }
         } else if (comp instanceof RefactoringPanel) {

@@ -60,11 +60,8 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author mkleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=200)
 public class SourceFoldersCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of SouceFoldersCustomizerProvider */
-    public SourceFoldersCategoryProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         AuxiliaryConfiguration aux = context.lookup(AuxiliaryConfiguration.class);

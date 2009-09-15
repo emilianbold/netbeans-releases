@@ -93,45 +93,6 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
-            <folder name="Customizer">
-                <file name="Sources.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createSources"/>
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="Libraries.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createLibraries"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <folder name="BuildCategory">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
-                    <attr name="position" intvalue="300"/>
-                    <file name="Build.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createBuild"/>
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="Jar.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createJar"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="Javadoc.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createJavadoc"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                </folder>
-                <file name="Run.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createRun"/>
-                    <attr name="position" intvalue="400"/>
-                </file>
-                <folder name="Application">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
-                    <attr name="position" intvalue="500"/>
-                    <file name="Self.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createApplication"/>
-                        <attr name="position" intvalue="0"/>
-                    </file>
-                </folder>
-            </folder>
-            
             <folder name="Nodes">
                 <file name="org-netbeans-modules-java-api-common-project-ui-JavaSourceNodeFactory.instance">
                     <attr name="position" intvalue="200"/>

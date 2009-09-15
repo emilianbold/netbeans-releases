@@ -45,6 +45,8 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.SeenProperty;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
@@ -65,7 +67,9 @@ public class BugzillaIssueNode extends IssueNode {
     protected Property<?>[] getProperties() {
         return new Property<?>[] {
             new IDProperty(),
-            new SeverityProperty(),
+            BugzillaUtil.isNbRepository((BugzillaRepository) getIssue().getRepository()) 
+                ? new IssueTypeProperty()
+                : new SeverityProperty(),
             new PriorityProperty(),
             new StatusProperty(),
             new AssignedProperty(),
@@ -150,6 +154,26 @@ public class BugzillaIssueNode extends IssueNode {
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
                 return getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY));
+            } else {
+                return super.getValue(attributeName);
+            }
+        }
+    }
+
+    private class IssueTypeProperty extends IssueNode.IssueProperty<String> {
+        public IssueTypeProperty() {
+            super(BugzillaIssue.LABEL_NAME_ISSUE_TYPE,
+                  String.class,
+                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Issue_Type_Title"), // NOI18N
+                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Issue_Type_Desc")); // NOI18N
+        }
+        public String getValue() {
+            return getBugzillaIssue().getFieldValue(IssueField.ISSUE_TYPE);
+        }
+        @Override
+        public Object getValue(String attributeName) {
+            if("sortkey".equals(attributeName)) {                               // NOI18N
+                return getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.ISSUE_TYPE));
             } else {
                 return super.getValue(attributeName);
             }

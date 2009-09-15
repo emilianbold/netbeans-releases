@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 public class RemoteServerSetup {
     
-    private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.7/cnd2/scripts/"; // NOI18N
+    private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.8/cnd3/scripts/"; // NOI18N
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
 
     // Anyhow all REMOTE_SCRIPT_DIR contents should have execution permission.
@@ -71,7 +71,7 @@ public class RemoteServerSetup {
     private static final String GET_SCRIPT_INFO = "sh -c \"chmod a+x " + REMOTE_SCRIPT_DIR + "* && grep VERSION= " + REMOTE_SCRIPT_DIR + "* 2> /dev/null \""; // NOI18N
     
     private static final String DOS2UNIX_CMD = "dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
-    public static final String REMOTE_LIB_DIR = ".netbeans/6.7/cnd2/lib/"; // NOI18N
+    public static final String REMOTE_LIB_DIR = ".netbeans/6.8/cnd3/lib/"; // NOI18N
     
     private final Map<String, Double> scriptSetupMap;
     private final Map<String, String> binarySetupMap;
@@ -254,9 +254,9 @@ public class RemoteServerSetup {
         // Parsing ls output doesn't work, since it differs in diferent OSes
         // (not to mention localization):
         // For example, Ubuntu says:
-        // ls: cannot access .netbeans/6.7/cnd2/lib/rfs_preload-SunOS-x86.so: No such file or directory
+        // ls: cannot access .netbeans/6.8/cnd3/lib/rfs_preload-SunOS-x86.so: No such file or directory
         // while Solaris says
-        // .netbeans/6.7/cnd2/lib/rfs_preload-SunOS-x86.so: No such file or directory
+        // .netbeans/6.8/cnd3/lib/rfs_preload-SunOS-x86.so: No such file or directory
 
         StringBuilder sb = new StringBuilder("sh -c \""); // NOI18N
         for (String path : binarySetupMap.keySet()) {
