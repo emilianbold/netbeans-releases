@@ -159,7 +159,7 @@ made subject to such option by the copyright holder.
             solve the chicken-and-egg problem -->
             <resolvePropertyWithoutBrackets property="keystore.resolved"
                 value="${{keystore.unresolved}}"/>
-                
+
             <echo>Keystore is ${keystore.resolved}</echo>
 
             <target name="__set_for_debug__">
@@ -177,15 +177,15 @@ user.properties.file not set in nbproject/private/private.properties.
 This should be set to the path on disk to the global NetBeans build.properties
 (usually ${user.home}/.netbeans/7.0/build.properties or similar).
 
-This file in turn contains a property jcplatform.${platform.active} which is a 
+This file in turn contains a property jcplatform.${platform.active} which is a
 path to a properties file which contains properties of the Java Card
 platform this project will be run on, such as the path to the emulator
 and other data.
 
-To fix this problem, open this project in the NetBeans IDE.  In 
+To fix this problem, open this project in the NetBeans IDE.  In
 Tools | Java Platforms, click Add Platform.  Select Java Card Platform from
 the choices of platform kinds.  Locate your copy of a Java Card runtime on
-disk.  Then right click this project in the Project tab, and make sure 
+disk.  Then right click this project in the Project tab, and make sure
 the project is set up to use the Java Card Platform you have just defined.
 
 Data about the path to the emulator is not stored in version control by
@@ -267,11 +267,11 @@ No emulator found at ${emulator.executable}]]>
                     </classpath>
                 </taskdef>
                 <xsl:if test="$webproject">
-                <taskdef name="jc-browse" classname="${{javacard.tasks.browseTaskClass}}">
-                    <classpath>
-                        <path refid="javacard.tasks.path"/>
-                    </classpath>
-                </taskdef>
+                    <taskdef name="jc-browse" classname="${{javacard.tasks.browseTaskClass}}">
+                        <classpath>
+                            <path refid="javacard.tasks.path"/>
+                        </classpath>
+                    </taskdef>
                 </xsl:if>
                 <mkdir dir="${{build.dir}}"/>
                 <mkdir dir="${{build.meta.inf.dir}}"/>
@@ -324,7 +324,7 @@ No emulator found at ${emulator.executable}]]>
 
             </xsl:choose>
 
-            <target name="pack" depends="pack-unsigned,pack-signed"/>
+            <target name="pack" depends="unpack-dependencies,pack-unsigned,pack-signed"/>
 
             <target name="pack-unsigned" unless="sign.bundle">
                 <java classname="${{javacard.packagerClass}}" dir="${{javacard.home}}/bin" classpath="${{javacard.toolClassPath}}" fork="true" failonerror="true">
@@ -394,7 +394,7 @@ No emulator found at ${emulator.executable}]]>
                 </xsl:otherwise>
             </xsl:choose>
 
-            <target name="load-bundle" depends="-init">
+            <target name="load-bundle" depends="-init,load-dependencies">
                 <waitfor>
                     <http url="${{javacard.device.cardmanagerurl}}"/>
                 </waitfor>
@@ -427,6 +427,7 @@ No emulator found at ${emulator.executable}]]>
                 <waitfor>
                     <http url="${{javacard.device.cardmanagerurl}}"/>
                 </waitfor>
+                <antcall target="unload-dependencies"/>
                 <jc-unload  failonerror="yes"/>
             </target>
 
@@ -465,7 +466,7 @@ No emulator found at ${emulator.executable}]]>
                         <available file="${{script.target}}" property="script.target.found"/>
                         <fail unless="script.target.found">No file found at ${script.target}</fail>
                         <echo><![CDATA[Invoking apdutool on ${script.target}]]></echo>
-                        
+
                         <java classname="${{javacard.apdutoolClass}}" dir="${{javacard.home}}/bin" classpath="${{javacard.toolClassPath}}" fork="true" failonerror="${{param_failonerror}}">
                             <arg value="${{javacard.device.apdutool.contactedProtocol}}"/>
                             <arg value="-p"/>
@@ -492,12 +493,45 @@ run   - Builds and deploys the application and starts the browser.
             </target>
 
             <target name="compile" depends="-init">
-                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" classpath="${{class.path}}" bootclasspathref="javacard.classpath" includeAntRuntime="no">
-                    <xsl:attribute name="srcdir">
-                        <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/project:project/project:configuration/jcproj:data/jcproj:source-roots"/>
-                        </xsl:call-template>
-                    </xsl:attribute>
+                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" bootclasspathref="javacard.classpath" includeAntRuntime="no">
+                    <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:source-roots/jcproj:root">
+                        <xsl:element name="src">
+                            <xsl:attribute name="path">
+                                <xsl:text>${</xsl:text>
+                                <xsl:value-of select="@id"/>
+                                <xsl:text>}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                    </xsl:for-each>
+                    <classpath>
+                    <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
+                        <xsl:element name="pathelement">
+                            <xsl:attribute name="path">
+                                <xsl:choose>
+                                    <xsl:when test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB' or @kind = 'JAVA_PROJECT'">
+                                        <xsl:text>${dependency.</xsl:text>
+                                        <xsl:value-of select="@id"/>
+                                        <xsl:text>.origin}/dist/</xsl:text>
+                                        <xsl:value-of select="@id"/>
+                                        <xsl:choose>
+                                            <xsl:when test="@kind = 'CLASSIC_LIB'">
+                                                <xsl:text>.cap</xsl:text>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>.jar</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:text>${dependency.</xsl:text>
+                                        <xsl:value-of select="@id"/>
+                                        <xsl:text>.origin}</xsl:text>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
+                        </xsl:element>
+                    </xsl:for-each>
+                    </classpath>
                 </javac>
 
                 <copy todir="${{build.classes.dir}}">
@@ -539,7 +573,407 @@ run   - Builds and deploys the application and starts the browser.
                     </xsl:choose>
                 </copy>
             </target>
+
+            <target name="load-dependencies" depends="build-dependencies,pack">
+                <xsl:call-template name="load-dependencies"/>
+            </target>
+
+            <target name="unload-dependencies">
+                <xsl:call-template name="unload-dependencies"/>
+            </target>
+
+            <target name="unpack-dependencies" depends="-init">
+                <mkdir dir="${{build.classes.dir}}"/>
+                <xsl:call-template name="unpack-dependencies"/>
+            </target>
+
+            <target name="build-dependencies" depends="-init" unless="dont.build.dependencies">
+                <xsl:call-template name="build-dependencies"/>
+            </target>
+
+            <target name="clean-dependencies" depends="-init" unless="dont.build.dependencies">
+                <xsl:call-template name="clean-dependencies"/>
+            </target>
+
+            <target name="clean-with-dependencies" description="Cleans this project and any projects it depends on" depends="clean,clean-dependencies"/>
+            <target name="build-with-dependencies" description="Builds any projects this project depends on, then builds this project" depends="build-dependencies,pack"/>
         </project>
+    </xsl:template>
+
+    <xsl:template name="load-dependencies">
+        <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
+            <xsl:if test="@deployment = 'DEPLOY_TO_CARD'">
+                <xsl:element name="echo">
+                    <xsl:attribute name="message">
+                        <xsl:text>Loading dependency</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text> (type:</xsl:text>
+                        <xsl:value-of select="@kind"/>
+                        <xsl:text>, deployment strategy </xsl:text>
+                        <xsl:value-of select="@deployment"/>
+                        <xsl:text>)</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
+                <!-- Project root dependencies -->
+                <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB'">
+                    <xsl:element name="ant">
+                        <xsl:attribute name="target">
+                            <xsl:text>load-bundle</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="antfile">
+                            <xsl:text>${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}/build.xml</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="dir">
+                            <xsl:text>${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="inheritAll">
+                            <xsl:text>false</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="inheritRefs">
+                            <xsl:text>false</xsl:text>
+                        </xsl:attribute>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>user.properties.file</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${user.properties.file}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>active.device</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${active.device}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.active</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.active}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.properties.file.key</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.properties.file.key}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.device.folder.path</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.device.folder.path}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                    </xsl:element>
+                </xsl:if>
+                <!-- deploying JAR files dependencies -->
+                <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
+                    <fail>Classic and Extension Lib JAR deployement w/o project not implemented yet</fail>
+                </xsl:if>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="build-dependencies">
+        <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
+                <!-- Project root dependencies -->
+                <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB' or @kind = 'JAVA_PROJECT'">
+                    <xsl:element name="echo">
+                        <xsl:attribute name="message">
+                            <xsl:text>Building dependency</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text> (type:</xsl:text>
+                            <xsl:value-of select="@kind"/>
+                            <xsl:text>, deployment strategy </xsl:text>
+                            <xsl:value-of select="@deployment"/>
+                            <xsl:text>)</xsl:text>
+                        </xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="ant">
+                        <xsl:attribute name="target">
+                            <xsl:choose>
+                                <xsl:when test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB' or @kind = 'JAVA_PROJECT'">
+                                    <xsl:text>pack</xsl:text>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:text>jar</xsl:text>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>
+                        <xsl:attribute name="antfile">
+                            <xsl:text>${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}/build.xml</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="dir">
+                            <xsl:text>${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="inheritAll">
+                            <xsl:text>false</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="inheritRefs">
+                            <xsl:text>false</xsl:text>
+                        </xsl:attribute>
+                        <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB'">
+                            <xsl:element name="property">
+                                <xsl:attribute name="name">
+                                    <xsl:text>user.properties.file</xsl:text>
+                                </xsl:attribute>
+                                <xsl:attribute name="value">
+                                    <xsl:text>${user.properties.file}</xsl:text>
+                                </xsl:attribute>
+                            </xsl:element>
+                            <xsl:element name="property">
+                                <xsl:attribute name="name">
+                                    <xsl:text>active.device</xsl:text>
+                                </xsl:attribute>
+                                <xsl:attribute name="value">
+                                    <xsl:text>${active.device}</xsl:text>
+                                </xsl:attribute>
+                            </xsl:element>
+                            <xsl:element name="property">
+                                <xsl:attribute name="name">
+                                    <xsl:text>platform.active</xsl:text>
+                                </xsl:attribute>
+                                <xsl:attribute name="value">
+                                    <xsl:text>${platform.active}</xsl:text>
+                                </xsl:attribute>
+                            </xsl:element>
+                            <xsl:element name="property">
+                                <xsl:attribute name="name">
+                                    <xsl:text>platform.properties.file.key</xsl:text>
+                                </xsl:attribute>
+                                <xsl:attribute name="value">
+                                    <xsl:text>${platform.properties.file.key}</xsl:text>
+                                </xsl:attribute>
+                            </xsl:element>
+                            <xsl:element name="property">
+                                <xsl:attribute name="name">
+                                    <xsl:text>platform.device.folder.path</xsl:text>
+                                </xsl:attribute>
+                                <xsl:attribute name="value">
+                                    <xsl:text>${platform.device.folder.path}</xsl:text>
+                                </xsl:attribute>
+                            </xsl:element>
+                        </xsl:if>
+                    </xsl:element>
+                </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="clean-dependencies">
+        <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
+            <!-- Project root dependencies -->
+            <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB' or @kind = 'JAVA_PROJECT'">
+                <xsl:element name="echo">
+                    <xsl:attribute name="message">
+                        <xsl:text>Cleaning dependency </xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text> (type:</xsl:text>
+                        <xsl:value-of select="@kind"/>
+                        <xsl:text>, deployment strategy </xsl:text>
+                        <xsl:value-of select="@deployment"/>
+                        <xsl:text>)</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
+                <xsl:element name="ant">
+                    <xsl:attribute name="target">
+                        <xsl:text>clean</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="antfile">
+                        <xsl:text>${dependency.</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text>.origin}/build.xml</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="dir">
+                        <xsl:text>${dependency.</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text>.origin}</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="inheritAll">
+                        <xsl:text>false</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="inheritRefs">
+                        <xsl:text>false</xsl:text>
+                    </xsl:attribute>
+                    <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB'">
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>user.properties.file</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${user.properties.file}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>active.device</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${active.device}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.active</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.active}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.properties.file.key</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.properties.file.key}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.device.folder.path</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.device.folder.path}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                    </xsl:if>
+                </xsl:element>
+            </xsl:if>
+            <!-- deploying JAR files dependencies -->
+            <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
+                <fail>Classic and Extension Lib JAR undeployement w/o project not implemented</fail>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="unload-dependencies">
+        <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
+            <xsl:if test="@deployment = 'DEPLOY_TO_CARD'">
+                <!-- Project root dependencies -->
+                <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB'">
+                    <xsl:element name="echo">
+                        <xsl:attribute name="message">
+                            <xsl:text>Unloading dependency </xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text> (type:</xsl:text>
+                            <xsl:value-of select="@kind"/>
+                            <xsl:text>, deployment strategy </xsl:text>
+                            <xsl:value-of select="@deployment"/>
+                            <xsl:text>)</xsl:text>
+                        </xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="ant">
+                        <xsl:attribute name="target">
+                            <xsl:text>unload-bundle</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="antfile">
+                            <xsl:text>${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}/build.xml</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="dir">
+                            <xsl:text>${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="inheritAll">
+                            <xsl:text>false</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="inheritRefs">
+                            <xsl:text>false</xsl:text>
+                        </xsl:attribute>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>user.properties.file</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${user.properties.file}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>active.device</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${active.device}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.active</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.active}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.properties.file.key</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.properties.file.key}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        <xsl:element name="property">
+                            <xsl:attribute name="name">
+                                <xsl:text>platform.device.folder.path</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:text>${platform.device.folder.path}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+
+                    </xsl:element>
+                </xsl:if>
+                <!-- deploying JAR files dependencies -->
+                <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
+                    <fail>Classic and Extension Lib JAR undeployement w/o project not implemented yet</fail>
+                </xsl:if>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="unpack-dependencies">
+        <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
+            <xsl:if test="@deployment = 'INCLUDE_IN_PROJECT_CLASSES'">
+                <xsl:element name="echo">
+                    <xsl:attribute name="message">
+                        <xsl:text>Un-JAR-ing dependency </xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text> (type:</xsl:text>
+                        <xsl:value-of select="@kind"/>
+                        <xsl:text>, deployment strategy </xsl:text>
+                        <xsl:value-of select="@deployment"/>
+                        <xsl:text>)</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
+                <xsl:element name="unjar">
+                    <xsl:attribute name="dest">
+                        <xsl:text>${build.classes.dir}</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="src">
+                        <xsl:text>${dependency.</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text>.origin}</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
+            </xsl:if>
+        </xsl:for-each>
     </xsl:template>
 
     <xsl:template name="createPath">

@@ -105,8 +105,13 @@ public class ModulesNode extends AbstractNode {
         return getIcon(true);
     }
 
+    static class Wrapper {
+        boolean isPOM;
+        LogicalViewProvider provider;
+        NbMavenProjectImpl proj;
+    }
 
-    static class ModulesChildren extends Children.Keys<NbMavenProjectImpl> {
+    static class ModulesChildren extends Children.Keys<Wrapper> {
 
         private NbMavenProjectImpl project;
         private PropertyChangeListener listener;
@@ -124,7 +129,7 @@ public class ModulesNode extends AbstractNode {
 
         @Override
         public void addNotify() {
-            setKeys(Collections.<NbMavenProjectImpl>emptyList());
+            setKeys(Collections.<Wrapper>emptyList());
             loadModules();
             NbMavenProject.addPropertyChangeListener(project, listener);
         }
@@ -132,19 +137,17 @@ public class ModulesNode extends AbstractNode {
         @Override
         public void removeNotify() {
             NbMavenProject.removePropertyChangeListener(project, listener);
-            setKeys(Collections.<NbMavenProjectImpl>emptyList());
+            setKeys(Collections.<Wrapper>emptyList());
         }
 
-        protected Node[] createNodes(NbMavenProjectImpl proj) {
-            boolean isPom = "pom".equals(proj.getOriginalMavenProject().getPackaging());
-            LogicalViewProvider prov = proj.getLookup().lookup(LogicalViewProvider.class);
-            return new Node[]{new ProjectFilterNode(project, proj, prov.createLogicalView(), isPom)};
+        protected Node[] createNodes(Wrapper wr) {
+            return new Node[]{new ProjectFilterNode(project, wr.proj, wr.provider.createLogicalView(), wr.isPOM)};
         }
 
         private void loadModules() {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Collection<NbMavenProjectImpl> modules = new ArrayList<NbMavenProjectImpl>();
+                    Collection<Wrapper> modules = new ArrayList<Wrapper>();
                     File base = project.getOriginalMavenProject().getBasedir();
                     for (Iterator it = project.getOriginalMavenProject().getModules().iterator(); it.hasNext();) {
                         String elem = (String) it.next();
@@ -154,7 +157,11 @@ public class ModulesNode extends AbstractNode {
                             try {
                                 Project prj = ProjectManager.getDefault().findProject(fo);
                                 if (prj != null && prj.getLookup().lookup(NbMavenProjectImpl.class) != null) {
-                                    modules.add((NbMavenProjectImpl) prj);
+                                    Wrapper wr = new Wrapper();
+                                    wr.proj = (NbMavenProjectImpl)prj;
+                                    wr.isPOM = "pom".equals(wr.proj.getOriginalMavenProject().getPackaging()); //NOI18N
+                                    wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
+                                    modules.add(wr);
                                 }
                             } catch (IllegalArgumentException ex) {
                                 ex.printStackTrace();

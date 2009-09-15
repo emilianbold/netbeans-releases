@@ -58,7 +58,7 @@ import java.util.Random;
  * 
  * @author Martin Entlicher
  */
-public class Expression {
+public class JavaExpression {
 
     public static final String LANGUAGE_JAVA_1_5 = "1.5.0"; // NOI18N
 
@@ -81,7 +81,7 @@ public class Expression {
      * @return pre-parsed Java expression
      * @throws ParseException if the expression has wrong syntax
      */
-    public static Expression parse (String expr, String language) {
+    public static JavaExpression parse (String expr, String language) {
     //throws ParseException {
         String replace_return = REPLACE_return;
         while (expr.indexOf(replace_return) >= 0) {
@@ -93,7 +93,7 @@ public class Expression {
         }
         String replacedExpr = replaceSpecialVar(expr, RETURN_MACRO, replace_return); // NOI18N
         replacedExpr = replaceSpecialVar(replacedExpr, CLASS_MACRO, replace_class); // NOI18N
-        return new Expression(replacedExpr, language, replace_return, replace_class);
+        return new JavaExpression(replacedExpr, language, replace_return, replace_class);
     }
     
     private static String replaceSpecialVar(String expr, String var, String replace_var) {
@@ -129,7 +129,7 @@ public class Expression {
         return expr;
     }
     
-    private Expression(String expression, String language,
+    private JavaExpression(String expression, String language,
                        String replace_return, String replace_class) {
         strExpression = expression;
         this.language = language;

@@ -313,9 +313,10 @@ public class ActionMappings extends javax.swing.JPanel {
         addListeners();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
+
+                final GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
+                final Set<String> strs = provider.getAvailableGoals();
                 if (provider != null) {
-                    final Set<String> strs = provider.getAvailableGoals();
                     try {
                         @SuppressWarnings("unchecked")
                         List<String> phases = EmbedderFactory.getProjectEmbedder().getLifecyclePhases();
@@ -324,18 +325,26 @@ public class ActionMappings extends javax.swing.JPanel {
                         // oh wel just ignore..
                         e.printStackTrace();
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+                }
+                List<String> allProfiles = null;
+                if (project != null) {
+                    ProjectProfileHandler profileHandler = project.getLookup().lookup(ProjectProfileHandler.class);
+                    allProfiles = profileHandler.getAllProfiles();
+                }
+                final List<String> profiles = allProfiles;
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (provider != null) {
                             goalcompleter.setValueList(strs);
                         }
-                    });
-                }
+                        if (profiles != null) {
+                            profilecompleter.setValueList(profiles);
+                        }
+                    }
+                });
             }
         });
-        if (project != null) {
-            ProjectProfileHandler profileHandler = project.getLookup().lookup(ProjectProfileHandler.class);
-            profilecompleter.setValueList(profileHandler.getAllProfiles());
-        }
     }
     
     /** This method is called from within the constructor to
@@ -622,9 +631,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         } else {
             MappingWrapper wr = (MappingWrapper)obj;
             NetbeansActionMapping mapp = wr.getMapping();
-            txtGoals.setEditable(true);
-            taProperties.setEditable(true);
-            txtProfiles.setEditable(true);
+            txtGoals.setEnabled(true);
+            taProperties.setEnabled(true);
+            txtProfiles.setEnabled(true);
             
             txtDirectory.getDocument().removeDocumentListener(directoryListener);
             txtGoals.getDocument().removeDocumentListener(goalsListener);
@@ -800,9 +809,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         taProperties.getDocument().addDocumentListener(propertiesListener);
         txtDirectory.getDocument().addDocumentListener(directoryListener);
         
-        txtGoals.setEditable(false);
-        taProperties.setEditable(false);
-        txtProfiles.setEditable(false);
+        txtGoals.setEnabled(false);
+        taProperties.setEnabled(false);
+        txtProfiles.setEnabled(false);
         updateColor(null);
         cbRecursively.setEnabled(false);
         btnAddProps.setEnabled(false);
