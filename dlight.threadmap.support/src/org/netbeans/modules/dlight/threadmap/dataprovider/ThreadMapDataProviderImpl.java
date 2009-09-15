@@ -42,6 +42,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +80,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Range;
 import org.openide.util.Exceptions;
 
+// TODO: review synchronization... oversynchronized.
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     private final static Logger log = DLightLogger.getLogger(ThreadMapDataProviderImpl.class);
@@ -107,7 +109,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     }
 
-    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+    public synchronized void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         DLightSession session = DLightManager.getDefault().getActiveSession();
 
         StackDataProvider sdp = (StackDataProvider) session.createDataProvider(
@@ -129,19 +131,20 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         final List<ThreadData> data = new ArrayList<ThreadData>();
         final HashMap<Integer, List<ThreadState>> lwpStates = new HashMap<Integer, List<ThreadState>>();
+        ResultSet rset = null;
 
         try {
             queryDataStatement.setLong(1, query.getTimeFrom());
             queryDataStatement.setLong(2, query.getTimeTo());
-            ResultSet rs = queryDataStatement.executeQuery();
+            rset = queryDataStatement.executeQuery();
 
-            while (!rs.isLast()) {
-                rs.next();
-                if (rs.getRow() == 0) {
+            while (!rset.isLast()) {
+                rset.next();
+                if (rset.getRow() == 0) {
                     break;
                 }
 
-                int threadID = rs.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
+                int threadID = rset.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
 
                 final ThreadInfo lwpInfo;
                 final List<ThreadState> states;
@@ -170,23 +173,23 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                     });
                 }
 
-                long ts = rs.getLong(MSASQLTables.msa.TIMESTAMP.getColumnName());
-                long sample = rs.getLong(MSASQLTables.msa.SAMPLE.getColumnName());
+                long ts = rset.getLong(MSASQLTables.msa.TIMESTAMP.getColumnName());
+                long sample = rset.getLong(MSASQLTables.msa.SAMPLE.getColumnName());
 
                 long[] stateValues = new long[13];
                 stateValues[0] = 1; // ???
                 stateValues[1] = 0;
                 stateValues[2] = 0;
-                stateValues[3] = rs.getLong(MSASQLTables.msa.LWP_MSA_USR.getColumnName());
-                stateValues[4] = rs.getLong(MSASQLTables.msa.LWP_MSA_SYS.getColumnName());
-                stateValues[5] = rs.getLong(MSASQLTables.msa.LWP_MSA_TRP.getColumnName());
-                stateValues[6] = rs.getLong(MSASQLTables.msa.LWP_MSA_TFL.getColumnName());
-                stateValues[7] = rs.getLong(MSASQLTables.msa.LWP_MSA_DFL.getColumnName());
-                stateValues[8] = rs.getLong(MSASQLTables.msa.LWP_MSA_KFL.getColumnName());
-                stateValues[9] = rs.getLong(MSASQLTables.msa.LWP_MSA_LAT.getColumnName());
-                stateValues[10] = rs.getLong(MSASQLTables.msa.LWP_MSA_STP.getColumnName());
-                stateValues[11] = rs.getLong(MSASQLTables.msa.LWP_MSA_LCK.getColumnName());
-                stateValues[12] = rs.getLong(MSASQLTables.msa.LWP_MSA_SLP.getColumnName());
+                stateValues[3] = rset.getLong(MSASQLTables.msa.LWP_MSA_USR.getColumnName());
+                stateValues[4] = rset.getLong(MSASQLTables.msa.LWP_MSA_SYS.getColumnName());
+                stateValues[5] = rset.getLong(MSASQLTables.msa.LWP_MSA_TRP.getColumnName());
+                stateValues[6] = rset.getLong(MSASQLTables.msa.LWP_MSA_TFL.getColumnName());
+                stateValues[7] = rset.getLong(MSASQLTables.msa.LWP_MSA_DFL.getColumnName());
+                stateValues[8] = rset.getLong(MSASQLTables.msa.LWP_MSA_KFL.getColumnName());
+                stateValues[9] = rset.getLong(MSASQLTables.msa.LWP_MSA_LAT.getColumnName());
+                stateValues[10] = rset.getLong(MSASQLTables.msa.LWP_MSA_STP.getColumnName());
+                stateValues[11] = rset.getLong(MSASQLTables.msa.LWP_MSA_LCK.getColumnName());
+                stateValues[12] = rset.getLong(MSASQLTables.msa.LWP_MSA_SLP.getColumnName());
 
                 ThreadState threadState = new ThreadStateImpl(ts, sample, stateValues);
                 states.add(threadState);
@@ -194,6 +197,13 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         } catch (SQLException ex) {
             if (log.isLoggable(Level.FINE)) {
                 log.fine("SQLException: " + ex.getMessage()); // NOI18N
+            }
+        } finally {
+            if (rset != null) {
+                try {
+                    rset.close();
+                } catch (SQLException ex) {
+                }
             }
         }
 
@@ -221,7 +231,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return threadDumpProvider == null ? null : threadDumpProvider.getThreadDump(query);
     }
 
-    public void attachTo(final DataStorage storage) {
+    public synchronized void attachTo(final DataStorage storage) {
         if (storage instanceof SQLDataStorage) {
             sqlStorage = (SQLDataStorage) storage;
             String query = String.format("select %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s from %s where %s >= ? and %s < ?", // NOI18N
@@ -295,30 +305,38 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
-    private ThreadInfo getLWPInfo(int lwpID) {
+    private synchronized ThreadInfo getLWPInfo(int lwpID) {
         ThreadInfo lwpInfo = null;
+        ResultSet rset = null;
+
         try {
             queryLWPInfo.setInt(1, lwpID);
-            ResultSet rset = queryLWPInfo.executeQuery();
+            rset = queryLWPInfo.executeQuery();
 
-            if (!rset.next()) {
-                return null;
+            if (rset.next()) {
+                long startts = rset.getLong(1);
+                lwpInfo = new ThreadInfoImpl(lwpID, "Thread " + lwpID, startts); // NOI18N
             }
-
-            long startts = rset.getLong(1);
-            lwpInfo = new ThreadInfoImpl(lwpID, "Thread " + lwpID, startts); // NOI18N
 
         } catch (SQLException ex) {
             if (log.isLoggable(Level.FINE)) {
                 log.fine("SQLException: " + ex.getMessage()); // NOI18N
             }
+        } finally {
+            if (rset != null) {
+                try {
+                    rset.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
+
         return lwpInfo;
     }
 
     public synchronized ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query) {
         if (log.isLoggable(Level.FINEST)) {
-            log.finest(String.format("DataQuery: [%s], fullstate: %s", query.getIntervals().toArray(), query.isFullState() ? "yes" : "no")); // NOI18N
+            log.finest(String.format("DataQuery: [%s], fullstate: %s", Arrays.toString(query.getIntervals().toArray()), query.isFullState() ? "yes" : "no")); // NOI18N
         }
 
         if (sqlStorage == null) {
@@ -337,12 +355,12 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         // TODO: for now take the first one...
         Range<Long> interval = intervals.iterator().next().getInterval();
-
+        ResultSet rset = null;
         try {
             querySummaryStatement.setLong(1, interval.getStart());
             querySummaryStatement.setLong(2, interval.getEnd());
 
-            ResultSet rset = querySummaryStatement.executeQuery();
+            rset = querySummaryStatement.executeQuery();
 
             while (!rset.isLast()) {
                 rset.next();
@@ -386,6 +404,13 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         } catch (SQLException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (rset != null) {
+                try {
+                    rset.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
 
