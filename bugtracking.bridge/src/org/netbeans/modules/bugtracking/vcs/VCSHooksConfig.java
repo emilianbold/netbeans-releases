@@ -40,6 +40,9 @@
 package org.netbeans.modules.bugtracking.vcs;
 
 import java.util.prefs.Preferences;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -272,5 +275,10 @@ public class VCSHooksConfig {
             return sb.toString();
         }
 
+    }
+
+    static void logHookUsage(String vcs, Repository bugRepository) {
+        BugtrackingUtil.logBugtrackingUsage(bugRepository, "COMMIT_HOOK"); // NOI18N
+        Utils.logVCSActionEvent("COMMIT_HOOK_"+vcs); // NOI18N
     }
 }
