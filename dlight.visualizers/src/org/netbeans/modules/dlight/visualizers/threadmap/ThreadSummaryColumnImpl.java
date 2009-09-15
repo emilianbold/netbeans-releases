@@ -43,10 +43,36 @@ import java.util.List;
 import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
 
 /**
- * Represents thread state summary column
  *
  * @author Alexander Simon
  */
-public interface ThreadSummaryColumn {
-    List<StateDuration> getSummary();
+public class ThreadSummaryColumnImpl implements ThreadSummaryColumn {
+    private List<StateDuration> state;
+
+    ThreadSummaryColumnImpl(List<StateDuration> state) {
+        this.state = state;
+    }
+
+    public List<StateDuration> getSummary(){
+        return state;
+    }
+
+    public int getRunning() {
+        int all = 0;
+        int running = 0;
+        for(StateDuration duration : state) {
+            all += duration.getDuration()/1000/1000;
+            switch(duration.getState()) {
+                case Running:
+                case RunningOther:
+                case RunningSystemCall:
+                case RunningUser:
+                    running += duration.getDuration()/1000/1000;
+            }
+        }
+        if (all != 0) {
+            return 100*running/all;
+        }
+        return 0;
+    }
 }

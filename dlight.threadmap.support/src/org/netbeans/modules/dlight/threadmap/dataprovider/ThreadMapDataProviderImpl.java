@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
@@ -348,7 +349,8 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         System.out.println("Intervals size: " + intervals.size()); // NOI18N
 
         if (intervals.isEmpty()) {
-            return null;
+            intervals = new ArrayList<TimeIntervalDataFilter>(1);
+            intervals.add(TimeIntervalDataFilterFactory.create(new Range<Long>(Long.valueOf(0), Long.MAX_VALUE)));
         }
 
         final List<ThreadSummaryData> result = new ArrayList<ThreadSummaryData>();
@@ -385,6 +387,11 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
                             public long getDuration() {
                                 return stateDuration;
+                            }
+
+                            @Override
+                            public String toString() {
+                                return String.format("%s: %dns", state.toString(), stateDuration); // NOI18N
                             }
                         });
                     }
