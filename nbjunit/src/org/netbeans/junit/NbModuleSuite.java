@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -684,13 +685,26 @@ public class NbModuleSuite {
                     }
                 }
             }
+
+            //in case we're running code coverage, load the coverage libraries
+            if (System.getProperty("code.coverage.classpath") != null)
+            {
+                File coveragePath = new File(System.getProperty("code.coverage.classpath"));
+                if (coveragePath.isDirectory()) {
+                    for (File jar : coveragePath.listFiles()) {
+                        if (jar.getName().endsWith(".jar")) {
+                            bootCP.add(jar.toURI().toURL());
+                        }
+                    }
+                }
+            }            
             
             // loader that does not see our current classloader
             JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
             URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), junit);
             Class<?> main = loader.loadClass("org.netbeans.Main"); // NOI18N
             Assert.assertEquals("Loaded by our classloader", loader, main.getClassLoader());
-            Method m = main.getDeclaredMethod("main", String[].class); // NOI18N
+            Method m = main.getDeclaredMethod("main", String[].class); // NOI18N            
 
             System.setProperty("java.util.logging.config", "-");
             System.setProperty("netbeans.logger.console", "true");

@@ -150,6 +150,14 @@ public abstract class VCSKenaiSupport {
     public abstract String getRevisionUrl (String sourcesUrl, String revision);
 
     /**
+     * Logs usage of a versioning system for a specific repository - if the
+     * repository is from Kenai.
+     * @param vcs name of the versioning system
+     * @param repositoryUrl repository URL
+     */
+    public abstract void logVcsUsage(String vcs, String repositoryUrl);
+
+    /**
      * Repesents a Kenai user
      */
     public abstract class KenaiUser {

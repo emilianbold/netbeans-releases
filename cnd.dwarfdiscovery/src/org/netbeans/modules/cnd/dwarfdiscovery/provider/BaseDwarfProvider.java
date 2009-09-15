@@ -109,6 +109,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         } finally {
             PathCache.dispose();
             grepBase.clear();
+            grepBase = new ConcurrentHashMap<String, GrepEntry>();
             getCommpilerSettings().dispose();
         }
     }
@@ -378,6 +379,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             systemMacroDefinitionsC.clear();
             systemMacroDefinitionsCpp.clear();
             normalizedPaths.clear();
+            normalizedPaths = new ConcurrentHashMap<String, String>();
         }
     }
 

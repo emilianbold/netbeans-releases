@@ -63,16 +63,20 @@ import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -179,12 +183,31 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         if (elem instanceof IndexedFullyQualified) {
             IndexedFullyQualified ifq = (IndexedFullyQualified) elem;
             final QualifiedName qn = QualifiedName.create(request.prefix);
-            if (generateAs == null) {
-                generateAs = qn.getKind();
-            } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
-                    ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
-                //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
-                generateAs = QualifiedNameKind.FULLYQUALIFIED;
+            final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+            Properties props = fileObject != null ? PhpLanguageOptions.getDefault().getProperties(fileObject) : null;
+            if (props != null && props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
+                if (generateAs == null) {
+                    CodeCompletionType codeCompletionType = OptionsUtils.getCodeCompletionType();
+                    switch (codeCompletionType) {
+                        case QUALIFIED:
+                            template.append(ifq.getFullyQualifiedName());
+                            return template.toString();
+                        case UNQUALIFIED:
+                            template.append(getName());
+                            return template.toString();
+                        case SMART:
+                            generateAs = qn.getKind();
+                            break;
+                    }
+
+                } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
+                        ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+                    //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
+                    generateAs = QualifiedNameKind.FULLYQUALIFIED;
+                }
+            } else {
+                template.append(getName());
+                return template.toString();
             }
             switch(generateAs) {
                 case FULLYQUALIFIED:

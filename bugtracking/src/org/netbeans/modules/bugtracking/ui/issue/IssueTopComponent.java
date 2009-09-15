@@ -115,6 +115,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly) {
+        BugtrackingUtil.logBugtrackingUsage(defaultRepository, "ISSUE_EDIT"); // NOI18N
+
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -159,6 +161,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public void setIssue(Issue issue) {
         assert (this.issue == null);
+        BugtrackingUtil.logBugtrackingUsage(issue.getRepository(), "ISSUE_EDIT"); // NOI18N
         this.issue = issue;
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
