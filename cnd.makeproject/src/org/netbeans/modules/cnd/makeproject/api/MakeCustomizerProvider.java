@@ -213,7 +213,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         customizerPerProject.put(project, dialog);
         currentCommand = COMMAND_CANCEL;
         dialog.setVisible(true);
-        fireActionEvent(new ActionEvent(this, 0, currentCommand));
+        fireActionEvent(new ActionEvent(project, 0, currentCommand));
     }
 
     /** Listens to the actions on the Customizer's option buttons */
@@ -267,7 +267,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             }
             if (currentCommand.equals(COMMAND_APPLY)) {
                 makeCustomizer.refresh();
-                fireActionEvent(e);
+                fireActionEvent(new ActionEvent(project, 0, currentCommand));
             }
         }
     }
