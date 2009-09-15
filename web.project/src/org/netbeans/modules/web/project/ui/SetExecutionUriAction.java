@@ -225,6 +225,9 @@ public final class SetExecutionUriAction extends NodeAction {
         if ( project != null ){
             final ProjectWebModule prjWebModule = project.getLookup().lookup( 
                     ProjectWebModule.class);
+            if (prjWebModule == null) {
+                return false;
+            }
             MarkerClass marker = prjWebModule.getLookup().lookup( 
                     MarkerClass.class );
             if ( marker == null ){
