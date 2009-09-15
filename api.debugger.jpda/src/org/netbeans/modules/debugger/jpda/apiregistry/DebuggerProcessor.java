@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.debugger.jpda.apiregistry;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -51,17 +54,20 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.Evaluator;
 import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
-import org.openide.filesystems.annotations.LayerBuilder.File;
+import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -76,7 +82,8 @@ import org.openide.util.lookup.ServiceProvider;
                            "org.netbeans.spi.debugger.jpda.SmartSteppingCallback.Registration", //NOI18N
                            "org.netbeans.spi.debugger.jpda.SourcePathProvider.Registration", //NOI18N
                            "org.netbeans.spi.debugger.jpda.EditorContext.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.jpda.VariablesFilter.Registration"}) //NOI18N
+                           "org.netbeans.spi.debugger.jpda.VariablesFilter.Registration", //NOI18N
+                           "org.netbeans.spi.debugger.jpda.Evaluator.Registration"}) //NOI18N
 public class DebuggerProcessor extends LayerGeneratingProcessor {
 
     public static final String SERVICE_NAME = "serviceName"; // NOI18N
@@ -127,6 +134,13 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             handleProviderRegistration(e, VariablesFilter.class, path);
             cnt++;
         }
+        for (Element e : env.getElementsAnnotatedWith(Evaluator.Registration.class)) {
+            Evaluator.Registration reg = e.getAnnotation(Evaluator.Registration.class);
+
+            final String language = reg.language();
+            handleEvaluatorRegistration(e, language);
+            cnt++;
+        }
         return cnt == annotations.size();
     }
 
@@ -140,12 +154,30 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         } else {
             path = "Debugger";
         }
-        layer(e).instanceFile(path, null, providerClass).
-                stringvalue(SERVICE_NAME, className).
-                stringvalue("serviceClass", providerClass.getName()).
-                methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
-                //methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
-                write();
+        LayerBuilder lb = layer(e);
+        String basename = className.replace('.', '-');
+        LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
+        f.stringvalue(SERVICE_NAME, className).
+          stringvalue("serviceClass", providerClass.getName()).
+          methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
+          write();
+    }
+
+    private void handleEvaluatorRegistration(Element e, String language) throws IllegalArgumentException, LayerGenerationException {
+        String className = instantiableClassOrMethod(e);
+        if (!implementsInterface(e, Evaluator.class.getName())) {
+            throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + Evaluator.class);
+        }
+        String path = "Debugger/netbeans-JPDASession/"+language; // NOI18N
+        LayerBuilder lb = layer(e);
+        String basename = className.replace('.', '-');
+        LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
+        //LayerBuilder.File f = lb.instanceFile(path, null, Evaluator.class);
+        f.stringvalue(SERVICE_NAME, className).
+          stringvalue("serviceClass", Evaluator.class.getName()).
+          stringvalue("instanceOf", Evaluator.class.getName()).
+          methodvalue("instanceCreate", "org.netbeans.spi.debugger.ContextAwareSupport", "createService").
+          write();
     }
 
     private boolean isClassOf(Element e, Class providerClass) {
@@ -184,6 +216,43 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         }
     }
 
+    private boolean implementsInterface(Element e, String interfaceName) {
+        switch (e.getKind()) {
+            case CLASS: {
+                TypeElement te = (TypeElement) e;
+                List<? extends TypeMirror> interfs = te.getInterfaces();
+                for (TypeMirror tm : interfs) {
+                    e = ((DeclaredType) tm).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    if (interfaceName.equals(clazz)) {
+                        return true;
+                    }
+                }
+                break;
+            }
+            case METHOD: {
+                TypeMirror retType = ((ExecutableElement) e).getReturnType();
+                if (retType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    TypeElement te = (TypeElement) ((DeclaredType) retType).asElement();
+                    List<? extends TypeMirror> interfs = te.getInterfaces();
+                    for (TypeMirror tm : interfs) {
+                        e = ((DeclaredType) tm).asElement();
+                        String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                        if (interfaceName.equals(clazz)) {
+                            return true;
+                        }
+                    }
+                }
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
+        }
+        return false;
+    }
+
     private String instantiableClassOrMethod(Element e) throws IllegalArgumentException, LayerGenerationException {
         switch (e.getKind()) {
             case CLASS: {
@@ -193,14 +262,26 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 }
                 {
                     boolean hasDefaultCtor = false;
+                    boolean hasContextCtor = false;
                     for (ExecutableElement constructor : ElementFilter.constructorsIn(e.getEnclosedElements())) {
-                        if (constructor.getParameters().isEmpty()) {
+                        List<? extends VariableElement> params = constructor.getParameters();
+                        if (params.isEmpty()) {
                             hasDefaultCtor = true;
                             break;
                         }
+                        if (params.size() == 1) {
+                            String type = params.get(0).asType().toString();
+                            //System.err.println("Param type = "+type);
+                            //TypeElement te = processingEnv.getElementUtils().getTypeElement(params.get(0).asType().toString());
+                            //if (te != null && isClassOf(te, ContextProvider.class)) {
+                            if (ContextProvider.class.getName().equals(type)) {
+                                hasContextCtor = true;
+                                break;
+                            }
+                        }
                     }
-                    if (!hasDefaultCtor) {
-                        throw new LayerGenerationException(clazz + " must have a no-argument constructor", e);
+                    if (!(hasDefaultCtor || hasContextCtor)) {
+                        throw new LayerGenerationException(clazz + " must have a no-argument constructor or constuctor taking "+ContextProvider.class.getName()+" as a parameter.", e);
                     }
                 }
                 /*propType = processingEnv.getElementUtils().getTypeElement("java.util.Properties").asType();

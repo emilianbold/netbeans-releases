@@ -499,6 +499,8 @@ implements Executor {
             url = sourcePath.getURL(loc, language);
         } catch (InternalExceptionWrapper iex) {
             return ;
+        } catch (ObjectCollectedExceptionWrapper iex) {
+            return ;
         }
         ExpressionPool exprPool = debugger.getExpressionPool();
         ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);

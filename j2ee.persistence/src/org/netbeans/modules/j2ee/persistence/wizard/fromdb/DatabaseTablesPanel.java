@@ -647,7 +647,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "TXT_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        tableClosureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableClosureCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 tableClosureCheckBoxItemStateChanged(evt);
@@ -678,8 +677,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(dbschemaComboBox, 0, 387, Short.MAX_VALUE)
                     .add(datasourceComboBox, 0, 387, Short.MAX_VALUE)))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -746,6 +745,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_dbschemaRadioButtonItemStateChanged
 
     private void datasourceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_datasourceComboBoxActionPerformed
+        datasourceComboBox.hidePopup();
         updateSourceSchema();
     }//GEN-LAST:event_datasourceComboBoxActionPerformed
 

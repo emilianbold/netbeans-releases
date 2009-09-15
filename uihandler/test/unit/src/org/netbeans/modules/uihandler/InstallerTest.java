@@ -62,6 +62,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
 
 /**
@@ -109,7 +110,7 @@ public class InstallerTest extends NbTestCase {
     public void testLogsRereadOnStartup() throws Exception {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.warning("Something happened");
-        
+
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
         installer.doClose();

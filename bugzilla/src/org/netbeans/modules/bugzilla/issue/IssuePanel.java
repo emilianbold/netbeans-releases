@@ -140,8 +140,6 @@ public class IssuePanel extends javax.swing.JPanel {
         // Not supported yet
         issueTypeLabel.setVisible(false);
         issueTypeCombo.setVisible(false);
-        statusWhiteboardLabel.setVisible(false);
-        statusWhiteboardField.setVisible(false);
 
         // A11Y - Issues 163597 and 163598
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
@@ -239,6 +237,9 @@ public class IssuePanel extends javax.swing.JPanel {
             qaContactLabel.setVisible(showQAContact);
             qaContactField.setVisible(showQAContact);
         }
+        boolean showStatusWhiteboard = !(issue.getBugzillaRepository() instanceof KenaiRepository);
+        statusWhiteboardLabel.setVisible(showStatusWhiteboard);
+        statusWhiteboardField.setVisible(showStatusWhiteboard);
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
@@ -336,6 +337,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE, milestoneWarning, targetMilestoneLabel);
             }
             reloadField(force, urlField, BugzillaIssue.IssueField.URL, urlWarning, urlLabel);
+            reloadField(force, statusWhiteboardField, BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardWarning, statusWhiteboardLabel);
             reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
 
             // reported field
@@ -621,6 +623,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(BugzillaIssue.IssueField.SEVERITY, priorityLabel);
         updateFieldStatus(BugzillaIssue.IssueField.MILESTONE, targetMilestoneLabel);
         updateFieldStatus(BugzillaIssue.IssueField.URL, urlLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardLabel);
         updateFieldStatus(BugzillaIssue.IssueField.KEYWORDS, keywordsLabel);
         updateFieldStatus(BugzillaIssue.IssueField.ASSIGNED_TO, assignedLabel);
         updateFieldStatus(BugzillaIssue.IssueField.QA_CONTACT, qaContactLabel);
@@ -680,6 +683,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void attachDocumentListeners() {
         urlField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(urlLabel));
+        statusWhiteboardField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(statusWhiteboardLabel));
         keywordsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(keywordsLabel));
         assignedField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(assignedLabel));
         qaContactField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(qaContactLabel));
@@ -1248,7 +1252,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                     .add(urlWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(keywordsWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(statusWhiteboardWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, reportedLabel)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, blocksLabel)
@@ -1300,7 +1304,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                         .add(modifiedLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                .add(11, 11, 11))
+                                .addContainerGap(20, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane1)
@@ -1660,6 +1664,7 @@ public class IssuePanel extends javax.swing.JPanel {
             storeFieldValue(BugzillaIssue.IssueField.MILESTONE, targetMilestoneCombo);
         }
         storeFieldValue(BugzillaIssue.IssueField.URL, urlField);
+        storeFieldValue(BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardField);
         storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
         if (assignedField.getParent() == null) {
             storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedCombo);

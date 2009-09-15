@@ -79,6 +79,7 @@ import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -1091,5 +1092,98 @@ public final class Utils {
         protected String messageOpened() {
             return name;
         }
+    }
+
+    // -----
+    // Usages logging based on repository URL (for Kenai)
+
+    private static VCSKenaiSupport kenaiSupport;
+    private static final LinkedList<File> loggedRoots = new LinkedList<File>();
+    private static final List<File> foldersToCheck = new LinkedList<File>();
+    private static Runnable loggingTask = null;
+
+    public static void logVCSKenaiUsage(String vcs, String repositoryUrl) {
+        VCSKenaiSupport kenaiSup = getKenaiSupport();
+        if (kenaiSup != null) {
+            kenaiSup.logVcsUsage(vcs, repositoryUrl);
+        }
+    }
+
+    private static VCSKenaiSupport getKenaiSupport() {
+        if (kenaiSupport == null) {
+            kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+        }
+        return kenaiSupport;
+    }
+
+    /*
+     * Makes sure repository of given versioned folder is logged for usage
+     * (if on Kenai). Versioned folders are collected and a task invoked in 2s
+     * to process them. Roots are remembered so no subfolder is processed again
+     * (it's enough to log one usage per repository). Called from annotators so
+     * all user visible repositories are logged.
+     */
+    public static void addFolderToLog(File folder) {
+        if (!checkFolderLogged(folder, false)) {
+            synchronized(foldersToCheck) {
+                foldersToCheck.add(folder);
+                if (loggingTask == null) {
+                    loggingTask = new LogTask();
+                    RequestProcessor.getDefault().post(loggingTask, 2000);
+                }
+            }
+        }
+    }
+
+    private static class LogTask implements Runnable {
+        public void run() {
+            File[] folders;
+            synchronized (foldersToCheck) {
+                folders = foldersToCheck.toArray(new File[foldersToCheck.size()]);
+                foldersToCheck.clear();
+                loggingTask = null;
+            }
+            for (File f : folders) {
+                if (!checkFolderLogged(f, false)) { // if other task has not processed the root yet
+                    VersioningSystem vs = VersioningSupport.getOwner(f);
+                    if (vs != null) {
+                        File root = vs.getTopmostManagedAncestor(f);
+                        if (root != null) {
+                            checkFolderLogged(root, true); // remember the root
+                            FileObject rootFO = FileUtil.toFileObject(root);
+                            if (rootFO != null) {
+                                String url = (String) rootFO.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
+                                if (url != null) {
+                                    Object name = vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME);
+                                    if (!(name instanceof String)) {
+                                        name = vs.getClass().getSimpleName();
+                                    }
+                                    logVCSKenaiUsage(name.toString(), url);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean checkFolderLogged(File folder, boolean add) {
+        synchronized(loggedRoots) {
+            for (File f : loggedRoots) {
+                String ancestorPath = f.getPath();
+                String folderPath = folder.getPath();
+                if (folderPath.startsWith(ancestorPath)
+                        && (folderPath.length() == ancestorPath.length()
+                             || folderPath.charAt(ancestorPath.length()) == File.separatorChar)) {
+                    // folder is the same or subfolder of already logged one
+                    return true;
+                }
+            }
+            if (add) {
+                loggedRoots.add(folder);
+            }
+        }
+        return false;
     }
 }

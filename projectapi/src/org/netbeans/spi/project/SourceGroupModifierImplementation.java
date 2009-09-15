@@ -67,7 +67,7 @@ public interface SourceGroupModifierImplementation {
      * checks if {@link org.netbeans.api.project.SourceGroup} of the given type and hint can be created.
      * Typically a type is a constant for java/groovy/ruby source roots and hint is a constant for main sources or test sources.
      * Please consult specific APIs fro the supported types/hints. Eg. <code>JavaProjectConstants</code> for java related project sources.
-     * If the SourceGroup of given type/hint already exists it shall be return true as well.
+     * If the SourceGroup of given type/hint already exists it shall return true as well.
      *
      * @param type constant for type of sources
      * @param hint

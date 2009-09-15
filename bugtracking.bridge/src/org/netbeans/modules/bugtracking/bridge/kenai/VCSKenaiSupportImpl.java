@@ -61,6 +61,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 
 /**
@@ -191,6 +192,13 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
             }
         }
         return repositoryName;
+    }
+
+    @Override
+    public void logVcsUsage(String vcs, String repositoryUrl) {
+        if (repositoryUrl != null && isKenai(repositoryUrl)) {
+            UIUtils.logKenaiUsage("SCM", vcs); // NOI18N
+        }
     }
 
     private class KenaiUserImpl extends KenaiUser {

@@ -41,7 +41,9 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -126,6 +128,15 @@ final class KenaiTopComponent extends TopComponent {
     public void componentClosed() {
         DashboardImpl.getInstance().close();
         removeAll();
+    }
+
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+        if (Kenai.getDefault().getPasswordAuthentication() != null
+                || DashboardImpl.getInstance().getOpenProjects().length > 0) {
+            UIUtils.logKenaiUsage("DASHBOARD"); // NOI18N
+        }
     }
 
     /** replaces this in object stream */
