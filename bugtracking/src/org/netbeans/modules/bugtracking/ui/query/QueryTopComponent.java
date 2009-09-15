@@ -451,7 +451,9 @@ public final class QueryTopComponent extends TopComponent
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    rs.refreshRepositoryModel();
+                    if(rs != null) {
+                        rs.refreshRepositoryModel();
+                    }
                 }
             });
         }
