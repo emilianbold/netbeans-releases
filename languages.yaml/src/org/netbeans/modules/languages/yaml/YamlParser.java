@@ -239,7 +239,10 @@ public class YamlParser extends Parser {
                     TokenSequence ts = th.tokenSequence();
                     if (ts != null) {
                         ts.move(pos);
-                        if (ts.movePrevious()) {
+                        ts.moveNext();
+                        Token token = ts.token();
+                        // don't move the error, when there is more values on the line. See #171633
+                        if (token != null && token.text().toString().indexOf('{') == -1 && ts.movePrevious()) {
                             pos = ts.offset();
                         }
                     }
