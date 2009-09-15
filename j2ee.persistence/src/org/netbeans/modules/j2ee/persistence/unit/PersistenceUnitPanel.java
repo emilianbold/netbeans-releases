@@ -513,9 +513,11 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         if (isJta()){
             persistenceUnit.setJtaDataSource(jndiName);
             persistenceUnit.setNonJtaDataSource(null);
+            persistenceUnit.setTransactionType(PersistenceUnit.JTA_TRANSACTIONTYPE);
         } else {
             persistenceUnit.setJtaDataSource(null);
             persistenceUnit.setNonJtaDataSource(jndiName);
+            persistenceUnit.setTransactionType(PersistenceUnit.RESOURCE_LOCAL_TRANSACTIONTYPE);
         }
     }
     
