@@ -132,6 +132,7 @@ public class BugzillaIssue extends Issue {
      */
     static final int FIELD_STATUS_MODIFIED = 4;
     private Map<String, String> seenAtributes;
+    private String initialProduct = null;
 
     enum IssueField {
         SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
@@ -608,7 +609,6 @@ public class BugzillaIssue extends Issue {
         return sb.toString();
     }
 
-    private String initialProduct = null;
     void setFieldValue(IssueField f, String value) {
         if(f.isReadOnly()) {
             assert false : "can't set value into IssueField " + f.name();       // NOI18N
