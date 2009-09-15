@@ -551,7 +551,7 @@ public class PhpProject implements Project {
         PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
         return Lookups.fixed(new Object[] {
                 this,
-                CopySupport.getInstance(),
+                CopySupport.getInstance(this),
                 new SeleniumProvider(),
                 new PhpCoverageProvider(this),
                 new Info(),
@@ -648,10 +648,7 @@ public class PhpProject implements Project {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
-            final CopySupport copySupport = getCopySupport();
-            if (copySupport != null) {
-                copySupport.projectOpened(PhpProject.this);
-            }
+            getCopySupport().projectOpened();
 
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
@@ -670,10 +667,7 @@ public class PhpProject implements Project {
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
 
-            final CopySupport copySupport = getCopySupport();
-            if (copySupport != null) {
-                copySupport.projectClosed(PhpProject.this);
-            }
+            getCopySupport().projectClosed();
 
             try {
                 ProjectManager.getDefault().saveProject(PhpProject.this);

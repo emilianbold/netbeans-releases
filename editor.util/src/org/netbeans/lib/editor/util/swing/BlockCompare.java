@@ -259,8 +259,8 @@ public final class BlockCompare {
                 } else { // X non-empty && right-after Y
                     if (yStartOffset == yEndOffset) { // X and Y empty
                         value = EMPTY_Y | BEFORE | AFTER | INSIDE | CONTAINS;
-                    } else { // X empty && right-after Y; Y non-empty
-                        value = AFTER | CONTAINS;
+                    } else { // X non-empty && right-after Y; Y non-empty
+                        value = AFTER;
                     }
                 }
 
