@@ -51,7 +51,6 @@ import org.openide.util.WeakListeners;
  * @author Tomas Mysik
  */
 public final class OptionsUtils {
-
     private static final AtomicBoolean INITED = new AtomicBoolean(false);
 
     private static final PreferenceChangeListener PREFERENCES_TRACKER = new PreferenceChangeListener() {
@@ -60,18 +59,43 @@ public final class OptionsUtils {
             if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE.equals(settingName)) {
                 codeCompletionType = CodeCompletionPanel.CodeCompletionType.resolve(preferences.get(CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE, null));
             }
+            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS.equals(settingName)) {
+                provideStaticMethods = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS,
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS_DEFAULT);
+            }
+            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS.equals(settingName)) {
+                provideNonStaticMethods = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS,
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS_DEFAULT);
+            }
         }
     };
 
     private static Preferences preferences;
-    private static CodeCompletionPanel.CodeCompletionType codeCompletionType;
+    private static CodeCompletionPanel.CodeCompletionType codeCompletionType = null;;
+    private static Boolean provideStaticMethods = null;
+    private static Boolean provideNonStaticMethods = null;
 
     private OptionsUtils() {
     }
 
     public static CodeCompletionPanel.CodeCompletionType getCodeCompletionType() {
         lazyInit();
+        assert codeCompletionType != null;
         return codeCompletionType;
+    }
+
+    public static boolean provideCodeCompletionWithStaticMethods() {
+        lazyInit();
+        assert provideStaticMethods != null;
+        return provideStaticMethods;
+    }
+
+    public static boolean provideCodeCompletionWithNonStaticMethods() {
+        lazyInit();
+        assert provideNonStaticMethods != null;
+        return provideNonStaticMethods;
     }
 
     private static void lazyInit() {
