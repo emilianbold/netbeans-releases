@@ -42,15 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-  <!-- Lines marked as erroneous: -->
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="Maven.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.maven.options.MavenAdvancedOption"/>
-            </file>
-        </folder>
-   </folder>
-  
     <folder name="Maven2Templates">
         <file name="profiles.xml" url="profiles.xml">
             <attr name="template" boolvalue="true"/>

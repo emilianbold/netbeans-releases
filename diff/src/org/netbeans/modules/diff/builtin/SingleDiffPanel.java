@@ -47,7 +47,6 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
@@ -64,6 +63,7 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.modules.diff.options.DiffOptionsController;
 
 /**
  *
@@ -293,7 +293,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     }//GEN-LAST:event_bExportActionPerformed
     
     private void bOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bOptionsActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced/Diff");
+        OptionsDisplayer.getDefault().open("Advanced/" + DiffOptionsController.OPTIONS_SUBPATH);
     }//GEN-LAST:event_bOptionsActionPerformed
 
 
