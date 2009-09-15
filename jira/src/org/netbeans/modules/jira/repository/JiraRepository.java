@@ -102,6 +102,7 @@ public class JiraRepository extends Repository {
     private TaskRepository taskRepository;
     private RepositoryController controller;
     private Set<Query> queries = null;
+    private Set<Query> remoteFilters = null;
     private IssueCache<TaskData> cache;
     private Image icon;
 
@@ -113,7 +114,6 @@ public class JiraRepository extends Repository {
     private JiraExecutor executor;
     private JiraConfiguration configuration;
 
-    private boolean remoteFiltersLoaded = false;
     private final Object REPOSITORY_LOCK = new Object();
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
@@ -122,7 +122,7 @@ public class JiraRepository extends Repository {
     public static final String ATTRIBUTE_URL = "jira.repository.attribute.url"; //NOI18N
     public static final String ATTRIBUTE_DISPLAY_NAME = "jira.repository.attribute.displayName"; //NOI18N
     private Lookup lookup;
-    
+
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
@@ -228,7 +228,7 @@ public class JiraRepository extends Repository {
     protected Object[] getLookupObjects() {
         return new Object[] { getIssueCache() };
     }
-    
+
     @Override
     public String getUrl() {
         return taskRepository != null ? taskRepository.getUrl() : null;
@@ -236,9 +236,11 @@ public class JiraRepository extends Repository {
 
     @Override
     public void remove() {
-        Set<Query> qs = getQueriesIntern(false);
-        for (Query q : qs) {
-            removeQuery((JiraQuery) q);
+        synchronized(QUERIES_LOCK) {
+            Set<Query> qs = getQueriesIntern();
+            for (Query q : qs) {
+                removeQuery((JiraQuery) q);
+            }
         }
         resetRepository();
         Jira.getInstance().removeRepository(this);
@@ -276,36 +278,50 @@ public class JiraRepository extends Repository {
     public void removeQuery(JiraQuery query) {
         Jira.getInstance().getStorageManager().removeQuery(this, query);
         getIssueCache().removeQuery(name);
-        getQueriesIntern(false).remove(query);
+        synchronized(QUERIES_LOCK) {
+            getQueriesIntern().remove(query);
+        }
         stopRefreshing(query);
     }
 
     public void saveQuery(JiraQuery query) {
         assert name != null;
         Jira.getInstance().getStorageManager().putQuery(this, query);
-        getQueriesIntern(false).add(query);
+        synchronized (QUERIES_LOCK) {
+            getQueriesIntern().add(query);
+        }
     }
 
-    private Set<Query> getQueriesIntern(boolean alsoRemoteFilters) {
+    private Set<Query> getQueriesIntern() {
         synchronized (QUERIES_LOCK) {
             if(queries == null) {
                 JiraStorageManager manager = Jira.getInstance().getStorageManager();
                 queries = manager.getQueries(this);
             }
-            if(alsoRemoteFilters && !remoteFiltersLoaded) {
-                remoteFiltersLoaded = true;
-                Jira.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        queries.addAll(getServerQueries());
-                        fireQueryListChanged();
-                    }
-                });
-            }
             return queries;
         }
     }
 
-    protected Collection<Query> getServerQueries() {
+    @Override
+    public Query[] getQueries() {
+        List<Query> ret = new ArrayList<Query>();
+        synchronized (QUERIES_LOCK) {
+            Set<Query> l = getQueriesIntern();
+            ret.addAll(l);
+            if(remoteFilters == null) {
+                Jira.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        getRemoteFilters();
+                    }
+                });
+            } else {
+                ret.addAll(remoteFilters);
+            }
+        }
+        return ret.toArray(new Query[ret.size()]);
+    }
+
+    private void getRemoteFilters() {
         List<Query> ret = new ArrayList<Query>();
         NamedFiltersCommand cmd = new NamedFiltersCommand(taskRepository);
         getExecutor().execute(cmd);
@@ -318,13 +334,11 @@ public class JiraRepository extends Repository {
                 }
             }
         }
-        return ret;
-    }
-
-    @Override
-    public Query[] getQueries() {
-        Set<Query> l = getQueriesIntern(true);
-        return l.toArray(new Query[l.size()]);
+        synchronized (QUERIES_LOCK) {
+            remoteFilters = new HashSet<Query>();
+            remoteFilters.addAll(ret);
+        }
+        fireQueryListChanged();
     }
 
     @Override
