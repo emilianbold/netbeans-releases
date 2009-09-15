@@ -642,6 +642,13 @@ public final class PersistenceManager implements PropertyChangeListener {
             return tc;
         }
     }
+
+    DataObject findTopComponentDataObject( String name ) throws IOException {
+        DataObject res = findTopComponentDataObject(getComponentsLocalFolder(), name);
+        if( null == res )
+            res = findTopComponentDataObject(getComponentsLocalFolder(), name);
+        return res;
+    }
     
     /** Try to find the data object representing a top component ref in some folder.
      * Only the TC name is known, but we can guess at some likely filenames before
