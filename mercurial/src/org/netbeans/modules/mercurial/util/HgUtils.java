@@ -124,6 +124,9 @@ public class HgUtils {
     private static final String HG_IGNORE_CONFLICT_ANY_FILES = "\\.conflict\\~$"; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
+    private static final String IGNORE_SYNTAX_PREFIX = "syntax:";       //NOI18N
+    private static final String IGNORE_SYNTAX_GLOB = "glob";            //NOI18N
+    private static final String IGNORE_SYNTAX_REGEXP = "regexp";        //NOI18N
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
 
@@ -713,6 +716,7 @@ public class HgUtils {
 
         String s;
         BufferedReader r = null;
+        boolean glob = false;
         try {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
@@ -720,13 +724,29 @@ public class HgUtils {
                 line = removeCommentsInIgnore(line);
                 if (line.length() == 0) continue;
                 String [] array = line.split(" ");
-                if (array[0].equals("syntax:")) continue;
-                entries.add(line);
+                if (array[0].equals(IGNORE_SYNTAX_PREFIX)) {
+                    String syntax = line.substring(IGNORE_SYNTAX_PREFIX.length()).trim();
+                    if (IGNORE_SYNTAX_GLOB.equals(syntax)) {
+                        glob = true;
+                    } else if (IGNORE_SYNTAX_REGEXP.equals(syntax)) {
+                        glob = false;
+                    }
+                    continue;
+                }
+                entries.add(glob ? transformFromGlobPattern(line) : line);
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
         }
         return entries;
+    }
+
+    private static String transformFromGlobPattern (String pattern) {
+        // returned pattern consists of two patterns - one for a file/folder directly under
+        pattern = pattern.replace("$", "\\$").replace("^", "\\^").replace(".", "\\.").replace("*", ".*") + '$'; //NOI18N
+        return  "^" + pattern // a folder/file directly under the repository, does not start with '/' //NOI18N
+                + "|"                                                   //NOI18N
+                + ".*/" + pattern; // a folder in 2nd+ depth            //NOI18N
     }
 
     private static String computePatternToIgnore(File directory, File file) {
