@@ -66,7 +66,7 @@ import org.openide.util.Lookup;
  */
 class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
-    private final Object lock = new String("FunctionsListDataProviderImpl.lock");
+    private final Object lock = new String("FunctionsListDataProviderImpl.lock");//NOI18N
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
