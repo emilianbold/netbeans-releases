@@ -93,15 +93,14 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
             return result;
         }
-        List<DataFilter> changedFilters = new ArrayList<DataFilter>();
-        final long startTimeStamp = Long.valueOf(serviceInfoStorage.getValue(ServiceInfoDataStorage.START_TIME_NANOSECONDS));
+       List<DataFilter> changedFilters = new ArrayList<DataFilter>();
         synchronized(lock){
             for (DataFilter f : filters){
                 if (f instanceof TimeIntervalDataFilter){
                     //long startTs = f.
                     Range<Long> interval  = ((TimeIntervalDataFilter)f).getInterval();
-                    Range<Long> newInterval = new Range<Long>(interval.getStart() + startTimeStamp, interval.getEnd() + startTimeStamp);
-                    TimeIntervalDataFilter newFilter  = TimeIntervalDataFilterFactory.create(newInterval);
+ //                   Range<Long> newInterval = new Range<Long>(interval.getStart() + startTimeStamp, interval.getEnd() + startTimeStamp);
+                    TimeIntervalDataFilter newFilter  = TimeIntervalDataFilterFactory.create(interval);
                     changedFilters.add(newFilter);
                 }else{
                     changedFilters.add(f);
