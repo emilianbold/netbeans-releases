@@ -667,41 +667,22 @@ public class Installer extends ModuleInstall implements Runnable {
         return prefs.getInt("count", 0); // NOI18N
     }
 
-    static List<LogRecord> getLogs() {
+    static void readLogs(Handler handler){
         synchronized (UIGESTURE_LOG_LOCK) {
             UIHandler.waitFlushed();
 
             File f = logFile(0);
             if (f == null || !f.exists()) {
-                return new ArrayList<LogRecord>();
+                return ;
             }
             closeLogStream();
-
-            class H extends Handler {
-                List<LogRecord> logs = new LinkedList<LogRecord>();
-
-                public void publish(LogRecord r) {
-                    logs.add(r);
-                    if (logs.size() > UIHandler.MAX_LOGS) {
-                        logs.remove(0);
-                    }
-                }
-
-                public void flush() {
-                }
-
-                public void close() throws SecurityException {
-                }
-            }
-            H hndlr = new H();
-
 
             InputStream is = null;
             File f1 = logFile(1);
             if (logsSize < UIHandler.MAX_LOGS && f1 != null && f1.exists()) {
                 try {
                     is = new FileInputStream(f1);
-                    LogRecords.scan(is, hndlr);
+                    LogRecords.scan(is, handler);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {
@@ -716,7 +697,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             try {
                 is = new FileInputStream(f);
-                LogRecords.scan(is, hndlr);
+                LogRecords.scan(is, handler);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
@@ -728,8 +709,29 @@ public class Installer extends ModuleInstall implements Runnable {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            return hndlr.logs;
         }
+    }
+    
+    static List<LogRecord> getLogs() {
+        class H extends Handler {
+            List<LogRecord> logs = new LinkedList<LogRecord>();
+
+            public void publish(LogRecord r) {
+                logs.add(r);
+                if (logs.size() > UIHandler.MAX_LOGS) {
+                    logs.remove(0);
+                }
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        H hndlr = new H();
+        readLogs(hndlr);
+        return hndlr.logs;
     }
 
     public static List<LogRecord> getLogsMetrics() {
@@ -952,6 +954,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, slownessData);
     }
 
+    /** used only in tests - low performance - should use read logs*/
     static Throwable getThrown() {
         return getThrown(getLogs());
     }
