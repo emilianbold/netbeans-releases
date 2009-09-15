@@ -731,14 +731,21 @@ public final class NbModuleProject implements Project {
         return getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo();
     }
     
-    
+    private int atomicActionCounter = 0;
+
     /** See issue #69440 for more details. */
-    public void setRunInAtomicAction(boolean runInAtomicAction) {
-        eval.setRunInAtomicAction(runInAtomicAction);
+    public synchronized void setRunInAtomicAction(boolean runInAtomicAction) {
+        if (atomicActionCounter == 0 && ! runInAtomicAction)
+            throw new IllegalArgumentException("Not in atomic action");    // NOI18N
+        atomicActionCounter += runInAtomicAction ? 1 : -1;
+        if (runInAtomicAction && atomicActionCounter == 1)
+            eval.setRunInAtomicAction(true);
+        else if (! runInAtomicAction && atomicActionCounter == 0)
+            eval.setRunInAtomicAction(false);
     }
     
     /** See issue #69440 for more details. */
-    public boolean isRunInAtomicAction() {
+    public synchronized boolean isRunInAtomicAction() {
         return eval.isRunInAtomicAction();
     }
     

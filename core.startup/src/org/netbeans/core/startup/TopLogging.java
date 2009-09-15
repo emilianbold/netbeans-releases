@@ -775,6 +775,7 @@ public final class TopLogging {
         @Override
         public void flush() {
             try {
+                flush.schedule(0);
                 flush.waitFinished(500);
             } catch (InterruptedException ex) {
                 // ok, flush failed, do not even print

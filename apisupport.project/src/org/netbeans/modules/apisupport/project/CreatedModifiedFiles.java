@@ -516,4 +516,13 @@ public final class CreatedModifiedFiles {
         
     }
     
+    /**
+     * Provides {@link Operation} that will create a {@code package-info.java} if needed
+     * and optionally add some annotations to the package.
+     * Each annotation is of the form FQN -> {key -> val}.
+     */
+    public Operation packageInfo(String packageName, Map<String,Map<String,Object>> annotations) {
+        return CreatedModifiedFilesFactory.packageInfo(project, packageName, annotations);
+    }
+
 }

@@ -154,6 +154,38 @@ public final class LayerBuilder {
         return f;
     }
 
+    /**
+     * Generates an instance file that is <em>not initialized</em> with an instance.
+     * Useful for {@link LayerGeneratingProcessor}s which define layer fragments
+     * which indirectly instantiate Java objects from the annotated code via a generic factory method.
+     * Invoke the factory using {@link File#methodvalue} on {@code instanceCreate}
+     * and configure it with a {@link File#instanceAttribute} appropriate to the factory.
+     * <p>While you can pick a specific instance file name, if possible you should pass null for {@code name}
+     * as using the generated name will help avoid accidental name collisions between annotations.
+     * @param path path to folder of instance file, e.g. {@code "Menu/File"}
+     * @param name instance file basename, e.g. {@code "my-menu-Item"}, or null to pick a name according to the element
+     * @return an instance file (call {@link File#write} to finalize)
+     * @throws IllegalArgumentException if the builder is not associated with exactly one
+     *                                  {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+     * @throws LayerGenerationException if the associated element would not be loadable as an instance 
+     * @since org.openide.filesystems 7.27
+     */
+    public File instanceFile(String path, String name) throws IllegalArgumentException, LayerGenerationException {
+        String[] clazzOrMethod = instantiableClassOrMethod(null);
+        String clazz = clazzOrMethod[0];
+        String method = clazzOrMethod[1];
+        String basename;
+        if (name == null) {
+            basename = clazz.replace('.', '-');
+            if (method != null) {
+                basename += "-" + method;
+            }
+        } else {
+            basename = name;
+        }
+        return file(path + "/" + basename + ".instance");
+    }
+
     private String[] instantiableClassOrMethod(Class type) throws IllegalArgumentException, LayerGenerationException {
         if (originatingElement == null) {
             throw new IllegalArgumentException("Only applicable to builders with exactly one associated element");
