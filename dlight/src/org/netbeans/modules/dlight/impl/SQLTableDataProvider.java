@@ -43,13 +43,19 @@ import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.util.Range;
 import org.openide.util.Exceptions;
 
 /**
@@ -57,7 +63,10 @@ import org.openide.util.Exceptions;
  */
 public class SQLTableDataProvider implements TableDataProvider {
 
+    private final Object lock = new String("FunctionsListDataProviderImpl.lock");
+    private final List<DataFilter> filters = new ArrayList<DataFilter>();
     private SQLDataStorage storage;
+    private ServiceInfoDataStorage serviceInfoStorage;
 
     public SQLTableDataProvider() {
     }
@@ -65,7 +74,6 @@ public class SQLTableDataProvider implements TableDataProvider {
 //  public String getID() {
 //    return "TableDataProvider";
 //  }
-
 //  /**
 //   * Returns {@link org.netbeans.modules.dlight.core.dataprovider.model.TableDataModel} as
 //   * provided data model scheme
@@ -100,6 +108,16 @@ public class SQLTableDataProvider implements TableDataProvider {
 //  public DataProvider newInstance() {
 //    return new SQLTableDataProvider();
 //  }
+    private final <T extends DataFilter> Collection<T> getDataFilters(List<DataFilter> filters, Class<T> clazz) {
+        Collection<T> result = new ArrayList<T>();
+        for (DataFilter f : filters) {
+            if (f.getClass() == clazz) {
+                result.add(clazz.cast(f));
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns table view to visualize
      * @param tableMetadata table description to get data from
@@ -109,12 +127,34 @@ public class SQLTableDataProvider implements TableDataProvider {
         if (tableMetadata == null) {
             return null;
         }
-
         List<Column> columns = tableMetadata.getColumns();
         List<DataRow> result = new ArrayList<DataRow>();
-        
+        List<DataFilter> changedFilters = new ArrayList<DataFilter>();
+        final long startTimeStamp = Long.valueOf(serviceInfoStorage.getValue(ServiceInfoDataStorage.START_TIME_NANOSECONDS));
+        synchronized(lock){
+            for (DataFilter f : filters){
+                if (f instanceof TimeIntervalDataFilter){
+                    //long startTs = f.
+                    Range<Long> interval  = ((TimeIntervalDataFilter)f).getInterval();
+                    Range<Long> newInterval = new Range<Long>(interval.getStart() + startTimeStamp, interval.getEnd() + startTimeStamp);
+                    TimeIntervalDataFilter newFilter  = TimeIntervalDataFilterFactory.create(newInterval);
+                    changedFilters.add(newFilter);
+                }else{
+                    changedFilters.add(f);
+                }
+            }
+        }
+        Collection<TimeIntervalDataFilter> timeFilters = getDataFilters(changedFilters, TimeIntervalDataFilter.class);
+        Collection<DataTableMetadataFilter> tableFilters = new ArrayList<DataTableMetadataFilter>();
+        DataTableMetadataFilterSupport filtersSupport = DataTableMetadataFilterSupport.getInstance();
+        for (TimeIntervalDataFilter timeFilter : timeFilters) {
+            tableFilters.addAll(filtersSupport.createFilters(tableMetadata, timeFilter));
+        }
+
         try {
-            ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
+            //TODO: once it is ready for I/O - just uncomment
+            ResultSet rs = storage.select(tableMetadata, tableFilters);
+            //ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
             if (rs == null) {
                 return Collections.emptyList();
             }
@@ -138,8 +178,17 @@ public class SQLTableDataProvider implements TableDataProvider {
     }
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+        this.serviceInfoStorage = serviceInfoDataStorage;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        //we should keep them here
+        if (isAdjusting) {
+            return;
+        }
+        synchronized (lock) {
+            filters.clear();
+            filters.addAll(newSet);
+        }
     }
 }

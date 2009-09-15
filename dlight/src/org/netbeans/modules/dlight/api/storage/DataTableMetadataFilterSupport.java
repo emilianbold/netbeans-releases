@@ -36,45 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.api.storage;
 
-package org.netbeans.modules.dlight.core.stack.api.support;
-
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 
 /**
  *
  * @author mt154047
  */
-public final class FunctionMetricFormatter {
-    private static NumberFormat format = null;
+public final class DataTableMetadataFilterSupport {
 
-    private static String formatValue(Object value) {
-        // format with three decimals (including 0s)
-        if (format == null) {
-            format = NumberFormat.getNumberInstance();
-            format.setGroupingUsed(false);
-            format.setMinimumIntegerDigits(1);
-            format.setMinimumFractionDigits(3);
-            format.setMaximumFractionDigits(3);
-        }
-        return format.format(value);
+    private static DataTableMetadataFilterSupport instance;
+
+    private DataTableMetadataFilterSupport() {
     }
 
-    public static final String getFormattedValue(FunctionCallWithMetric functionCall, String metricID){
-        Object value = functionCall.getMetricValue(metricID);
-        if (value instanceof Double || value instanceof Float) {
-            return formatValue(value);
+    public static final synchronized DataTableMetadataFilterSupport getInstance() {
+        if (instance == null) {
+            instance = new DataTableMetadataFilterSupport();
         }
-        PropertyEditor editor = value == null ? null : PropertyEditorManager.findEditor(value.getClass());
-        if (editor != null){
-            editor.setValue(value);
-            return editor.getAsText();
-        }      
-        return value + "";
+        return instance;
     }
 
+    private final Collection<DataTableMetadataFilter> createFilters(List<Column> columns, TimeIntervalDataFilter filter) {
+        Collection<DataTableMetadataFilter> result = new ArrayList<DataTableMetadataFilter>();
+        for (Column c : columns) {
+            try {
+                c.getColumnClass().asSubclass(Time.class);
+                //if we are here it is time, create
+                result.add(new DataTableMetadataFilter(c, filter));
+            } catch (ClassCastException e) {
+            }
+        }
+        return result;
+    }
+
+    public final Collection<DataTableMetadataFilter> createFilters(DataTableMetadata metadata, TimeIntervalDataFilter filter) {
+        Collection<DataTableMetadataFilter> result = new ArrayList<DataTableMetadataFilter>();
+        List<DataTableMetadata> sourceTables = metadata.getSourceTables();
+        if (sourceTables == null) {
+            List<Column> columns = metadata.getColumns();
+            result.addAll(createFilters(columns, filter));
+            return result;
+        }
+        for (DataTableMetadata table : sourceTables){
+            result.addAll(createFilters(table.getColumns(), filter));
+        }
+        return result;
+    }
 }

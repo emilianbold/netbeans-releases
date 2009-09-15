@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.impl;
 
-import org.netbeans.modules.dlight.api.storage.types.Time;
-import java.beans.PropertyEditorSupport;
-import java.text.NumberFormat;
+package org.netbeans.modules.ruby.rhtml.editor;
+
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
- * Property editor for {@link Time} value type. Does not actually support
- * editing, but represents nanosecond times in human-readable format.
  *
- * @author Alexey Vladykin
+ * @author Erno Mononen
  */
-public class TimeEditor extends PropertyEditorSupport {
+public class RhtmlBracesMatcherFactory implements BracesMatcherFactory {
 
-    private static final Time zeroTime = new Time(0);
-    private final NumberFormat format;
-
-    /**
-     * Creates new instance.
-     */
-    public TimeEditor() {
-        format = NumberFormat.getNumberInstance();
-        format.setGroupingUsed(false);
-        format.setMinimumIntegerDigits(1);
-        format.setMinimumFractionDigits(3);
-        format.setMaximumFractionDigits(3);
+    public BracesMatcher createMatcher(MatcherContext context) {
+        return new RhtmlBracesMatcher(context);
     }
 
-    @Override
-    public String getAsText() {
-        if (!(getValue() instanceof Time)){
-            return String.valueOf(getValue());
-        }
-        return ((Time) getValue()).equals(zeroTime) ? "0.000" : format.format(((Time) getValue()).getNanos() / 1e9); // NOI18N
-    }
-
-    @Override
-    public void setAsText(String text) {
-        throw new UnsupportedOperationException();
-    }
 }
