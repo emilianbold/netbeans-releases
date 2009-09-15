@@ -166,6 +166,8 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                 name = ReferenceTypeWrapper.name(referenceTypes.get(0));
             } catch (InternalExceptionWrapper e) {
                 name = e.getLocalizedMessage();
+            } catch (ObjectCollectedExceptionWrapper e) {
+                name = e.getLocalizedMessage();
             } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
             }

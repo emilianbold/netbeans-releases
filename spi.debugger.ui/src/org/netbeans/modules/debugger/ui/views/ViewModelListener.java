@@ -1474,8 +1474,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
          * Unknown properties are null
          */
         private static final class NodeProperties extends Object {
-            Integer childrenCount;
-            private Reference[] children;
+            volatile Integer childrenCount;
+            private volatile Reference[] children;
             Boolean isLeaf;
             Boolean canRename;
             Boolean canCopy;
@@ -1515,12 +1515,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
 
             void setChildren(Object[] ch) {
-                synchronized (CHILDREN_LOCK) {
-                    children = new Reference[ch.length];
-                    for (int i = 0; i < ch.length; i++) {
-                        children[i] = new WeakReference(ch[i]);
-                    }
+                Reference[] chr = new Reference[ch.length];
+                for (int i = 0; i < ch.length; i++) {
+                    chr[i] = new WeakReference(ch[i]);
                 }
+                children = chr;
             }
 
             void clearValues() {

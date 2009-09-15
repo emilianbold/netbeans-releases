@@ -205,7 +205,8 @@ public class AstNodeUtilsTest extends TestBase {
     }
 
     private AstNode parse(String code, String publicId) throws BadLocationException {
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserContext context = SyntaxParserContext.createContext(code);
+        SyntaxParserResult result = SyntaxParser.parse(context);
         DTD dtd;
         if (publicId == null) {
             dtd = result.getDTD();
@@ -215,7 +216,8 @@ public class AstNodeUtilsTest extends TestBase {
         }
 
         assertNotNull(dtd);
-        return SyntaxTree.makeTree(result.getElements(), dtd);
+        context.setDTD(dtd);
+        return SyntaxTree.makeTree(context);
     }
 
     private void assertPossibleElements(AstNode rootNode, int offset, String[] expected, Match type) {

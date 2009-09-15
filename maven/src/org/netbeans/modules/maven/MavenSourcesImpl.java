@@ -439,7 +439,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 folder = FileUtilities.convertStringToFile(mp.getBuild().getTestSourceDirectory());
             }
         }
-        if (MavenSourcesImpl.TYPE_GROOVY.equals(type)) {
+        if (TYPE_GROOVY.equals(type)) {
             if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
                 folder = new File(project.getGroovyDirectory(false));
             }
@@ -447,7 +447,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 folder = new File(project.getGroovyDirectory(true));
             }
         }
-        if (MavenSourcesImpl.TYPE_SCALA.equals(type)) {
+        if (TYPE_SCALA.equals(type)) {
             if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
                 folder = new File(project.getScalaDirectory(false));
             }
@@ -474,11 +474,12 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     }
 
     public boolean canCreateSourceGroup(String type, String hint) {
-        if ((JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type) || JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type))
-                && (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint) || JavaProjectConstants.SOURCES_HINT_TEST.equals(hint))) {
-            return true;
-        }
-        return false;
+        return   (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type) ||
+                  JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type) ||
+                  TYPE_GROOVY.equals(type) ||
+                  TYPE_SCALA.equals(type))
+              && (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint) ||
+                  JavaProjectConstants.SOURCES_HINT_TEST.equals(hint));
     }
     
     

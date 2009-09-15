@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 
@@ -64,7 +65,15 @@ import javax.swing.DefaultListModel;
  * @version 1.0
  */
 public class FontModel{
-    
+
+    public static Callable<FontModel> getFontModel() {
+        return new Callable<FontModel>() {
+            public FontModel call() throws Exception {
+                return new FontModel();
+            }
+        };
+    }
+
     Map<String, List<String>> fontFamilyNames = new HashMap<String, List<String>>();
     List<String> fontFaceNames = new ArrayList<String>();
 

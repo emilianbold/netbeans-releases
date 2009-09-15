@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -158,7 +159,7 @@ public class SourcePath {
     public String getURL (
         StackFrame sf,
         String stratumn
-    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper {
+    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
         try {
             return getURL (
                 convertSlash(LocationWrapper.sourcePath(StackFrameWrapper.location(sf), stratumn)),
@@ -177,7 +178,7 @@ public class SourcePath {
     public String getURL (
         Location loc,
         String stratumn
-    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         try {
             return getURL (
                 convertSlash(LocationWrapper.sourcePath(loc, stratumn)),

@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -149,6 +150,8 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
             } catch (InternalExceptionWrapper e) {
                 return false;
             } catch (VMDisconnectedExceptionWrapper e) {
+                return false;
+            } catch (ObjectCollectedExceptionWrapper e) {
                 return false;
             }
         } else
