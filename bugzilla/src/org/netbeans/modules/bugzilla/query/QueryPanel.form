@@ -404,36 +404,50 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="severityLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                      <Component id="jScrollPane8" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="severityScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="issueTypeScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
+                  </Group>
+                  <EmptySpace pref="99" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="severityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jScrollPane4" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane7" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane6" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane2" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane3" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane5" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane8" alignment="0" pref="99" max="32767" attributes="1"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="issueTypeLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Component id="issueTypeScrollPane" pref="99" max="32767" attributes="1"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="severityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jScrollPane4" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane7" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane6" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane2" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane3" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane5" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="severityScrollPane" alignment="0" pref="99" max="32767" attributes="1"/>
+                          </Group>
+                      </Group>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -754,7 +768,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane8">
+        <Container class="javax.swing.JScrollPane" name="severityScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -782,6 +796,51 @@
                   <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.severityList.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Component class="javax.swing.JLabel" name="issueTypeLabel">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Lucida Grande" size="13" style="1"/>
+            </Property>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="severityList"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.issueTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
+        </Component>
+        <Container class="javax.swing.JScrollPane" name="issueTypeScrollPane">
+          <Properties>
+            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HackedScrollPane()"/>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JList" name="issueTypeList">
+              <Properties>
+                <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                  <StringArray count="1">
+                    <StringItem index="0" value=""/>
+                  </StringArray>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[100, 2]"/>
+                </Property>
+              </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
               </AuxValues>

@@ -232,7 +232,14 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final class PhpTranslator implements Translator {
 
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+            if (th == null) {
+                //likely the php language couldn't be found
+                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
+                return Collections.emptyList();
+            }
+
+            TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
 
             //TODO - implement the "classpath" import for other projects
@@ -280,7 +287,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             TokenHierarchy th = snapshot.getTokenHierarchy();
             if (th == null) {
                 //likely a rhtml language couldn't be found
-                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot);
+                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
                 return embeddings;
             }
             TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();

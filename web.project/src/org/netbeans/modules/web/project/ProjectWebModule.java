@@ -73,7 +73,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.netbeans.modules.j2ee.dd.api.webservices.*;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
@@ -87,9 +90,13 @@ import org.openide.loaders.FileEntry.Folder;
 /** A web module implementation on top of project.
  *
  * @author  Pavel Buzek
+ * @author ads
  */
 public final class ProjectWebModule extends J2eeModuleProvider 
-        implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements J2eeModuleImplementation2, ModuleChangeReporter, 
+        EjbChangeDescriptor, PropertyChangeListener,
+        Lookup.Provider 
+{
       
     public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
 //    public static final String FOLDER_CLASSES = "classes";//NOI18N
@@ -100,6 +107,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private UpdateHelper helper;
     private ClassPathProviderImpl cpProvider;
     private String fakeServerInstId = null; // used to get access to properties of other servers
+    private Lookup myLookup;
+    private InstanceContent myContent;
 
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
@@ -115,7 +124,21 @@ public final class ProjectWebModule extends J2eeModuleProvider
         this.project = project;
         this.helper = helper;
         this.cpProvider = cpProvider;
+        myContent = new InstanceContent();
+        myLookup = new AbstractLookup( myContent );
         project.evaluator ().addPropertyChangeListener (this);
+    }
+    
+    public Lookup getLookup(){
+        return myLookup;
+    }
+    
+    public void addCookie( Object cookie ){
+        myContent.add( cookie );
+    }
+    
+    public void removeCookie( Object cookie ){
+        myContent.remove( cookie);
     }
     
     public FileObject getDeploymentDescriptor() {
