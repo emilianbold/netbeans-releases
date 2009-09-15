@@ -103,7 +103,12 @@ import org.netbeans.modules.dlight.util.DLightMath;
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
-                viewportModel.setViewport(new Range<Long>(DLightMath.map(pos, margin, getWidth() - margin - 2, vms.getLimits().getStart(), vms.getLimits().getEnd()), null));
+                Range<Long> viewport = vms.getViewport();
+                Long startTime = DLightMath.map(pos, margin, getWidth() - margin - 2, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                if (viewport != null && startTime >= viewport.getEnd()){
+                    return;
+                }
+                viewportModel.setViewport(new Range<Long>(startTime, null));
             }
 
             @Override
@@ -131,7 +136,12 @@ import org.netbeans.modules.dlight.util.DLightMath;
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
-                viewportModel.setViewport(new Range<Long>(null, DLightMath.map(pos, margin, getWidth() - margin - 2, vms.getLimits().getStart(), vms.getLimits().getEnd())));
+                Range<Long> viewport = vms.getViewport();
+                Long endTime = DLightMath.map(pos, margin, getWidth() - margin - 2, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                if (viewport != null && viewport.getStart() >= endTime){
+                    return;
+                }
+                viewportModel.setViewport(new Range<Long>(null, endTime));
             }
 
             @Override
@@ -172,7 +182,13 @@ import org.netbeans.modules.dlight.util.DLightMath;
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
-                setTimeSelection(new Range<Long>(DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd()), null), isAdjusting);
+                Range<Long> selection = ViewportBar.this.getTimeSelection();
+                Long startTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                if (selection != null && selection.getEnd() <= startTime){
+                    //return
+                    return;
+                }
+                setTimeSelection(new Range<Long>(startTime, null), isAdjusting);
             }
 
             @Override
@@ -207,7 +223,12 @@ import org.netbeans.modules.dlight.util.DLightMath;
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
-                setTimeSelection(new Range<Long>(null, DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd())), isAdjusting);
+                Long endTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Range<Long> selection = ViewportBar.this.getTimeSelection();
+                if (selection  != null && selection.getStart() >= endTime){
+                    return;
+                }
+                setTimeSelection(new Range<Long>(null, endTime), isAdjusting);
             }
 
             @Override
