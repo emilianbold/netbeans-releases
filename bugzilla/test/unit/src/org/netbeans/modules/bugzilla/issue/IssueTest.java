@@ -759,6 +759,34 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertEquals(TEST_PROJECT2, issue.getFieldValue(IssueField.PRODUCT));
     }
 
+    public void testSetResetProduct() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
+
+        resetStatusValues(issue);
+
+        // set new product
+        issue.setFieldValue(IssueField.PRODUCT, TEST_PROJECT2);
+        issue.setFieldValue(IssueField.COMPONENT, getOtherComponent(issue, TEST_PROJECT2));
+        issue.setFieldValue(IssueField.VERSION, getOtherVersion(issue, TEST_PROJECT2));
+        issue.setFieldValue(IssueField.MILESTONE, getOtherMilestone(issue, TEST_PROJECT2));
+
+        // reset back
+        issue.setFieldValue(IssueField.PRODUCT, TEST_PROJECT);
+        issue.setFieldValue(IssueField.COMPONENT, getOtherComponent(issue, TEST_PROJECT));
+        issue.setFieldValue(IssueField.VERSION, getOtherVersion(issue, TEST_PROJECT));
+        issue.setFieldValue(IssueField.MILESTONE, getOtherMilestone(issue, TEST_PROJECT));
+
+        issue.submitAndRefresh();
+        assertEquals(TEST_PROJECT, issue.getFieldValue(IssueField.PRODUCT));
+    }
+
+    // XXX test new issue
 
     private void addHandler(LogHandler lh) {
         Logger l = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
