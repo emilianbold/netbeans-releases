@@ -100,10 +100,10 @@ final class ProcessList {
                     ptype = PTYPE.NONE;
                 }
             } else {
-                if (HostInfoUtils.fileExists(exEnv, "/bin/ps")) {
+                if (HostInfoUtils.fileExists(exEnv, "/bin/ps")) { // NOI18N
                     // NOI18N
                     exec = "/bin/ps"; // NOI18N
-                } else if (HostInfoUtils.fileExists(exEnv, "/usr/bin/ps")) {
+                } else if (HostInfoUtils.fileExists(exEnv, "/usr/bin/ps")) { // NOI18N
                     // NOI18N
                     exec = "/usr/bin/ps"; // NOI18N
                 } else {

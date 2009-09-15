@@ -362,7 +362,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
     private List<String> undoInstrumentationMakefile() {
         List<String> res = new ArrayList<String>(1);
-        res.add("configure");
+        res.add("configure"); // NOI18N
         return res;
     }
 
