@@ -118,4 +118,12 @@ public final class THAConfigurationOptions implements DLightConfigurationOptions
             listeners.remove(listener);
         }
     }
+
+    public String getNoIndicatorDataProvidersMessage() {
+        return null;
+    }
+
+    public String getNoDataCollectorsMessage() {
+        return null;
+    }
 }
