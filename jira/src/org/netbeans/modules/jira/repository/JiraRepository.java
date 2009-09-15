@@ -378,14 +378,14 @@ public class JiraRepository extends Repository {
 
         FilterDefinition fd = new FilterDefinition();
         StringBuffer sb = new StringBuffer();
-        StringTokenizer st = new StringTokenizer(criteria, " \t"); // NOI18N
+        StringTokenizer st = new StringTokenizer(criteria, " \t");  // NOI18N
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
             sb.append(token);
-            sb.append(' ');
+            sb.append(' ');                                         // NOI18N
             sb.append(token);
-            sb.append('*');
-            sb.append(' ');
+            sb.append('*');                                         // NOI18N
+            sb.append(' ');                                         // NOI18N
         }
 
         final ContentFilter cf = new ContentFilter(sb.toString(), true, false, false, false);
@@ -537,7 +537,7 @@ public class JiraRepository extends Repository {
                         try {
                             TaskData data = JiraUtils.getTaskDataById(JiraRepository.this, id, false);
                             if(data == null) {
-                                Jira.LOG.warning("No task data available for issue with id " + id);
+                                Jira.LOG.warning("No task data available for issue with id " + id); // NOI18N
                             } else {
                                 getIssueCache().setIssueData(id, data);
                             }
