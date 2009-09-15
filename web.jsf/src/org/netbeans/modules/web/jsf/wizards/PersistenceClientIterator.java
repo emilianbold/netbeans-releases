@@ -472,7 +472,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params.put("controllerClassName", controllerClassName);
             expandSingleJSFTemplate("list.ftl", entityClass, jsfFolder, webRoot, "List", params, progressContributor, progressPanel, progressIndex++);
 
-            String styleAndScriptTags = "<link href=\""+CSS_FOLDER+JSFClientGenerator.JSFCRUD_STYLESHEET+"\" rel=\"stylesheet\" type=\"text/css\">";//"<h:outputStylesheet name=\"css/jsfcrud.css\"/>"; //NOI18N
+            String styleAndScriptTags = "<h:outputStylesheet name=\"css/"+JSFClientGenerator.JSFCRUD_STYLESHEET+"\"/>"; //NOI18N
             JSFClientGenerator.addLinkToListJspIntoIndexJsp(WebModule.getWebModule(project.getProjectDirectory()),
                     simpleClassName, styleAndScriptTags, "UTF-8", "/"+getJsfFileName(entityClass, jsfFolder, "List"));
 

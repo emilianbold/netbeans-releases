@@ -428,6 +428,7 @@ public class JSFClientGenerator {
             
             //insert style and script tags if not already present
             if (content.indexOf(styleAndScriptTags) == -1) {
+                styleAndScriptTags = "<link href=\"resources/css/"+JSFCRUD_STYLESHEET+"\" rel=\"stylesheet\" type=\"text/css\">";   //NOI18N
                 String justTitleEnd = "</title>"; //NOI18N
                 String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
                 content = content.replace(justTitleEnd, replaceHeadWith); //NOI18N
