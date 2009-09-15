@@ -169,7 +169,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     }
                 }
                 if (val == null) {
-                    handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
+                    val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
                 }
                 if (val != null) {
                     return valueToLabel(val);

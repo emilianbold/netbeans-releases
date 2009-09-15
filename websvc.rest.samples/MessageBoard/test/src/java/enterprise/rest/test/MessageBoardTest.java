@@ -58,7 +58,7 @@ public class MessageBoardTest {
                 serverUri = new URI("http://localhost:8080");
             }
             c = new Client();
-            baseWebResource = c.resource(serverUri).path("message-board-war");
+            baseWebResource = c.resource(serverUri).path("message-board");
 
         } catch(Exception e) {
             assertTrue(false);

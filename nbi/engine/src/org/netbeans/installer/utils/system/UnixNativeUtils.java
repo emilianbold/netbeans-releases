@@ -47,6 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -530,9 +531,12 @@ public class UnixNativeUtils extends NativeUtils {
         }
 
         list.add("Version=1.0");
-        list.add("StartupNotify=true");
         list.add("Type=Application");
         list.add("Terminal=0");
+        Properties props = shortcut.getAdditionalProperties();
+        for(Object key : props.keySet()) {
+            list.add(key.toString() + "=" + props.get(key));
+        }
         list.add(SystemUtils.getLineSeparator());
         return list;
     }
@@ -553,8 +557,11 @@ public class UnixNativeUtils extends NativeUtils {
                     StringUtils.asString(shortcut.getCategories(),";"));
         }
         list.add("Version=1.0");
-        list.add("StartupNotify=true");
         list.add("Type=Link");
+        Properties props = shortcut.getAdditionalProperties();
+        for(Object key : props.keySet()) {
+            list.add(key.toString() + "=" + props.get(key));
+        }
         list.add(SystemUtils.getLineSeparator());
         return list;
     }

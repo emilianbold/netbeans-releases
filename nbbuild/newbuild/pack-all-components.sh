@@ -33,7 +33,11 @@ pack_all_components()
 	ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST_DIR/zip/$NAME-javafx-full.zip || exit 1
 
         cd $NB_ALL/nbbuild/netbeans
-	pack_component $DIST_DIR/zip/moduleclusters $NAME javafx "javafx*"
+	cp $NB_ALL/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
+	cp $NB_ALL/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip
+	cp $NB_ALL/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip
+	cp $NB_ALL/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip
+	cp $NB_ALL/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip
 	rm -rf javafx*
     fi
 
