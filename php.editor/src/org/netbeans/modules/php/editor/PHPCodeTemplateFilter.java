@@ -46,11 +46,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 
@@ -89,23 +91,36 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
-        ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-        BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
-        if (document != null) {
-            document.readLock();
-
-            try {
-                context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
-                switch (context) {
-                    case EXPRESSION:
-                        accept = true;
-                        break;
-                    case CLASS_CONTEXT_KEYWORDS:
-                        accept = true;
-                        break;
+        ParserResult parameter = null;
+        String mimeType = resultIterator.getSnapshot().getMimeType();
+        if (!mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
+            for (Embedding e : resultIterator.getEmbeddings()) {
+                if (e.getMimeType().equals(FileUtils.PHP_MIME_TYPE)) {
+                    resultIterator = resultIterator.getResultIterator(e);
+                    break;
                 }
-            } finally {
-                document.readUnlock();
+            }
+            mimeType = resultIterator.getSnapshot().getMimeType();
+        }
+        if (mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
+            parameter = (ParserResult) resultIterator.getParserResult();
+            BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
+            if (document != null) {
+                document.readLock();
+
+                try {
+                    context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
+                    switch (context) {
+                        case EXPRESSION:
+                            accept = true;
+                            break;
+                        case CLASS_CONTEXT_KEYWORDS:
+                            accept = true;
+                            break;
+                    }
+                } finally {
+                    document.readUnlock();
+                }
             }
         }
     }
