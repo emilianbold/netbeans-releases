@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
  */
 public class SQLTableDataProvider implements TableDataProvider {
 
-    private final Object lock = new String("FunctionsListDataProviderImpl.lock");
+    private final Object lock = new String("FunctionsListDataProviderImpl.lock");//NOI18N
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
     private SQLDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
