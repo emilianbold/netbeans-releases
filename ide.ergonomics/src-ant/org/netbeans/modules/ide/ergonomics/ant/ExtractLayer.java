@@ -219,7 +219,15 @@ implements FileNameMapper {
             }
         }
         for (FileSet fs : entries == null ? moduleSet : entries) {
-            DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+            DirectoryScanner ds;
+            try {
+                ds = fs.getDirectoryScanner(getProject());
+            } catch (RuntimeException e) {
+                if (fs.getDir().getPath().contains("${")) {
+                    continue;
+                }
+                throw e;
+            }
             File basedir = ds.getBasedir();
             for (String path : ds.getIncludedFiles()) {
                 File jar = new File(basedir, path);
