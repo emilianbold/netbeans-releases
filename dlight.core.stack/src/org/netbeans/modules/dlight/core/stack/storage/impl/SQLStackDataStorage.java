@@ -79,6 +79,7 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -311,7 +312,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
         return Collections.emptyList();
     }
-
+    
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
             List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters) {
         try {
@@ -327,19 +328,19 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             Collection<TimeIntervalDataFilter> timeFilters = getDataFilters(filters, TimeIntervalDataFilter.class);
             //create list of DataTableMetadataFilter
             //if we hvae Time column create filter
-            Collection<DataTableMetadataFilter> tableFilters = null;
-         //   for (Column c :)
+            Collection<DataTableMetadataFilter> tableFilters = new ArrayList<DataTableMetadataFilter>();
+            DataTableMetadataFilterSupport filtersSupport = DataTableMetadataFilterSupport.getInstance();
             for (TimeIntervalDataFilter timeFilter : timeFilters){
-                
+                tableFilters.addAll(filtersSupport.createFilters(metadata, timeFilter));
             }
-            ResultSet rs = null;
+            ResultSet rs = sqlStorage.select(metadata, tableFilters);
 
-            if (metadata.getViewStatement() != null) {
-                PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
-                rs = select.executeQuery();
-            } else {
-                rs = sqlStorage.select(metadata.getName(), metricsColumn);
-            }
+//            if (metadata.getViewStatement() != null) {
+//                PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
+//                rs = select.executeQuery();
+//            } else {
+//                rs = sqlStorage.select(metadata.getName(), metricsColumn);
+//            }
           //  rs = sqlStorage.select(metadata.getName(), metricsColumn, metadata.getViewStatement(), tableFilters);
             while (rs.next()) {
                 Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();

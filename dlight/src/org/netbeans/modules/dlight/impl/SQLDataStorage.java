@@ -47,7 +47,9 @@ import java.util.ArrayList;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -236,9 +238,8 @@ public abstract class SQLDataStorage implements DataStorage {
         }
         String viewName = tableName + "_DLIGHT_VIEW"; // NOI18N
         String dropViewQuery = new String("DROP VIEW IF EXISTS " + viewName); // NOI18N
-        ResultSet rs = null;
         try {
-            rs = connection.createStatement().executeQuery(dropViewQuery);
+            connection.createStatement().execute(dropViewQuery);
         } catch (SQLException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -260,7 +261,7 @@ public abstract class SQLDataStorage implements DataStorage {
             if (columns.contains(filterColumn)){
                 Range range = filter.getNumericDataFilter().getInterval();
                 hasWhereExpression = true;
-                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn + "<=" + range.getEnd()); // NOI18N
+                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn.getColumnName() + "<=" + range.getEnd()); // NOI18N
             }
         }
         if (hasWhereExpression){
@@ -269,7 +270,7 @@ public abstract class SQLDataStorage implements DataStorage {
             return tableName;
         }
         try {
-            rs = connection.createStatement().executeQuery(createViewQuery.toString());
+            connection.createStatement().execute(createViewQuery.toString());
         } catch (SQLException ex) {
             return tableName;
         }
@@ -379,16 +380,32 @@ public abstract class SQLDataStorage implements DataStorage {
         String tableName = metadata.getName();
         String sqlQuery = metadata.getViewStatement();
         List<Column> columns = metadata.getColumns();
-        //find 
-        String viewName = createView(filters, tableName, columns);
-        if (viewName != null || viewName.equals(tableName)){
-            return select(tableName, columns, sqlQuery);
+        //apply to source tables if any
+        List<DataTableMetadata> sourceTables = metadata.getSourceTables();
+        Hashtable<String, String> renamedTableNames = new Hashtable<String, String>();
+        if (sourceTables != null){
+            for (DataTableMetadata sourceTable : sourceTables){
+                String viewName = createView(filters, sourceTable.getName(), sourceTable.getColumns());
+                if (viewName != null && !viewName.equals(sourceTable.getName())){
+                    renamedTableNames.put(sourceTable.getName(), viewName);
+                }
+            }
+        }else{
+            String viewName = createView(filters, tableName, columns);
+            if (viewName != null || viewName.equals(tableName)){
+                return select(tableName, columns, sqlQuery);
+            }
+            if (sqlQuery == null){
+                return select(viewName, columns, sqlQuery);
+            }
         }
-        if (sqlQuery == null){
-            return select(viewName, columns, sqlQuery);
+        Iterator<String> tableNames = renamedTableNames.keySet().iterator();
+        String sqlQueryNew = sqlQuery;
+        while(tableNames.hasNext()){
+            String key = tableNames.next();
+            sqlQueryNew = sqlQuery.replaceAll(key, renamedTableNames.get(key));
         }
-        String changedSQLQuery = sqlQuery.replaceAll(tableName, viewName);
-        return select(viewName, columns, changedSQLQuery);
+        return select(tableName, columns, sqlQueryNew);
 
     }
 

@@ -74,6 +74,10 @@ public final class Unresolved implements Disposable {
 	    super("This method should never be called for Unresolved"); // NOI18N
 	}
     }
+
+    public static final boolean isUnresolved(Object obj) {
+        return obj instanceof UnresolvedClass || obj instanceof UnresolvedFile || obj instanceof UnresolvedNamespace;
+    }
     
     public final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
         public UnresolvedClass(String name) {
