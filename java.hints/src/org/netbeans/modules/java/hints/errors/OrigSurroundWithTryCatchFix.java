@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -119,28 +120,42 @@ class OrigSurroundWithTryCatchFix implements Fix {
 
                     // XXX: Come up with some smart skipping solution for comma separated variables, with respect to #143232
                     if (e != null && e.getKind() == ElementKind.LOCAL_VARIABLE) {
-                        TreePath block = findBlock(p);
+                        TreePath block = findBlockOrCase(p);
                         
                         if (block != null) {
                             boolean sep = new FindUsages(leaf, parameter).scan(block, (VariableElement) e) == Boolean.TRUE;
                             
                             if (sep) {
-                                BlockTree bt = (BlockTree) block.getLeaf();
-                                int index = bt.getStatements().indexOf(leaf);
-                                
-                                assert index != (-1);
-                                
                                 StatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(vt.getName()), vt.getInitializer()));
                                 StatementTree declaration = make.Variable(vt.getModifiers(), vt.getName(), vt.getType(), null);//XXX: mask out final
                                 TryTree tryTree = make.Try(make.Block(Collections.singletonList(assignment), false), MagicSurroundWithTryCatchFix.createCatches(parameter, make, thandles, p), null);
                                 List<StatementTree> nueStatements = new LinkedList<StatementTree>();
-                                
-                                nueStatements.addAll(bt.getStatements().subList(0, index));
-                                nueStatements.add(declaration);
-                                nueStatements.add(tryTree);
-                                nueStatements.addAll(bt.getStatements().subList(index + 1, bt.getStatements().size()));
-                                
-                                parameter.rewrite(bt, make.Block(nueStatements, false));
+
+                                if (block.getLeaf().getKind() == Kind.BLOCK) {
+                                    BlockTree bt = (BlockTree) block.getLeaf();
+                                    int index = bt.getStatements().indexOf(leaf);
+
+                                    assert index != (-1);
+
+                                    nueStatements.addAll(bt.getStatements().subList(0, index));
+                                    nueStatements.add(declaration);
+                                    nueStatements.add(tryTree);
+                                    nueStatements.addAll(bt.getStatements().subList(index + 1, bt.getStatements().size()));
+
+                                    parameter.rewrite(bt, make.Block(nueStatements, false));
+                                } else {
+                                    CaseTree ct = (CaseTree) block.getLeaf();
+                                    int index = ct.getStatements().indexOf(leaf);
+
+                                    assert index != (-1);
+
+                                    nueStatements.addAll(ct.getStatements().subList(0, index));
+                                    nueStatements.add(declaration);
+                                    nueStatements.add(tryTree);
+                                    nueStatements.addAll(ct.getStatements().subList(index + 1, ct.getStatements().size()));
+
+                                    parameter.rewrite(ct, make.Case(ct.getExpression(), nueStatements));
+                                }
                                 return ;
                             }
                         }
@@ -163,8 +178,8 @@ class OrigSurroundWithTryCatchFix implements Fix {
         return path;
     }
     
-    private TreePath findBlock(TreePath path) {
-        while (path != null && path.getLeaf().getKind() != Kind.BLOCK) {
+    private TreePath findBlockOrCase(TreePath path) {
+        while (path != null && path.getLeaf().getKind() != Kind.BLOCK && path.getLeaf().getKind() != Kind.CASE) {
             path = path.getParentPath();
         }
         
