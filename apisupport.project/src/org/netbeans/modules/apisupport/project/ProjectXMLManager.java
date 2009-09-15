@@ -63,12 +63,17 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Mutex;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -464,79 +469,98 @@ public final class ProjectXMLManager {
         final String QA_FUNCTIONAL = TestModuleDependency.QA_FUNCTIONAL;
         assert (UNIT.equals(testType) || QA_FUNCTIONAL.equals(testType)) : "Current impl.supports only " + QA_FUNCTIONAL +
                 " or " + UNIT + " tests"; // NOI18N
-        File projectDir = FileUtil.toFile(project.getProjectDirectory());
-        ModuleList ml = ModuleList.getModuleList(projectDir);
-        Map<String, Set<TestModuleDependency>> map = new HashMap<String, Set<TestModuleDependency>>(getTestDependencies(ml));
-        Set<TestModuleDependency> testDependenciesSet = map.get(testType);
-        if (testDependenciesSet == null) {
-            testDependenciesSet = new TreeSet<TestModuleDependency>();
-            map.put(testType, testDependenciesSet);
-        } else {
-            // XXX necessary to clone?
-            testDependenciesSet = new TreeSet<TestModuleDependency>(testDependenciesSet);
-        }
-        if (!testDependenciesSet.add(newTestDep)) {
-            return; //nothing new to add, dep is already there, finished
-        }
-        final Element confData = getConfData();
-        final Document doc = confData.getOwnerDocument();
-        Element testModuleDependenciesEl = findTestDependenciesElement(confData);
-        if (testModuleDependenciesEl == null) {      // test dependencies element does not exist, create it
-            Element before = findPublicPackagesElement(confData);
-            if (before == null) {
-                before = findFriendsElement(confData);
-            }
-            assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
-                    + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
-            testModuleDependenciesEl = createModuleElement(doc, TEST_DEPENDENCIES);
-            confData.insertBefore(testModuleDependenciesEl, before);
-        }
-        Element testTypeEl = null;
-        //iterate through test types to determine if testType exist
-        for (Element tt : Util.findSubElements(testModuleDependenciesEl)) {
-            Node nameNode = findElement(tt, "name"); // NOI18N
-            assert nameNode != null : "should be some child with name";
-            //Node nameNode = tt.getFirstChild();
-            //nameNode.getNodeName()
-            assert (TEST_TYPE_NAME.equals(nameNode.getLocalName())) : "name node should be first child, but was:" + nameNode.getLocalName() +
+
+        final ExceptionAction<Void> action = new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
+                File projectDir = FileUtil.toFile(project.getProjectDirectory());
+                ModuleList ml = ModuleList.getModuleList(projectDir);
+                Map<String, Set<TestModuleDependency>> map = new HashMap<String, Set<TestModuleDependency>>(getTestDependencies(ml));
+                Set<TestModuleDependency> testDependenciesSet = map.get(testType);
+                if (testDependenciesSet == null) {
+                    testDependenciesSet = new TreeSet<TestModuleDependency>();
+                    map.put(testType, testDependenciesSet);
+                } else {
+                    // XXX necessary to clone?
+                    testDependenciesSet = new TreeSet<TestModuleDependency>(testDependenciesSet);
+                }
+                if (!testDependenciesSet.add(newTestDep)) {
+                    return null; //nothing new to add, dep is already there, finished
+                }
+                final Element confData = getConfData();
+                final Document doc = confData.getOwnerDocument();
+                Element testModuleDependenciesEl = findTestDependenciesElement(confData);
+                if (testModuleDependenciesEl == null) {      // test dependencies element does not exist, create it
+                    Element before = findPublicPackagesElement(confData);
+                    if (before == null) {
+                        before = findFriendsElement(confData);
+                    }
+                    assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
+                            + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
+                    testModuleDependenciesEl = createModuleElement(doc, TEST_DEPENDENCIES);
+                    confData.insertBefore(testModuleDependenciesEl, before);
+                }
+                Element testTypeEl = null;
+                //iterate through test types to determine if testType exist
+                for (Element tt : Util.findSubElements(testModuleDependenciesEl)) {
+                    Node nameNode = findElement(tt, "name"); // NOI18N
+                    assert nameNode != null : "should be some child with name";
+                    //Node nameNode = tt.getFirstChild();
+                    //nameNode.getNodeName()
+                    assert (TEST_TYPE_NAME.equals(nameNode.getLocalName())) : "name node should be first child, but was:" + nameNode.getLocalName() +
                     "or" + nameNode.getNodeName(); //NOI18N
-//equals
-            if (nameNode.getTextContent().equals(testType)) {
-                testTypeEl = tt;
-            }
-        }
+                    //equals
+                    if (nameNode.getTextContent().equals(testType)) {
+                        testTypeEl = tt;
+                    }
+                }
 
-        // #142594: silently switch to /3 schema
-        final Element ttEl = testTypeEl;
-        final Element tmdEl = testModuleDependenciesEl;
-        final Set<TestModuleDependency> tdSet = testDependenciesSet;
+                // #142594: silently switch to /3 schema
+                final Element ttEl = testTypeEl;
+                final Element tmdEl = testModuleDependenciesEl;
+                final Set<TestModuleDependency> tdSet = testDependenciesSet;
 
-        AuxiliaryConfiguration auxConf = project.getHelper().createAuxiliaryConfiguration();
-        auxConf.removeConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
+                AuxiliaryConfiguration auxConf = project.getHelper().createAuxiliaryConfiguration();
+                auxConf.removeConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
 
-        //? new or existing test type?
-        if (ttEl == null) {
-            //this test type, does not exist, create it, and add new test dependency
-            Element newTestTypeEl = createNewTestTypeElement(doc, testType);
-            tmdEl.appendChild(newTestTypeEl);
-            createTestModuleDependencyElement(newTestTypeEl, newTestDep);
-            project.putPrimaryConfigurationData(confData);
-        } else {
-            //testtype exists, refresh it
-            Node beforeWhat = ttEl.getNextSibling();
-            tmdEl.removeChild(ttEl);
-            Element refreshedTestTypeEl = createNewTestTypeElement(doc, testType);
-            if (beforeWhat == null) {
-                tmdEl.appendChild(refreshedTestTypeEl);
-            } else {
-                tmdEl.insertBefore(refreshedTestTypeEl, beforeWhat);
+                //? new or existing test type?
+                if (ttEl == null) {
+                    //this test type, does not exist, create it, and add new test dependency
+                    Element newTestTypeEl = createNewTestTypeElement(doc, testType);
+                    tmdEl.appendChild(newTestTypeEl);
+                    createTestModuleDependencyElement(newTestTypeEl, newTestDep);
+                    project.putPrimaryConfigurationData(confData);
+                } else {
+                    //testtype exists, refresh it
+                    Node beforeWhat = ttEl.getNextSibling();
+                    tmdEl.removeChild(ttEl);
+                    Element refreshedTestTypeEl = createNewTestTypeElement(doc, testType);
+                    if (beforeWhat == null) {
+                        tmdEl.appendChild(refreshedTestTypeEl);
+                    } else {
+                        tmdEl.insertBefore(refreshedTestTypeEl, beforeWhat);
+                    }
+                    for (Iterator it = tdSet.iterator(); it.hasNext();) {
+                        TestModuleDependency tmd = (TestModuleDependency) it.next();
+                        createTestModuleDependencyElement(refreshedTestTypeEl, tmd);
+                        project.putPrimaryConfigurationData(confData);
+                    }
+                }
+                return null;
             }
-            for (Iterator it = tdSet.iterator(); it.hasNext();) {
-                TestModuleDependency tmd = (TestModuleDependency) it.next();
-                createTestModuleDependencyElement(refreshedTestTypeEl, tmd);
-                project.putPrimaryConfigurationData(confData);
+        };
+
+        project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                try {
+                    project.setRunInAtomicAction(true);
+                    ProjectManager.mutex().writeAccess(action);
+                } catch (MutexException ex) {
+                    throw (IOException) ex.getCause();
+                } finally {
+                    project.setRunInAtomicAction(false);
+                }
             }
-        }
+        });
     }
 
     private Element createNewTestTypeElement(Document doc, String testTypeName) {
