@@ -50,18 +50,65 @@ public class SessionDataFiltersSupport {
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
     private final Collection<DataFilterListener> listeners = new ArrayList<DataFilterListener>();
 
-    public void addFilter(DataFilter filter) {
+    public void addFilter(DataFilter filter, boolean isAdjusting) {
         synchronized (lock) {
             if (filters.add(filter)) {
-                notifyListeners();
+                notifyListeners(isAdjusting);
             }
         }
     }
 
-    public void removeFilter(DataFilter filter) {
+    public boolean removeFilter(DataFilter filter) {
         synchronized (lock) {
-            if (filters.remove(filter)) {
-                notifyListeners();
+            boolean result = filters.remove(filter);
+            if (result) {
+                notifyListeners(false);
+            }
+            return result;
+        }
+    }
+
+    public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
+        synchronized (lock) {
+            Collection<T> result = new ArrayList<T>();
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
+                    result.add(clazz.cast(f));
+                } else {
+                    try {
+                        Class<? extends T> r = f.getClass().asSubclass(clazz);
+                        result.add(clazz.cast(f));
+                    } catch (ClassCastException e) {
+                    }
+
+                }
+            }
+            return result;
+        }
+    }
+
+    public void cleanAll() {
+        synchronized (lock) {
+            filters.clear();
+            notifyListeners(false);
+        }
+    }
+
+    public void cleanAll(Class clazz) {
+        cleanAll(clazz, true);
+    }
+
+    public void cleanAll(Class clazz, boolean notify) {
+        synchronized (lock) {
+            Collection<DataFilter> toRemove = new ArrayList<DataFilter>();
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
+                    toRemove.add(f);
+                }
+            }
+            filters.removeAll(toRemove);
+            if (notify) {
+                notifyListeners(false);
             }
         }
     }
@@ -71,7 +118,7 @@ public class SessionDataFiltersSupport {
             listeners.add(listener);
 
             // And immediately notify it...
-            listener.dataFiltersChanged(filters);
+            listener.dataFiltersChanged(filters, false);
         }
     }
 
@@ -87,9 +134,9 @@ public class SessionDataFiltersSupport {
         }
     }
 
-    private void notifyListeners() {
+    private void notifyListeners(boolean isAdjusting) {
         for (DataFilterListener listener : listeners) {
-            listener.dataFiltersChanged(filters);
+            listener.dataFiltersChanged(filters, isAdjusting);
         }
     }
 }

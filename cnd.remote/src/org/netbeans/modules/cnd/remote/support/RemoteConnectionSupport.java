@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.NbBundle;
@@ -59,25 +58,24 @@ public abstract class RemoteConnectionSupport {
     private boolean cancelled = false;
     private boolean failed = false;
     private String failureReason;
-    protected static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     public RemoteConnectionSupport(ExecutionEnvironment env) {
         this.executionEnvironment = env;
         exit_status = -1; // this is what JSch initializes it to...
         failureReason = "";
-        log.finest("RCS<Init>: Starting " + getClass().getName() + " on " + executionEnvironment);
+        RemoteUtil.LOGGER.finest("RCS<Init>: Starting " + getClass().getName() + " on " + executionEnvironment);
 
         if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
             try {
                 ConnectionManager.getInstance().connectTo(executionEnvironment);
             } catch (IOException ex) {
-                log.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
-                log.log(Level.FINE, "Caused by:", ex);
+                RemoteUtil.LOGGER.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
+                RemoteUtil.LOGGER.log(Level.FINE, "Caused by:", ex);
             } catch (CancellationException ex) {
                 cancelled = true;
             }
             if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
-                log.fine("RCS<Init>: Connection failed on " + executionEnvironment);
+                RemoteUtil.LOGGER.fine("RCS<Init>: Connection failed on " + executionEnvironment);
             }
         }
     }

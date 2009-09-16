@@ -404,36 +404,50 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="severityLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                      <Component id="jScrollPane8" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="severityScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="issueTypeScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
+                  </Group>
+                  <EmptySpace pref="99" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="severityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jScrollPane4" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane7" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane6" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane2" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane3" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane5" alignment="0" pref="99" max="32767" attributes="1"/>
-                      <Component id="jScrollPane8" alignment="0" pref="99" max="32767" attributes="1"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="issueTypeLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Component id="issueTypeScrollPane" pref="99" max="32767" attributes="1"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="severityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jScrollPane4" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane7" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane6" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane2" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane3" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane5" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="severityScrollPane" alignment="0" pref="99" max="32767" attributes="1"/>
+                          </Group>
+                      </Group>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -754,7 +768,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane8">
+        <Container class="javax.swing.JScrollPane" name="severityScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -788,6 +802,51 @@
             </Component>
           </SubComponents>
         </Container>
+        <Component class="javax.swing.JLabel" name="issueTypeLabel">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Lucida Grande" size="13" style="1"/>
+            </Property>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="severityList"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.issueTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
+        </Component>
+        <Container class="javax.swing.JScrollPane" name="issueTypeScrollPane">
+          <Properties>
+            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HackedScrollPane()"/>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JList" name="issueTypeList">
+              <Properties>
+                <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                  <StringArray count="1">
+                    <StringItem index="0" value=""/>
+                  </StringArray>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[100, 2]"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="byTextPanel">
@@ -800,28 +859,40 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="commentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="whiteboardLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="keywordsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="commentComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="3"/>
                       <Component id="summaryComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="3"/>
+                      <Component id="whiteboardComboBox" alignment="0" min="-2" max="-2" attributes="3"/>
                       <Component id="keywordsComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="2"/>
-                      <Component id="commentComboBox" linkSize="4" min="-2" max="-2" attributes="3"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="keywordsTextField" max="32767" attributes="2"/>
-                      <Component id="commentTextField" alignment="0" max="32767" attributes="2"/>
-                      <Component id="summaryTextField" alignment="0" max="32767" attributes="2"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="commentTextField" alignment="0" pref="26" max="32767" attributes="2"/>
+                              <Component id="summaryTextField" alignment="0" pref="26" max="32767" attributes="2"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="84" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="keywordsTextField" alignment="0" pref="26" max="32767" attributes="2"/>
+                              <Component id="whiteboardTextField" alignment="0" pref="26" max="32767" attributes="2"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -839,6 +910,12 @@
                       <Component id="commentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="commentTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="commentComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="whiteboardLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="whiteboardTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="whiteboardComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -1024,6 +1101,44 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
+        <Component class="javax.swing.JLabel" name="whiteboardLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="commentComboBox"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.whiteboardLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="whiteboardComboBox">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="4">
+                <StringItem index="0" value="Item 1"/>
+                <StringItem index="1" value="Item 2"/>
+                <StringItem index="2" value="Item 3"/>
+                <StringItem index="3" value="Item 4"/>
+              </StringArray>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JTextField" name="whiteboardTextField">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.whiteboardTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
+        </Component>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="savePanel">
@@ -1115,7 +1230,7 @@
     </Property>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,-85,0,0,5,120"/>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,-44,0,0,6,57"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -1138,7 +1253,7 @@
               <Component id="tableFieldsPanel" max="32767" attributes="2"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="noContentPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="noContentPanel" alignment="0" pref="1593" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -1170,7 +1285,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="tablePanel" alignment="0" max="32767" attributes="2"/>
+                      <Component id="tablePanel" alignment="0" pref="1553" max="32767" attributes="2"/>
                       <Component id="tableHeaderPanel" alignment="0" max="32767" attributes="2"/>
                   </Group>
               </Group>
@@ -1181,7 +1296,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="tableHeaderPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="tablePanel" max="32767" attributes="0"/>
+                  <Component id="tablePanel" pref="350" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -1215,7 +1330,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1257" max="32767" attributes="0"/>
+                      <EmptySpace pref="1376" max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
@@ -1407,30 +1522,30 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="byLastChangeContainer" alignment="0" max="32767" attributes="1"/>
+                  <Component id="byLastChangeContainer" alignment="0" pref="1593" max="32767" attributes="1"/>
                   <Component id="urlPanel" alignment="0" max="32767" attributes="3"/>
-                  <Component id="byTextContainer" alignment="0" max="32767" attributes="2"/>
+                  <Component id="byTextContainer" alignment="0" pref="1593" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byTextLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1273" max="32767" attributes="0"/>
+                      <EmptySpace pref="1447" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1245" max="32767" attributes="0"/>
+                      <EmptySpace pref="1417" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="byDetailsContainer" alignment="0" max="32767" attributes="1"/>
+                  <Component id="byDetailsContainer" alignment="0" pref="1593" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1295" max="32767" attributes="0"/>
+                      <EmptySpace pref="1473" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="byPeopleContainer" alignment="0" max="32767" attributes="1"/>
+                  <Component id="byPeopleContainer" alignment="0" pref="1593" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1266" max="32767" attributes="0"/>
+                      <EmptySpace pref="1441" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1556,7 +1671,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlTextField" max="32767" attributes="0"/>
+                          <Component id="urlTextField" pref="1480" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1668,7 +1783,7 @@
                       <Component id="idTextField" min="-2" pref="191" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="gotoIssueButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1054" max="32767" attributes="0"/>
+                      <EmptySpace pref="1190" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1796,7 +1911,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="1104" max="32767" attributes="0"/>
+                          <EmptySpace pref="1199" max="32767" attributes="0"/>
                           <Component id="refreshCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="lastRefreshLabel" min="-2" max="-2" attributes="0"/>

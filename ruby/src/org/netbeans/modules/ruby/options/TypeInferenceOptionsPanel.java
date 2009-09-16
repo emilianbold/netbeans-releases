@@ -96,7 +96,7 @@ public class TypeInferenceOptionsPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
+                .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(rdocCheckBox)
                     .add(methodsCheckBox)
@@ -122,6 +122,9 @@ public class TypeInferenceOptionsPanel extends javax.swing.JPanel {
                 .add(rdocCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        methodsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TypeInferenceOptionsPanel.class, "AD_Options_Methods")); // NOI18N
+        rdocCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TypeInferenceOptionsPanel.class, "AD_Options_RDoc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

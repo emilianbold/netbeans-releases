@@ -68,8 +68,18 @@ class URLClickListener implements MouseListener {
         target.addMouseListener(new URLClickListener(urlLoc));
     }
 
+    public static void deregisterAll(JLabel target) {
+        for (MouseListener listener : target.getMouseListeners()) {
+            if (listener instanceof URLClickListener) {
+                target.removeMouseListener(listener);
+            }
+        }
+    }
+
     public void mouseClicked(MouseEvent e) {
-        URLDisplayer.getDefault().showURL(url);
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            URLDisplayer.getDefault().showURL(url);
+        }
     }
 
     public void mousePressed(MouseEvent e) {

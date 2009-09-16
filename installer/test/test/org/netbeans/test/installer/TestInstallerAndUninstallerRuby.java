@@ -33,8 +33,9 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Mikhail Vaysman
  */
-public class TestInstallerAndUninstallerRuby extends NbTestCase {
+public class TestInstallerAndUninstallerRuby extends Installer {
 
+    /*
     public TestInstallerAndUninstallerRuby() {
         super("Installer test");
     }
@@ -44,21 +45,39 @@ public class TestInstallerAndUninstallerRuby extends NbTestCase {
 
         return suite;
     }
+    */
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
 
-        Utils.phaseOne(this, data, "ruby");
+        Utils.phaseOne(data, "ruby");
 
-        Utils.phaseTwo(data);
+        // Pages
+        // Welcome
+        Utils.stepWelcome(); // Checkbox for GF installation
+        // Agreement
+        Utils.stepLicense();
+        // Location
+        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
+        // GF
+        Utils.stepSetDir(data, "Install GlassFish", Utils.GF2_DIR_NAME);
+        // Summary
+        Utils.stepInstall(data);
+        //Installation
+        //finish
+        Utils.stepFinish();
 
-        Utils.phaseFour(data);
+        //Utils.phaseTwo(data);
+
+        Utils.phaseFour( data );
+
+        Utils.phaseFive( data );
 
         //TODO Dir removed test
         //TODO Clean up work dir
     }
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+    //public static void main(String[] args) {
+    //    junit.textui.TestRunner.run(suite());
+    //}
 }

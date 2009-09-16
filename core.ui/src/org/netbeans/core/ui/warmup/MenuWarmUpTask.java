@@ -53,9 +53,12 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 /**
@@ -168,7 +171,11 @@ public final class MenuWarmUpTask implements Runnable {
             r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
             r.setLoggerName(LOG.getName());
             LOG.log(r);
-
+            try {
+                FileUtil.getConfigRoot().getFileSystem().refresh(true);
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }        
     }
     

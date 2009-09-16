@@ -58,6 +58,8 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -111,6 +113,7 @@ public class AddBreakpointAction extends AbstractAction {
         private Dialog dialog;
         private AddBreakpointPanel panel;
         private DialogDescriptor descriptor;
+        private NotificationLineSupport notificationSupport;
         private Controller controller;
         private JButton bOk;
         private JButton bCancel;
@@ -145,6 +148,7 @@ public class AddBreakpointAction extends AbstractAction {
             bOk.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Ok")); // NOI18N
             bCancel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Cancel")); // NOI18N
             descriptor.setClosingOptions (new Object [0]);
+            notificationSupport = descriptor.createNotificationLineSupport();
             Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
             d.pack ();
             return d;
@@ -177,6 +181,18 @@ public class AddBreakpointAction extends AbstractAction {
             } else
             if (e.getPropertyName () == Controller.PROP_VALID) {
                 setValid ();
+            } else if (e.getPropertyName() == NotifyDescriptor.PROP_ERROR_NOTIFICATION) {
+                Object v = e.getNewValue();
+                String msg = (v == null) ? null : v.toString();
+                notificationSupport.setErrorMessage(msg);
+            } else if (e.getPropertyName() == NotifyDescriptor.PROP_INFO_NOTIFICATION) {
+                Object v = e.getNewValue();
+                String msg = (v == null) ? null : v.toString();
+                notificationSupport.setInformationMessage(msg);
+            } else if (e.getPropertyName() == NotifyDescriptor.PROP_WARNING_NOTIFICATION) {
+                Object v = e.getNewValue();
+                String msg = (v == null) ? null : v.toString();
+                notificationSupport.setWarningMessage(msg);
             }
         }
         

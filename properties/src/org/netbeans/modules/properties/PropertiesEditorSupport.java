@@ -108,6 +108,7 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -248,11 +249,13 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         final String title = messageName();
         final String htmlTitle = messageHtmlName();
+        final String toolTip = messageToolTip();
         Enumeration en = allEditors.getComponents();
         while (en.hasMoreElements()) {
             TopComponent tc = (TopComponent) en.nextElement();
             tc.setDisplayName(title);
             tc.setHtmlDisplayName(htmlTitle);
+            tc.setToolTipText(toolTip);
         }
     }
     
@@ -450,17 +453,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 : propDO.getPrimaryFile().getNameExt();
     }
     
-    /**
-     */
-    private String addModifiedInfo(String name) {
-        int version = isModified() ? (myEntry.getFile().canWrite() ? 1 : 2)
-                                   : (myEntry.getFile().canWrite() ? 3 : 0);
-        return NbBundle.getMessage(PropertiesEditorSupport.class,
-                                   "LBL_EditorName",                    //NOI18N
-                                   new Integer(version),
-                                   name);
-    }
-    
     /** 
      * Overrides superclass abstract method. 
      * Constructs message that should be used to name the editor component.
@@ -470,8 +462,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         if (!myEntry.getDataObject().isValid()) {
             return "";                                                  //NOI18N       
         }
-        
-        return addModifiedInfo(getFileLabel());
+        return DataEditorSupport.annotateName(getFileLabel(), false, isModified(), !myEntry.getFile().canWrite());
     }
 
     /** */
@@ -509,8 +500,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             //do nothing and fall through
         }
         
-        String name = (annotatedName != null) ? annotatedName : rawName;
-        return addModifiedInfo(name);
+        String name = (annotatedName != null) ? annotatedName : /*XXX escape HTML content*/rawName;
+        return DataEditorSupport.annotateName(name, true, isModified(), !myEntry.getFile().canWrite());
     }
     
     /** 
@@ -534,7 +525,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected String messageToolTip () {
         // copied from DataEditorSupport, more or less
         FileObject fo = myEntry.getFile();
-        return FileUtil.getFileDisplayName(fo);
+        return DataEditorSupport.toolTip(fo, isModified(), !myEntry.getFile().canWrite());
     }
     
     /** Overrides superclass method. Gets <code>UndoRedo</code> manager which maps 

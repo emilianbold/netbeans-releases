@@ -43,7 +43,6 @@ import java.net.URI;
 import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.test.TestBase;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 
 /**
  *
@@ -55,15 +54,10 @@ public class SyntaxParserResultTest extends TestBase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
-    }
     
     public void testBasic() {
         String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
 
         assertNotNull(result);
         assertNotNull(result.getSource());
@@ -79,7 +73,7 @@ public class SyntaxParserResultTest extends TestBase {
 
     public void testInvalidPublicId() {
         String code = "<!DOCTYPE HTML PUBLIC \"invalid_public_id\"><html><head><title>xxx</title></head><body>yyy</body></html>";
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
 
         assertNotNull(result);
 
@@ -95,7 +89,7 @@ public class SyntaxParserResultTest extends TestBase {
 
     public void testGetGlobalNamespaces() {
         String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:jsp=\"http://java.sun.com/JSP/Page\"></html>";
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
 
         assertNotNull(result);
 
@@ -117,7 +111,7 @@ public class SyntaxParserResultTest extends TestBase {
                 "<ui:composition xmlns:ui=\"http://java.sun.com/jsf/facelets\"/>" +
                 "</html>";
         
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
 
         assertNotNull(result);
 
@@ -141,7 +135,7 @@ public class SyntaxParserResultTest extends TestBase {
                     "<ui:composition><div><ui:define></ui:define></div></ui:composition>" +
                 "</html>";
 
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
 
         AstNode froot = result.getASTRoot("http://java.sun.com/jsf/facelets");
         assertNotNull(froot);

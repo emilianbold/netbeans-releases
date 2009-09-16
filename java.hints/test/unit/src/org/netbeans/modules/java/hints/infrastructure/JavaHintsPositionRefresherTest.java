@@ -41,10 +41,12 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -99,7 +101,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml"},
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml", "org/netbeans/modules/java/hints/resources/layer.xml"},
                 new Object[]{JavaDataLoader.class,
                 new MimeDataProvider() {
                 public Lookup getLookup(MimePath mimePath) {
@@ -187,20 +189,32 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         return ctx;
     }
 
-//    public void testOverride0() throws Exception {
-//        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "");
-//    }
+    public void testEmpty() throws Exception {
+        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "1:20-1:32:verifier:Empty statement after 'while'");
+    }
 
     public void testErrorHint0() throws Exception {
         performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
+    }
+
+    public void testWrongpackage() throws Exception {
+        performTest("test/Test.java", "|\npublic class Test {\n }", "0:0-1:0:error:Incorrect Package");
     }
 
     private void performTest(String fileName , String code, String expected) throws Exception {
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
         prepareTest(fileName, code);
-        Context ctx = prepareContext(caretPosition[0]);
-        Map<String, List<ErrorDescription>> errorDescriptionsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+        final Context ctx = prepareContext(caretPosition[0]);
+        final Map<String, List<ErrorDescription>> errorDescriptionsAt = new HashMap<String, List<ErrorDescription>>();
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                Map<String, List<ErrorDescription>> eds = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+                errorDescriptionsAt.putAll(eds);
+            }
+        });
+
         StringBuffer buf = new StringBuffer();
         for (Entry<String, List<ErrorDescription>> e : errorDescriptionsAt.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {

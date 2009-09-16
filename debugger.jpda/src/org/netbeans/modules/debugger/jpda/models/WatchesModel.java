@@ -66,7 +66,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.Expression;
+import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.openide.util.NbBundle;
@@ -87,7 +87,7 @@ public class WatchesModel implements TreeModel {
     private Listener            listener;
     private Vector<ModelListener> listeners = new Vector<ModelListener>();
     private ContextProvider     lookupProvider;
-    // Watch to Expression or Exception
+    // Watch to JavaExpression or Exception
     private final Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
     private final JPDAWatch EMPTY_WATCH;
 
@@ -176,6 +176,9 @@ public class WatchesModel implements TreeModel {
         if (node == ROOT) return false;
         if (node instanceof JPDAWatchEvaluating) {
             JPDAWatchEvaluating jwe = (JPDAWatchEvaluating) node;
+            if (!jwe.isCurrent()) {
+                return false; // When not yet evaluated, suppose that it's not leaf
+            }
             JPDAWatch jw = jwe.getEvaluatedWatch();
             if (jw instanceof JPDAWatchImpl) {
                 return ((JPDAWatchImpl) jw).isPrimitive ();
@@ -227,6 +230,15 @@ public class WatchesModel implements TreeModel {
                 new ModelEvent.TableValueChanged (this, node, propertyName)
             );
     }
+
+    private void fireChildrenChanged(Object node) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.NodeChanged (this, node, ModelEvent.NodeChanged.CHILDREN_MASK)
+            );
+    }
     
     
     // other methods ...........................................................
@@ -256,7 +268,7 @@ public class WatchesModel implements TreeModel {
         private Watch w;
         private JPDADebuggerImpl debugger;
         private JPDAWatch evaluatedWatch;
-        private Expression expression;
+        private EvaluatorExpression expression;
         private final boolean[] evaluating = new boolean[] { false };
         
         public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
@@ -275,13 +287,10 @@ public class WatchesModel implements TreeModel {
         }
         
         private void parseExpression(String exprStr) {
-            expression = Expression.parse (
-                exprStr,
-                Expression.LANGUAGE_JAVA_1_5
-            );
+            expression = new EvaluatorExpression(exprStr);
         }
         
-        Expression getParsedExpression() {
+        EvaluatorExpression getParsedExpression() {
             return expression;
         }
 
@@ -300,6 +309,12 @@ public class WatchesModel implements TreeModel {
             } else {
                 setInnerValue(null);
             }
+            try {
+                if (model.isLeaf(this)) {
+                    // If the evaluated watch is a leaf, we need to refresh children to get rid of the expansion sign.
+                    model.fireChildrenChanged(this);
+                }
+            } catch (UnknownTypeException utex) {}
             //model.fireTableValueChangedComputed(this, null);
         }
         
@@ -386,7 +401,7 @@ public class WatchesModel implements TreeModel {
             
             JPDAWatch jw = null;
             try {
-                Expression expr = getParsedExpression();
+                EvaluatorExpression expr = getParsedExpression();
                 Value v = debugger.evaluateIn (expr);
                 //if (v instanceof ObjectReference)
                 //    jw = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
@@ -550,7 +565,7 @@ public class WatchesModel implements TreeModel {
             }
             if (m.debugger.getState () == JPDADebugger.STATE_RUNNING ||
                  JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName) &&
-                 m.debugger.getCurrentCallStackFrameOrNull() == null) {
+                 m.debugger.getCurrentCallStackFrame() == null) {
 
                     return;
             }

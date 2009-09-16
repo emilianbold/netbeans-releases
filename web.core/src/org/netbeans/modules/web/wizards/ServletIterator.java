@@ -81,7 +81,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
     private static final long serialVersionUID = -4147344271705652643L;
 
     private transient FileType fileType; 
-    private transient Evaluator evaluator = null; 
+    private transient TargetEvaluator evaluator = null; 
     private transient DeployData deployData = null; 
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -127,14 +127,14 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
                         new FinishableProxyWizardPanel(
                         createPackageChooserPanel(wizard, null),
                         new HelpCtx(ServletIterator.class.getName() + "." + fileType)), // #114487
-                        ServletPanel.createServletPanel((TargetEvaluator) evaluator, wizard)
+                        ServletPanel.createServletPanel(evaluator, wizard)
                     };
         } else if (fileType == FileType.FILTER) {
             customPanel = new WrapperSelection(wizard);
             panels = new WizardDescriptor.Panel[]{
                         createPackageChooserPanel(wizard, customPanel),
-                        ServletPanel.createServletPanel((TargetEvaluator) evaluator, wizard),
-                        ServletPanel.createFilterPanel((TargetEvaluator) evaluator, wizard)
+                        ServletPanel.createServletPanel(evaluator, wizard),
+                        ServletPanel.createFilterPanel(evaluator, wizard)
                     };
         }
         
@@ -197,6 +197,9 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         HashMap<String, String> templateParameters = new HashMap<String, String>();
         templateParameters.put("servletEditorFold", NbBundle.getMessage(ServletIterator.class, "MSG_ServletEditorFold")); //NOI18N
 
+        // Fix for IZ171834 - Badly generated servlet template in JavaEE6 Web Application
+        initServletEmptyData( );
+        
         if (!deployData.makeEntry() && Utilities.isJavaEE6(wizard)) {
             if (fileType == FileType.SERVLET) {
                 AnnotationGenerator.webServlet((ServletData)deployData, templateParameters);
@@ -258,10 +261,14 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
             ((ServletData)deployData).createDDServletMapping(servletName);
         } 
         deployData.createDDEntries();
+        
+        if (fileType == FileType.SERVLET && dobj.getPrimaryFile()!=null) {
+            dobj.getPrimaryFile().setAttribute("org.netbeans.modules.web.IsServletFile", 
+                    Boolean.TRUE);                      // NOI18N
+        }
 
         return Collections.singleton(dobj);
     } 
-
 
     public void uninitialize(WizardDescriptor wizard) {
         this.wizard = null;
@@ -295,6 +302,29 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
     }
     public WizardDescriptor.Panel current() {
         return panels[index];
+    }
+    
+    /*
+     * Fix for IZ171834 - Badly generated servlet template in JavaEE6 Web Application
+     */
+    private void initServletEmptyData(  ) {
+        if (fileType != FileType.SERVLET) {
+            return;
+        }
+        if ( !(deployData instanceof ServletData) ){
+            return;
+        }
+        ServletData data = (ServletData)deployData;
+        if ( evaluator.getClassName() == null ){
+            /*
+             *  User skip second panel. So one need to generate
+             *  default servlet name and  url mapping.  
+             */
+            // this call will set file and class name in evaluator.
+            panels[1].readSettings( wizard );
+            data.createDDServletName( evaluator.getFileName() );
+            data.createDDServletMapping( data.getName());
+        }
     }
     
     // PENDING - Ann suggests updating the available panels based on

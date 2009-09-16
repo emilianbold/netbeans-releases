@@ -84,6 +84,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -178,7 +179,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             public void actionPerformed(ActionEvent e) {
                 if ("pressed".equals(e.getActionCommand())) {
                     JComponent jc = (JComponent) e.getSource();
-                    Point p = new Point(jc.getWidth(), jc.getHeight());
+                    Point p = new Point(0, 0);
                     SwingUtilities.convertPointToScreen(p, jc);
                     if (!ButtonPopupSwitcher.isShown()) {
                         SwitcherTableItem[] items = createSwitcherItems();
@@ -483,8 +484,16 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     // End of variables declaration//GEN-END:variables
 
     public static void openEvaluator() {
+        String selectedText = null;
+        JEditorPane editor = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        if (editor != null) {
+            selectedText = editor.getSelectedText();
+        }
         CodeEvaluator evaluator = getInstance();
         evaluator.open ();
+        if (selectedText != null) {
+            evaluator.codePane.setText(selectedText);
+        }
         evaluator.codePane.selectAll();
         evaluator.requestActive ();
     }
@@ -539,7 +548,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (preferences.getBoolean("show_evaluator_result", false)) {
+                if (preferences.getBoolean("show_evaluator_result", true)) {
                     TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
                     view.open();
                     view.requestActive();

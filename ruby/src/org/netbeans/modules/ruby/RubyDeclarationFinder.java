@@ -227,6 +227,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     return new OffsetRange(requireStart, requireStart + require.length());
                 }
             }
+            
+            int classNameStart = LexUtilities.getClassNameStringOffset(lexOffset, th);
+            if (classNameStart != -1) {
+                String className = LexUtilities.getStringAt(lexOffset, th);
+                if (className != null) {
+                    return new OffsetRange(classNameStart, classNameStart + className.length());
+                }
+            }
         }
 
         return OffsetRange.NONE;
@@ -448,8 +456,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 Arity arity = Arity.UNKNOWN;
                 DeclarationLocation location = findMethod(parserResult, root, name, arity);
 
+                // search for AR associations
                 if (location == DeclarationLocation.NONE) {
-                    location = findInstance(parserResult, root, name);
+                    location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
+                }
+
+                if (location == DeclarationLocation.NONE) {
+                    location = findInstance(parserResult, root, name, index);
                 }
 
                 if (location == DeclarationLocation.NONE) {
@@ -519,7 +532,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             }
 
                             if (location == DeclarationLocation.NONE) {
-                                location = findInstance(parserResult, root, name);
+                                location = findInstance(parserResult, root, name, index);
                             }
 
                             if (location == DeclarationLocation.NONE) {
@@ -571,7 +584,16 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                         return fix(findLocal(parserResult, method, name), parserResult);
                     }
-                }
+                } 
+            } else if (closest instanceof StrNode) {
+                    // See if the hyperlink is for the string that is the value for :class_name =>
+                    int classNameStart = LexUtilities.getClassNameStringOffset(astOffset, th);
+                    if (classNameStart != -1) {
+                        String className = LexUtilities.getStringAt(tokenOffset, th);
+                        if (className != null) {
+                            return getLocation(index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false));
+                        }
+                    }
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
@@ -640,7 +662,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return classDeclarationLocation;
     }
 
-    private static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
+    static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
         DeclarationLocation loc = DeclarationLocation.NONE;
         for (IndexedElement element : elements) {
             FileObject fo = element.getFileObject();
@@ -654,6 +676,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     offset = AstUtilities.getRange(node).getStart();
                 }
                 loc = new DeclarationLocation(fo, offset, element);
+                loc.addAlternative(new RubyAltLocation(element, false));
             } else {
                 AlternativeLocation alternate = new RubyAltLocation(element, false);
                 loc.addAlternative(alternate);
@@ -674,7 +697,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 if (slashIndex != -1) {
                     
                     // Find app dir, and build up a relative path to the view file in the process
-                    FileObject app = RubyUtils.getFileObject(info);
+                    FileObject app = RubyUtils.getFileObject(info).getParent();
 
                     while (app != null) {
                         if (app.getName().equals("views") && // NOI18N
@@ -699,7 +722,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     name = "_" + target.name.substring(slashIndex+1); // NOI18N
                     
                 } else {
-                    dir = RubyUtils.getFileObject(info);
+                    dir = RubyUtils.getFileObject(info).getParent();
                     name = "_" + target.name; // NOI18N
                 }
                 
@@ -1280,7 +1303,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 // but to attributes as well - in Rails' initializer.rb this is used
                 // in a number of places.
                 if (loc == DeclarationLocation.NONE) {
-                    loc = findInstance(info, root, "@" + method);
+                    loc = findInstance(info, root, "@" + method, index);
                 }
 
                 return loc;
@@ -1333,7 +1356,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             // but to attributes as well - in Rails' initializer.rb this is used
             // in a number of places.
             if (loc == DeclarationLocation.NONE) {
-                loc = findInstance(info, root, "@" + method);
+                loc = findInstance(info, root, "@" + method, index);
             }
 
             return loc;
@@ -1784,7 +1807,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return DeclarationLocation.NONE;
     }
 
-    private DeclarationLocation findInstance(ParserResult info, Node node, String name) {
+    private DeclarationLocation findInstance(ParserResult info, Node node, String name, RubyIndex index) {
         if (node instanceof InstAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
                 return getLocation(info, node);
@@ -1803,7 +1826,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 if (name.equals(symbols[i].getName())) {
                     Node root = AstUtilities.getRoot(info);
                     DeclarationLocation location =
-                            findInstanceFromIndex(info, name, new AstPath(root, node), RubyIndex.get(info), true);
+                            findInstanceFromIndex(info, name, new AstPath(root, node), index, true);
                     if (location != DeclarationLocation.NONE) {
                         return location;
                     }
@@ -1818,7 +1841,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             if (child.isInvisible()) {
                 continue;
             }
-            DeclarationLocation location = findInstance(info, child, name);
+            DeclarationLocation location = findInstance(info, child, name, index);
 
             if (location != DeclarationLocation.NONE) {
                 return location;

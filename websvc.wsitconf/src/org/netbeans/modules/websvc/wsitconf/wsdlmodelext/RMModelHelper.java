@@ -166,13 +166,13 @@ public class RMModelHelper {
     private String getInactivityTimeout(RMAssertion rm) {
         String timeout = null;
         if (rm != null) {
-            if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
-                List<InactivityTimeout> time = rm.getParent().getExtensibilityElements(InactivityTimeout.class);
+            if (ConfigVersion.CONFIG_1_0.equals(configVersion)) {
+                List<InactivityTimeout> time = rm.getExtensibilityElements(InactivityTimeout.class);
                 if ((time != null) && (time.size() > 0)) {
                     timeout = time.get(0).getMilliseconds();
                 }
             } else {
-                List<InactivityTimeout> time = rm.getExtensibilityElements(InactivityTimeout.class);
+                List<InactivityTimeout> time = rm.getParent().getExtensibilityElements(InactivityTimeout.class);
                 if ((time != null) && (time.size() > 0)) {
                     timeout = time.get(0).getMilliseconds();
                 }
@@ -189,24 +189,7 @@ public class RMModelHelper {
                 model.startTransaction();
             }
             try {
-                if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
-                    InactivityTimeout time = PolicyModelHelper.getTopLevelElement(rm.getParent(), InactivityTimeout.class, false);
-                    if (value != null) {    // if is null, then there's no element and we want to remove it -> do nothing
-                        if (time == null) {
-                            WSDLComponentFactory wcf = rm.getModel().getFactory();
-                            InactivityTimeout inT = null;
-                            inT = (InactivityTimeout)wcf.create(rm.getParent(), RMMS13QName.INACTIVITYTIMEOUT.getQName(configVersion));
-                            inT.setMilliseconds(value);
-                            rm.getParent().addExtensibilityElement(inT);
-                        } else {
-                            time.setMilliseconds(value);
-                        }
-                    } else {
-                        if (time != null) {
-                            rm.getParent().removeExtensibilityElement(time);
-                        }
-                    }
-                } else {
+                if (ConfigVersion.CONFIG_1_0.equals(configVersion)) {
                     List<InactivityTimeout> time = rm.getExtensibilityElements(InactivityTimeout.class);
                     InactivityTimeout iTimeout = null;
                     if ((time != null) && (time.size() > 0)) { iTimeout = time.get(0); }
@@ -223,6 +206,23 @@ public class RMModelHelper {
                             rm.removeExtensibilityElement(iTimeout);
                         } else {
                             iTimeout.setMilliseconds(value);
+                        }
+                    }
+                } else {
+                    InactivityTimeout time = PolicyModelHelper.getTopLevelElement(rm.getParent(), InactivityTimeout.class, false);
+                    if (value != null) {    // if is null, then there's no element and we want to remove it -> do nothing
+                        if (time == null) {
+                            WSDLComponentFactory wcf = rm.getModel().getFactory();
+                            InactivityTimeout inT = null;
+                            inT = (InactivityTimeout)wcf.create(rm.getParent(), RMMS13QName.INACTIVITYTIMEOUT.getQName(configVersion));
+                            inT.setMilliseconds(value);
+                            rm.getParent().addExtensibilityElement(inT);
+                        } else {
+                            time.setMilliseconds(value);
+                        }
+                    } else {
+                        if (time != null) {
+                            rm.getParent().removeExtensibilityElement(time);
                         }
                     }
                 }

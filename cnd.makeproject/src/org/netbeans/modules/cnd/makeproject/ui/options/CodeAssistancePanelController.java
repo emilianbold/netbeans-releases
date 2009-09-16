@@ -47,6 +47,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
+@OptionsPanelController.SubRegistration(
+    location="CPlusPlus", // NOI18N
+    displayName="#TAB_CodeAssistanceTab", // NOI18N
+    position=300
+)
 public final class CodeAssistancePanelController extends OptionsPanelController {
     public static final boolean TRACE_CODEASSIST = Boolean.getBoolean("trace.codeassist.controller");
 //    private CodeAssistancePanel panel = new CodeAssistancePanel();
@@ -73,7 +78,7 @@ public final class CodeAssistancePanelController extends OptionsPanelController 
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.NEED_TOPIC"); // NOI18N
+        return new HelpCtx("cnd.optionsDialog"); // NOI18N
     }
     
     public JComponent getComponent(Lookup masterLookup) {

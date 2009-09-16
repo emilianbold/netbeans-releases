@@ -40,7 +40,10 @@ package org.netbeans.modules.dlight.util;
 
 import org.openide.util.Mutex;
 
-public class UIThread {
+public final class UIThread {
+
+    private UIThread() {
+    }
 
     public static final void invoke(Runnable r) {
         Mutex.EVENT.postReadRequest(r);

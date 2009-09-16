@@ -38,23 +38,23 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static java.lang.Character.isSpaceChar;
 
 /**
- * Represens a bugtracking Issue
+ * Represents a bugtracking Issue
  *
  * @author Tomas Stupka
  */
@@ -63,53 +63,10 @@ public abstract class Issue {
     private static final int SHORT_DISP_NAME_LENGTH = 15;
     private final PropertyChangeSupport support;
 
-    // XXX do we need this?
-    public static final String ATTR_DATE_MODIFICATION = "date.modification";    // NOI18N
-    /**
-     * Seen property id
-     */
-    public static final String LABEL_NAME_SEEN = "issue.seen";                        // NOI18N
-    /**
-     * Recetn Changes property id
-     */
-    public static final String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
     /**
      * issue data were changed
      */
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
-    /**
-     * issues seen state changed
-     */
-    public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
-    /**
-     * No information available
-     */
-    public static final int ISSUE_STATUS_UNKNOWN = 0;
-    /**
-     * Issue was seen
-     */
-    public static final int ISSUE_STATUS_SEEN = 2;
-    /**
-     * Issue wasn't seen yet
-     */
-    public static final int ISSUE_STATUS_NEW = 4;
-    /**
-     * Issue was remotely modified since the last time it was seen
-     */
-    public static final int ISSUE_STATUS_MODIFIED = 8;
-    /**
-     * Seen, New or Modified
-     */
-    public static final int ISSUE_STATUS_ALL =
-            ISSUE_STATUS_NEW |
-            ISSUE_STATUS_MODIFIED |
-            ISSUE_STATUS_SEEN;
-    /**
-     * New or modified
-     */
-    public static final int ISSUE_STATUS_NOT_SEEN =
-            ISSUE_STATUS_NEW |
-            ISSUE_STATUS_MODIFIED;
     
     private Repository repository;
 
@@ -248,14 +205,13 @@ public abstract class Issue {
                                     });
                                     return;
                                 }
-                                tc.setIssue(issue[0]);
-                                try {
-                                    if(issue[0] != null) {
-                                        issue[0].setSeen(true);
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    public void run() {
+                                        tc.setIssue(issue[0]);
                                     }
-                                } catch (IOException ex) {
-                                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                                }
+                                });
+                                IssueCacheUtils.setSeen(issue[0], true);
                             }
                             BugtrackingManager.getInstance().addRecentIssue(repository, issue[0]);
                         } finally {
@@ -270,7 +226,7 @@ public abstract class Issue {
     /**
      * Opens this issue in the IDE
      */
-    final public void open() {
+    public final void open() {
         open(false);
     }
 
@@ -279,7 +235,7 @@ public abstract class Issue {
      * @param refresh also refreshes the issue after opening
      * 
      */
-    final void open(final boolean refresh) {
+    public final void open(final boolean refresh) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 IssueTopComponent tc = IssueTopComponent.find(Issue.this);
@@ -291,14 +247,10 @@ public abstract class Issue {
                         try {
                             handle.start();
                             BugtrackingManager.getInstance().addRecentIssue(repository, Issue.this);
-                            try {
-                                if (refresh && !Issue.this.refresh()) {
-                                    return;
-                                }
-                                Issue.this.setSeen(true);
-                            } catch (IOException ex) {
-                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                            if (refresh && !Issue.this.refresh()) {
+                                return;
                             }
+                            IssueCacheUtils.setSeen(Issue.this, true);
                         } finally {
                             if(handle != null) handle.finish();
                         }
@@ -327,30 +279,6 @@ public abstract class Issue {
     public abstract String getSummary();
 
     /**
-     * Returns a description summarizing the changes made
-     * in this issue since the last time it was as seen.
-     */
-    public abstract String getRecentChanges();
-
-    /**
-     * Returns true if issue was already seen or marked as seen by the user
-     * @return
-     */
-    public boolean wasSeen() {
-        return repository.getCache().wasSeen(getID());
-    }
-
-    /**
-     * Sets the seen flag
-     * @param seen
-     */
-    public void setSeen(boolean seen) throws IOException {
-        boolean oldValue = wasSeen();
-        repository.getCache().setSeen(getID(), seen);
-        fireSeenChanged(oldValue, seen);
-    }
-
-    /**
      * Returns this issues attributes. 
      * @return
      */
@@ -371,14 +299,4 @@ public abstract class Issue {
         support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
-    /**
-     * Notify listeners on this issue that the seen state has chaged
-     *
-     * @param oldSeen the old seen state
-     * @param newSeen the new seen state
-     * @see #EVENT_ISSUE_SEEN_CHANGED
-     */
-    protected void fireSeenChanged(boolean oldSeen, boolean newSeen) {
-        support.firePropertyChange(EVENT_ISSUE_SEEN_CHANGED, oldSeen, newSeen);
-    }
 }

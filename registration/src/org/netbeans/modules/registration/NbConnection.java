@@ -118,7 +118,7 @@ class NbConnection {
         + Thread.currentThread().getName());
         File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
-        if (statusFile.exists()) {
+        if (statusFile.exists() && statusFile.length() > 0) {
             LOG.log(Level.FINE,"Load registration status from:" + statusFile);
             //Status file exists, check its content
             BufferedInputStream in = null;
@@ -398,6 +398,10 @@ class NbConnection {
             } catch (UnsupportedOperationException ex) {
                 // ignore if not supported
                 LOG.log(Level.FINE,"Cannot open browser:",ex);
+            } catch (IOException ex) {
+                //fallback to openide API
+                LOG.log(Level.FINE,"Cannot open browser:",ex);
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
         } else {
             //Fallback to openide API in JDK 5
@@ -427,6 +431,10 @@ class NbConnection {
             } catch (UnsupportedOperationException ex) {
                 // ignore if not supported
                 LOG.log(Level.FINE,"Cannot open browser:",ex);
+            } catch (IOException ex) {
+                //fallback to openide API
+                LOG.log(Level.FINE,"Cannot open browser:",ex);
+                HtmlBrowser.URLDisplayer.getDefault().showURL(registerPage.toURI().toURL());
             }
         } else {
             //Fallback to openide API in JDK 5

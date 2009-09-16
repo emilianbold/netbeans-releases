@@ -56,14 +56,17 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 
 /**
-* This is the parent of majority of the actions. It implements
-* the necessary resetting depending of what is required
-* by constructor of target action.
-* The other thing implemented here is macro recording.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ * This is the parent of majority of the actions. It implements
+ * the necessary resetting depending of what is required
+ * by constructor of target action.
+ * The other thing implemented here is macro recording.
+ * <br/>
+ * Property "noIconInMenu" can be set to inform menu items not to use action's icon.
+ * <br/>
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ */
 
 public abstract class BaseAction extends TextAction {
 
@@ -120,7 +123,7 @@ public abstract class BaseAction extends TextAction {
     * the action's real task is invoked.
     */
     protected int updateMask;
-    
+
     private static boolean recording;
     private static StringBuffer macroBuffer = new StringBuffer();
     private static StringBuffer textBuffer = new StringBuffer();

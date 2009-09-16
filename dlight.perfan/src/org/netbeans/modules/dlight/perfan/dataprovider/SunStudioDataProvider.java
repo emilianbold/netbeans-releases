@@ -117,4 +117,23 @@ final class SunStudioDataProvider extends SSStackDataProvider
         return result;
 
     }
+
+    public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
+        if (!metricsColumn.contains(SunStudioDCConfiguration.c_name)) {
+            List<Column> oldMetrics = metricsColumn;
+            metricsColumn = new ArrayList<Column>();
+            metricsColumn.addAll(oldMetrics);
+            metricsColumn.add(SunStudioDCConfiguration.c_name);
+        }
+        List<FunctionCallTreeTableNode> nodes = super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
+        for (FunctionCallTreeTableNode node : nodes) {
+            FunctionCallWithMetric call = node.getDeligator();
+            result.add(call);
+        }
+
+        return result;
+    }
+
+
 }

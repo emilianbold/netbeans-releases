@@ -45,10 +45,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.api.KenaiProjectMember;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
@@ -60,14 +59,19 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @ServiceProvider(service=MemberAccessor.class)
-public class MemberAccessorImpl extends MemberAccessor{
+public class MemberAccessorImpl extends MemberAccessor {
 
     @Override
     public List<MemberHandle> getMembers(ProjectHandle project) {
         ArrayList<MemberHandle> handles = new ArrayList();
-        for (String user : KenaiConnection.getDefault().getMembers(project.getId())) {
-            handles.add(new MemberHandleImpl(user));
+        try {
+            for (KenaiProjectMember member : ((ProjectHandleImpl) project).getKenaiProject().getMembers()) {
+                handles.add(new MemberHandleImpl(member));
+            }
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        Collections.sort(handles);
         return handles;
     }
 
@@ -76,7 +80,7 @@ public class MemberAccessorImpl extends MemberAccessor{
         return new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                KenaiUser.forName(member.getName()).startChat();
+                new KenaiUserUI(member.getName()).startChat();
             }
         };
     }

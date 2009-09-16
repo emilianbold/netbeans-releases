@@ -47,10 +47,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxParserContext;
 import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -99,17 +99,19 @@ public class HtmlGSFParser extends Parser {
         // no-op, we don't support state changes
     }
 
-    public HtmlGSFParser() {
-        NbReaderProvider.setupReaders(); //initialize DTD registry
-    }
     /** logger for timers/counters */
     private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
-
-        SyntaxParserResult spresult = SyntaxParser.parse(snapshot.getText());
+        boolean embedded = snapshot.getMimePath().size() > 1;
+        SyntaxParserContext context = SyntaxParserContext.createContext(snapshot.getText());
+        //disable html structure checks for embedded html code
+        if(embedded) {
+            context.setProperty(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name(), Boolean.TRUE); //NOI18N
+        }
+        SyntaxParserResult spresult = SyntaxParser.parse(context);
         
         HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(snapshot, spresult);
 

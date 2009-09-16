@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 
     <property name="nb_all" location="${whitelist-test.basedir}/../../.."/>
     <property name="temp_dir" location="${whitelist-test.basedir}/temp"/>
-    <property name="lime6_zip" location="${temp_dir}/qa/projectized/lime6.zip"/>
+    <property name="lime6_zip" location="${temp_dir}/lime6.zip"/>
     <property name="lime6_dir" location="${temp_dir}/lime6"/>
     <property name="lime6_dest_dir" location="${whitelist-test.basedir}/../qa-functional/data/lime6"/>
     <property name="work_dir" location="${whitelist-test.basedir}/../../build/test/qa-functional/work"/>
@@ -84,7 +84,8 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
-        <cvs cvsroot=":pserver:anoncvs@toolscvs.sfbay.sun.com:/cvs/nbextra" command="co qa/projectized/lime6.zip" dest="${temp_dir}"/>
+        <get src="http://wiki.netbeans.org/attach/FitnessViaSamples/lime6.zip" 
+            dest="${temp_dir}/lime6.zip"/>
     </target>
     
     <!-- Prepare -->

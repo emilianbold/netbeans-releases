@@ -60,7 +60,7 @@ public class TimeEditor extends PropertyEditorSupport {
         format = NumberFormat.getNumberInstance();
         format.setGroupingUsed(false);
         format.setMinimumIntegerDigits(1);
-        format.setMinimumFractionDigits(0);
+        format.setMinimumFractionDigits(3);
         format.setMaximumFractionDigits(3);
     }
 
@@ -69,7 +69,7 @@ public class TimeEditor extends PropertyEditorSupport {
         if (!(getValue() instanceof Time)){
             return String.valueOf(getValue());
         }
-        return ((Time) getValue()).equals(zeroTime) ? "0" : format.format(((Time) getValue()).getNanos() / 1e9); // NOI18N
+        return ((Time) getValue()).equals(zeroTime) ? "0.000" : format.format(((Time) getValue()).getNanos() / 1e9); // NOI18N
     }
 
     @Override

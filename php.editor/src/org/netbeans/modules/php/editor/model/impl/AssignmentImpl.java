@@ -56,7 +56,7 @@ import org.openide.util.Union2;
 class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private Container container;
     //TODO: typeName should be list or array to keep mixed types
-    private Union2<String,List<? extends TypeScope>> typeName;
+    private Union2<String,Collection<? extends TypeScope>> typeName;
     private OffsetRange scopeRange;
 
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
@@ -67,18 +67,26 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
         super(scope, container.getName(), container.getFile(), nameRange, container.getPhpKind());
         this.container = container;
-        this.typeName = Union2.<String,List<? extends TypeScope>>createFirst(typeName);
+        this.typeName = Union2.<String,Collection<? extends TypeScope>>createFirst(typeName);
         this.scopeRange = scopeRange;
     }
 
     @CheckForNull
-    Union2<String,List<? extends TypeScope>> getTypeUnion() {
+    Union2<String,Collection<? extends TypeScope>> getTypeUnion() {
         return typeName;
     }
 
+    boolean canBeProcessed(String tName) {
+        return canBeProcessed(tName, getName()) && canBeProcessed(tName, getName().substring(1));
+    }
+
+    static boolean canBeProcessed(String tName, String name) {
+        return tName.indexOf(name) == -1;
+    }
+
     @CheckForNull
-    private List<? extends TypeScope> typesFromUnion() {
-        Union2<String, List<? extends TypeScope>> typeUnion = getTypeUnion();
+    private Collection<? extends TypeScope> typesFromUnion() {
+        Union2<String, Collection<? extends TypeScope>> typeUnion = getTypeUnion();
         if (typeUnion != null) {
             if (typeUnion.hasSecond() && typeUnion.second() != null) {
                 return typeUnion.second();
@@ -88,7 +96,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     String typeNameFromUnion() {
-        Union2<String, List<? extends TypeScope>> typeUnion = getTypeUnion();
+        Union2<String, Collection<? extends TypeScope>> typeUnion = getTypeUnion();
         if (typeUnion != null) {
             if (typeUnion.hasFirst() && typeUnion.first() != null) {
                 return typeUnion.first();
@@ -103,30 +111,29 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getContainer().getName());
+        sb.append(getName());
         sb.append(" == ").append(getTypeUnion());
         return sb.toString();
     }
 
     public Collection<? extends TypeScope> getTypes() {
-        String name = container.getName();
         List<? extends TypeScope> empty = Collections.emptyList();
         FileScope topScope = ModelUtils.getFileScope(this);
         //TODO: cache the value
-        List<? extends TypeScope> types = typesFromUnion();
+        Collection<? extends TypeScope> types = typesFromUnion();
         if (types != null) {
             return types;
         }
         String tName = typeNameFromUnion();
         if (tName != null) {
             //StackOverflow prevention
-            if (tName.indexOf(name) == -1) {
-                types = VariousUtils.getType(topScope, (VariableScope) getInScope(),
+            if (canBeProcessed(tName)) {
+                types = VariousUtils.getType( (VariableScope) getInScope(),
                         tName, getOffset(), false);
             }
         }
         if (types != null) {
-            typeName = Union2.<String, List<? extends TypeScope>>createSecond(types);
+            typeName = Union2.<String, Collection<? extends TypeScope>>createSecond(types);
             return types;
         } else {
             typeName = null;
@@ -141,5 +148,10 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     @Override
     public OffsetRange getBlockRange() {
         return scopeRange;
+    }
+
+    @Override
+    public String getNormalizedName() {
+        return getClass().getName()+":"+ toString() + ":" + String.valueOf(getOffset());//NOI18N
     }
 }

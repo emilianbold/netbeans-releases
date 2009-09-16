@@ -105,6 +105,8 @@ public class ExpressionPool {
             return expressions.get(exprLocation);
         } catch (InternalExceptionWrapper ex) {
             return null;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return null;
         } catch (VMDisconnectedExceptionWrapper ex) {
             return null;
         }
@@ -154,7 +156,7 @@ public class ExpressionPool {
         }
     }
 
-    private Expression createExpressionAt(Location loc, String url) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    private Expression createExpressionAt(Location loc, String url) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         VirtualMachine vm = MirrorWrapper.virtualMachine(loc);
         if (!VirtualMachineWrapper.canGetBytecodes(vm)) {
             // Can not analyze expressions without bytecode

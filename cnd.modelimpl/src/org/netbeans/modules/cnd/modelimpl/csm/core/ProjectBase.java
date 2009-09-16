@@ -537,6 +537,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    @Override
+    public void scheduleReparse() {
+        ensureFilesCreated();
+        DeepReparsingUtils.reparseOnEdit(this.getAllFileImpls(), this, true);
+    }
+
     protected void ensureFilesCreated() {
         if (status == Status.Ready) {
             return;

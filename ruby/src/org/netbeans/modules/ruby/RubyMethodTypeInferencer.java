@@ -39,11 +39,13 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.IScopingNode;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -87,17 +89,20 @@ final class RubyMethodTypeInferencer {
     }
 
 
-    private Node callNodeToInfer;
-    private ContextKnowledge knowledge;
+    private final Node callNodeToInfer;
+    private final ContextKnowledge knowledge;
+    private final boolean fast;
 
-    private RubyMethodTypeInferencer(final Node nodeToInfer, final ContextKnowledge knowledge) {
+
+    private RubyMethodTypeInferencer(final Node nodeToInfer, final ContextKnowledge knowledge, boolean fast) {
         assert AstUtilities.isCall(nodeToInfer) : "Must be a call node";
         this.callNodeToInfer = nodeToInfer;
         this.knowledge = knowledge;
+        this.fast = fast;
     }
 
-    static RubyType inferTypeFor(final Node nodeToInfer, final ContextKnowledge knowledge) {
-        return new RubyMethodTypeInferencer(nodeToInfer, knowledge).inferType();
+    static RubyType inferTypeFor(final Node nodeToInfer, final ContextKnowledge knowledge, boolean fast) {
+        return new RubyMethodTypeInferencer(nodeToInfer, knowledge, fast).inferType();
     }
 
     /**
@@ -140,15 +145,20 @@ final class RubyMethodTypeInferencer {
     private RubyType inferType() {
         String name = AstUtilities.getName(callNodeToInfer);
         Node receiver = null;
+        RubyType receiverType = null;
         switch (callNodeToInfer.getNodeType()) {
             case CALLNODE:
                 receiver = ((CallNode) callNodeToInfer).getReceiverNode();
                 break;
             case FCALLNODE:
-                // TODO: receiver is self;
-                break;
             case VCALLNODE:
-                receiver = null;
+                Node root = knowledge.getRoot();
+                AstPath path = new AstPath(root, callNodeToInfer);
+                IScopingNode clazz = AstUtilities.findClassOrModule(path);
+                if (clazz == null) {
+                    break;
+                }
+                receiverType = RubyType.create(AstUtilities.getClassOrModuleName(clazz));
                 break;
             default:
                 throw new IllegalArgumentException("Illegal node passed: " + callNodeToInfer);
@@ -159,10 +169,15 @@ final class RubyMethodTypeInferencer {
         if (fastResult != null) {
             return fastResult;
         }
-        if (receiver == null) {
+
+        if (receiverType == null && receiver != null) {
+            receiverType = getReceiverType(receiver);
+        }
+
+        if (receiverType == null) {
             return RubyType.createUnknown();
         }
-        RubyType receiverType = getReceiverType(receiver);
+
         if (returnsReceiver(name)) {
             return receiverType;
         }
@@ -184,21 +199,33 @@ final class RubyMethodTypeInferencer {
             }
         }
 
-        // this can be very time consuming, return if TI is not enabled
-        if (!TypeInferenceSettings.getDefault().getMethodTypeInference()) {
+        // this can be very time consuming, return if TI is not enabled and
+        // we're operating in the fast mode
+        if (fast && !TypeInferenceSettings.getDefault().getMethodTypeInference()) {
             return RubyType.createUnknown();
         }
 
         RubyType resultType = new RubyType();
         RubyIndex index = getIndex();
-        if (index != null) {
-            Set<IndexedMethod> methods = index.getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
-            for (IndexedMethod indexedMethod : methods) {
-                RubyType type = indexedMethod.getType();
-                resultType.append(type);
-            }
-            index.logMostTimeConsuming();
+        if (index == null) {
+            return resultType;
         }
+
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        // first methods from the class itself
+        for (String type : receiverType.getRealTypes()) {
+            methods.addAll(index.getMethods(name, type, QuerySupport.Kind.EXACT));
+        }
+        if (methods.isEmpty()) {
+            // inherited methods
+            // TODO: should consider only the return type of the first inherited method in the hiearchy
+            methods.addAll(index.getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT));
+        }
+        for (IndexedMethod indexedMethod : methods) {
+            RubyType type = indexedMethod.getType();
+            resultType.append(type);
+        }
+        index.logMostTimeConsuming();
         return resultType;
     }
 

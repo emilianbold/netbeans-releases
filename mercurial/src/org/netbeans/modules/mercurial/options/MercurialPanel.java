@@ -46,9 +46,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
 
 final class MercurialPanel extends javax.swing.JPanel {
     
@@ -100,6 +98,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         jSeparator2 = new javax.swing.JSeparator();
         cbOpenOutputWindow = new javax.swing.JCheckBox();
         cbAskBeforeCommitAfterMerge = new javax.swing.JCheckBox();
+        cbInternalMergeToolEnabled = new javax.swing.JCheckBox();
 
         jLabel1.setLabelFor(userNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel1.text")); // NOI18N
@@ -141,6 +140,10 @@ final class MercurialPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbAskBeforeCommitAfterMerge, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbAskBeforeCommitAfterMerge.text")); // NOI18N
         cbAskBeforeCommitAfterMerge.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbAskBeforeCommitAfterMerge.toolTipText")); // NOI18N
 
+        cbInternalMergeToolEnabled.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cbInternalMergeToolEnabled, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbInternalMergeToolEnabled.text")); // NOI18N
+        cbInternalMergeToolEnabled.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbInternalMergeToolEnabled.toolTipText")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -152,11 +155,11 @@ final class MercurialPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel6)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE))
+                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel5)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
@@ -174,12 +177,12 @@ final class MercurialPanel extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(jTextPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                                .add(jTextPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(jLabel3)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                                .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
                                 .add(2, 2, 2)))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -190,6 +193,9 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(cbAskBeforeCommitAfterMerge)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(cbInternalMergeToolEnabled)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -231,6 +237,8 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .add(cbOpenOutputWindow)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbAskBeforeCommitAfterMerge)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(cbInternalMergeToolEnabled)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -265,6 +273,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         backupOnRevertModifications.setSelected(HgModuleConfig.getDefault().getBackupOnRevertModifications());
         cbOpenOutputWindow.setSelected(HgModuleConfig.getDefault().getAutoOpenOutput());
         cbAskBeforeCommitAfterMerge.setSelected(HgModuleConfig.getDefault().getConfirmCommitAfterMerge());
+        cbInternalMergeToolEnabled.setSelected(HgModuleConfig.getDefault().isInternalMergeToolEnabled());
     }
     
     void store() {
@@ -289,6 +298,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         HgModuleConfig.getDefault().setBackupOnRevertModifications(backupOnRevertModifications.isSelected());
         HgModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
         HgModuleConfig.getDefault().setConfirmCommitAfterMerge(cbAskBeforeCommitAfterMerge.isSelected());
+        HgModuleConfig.getDefault().setInternalMergeToolEnabled(cbInternalMergeToolEnabled.isSelected());
     }
     
     boolean valid() {
@@ -308,6 +318,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     final javax.swing.JTextField annotationTextField = new javax.swing.JTextField();
     private javax.swing.JCheckBox backupOnRevertModifications;
     private javax.swing.JCheckBox cbAskBeforeCommitAfterMerge;
+    private javax.swing.JCheckBox cbInternalMergeToolEnabled;
     private javax.swing.JCheckBox cbOpenOutputWindow;
     final javax.swing.JButton execPathBrowseButton = new javax.swing.JButton();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();

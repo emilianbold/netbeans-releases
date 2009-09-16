@@ -62,6 +62,7 @@ import javax.swing.*;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Performs the CVS 'update -j' command on selected nodes.
@@ -197,6 +198,11 @@ public class MergeBranchAction extends AbstractSystemAction {
                 cmd.setMergeRevision2(headTag);
             } else {
                 cmd.setMergeRevision1(headTag);
+            }
+
+            File[][] files = Utils.splitFlatOthers(context.getFiles());
+            if (files[0].length > 0) {
+                cmd.setRecursive(false);
             }
             cmd.setFiles(context.getRootFiles());
             cmd.setBuildDirectories(true);

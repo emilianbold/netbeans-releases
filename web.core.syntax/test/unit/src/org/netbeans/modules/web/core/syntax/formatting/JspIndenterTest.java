@@ -48,6 +48,7 @@ import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
@@ -64,22 +65,28 @@ import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
+import org.netbeans.modules.web.core.syntax.JSPProcessor;
 import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
 import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
+import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.netbeans.test.web.core.syntax.TestBase2;
@@ -109,10 +116,11 @@ public class JspIndenterTest extends TestBase2 {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(new TestClassPathProvider(createClassPaths()), testLanguageProvider);
+        JSPProcessor.ignoreLockFromUnitTest = true;
+        MockLookup.setInstances(new TestClassPathProvider(createClassPaths()),
+            testLanguageProvider, new FakeWebModuleProvider(getTestFile("testfilesformatting")));
         initParserJARs();
         
-        NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
         // init TestLanguageProvider
@@ -270,34 +278,6 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("testfilesformatting/issue162017.jsp", new IndentPrefs(4, 4));
     }
 
-    @Override
-    protected BaseDocument getDocument(FileObject fo) {
-        try {
-            //this create an instance of JspKit which initializes the coloring data but lazily, not parsed yet here
-            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fo, EditorCookie.class);
-            BaseDocument bdoc = (BaseDocument) ec.openDocument();
-
-            //force parse and wait
-            TagLibParseSupport pc = (TagLibParseSupport) DataLoadersBridge.getDefault().getCookie(fo, TagLibParseCookie.class);
-            pc.getCachedParseResult(false, false, true);
-            //get the parser coloring data
-            JspColoringData data = pc.getJSPColoringData();
-
-            //set correct values to the document's input attributes
-            InputAttributes inputAttributes = (InputAttributes) bdoc.getProperty(InputAttributes.class);
-            JspParseData jspParseData = (JspParseData) inputAttributes.getValue(LanguagePath.get(JspTokenId.language()), JspParseData.class);
-            jspParseData.updateParseData(data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax());
-            //mark as initialized
-            jspParseData.initialized();
-
-            //any token hierarchy taken from this document should see the correct lexing - based on parsing results
-            return bdoc;
-        } catch (IOException ex) {
-            fail(ex.toString());
-            return null;
-        }
-    }
-
     public void testIndentation() throws Exception {
 //        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
 //                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
@@ -360,5 +340,86 @@ public class JspIndenterTest extends TestBase2 {
 //         is then used to calcualte line-adjustment causing wrong indentation:
 //        insertNewline("<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>^",
 //                      "<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>\n        ^", null);
+    }
+
+    
+    @Override
+    protected BaseDocument getDocument(FileObject fo) {
+        try {
+            //this create an instance of JspKit which initializes the coloring data but lazily, not parsed yet here
+            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fo, EditorCookie.class);
+            BaseDocument bdoc = (BaseDocument) ec.openDocument();
+
+            //force parse and wait
+            TagLibParseSupport pc = (TagLibParseSupport) DataLoadersBridge.getDefault().getCookie(fo, TagLibParseCookie.class);
+            pc.getCachedParseResult(false, false, true);
+            //get the parser coloring data
+            JspColoringData data = pc.getJSPColoringData();
+
+            //set correct values to the document's input attributes
+            InputAttributes inputAttributes = (InputAttributes) bdoc.getProperty(InputAttributes.class);
+            JspParseData jspParseData = (JspParseData) inputAttributes.getValue(LanguagePath.get(JspTokenId.language()), JspParseData.class);
+            jspParseData.updateParseData(data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax());
+            //mark as initialized
+            jspParseData.initialized();
+
+            //any token hierarchy taken from this document should see the correct lexing - based on parsing results
+            return bdoc;
+        } catch (IOException ex) {
+            fail(ex.toString());
+            return null;
+        }
+    }
+
+    private static class FakeWebModuleProvider implements WebModuleProvider {
+
+        private FileObject webRoot;
+
+        public FakeWebModuleProvider(FileObject webRoot) {
+            this.webRoot = webRoot;
+        }
+
+        public WebModule findWebModule(FileObject file) {
+            return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot));
+        }
+        
+    }
+
+    private static class FakeWebModuleImplementation2 implements WebModuleImplementation2 {
+
+        private FileObject webRoot;
+
+        public FakeWebModuleImplementation2(FileObject webRoot) {
+            this.webRoot = webRoot;
+        }
+
+        public FileObject getDocumentBase() {
+            return webRoot;
+        }
+
+        public String getContextPath() {
+            return "/";
+        }
+
+        public Profile getJ2eeProfile() {
+            return Profile.JAVA_EE_6_FULL;
+        }
+
+        public FileObject getWebInf() {
+            return null;
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return null;
+        }
+
+        public FileObject[] getJavaSources() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }

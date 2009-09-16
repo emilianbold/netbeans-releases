@@ -723,6 +723,76 @@ public class LexUtilities {
      *     if the offset is not inside a require string.
      */
     public static int getRequireStringOffset(int caretOffset, TokenHierarchy<Document> th) {
+        TokenEvaluator evaluator = new TokenEvaluator() {
+
+            @Override
+            boolean next() {
+                return false;
+            }
+
+            @Override
+            boolean handled() {
+                return true;
+            }
+
+            @Override
+            int returnValue() {
+                if (this.token.id()  == RubyTokenId.IDENTIFIER) {
+                    String text = token.text().toString();
+
+                    if (text.equals("require") || text.equals("load")) {
+                        return start;
+                    } else {
+                        return -1;
+                    }
+                }
+                return -1;
+            }
+        };
+
+        return getStringOffset(caretOffset, th, evaluator);
+    }
+
+
+    /**
+     * Check if the caret is inside a literal string that is associated with
+     * a :class or :class_name symbol.
+     *
+     * @return The offset of the beginning of the class name string, or -1
+     *     if the offset is not inside a class name string.
+     */
+    public static int getClassNameStringOffset(int caretOffset, TokenHierarchy<Document> th) {
+        TokenEvaluator evaluator = new TokenEvaluator() {
+
+            @Override
+            boolean next() {
+                return token.id() == RubyTokenId.NONUNARY_OP;
+            }
+
+            @Override
+            boolean handled() {
+                return true;
+            }
+
+            @Override
+            int returnValue() {
+                if (this.token.id()  == RubyTokenId.TYPE_SYMBOL) {
+                    String text = token.text().toString();
+
+                    if (text.equals("class") || text.equals("class_name")) {
+                        return start;
+                    } else {
+                        return -1;
+                    }
+                }
+                return -1;
+            }
+        };
+
+        return getStringOffset(caretOffset, th, evaluator);
+    }
+
+    private static int getStringOffset(int caretOffset, TokenHierarchy<Document> th, TokenEvaluator evaluator) {
         TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(th, caretOffset);
 
         if (ts == null) {
@@ -759,6 +829,7 @@ public class LexUtilities {
             }
 
             int stringStart = ts.offset() + token.length();
+            evaluator.setStart(stringStart);
 
             if ((id == RubyTokenId.STRING_BEGIN) || (id == RubyTokenId.QUOTED_STRING_BEGIN)) {
                 // Completion of literal strings within require calls
@@ -773,22 +844,38 @@ public class LexUtilities {
                         continue;
                     }
 
-                    if (id == RubyTokenId.IDENTIFIER) {
-                        String text = token.text().toString();
 
-                        if (text.equals("require") || text.equals("load")) {
-                            return stringStart;
-                        } else {
-                            return -1;
-                        }
-                    } else {
-                        return -1;
+                    evaluator.setToken(token);
+                    if (evaluator.next()) {
+                        continue;
+                    }
+                    if (evaluator.handled()) {
+                        return evaluator.returnValue();
                     }
                 }
             }
         }
 
         return -1;
+    }
+
+    private static abstract class TokenEvaluator {
+        protected Token token;
+        protected int start;
+        
+        void setToken(Token token) {
+            this.token = token;
+        }
+
+        void setStart(int start) {
+            this.start = start;
+        }
+
+        abstract boolean next();
+
+        abstract boolean handled();
+
+        abstract int returnValue();
     }
 
     public static int getSingleQuotedStringOffset(int caretOffset, TokenHierarchy<Document> th) {

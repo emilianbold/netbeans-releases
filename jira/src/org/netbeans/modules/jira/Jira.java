@@ -90,7 +90,7 @@ public class Jira {
         BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
     }
 
-    public static Jira getInstance() {
+    public static synchronized Jira getInstance() {
         if(instance == null) {
             instance = new Jira();
             REPOSITORIES_STORE = BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath() + "/jira/repositories";
@@ -144,6 +144,7 @@ public class Jira {
             BugtrackingRuntime br = BugtrackingRuntime.getInstance();
             br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
+        JiraIssueProvider.getInstance().removeAllFor(repository);
     }
 
     public JiraRepository[] getRepositories() {

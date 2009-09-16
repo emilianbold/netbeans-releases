@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -172,16 +173,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
     
     public InputStream getInputStream() throws IOException {
-        File file = getFile();
-        // file must be normalized
-        FileObject fo = FileUtil.toFileObject(file);
-        InputStream is;
-        if (fo != null) {
-            is = fo.getInputStream();
-        } else {
-            is = new FileInputStream(file);
-        }
-        return new BufferedInputStream(is, TraceFlags.BUF_SIZE);
+        return new BufferedInputStream(CndFileUtils.getInputStream(getAbsolutePath()), TraceFlags.BUF_SIZE);
     }
     
     public int getLength() {

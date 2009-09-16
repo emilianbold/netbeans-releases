@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.ui.actions.ShowNotifications;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
@@ -197,7 +198,9 @@ public class Utilities {
             if(!coveredByVisible.contains(u) && 
                     u.getAvailableUpdates().size() > 0 &&
                     u.getInstalled()!=null &&
-                    !u.isPending()) {
+                    !u.isPending() &&
+                    (u.getInstalled().isEnabled() ||
+                        OperationContainer.createForEnable().canBeAdded(u, u.getInstalled()))) { // just disabled, but can be enabled: i.e. not eager/autoload
                 otherUnits.add(u);
             }
         }
@@ -487,6 +490,10 @@ public class Utilities {
             finish = tryRefreshProviders (providers, manager, force);
         }
     }
+
+    public static void showProviderNotification(UpdateUnitProvider p) {
+        ShowNotifications.checkNotification(p);
+    }
     
     private static boolean tryRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
         ProgressHandle handle = ProgressHandleFactory.createHandle (NbBundle.getMessage(SettingsTableModel.class,  ("Utilities_CheckingForUpdates")));
@@ -503,6 +510,7 @@ public class Utilities {
             for (UpdateUnitProvider p : providers) {
                 try {
                     p.refresh (handle, force);
+                    showProviderNotification(p);
                 } catch (IOException ioe) {
                     logger.log (Level.INFO, ioe.getMessage (), ioe);
                     JButton cancel = new JButton ();

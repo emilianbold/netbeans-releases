@@ -89,7 +89,7 @@ public class PolicyModelHelper {
 
     /** 
      * Checks for version of the configuration file. 
-     * Returns 1.0 if 1.0 namespace is found, otherwise 1.1 is default.
+     * Returns 1.0 if 1.0 namespace is found, otherwise returns default.
      */
     public static ConfigVersion getConfigVersion(WSDLComponent c) {
         ConfigVersion cfg = getWrittenConfigVersion(c);

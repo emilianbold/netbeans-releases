@@ -46,9 +46,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -89,6 +96,16 @@ public abstract class HtmlExtension {
 
     public abstract List<CompletionItem> completeAttributeValue(CompletionContext context);
 
+    //hyperlinking
+    public abstract OffsetRange getReferenceSpan(Document doc, int caretOffset);
+
+    public abstract DeclarationLocation findDeclaration(ParserResult info, int caretOffset);
+
+    //errors, hints
+    public abstract void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled);
+
+
+    //--------------------
 
     public static class CompletionContext {
 
@@ -100,13 +117,18 @@ public abstract class HtmlExtension {
         private String preText;
         private String itemText;
         private AstNode currentNode;
+        private String attributeName; //for attribute value completion
+        private boolean valueQuoted;
 
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText) {
             this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, null);
         }
 
- 
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode) {
+            this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, currentNode, null, false);
+        }
+        
+        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode, String attributeName, boolean valueQuoted) {
             this.result = result;
             this.originalOffset = originalOffset;
             this.astoffset = astoffset;
@@ -114,6 +136,8 @@ public abstract class HtmlExtension {
             this.ccItemStartOffset = ccItemStartOffset;
             this.currentNode = currentNode;
             this.itemText = itemText;
+            this.attributeName = attributeName;
+            this.valueQuoted = valueQuoted;
         }
 
         public String getPrefix() {
@@ -143,6 +167,14 @@ public abstract class HtmlExtension {
 
         public AstNode getCurrentNode() {
             return currentNode;
+        }
+
+        public String getAttributeName() {
+            return attributeName;
+        }
+
+        public boolean isValueQuoted() {
+            return valueQuoted;
         }
 
     }

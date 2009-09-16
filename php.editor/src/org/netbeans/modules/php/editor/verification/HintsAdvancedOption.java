@@ -26,7 +26,7 @@ package org.netbeans.modules.php.editor.verification;
 
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
@@ -49,7 +49,7 @@ public class HintsAdvancedOption extends AdvancedOption {
 
     public synchronized OptionsPanelController create() {
         if ( panelController == null ) {
-            HintsManager manager = HintsProvider.HintsManager.getManagerForMimeType(PHPLanguage.PHP_MIME_TYPE);
+            HintsManager manager = HintsProvider.HintsManager.getManagerForMimeType(FileUtils.PHP_MIME_TYPE);
             assert manager != null;
             panelController = manager.getOptionsController();
         }

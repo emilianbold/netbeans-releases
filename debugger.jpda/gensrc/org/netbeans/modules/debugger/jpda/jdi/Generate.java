@@ -134,6 +134,7 @@ public class Generate {
         ReferenceTypeExceptions.put("allLineLocations", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
         ReferenceTypeExceptions.put("locationsOfLine", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
         ReferenceTypeExceptions.put("classObject", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
+        ReferenceTypeExceptions.put("*", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ReferenceType.class.getName(), ReferenceTypeExceptions);
         Map<String, Set<Class>> ClassTypeExceptions = new LinkedHashMap<String, Set<Class>>();
         ClassTypeExceptions.put("interfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
@@ -185,7 +186,10 @@ public class Generate {
 
         Map<String, Set<Class>> EventSetExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
-        EventSetExceptions.put("resume", Collections.singleton((Class) IllegalThreadStateException.class));
+        // ObjectCollectedException can be thrown when the thread is collected.
+        EventSetExceptions.put("resume", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { IllegalThreadStateException.class,
+                               com.sun.jdi.ObjectCollectedException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.event.EventSet.class.getName(), EventSetExceptions);
     }
 

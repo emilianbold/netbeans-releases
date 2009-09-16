@@ -42,11 +42,13 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
@@ -56,6 +58,7 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,6 +71,7 @@ public class MoveTransformer extends RefactoringVisitor {
     private MoveRefactoringPlugin move;
     private Set<Element> elementsToImport;
     private Set<ImportTree> importToRemove;
+    private Set<String> importToAdd;
     private boolean isThisFileMoving;
     private boolean isThisFileReferencingOldPackage = false;
     private Set<Element> elementsAlreadyImported;
@@ -96,6 +100,7 @@ public class MoveTransformer extends RefactoringVisitor {
         isThisFileReferencingOldPackage = false;
         elementsAlreadyImported = new HashSet<Element>();
         importToRemove = new HashSet<ImportTree>();
+        importToAdd = new HashSet<String>();
     }
     
     @Override
@@ -167,9 +172,9 @@ public class MoveTransformer extends RefactoringVisitor {
                     }
                 } else {
                     Boolean[] isElementMoving = new Boolean[1];
-                    if (!isThisFileReferencingOldPackage
-                            && (isTopLevelClass(el) && !isElementMoving(el, isElementMoving))
+                    if (isTopLevelClass(el) && !isElementMoving(el, isElementMoving)
                             && getPackageOf(el).toString().equals(originalPackage)) {
+                        importToAdd.add(el.toString());
                         isThisFileReferencingOldPackage = true;
                     }
                     if (el.getKind() != ElementKind.PACKAGE
@@ -301,7 +306,11 @@ public class MoveTransformer extends RefactoringVisitor {
                 //add import to old package
                 ExpressionTree newPackageName = cut.getPackageName();
                 if (newPackageName != null) {
-                    cut = insertImport(cut, newPackageName.toString() + ".*", null, null); // NOI18N
+                    try {
+                        cut = RetoucheUtils.addImports(cut, new LinkedList<String>(importToAdd), make);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 } else {
                     if (!moveToDefaulPackageProblem) {
                         problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));

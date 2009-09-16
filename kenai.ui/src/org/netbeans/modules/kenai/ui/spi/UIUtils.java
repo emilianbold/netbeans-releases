@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Font;
@@ -47,11 +46,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.JTextPane;
@@ -61,6 +65,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
@@ -77,17 +82,23 @@ import org.openide.util.RequestProcessor;
  */
 public final class UIUtils {
     static {
-        String url = System.getProperty("kenai.com.url", "https://kenai.com"); //NOI18N
-        String s = url.substring(url.lastIndexOf("/")+1); //NOI18N
-        KENAI_USERNAME_PREF= s + ".username"; //NOI18N
-        KENAI_PASSWORD_PREF= s + ".password"; //NOI18N
-        ONLINE_STATUS_PREF = s + ".online"; // NOI18N
-
+        String name = Kenai.getDefault().getName();
+        KENAI_USERNAME_PREF= name + ".username"; //NOI18N
+        KENAI_PASSWORD_PREF= name + ".password"; //NOI18N
+        ONLINE_STATUS_PREF = name + ".online"; // NOI18N
+        LOGIN_STATUS_PREF = name + ".login";// NOI18N
     }
     
     private final static String KENAI_PASSWORD_PREF;
     private final static String KENAI_USERNAME_PREF;
     public final static String ONLINE_STATUS_PREF;
+    public final static String LOGIN_STATUS_PREF;
+
+    // Usage logging
+    private static Logger metricsLogger;
+    private static final String USG_KENAI = "USG_KENAI"; // NOI18N
+    private static Set<String> loggedParams; // to avoid logging same params more than once in a session
+
 
     public static void waitStartupFinished() {
         KenaiLoginTask.waitStartupFinished();
@@ -163,7 +174,7 @@ public final class UIUtils {
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
-        String online = preferences.get(ONLINE_STATUS_PREF, "false"); // NOI18N
+        String online = preferences.get(LOGIN_STATUS_PREF, "false"); // NOI18N
         if (!Boolean.parseBoolean(online)) {
             return false;
         }
@@ -175,7 +186,7 @@ public final class UIUtils {
         String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray());
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), Boolean.parseBoolean(preferences.get(ONLINE_STATUS_PREF, "true")));
         } catch (KenaiException ex) {
             return false;
         }
@@ -200,21 +211,23 @@ public final class UIUtils {
                 null, new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
                         if (event.getSource().equals(ctlLogin)) {
+                            UIUtils.logKenaiUsage("LOGIN"); // NOI18N
                         loginPanel.showProgress();
                         RequestProcessor.getDefault().post(new Runnable() {
 
                             public void run() {
                                 try {
                                     KenaiConnection.getDefault();
-                                    Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
+                                    Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
                                     SwingUtilities.invokeLater(new Runnable() {
 
                                         public void run() {
                                             JRootPane rootPane = loginPanel.getRootPane();
                                             if (rootPane != null) {
-                                                Container parent = rootPane.getParent();
+                                                JDialog parent = (JDialog) rootPane.getParent();
                                                 if (parent != null) {
                                                     parent.setVisible(false);
+                                                    parent.dispose();
                                                 }
                                             }
                                         }
@@ -238,7 +251,9 @@ public final class UIUtils {
                         }
                     } else {
                         loginPanel.putClientProperty("cancel", "true"); // NOI18N
-                        loginPanel.getRootPane().getParent().setVisible(false);
+                        JDialog parent = (JDialog) loginPanel.getRootPane().getParent();
+                        parent.setVisible(false);
+                        parent.dispose();
                     }
                 }
         });
@@ -260,13 +275,13 @@ public final class UIUtils {
     }
 
     public static JLabel createUserWidget(String user) {
-        return createUserWidget(KenaiUser.forName(user));
+        return createUserWidget(new KenaiUserUI(user));
     }
 
-    static JLabel createUserWidget(final KenaiUser u) {
-        final JLabel result = new JLabel(u.getUser());
+    static JLabel createUserWidget(final KenaiUserUI u) {
+        final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        u.addPropertyChangeListener(new PropertyChangeListener() {
+        u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
@@ -298,6 +313,39 @@ public final class UIUtils {
         });
 
         return result;
+    }
+
+    public static synchronized void logKenaiUsage(Object... parameters) {
+        String paramStr = getParamString(parameters);
+        if (loggedParams == null || !loggedParams.contains(paramStr)) {
+            // not logged in this session yet
+            if (metricsLogger == null) {
+                metricsLogger = Logger.getLogger("org.netbeans.ui.metrics.kenai"); // NOI18N
+            }
+            LogRecord rec = new LogRecord(Level.INFO, USG_KENAI);
+            rec.setParameters(parameters);
+            rec.setLoggerName(metricsLogger.getName());
+            metricsLogger.log(rec);
+
+            if (loggedParams == null) {
+                loggedParams = new HashSet<String>();
+            }
+            loggedParams.add(paramStr);
+        }
+    }
+
+    private static String getParamString(Object... parameters) {
+        if (parameters == null || parameters.length == 0) {
+            return ""; // NOI18N
+        }
+        if (parameters.length == 1) {
+            return parameters[0].toString();
+        }
+        StringBuilder buf = new StringBuilder();
+        for (Object p : parameters) {
+            buf.append(p.toString());
+        }
+        return buf.toString();
     }
 
 }

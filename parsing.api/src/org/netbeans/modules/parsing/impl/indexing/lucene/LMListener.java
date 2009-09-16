@@ -40,10 +40,8 @@
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
+import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.List;
 
 /**
  *
@@ -51,12 +49,9 @@ import java.util.List;
  */
 public class LMListener {
 
-    //@GuardedBy(LMListener.class)
-    private static MemoryPoolMXBean cachedPool;
+    private final MemoryMXBean memBean;
 
-    private MemoryPoolMXBean pool;
-
-    private static final float DEFAULT_HEAP_LIMIT = 0.7f;
+    private static final float DEFAULT_HEAP_LIMIT = 0.8f;
 
     private final float heapLimit;
 
@@ -66,8 +61,8 @@ public class LMListener {
 
     public LMListener (final float heapLimit) {
         this.heapLimit = heapLimit;
-        this.pool = findPool();
-        assert pool != null;
+        this.memBean = ManagementFactory.getMemoryMXBean();
+        assert this.memBean != null;
     }
 
     public float getHeapLimit () {
@@ -75,8 +70,8 @@ public class LMListener {
     }
     
     public boolean isLowMemory () {
-        if (this.pool != null) {
-            final MemoryUsage usage = this.pool.getUsage();
+        if (this.memBean != null) {
+            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
             if (usage != null) {
                 long used = usage.getUsed();
                 long max = usage.getMax();
@@ -85,28 +80,5 @@ public class LMListener {
         }
         return false;
     }
-
-    private static synchronized MemoryPoolMXBean findPool () {
-        if (cachedPool == null || !cachedPool.isValid()) {
-            final List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
-            for (MemoryPoolMXBean pool : pools) {
-                if (pool.getType() == MemoryType.HEAP && pool.isUsageThresholdSupported()) {
-                    cachedPool = pool;
-                    break;
-                }
-            }
-            assert cachedPool != null : dumpMemoryPoolMXBean (pools);
-        }
-        return cachedPool;
-    }
-
-    private static String dumpMemoryPoolMXBean (List<MemoryPoolMXBean> pools) {
-        StringBuilder sb = new StringBuilder ();
-        for (MemoryPoolMXBean pool : pools) {
-            sb.append(String.format("Pool: %s Type: %s TresholdSupported: %s\n", pool.getName(), pool.getType(), pool.isUsageThresholdSupported() ? Boolean.TRUE : Boolean.FALSE));
-        }
-        sb.append('\n');
-        return sb.toString();
-    }
-
+   
 }

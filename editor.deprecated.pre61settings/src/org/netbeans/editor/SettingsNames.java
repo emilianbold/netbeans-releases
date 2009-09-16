@@ -41,7 +41,7 @@
 
 package org.netbeans.editor;
 
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 
 /**
 * Names of the base settings defined in the editor. The other packages

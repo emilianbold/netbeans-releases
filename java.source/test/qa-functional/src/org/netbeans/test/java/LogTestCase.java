@@ -83,13 +83,13 @@ public class LogTestCase extends JavaTestCase {
      */
     protected void setUp() {
         prepareProject();
-        openDefaultProject();
         try {
             //logs and refs
             refFile = new File(getWorkDir(), getName() + ".ref");
             File logFile = new File(getWorkDir(), getName() + ".log");
             ref = new PrintWriter(new BufferedWriter(new FileWriter(refFile)));
             log = new PrintWriter(new BufferedWriter(new FileWriter(logFile)));
+            openDefaultProject();
             if (CREATE_GOLDENFILES) { //generates golden files
                 File f;
                 //generate goldenfile name

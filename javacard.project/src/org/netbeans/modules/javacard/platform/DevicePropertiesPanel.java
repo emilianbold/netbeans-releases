@@ -157,10 +157,12 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         group.add (contactedPortTextField, portvalidator);
         group.add (proxy2cjcrePortTextField, portvalidator);
         group.add (proxy2idePortTextField, portvalidator);
-        group.add (cardManagerUrlField, Validators.REQUIRE_NON_EMPTY_STRING,
-                Validators.MAY_NOT_START_WITH_DIGIT, Validators.URL_MUST_BE_VALID);
-        group.add (serverUrlField, Validators.REQUIRE_NON_EMPTY_STRING,
-                Validators.MAY_NOT_START_WITH_DIGIT, Validators.URL_MUST_BE_VALID);
+        group.add (cardManagerUrlField, Validators.REQUIRE_NON_EMPTY_STRING.forString(false),
+                Validators.MAY_NOT_START_WITH_DIGIT.forString(false), Validators.URL_MUST_BE_VALID.forString(false),
+                new RemoteVsLocalhostMismatchValidator());
+        group.add (serverUrlField, Validators.REQUIRE_NON_EMPTY_STRING.forString(false),
+                Validators.MAY_NOT_START_WITH_DIGIT.forString(false), Validators.URL_MUST_BE_VALID.forString(false),
+                new RemoteVsLocalhostMismatchValidator());
         Validator<Document> v = Converter.find(String.class, Document.class).convert(new PortMismatchValidator());
         group.add (httpPortTextField, v);
         group.add (serverUrlField, v);
@@ -232,6 +234,25 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             }
             return true;
         }
+    }
+
+    private class RemoteVsLocalhostMismatchValidator implements Validator <String> {
+
+        public boolean validate(Problems pblms, String compName, String value) {
+            boolean setToLocal = !remoteCheckbox.isSelected();
+            boolean mismatch = (containsLocalhostReference(cardManagerUrlField.getText()) ||
+                    containsLocalhostReference(serverUrlField.getText())) && !setToLocal;
+            if (mismatch) {
+                pblms.add(NbBundle.getMessage(RemoteVsLocalhostMismatchValidator.class,
+                        "WARN_REMOTE_LOCAL_MISMATCH"), Severity.WARNING);
+            }
+            return !mismatch;
+        }
+
+        private boolean containsLocalhostReference (String val) {
+            return val.indexOf ("127.0.0.1") >= 0 ||
+                    val.indexOf ("localhost") >= 0;
+        }
 
     }
 
@@ -279,17 +300,14 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         s.put(DEVICE_PROXY2IDEPORT, getProxy2idePort());
         s.put(DEVICE_CONTACTEDPORT, getContactedPort());
         s.put(DEVICE_CONTACTEDPROTOCOL, getContactedProtocol());
-        s.put(DEVICE_APDUTOOL_CONTACTEDPROTOCOL, "T=0".equals(getContactedProtocol())? "-t0":"");
+        s.put(DEVICE_APDUTOOL_CONTACTEDPROTOCOL, "T=0".equals(getContactedProtocol())? "-t0":""); //NOI18N
         s.put(DEVICE_CONTACTLESSPORT, getContactlessPort());
         s.put(DEVICE_LOGGERLEVEL, getLoggerLevel());
         s.put(DEVICE_SECUREMODE, getSecureMode());
         s.put(DEVICE_SERVERURL, getServerUrl());
         s.put(DEVICE_CARDMANAGERURL, getCardManagerUrl());
-        boolean noSuspend = !suspendCheckBox.isSelected();
-        if (noSuspend) {
-            s.put(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP,
-                    Boolean.TRUE.toString());
-        }
+        s.put(DEVICE_IS_REMOTE, remoteCheckbox.isSelected() + ""); //NOI18N
+        s.put(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, !suspendCheckBox.isSelected() + ""); //NOI18N
     }
 
     public void read(KeysAndValues<?> s) {
@@ -351,6 +369,10 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             val = s.get(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP);
             if (val != null) {
                 suspendCheckBox.setSelected(Boolean.valueOf(val));
+            }
+            val = s.get(DEVICE_IS_REMOTE);
+            if (val != null) {
+                remoteCheckbox.setSelected(Boolean.valueOf(val));
             }
         } finally {
             updating = false;
@@ -454,6 +476,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         contactedProtocolComboBox = new javax.swing.JComboBox();
         jLabel8 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        remoteCheckbox = new javax.swing.JCheckBox();
 
         secureModeCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(secureModeCheckBox, org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("Run_In_Secure_Mode")); // NOI18N
@@ -553,6 +576,13 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel12, "Contactless Port:");
 
+        org.openide.awt.Mnemonics.setLocalizedText(remoteCheckbox, "Card Manager is on a remote computer");
+        remoteCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onRemoteCheckboxChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -622,7 +652,8 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                             .add(proxy2idePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(layout.createSequentialGroup()
                         .add(suspendCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(remoteCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -696,7 +727,9 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                             .add(cardManagerUrlLabel)
                             .add(cardManagerUrlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(remoteCheckbox)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -707,6 +740,10 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     private void loggerLevelComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loggerLevelComboBoxActionPerformed
         fireChange();
 }//GEN-LAST:event_loggerLevelComboBoxActionPerformed
+
+    private void onRemoteCheckboxChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onRemoteCheckboxChanged
+        group.validateAll();
+    }//GEN-LAST:event_onRemoteCheckboxChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField cardManagerUrlField;
@@ -736,6 +773,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     private javax.swing.JTextField proxy2cjcrePortTextField;
     private javax.swing.JTextField proxy2idePortTextField;
     private javax.swing.JSpinner ramSpinner;
+    private javax.swing.JCheckBox remoteCheckbox;
     private javax.swing.JCheckBox secureModeCheckBox;
     private javax.swing.JTextField serverUrlField;
     private javax.swing.JLabel serverUrlLabel;

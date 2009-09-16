@@ -261,8 +261,9 @@ public abstract class OperationWizardModel {
 
 
     public Set<UpdateElement> getAllVisibleUpdateElements () {
-        Set <UpdateElement> all = getAllUpdateElements();
-        Set <UpdateElement> visible = getVisibleUpdateElements(all, false, getOperation(), true);
+        Set <UpdateElement> visible = new HashSet <UpdateElement> ();
+        visible.addAll(getPrimaryVisibleUpdateElements());
+        visible.addAll(getRequiredVisibleUpdateElements());
         return visible;
     }
     public Set<UpdateElement> getPrimaryVisibleUpdateElements () {
@@ -315,10 +316,12 @@ public abstract class OperationWizardModel {
                 //filter out eager invisible modules, which are covered by other invisible
                 for (UpdateElement v : invisible) {
                     OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                    container.add(v);
-                    for (OperationInfo<InstallSupport> info : container.listAll()) {
-                        if (info.getUpdateElement() != v) {
-                            realInvisible.remove(info.getUpdateElement());
+                    if (v.getUpdateUnit().getInstalled() != null) {
+                        container.add(v);
+                        for (OperationInfo<InstallSupport> info : container.listAll()) {
+                            if (info.getUpdateElement() != v) {
+                                realInvisible.remove(info.getUpdateElement());
+                            }
                         }
                     }
                 }
@@ -517,6 +520,8 @@ public abstract class OperationWizardModel {
     }
     
     private void addRequiredElements (Set<UpdateElement> elems) {
+        OperationContainer baseContainer = getBaseContainer();
+        OperationContainer customContainer = getCustomHandledContainer();
         for (UpdateElement el : elems) {
             if (el == null || el.getUpdateUnit () == null) {
                 Logger.getLogger (OperationWizardModel.class.getName ()).log (Level.INFO, "UpdateElement " + el + " cannot be null"
@@ -524,9 +529,9 @@ public abstract class OperationWizardModel {
                 continue;
             }
             if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == el.getUpdateUnit ().getType ()) {
-                getCustomHandledContainer ().add (el);
+                customContainer.add (el);
             } else {
-                getBaseContainer ().add (el);
+                baseContainer.add (el);
             }
         }
     }

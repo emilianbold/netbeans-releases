@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.dtrace.collector;
 
 import java.net.URL;
 import java.util.Arrays;
-import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -72,6 +71,7 @@ public final class DTDCConfiguration implements
      */
     public static final String DTRACE_PROC = "dtrace_proc"; // NOI18N
     static final String DTDC_CONFIGURATION_ID = "DtraceDataCollectorConfigurationId"; // NOI18N
+    private static DTDCConfiguration CPU_SAMPLING;
     private URL scriptUrl;
     private String args;
     private List<DataTableMetadata> datatableMetadata;
@@ -89,7 +89,7 @@ public final class DTDCConfiguration implements
 
     /**
      * Constructs DTDCConfiguration object initialized with params.
-     * @param scriptPath path to d-trace script (on the localhost).
+     * @param scriptUrl path to d-trace script (on the localhost).
      * @param dataTableMetadata metadats description of provided data.
      */
     public DTDCConfiguration(URL scriptUrl, List<DataTableMetadata> dataTableMetadata) {
@@ -224,11 +224,13 @@ public final class DTDCConfiguration implements
         return DTDC_CONFIGURATION_ID;
     }
 
-    public static DTDCConfiguration createCpuSamplingConfiguration() {
-        DTDCConfiguration result = new DTDCConfiguration(CpuSamplingSupport.CPU_SAMPLING_SCRIPT_URL, Arrays.asList(CpuSamplingSupport.CPU_SAMPLE_TABLE));
-        result.setStackSupportEnabled(true);
-        result.setOutputPrefix("cpu:"); // NOI18N
-        return result;
+    public static synchronized DTDCConfiguration createCpuSamplingConfiguration() {
+        if (CPU_SAMPLING == null) {
+            CPU_SAMPLING = new DTDCConfiguration(CpuSamplingSupport.CPU_SAMPLING_SCRIPT_URL, Arrays.asList(CpuSamplingSupport.CPU_SAMPLE_TABLE));
+            CPU_SAMPLING.setStackSupportEnabled(true);
+            CPU_SAMPLING.setOutputPrefix("cpu:"); // NOI18N
+        }
+        return CPU_SAMPLING;
     }
 
     private static final class DTDCConfigurationAccessorImpl extends DTDCConfigurationAccessor {

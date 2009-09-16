@@ -232,6 +232,13 @@ public final class TaskListProvider extends PushTaskScanner {
         refreshTasks(false);
     }
 
+    /*
+     * Schedules a refresh of issue tasks.
+     */
+    public void refresh () {
+        refreshTasks(false);
+    }
+
     private void removeCachedTasks (LazyIssue... issues) {
         synchronized (cachedTasks) {
             for (LazyIssue issue : issues) {
@@ -350,7 +357,7 @@ public final class TaskListProvider extends PushTaskScanner {
                         }
                     } else {
                         for (LazyIssue issue : e.getValue()) {
-                            if (validatedIssues.contains(issue) && !issuesToValidate.containsKey(issue)) {
+                            if (validatedIssues.contains(issue)) {
                                 issuesToInclude.put(issue, e.getKey());
                             } else {
                                 issuesToValidate.put(issue, e.getKey());

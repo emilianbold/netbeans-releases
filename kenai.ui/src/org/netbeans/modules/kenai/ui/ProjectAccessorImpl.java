@@ -60,6 +60,7 @@ import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -170,6 +171,25 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             Exceptions.printStackTrace(kenaiException);
         }
         return null;
+    }
+
+    @Override
+    public Action getBookmarkAction(ProjectHandle project) {
+        return new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet. Please vote for http://kenai.com/jira/browse/KENAI-735");
+            }
+        };
+    }
+
+    @Override
+    public Action getNewKenaiProjectAction() {
+        return new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                ShareAction.actionPerformed(new Node[0]);
+            }
+        };
     }
 
     private static class RefreshAction extends AbstractAction {

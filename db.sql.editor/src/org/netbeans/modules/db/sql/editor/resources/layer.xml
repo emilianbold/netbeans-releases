@@ -51,9 +51,15 @@ made subject to such option by the copyright holder.
 
     <folder name="Actions">
         <folder name="System">
-            <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance">
+                <!-- #128873 - to show icon in toolbar (keep in sync with RunSQLAction.ICON_PATH) -->
+                <attr name="iconBase" stringvalue="org/netbeans/modules/db/sql/editor/resources/runsql.png"/>
+            </file>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
-            <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance">
+                <!-- #128873 - to show icon in toolbar (keep in sync with SQLHistoryAction.ICON_PATH) -->
+                <attr name="iconBase" stringvalue="org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"/>
+            </file>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleKeepOldResultTabsAction.instance"/>
         </folder>
     </folder>

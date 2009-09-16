@@ -229,6 +229,8 @@ public class Operator {
                                         EventSetWrapper.resume(eventSet);
                                     } catch (IllegalThreadStateExceptionWrapper itex) {
                                         logger.throwing(Operator.class.getName(), "loop", itex);
+                                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                                        logger.throwing(Operator.class.getName(), "loop", ocex);
                                     }
                                     if (logger.isLoggable(Level.FINE)) {
                                         logger.fine("RESUMING "+eventSet);
@@ -329,6 +331,8 @@ public class Operator {
                                 EventSetWrapper.resume(eventSet);
                              } catch (IllegalThreadStateExceptionWrapper itex) {
                                  logger.throwing(Operator.class.getName(), "loop", itex);
+                             } catch (ObjectCollectedExceptionWrapper ocex) {
+                                 logger.throwing(Operator.class.getName(), "loop", ocex);
                              }
                              if (eventAccessLock != null) {
                                 logger.finer("Write access lock RELEASED:"+eventAccessLock);
@@ -494,6 +498,8 @@ public class Operator {
                                  EventSetWrapper.resume(eventSet);
                              } catch (IllegalThreadStateExceptionWrapper itex) {
                                  logger.throwing(Operator.class.getName(), "loop", itex);
+                             } catch (ObjectCollectedExceptionWrapper ocex) {
+                                 logger.throwing(Operator.class.getName(), "loop", ocex);
                              }
                              //} finally {
                              //    resumeLock.writeLock().unlock();

@@ -410,7 +410,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
 
             return new NbProcessDescriptor( b,
                 "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
-                NbBundle.getMessage(ExtWebBrowser.class, "MSG_BrowserExecutorHint")
+                ExtWebBrowser.UnixBrowserFormat.getHint()
             );
             
         // OS/2
@@ -419,7 +419,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 "Netscape.exe", // NOI18N
                 // {URL}
                 " {" + UnixBrowserFormat.TAG_URL + "}", // NOI18N
-                NbBundle.getBundle(ExtWebBrowser.class).getString("MSG_BrowserExecutorHint")
+                ExtWebBrowser.UnixBrowserFormat.getHint()
             );
             
         // Mac OS
@@ -428,7 +428,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 "/usr/bin/open", // NOI18N
                 // {URL}
                 " {" + UnixBrowserFormat.TAG_URL + "}", // NOI18N
-                NbBundle.getBundle(ExtWebBrowser.class).getString("MSG_BrowserExecutorHint")
+                ExtWebBrowser.UnixBrowserFormat.getHint()
             );
             
         // Other
@@ -438,7 +438,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 "", // NOI18N
                 // {URL}
                 " {" + UnixBrowserFormat.TAG_URL + "}", // NOI18N
-                NbBundle.getBundle(ExtWebBrowser.class).getString("MSG_BrowserExecutorHint")
+                ExtWebBrowser.UnixBrowserFormat.getHint()
             );
         }
     }
@@ -478,7 +478,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 browserExecutable = new NbProcessDescriptor (
                     browserExecutable.getProcessName(),
                     args.substring(0, idx)+"-remote \"openURL({URL})"+args.substring(idx+8), // NOI18N
-                    NbBundle.getMessage (ExtWebBrowser.class, "MSG_BrowserExecutorHint")
+                    ExtWebBrowser.UnixBrowserFormat.getHint()
                 );
             }
         }
@@ -495,7 +495,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         
         /** Tag used to pass URL */
         public static final String TAG_URL = "URL"; // NOI18N
-        
+
         /** Creates UnixBrowserFormat for URL.
          * @param url to specify URL
          */
@@ -503,7 +503,12 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             super(new java.util.HashMap ());
             java.util.Map map = getMap ();        
             map.put (TAG_URL, url);
-        }    
+        }
+        
+        public static String getHint() {
+            return NbBundle.getMessage(ExtWebBrowser.class, "MSG_BrowserExecutorHint"); // NOI18N
+        }
+
     }
     
 }

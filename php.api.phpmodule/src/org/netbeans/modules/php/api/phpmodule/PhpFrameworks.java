@@ -42,6 +42,9 @@ package org.netbeans.modules.php.api.phpmodule;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -54,6 +57,8 @@ public final class PhpFrameworks {
 
     public static final String FRAMEWORK_PATH = "PHP/Frameworks"; //NOI18N
 
+    private static final Lookup.Result<PhpFrameworkProvider> FRAMEWORKS = Lookups.forPath(FRAMEWORK_PATH).lookupResult(PhpFrameworkProvider.class);
+
     private PhpFrameworks() {
     }
 
@@ -62,6 +67,29 @@ public final class PhpFrameworks {
      * @return a list of all registered {@link PhpFrameworkProvider}s; never null.
      */
     public static List<PhpFrameworkProvider> getFrameworks() {
-        return new ArrayList<PhpFrameworkProvider>(Lookups.forPath(FRAMEWORK_PATH).lookupAll(PhpFrameworkProvider.class));
+        return new ArrayList<PhpFrameworkProvider>(FRAMEWORKS.allInstances());
+    }
+
+    /**
+     * Add {@link LookupListener listener} to be notified when frameworks change
+     * (new framework added, existing removed).
+     * @param listener {@link LookupListener listener} to be added
+     * @since 1.14
+     * @see #removeFrameworksListener(LookupListener)
+     */
+    public static void addFrameworksListener(LookupListener listener) {
+        Parameters.notNull("listener", listener);
+        FRAMEWORKS.addLookupListener(listener);
+    }
+
+    /**
+     * Remove {@link LookupListener listener}.
+     * @param listener {@link LookupListener listener} to be removed
+     * @since 1.14
+     * @see #addFrameworksListener(LookupListener)
+     */
+    public static void removeFrameworksListener(LookupListener listener) {
+        Parameters.notNull("listener", listener);
+        FRAMEWORKS.removeLookupListener(listener);
     }
 }

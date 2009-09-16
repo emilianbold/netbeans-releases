@@ -136,7 +136,7 @@ public class FileStatusCache {
      * @param cached if set to <code>true</code>, only cached values will be checked otherwise it may call I/O operations
      * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
      */
-    public boolean containsFileOfStatus(VCSContext context, int includeStatus, boolean cached){
+    public boolean containsFileOfStatus(VCSContext context, int includeStatus, boolean checkCommitExclusions, boolean cached){
         Map<File, FileInformation> allFiles = cached ? cacheProvider.getCachedValues() : cacheProvider.getAllModifiedValues();
         if(allFiles == null){
             Mercurial.LOG.log(Level.FINE, "containsFileOfStatus(): allFiles == null"); // NOI18N

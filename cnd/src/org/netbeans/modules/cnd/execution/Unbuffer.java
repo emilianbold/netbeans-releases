@@ -54,8 +54,10 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  *
+ * @deprecated use org.netbeans.modules.nativeexecution.support.UnbufferSupport instead
  * @author eu155513
  */
+@Deprecated
 public class Unbuffer {
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
     private static final boolean disabled = Boolean.getBoolean("cnd.unbuffer.disable"); // NOI18N

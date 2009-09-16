@@ -25,7 +25,7 @@
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
+ * single choicge of license, a recipient has the option to distribute
  * your version of this file aunder either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -85,11 +86,13 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskCommentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -328,6 +331,39 @@ public class NbJiraIssue extends Issue {
         return getFieldValues(IssueField.SUBTASK_IDS);
     }
 
+    public long getLastModify() {
+        String value = getFieldValue(IssueField.MODIFICATION);
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException nfex) {
+            Jira.LOG.log(Level.WARNING, null, nfex);
+        }
+        return -1;
+    }
+
+    public long getCreated() {
+        String value = getFieldValue(IssueField.CREATION);
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException nfex) {
+            Jira.LOG.log(Level.WARNING, null, nfex);
+        }
+        return -1;
+    }
+
+    private String dateByMillis(String text, boolean includeTime) {
+        if (text.trim().length() > 0) {
+            try {
+                long millis = Long.parseLong(text);
+                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
+                return format.format(new Date(millis));
+            } catch (NumberFormatException nfex) {
+                nfex.printStackTrace();
+            }
+        }
+        return ""; // NOI18N
+    }
+
     Comment[] getComments() {
         List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
         if (attrs == null) {
@@ -379,6 +415,22 @@ public class NbJiraIssue extends Issue {
                 attribute.setValues(customField.getValues());
             }
         }
+    }
+
+    LinkedIssue[] getLinkedIssues() {
+        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        if (attrs == null) {
+            return new LinkedIssue[0];
+        }
+        List<LinkedIssue> linkedIssues = new ArrayList<LinkedIssue>();
+
+        for (TaskAttribute attribute : attrs.values()) {
+            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_LINK_PREFIX)) {
+                LinkedIssue linkedIssue = new LinkedIssue(attribute);
+                linkedIssues.add(linkedIssue);
+            }
+        }
+        return linkedIssues.toArray(new LinkedIssue[linkedIssues.size()]);
     }
 
     /**
@@ -435,7 +487,7 @@ public class NbJiraIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            getRepository().getIssueCache().setIssueData(this, td); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }
@@ -457,8 +509,7 @@ public class NbJiraIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            String key = getID(td);
-            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            getRepository().getIssueCache().setIssueData(this, td);
             if (controller != null) {
                 controller.refreshViewData();
             }
@@ -785,16 +836,15 @@ public class NbJiraIssue extends Issue {
         }
         return controller;
     }
-
-    @Override
+    
     public String getRecentChanges() {
-        if(wasSeen()) {
+        if(IssueCacheUtils.wasSeen(this)) {
             return "";                                                          // NOI18N
         }
         int status = repository.getIssueCache().getStatus(getID());
-        if(status == Issue.ISSUE_STATUS_NEW) {
+        if(status == IssueCache.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
-        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             Map<String, String> seenAtributes = getSeenAttributes();
             assert seenAtributes != null;
@@ -1192,12 +1242,8 @@ public class NbJiraIssue extends Issue {
             repository.refreshAllQueries();
         }
 
-        try {
-            seenAtributes = null;
-            setSeen(true);
-        } catch (IOException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
+        seenAtributes = null;
+        IssueCacheUtils.setSeen(this, true);
 
         return true;
     }
@@ -1483,6 +1529,38 @@ public class NbJiraIssue extends Issue {
         public void setValues (List<String> values) {
             this.values = values;
         }
+    }
+
+    public static final class LinkedIssue {
+        private final String linkId;
+        private final String label;
+        private final String issueKey;
+        private final boolean inward;
+
+        private LinkedIssue(TaskAttribute attribute) {
+            String suffix = attribute.getId().substring(IJiraConstants.ATTRIBUTE_LINK_PREFIX.length());
+            inward = suffix.endsWith("inward"); // NOI18N
+            linkId = suffix.substring(0, suffix.length()-(inward?6:7));
+            label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
+            issueKey = attribute.getValue();
+        }
+
+        public String getLinkId() {
+            return linkId;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getIssueKey() {
+            return issueKey;
+        }
+
+        public boolean isInward() {
+            return inward;
+        }
+
     }
 
     public static final class WorkLog {

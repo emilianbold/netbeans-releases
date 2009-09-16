@@ -1,0 +1,4 @@
+Code completion result for source line:
+puts Outer::|OUTER_CONST
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CONSTANT   OUTER_CONST                                null

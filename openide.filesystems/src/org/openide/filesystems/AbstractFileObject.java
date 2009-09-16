@@ -1251,7 +1251,7 @@ final class AbstractFileObject extends AbstractFolder {
         /** Finds the right file.
         */
         public Object readResolve() {
-            Repository rep = ExternalUtil.getRepository();
+            Repository rep = Repository.getDefault();
             @SuppressWarnings("deprecation") // FileSystem.systemName historical part of serial form
             FileSystem fs = rep.findFileSystem(fsName);
             FileObject fo = null;

@@ -158,7 +158,7 @@ import org.openide.util.NbBundle;
         }
         
         for (String entity : entities) {
-            createdFiles.addAll(generate(targetFolder, entity, pkg, panel.isRemote(), panel.isLocal()));
+            createdFiles.addAll(generate(targetFolder, entity, pkg, panel.isRemote(), panel.isLocal(), false));
         }
         return createdFiles;
     }
@@ -174,8 +174,8 @@ import org.openide.util.NbBundle;
      * 
      * @return a set containing the generated files.
      */ 
-    private Set<FileObject> generate(final FileObject targetFolder, final String entityClass, String pkg, final boolean hasRemote, final boolean hasLocal) throws IOException {
-        return generate(targetFolder, entityClass, pkg, hasRemote, hasLocal, ContainerManagedJTAInjectableInEJB.class);
+    private Set<FileObject> generate(final FileObject targetFolder, final String entityClass, String pkg, final boolean hasRemote, final boolean hasLocal, boolean overrideExisting) throws IOException {
+        return generate(targetFolder, entityClass, pkg, hasRemote, hasLocal, ContainerManagedJTAInjectableInEJB.class, overrideExisting);
     }
     
     
@@ -193,13 +193,23 @@ import org.openide.util.NbBundle;
      * @return a set containing the generated files.
      */ 
     Set<FileObject> generate(final FileObject targetFolder, final String entityFQN, 
-            String pkg, final boolean hasRemote, final boolean hasLocal, final Class<? extends EntityManagerGenerationStrategy> strategyClass) throws IOException {
+            String pkg, final boolean hasRemote, final boolean hasLocal, 
+            final Class<? extends EntityManagerGenerationStrategy> strategyClass,
+            boolean overrideExisting) throws IOException {
         
         final Set<FileObject> createdFiles = new HashSet<FileObject>();
         final String entitySimpleName = JavaIdentifiers.unqualify(entityFQN);
         final String variableName = entitySimpleName.toLowerCase().charAt(0) + entitySimpleName.substring(1);
         
         // create the facade
+        FileObject existingFO = targetFolder.getFileObject(entitySimpleName + FACADE_SUFFIX, "java");
+        if (existingFO != null) {
+            if (overrideExisting) {
+                existingFO.delete();
+            } else {
+                throw new IOException("file alerady exists exception: "+existingFO);
+            }
+        }
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + FACADE_SUFFIX, null);
         createdFiles.add(facade);
         // add the @stateless annotation 
@@ -524,7 +534,12 @@ import org.openide.util.NbBundle;
         System.arraycopy(beforeSteps, 0, steps, 0, stepsStartPos);
         System.arraycopy(thisSteps, 0, steps, stepsStartPos, thisSteps.length);
     }
+
     public static FileObject[] generateSessionBeans(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, boolean local, boolean remote) throws IOException {
+        return generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, local, remote, false);
+    }
+    
+    public static FileObject[] generateSessionBeans(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, boolean local, boolean remote, boolean overrideExisting) throws IOException {
         int progressIndex = 0;
         String progressMsg =  NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_Progress_SessionBean_Pre"); //NOI18N;
         progressContributor.progress(progressMsg, progressIndex++);
@@ -541,7 +556,7 @@ import org.openide.util.NbBundle;
             progressMsg = NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_Progress_SessionBean_Now_Generating", entitySimpleName + FACADE_SUFFIX + ".java");//NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
-            sbFileObjects[i]=iterator.generate(jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote).iterator().next();
+            sbFileObjects[i]=iterator.generate(jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote, overrideExisting).iterator().next();
         }
 
         return sbFileObjects;

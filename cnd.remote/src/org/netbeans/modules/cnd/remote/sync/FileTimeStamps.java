@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -60,7 +60,6 @@ public class FileTimeStamps {
     private final Properties data;
     private final File dataFile;
     private final ExecutionEnvironment executionEnvironment;
-    protected final Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     public FileTimeStamps(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         this.executionEnvironment = executionEnvironment;
@@ -75,7 +74,7 @@ public class FileTimeStamps {
                 final FileInputStream is = new FileInputStream(dataFile);
                 data.load(new BufferedInputStream(is));
                 is.close();
-                if (logger.isLoggable(Level.FINEST)) {
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                     time = System.currentTimeMillis() - time;
                     System.out.printf("\treading %d timestamps from %s took %d ms\n", data.size(), dataFile.getAbsolutePath(), time); // NOI18N
                 }

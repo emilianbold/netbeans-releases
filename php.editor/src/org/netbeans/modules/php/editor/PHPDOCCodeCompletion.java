@@ -52,9 +52,7 @@ import java.util.TreeMap;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -87,6 +85,7 @@ public class PHPDOCCodeCompletion {
             PHPDocCommentTokenId.PHPDOC_RETURN,
             PHPDocCommentTokenId.PHPDOC_VAR,
             PHPDocCommentTokenId.PHPDOC_PARAM,
+            PHPDocCommentTokenId.PHPDOC_METHOD,
             PHPDocCommentTokenId.PHPDOC_PROPERTY,
             PHPDocCommentTokenId.PHPDOC_PROPERTY_READ,
             PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE);

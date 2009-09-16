@@ -42,16 +42,22 @@
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
@@ -74,7 +80,7 @@ import org.openide.util.NbBundle;
 // Implement HelpCtx.Provider interface to provide help ids for help system
 // public class LineBreakpointPanel extends JPanel implements Controller {
 //
-public class LineBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
+public class LineBreakpointPanel extends JPanel implements ControllerProvider, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
     private static final String         HELP_ID = "NetbeansDebuggerBreakpointLineJPDA"; // NOI18N
@@ -82,6 +88,8 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     private ActionsPanel                actionsPanel; 
     private LineBreakpoint              breakpoint;
     private boolean                     createBreakpoint = false;
+    private LBController                controller = new LBController();
+    private final DocumentListener      validityDocumentListener = new ValidityDocumentListener();
     
     
     private static LineBreakpoint createBreakpoint () {
@@ -98,19 +106,31 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     
     
     public LineBreakpointPanel () {
-        this (createBreakpoint ());
-        createBreakpoint = true;
+        this (createBreakpoint (), true);
     }
     
     /** Creates new form LineBreakpointPanel */
     public LineBreakpointPanel (LineBreakpoint b) {
+        this(b, false);
+    }
+
+    /** Creates new form LineBreakpointPanel */
+    public LineBreakpointPanel (LineBreakpoint b, boolean createBreakpoint) {
+        this.createBreakpoint= createBreakpoint;
         breakpoint = b;
         initComponents ();
+        if (createBreakpoint) {
+            tfFileName.setEditable(true);
+        }
 
         String url = b.getURL();
         try {
             URI uri = new URI(url);
-            tfFileName.setText(uri.getPath());
+            String s = uri.getPath();
+            if (s.length() == 0) {
+                s = url;
+            }
+            tfFileName.setText(s);
         } catch (Exception e) {
             tfFileName.setText(url);
         }
@@ -129,6 +149,14 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
+
+        tfFileName.getDocument().addDocumentListener(validityDocumentListener);
+        tfLineNumber.getDocument().addDocumentListener(validityDocumentListener);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                controller.checkValid();
+            }
+        });
     }
     
     private static int findNumLines(String url) {
@@ -269,61 +297,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     
     // Controller implementation ...............................................
     
-    /**
-     * Called when "Ok" button is pressed.
-     *
-     * @return whether customizer can be closed
-     */
-    public boolean ok () {
-        String msg = valiadateMsg();
-        if (msg == null) {
-            msg = conditionsPanel.valiadateMsg();
-        }
-        if (msg != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-            return false;
-        }
-        actionsPanel.ok ();
-        breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
-        breakpoint.setCondition (conditionsPanel.getCondition());
-        breakpoint.setHitCountFilter(conditionsPanel.getHitCount(),
-                conditionsPanel.getHitCountFilteringStyle());
-        
-        if (createBreakpoint)
-            DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
-        return true;
-    }
-    
-    /**
-     * Called when "Cancel" button is pressed.
-     *
-     * @return whether customizer can be closed
-     */
-    public boolean cancel () {
-        return true;
-    }
-    
-    private String valiadateMsg () {
-        int line;
-        try {
-            line = Integer.parseInt(tfLineNumber.getText().trim());
-        } catch (NumberFormatException e) {
-            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_Line_Number_Spec");
-        }
-        if (line <= 0) {
-            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
-        }
-        int maxLine = findNumLines(breakpoint.getURL());
-        if (maxLine == 0) { // Not found
-            maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
-        }
-        if (line > maxLine + 1) {
-            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
-                    Integer.toString(line), Integer.toString(maxLine + 1));
-        }
-        return null;
-    }
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel cPanel;
@@ -335,5 +308,173 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     private javax.swing.JTextField tfFileName;
     private javax.swing.JTextField tfLineNumber;
     // End of variables declaration//GEN-END:variables
+
+    public Controller getController() {
+        return controller;
+    }
+
+    private class LBController implements Controller {
+
+        private boolean valid;
+
+        /**
+         * Called when "Ok" button is pressed.
+         *
+         * @return whether customizer can be closed
+         */
+        public boolean ok () {
+            String msg = valiadateMsg();
+            if (msg == null) {
+                msg = conditionsPanel.valiadateMsg();
+            }
+            if (msg != null) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                return false;
+            }
+            actionsPanel.ok ();
+            breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
+            breakpoint.setCondition (conditionsPanel.getCondition());
+            breakpoint.setHitCountFilter(conditionsPanel.getHitCount(),
+                    conditionsPanel.getHitCountFilteringStyle());
+
+            if (createBreakpoint)
+                DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
+            return true;
+        }
+
+        /**
+         * Called when "Cancel" button is pressed.
+         *
+         * @return whether customizer can be closed
+         */
+        public boolean cancel () {
+            return true;
+        }
+
+        private void checkValid() {
+            String path = tfFileName.getText().trim();
+            if (path.length() == 0) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_File_Spec"));
+                setValid(false);
+                return ;
+            }
+            try {
+                if (new File(path).exists()) {
+                    path = "file:"+path;
+                }
+                URL url = new URL(path);
+                try {
+                    File f = new File(url.toURI());
+                    if (!f.isFile()) {
+                        setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonExistent_File_Spec"));
+                        setValid(false);
+                        return ;
+                    }
+                } catch (IllegalArgumentException iaex) {
+                    // Ignore IllegalArgumentException (e.g. URI might not be hierarchical)
+                }
+            } catch (MalformedURLException ex) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonExistent_File_Spec"));
+                setValid(false);
+                return ;
+            } catch (URISyntaxException ex) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_Malformed_File_Spec"));
+                setValid(false);
+                return ;
+            } catch (IOException ioex) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_Invalid_File_Spec"));
+                setValid(false);
+                return ;
+            }
+            int line;
+            try {
+                line = Integer.parseInt(tfLineNumber.getText().trim());
+            } catch (NumberFormatException e) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_Line_Number_Spec"));
+                setValid(false);
+                return ;
+            }
+            if (line <= 0) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec"));
+                setValid(false);
+                return ;
+            }
+            int maxLine = findNumLines(breakpoint.getURL());
+            if (maxLine == 0) { // Not found
+                maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
+            }
+            if (line > maxLine + 1) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
+                                Integer.toString(line), Integer.toString(maxLine + 1)));
+                setValid(false);
+                return ;
+            }
+            setErrorMessage(null);
+            setValid(true);
+        }
+
+        private String valiadateMsg () {
+            int line;
+            try {
+                line = Integer.parseInt(tfLineNumber.getText().trim());
+            } catch (NumberFormatException e) {
+                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_Line_Number_Spec");
+            }
+            if (line <= 0) {
+                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
+            }
+            int maxLine = findNumLines(breakpoint.getURL());
+            if (maxLine == 0) { // Not found
+                maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
+            }
+            if (line > maxLine + 1) {
+                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
+                        Integer.toString(line), Integer.toString(maxLine + 1));
+            }
+            return null;
+        }
+
+        private void setValid(boolean valid) {
+            this.valid = valid;
+            firePropertyChange(PROP_VALID, !valid, valid);
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        private void setErrorMessage(String msg) {
+            firePropertyChange(NotifyDescriptor.PROP_ERROR_NOTIFICATION, null, msg);
+        }
+
+        private void setInformationMessage(String msg) {
+            firePropertyChange(NotifyDescriptor.PROP_INFO_NOTIFICATION, null, msg);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            LineBreakpointPanel.this.addPropertyChangeListener(l);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            LineBreakpointPanel.this.removePropertyChangeListener(l);
+        }
+        
+    }
+
+    private class ValidityDocumentListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            controller.checkValid();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            controller.checkValid();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            controller.checkValid();
+        }
+        
+    }
     
 }

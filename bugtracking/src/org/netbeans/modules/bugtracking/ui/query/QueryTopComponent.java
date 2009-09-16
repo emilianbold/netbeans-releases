@@ -147,31 +147,38 @@ public final class QueryTopComponent extends TopComponent
             BugtrackingController c = query.getController();
             panel.add(c.getComponent());
             this.query.addPropertyChangeListener(this);
+            this.query.addNotifyListener(this);
         } else {
             newButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onNewClick();
                 }
             });
-            if(defaultRepository == null) {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox);
-            } else {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
-            }
             repositoryComboBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
-                        onRepoSelected();
+                        Object item = e.getItem();
+                        if (item instanceof Repository) {
+                            onRepoSelected();
+                        }
                     } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                        Repository repo = (Repository) e.getItem();
-                        repo.removePropertyChangeListener(QueryTopComponent.this);
+                        Object item = e.getItem();
+                        if (item instanceof Repository) {
+                            ((Repository) item).removePropertyChangeListener(QueryTopComponent.this);
+                        }
                     }
                 }
             });
+            if(defaultRepository == null) {
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, true);
+            } else {
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
+            }
             newButton.addFocusListener(this);
             repositoryComboBox.addFocusListener(this);
             queriesPanel.setVisible(false);
         }
+        BugtrackingUtil.logBugtrackingUsage(query != null ? query.getRepository() : defaultRepository, "ISSUE_QUERY"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -404,6 +411,7 @@ public final class QueryTopComponent extends TopComponent
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
+            query.removeNotifyListener(this);
             query.getController().closed();
         }
         Kenai.getDefault().removePropertyChangeListener(this);
@@ -536,6 +544,7 @@ public final class QueryTopComponent extends TopComponent
                     final BugtrackingController removeController = query != null ? query.getController() : null;
                     if(query != null) {
                         query.removePropertyChangeListener(QueryTopComponent.this);
+                        query.removeNotifyListener(QueryTopComponent.this);
                     }
 
                     query = repo.createQuery();

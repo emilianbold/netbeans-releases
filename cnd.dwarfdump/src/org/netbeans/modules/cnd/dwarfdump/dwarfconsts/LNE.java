@@ -53,7 +53,7 @@ public enum LNE {
     DW_LNE_define_file(0x03),
     DW_LNE_lo_user(0x80),
     DW_LNE_hi_user(0xff);
-    
+
     private final int value;
     static private final HashMap<Integer, LNE> hashmap = new HashMap<Integer, LNE>();
     

@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.ActionsManager;
@@ -55,13 +54,12 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
-import org.netbeans.modules.debugger.ui.Utils;
 
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 /**
@@ -278,19 +276,21 @@ public class DebuggerAction extends AbstractAction {
     
     public static Action createDebugFileAction() {
         Action a = FileSensitiveActions.fileCommandAction(
-            "debug.single", // XXX Define standard
-            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugSingleAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugSingle.png", false)); //NOI18N
+            ActionProvider.COMMAND_DEBUG_SINGLE,
+            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugSingleAction_Name"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugSingle.png", true));
         a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugSingle.png"); //NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        a.putValue("noIconInMenu", true); //NOI18N
         return a;
     }
     
     public static Action createDebugTestFileAction()  {
         Action a = FileSensitiveActions.fileCommandAction(
-            "debug.test.single", // XXX Define standard
-            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugTestSingleAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugTestSingle.png", false)); //NOI18N
+            ActionProvider.COMMAND_DEBUG_TEST_SINGLE,
+            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugTestSingleAction_Name"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugTestSingle.png", true));
         a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugTestSingle.png"); //NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        a.putValue("noIconInMenu", true); //NOI18N
         return a;
     }
     

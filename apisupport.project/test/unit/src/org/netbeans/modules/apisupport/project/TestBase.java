@@ -71,7 +71,7 @@ import org.netbeans.modules.apisupport.project.ui.ImportantFilesNodeFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.openide.filesystems.FileLock;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -83,11 +83,11 @@ import org.openide.util.Lookup;
  */
   public abstract class TestBase extends NbTestCase {
 
-    public static final String CLUSTER_IDE = "ide11";
-    public static final String CLUSTER_PLATFORM = "platform10";
+    public static final String CLUSTER_IDE = "ide12";
+    public static final String CLUSTER_PLATFORM = "platform11";
     public static final String CLUSTER_ENTERPRISE = "enterprise5";
     public static final String CLUSTER_APISUPPORT = "apisupport1";
-    public static final String CLUSTER_JAVA = "java2";
+    public static final String CLUSTER_JAVA = "java3";
 
     protected TestBase(String name) {
         super(name);
@@ -303,7 +303,8 @@ import org.openide.util.Lookup;
             }
         }
     }
-    
+
+    // XXX use FileObject.asText
     public static String slurp(FileObject fileObject) throws IOException {
         InputStream is = fileObject.getInputStream();
         try {
@@ -314,19 +315,15 @@ import org.openide.util.Lookup;
             is.close();
         }
     }
+    // XXX use TestUtils in openide.util
     public static void dump(FileObject f, String contents) throws IOException {
-        FileLock lock = f.lock();
+        OutputStream os = f.getOutputStream();
         try {
-            OutputStream os = f.getOutputStream(lock);
-            try {
-                Writer w = new OutputStreamWriter(os, "UTF-8");
-                w.write(contents);
-                w.flush();
-            } finally {
-                os.close();
-            }
+            Writer w = new OutputStreamWriter(os, "UTF-8");
+            w.write(contents);
+            w.flush();
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
     public static String slurp(File file) throws IOException {
