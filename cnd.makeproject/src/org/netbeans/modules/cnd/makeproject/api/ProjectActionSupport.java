@@ -382,7 +382,7 @@ public class ProjectActionSupport {
             File dir2sync = new File(projectDir);
             File privProjectStorage = new File(new File(dir2sync, "nbproject"), "private"); //NOI18N
             RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
-                    dir2sync, env, out, err, privProjectStorage);
+                    env, out, err, privProjectStorage, dir2sync);
             return syncWorker.synchronize();
         }
 
