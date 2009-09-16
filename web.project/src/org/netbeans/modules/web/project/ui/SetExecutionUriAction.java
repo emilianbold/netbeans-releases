@@ -225,30 +225,32 @@ public final class SetExecutionUriAction extends NodeAction {
         if ( project != null ){
             final ProjectWebModule prjWebModule = project.getLookup().lookup( 
                     ProjectWebModule.class);
-            MarkerClass marker = prjWebModule.getLookup().lookup( 
-                    MarkerClass.class );
-            if ( marker == null ){
-                Runnable runnable = new Runnable(){
-                    public void run() {
-                        isServletFile(webModule, fileObject , true );
-                        prjWebModule.removeCookie( myMarker);
-                        prjWebModule.addCookie( new MarkerClass() );
-                    }
-                };
-                if ( prjWebModule.getLookup().lookup( MarkerClass.class ) == null ){
-                    /* Double check . It's not good but not fatal. 
-                     * In the worst case we will start several initial scanning.
-                     */
-                    RequestProcessor.getDefault().post(runnable);
-                    prjWebModule.addCookie( myMarker );
-                 }
-                return true;
-            }
-            else if ( marker == myMarker ){
-                return true;
-            }
-            else {
-                return false;
+            if (prjWebModule != null) {
+                MarkerClass marker = prjWebModule.getLookup().lookup(
+                        MarkerClass.class );
+                if ( marker == null ){
+                    Runnable runnable = new Runnable(){
+                        public void run() {
+                            isServletFile(webModule, fileObject , true );
+                            prjWebModule.removeCookie( myMarker);
+                            prjWebModule.addCookie( new MarkerClass() );
+                        }
+                    };
+                    if ( prjWebModule.getLookup().lookup( MarkerClass.class ) == null ){
+                        /* Double check . It's not good but not fatal.
+                         * In the worst case we will start several initial scanning.
+                         */
+                        RequestProcessor.getDefault().post(runnable);
+                        prjWebModule.addCookie( myMarker );
+                     }
+                    return true;
+                }
+                else if ( marker == myMarker ){
+                    return true;
+                }
+                else {
+                    return false;
+                }
             }
         }
         return false;

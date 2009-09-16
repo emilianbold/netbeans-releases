@@ -100,7 +100,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
         private int creationCaretOffset;
         private int completionExpressionStartOffset;
         private JTextComponent component;
-        private Collection<PaletteCompletionItem> items;
+        private Collection<PaletteCompletionItem> items = new ArrayList<PaletteCompletionItem>();
 
         CCQuery(int caretOffset) {
             this.creationCaretOffset = caretOffset;
@@ -108,7 +108,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
 
         protected void query(CompletionResultSet resultSet, Document doc, int offset) {
             try {
-                items = new ArrayList<PaletteCompletionItem>();
+                items.clear();
 
                 TokenSequence htmlTs = getTokenSequence(doc, offset);
 

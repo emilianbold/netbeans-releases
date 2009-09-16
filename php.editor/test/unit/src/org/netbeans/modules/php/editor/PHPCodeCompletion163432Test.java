@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,78 +39,41 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.wizards;
+package org.netbeans.modules.php.editor;
 
-import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
-import org.openide.util.HelpCtx;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish
- * the original wizard panel, that is not finishable
  *
- *
- * @author mkuchtiak
+ * @author Radek Matous
  */
-public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+public class PHPCodeCompletion163432Test extends PHPTestBase {
 
-    private final WizardDescriptor.Panel original;
-    private final HelpCtx helpCtx;
-    private boolean isOriginallyValid = true;
-
-    public FinishableProxyWizardPanel(Panel original, HelpCtx helpCtx) {
-        this.original = original;
-        this.helpCtx = helpCtx;
-    }
-    
-    public FinishableProxyWizardPanel(Panel original, HelpCtx helpCtx, 
-            boolean isValid ) 
-    {
-        this.original = original;
-        this.helpCtx = helpCtx;
-        isOriginallyValid = isValid;
-    }
-    
-    public FinishableProxyWizardPanel(WizardDescriptor.Panel original) {
-        this(original, null);
+    public PHPCodeCompletion163432Test(String testName) {
+        super(testName);
     }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        original.addChangeListener(l);
+    public void test163432() throws Exception {
+        checkCompletion("testfiles/completion/lib/test163432/test.php", "@fn^", false);
+    }
+    public void test163432_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test163432/test.php", "@$cls163432->^", false);
     }
 
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        original.removeChangeListener(l);
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test163432"))
+            })
+        );
     }
-
-    public void storeSettings(Object settings) {
-        original.storeSettings(settings);
-    }
-
-    public void readSettings(Object settings) {
-        original.readSettings(settings);
-    }
-
-    public boolean isValid() {
-        if ( !isOriginallyValid ){
-            return false;
-        }
-        return original.isValid();
-    }
-
-    public boolean isFinishPanel() {
-        return true;
-    }
-
-    public java.awt.Component getComponent() {
-        return original.getComponent();
-    }
-
-    public org.openide.util.HelpCtx getHelp() {
-        if (helpCtx != null) {
-            return helpCtx;
-        }
-        return original.getHelp();
-    }
-    
 }
