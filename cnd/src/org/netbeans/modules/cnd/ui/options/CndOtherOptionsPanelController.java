@@ -49,6 +49,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
+@OptionsPanelController.SubRegistration(
+    location="CPlusPlus",
+    displayName="#TAB_CndOtherOptionsTab",
+    position=1000
+)
 public final class CndOtherOptionsPanelController extends OptionsPanelController {
 
     private CndOtherOptionsPanel panel = new CndOtherOptionsPanel();

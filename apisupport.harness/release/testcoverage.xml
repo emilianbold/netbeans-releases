@@ -4,8 +4,7 @@
 <!--
   Test coverage measurement for apisupport module projects.
 
-  At present, this only measure coverage for unit tests.  Functional
-  tests, performance tests and other types of tests are not considered.
+  Unit and functional tests supported.
 
   NOTE: Implemented using Cobertura, will be moved to separate module.
   General contract for test coverage implementation for module projects is
@@ -36,7 +35,7 @@
         <property name="cobertura.datafile" value="${basedir}/build/test/cobertura.ser"/>
         <property name="continue.after.failing.tests" value="true" />
 
-        <path id="cobertura.test.cp"> 
+        <path id="cobertura.test.cp">
             <pathelement location="${build.test.cobertura.classes.dir}" />
             <pathelement location="${cobertura.dir}/cobertura-1.9.jar" />
             <pathelement location="${test.unit.lib.cp}"/>
@@ -53,7 +52,7 @@
 
     <target name="-copy-source-folder" depends="cobertura-init">
         <!--
-            note that this does not inherently handle if there are multiple source 
+            note that this does not inherently handle if there are multiple source
             folders; it might be possible to handle this by overriding in the
             module's build.xml.
         -->
@@ -107,9 +106,9 @@ Current java platform setup is:
                 </fileset>
 
             </batchtest>
-            <!-- 
-               This somewhat duplicates the normal JUnit testing target, but the 
-               cobertura.test.cp  must come first in the testing classpath for 
+            <!--
+               This somewhat duplicates the normal JUnit testing target, but the
+               cobertura.test.cp  must come first in the testing classpath for
                coverage to work properly and there is no other good way to inject it.
             -->
             <classpath refid="cobertura.test.cp"/>
@@ -128,5 +127,121 @@ Current java platform setup is:
             <delete dir="${testcoverage.report.dir}" failonerror="false"/>
         <cobertura-report datafile="${cobertura.datafile}" srcdir="${src.dir}" destdir="${testcoverage.report.dir}"/>
     </target>
-    
+
+     <!-- Support for functional tests
+     DO NOT MODIFY!!! The following ant scripts are a bit dirty and are put together to make the c-c for
+     functional tests work. Will be cleaned and merged with the above script in the next days.
+     -->
+
+    <target name="cobertura-init-functional" depends="build-init,init,test-init">
+        <property name="testcoverage.report.dir" value="${basedir}/build/test/qa-functional/cobertura-report"/>
+        <property name="cobertura.datafile" value="${basedir}/build/test/qa-functional/cobertura.ser"/>
+        <property name="continue.after.failing.tests" value="true" />
+        <property name="testcoverage.backup.dir" value="${basedir}/build/test/qa-functional/modulebackup" />
+    </target>
+
+    <target name="cobertura-instrument-functional-prepare" depends="cobertura-init-functional, test-build">
+        <condition property="nbjdk.active.print" value="${nbjdk.active}" else="UNSET">
+            <isset property="nbjdk.active"/>
+        </condition>
+        <condition property="nbjdk.home.print" value="${nbjdk.home}" else="UNSET">
+            <isset property="nbjdk.home"/>
+        </condition>
+        <condition property="nbjdk.home.defaulted.print" value="YES" else="NO">
+            <isset property="nbjdk.home.defaulted"/>
+        </condition>
+        <fail if="nbjdk.valid">
+Test coverage tasks can be currently run only with default java platform, that is
+with property nbjdk.active unset or set to 'default' and with property nbjdk.home
+unset.
+
+For NB.org module, specify properties:
+nbjdk.home.defaulted=true
+permit.jdk6.builds=true
+when running the target.
+
+Current java platform setup is:
+  nbjdk.active:         ${nbjdk.active.print}
+  nbjdk.home:           ${nbjdk.home.print}
+  nbjdk.home defaulted: ${nbjdk.home.defaulted.print}
+        </fail>
+        <delete file="${cobertura.datafile}" failonerror="false"/>
+        <delete dir="${testcoverage.backup.dir}" />
+        <mkdir dir="${testcoverage.backup.dir}" />
+    </target>
+
+    <!-- In case test.coverage.qa-functional.coveredmodules property is not set backup and instrument
+        just the module we're running code coverage from -->
+    <target name="tc-instrument-default" unless="test.coverage.qa-functional.coveredmodules">
+        <copy file="${cluster}/${module.jar}" todir="${testcoverage.backup.dir}/modules" />
+        <cobertura-instrument datafile="${cobertura.datafile}" >
+            <fileset dir="${cluster}" includes="${module.jar}" />
+        </cobertura-instrument>
+    </target>
+
+    <target name="tc-instrument-specified" if="test.coverage.qa-functional.coveredmodules">
+        <copy todir="${testcoverage.backup.dir}">
+            <fileset dir="${netbeans.dest.dir}" includes="${test.coverage.qa-functional.coveredmodules}" />
+        </copy>
+        <cobertura-instrument datafile="${cobertura.datafile}">
+            <fileset dir="${netbeans.dest.dir}" includes="${test.coverage.qa-functional.coveredmodules}" />
+        </cobertura-instrument>
+    </target>
+
+    <target name="tc-restore-default" unless="test.coverage.qa-functional.coveredmodules">
+        <delete file="${cluster}/${module.jar}" />
+        <copy file="${testcoverage.backup.dir}/${module.jar}" todir="${cluster}" />
+    </target>
+
+    <target name="tc-restore-specified" if="test.coverage.qa-functional.coveredmodules">
+        <delete>
+            <fileset dir="${netbeans.dest.dir}" includes="test.coverage.qa-functional.coveredmodules" />
+        </delete>
+        <copy todir="${netbeans.dest.dir}" >
+            <fileset dir="${testcoverage.backup.dir}" includes="test.coverage.qa-functional.coveredmodules" />
+        </copy>
+    </target>
+
+    <target name="test-coverage-instrument" depends="tc-instrument-default,tc-instrument-specified"/>
+    <target name="test-coverage-restore" depends="tc-restore-default,tc-restore-specified" />
+
+    <target name="test-with-cobertura-functional" depends="cobertura-init-functional,init,test-init,netbeans,test-build">
+        <pathconvert pathsep="${line.separator} " property="echo.cobertura.test.cp" refid="cobertura.test.cp"/>
+        <mkdir dir="${build.test.qa-functional.results.dir}"/>
+        <property name="code.coverage.classpath" value="${cobertura.dir}" />
+        <propertyset id="test.qa-functional.coverage.properties">
+            <propertyset refid="test.qa-functional.properties"/>
+            <propertyref name="code.coverage.classpath" />
+        </propertyset>
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.qa-functional.results.dir}" timeout="${test.timeout}">
+            <batchtest todir="${build.test.qa-functional.results.dir}">
+                <fileset dir="${build.test.qa-functional.classes.dir}" erroronmissingdir="false">
+                    <include name="**/*Test.class"/>
+                </fileset>
+
+            </batchtest>
+            <!--
+               This somewhat duplicates the normal JUnit testing target, but the
+               cobertura.test.cp  must come first in the testing classpath for
+               coverage to work properly and there is no other good way to inject it.
+            -->
+            <classpath refid="test.qa-functional.run.cp"/>
+
+            <syspropertyset refid="test.qa-functional.coverage.properties"/>
+
+            <jvmarg line="${test.run.args}"/>
+            <sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.datafile}" />
+            <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+        </junit>
+        <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+    </target>
+
+    <target name="test-coverage-functional" depends="netbeans,cobertura-init-functional,cobertura-instrument-functional-prepare,test-coverage-instrument,test-with-cobertura-functional,test-coverage-restore"/>
+
+    <target name="coverage-report-functional" depends="netbeans, test-coverage-functional" description="Creates qa-functional test coverage report for this module">
+        <delete dir="${testcoverage.report.dir}" failonerror="false"/>
+        <cobertura-report datafile="${cobertura.datafile}" srcdir="${src.dir}" destdir="${testcoverage.report.dir}"/>
+    </target>
+
 </project>

@@ -72,6 +72,29 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="annotations">
+        <api name="OptionsAPI"/>
+        <summary>Annotations to register dialog panels</summary>
+        <version major="1" minor="14"/>
+        <date day="14" month="9" year="2009"/>
+        <author login="jglick"/>
+        <compatibility addition="yes" deprecation="yes">
+            <p>
+                Deprecated subclassing <code>AdvancedOption</code> and using
+                <code>OptionsPanelController.createAdvanced</code> as these
+                do not do anything you cannot do more easily using annotations.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Introduced three annotations inside <code>OptionsPanelController</code>
+                to register Options dialog panels declaratively.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.options" name="OptionsPanelController"/>
+        <class package="org.netbeans.spi.options" name="AdvancedOption"/>
+        <issue number="171284"/>
+    </change>
     <change id="classic">
         <api name="OptionsAPI"/>
         <summary>"Classic" mode fully implemented in module</summary>

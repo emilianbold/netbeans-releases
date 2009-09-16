@@ -290,8 +290,11 @@ made subject to such option by the copyright holder.
     <mkdir dir="${netbeans.build.dir}"/>
     <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
     <hgexec dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
-      <arg value="id"/>
-      <arg value="-i"/>
+      <arg value="log"/>
+      <arg value="-r"/>
+      <arg value="."/>
+      <arg value="--template"/>
+      <arg value="{node|short}\n"/>
     </hgexec>
     <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
       <equals arg1="${hg.id.exit}" arg2="0"/>
@@ -1560,6 +1563,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="group-friend-packages" file="${generated.files.dir}/group-friend-packages.txt" />
       <output type="kits" file="${generated.files.dir}/kits.txt" />
       <output type="kit-dependencies" file="${generated.files.dir}/kit-deps.txt" />
+      <output type="plugins" file="${generated.files.dir}/plugins.txt"/>
     </deps>
 
     <taskdef name="test-deps" classname="org.netbeans.nbbuild.ModuleTestDependencies" classpath="nbantext.jar"/>

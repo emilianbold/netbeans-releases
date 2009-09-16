@@ -1334,7 +1334,7 @@ public final class OpenProjectList {
             }
             return false;
         }
-        
+
         public void refresh() {
             ProjectManager.mutex().readAccess(new Runnable() {
                 public void run () {
@@ -1500,7 +1500,8 @@ public final class OpenProjectList {
         }
         
         private List<UnloadedProjectInformation> getRecentProjectsInfo() {
-            refresh();
+            // #166408: refreshing is too time expensive and we want to be fast, not correct
+            //refresh();
             return recentProjectsInfos;
         }
         
