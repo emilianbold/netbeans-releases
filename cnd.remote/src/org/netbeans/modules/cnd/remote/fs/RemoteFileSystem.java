@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -65,7 +66,7 @@ public class RemoteFileSystem extends FileSystem {
     private final File cache;
 
     public RemoteFileSystem(ExecutionEnvironment execEnv) {
-        assert execEnv.isRemote();
+        CndUtils.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.

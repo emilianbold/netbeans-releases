@@ -37,16 +37,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.threadmap;
+package org.netbeans.modules.cnd.tha.support;
 
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
 
 /**
- * Represents thread state summary column
  *
  * @author Alexander Simon
  */
-public interface ThreadSummaryColumn {
-    List<StateDuration> getSummary();
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider.class)
+public class ValidateInstrumentationProviderImpl extends ValidateInstrumentationProvider {
+
+    @Override
+    public List<String> validate(Project makeProject) {
+        THAProjectSupport support = THAProjectSupport.getSupportFor(makeProject);
+        if (support != null) {
+            if (support.isConfiguredForInstrumentation(null)){
+                if (RemoveInstrumentationPanel.showDialog(makeProject)){
+                    return support.undoInstrumentation();
+                }
+            }
+        }
+        return Collections.<String>emptyList();
+    }
 }

@@ -38,10 +38,10 @@
  */
 
 @OptionsPanelController.ContainerRegistration(
-    id="CPlusPlus",
-    categoryName="#CndOptionsCategory_Name",
+    id="CPlusPlus", // NOI18N
+    categoryName="#CndOptionsCategory_Name", // NOI18N
 //    title="#CndOptions_Title"
-    iconBase="org/netbeans/modules/cnd/ui/options/cnd_32.png",
+    iconBase="org/netbeans/modules/cnd/ui/options/cnd_32.png", // NOI18N
     position=700
 )
 package org.netbeans.modules.cnd.ui.options;
