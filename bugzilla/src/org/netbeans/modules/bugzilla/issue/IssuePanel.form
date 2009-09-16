@@ -1004,6 +1004,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="issueTypeCombo">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="issueTypeComboActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="dummyLabel3">
     </Component>

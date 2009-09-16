@@ -93,7 +93,7 @@ public class MakeAction extends MakeBaseAction {
      */
     public static Future<Integer> execute(Node node, String target, ExecutionListener listener, Writer outputListener,
                                Project project, List<String> additionalEnvironment, InputOutput inputOutput) {
-        return (SystemAction.get(MakeAction.class)).performAction(node, target, listener, outputListener, project, additionalEnvironment, null);
+        return (SystemAction.get(MakeAction.class)).performAction(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
     }
 
     @Override

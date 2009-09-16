@@ -109,8 +109,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
             }
         });
 
-        repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.issueLabel.text")); // NOI18N
 
         jLabel2.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));

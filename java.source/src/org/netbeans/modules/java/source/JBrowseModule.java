@@ -57,7 +57,6 @@ import org.netbeans.modules.java.source.usages.LuceneIndexMBean;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBeanImpl;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
-import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 
