@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -33,18 +33,56 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-  
-  var lastHighlightedMenu=null;   
-  function menuHighlight(menuIndex) {  
-    menuDisappear();          
-    var myDiv = document.getElementById("menu"+menuIndex); 
-    // armazena qual o item de menu foi selecionado
-    lastHighlightedMenu=myDiv; 
-    myDiv.style.display="block";        
-  }
 
-  function menuDisappear() {
-    //  retorna true se diferente de null ou undefined
-    if(lastHighlightedMenu) 
-      lastHighlightedMenu.style.display="none";
-  }
+package jsf2.demo.scrum.web.controller;
+
+import javax.annotation.PostConstruct;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ApplicationScoped;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.ArrayList;
+
+
+/**
+ *
+ * @author edermag
+ */
+@ManagedBean(name="skinValuesManager", eager=true)
+@ApplicationScoped
+public class SkinValuesManager {
+
+    private Map<String, String> values;
+
+    private String defaultSkin = "blue";
+    
+    @PostConstruct
+    public void construct() {
+        values = new LinkedHashMap<String, String>();
+        values.put("yellow", "appYellowSkin.css");
+        values.put("orange", "appOrangeSkin.css");
+        values.put("red", "appRedSkin.css");
+        values.put(defaultSkin, "appBlueSkin.css");
+    }
+    
+    protected String getSkinCss(String skin) {
+        if (!values.containsKey(skin))
+            return getDefaultSkinCss();
+        return values.get(skin);
+    }
+
+    protected String getDefaultSkinCss() {
+        return values.get(defaultSkin);
+    }
+
+    public List<String> getNames() {
+        return new ArrayList<String>(values == null ? null : values.keySet());
+    }
+
+    public int getSize() {
+        return values.keySet().size();
+    }
+
+}

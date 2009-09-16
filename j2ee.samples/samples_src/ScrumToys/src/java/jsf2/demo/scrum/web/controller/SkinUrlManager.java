@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -33,21 +33,58 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package jsf2;
 
-import com.gargoylesoftware.htmlunit.*;
-import com.gargoylesoftware.htmlunit.html.*;
-import org.junit.Assert;
-import org.junit.Test;
+package jsf2.demo.scrum.web.controller;
 
-public class ScrumToysTest {
+import java.io.Serializable;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.RequestScoped;
 
-    @Test
-    public void homePage() throws Exception {
-        final WebClient webClient = new WebClient();
-        final HtmlPage page = webClient.getPage("http://localhost:8080/scrumtoys/home.jsf");
-	String titleText = page.getTitleText().trim();
-        Assert.assertEquals("JSF 2.0 Demo - Scrum Whiteboard Application", titleText);
+/**
+ *
+ * @author eder
+ */
+@ManagedBean(name = "skinUrlManager")
+@RequestScoped
+public class SkinUrlManager extends AbstractManager implements Serializable {
+
+    private String skin;
+
+    @ManagedProperty(value="#{skinManager}")
+    private SkinManager skinManager;
+    @ManagedProperty(value="#{skinValuesManager}")
+    private SkinValuesManager skinValuesManager;
+    
+    public String getSkin() {
+        return skin;
+    }
+
+    public void setSkin(String skin) {
+        this.skin = skin;
+    }
+
+    public void update() {
+        if (skin == null ||"".equals(skin))
+            return;
+        String skinCss = skinValuesManager.getSkinCss(skin.toLowerCase());
+        skinManager.setSelectedSkin(skinCss);
+    }
+
+    public SkinManager getSkinManager() {
+        return skinManager;
+    }
+
+    public void setSkinManager(SkinManager skinManager) {
+        this.skinManager = skinManager;
+    }
+
+    public SkinValuesManager getSkinValuesManager() {
+        return skinValuesManager;
+    }
+
+    public void setSkinValuesManager(SkinValuesManager skinValuesManager) {
+        this.skinValuesManager = skinValuesManager;
     }
 
 }

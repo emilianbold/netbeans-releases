@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -33,18 +33,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-  
-  var lastHighlightedMenu=null;   
-  function menuHighlight(menuIndex) {  
-    menuDisappear();          
-    var myDiv = document.getElementById("menu"+menuIndex); 
-    // armazena qual o item de menu foi selecionado
-    lastHighlightedMenu=myDiv; 
-    myDiv.style.display="block";        
-  }
 
-  function menuDisappear() {
-    //  retorna true se diferente de null ou undefined
-    if(lastHighlightedMenu) 
-      lastHighlightedMenu.style.display="none";
-  }
+package jsf2.demo.scrum.web.scope;
+
+import java.util.concurrent.ConcurrentHashMap;
+import javax.faces.application.Application;
+import javax.faces.context.FacesContext;
+import javax.faces.event.PostConstructCustomScopeEvent;
+import javax.faces.event.PreDestroyCustomScopeEvent;
+import javax.faces.event.ScopeContext;
+
+/**
+ * Actually, custom scope is a Map where the instances of managed bean are store.
+ * @author eder
+ */
+public class TaskScope extends ConcurrentHashMap<String,Object> {
+
+    private Application application;
+    
+
+    public TaskScope(Application application) {
+        this.application = application;   
+    }
+
+    //will call the postConstruct method.
+    public void notifyCreate(String scopeName, FacesContext facesContext) {
+        ScopeContext scopeContext = new ScopeContext(scopeName, this);
+        application.publishEvent(facesContext, PostConstructCustomScopeEvent.class, scopeContext);
+    }
+
+    //will call the preDestroy method.
+    public void notifyDestroy(String scopeName, FacesContext facesContext) {
+        ScopeContext scopeContext = new ScopeContext(scopeName, this);
+        application.publishEvent(facesContext, PreDestroyCustomScopeEvent.class, scopeContext);
+    }
+
+}
