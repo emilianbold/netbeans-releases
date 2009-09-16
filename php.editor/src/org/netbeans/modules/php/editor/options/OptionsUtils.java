@@ -80,18 +80,27 @@ public final class OptionsUtils {
     private OptionsUtils() {
     }
 
+    /**
+     * Code completion type for PHP 5.3.
+     */
     public static CodeCompletionPanel.CodeCompletionType getCodeCompletionType() {
         lazyInit();
         assert codeCompletionType != null;
         return codeCompletionType;
     }
 
+    /**
+     * Provide also static methods after "->"
+     */
     public static boolean provideCodeCompletionWithStaticMethods() {
         lazyInit();
         assert provideStaticMethods != null;
         return provideStaticMethods;
     }
 
+    /**
+     * Provide also non-static methods after "::"
+     */
     public static boolean provideCodeCompletionWithNonStaticMethods() {
         lazyInit();
         assert provideNonStaticMethods != null;
