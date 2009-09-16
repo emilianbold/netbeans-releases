@@ -69,6 +69,8 @@ public class TestInstallerAndUninstallerPHP extends Installer {
 
         Utils.phaseFour(data);
 
+        //Utils.RunCommitTests( data );
+
         Utils.phaseFive( data );
 
         //TODO Dir removed test
