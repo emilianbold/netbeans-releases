@@ -220,8 +220,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             startTime = System.currentTimeMillis();
         }
 
-        String prefix = completionContext.getPrefix();        
-
+        String prefix = completionContext.getPrefix();
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
 
@@ -250,6 +249,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (context == CompletionContext.NONE) {
                 return CodeCompletionResult.NONE;
             }
+            if (!context.equals(CompletionContext.PHPDOC)) {
+                prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
+            }
+
 
             PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
             request.anchor = caretOffset - prefix.length();
