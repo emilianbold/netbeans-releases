@@ -121,18 +121,24 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
             targetFolder = DataFolder.findFolder(project.getProjectDirectory());
         }
         evaluator.setInitialFolder(targetFolder,project); 
+        boolean canCreate = ((ServletData)deployData).canCreate(wizard);
         
         if (fileType == FileType.SERVLET) {
             panels = new WizardDescriptor.Panel[]{
                         new FinishableProxyWizardPanel(
                         createPackageChooserPanel(wizard, null),
-                        new HelpCtx(ServletIterator.class.getName() + "." + fileType)), // #114487
+                        new HelpCtx(ServletIterator.class.getName() + "." + fileType), // #114487
+                        canCreate ), 
                         ServletPanel.createServletPanel(evaluator, wizard)
                     };
         } else if (fileType == FileType.FILTER) {
             customPanel = new WrapperSelection(wizard);
-            panels = new WizardDescriptor.Panel[]{
-                        createPackageChooserPanel(wizard, customPanel),
+            panels = new WizardDescriptor.Panel[]{ canCreate ? 
+                        createPackageChooserPanel(wizard, customPanel):
+                            new FinishableProxyWizardPanel( 
+                                    createPackageChooserPanel(wizard, customPanel), 
+                                    new HelpCtx(ServletIterator.class.getName() 
+                                            + "." + fileType), false),
                         ServletPanel.createServletPanel(evaluator, wizard),
                         ServletPanel.createFilterPanel(evaluator, wizard)
                     };
