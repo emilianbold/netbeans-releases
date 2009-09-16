@@ -71,6 +71,14 @@ public final class Range<T extends Number & Comparable<? super T>> {
         return end;
     }
 
+    public int getStartMilliSeconds() {
+        return (int) (start.longValue() / 1000 / 1000);
+    }
+
+    public int getEndMilliSeconds() {
+        return (int) (end.longValue() / 1000 / 1000);
+    }
+
     public boolean cotains(T t){
         return t.longValue() >= start.longValue() && t.longValue() <= end.longValue();
     }

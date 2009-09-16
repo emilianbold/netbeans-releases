@@ -291,7 +291,7 @@ public class ProcFSDataCollector
         }
 
         private final long toMilliOffset(long timenano) {
-            return (timenano - processStartTime.get());// / 1000;
+            return (timenano - processStartTime.get()) / 1000 / 1000;
         }
 
         public void run() {
@@ -375,7 +375,7 @@ public class ProcFSDataCollector
 
         private final class LWPsTracker {
 
-            private final Object lock = new String(LWPsTracker.class.getName());
+            private final Object lock = LWPsTracker.class.getName() + "_lock"; // NOI18N
             private final HashMap<Integer, LWPUsage> lastReportedLWPs = new HashMap<Integer, LWPUsage>();
             private final HashMap<Integer, LWPUsage> newReportedLWPs = new HashMap<Integer, LWPUsage>();
             private PreparedStatement insertStatement = null;
