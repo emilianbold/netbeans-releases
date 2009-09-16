@@ -305,7 +305,7 @@ final class ExecutionContext {
         ArrayList<Indicator<?>> result = new ArrayList<Indicator<?>>();
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if (activeToolNames == null || activeToolNames.contains(tool.getName())){
+            if (activeToolNames == null || activeToolNames.contains(tool.getID())){
                 result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
             }
         }
@@ -316,7 +316,7 @@ final class ExecutionContext {
     DLightTool getToolByName(String toolName){
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if (activeToolNames == null || activeToolNames.contains(tool.getName()) &&  tool.getName().equals(toolName)){
+            if (activeToolNames == null || activeToolNames.contains(tool.getID()) &&  tool.getName().equals(toolName)){
                 return tool;
             }
         }
@@ -327,8 +327,8 @@ final class ExecutionContext {
         List<DLightTool> result = new ArrayList<DLightTool>();
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if ((tool.isEnabled() &&  (activeToolNames == null || activeToolNames.contains(tool.getName()))) ||
-                    (!tool.isEnabled() && activeToolNames != null && activeToolNames.contains(tool.getName()))) {
+            if ((tool.isEnabled() &&  (activeToolNames == null || activeToolNames.contains(tool.getID()))) ||
+                    (!tool.isEnabled() && activeToolNames != null && activeToolNames.contains(tool.getID()))) {
                 result.add(tool);
             }
         }
