@@ -66,8 +66,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     private long totalSize;
     private long uploadSize;
 
-    public ZipSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        super(localDir, executionEnvironment, out, err, privProjectStorageDir);        
+    public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+        super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
     }
 
     private static File getTemp() {
