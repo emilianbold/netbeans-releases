@@ -438,7 +438,9 @@ public class IssueTest extends NbTestCase implements TestConstants {
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER4);
         ccs.add(REPO_USER);
-        modIssue.setFieldValues(IssueField.REMOVECC, ccs);
+        for (String c : ccs) {
+            modIssue.setFieldValue(IssueField.REMOVECC, c);
+        }
         submit(modIssue);
         issue.refresh();
         ccs = issue.getFieldValues(IssueField.CC);
@@ -456,7 +458,9 @@ public class IssueTest extends NbTestCase implements TestConstants {
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER3);
         ccs.add(REPO_USER2);
-        modIssue.setFieldValues(IssueField.REMOVECC, ccs);
+        for (String c : ccs) {
+            modIssue.setFieldValue(IssueField.REMOVECC, c);
+        }
         submit(modIssue);
         issue.refresh();
         ccs = issue.getFieldValues(IssueField.CC);
