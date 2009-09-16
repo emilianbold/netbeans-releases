@@ -47,8 +47,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location="CPlusPlus",
-    displayName="#TAB_ProjectsTab",
+    location="CPlusPlus", // NOI18N
+    displayName="#TAB_ProjectsTab", // NOI18N
     position=200
 )
 public final class ProjectOptionsPanelController extends OptionsPanelController {
