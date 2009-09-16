@@ -51,6 +51,8 @@ import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -182,6 +184,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         this.preselectSingleRepo = preselectSingleRepo;
 
         defaultRepoComputationPending = (defaultRepo == null);
+
+        progress.set(Progress.INITIALIZED);
     }
 
     private void checkOldComboBoxModel(JComboBox comboBox) {
@@ -209,7 +213,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         }
     }
 
-    private void start() {
+    void start() {
         assert EventQueue.isDispatchThread();
         LOG.finer("start()");                                           //NOI18N
 
@@ -230,6 +234,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         this.comboBox.setModel(comboBoxModel = new RepositoryComboModel());
         this.comboBox.setRenderer(new RepositoryComboRenderer());
         setComboBoxData(new Object[] {LOADING_REPOSITORIES});
+
+        updateProgress(Progress.STARTED);
 
         RequestProcessor.getDefault().post(this);
     }
@@ -373,7 +379,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             }
 
             /* schedule display of list of repositories */
+            updateProgress(Progress.WILL_SCHEDULE_DISPLAY_OF_REPOS);
             EventQueue.invokeLater(this);
+            updateProgress(Progress.SCHEDULED_DISPLAY_OF_REPOS);
 
             if (defaultRepoComputationPending) {
                 try {
@@ -515,6 +523,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private void setRepositories(Repository[] repos,
                                  Repository knownDefaultRepository) {
         assert EventQueue.isDispatchThread();
+        updateProgress(Progress.WILL_DISPLAY_REPOS);
 
         int reposCount = (repos != null) ? repos.length : 0;
         Object[] comboData;
@@ -539,6 +548,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             assert (comboBox.getSelectedItem() == SELECT_REPOSITORY);
             comboBox.addItemListener(this);
         }
+
+        updateProgress(Progress.DISPLAYED_REPOS);
     }
 
     private void refreshComboBoxData(Repository[] repos) {
@@ -564,6 +575,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private void loadRepositories() {
         assert RequestProcessor.getDefault().isRequestProcessorThread();
         LOG.finer("loadRepositories()");                                //NOI18N
+        updateProgress(Progress.WILL_LOAD_REPOS);
 
         long startTimeMillis = System.currentTimeMillis();
 
@@ -574,11 +586,13 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             LOG.finest("BugtrackingUtil.getKnownRepositories() took "   //NOI18N
                        + (endTimeMillis - startTimeMillis) + " ms.");   //NOI18N
         }
+        updateProgress(Progress.LOADED_REPOS);
     }
 
     private void findDefaultRepository() {
         assert RequestProcessor.getDefault().isRequestProcessorThread();
         LOG.finer("findDefaultRepository()");                           //NOI18N
+        updateProgress(Progress.WILL_DETERMINE_DEFAULT_REPO);
 
         long startTimeMillis, endTimeMillis;
         Repository result;
@@ -610,5 +624,49 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         } else {
             LOG.finest(" - default repository: <null>");                //NOI18N
         }
+
+        updateProgress(Progress.DETERMINED_DEFAULT_REPO);
     }
+
+    //--------------- infrastructure for unit tests -----------------
+
+    enum Progress {
+        INITIALIZED,
+        STARTED,
+        WILL_LOAD_REPOS,
+        LOADED_REPOS,
+        WILL_SCHEDULE_DISPLAY_OF_REPOS,
+        SCHEDULED_DISPLAY_OF_REPOS,
+        WILL_DISPLAY_REPOS,
+        DISPLAYED_REPOS,
+        WILL_DETERMINE_DEFAULT_REPO,
+        DETERMINED_DEFAULT_REPO,
+        WILL_SELECT_DEFAULT_REPO,
+        SELECTED_DEFAULT_REPO,
+        WILL_DISPLAY_REPOS_AND_SELECT_DEFAULT,
+        DISPLAYED_REPOS_AND_SELECTED_DEFAULT
+    }
+
+    private final ThreadLocal<Progress> progress = new ThreadLocal<Progress>();
+    private volatile ChangeListener progressListener;
+
+    private void updateProgress(Progress progress) {
+        this.progress.set(progress);
+        fireProgressChange();
+    }
+
+    private void fireProgressChange() {
+        if (progressListener != null) {
+            progressListener.stateChanged(new ChangeEvent(this));
+        }
+    }
+
+    void setProgressListener(ChangeListener l) {
+        progressListener = l;
+    }
+
+    Progress getProgress() {
+        return progress.get();
+    }
+
 }
