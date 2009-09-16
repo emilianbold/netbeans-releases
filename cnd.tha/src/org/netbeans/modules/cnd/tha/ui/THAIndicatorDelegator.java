@@ -103,17 +103,17 @@ public final class THAIndicatorDelegator implements IndicatorComponentDelegator,
                 //can return even if it is different project as both platfortms are not supported and the same message will be displayed
                 return tc;
             }
-            String sessionPF = getProjectFolder(tcSession);
-            if (sessionPF != null && sessionPF.equals(projectFolder)) {
-                ///and old session is finished
-                if (tcSession != null && (tcSession.getState() == SessionState.ANALYZE || tcSession.getState() == SessionState.CLOSED)) {
-                    //reuse
-                    return tc;
-                }
-                if (tcSession == null) {
-                    return tc;
-                }
-            }
+//            String sessionPF = getProjectFolder(tcSession);
+//            if (sessionPF != null && sessionPF.equals(projectFolder)) {
+//                ///and old session is finished
+//                if (tcSession != null && (tcSession.getState() == SessionState.ANALYZE || tcSession.getState() == SessionState.CLOSED)) {
+//                    //do not reuse
+//                    return tc;
+//                }
+//                if (tcSession == null) {
+//                    return tc;
+//                }
+//            }
         }
         THAIndicatorsTopComponent result = THAIndicatorsTopComponent.newInstance();
         result.setActionsProvider(this);
@@ -121,45 +121,47 @@ public final class THAIndicatorDelegator implements IndicatorComponentDelegator,
     }
 
     public THAIndicatorsTopComponent getComponent(Project project, DLightSession newSession) {
-        String projectFolder = getProjectFolder(newSession);
-        //get all opened
-        THAIndicatorsTopComponent topComponent = THAIndicatorsTopComponent.findInstance();
-        topComponent.setActionsProvider(this);
-        if (THAIndicatorTopComponentRegsitry.getRegistry().getOpened().isEmpty()) {
-            return topComponent;
-        }
-        //if default is opened for unsupported platform and current platform is also unsupported do not open it again
-        boolean isCurrentPlatformSupported =  GizmoServiceInfo.isPlatformSupported(getProjectPlatform(project));
-                //pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName())
-                //GizmoServiceInfo.isPlatformSupported(getPlatform(newSession));
-        if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getProjectPlatform(topComponent.getProject()))) {
-            return topComponent;
-        }
-        for (THAIndicatorsTopComponent tc : THAIndicatorTopComponentRegsitry.getRegistry().getOpened()) {
-            DLightSession tcSession = tc.getSession();
-            if (tcSession == null && newSession != null){
-                tc.setActionsProvider(this);
-                return tc;
+        synchronized(this){
+            String projectFolder = getProjectFolder(newSession);
+            //get all opened
+            THAIndicatorsTopComponent topComponent = THAIndicatorsTopComponent.findInstance();
+            topComponent.setActionsProvider(this);
+            if (THAIndicatorTopComponentRegsitry.getRegistry().getOpened().isEmpty()) {
+                return topComponent;
             }
-            if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getPlatform(tcSession))) {
-                //can return even if it is different project as both platfortms are not supported and the same message will be displayed
-                return tc;
+            //if default is opened for unsupported platform and current platform is also unsupported do not open it again
+            boolean isCurrentPlatformSupported =  GizmoServiceInfo.isPlatformSupported(getProjectPlatform(project));
+                    //pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName())
+                    //GizmoServiceInfo.isPlatformSupported(getPlatform(newSession));
+            if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getProjectPlatform(topComponent.getProject()))) {
+                return topComponent;
             }
-            String sessionPF = getProjectFolder(tcSession);
-            if (sessionPF != null && sessionPF.equals(projectFolder)) {
-                ///and old session is finished
-                if (tcSession != null && (tcSession.getState() == SessionState.ANALYZE || tcSession.getState() == SessionState.CLOSED)) {
-                    //reuse
+            for (THAIndicatorsTopComponent tc : THAIndicatorTopComponentRegsitry.getRegistry().getOpened()) {
+                DLightSession tcSession = tc.getSession();
+                if (tcSession == null && newSession != null){
+                    tc.setActionsProvider(this);
                     return tc;
                 }
-                if (tcSession == null && (tc.getProject() == null || tc.getProject() == project) ) {
+                if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getPlatform(tcSession))) {
+                    //can return even if it is different project as both platfortms are not supported and the same message will be displayed
                     return tc;
                 }
+    //            String sessionPF = getProjectFolder(tcSession);
+    //            if (sessionPF != null && sessionPF.equals(projectFolder)) {
+    //                ///and old session is finished
+    //                if (tcSession != null && (tcSession.getState() == SessionState.ANALYZE || tcSession.getState() == SessionState.CLOSED)) {
+    //                    //reuse
+    //                    return tc;
+    //                }
+    //                if (tcSession == null && (tc.getProject() == null || tc.getProject() == project) ) {
+    //                    return tc;
+    //                }
+    //            }
             }
+            THAIndicatorsTopComponent result = THAIndicatorsTopComponent.newInstance();
+            result.setActionsProvider(this);
+            return result;
         }
-        THAIndicatorsTopComponent result = THAIndicatorsTopComponent.newInstance();
-        result.setActionsProvider(this);
-        return result;
     }
 
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {
