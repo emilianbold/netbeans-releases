@@ -233,5 +233,10 @@ public class FileEvent extends EventObject {
         assert postNotify == null || runs == null;
         this.postNotify = runs;
     }
-    
+
+    void inheritPostNotify(FileEvent ev) {
+        // cannot try to set the postNotify field twiced
+        assert postNotify == null;
+        this.postNotify = ev.postNotify;
+    }
 }
