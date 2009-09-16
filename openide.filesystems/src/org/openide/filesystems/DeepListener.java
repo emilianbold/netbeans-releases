@@ -102,6 +102,7 @@ implements FileChangeListener, Runnable {
     }
 
     public void fileFolderCreated(FileEvent fe) {
+        relisten();
         fileFolderCreated(fe, false);
     }
     public void fileFolderCreated(FileEvent fe, boolean fromHolder) {

@@ -72,6 +72,8 @@ final class FileObjectKeeper implements FileChangeListener {
     public synchronized void addRecursiveListener(FileChangeListener fcl) {
         if (listeners == null) {
             listeners = new CopyOnWriteArraySet<FileChangeListener>();
+        }
+        if (listeners.isEmpty()) {
             listenToAll();
         }
         listeners.add(fcl);

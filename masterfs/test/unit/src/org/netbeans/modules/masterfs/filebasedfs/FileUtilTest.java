@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
@@ -581,8 +582,9 @@ public class FileUtilTest extends NbTestCase {
         dirFO.rename(lock, "dir", null);
         lock.releaseLock();
         /* According to jskrivanek in http://www.netbeans.org/nonav/issues/showattachment.cgi/86910/X.diff, the rename back does not need to
-         * fire an event:
+         * fire an event. Instead the support delivers FOLDER_CREATED event:
         assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.FOLDER_CREATED));
         fcl.printAll();
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
          */
@@ -592,11 +594,11 @@ public class FileUtilTest extends NbTestCase {
         fcl.clearAll();
 
         // disk changes
+        Thread.sleep(1000); // give OS same time
         assertTrue(subsubdirF.mkdirs());
         assertTrue(fileF.createNewFile());
         assertTrue(subfileF.createNewFile());
         assertTrue(subsubfileF.createNewFile());
-        Thread.sleep(3000); // wait for OS
         FileUtil.refreshAll();
         // TODO - should be 3
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
