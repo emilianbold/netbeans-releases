@@ -143,10 +143,12 @@ import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -772,8 +774,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Mirror var = arg0.getVariable().accept(this, evaluationContext);
         Mirror exp = arg0.getExpression().accept(this, evaluationContext);
         Value value = (Value) exp;
-        setToMirror(arg0.getVariable(), value, evaluationContext);
-        return value;
+        return setToMirror(arg0.getVariable(), value, evaluationContext);
     }
 
     @Override
@@ -856,8 +857,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof DoubleValue) {
             double v = ((DoubleValue) var).value();
@@ -877,8 +877,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof FloatValue) {
             float v = ((FloatValue) var).value();
@@ -898,8 +897,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof LongValue) {
             long v = ((LongValue) var).value();
@@ -933,8 +931,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof IntegerValue) {
             int v = ((IntegerValue) var).value();
@@ -968,8 +965,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof ShortValue) {
             short v = ((ShortValue) var).value();
@@ -1003,8 +999,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof CharValue) {
             char v = ((CharValue) var).value();
@@ -1038,8 +1033,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof ByteValue) {
             byte v = ((ByteValue) var).value();
@@ -1073,8 +1067,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             Value value = mirrorOf(vm, v);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         if (var instanceof StringReference) {
             String v = ((StringReference) var).value();
@@ -1088,8 +1081,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default: Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
             }
             StringReference value = createStringMirrorWithDisabledCollection(v, vm, evaluationContext);
-            setToMirror(arg0.getVariable(), value, evaluationContext);
-            return value;
+            return setToMirror(arg0.getVariable(), value, evaluationContext);
         }
         Assert.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
         throw new IllegalStateException("Unknown assignment var type: "+var);
@@ -3101,7 +3093,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return null;
     }
 
-    private void setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
+    private Value setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
         VariableInfo varInfo = evaluationContext.getVariableInfo(var);
         if (varInfo == null) {
             Assert.error(var, "unknownVariable", var.toString());
@@ -3111,7 +3103,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (value instanceof ArtificialMirror) {
             value = (Value)((ArtificialMirror) value).getVMMirror();
         }
+        try {
+            List<Value> valuePtr = new ArrayList<Value>(1);
+            valuePtr.add(value);
+            autoboxElements(var, varInfo.getType(), valuePtr, evaluationContext);
+            value = valuePtr.get(0);
+        } catch (ClassNotLoadedException ex) {}
         varInfo.setValue(value);
+        return value;
     }
 
     private Value invokeMethod(Tree arg0, Method method, Boolean isStatic, ClassType type,
@@ -3389,21 +3388,51 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
     }
 
-    public static PrimitiveValue unbox(ObjectReference val, PrimitiveType type,
-                                       ThreadReference thread,
-                                       EvaluationContext context) throws InvalidTypeException,
-                                                                         ClassNotLoadedException,
-                                                                         IncompatibleThreadStateException,
-                                                                         InvocationException {
-        if (type instanceof BooleanType) return invokeUnboxingMethod(val, "booleanValue", thread, context);
-        if (type instanceof ByteType) return invokeUnboxingMethod(val, "byteValue", thread, context);
-        if (type instanceof CharType) return invokeUnboxingMethod(val, "charValue", thread, context);
-        if (type instanceof ShortType) return invokeUnboxingMethod(val, "shortValue", thread, context);
-        if (type instanceof IntegerType) return invokeUnboxingMethod(val, "intValue", thread, context);
-        if (type instanceof LongType) return invokeUnboxingMethod(val, "longValue", thread, context);
-        if (type instanceof FloatType) return invokeUnboxingMethod(val, "floatValue", thread, context);
-        if (type instanceof DoubleType) return invokeUnboxingMethod(val, "doubleValue", thread, context);
-        throw new RuntimeException("Invalid type while unboxing: " + type.signature());    // never happens
+    public static Value unbox(ObjectReference val, PrimitiveType type,
+                              ThreadReference thread,
+                              EvaluationContext context) throws InvalidTypeException,
+                                                                ClassNotLoadedException,
+                                                                IncompatibleThreadStateException,
+                                                                InvocationException {
+        ReferenceType rt = val.referenceType();
+        String classType = rt.name();
+        PrimitiveValue pv;
+        if (classType.equals("java.lang.Boolean"))
+            pv = invokeUnboxingMethod(val, "booleanValue", thread, context);
+        else if (classType.equals("java.lang.Byte"))
+            pv = invokeUnboxingMethod(val, "byteValue", thread, context);
+        else if (classType.equals("java.lang.Character"))
+            pv = invokeUnboxingMethod(val, "charValue", thread, context);
+        else if (classType.equals("java.lang.Short"))
+            pv = invokeUnboxingMethod(val, "shortValue", thread, context);
+        else if (classType.equals("java.lang.Integer"))
+            pv = invokeUnboxingMethod(val, "intValue", thread, context);
+        else if (classType.equals("java.lang.Long"))
+            pv = invokeUnboxingMethod(val, "longValue", thread, context);
+        else if (classType.equals("java.lang.Float"))
+            pv = invokeUnboxingMethod(val, "floatValue", thread, context);
+        else if (classType.equals("java.lang.Double"))
+            pv = invokeUnboxingMethod(val, "doubleValue", thread, context);
+        //throw new RuntimeException("Invalid type while unboxing: " + type.signature());    // never happens
+        else return val;
+        VirtualMachine vm = pv.virtualMachine();
+        if (type instanceof BooleanType && !(pv instanceof BooleanValue))
+            return vm.mirrorOf(pv.booleanValue());
+        if (type instanceof ByteType && !(pv instanceof ByteValue))
+            return vm.mirrorOf(pv.byteValue());
+        if (type instanceof CharType && !(pv instanceof CharValue))
+            return vm.mirrorOf(pv.charValue());
+        if (type instanceof ShortType && !(pv instanceof ShortValue))
+            return vm.mirrorOf(pv.shortValue());
+        if (type instanceof IntegerType && !(pv instanceof IntegerValue))
+            return vm.mirrorOf(pv.intValue());
+        if (type instanceof LongType && !(pv instanceof LongValue))
+            return vm.mirrorOf(pv.longValue());
+        if (type instanceof FloatType && !(pv instanceof FloatValue))
+            return vm.mirrorOf(pv.floatValue());
+        if (type instanceof DoubleType && !(pv instanceof DoubleValue))
+            return vm.mirrorOf(pv.doubleValue());
+        return pv;
     }
 
     private static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType,
@@ -3435,15 +3464,49 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return type;
     }
 
-    public static ObjectReference box(PrimitiveValue v, ReferenceType type,
-                                      ThreadReference thread,
-                                      EvaluationContext evaluationContext) throws InvalidTypeException,
-                                                                                  ClassNotLoadedException,
-                                                                                  IncompatibleThreadStateException,
-                                                                                  InvocationException {
+    private static final Set<String> PRIMITIVE_CLASS_NAMES = Collections.unmodifiableSet(new HashSet<String>(
+            Arrays.asList(new String[] {
+                java.lang.Boolean.class.getName(),
+                java.lang.Byte.class.getName(),
+                java.lang.Character.class.getName(),
+                java.lang.Short.class.getName(),
+                java.lang.Integer.class.getName(),
+                java.lang.Long.class.getName(),
+                java.lang.Float.class.getName(),
+                java.lang.Double.class.getName(),
+            })));
+
+    public static Value box(PrimitiveValue v, ReferenceType type,
+                            ThreadReference thread,
+                            EvaluationContext evaluationContext) throws InvalidTypeException,
+                                                                        ClassNotLoadedException,
+                                                                        IncompatibleThreadStateException,
+                                                                        InvocationException {
         try {
             Method constructor = null;
-            type = adjustBoxingType(type, (PrimitiveType) v.type(), evaluationContext);
+            String classType = type.name();
+            if (!PRIMITIVE_CLASS_NAMES.contains(classType)) {
+                type = adjustBoxingType(type, (PrimitiveType) v.type(), evaluationContext);
+            } else {
+                VirtualMachine vm = v.virtualMachine();
+                if (classType.equals("java.lang.Boolean") && !(v instanceof BooleanValue)) {
+                    v = vm.mirrorOf(v.booleanValue());
+                } else if (classType.equals("java.lang.Byte") && !(v instanceof ByteValue)) {
+                    v = vm.mirrorOf(v.byteValue());
+                } else if (classType.equals("java.lang.Character") && !(v instanceof CharValue)) {
+                    v = vm.mirrorOf(v.charValue());
+                } else if (classType.equals("java.lang.Short") && !(v instanceof ShortValue)) {
+                    v = vm.mirrorOf(v.shortValue());
+                } else if (classType.equals("java.lang.Integer") && !(v instanceof IntegerValue)) {
+                    v = vm.mirrorOf(v.intValue());
+                } else if (classType.equals("java.lang.Long") && !(v instanceof LongValue)) {
+                    v = vm.mirrorOf(v.longValue());
+                } else if (classType.equals("java.lang.Float") && !(v instanceof FloatValue)) {
+                    v = vm.mirrorOf(v.floatValue());
+                } else if (classType.equals("java.lang.Double") && !(v instanceof DoubleValue)) {
+                    v = vm.mirrorOf(v.doubleValue());
+                }
+            }
             List<Method> methods = type.methodsByName("<init>");
             String signature = "("+v.type().signature()+")";
             for (Method method : methods) {
@@ -3468,6 +3531,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw itsex;
         } catch (InvocationException iex) {
             throw iex;
+        } catch (RuntimeException rex) {
+            throw rex;
         } catch (Exception e) {
             // this should never happen, indicates an internal error
             throw new RuntimeException("Unexpected exception while invoking boxing method", e);
