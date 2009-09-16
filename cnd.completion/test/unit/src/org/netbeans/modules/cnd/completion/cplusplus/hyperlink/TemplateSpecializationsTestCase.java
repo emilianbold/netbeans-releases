@@ -97,6 +97,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("iz160659.cc", 25, 51, "iz160659.cc", 21, 16);
     }
 
+    public void testIZ172227() throws Exception {
+        // IZ#172227 : Unable to resolve identifier path although code compiles allright
+        performTest("iz172227.cc", 14, 9, "iz172227.cc", 2, 5);
+        performTest("iz172227.cc", 16, 10, "iz172227.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
