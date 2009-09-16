@@ -713,17 +713,29 @@ public class ModuleDependencies extends Task {
     }
 
     private void generatePlugins(File output) throws BuildException, IOException {
+        Set<String> standardClusters = new HashSet<String>();
+        String standardClustersS = getProject().getProperty("clusters.config.full.list");
+        if (standardClustersS != null) {
+            for (String clusterProp : standardClustersS.split(",")) {
+                String dir = getProject().getProperty(clusterProp + ".dir");
+                if (dir != null) {
+                    standardClusters.add(dir.replaceFirst("[0-9.]+$", ""));
+                }
+            }
+        }
         FileWriter fw = new FileWriter(output);
         try {
             PrintWriter w = new PrintWriter(fw);
-            w.println("||Codebase||Display name||Category||Cluster");
             SortedMap<String,String> lines = new TreeMap<String,String>(Collator.getInstance());
+            lines.put("A", "||Code Name Base||Display Name||Display Category||Standard Cluster");
+            lines.put("C", "");
+            lines.put("D", "||Code Name Base||Display Name||Display Category||Extra Cluster");
             for (ModuleInfo m : modules) {
                 if (regexp != null && !regexp.matcher(m.group).matches()) {
                     continue;
                 }
                 if (m.showInAutoupdate) {
-                    lines.put(m.displayCategory + " " + m.displayName,
+                    lines.put((standardClusters.contains(m.group) ? "B" : "E") + m.displayCategory + " " + m.displayName,
                             "|" + m.codebasename + "|" + m.displayName + "|" + m.displayCategory + "|" + m.group);
                 }
             }
