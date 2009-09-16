@@ -133,7 +133,7 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     /**
-     * Start the initialization process. This should <b>never</b> be done from the AWT Evet
+     * Start the initialization process. This should <b>never</b> be done from the AWT Event
      * thread. Parts of the initialization use this thread and will block.
      */
     public synchronized void init(PropertyChangeSupport pcs) {
