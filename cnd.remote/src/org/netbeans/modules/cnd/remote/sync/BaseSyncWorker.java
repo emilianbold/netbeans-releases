@@ -58,18 +58,24 @@ import org.openide.util.NbBundle;
  */
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
+    @Deprecated
     protected final File localDir;
+    protected final File topDir;
+    protected final File[] localDirs;
     protected final File privProjectStorageDir;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
 
-    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        this.localDir = localDir;
+    public BaseSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+        this.localDirs = new File[localDirs.length];
+        System.arraycopy(localDirs, 0, this.localDirs, 0, localDirs.length);
+        this.localDir = localDirs[0];
         this.privProjectStorageDir = privProjectStorageDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;
         this.err = err;
+        topDir = findCommonTop(localDirs);
     }
 
     /**
@@ -147,6 +153,11 @@ import org.openide.util.NbBundle;
             }
         }
         return success;
+    }
+
+    private File findCommonTop(File[] dirs) {
+        // TODO: implement
+        return dirs[0];
     }
 
 }
