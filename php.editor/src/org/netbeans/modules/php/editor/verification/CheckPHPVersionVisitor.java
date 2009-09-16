@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -49,12 +50,15 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
@@ -65,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class CheckPHPVersionVisitor extends DefaultVisitor {
+public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     private FileObject fobj;
     private ArrayList<PHPVersionError> errors = new ArrayList<PHPVersionError>();
 
@@ -98,6 +102,16 @@ public class CheckPHPVersionVisitor extends DefaultVisitor {
     @Override
     public void visit(GotoLabel label) {
         createError(label);
+    }
+
+    @Override
+    public void visit(ConstantDeclaration statement) {
+        for (ASTNode node : getPath()) {
+            if (node instanceof ClassDeclaration) {
+                return;
+            }
+        }
+        createError(statement);
     }
 
     @Override
