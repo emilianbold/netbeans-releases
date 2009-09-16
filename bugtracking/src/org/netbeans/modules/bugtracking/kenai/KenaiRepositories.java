@@ -41,13 +41,9 @@ package org.netbeans.modules.bugtracking.kenai;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -55,24 +51,29 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public class KenaiRepositories {
+public abstract class KenaiRepositories {
     private static KenaiRepositories instance;
 
-    private Map<String, Repository> map = new HashMap<String, Repository>();
-    private KenaiRepositories() { }
+    protected KenaiRepositories() { }
 
     public static KenaiRepositories getInstance() {
         if(instance == null) {
-            instance = new KenaiRepositories();
+            instance = Lookup.getDefault().lookup(KenaiRepositories.class);
+            if (instance == null) {
+                instance = new DefaultImpl();
+            }
         }
         return instance;
     }
+
+    //--------------------------------------------------------------------------
 
     /**
      * Returns bugtracking repositories of all Kenai projects currently opened
@@ -87,7 +88,7 @@ public class KenaiRepositories {
 
     /**
      * Returns bugtracking repositories of all Kenai projects.
-     * 
+     *
      * @param  allOpenProjects  if {@code false}, search only Kenai projects
      *                          that are currently open in the Kenai dashboard;
      *                          if {@code true}, search also all Kenai projects
@@ -95,182 +96,155 @@ public class KenaiRepositories {
      * @return  array of repositories collected from the projects
      *          (never {@code null})
      */
-    public Repository[] getRepositories(boolean allOpenProjects) {
-        KenaiProject[] kenaiProjects = allOpenProjects
-                                       ? union(getDashboardProjects(),
-                                               getProjectsViewProjects())
-                                       : getDashboardProjects();
+    public abstract Repository[] getRepositories(boolean allOpenProjects);
 
-        Repository[] result = new Repository[kenaiProjects.length];
+    //--------------------------------------------------------------------------
 
-        int count = 0;
-        for (KenaiProject p : kenaiProjects) {
-            Repository repo = getRepository(p);
-            if (repo != null) {
-                result[count++] = repo;
+    /**
+     * The default implementation of {@code KenaiRepositories}.
+     * This implementation is used if no other implementation is found
+     * in the default lookup.
+     */
+    private static class DefaultImpl extends KenaiRepositories {
+
+        public Repository[] getRepositories(boolean allOpenProjects) {
+            KenaiProject[] kenaiProjects = allOpenProjects
+                                           ? union(getDashboardProjects(),
+                                                   getProjectsViewProjects())
+                                           : getDashboardProjects();
+
+            Repository[] result = new Repository[kenaiProjects.length];
+
+            int count = 0;
+            for (KenaiProject p : kenaiProjects) {
+                Repository repo = KenaiRepositoryUtils.getInstance().getRepository(p);
+                if (repo != null) {
+                    result[count++] = repo;
+                }
             }
+            return stripTrailingNulls(result);
         }
-        return stripTrailingNulls(result);
-    }
 
-    private KenaiProject[] getDashboardProjects() {
-        ProjectHandle[] handles = Dashboard.getDefault().getOpenProjects();
-        if ((handles == null) || (handles.length == 0)) {
-            return new KenaiProject[0];
+        private KenaiProject[] getDashboardProjects() {
+            ProjectHandle[] handles = Dashboard.getDefault().getOpenProjects();
+            if ((handles == null) || (handles.length == 0)) {
+                return new KenaiProject[0];
+            }
+
+            int count = 0;
+            KenaiProject[] kenaiProjects = new KenaiProject[handles.length];
+            for (ProjectHandle handle : handles) {
+                KenaiProject project = KenaiUtil.getKenaiProject(handle);
+                if (project != null) {
+                    kenaiProjects[count++] = project;
+                } else {
+                    BugtrackingManager.LOG.warning(
+                            "No Kenai project is available for ProjectHandle" //NOI18N
+                            + " [" + handle.getId() + ", " + handle.getDisplayName() + "]"); //NOI18N
+                }
+            }
+
+            return stripTrailingNulls(kenaiProjects);
         }
-        
-        int count = 0;
-        KenaiProject[] kenaiProjects = new KenaiProject[handles.length];
-        for (ProjectHandle handle : handles) {
-            KenaiProject project = KenaiUtil.getKenaiProject(handle);
-            if (project != null) {
-                kenaiProjects[count++] = project;
-            } else {
+
+        private KenaiProject[] getProjectsViewProjects() {
+            Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+            if (openProjects.length == 0) {
+                return new KenaiProject[0];
+            }
+
+            int count = 0;
+            KenaiProject[] kenaiProjects = new KenaiProject[openProjects.length];
+            for (Project p : openProjects) {
+                KenaiProject kenaiProject = getKenaiProject(p);
+                if (kenaiProject != null) {
+                    kenaiProjects[count++] = kenaiProject;
+                }
+            }
+
+            return stripTrailingNulls(kenaiProjects);
+        }
+
+        private static KenaiProject getKenaiProject(Project p) {
+            FileObject rootDir = p.getProjectDirectory();
+            Object attValue = rootDir.getAttribute(
+                                       "ProvidedExtensions.RemoteLocation");//NOI18N
+            if (!(attValue instanceof String)) {
+                return null;
+            }
+
+            KenaiProject kenaiProject;
+            try {
+                kenaiProject = KenaiProject.forRepository((String) attValue);
+            } catch (KenaiException ex) {
+                kenaiProject = null;
                 BugtrackingManager.LOG.warning(
-                        "No Kenai project is available for ProjectHandle" //NOI18N
-                        + " [" + handle.getId() + ", " + handle.getDisplayName() + "]"); //NOI18N
+                        "No Kenai project is available for bugtracking repository " //NOI18N
+                        + " [" + attValue + "]");                           //NOI18N
             }
+            return kenaiProject;
         }
 
-        return stripTrailingNulls(kenaiProjects);
-    }
+        private static KenaiProject[] union(KenaiProject[]... projectArrays) {
+            int totalSize = 0;
+            KenaiProject[] nonEmpty = null;
 
-    private KenaiProject[] getProjectsViewProjects() {
-        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-        if (openProjects.length == 0) {
-            return new KenaiProject[0];
-        }
+            /* Count the sum of all array sizes: */
+            for (KenaiProject[] projectArray : projectArrays) {
+                if (projectArray.length == 0) {
+                    continue;
+                }
 
-        int count = 0;
-        KenaiProject[] kenaiProjects = new KenaiProject[openProjects.length];
-        for (Project p : openProjects) {
-            KenaiProject kenaiProject = getKenaiProject(p);
-            if (kenaiProject != null) {
-                kenaiProjects[count++] = kenaiProject;
+                totalSize += projectArray.length;
+                nonEmpty = projectArray;
             }
-        }
+            assert (totalSize == 0) == (nonEmpty == null);
 
-        return stripTrailingNulls(kenaiProjects);
-    }
+            /* Trivial cases: */
+            if (totalSize == 0) {
+                return new KenaiProject[0];
+            }
+            if (totalSize == nonEmpty.length) {
+                return nonEmpty;        //all other arrays were empty
+            }
 
-    private static KenaiProject getKenaiProject(Project p) {
-        FileObject rootDir = p.getProjectDirectory();
-        Object attValue = rootDir.getAttribute(
-                                   "ProvidedExtensions.RemoteLocation");//NOI18N
-        if (!(attValue instanceof String)) {
-            return null;
-        }
+            int count = 0;
+            Collection<String> ids = new ArrayList<String>(totalSize);
 
-        KenaiProject kenaiProject;
-        try {
-            kenaiProject = KenaiProject.forRepository((String) attValue);
-        } catch (KenaiException ex) {
-            kenaiProject = null;
-            BugtrackingManager.LOG.warning(
-                    "No Kenai project is available for bugtracking repository " //NOI18N
-                    + " [" + attValue + "]");                           //NOI18N
-        }
-        return kenaiProject;
-    }
-
-    public Repository getRepository(KenaiProject kp) {
-        Repository repository = map.get(kp.getName());
-        if(repository != null) {
-            return repository;
-        }
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (BugtrackingConnector c : connectors) {
-            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
-            if(support != null) {
-                repository = support.createRepository(kp);
-                if(repository != null) {
-                    // XXX what if more repos?!
-                    map.put(kp.getName(), repository);
-                    return repository;
+            KenaiProject[] union = new KenaiProject[totalSize];
+            for (KenaiProject[] projectArray : projectArrays) {
+                for (KenaiProject p : projectArray) {
+                    if (!ids.contains(p.getName())) {
+                        union[count++] = p;
+                        ids.add(p.getName());
+                    }
                 }
             }
-        }
-        return null;
-    }
 
-    Repository getRepository(ProjectHandle ph) {
-        KenaiProject kp = KenaiUtil.getKenaiProject(ph);
-        if(kp == null) {
-            BugtrackingManager.LOG.warning("No issue tracking repository available for ProjectHandle [" + ph.getId() + "," + ph.getDisplayName() + "]"); // NOI18N
-            return null;
+            return stripTrailingNulls(union);
         }
 
-        Repository repository = map.get(kp.getName());
-        if(repository != null) {
-            return repository;
-        }
+        private static <T> T[] stripTrailingNulls(T[] array) {
 
-        repository = getRepository(kp);
-        if(repository == null) {
-            BugtrackingManager.LOG.warning("No issue tracking repository available for project " + kp.getName()); // NOI18N
-            return null;
-        }        
-        return repository;
-    }
-
-    private static KenaiProject[] union(KenaiProject[]... projectArrays) {
-        int totalSize = 0;
-        KenaiProject[] nonEmpty = null;
-
-        /* Count the sum of all array sizes: */
-        for (KenaiProject[] projectArray : projectArrays) {
-            if (projectArray.length == 0) {
-                continue;
+            /* count trailing nulls -> compute size of the resulting array */
+            int resultSize = array.length;
+            while ((resultSize > 0) && (array[resultSize - 1] == null)) {
+                resultSize--;
             }
 
-            totalSize += projectArray.length;
-            nonEmpty = projectArray;
-        }
-        assert (totalSize == 0) == (nonEmpty == null);
-
-        /* Trivial cases: */
-        if (totalSize == 0) {
-            return new KenaiProject[0];
-        }
-        if (totalSize == nonEmpty.length) {
-            return nonEmpty;        //all other arrays were empty
-        }
-
-        int count = 0;
-        Collection<String> ids = new ArrayList<String>(totalSize);
-
-        KenaiProject[] union = new KenaiProject[totalSize];
-        for (KenaiProject[] projectArray : projectArrays) {
-            for (KenaiProject p : projectArray) {
-                if (!ids.contains(p.getName())) {
-                    union[count++] = p;
-                    ids.add(p.getName());
-                }
+            if (resultSize == array.length) {       //no trailing nulls
+                return array;
             }
+
+            T[] result = (T[]) java.lang.reflect.Array.newInstance(
+                                                array.getClass().getComponentType(),
+                                                resultSize);
+            if (resultSize != 0) {
+                System.arraycopy(array, 0, result, 0, resultSize);
+            }
+            return result;
         }
 
-        return stripTrailingNulls(union);
-    }
-
-    private static <T> T[] stripTrailingNulls(T[] array) {
-
-        /* count trailing nulls -> compute size of the resulting array */
-        int resultSize = array.length;
-        while ((resultSize > 0) && (array[resultSize - 1] == null)) {
-            resultSize--;
-        }
-
-        if (resultSize == array.length) {       //no trailing nulls
-            return array;
-        }
-
-        T[] result = (T[]) java.lang.reflect.Array.newInstance(
-                                            array.getClass().getComponentType(),
-                                            resultSize);
-        if (resultSize != 0) {
-            System.arraycopy(array, 0, result, 0, resultSize);
-        }
-        return result;
     }
 
 }

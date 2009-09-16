@@ -84,22 +84,23 @@ public class QMakeAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node) {
-        performAction(node, null, null, null);
+        performAction(node, null, null, null, null);
     }
 
-    public static void performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project) {
+    public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    _performAction(node, listener, outputListener, project);
+                    _performAction(node, listener, outputListener, project, inputOutput);
                 }
             });
         } else {
-            _performAction(node, listener, outputListener, project);
+            return _performAction(node, listener, outputListener, project, inputOutput);
         }
+        return null;
     }
 
-    private static void _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+    private static Future<Integer> _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         //Save file
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
@@ -112,8 +113,6 @@ public class QMakeAction extends AbstractExecutorRunAction {
         // Arguments
         String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
         String[] args = getArguments(node, Tool.QMakeTool); // NOI18N
-        // Tab Name
-        String tabName = getString("QMAKE_LABEL", node.getName()); // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         Map<String, String> envMap = getEnv(execEnv, node, null);
@@ -123,14 +122,19 @@ public class QMakeAction extends AbstractExecutorRunAction {
             argsFlat.append(args[i]);
         }
         traceExecutable(executable, buildDir, argsFlat, envMap);
-        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
-        _tab.closeInputOutput(); // Close it...
-        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
-        try {
-            tab.getOut().reset();
-        } catch (IOException ioe) {
+        if (inputOutput == null) {
+            // Tab Name
+            String tabName = getString("QMAKE_LABEL", node.getName()); // NOI18N
+            InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+            _tab.closeInputOutput(); // Close it...
+            final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+            try {
+                tab.getOut().reset();
+            } catch (IOException ioe) {
+            }
+            inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "QMake"); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "QMake"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir.getPath())
@@ -143,12 +147,12 @@ public class QMakeAction extends AbstractExecutorRunAction {
         .controllable(true)
         .frontWindow(true)
         .inputVisible(true)
-        .inputOutput(tab)
+        .inputOutput(inputOutput)
         .outLineBased(true)
         .showProgress(true)
         .postExecution(processChangeListener)
         .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
-        final ExecutionService es = ExecutionService.newService(npb, descr, "qmake"); // NOI18N
-        Future<Integer> result = es.run();
+        ExecutionService es = ExecutionService.newService(npb, descr, "qmake"); // NOI18N
+        return es.run();
     }
 }

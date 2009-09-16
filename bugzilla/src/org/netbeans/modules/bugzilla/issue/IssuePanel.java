@@ -137,12 +137,6 @@ public class IssuePanel extends javax.swing.JPanel {
         attachDocumentListeners();
         attachHideStatusListener();
 
-        // Not supported yet
-        issueTypeLabel.setVisible(false);
-        issueTypeCombo.setVisible(false);
-        statusWhiteboardLabel.setVisible(false);
-        statusWhiteboardField.setVisible(false);
-
         // A11Y - Issues 163597 and 163598
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
 
@@ -239,6 +233,15 @@ public class IssuePanel extends javax.swing.JPanel {
             qaContactLabel.setVisible(showQAContact);
             qaContactField.setVisible(showQAContact);
         }
+        boolean showStatusWhiteboard = !(issue.getBugzillaRepository() instanceof KenaiRepository);
+        statusWhiteboardLabel.setVisible(showStatusWhiteboard);
+        statusWhiteboardField.setVisible(showStatusWhiteboard);
+        statusWhiteboardWarning.setVisible(showStatusWhiteboard);
+        boolean showIssueType = BugzillaUtil.isNbRepository(issue.getRepository());
+        issueTypeLabel.setVisible(showIssueType);
+        issueTypeCombo.setVisible(showIssueType);
+        issueTypeWarning.setVisible(showIssueType);
+
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
@@ -331,11 +334,15 @@ public class IssuePanel extends javax.swing.JPanel {
                 duplicateField.setBackground(field.getBackground());
             }
             reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY, priorityWarning, priorityLabel);
+            if (BugzillaUtil.isNbRepository(issue.getRepository())) {
+                reloadField(force, issueTypeCombo, BugzillaIssue.IssueField.ISSUE_TYPE, issueTypeWarning, issueTypeLabel);
+            }
             reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY, severityWarning, priorityLabel);
             if (usingTargetMilestones) {
                 reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE, milestoneWarning, targetMilestoneLabel);
             }
             reloadField(force, urlField, BugzillaIssue.IssueField.URL, urlWarning, urlLabel);
+            reloadField(force, statusWhiteboardField, BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardWarning, statusWhiteboardLabel);
             reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
 
             // reported field
@@ -537,6 +544,11 @@ public class IssuePanel extends javax.swing.JPanel {
             layout.replace(users.isEmpty() ? assignedCombo : assignedField, users.isEmpty() ? assignedField : assignedCombo);
             assignedLabel.setLabelFor(users.isEmpty() ? assignedField : assignedCombo);
         }
+
+        if (BugzillaUtil.isNbRepository(repository)) {
+            issueTypeCombo.setModel(toComboModel(bc.getIssueTypes()));
+        }
+
         // stausCombo and resolution fields are filled in reloadForm
     }
 
@@ -621,12 +633,16 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(BugzillaIssue.IssueField.SEVERITY, priorityLabel);
         updateFieldStatus(BugzillaIssue.IssueField.MILESTONE, targetMilestoneLabel);
         updateFieldStatus(BugzillaIssue.IssueField.URL, urlLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardLabel);
         updateFieldStatus(BugzillaIssue.IssueField.KEYWORDS, keywordsLabel);
         updateFieldStatus(BugzillaIssue.IssueField.ASSIGNED_TO, assignedLabel);
         updateFieldStatus(BugzillaIssue.IssueField.QA_CONTACT, qaContactLabel);
         updateFieldStatus(BugzillaIssue.IssueField.CC, ccLabel);
         updateFieldStatus(BugzillaIssue.IssueField.DEPENDS_ON, dependsLabel);
         updateFieldStatus(BugzillaIssue.IssueField.BLOCKS, blocksLabel);
+        if (BugzillaUtil.isNbRepository(issue.getRepository())) {
+            updateFieldStatus(BugzillaIssue.IssueField.ISSUE_TYPE, issueTypeLabel);
+        }
     }
 
     private void updateFieldStatus(BugzillaIssue.IssueField field, JLabel label) {
@@ -680,6 +696,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void attachDocumentListeners() {
         urlField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(urlLabel));
+        statusWhiteboardField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(statusWhiteboardLabel));
         keywordsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(keywordsLabel));
         assignedField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(assignedLabel));
         qaContactField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(qaContactLabel));
@@ -1154,6 +1171,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(issueTypeLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueTypeLabel.text")); // NOI18N
 
+        issueTypeCombo.addActionListener(formListener);
+
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         addCommentArea.setRows(5);
@@ -1248,7 +1267,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                     .add(urlWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(keywordsWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(statusWhiteboardWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, reportedLabel)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, blocksLabel)
@@ -1300,7 +1319,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                         .add(modifiedLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                .add(11, 11, 11))
+                                .addContainerGap(20, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane1)
@@ -1548,6 +1567,9 @@ public class IssuePanel extends javax.swing.JPanel {
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
             }
+            else if (evt.getSource() == issueTypeCombo) {
+                IssuePanel.this.issueTypeComboActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1655,11 +1677,15 @@ public class IssuePanel extends javax.swing.JPanel {
             issue.duplicate(duplicateField.getText());
         }
         storeFieldValue(BugzillaIssue.IssueField.PRIORITY, priorityCombo);
+        if (BugzillaUtil.isNbRepository(issue.getRepository())) {
+            storeFieldValue(BugzillaIssue.IssueField.ISSUE_TYPE, issueTypeCombo);
+        }
         storeFieldValue(BugzillaIssue.IssueField.SEVERITY, severityCombo);
         if (usingTargetMilestones) {
             storeFieldValue(BugzillaIssue.IssueField.MILESTONE, targetMilestoneCombo);
         }
         storeFieldValue(BugzillaIssue.IssueField.URL, urlField);
+        storeFieldValue(BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardField);
         storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
         if (assignedField.getParent() == null) {
             storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedCombo);
@@ -1876,6 +1902,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             Object severity = severityCombo.getSelectedItem();
                             Object resolution = resolutionCombo.getSelectedItem();
                             Object assignee = assignedCombo.getSelectedItem();
+                            Object issueType = issueTypeCombo.getSelectedItem();
                             initCombos();
                             selectInCombo(productCombo, product, false);
                             selectInCombo(platformCombo, platform, false);
@@ -1885,6 +1912,9 @@ public class IssuePanel extends javax.swing.JPanel {
                             initStatusCombo(statusCombo.getSelectedItem().toString());
                             selectInCombo(resolutionCombo, resolution, false);
                             assignedCombo.setSelectedItem(assignee);
+                            if (BugzillaUtil.isNbRepository(issue.getRepository())) {
+                                issueTypeCombo.setSelectedItem(issueType);
+                            }
                         } finally {
                             reloading = false;
                             enableComponents(true);
@@ -1931,6 +1961,10 @@ public class IssuePanel extends javax.swing.JPanel {
             assignedCombo.setSelectedItem(assignee);
         }
     }//GEN-LAST:event_assignedComboActionPerformed
+
+    private void issueTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_issueTypeComboActionPerformed
+        cancelHighlight(issueTypeLabel);
+    }//GEN-LAST:event_issueTypeComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;

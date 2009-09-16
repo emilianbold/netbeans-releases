@@ -189,10 +189,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     private Type newArrayType;
-    private Expression expression;
+    private JavaExpression expression;
     private Map<Tree, Type> subExpressionTypes = new IdentityHashMap<Tree, Type>();
 
-    public EvaluatorVisitor(Expression expression) {
+    public EvaluatorVisitor(JavaExpression expression) {
         this.expression = expression;
     }
 

@@ -1,5 +1,10 @@
-#!/usr/sbin/dtrace -s
+#!/usr/sbin/dtrace -sC
 #pragma D option quiet
+#define ts() (timestamp-starttime) / 1000 / 1000
+this uint64 starttime;
+BEGIN {
+  starttime=timestamp;
+}
 
 /* Unique I/O session id sequence */
 uint64_t sid;
@@ -35,7 +40,7 @@ syscall::creat*:return
     fd2sid[arg0] = (arg0 != -1)? this->sid : 0;
     fd2path[arg0] = (arg0 != -1 && fds[arg0].fi_pathname != "<none>" && fds[arg0].fi_pathname != "<unknown>")? fds[arg0].fi_pathname : copyinstr(self->pathaddr);
     file_count = (arg0 != -1)? file_count + 1 : file_count;
-    printf("%d %s %d \"%s\" %d %d", timestamp, "open", this->sid, fd2path[arg0], 0, file_count);
+    printf("%d %s %d \"%s\" %d %d", ts(), "open", this->sid, fd2path[arg0], 0, file_count);
     ustack();
     printf("\n");
 
@@ -93,7 +98,7 @@ syscall::close*:return
 /pid == $1 && self->sid/
 {
     file_count = (self->sid == -self->fd-1)? file_count : file_count - 1;
-    printf("%d %s %d \"%s\" %d %d", timestamp, "close", (signed int)self->sid, fd2path[self->fd], 0, file_count);
+    printf("%d %s %d \"%s\" %d %d", ts(), "close", (signed int)self->sid, fd2path[self->fd], 0, file_count);
     ustack();
     printf("\n");
 

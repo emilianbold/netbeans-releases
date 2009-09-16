@@ -89,6 +89,7 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -302,6 +303,9 @@ public class MethodChooser implements KeyListener, MouseListener,
             }
         } catch (InternalExceptionWrapper aiex) {
         } catch (VMDisconnectedExceptionWrapper aiex) {
+            return false;
+        } catch (ObjectCollectedExceptionWrapper aiex) {
+            return false;
         } catch (ClassNotPreparedExceptionWrapper aiex) {
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);

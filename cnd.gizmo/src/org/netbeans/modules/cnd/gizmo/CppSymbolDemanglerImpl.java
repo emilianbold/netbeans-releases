@@ -48,6 +48,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -55,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupp
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -237,12 +241,18 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
             checkGnuDemangler();
         }
 
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        final NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable(demanglerTool);
-        npb = npb.setArguments(mangledNames.toArray(new String[mangledNames.size()]));
+        npb.setArguments(mangledNames.toArray(new String[mangledNames.size()]));
 
         try {
-            NativeProcess np = npb.call();
+            Future<NativeProcess> task  = DLightExecutorService.submit(new Callable<NativeProcess>() {
+
+                public NativeProcess call() throws Exception {
+                    return npb.call();
+                }
+            }, "CPPSymbolDemangler call");//NOI18N
+            NativeProcess np = task.get();
             BufferedReader reader = new BufferedReader(new InputStreamReader(np.getInputStream()));
             try {
                 ListIterator<String> it = mangledNames.listIterator();
@@ -269,6 +279,10 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
             }
         } catch (IOException ex) {
             // hide it
+        }catch(InterruptedException e){
+            
+        }catch(ExecutionException execException){
+
         }
     }
 

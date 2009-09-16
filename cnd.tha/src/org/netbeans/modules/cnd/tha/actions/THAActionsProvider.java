@@ -38,26 +38,16 @@
  */
 package org.netbeans.modules.cnd.tha.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.MissingResourceException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
-import org.netbeans.modules.cnd.tha.ui.THAIndicatorDelegator;
-import org.netbeans.modules.cnd.tha.ui.THAIndicatorsTopComponent;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
@@ -66,10 +56,6 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -91,7 +77,6 @@ public final class THAActionsProvider {
     static {
         startThreadAnalyzerConfiguration = new THAMainProjectAction();
     }
-    private RemoveInstrumentationAction removeInstrumentation;
     private final Project project;
     private final THAConfiguration thaConfiguration;
     final DLightTargetListener dlightTargetListener;
@@ -187,12 +172,7 @@ public final class THAActionsProvider {
         return suspendDataCollection;
     }
 
-    public Action getRemoveInstrumentationAction() {
-        return removeInstrumentation;
-    }
-
     private void initActions() {
-        removeInstrumentation = new RemoveInstrumentationAction();
         suspendDataCollection = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -259,91 +239,7 @@ public final class THAActionsProvider {
         }
     }
 
-    private final class RemoveInstrumentationAction extends AbstractAction implements PropertyChangeListener {
-
-        private Project lastValidatedProject;
-        private volatile Future statusVerifyTask;
-
-        public RemoveInstrumentationAction() {
-            super(loc("LBL_THARemoveInstrumentation")); // NOI18N
-            putValue(Action.SHORT_DESCRIPTION, loc("HINT_THARemoveInstrumentation")); // NOI18N
-            lastValidatedProject = null;
-            setEnabled(false);
-        }
-
-        public synchronized void setProject(final Project project) {
-            if (lastValidatedProject == project) {
-                return;
-            }
-
-            if (lastValidatedProject != null) {
-                THAProjectSupport support = THAProjectSupport.getSupportFor(lastValidatedProject);
-                if (support != null) {
-                    support.removeProjectConfigurationChangedListener(this);
-                }
-            }
-
-            if (statusVerifyTask != null) {
-                statusVerifyTask.cancel(true);
-                statusVerifyTask = null;
-            }
-
-            setEnabled(false);
-
-            lastValidatedProject = project;
-
-            if (project != null) {
-                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
-
-                if (support != null) {
-                    support.addProjectConfigurationChangedListener(this);
-                }
-
-                revalidate(lastValidatedProject);
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            assert lastValidatedProject != null;
-
-            if (THAProjectSupport.getSupportFor(lastValidatedProject).undoInstrumentation()) {
-                setEnabled(false);
-            }
-        }
-
-        public synchronized void propertyChange(PropertyChangeEvent evt) {
-            revalidate(lastValidatedProject);
-        }
-
-        private void revalidate(final Project lastValidatedProject) {
-            setEnabled(false);
-
-            if (statusVerifyTask != null) {
-                statusVerifyTask.cancel(true);
-            }
-
-            final THAProjectSupport support = THAProjectSupport.getSupportFor(lastValidatedProject);
-
-            if (support == null) {
-                setEnabled(false);
-            } else {
-                statusVerifyTask = DLightExecutorService.submit(new Callable<Boolean>() {
-
-                    public Boolean call() throws Exception {
-                        boolean result = false;
-
-                        try {
-                            result = support.isConfiguredForInstrumentation();
-                        } catch (Exception ex) {
-                        }
-
-                        setEnabled(result);
-                        return result;
-                    }
-                }, "RemoveInstrumentationAction state verification task"); // NOI18N
-            }
-        }
-    }
+    
 
     public void targetStateChanged(DLightTargetChangeEvent event) {
         this.target = event.target;
@@ -374,7 +270,7 @@ public final class THAActionsProvider {
             return false;
         }
 
-        if (!support.isConfiguredForInstrumentation()) {
+        if (!support.isConfiguredForInstrumentation(thaConfiguration)) {
             boolean instrResult = support.doInstrumentation();
             if (!instrResult) {
                 return false;
@@ -400,7 +296,16 @@ public final class THAActionsProvider {
 
     void sendSignal() {
         if (0 < pid) {
-            CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+            if (!EventQueue.isDispatchThread()){
+                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+            }else{
+                DLightExecutorService.submit(new Runnable() {
+
+                    public void run() {
+                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+                    }
+                }, "Send signal USR1 to pid " + pid + " from THAActionsProvider.sendSignal()");//NOI18N
+            }
         }
     }
 

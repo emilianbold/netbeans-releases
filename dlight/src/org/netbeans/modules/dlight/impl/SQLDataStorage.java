@@ -48,6 +48,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -222,7 +223,6 @@ public abstract class SQLDataStorage implements DataStorage {
         return classToType.get(clazz);
     }
 
-
     /**
      *
      * @param filters
@@ -231,16 +231,25 @@ public abstract class SQLDataStorage implements DataStorage {
      * @return <code>null</code> if the view was not created
      */
     protected final String createView(Collection<DataTableMetadataFilter> filters, String tableName, List<Column> columns) {
-        if (filters == null || filters.isEmpty()){
+        if (filters == null || filters.isEmpty()) {
             return tableName;
         }
         String viewName = tableName + "_DLIGHT_VIEW"; // NOI18N
-        String dropViewQuery = new String("DROP VIEW IF EXISTS " + viewName); // NOI18N
-        ResultSet rs = null;
+        String dropViewQuery = "DROP VIEW IF EXISTS " + viewName; // NOI18N
+        Statement stmt = null;
+
         try {
-            rs = connection.createStatement().executeQuery(dropViewQuery);
+            stmt = connection.createStatement();
+            stmt.execute(dropViewQuery);
         } catch (SQLException ex) {
             logger.log(Level.SEVERE, null, ex);
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
         StringBuilder createViewQuery = new StringBuilder("CREATE  VIEW " + viewName + " AS "); //NOI18N
         createViewQuery.append("SELECT "); // NOI18N
@@ -255,23 +264,34 @@ public abstract class SQLDataStorage implements DataStorage {
         //check if we can create WHERE expression
         boolean hasWhereExpression = false;
         StringBuilder whereBuilder = new StringBuilder(" WHERE "); // NOI18N
-        for (DataTableMetadataFilter filter : filters){
+        for (DataTableMetadataFilter filter : filters) {
             Column filterColumn = filter.getFilteredColumn();
-            if (columns.contains(filterColumn)){
+            if (columns.contains(filterColumn)) {
                 Range range = filter.getNumericDataFilter().getInterval();
                 hasWhereExpression = true;
-                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn + "<=" + range.getEnd()); // NOI18N
+                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn.getColumnName() + "<=" + range.getEnd()); // NOI18N
             }
         }
-        if (hasWhereExpression){
+        if (hasWhereExpression) {
             createViewQuery.append(whereBuilder);
-        }else{
+        } else {
             return tableName;
         }
+
+        stmt = null;
+
         try {
-            rs = connection.createStatement().executeQuery(createViewQuery.toString());
+            stmt = connection.createStatement();
+            stmt.execute(createViewQuery.toString());
         } catch (SQLException ex) {
             return tableName;
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
         return viewName;
     }
@@ -379,16 +399,32 @@ public abstract class SQLDataStorage implements DataStorage {
         String tableName = metadata.getName();
         String sqlQuery = metadata.getViewStatement();
         List<Column> columns = metadata.getColumns();
-        //find 
-        String viewName = createView(filters, tableName, columns);
-        if (viewName != null || viewName.equals(tableName)){
-            return select(tableName, columns, sqlQuery);
+        //apply to source tables if any
+        List<DataTableMetadata> sourceTables = metadata.getSourceTables();
+        Hashtable<String, String> renamedTableNames = new Hashtable<String, String>();
+        if (sourceTables != null) {
+            for (DataTableMetadata sourceTable : sourceTables) {
+                String viewName = createView(filters, sourceTable.getName(), sourceTable.getColumns());
+                if (viewName != null && !viewName.equals(sourceTable.getName())) {
+                    renamedTableNames.put(sourceTable.getName(), viewName);
+                }
+            }
+        } else {
+            String viewName = createView(filters, tableName, columns);
+            if (viewName != null && viewName.equals(tableName)) {
+                return select(tableName, columns, sqlQuery);
+            }
+            if (sqlQuery == null) {
+                return select(viewName, columns, sqlQuery);
+            }
         }
-        if (sqlQuery == null){
-            return select(viewName, columns, sqlQuery);
+        Iterator<String> tableNames = renamedTableNames.keySet().iterator();
+        String sqlQueryNew = sqlQuery;
+        while (tableNames.hasNext()) {
+            String key = tableNames.next();
+            sqlQueryNew = sqlQuery.replaceAll(key, renamedTableNames.get(key));
         }
-        String changedSQLQuery = sqlQuery.replaceAll(tableName, viewName);
-        return select(viewName, columns, changedSQLQuery);
+        return select(tableName, columns, sqlQueryNew);
 
     }
 

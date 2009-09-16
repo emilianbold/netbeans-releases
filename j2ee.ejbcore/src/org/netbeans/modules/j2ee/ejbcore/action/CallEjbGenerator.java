@@ -40,7 +40,6 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -484,7 +483,7 @@ public class CallEjbGenerator {
                 VariableTree variableTree = treeMaker.Variable(
                         treeMaker.Modifiers(Collections.EMPTY_SET),
                         _RetoucheUtil.uniqueMemberName(fileObject, className, ejbName, "ejb"),
-                        treeMaker.QualIdent(workingCopy.getElements().getTypeElement(methodModel.getReturnType())),
+                        methodTree.getReturnType(),
                         treeMaker.MethodInvocation(Collections.EMPTY_LIST,
                                                    treeMaker.Identifier(methodTree.getName()),
                                                    Collections.EMPTY_LIST)

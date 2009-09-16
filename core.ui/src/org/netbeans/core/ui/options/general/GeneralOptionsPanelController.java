@@ -53,6 +53,15 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.TopLevelRegistration(
+    categoryName="#CTL_General_Options",
+    iconBase="org/netbeans/modules/options/resources/generalOptions.png",
+    keywords="#KW_General",
+    keywordsCategory="General",
+//    title="#CTL_General_Options_Title",
+//    description="#CTL_General_Options_Description",
+    position=100
+)
 public final class GeneralOptionsPanelController extends OptionsPanelController {
 
 

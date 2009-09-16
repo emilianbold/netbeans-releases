@@ -94,7 +94,7 @@ public final class THAConfigurationOptions implements DLightConfigurationOptions
         List<DLightTool> tools = configuration.getToolsSet();
         Collection<String> result = new ArrayList<String>();
         for (DLightTool tool : tools) {
-            result.add(tool.getName());
+            result.add(tool.getID());
         }
         return result;
     }
@@ -117,5 +117,13 @@ public final class THAConfigurationOptions implements DLightConfigurationOptions
         synchronized(this){
             listeners.remove(listener);
         }
+    }
+
+    public String getNoIndicatorDataProvidersMessage() {
+        return null;
+    }
+
+    public String getNoDataCollectorsMessage() {
+        return null;
     }
 }

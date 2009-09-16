@@ -86,6 +86,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         this.targetToValidateWith = targetToValidateWith;
         this.currentTool = tool;
         List<DataCollector<?>> collectors = configuration.getConfigurationOptions(false).getCollectors(currentTool);
+        List<DataCollector<?>> notSortedCollectors = configuration.getConfigurationOptions(true).getCollectors(currentTool);
         List<DataCollector<?>> toRepairList = new ArrayList<DataCollector<?>>();
         panelsList = new ArrayList<JPanel>();
         //get the first one

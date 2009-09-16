@@ -69,8 +69,10 @@ import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDataQuery;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
@@ -103,6 +105,7 @@ public class ThreadMapVisualizer extends JPanel implements
     private long startTimeStamp;
     private TimerBasedVisualizerSupport timerSupport;
     private DLightSession session;
+    private Collection<TimeIntervalDataFilter> lastTimeFilters;
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
 
@@ -168,7 +171,14 @@ public class ThreadMapVisualizer extends JPanel implements
         //filter out with the time
         if (session != null){
             Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
+            lastTimeFilters = timeFilters;
             setTimeIntervalSelection(timeFilters);
+            final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(lastTimeFilters,  true));
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    updateList(null, summaryData);
+                }
+            });
         }
 
     }
@@ -240,6 +250,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
     private void syncFillModel() {
         final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(startTimeStamp, true, false));
+        final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(lastTimeFilters,  true));
         final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
         UIThread.invoke(new Runnable() {
 
@@ -248,7 +259,7 @@ public class ThreadMapVisualizer extends JPanel implements
                 if (isEmptyConent) {
                     return;
                 }
-                updateList(mapData);
+                updateList(mapData, summaryData);
             }
         });
 
@@ -298,11 +309,14 @@ public class ThreadMapVisualizer extends JPanel implements
 
     }
 
-    protected void updateList(ThreadMapData mapData) {
+    protected void updateList(ThreadMapData mapData, ThreadMapSummaryData summaryData) {
         synchronized (uiLock) {
-            threadsPanel.threadsMonitoringEnabled();
-            dataManager.processData(MonitoredData.getMonitoredData(mapData), session);
-            startTimeStamp = dataManager.getEndTimeStump();
+            if (mapData != null) {
+                threadsPanel.threadsMonitoringEnabled();
+                dataManager.processData(MonitoredData.getMonitoredData(mapData), session);
+                startTimeStamp = dataManager.getEndTimeStump();
+            }
+            dataManager.processData(summaryData);
             setNonEmptyContent();
         }
     }

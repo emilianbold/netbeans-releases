@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/rest/jersey-core-1.1.2-ea.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jersey-json-1.1.2-ea.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jersey-server-1.1.2-ea.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-spring-1.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-spring-1.1.2-ea.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jettison-1.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/activation.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/api/jaxb-api.jar!/</resource>

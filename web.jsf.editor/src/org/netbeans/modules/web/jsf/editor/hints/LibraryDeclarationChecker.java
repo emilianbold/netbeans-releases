@@ -85,7 +85,11 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
-        Map<String, FaceletsLibrary> libs = JsfSupport.findFor(context.doc).getFaceletsLibraries();
+        JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
+        Map<String, FaceletsLibrary> libs = Collections.EMPTY_MAP;
+        if (jsfSupport != null) {
+             libs = jsfSupport.getFaceletsLibraries();
+        }
 
         //Find the namespaces declarations itself
         //a.take the html AST

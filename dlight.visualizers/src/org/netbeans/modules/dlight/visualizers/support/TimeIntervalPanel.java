@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
@@ -61,6 +63,7 @@ import org.netbeans.modules.dlight.util.Range;
  */
 public final class TimeIntervalPanel extends javax.swing.JPanel implements DataFilterListener {
 
+    private static final long NANOSECONDS_PER_SECOND = 1000000000;
     private DataFilterManager manager;
 
     /** Creates new form TimeIntervalPanel */
@@ -89,6 +92,14 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
                     return;
                 }
                 TimeIntervalPanel.this.manager.cleanAllDataFilter(TimeIntervalDataFilter.class);
+            }
+        });
+        startTimeSpinner.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                //if end time more then start re-set end
+                if (((Long)startTimeSpinner.getValue()) >= (Long)endTimeSpinner.getValue())
+                    endTimeSpinner.setValue((Long)startTimeSpinner.getValue() + 1);
             }
         });
     }
@@ -126,6 +137,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         jLabel2 = new javax.swing.JLabel();
         applyButton = new javax.swing.JButton();
         removeFilterButton = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.jLabel1.text")); // NOI18N
 
@@ -138,6 +150,8 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         applyButton.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.applyButton.text")); // NOI18N
 
         removeFilterButton.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.removeFilterButton.text")); // NOI18N
+
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.jLabel3.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -152,11 +166,13 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
                 .add(jLabel2)
                 .add(1, 1, 1)
                 .add(endTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
+                .add(4, 4, 4)
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(applyButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(removeFilterButton)
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -167,6 +183,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
                     .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(endTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2)
+                    .add(jLabel3)
                     .add(applyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(removeFilterButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -177,12 +194,13 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
     private javax.swing.JSpinner endTimeSpinner;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JButton removeFilterButton;
     private javax.swing.JSpinner startTimeSpinner;
     // End of variables declaration//GEN-END:variables
 
     public Range<Long> getSelectedInterval() {
-        return new Range<Long>((Long) startTimeSpinner.getValue(), (Long) endTimeSpinner.getValue());
+        return new Range<Long>((Long) startTimeSpinner.getValue() * NANOSECONDS_PER_SECOND, (Long) endTimeSpinner.getValue() * NANOSECONDS_PER_SECOND);
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
@@ -203,8 +221,9 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         if (filter == null) {
             return;
         }
-        startTimeSpinner.setValue(filter.getInterval().getStart());
-        endTimeSpinner.setValue(filter.getInterval().getEnd());
+        endTimeSpinner.setValue((long)(filter.getInterval().getEnd()/NANOSECONDS_PER_SECOND));
+        startTimeSpinner.setValue((long)filter.getInterval().getStart()/NANOSECONDS_PER_SECOND);
+        
     }
 
 

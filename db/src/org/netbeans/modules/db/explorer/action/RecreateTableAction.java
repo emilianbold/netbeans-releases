@@ -44,7 +44,6 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFileChooser;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
@@ -58,7 +57,7 @@ import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
@@ -104,10 +103,8 @@ public class RecreateTableAction extends BaseAction {
                     AbstractCommand cmd;
 
                     // Get filename
-                    JFileChooser chooser = new JFileChooser();
-                    FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-                    chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-                    chooser.setDialogTitle(NbBundle.getMessage (RecreateTableAction.class, "RecreateTableFileOpenDialogTitle")); //NOI18N
+                    FileChooserBuilder chooser = new FileChooserBuilder(RecreateTableAction.class);
+                    chooser.setTitle(NbBundle.getMessage (RecreateTableAction.class, "RecreateTableFileOpenDialogTitle")); //NOI18N
                     chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
                         public boolean accept(File f) {
                             return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
@@ -118,18 +115,16 @@ public class RecreateTableAction extends BaseAction {
                         }
                     });
 
-                    if (chooser.showOpenDialog(par) == JFileChooser.APPROVE_OPTION) {
-                        File file = chooser.getSelectedFile();
-                        if (file != null && file.isFile()) {
-                            FileInputStream fstream = new FileInputStream(file);
-                            ObjectInputStream istream = new ObjectInputStream(fstream);
-                            cmd = (AbstractCommand)istream.readObject();
-                            istream.close();
-                            cmd.setSpecification(spec);
-                        } else
-                            return;
-                    } else
+                    File file = chooser.showOpenDialog();
+                    if (file != null && file.isFile()) {
+                        FileInputStream fstream = new FileInputStream(file);
+                        ObjectInputStream istream = new ObjectInputStream(fstream);
+                        cmd = (AbstractCommand)istream.readObject();
+                        istream.close();
+                        cmd.setSpecification(spec);
+                    } else {
                         return;
+                    }
 
                     SchemaNameProvider schemaProvider = node.getLookup().lookup(SchemaNameProvider.class);
                     String schemaName = schemaProvider.getSchemaName();

@@ -124,19 +124,7 @@ public class CreateDomain extends Thread {
             String arrnd[];
             
             if ("".equals(pword)) { // NOI18N
-                arrnd = new String[] {startScript,
-                    "-client",  // NOI18N
-                    "-jar",  // NOI18N
-                    jarLocation,
-                    "create-domain", //NOI18N
-                    "--domaindir", //NOI18N
-                    domainDir,
-                    "--portbase", //NOI18N
-                    map.get(PORTBASE),
-                    "--user", //NOI18N
-                    uname,
-                    domain
-                };            
+                arrnd = gip.getNoPasswordCreatDomainCommand(startScript, jarLocation,domainDir,map.get(PORTBASE),uname,domain);
             } else {
                 arrnd = new String[] {startScript,
                     "-client",  // NOI18N

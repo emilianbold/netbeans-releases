@@ -500,16 +500,32 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
         Variable v = (Variable) o;
 
+        String type;
         if (checkEvaluated) {
-            if (!isEvaluated(v)) {
+            boolean evaluated;
+            if (v instanceof Refreshable) {
+                synchronized (v) { // Do the test and retrieve of type in synch
+                    evaluated = ((Refreshable) v).isCurrent();
+                    if (evaluated) {
+                        type = v.getType();
+                    } else {
+                        type = null;
+                    }
+                }
+            } else {
+                evaluated = true;
+                type = v.getType();
+            }
+            if (!evaluated) {
                 if (whenEvaluated != null) {
                     postEvaluationMonitor(o, whenEvaluated);
                 }
                 return null;
             }
+        } else {
+            type = v.getType();
         }
 
-        String type = v.getType ();
         VariablesFilter vf = (VariablesFilter) typeToFilterL.get (type);
         if (vf != null) return vf;
 

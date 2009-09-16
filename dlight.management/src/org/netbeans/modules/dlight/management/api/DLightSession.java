@@ -90,6 +90,7 @@ import org.openide.windows.InputOutput;
  * 
  */
 public final class DLightSession implements DLightTargetListener, DataFilterManager, DLightSessionIOProvider, DLightSessionInternalReference {
+
     private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
@@ -127,7 +128,8 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
-                startTimestamp = System.nanoTime();
+                startTimestamp = 0;
+                serviceInfoDataStorage.put(ServiceInfoDataStorage.START_TIME_NANOSECONDS, startTimestamp + "");
                 targetStarted(event.target);
                 break;
             case FAILED:
@@ -361,42 +363,48 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         dataFiltersSupport.addDataFilterListener(listener);
     }
 
-   public void removeDataFilterListener(DataFilterListener listener) {
+    public void removeDataFilterListener(DataFilterListener listener) {
         dataFiltersSupport.removeDataFilterListener(listener);
     }
 
-    public DLightSessionIOProvider getDLigthSessionIOProvider(){
+    public DLightSessionIOProvider getDLigthSessionIOProvider() {
         return this;
     }
-    
-    public InputOutput getInputOutput(){
-        if (this.state == SessionState.CONFIGURATION){
+
+    public InputOutput getInputOutput() {
+        if (this.state == SessionState.CONFIGURATION) {
             return null;//nothing to return, we are in configuration state
         }
         return io;
     }
-    
+
     public void addDataFilter(DataFilter filter, boolean isAdjusting) {
         //if the filter is TimeIntervalFilter: remove first
-        if (filter instanceof TimeIntervalDataFilter){
+        if (filter instanceof TimeIntervalDataFilter) {
             dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
         dataFiltersSupport.addFilter(filter, isAdjusting);
         //if filter is added - refresh all visualizers
-        if (!isAdjusting){
-            for (Visualizer v : getVisualizers()){
+        if (!isAdjusting) {
+            for (Visualizer v : getVisualizers()) {
                 v.refresh();
             }
         }
-        
+
     }
-    
+
     public void cleanAllDataFilter() {
         dataFiltersSupport.cleanAll();
+        for (Visualizer v : getVisualizers()) {
+            v.refresh();
+        }
     }
 
     public void cleanAllDataFilter(Class clazz) {
         dataFiltersSupport.cleanAll(clazz);
+        for (Visualizer v : getVisualizers()) {
+            v.refresh();
+        }
     }
 
     public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
@@ -406,7 +414,6 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     public boolean removeDataFilter(DataFilter filter) {
         return dataFiltersSupport.removeFilter(filter);
     }
-
 
     public final void addIndicatorNotificationListener(IndicatorNotificationsListener l) {
         if (l == null) {
@@ -521,7 +528,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                                 }
                             }
                             if (i instanceof DataFilterListener) {
-                                addDataFilterListener((DataFilterListener)i);
+                                addDataFilterListener((DataFilterListener) i);
                             }
                         }
                     }

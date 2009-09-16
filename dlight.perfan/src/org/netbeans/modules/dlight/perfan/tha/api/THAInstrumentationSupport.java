@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public final class THAInstrumentationSupport {
@@ -62,7 +61,7 @@ public final class THAInstrumentationSupport {
     private final static CollectVersion minSupportedVersion = CollectVersion.getCollectVersion("6.7"); // NOI18N
     private final static ConcurrentHashMap<SSLocation, THAInstrumentationSupport> hash = new ConcurrentHashMap<SSLocation, THAInstrumentationSupport>();
     private final ExecutionEnvironment execEnv;
-    private final Future<CollectVersion> version;
+    private Future<CollectVersion> version;
     private final String collectCMD;
     private final String binDir;
 
@@ -88,12 +87,15 @@ public final class THAInstrumentationSupport {
         this.binDir = sunstudioBinDir;
         this.execEnv = execEnv;
         collectCMD = sunstudioBinDir + "collect"; // NOI18N
-        version = getVersion();
+        //version = getVersion();
     }
 
     public boolean isSupported() {
         boolean result = false;
         try {
+            if (version == null) {
+                version = getVersion();
+            }
             CollectVersion vers = version.get();
             return vers.compareTo(minSupportedVersion) > 0;
         } catch (InterruptedException ex) {
@@ -103,9 +105,9 @@ public final class THAInstrumentationSupport {
         return result;
     }
 
-    public boolean isInstrumentationNeeded(ExecutionEnvironment env){
+    public boolean isInstrumentationNeeded(ExecutionEnvironment env, THAConfiguration configuration){
         try {
-            if (HostInfoUtils.getHostInfo(env).getCpuFamily().equals(CpuFamily.SPARC)) {
+            if (!configuration.collectDataRaces() && configuration.collectDeadlocks() && HostInfoUtils.getHostInfo(env).getCpuFamily().equals(CpuFamily.SPARC)) {
                 return false;
             }
             return true;

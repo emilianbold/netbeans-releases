@@ -122,6 +122,7 @@ import org.openide.util.NbPreferences;
  */
 public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionListener, TableColumnModelListener,
         DataManagerListener {
+
     // I18N String constants
     private static final ResourceBundle messages = NbBundle.getBundle(ThreadsPanel.class);
     private static final String VIEW_THREADS_ALL = messages.getString("ThreadsPanel_ViewThreadsAll"); // NOI18N
@@ -754,6 +755,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return manager.getThreadData(index);
     }
 
+    public ThreadSummaryColumnImpl getThreadSummary(int index) {
+        return manager.getThreadSummary(index);
+    }
+
     // ---------------------------------------------------------------------------------------
     // Thread data
     public String getThreadName(int index) {
@@ -1052,7 +1057,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                             }
                         }
                         final ThreadState state = threadData.getThreadStateAt(index);
-                        timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
+                        int interval = ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod());
+                        timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), interval);
                         refreshUI();
                         if (detailsCallback != null) {
 //                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
@@ -1173,7 +1179,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 if (sortedColum == 0){
                     map.put(col.getName()+col.getThreadID(),i);
                 } else {
-                    long l = col.getSummary();
+                    long l = 0;
+                    ThreadSummaryColumnImpl c = manager.getThreadSummary(i.intValue());
+                    if (c != null) {
+                        l = c.getRunning();
+                    }
                     l = (l << 32) + col.getThreadID();
                     map.put(l,i);
                 }
@@ -1251,10 +1261,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             scaleToFitButton.setEnabled(true);
             scaleToFitButton.setToolTipText(scaleToFit ? FIXED_SCALE_TOOLTIP : SCALE_TO_FIT_TOOLTIP);
         }
-    }
-
-    long getInterval() {
-        return manager.getInterval();
     }
 
     void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
@@ -1349,7 +1355,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 case DISPLAY_COLUMN_INDEX:
                     return getThreadData( filteredDataToDataIndex.get(rowIndex).intValue() );
                 case SUMMARY_COLUMN_INDEX:
-                    return getThreadData( filteredDataToDataIndex.get(rowIndex).intValue() );
+                    return getThreadSummary( filteredDataToDataIndex.get(rowIndex).intValue() );
                 default:
                     return null;
             }

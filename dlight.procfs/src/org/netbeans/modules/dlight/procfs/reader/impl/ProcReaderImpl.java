@@ -64,20 +64,21 @@ public abstract class ProcReaderImpl implements ProcReader {
         // TODO: fixme!
         // Try to set endian ... bad way!
 
-        try {
-            PStatus.PIDInfo pidinfo = getProcessStatus().getPIDInfo();
-            if (pidinfo.pr_pid != pid) {
-                DataReader.switchEndian();
-            }
-        } catch (IOException ex) {
+        PStatus.PIDInfo pidinfo = getProcessStatus().getPIDInfo();
+        if (pidinfo == null) {
+            return;
+        }
+
+        if (pidinfo.pr_pid != pid) {
+            DataReader.switchEndian();
         }
     }
 
-    public abstract PStatus getProcessStatus() throws IOException;
+    public abstract PStatus getProcessStatus();
 
     public abstract PUsage getProcessUsage() throws IOException;
 
-    public abstract List<LWPUsage> getThreadsInfo() throws IOException;
+    public abstract List<LWPUsage> getThreadsInfo();
 
     protected PStatus getProcessStatus(final InputStream is) throws IOException {
         DataReader reader = null;

@@ -41,7 +41,9 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,6 +122,32 @@ public class GotoTest implements TestLocator {
             "/" + FILE + "\\." + EXT, "/" + FILE + "_test\\." + EXT, // NOI18N
             "/" + FILE + "\\." + EXT, "/tc_" + FILE + "\\." + EXT, // NOI18N
         };
+
+
+    private String[] getProjectSourceRootPatterns(Project project) {
+        RubyBaseProject rubyBaseProject = project.getLookup().lookup(RubyBaseProject.class);
+        if (rubyBaseProject == null) {
+            return new String[0];
+        }
+        List<String> result = new ArrayList<String>();
+        for (FileObject sourceRoot : rubyBaseProject.getSourceRootFiles()) {
+            for (FileObject testRoot : rubyBaseProject.getTestSourceRootFiles()) {
+                addPatternPairs(sourceRoot, testRoot, result);
+            }
+        }
+        return result.toArray(new String[result.size()]);
+    }
+
+    private void addPatternPairs(FileObject sourceRoot, FileObject testRoot, List<String> result) {
+        result.add(sourceRoot.getName() + "/" + FILE + "\\." + EXT);
+        result.add(testRoot.getName() + "/" + "test_" + FILE + "\\." + EXT);
+
+        result.add(sourceRoot.getName() + "/" + FILE + "\\." + EXT);
+        result.add(testRoot.getName() + "/" + FILE + "_test\\." + EXT);
+
+        result.add(sourceRoot.getName() + "/" + FILE + "\\." + EXT);
+        result.add(testRoot.getName() + "/" + FILE + "_spec\\." + EXT);
+    }
 
     public GotoTest() {
     }
@@ -289,6 +317,11 @@ public class GotoTest implements TestLocator {
                 if (matching != null) {
                     return matching;
                 }
+            }
+            // try source/test roots defined in project properties
+            matching = findMatching(getProjectSourceRootPatterns(project), file, findTest);
+            if (matching != null) {
+                return matching;
             }
         }
 
