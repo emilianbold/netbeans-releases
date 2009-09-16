@@ -214,11 +214,6 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 return data;
             }
 
-            public TimeDuration getSamplingPeriod() {
-                // TODO: deprecate
-                return new TimeDuration(TimeUnit.SECONDS, 1);
-            }
-
             public boolean isSamplingMode() {
                 return false;
             }
@@ -359,8 +354,8 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         Range<Long> interval = intervals.iterator().next().getInterval();
         ResultSet rset = null;
         try {
-            querySummaryStatement.setLong(1, interval.getStart());
-            querySummaryStatement.setLong(2, interval.getEnd());
+            querySummaryStatement.setLong(1, interval.getStartMilliSeconds());
+            querySummaryStatement.setLong(2, interval.getEndMilliSeconds());
 
             rset = querySummaryStatement.executeQuery();
 

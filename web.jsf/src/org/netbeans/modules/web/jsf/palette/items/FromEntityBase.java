@@ -369,7 +369,7 @@ public abstract class FromEntityBase {
         } else if (TypeKind.FLOAT == idType.getKind()) {
             return "Float.parseFloat("+param+")";
         } else if (TypeKind.INT == idType.getKind()) {
-            return "Integer.parseInteger("+param+")";
+            return "Integer.parseInt("+param+")";
         } else if (TypeKind.LONG == idType.getKind()) {
             return "Long.parseLong("+param+")";
         } else if (TypeKind.SHORT == idType.getKind()) {

@@ -108,7 +108,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         ts.movePrevious();
         ts.movePrevious();
         
-        int end = ts.offset();
+        int end = ts.offset() + ts.token().length();
         addIndentLevel(start, indentSize);
         addIndentLevel(end, -1 * indentSize);  
     }
@@ -305,9 +305,14 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         int r = offset;
         try {
             int v = Utilities.getFirstNonWhiteBwd(doc, offset);
+            int rs = Utilities.getRowStart(doc, offset);
             
             if (v >= 0){
                 r = v;
+            }
+
+            if (r < rs){
+                r = rs - 1;
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -320,9 +325,14 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         int r = offset;
         try {
             int v = Utilities.getFirstNonWhiteFwd(doc, offset);
+            int re = Utilities.getRowEnd(doc, offset);
 
             if (v >= 0){
                 r = v;
+            }
+
+            if (r > re){
+                r = re + 1;
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);

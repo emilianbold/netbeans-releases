@@ -133,10 +133,6 @@ public class ThreadMapDataStorage implements ProxyDataStorage {
                 return Collections.unmodifiableList(threadsData);
             }
 
-            public TimeDuration getSamplingPeriod() {
-                return frequency;
-            }
-
             public boolean isSamplingMode() {
                 return false;
             }
