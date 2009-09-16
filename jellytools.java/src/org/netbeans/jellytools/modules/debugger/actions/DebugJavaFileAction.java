@@ -59,7 +59,7 @@ public class DebugJavaFileAction extends Action {
     //private static final String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
     // "Debug File"
     private static final String POPUP_PATH = 
-            Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action");
+            Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugSingleAction_Name");
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :
             KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
