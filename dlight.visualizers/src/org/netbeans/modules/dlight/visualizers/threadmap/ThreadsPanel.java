@@ -122,6 +122,8 @@ import org.openide.util.NbPreferences;
  */
 public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionListener, TableColumnModelListener,
         DataManagerListener {
+
+    static final boolean USE_SUMMARY_DATA_PROVIDER = true;
     // I18N String constants
     private static final ResourceBundle messages = NbBundle.getBundle(ThreadsPanel.class);
     private static final String VIEW_THREADS_ALL = messages.getString("ThreadsPanel_ViewThreadsAll"); // NOI18N
@@ -754,6 +756,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return manager.getThreadData(index);
     }
 
+    public ThreadSummaryColumnImpl getThreadSummary(int index) {
+        return manager.getThreadSummary(index);
+    }
+
     // ---------------------------------------------------------------------------------------
     // Thread data
     public String getThreadName(int index) {
@@ -1173,7 +1179,15 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 if (sortedColum == 0){
                     map.put(col.getName()+col.getThreadID(),i);
                 } else {
-                    long l = col.getSummary();
+                    long l = 0;
+                    if (USE_SUMMARY_DATA_PROVIDER) {
+                        ThreadSummaryColumnImpl c = manager.getThreadSummary(i.intValue());
+                        if (c != null) {
+                            l = c.getRunning();
+                        }
+                    } else {
+                        l = col.getRunning();
+                    }
                     l = (l << 32) + col.getThreadID();
                     map.put(l,i);
                 }
@@ -1349,7 +1363,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 case DISPLAY_COLUMN_INDEX:
                     return getThreadData( filteredDataToDataIndex.get(rowIndex).intValue() );
                 case SUMMARY_COLUMN_INDEX:
-                    return getThreadData( filteredDataToDataIndex.get(rowIndex).intValue() );
+                    if (USE_SUMMARY_DATA_PROVIDER) {
+                        return getThreadSummary( filteredDataToDataIndex.get(rowIndex).intValue() );
+                    } else {
+                        return getThreadData( filteredDataToDataIndex.get(rowIndex).intValue() );
+                    }
                 default:
                     return null;
             }

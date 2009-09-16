@@ -61,7 +61,7 @@ public final class THAInstrumentationSupport {
     private final static CollectVersion minSupportedVersion = CollectVersion.getCollectVersion("6.7"); // NOI18N
     private final static ConcurrentHashMap<SSLocation, THAInstrumentationSupport> hash = new ConcurrentHashMap<SSLocation, THAInstrumentationSupport>();
     private final ExecutionEnvironment execEnv;
-    private final Future<CollectVersion> version;
+    private Future<CollectVersion> version;
     private final String collectCMD;
     private final String binDir;
 
@@ -87,12 +87,15 @@ public final class THAInstrumentationSupport {
         this.binDir = sunstudioBinDir;
         this.execEnv = execEnv;
         collectCMD = sunstudioBinDir + "collect"; // NOI18N
-        version = getVersion();
+        //version = getVersion();
     }
 
     public boolean isSupported() {
         boolean result = false;
         try {
+            if (version == null) {
+                version = getVersion();
+            }
             CollectVersion vers = version.get();
             return vers.compareTo(minSupportedVersion) > 0;
         } catch (InterruptedException ex) {

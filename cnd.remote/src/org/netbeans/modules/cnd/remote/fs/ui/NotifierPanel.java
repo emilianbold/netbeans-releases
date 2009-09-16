@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.fs.ui;
 
+import java.util.List;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /**
  *
  * @author Vladimir Kvashin
@@ -46,8 +49,12 @@ package org.netbeans.modules.cnd.remote.fs.ui;
 public class NotifierPanel extends javax.swing.JPanel {
 
     /** Creates new form RemoteFileSystemNotifier */
-    public NotifierPanel() {
+    public NotifierPanel(ExecutionEnvironment env) {
         initComponents();
+        txtFilesList.setBackground(getBackground());
+        tpExplanation.setBackground(getBackground());
+        tfHost.setText(env.getHost());
+        tfUser.setText(env.getUser());  
     }
 
     public char[] getPassword() {
@@ -56,6 +63,17 @@ public class NotifierPanel extends javax.swing.JPanel {
 
     public boolean isRememberPassword() {
         return cbRememberPwd.isSelected();
+    }
+
+    public void setPendingFiles(List<String> pendingFiles) {
+        StringBuilder sb = new StringBuilder();
+        for (String file : pendingFiles) {
+            if (sb.length() > 0) {
+                sb.append('\n'); //NOI18N
+            }
+            sb.append(file);
+        }
+        txtFilesList.setText(sb.toString());
     }
 
     /** This method is called from within the constructor to
@@ -69,10 +87,9 @@ public class NotifierPanel extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         tpExplanation = new javax.swing.JTextPane();
-        lblHostOffline = new javax.swing.JLabel();
         lblFiles = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        txtFilesList = new javax.swing.JTextArea();
         tfPassword = new javax.swing.JPasswordField();
         tfHost = new javax.swing.JTextField();
         cbRememberPwd = new javax.swing.JCheckBox();
@@ -81,18 +98,17 @@ public class NotifierPanel extends javax.swing.JPanel {
         jLabel0 = new javax.swing.JLabel();
         tfUser = new javax.swing.JTextField();
 
+        tpExplanation.setBorder(null);
         tpExplanation.setEditable(false);
         tpExplanation.setText(org.openide.util.NbBundle.getMessage(NotifierPanel.class, "RemoteFileSystemNotifier.Explanation")); // NOI18N
         jScrollPane1.setViewportView(tpExplanation);
 
-        lblHostOffline.setText(org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.lblHostOffline.text")); // NOI18N
-
         lblFiles.setText(org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.lblFiles.text")); // NOI18N
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        txtFilesList.setColumns(20);
+        txtFilesList.setEditable(false);
+        txtFilesList.setRows(5);
+        jScrollPane2.setViewportView(txtFilesList);
 
         tfPassword.setText(null);
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -123,14 +139,11 @@ public class NotifierPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(lblHostOffline)
-                    .add(lblFiles)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
                             .add(jLabel1)
@@ -140,20 +153,20 @@ public class NotifierPanel extends javax.swing.JPanel {
                             .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
                             .add(tfUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
                             .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)))
-                    .add(cbRememberPwd))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cbRememberPwd)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lblFiles))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(lblHostOffline)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addContainerGap()
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblFiles)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 75, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel0)
@@ -184,13 +197,12 @@ public class NotifierPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel lblFiles;
-    private javax.swing.JLabel lblHostOffline;
     private javax.swing.JTextField tfHost;
     private javax.swing.JPasswordField tfPassword;
     private javax.swing.JTextField tfUser;
     private javax.swing.JTextPane tpExplanation;
+    private javax.swing.JTextArea txtFilesList;
     // End of variables declaration//GEN-END:variables
 
 }

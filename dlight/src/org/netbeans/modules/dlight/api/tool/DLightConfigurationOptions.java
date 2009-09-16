@@ -66,5 +66,9 @@ public interface DLightConfigurationOptions   {
     boolean validateToolsRequiredUserInteraction();
 
     Collection<String> getActiveToolNames();
+
+    String getNoIndicatorDataProvidersMessage();
+
+    String getNoDataCollectorsMessage();
     
 }

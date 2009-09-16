@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
@@ -90,6 +92,14 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
                     return;
                 }
                 TimeIntervalPanel.this.manager.cleanAllDataFilter(TimeIntervalDataFilter.class);
+            }
+        });
+        startTimeSpinner.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                //if end time more then start re-set end
+                if (((Long)startTimeSpinner.getValue()) >= (Long)endTimeSpinner.getValue())
+                    endTimeSpinner.setValue((Long)startTimeSpinner.getValue() + 1);
             }
         });
     }
@@ -211,8 +221,9 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         if (filter == null) {
             return;
         }
-        startTimeSpinner.setValue((long)filter.getInterval().getStart()/NANOSECONDS_PER_SECOND);
         endTimeSpinner.setValue((long)(filter.getInterval().getEnd()/NANOSECONDS_PER_SECOND));
+        startTimeSpinner.setValue((long)filter.getInterval().getStart()/NANOSECONDS_PER_SECOND);
+        
     }
 
 

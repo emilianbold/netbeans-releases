@@ -46,6 +46,7 @@ import org.netbeans.modules.dlight.util.Computable;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 final class ProcFSDataCollectorValidator implements Computable<DLightTarget, ValidationStatus> {
 
@@ -59,7 +60,7 @@ final class ProcFSDataCollectorValidator implements Computable<DLightTarget, Val
             if (HostInfoUtils.getHostInfo(target.getExecEnv()).getOSFamily() == OSFamily.SUNOS) {
                 result = ValidationStatus.validStatus();
             } else {
-                result = ValidationStatus.invalidStatus("Only SunOS is supported for now"); // NOI18N
+                result = ValidationStatus.invalidStatus(NbBundle.getMessage(ProcFSDataCollectorValidator.class, "SunOSIsSupportedPlatform")); // NOI18N
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

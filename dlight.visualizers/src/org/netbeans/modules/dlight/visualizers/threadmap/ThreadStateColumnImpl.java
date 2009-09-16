@@ -257,11 +257,11 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         this.stackProvider = stackProvider;
     }
 
-    public void setSummary(int sum) {
+    public void setRunning(int sum) {
         comparable.set(sum);
     }
 
-    public int getSummary() {
+    public int getRunning() {
         return comparable.get();
     }
 

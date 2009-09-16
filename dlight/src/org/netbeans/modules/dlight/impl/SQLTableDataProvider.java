@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
  */
 public class SQLTableDataProvider implements TableDataProvider {
 
-    private final Object lock = new String("FunctionsListDataProviderImpl.lock");
+    private final Object lock = new String("FunctionsListDataProviderImpl.lock");//NOI18N
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
     private SQLDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
@@ -108,11 +108,13 @@ public class SQLTableDataProvider implements TableDataProvider {
 //  public DataProvider newInstance() {
 //    return new SQLTableDataProvider();
 //  }
-    private final <T extends DataFilter> Collection<T> getDataFilters(List<DataFilter> filters, Class<T> clazz) {
+    private final <T extends DataFilter> Collection<T> getDataFilters(Class<T> clazz) {
         Collection<T> result = new ArrayList<T>();
-        for (DataFilter f : filters) {
-            if (f.getClass() == clazz) {
-                result.add(clazz.cast(f));
+        synchronized (lock) {
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
+                    result.add(clazz.cast(f));
+                }
             }
         }
         return result;
@@ -129,22 +131,23 @@ public class SQLTableDataProvider implements TableDataProvider {
         }
         List<Column> columns = tableMetadata.getColumns();
         List<DataRow> result = new ArrayList<DataRow>();
-        List<DataFilter> changedFilters = new ArrayList<DataFilter>();
-        final long startTimeStamp = Long.valueOf(serviceInfoStorage.getValue(ServiceInfoDataStorage.START_TIME_NANOSECONDS));
-        synchronized(lock){
-            for (DataFilter f : filters){
-                if (f instanceof TimeIntervalDataFilter){
-                    //long startTs = f.
-                    Range<Long> interval  = ((TimeIntervalDataFilter)f).getInterval();
-                    Range<Long> newInterval = new Range<Long>(interval.getStart() + startTimeStamp, interval.getEnd() + startTimeStamp);
-                    TimeIntervalDataFilter newFilter  = TimeIntervalDataFilterFactory.create(newInterval);
-                    changedFilters.add(newFilter);
-                }else{
-                    changedFilters.add(f);
-                }
-            }
-        }
-        Collection<TimeIntervalDataFilter> timeFilters = getDataFilters(changedFilters, TimeIntervalDataFilter.class);
+//        List<DataFilter> changedFilters = new ArrayList<DataFilter>();
+//        final long startTimeStamp = Long.valueOf(serviceInfoStorage.getValue(ServiceInfoDataStorage.START_TIME_NANOSECONDS));
+//        synchronized(lock){
+//            for (DataFilter f : filters){
+//                if (f instanceof TimeIntervalDataFilter){
+//                    //long startTs = f.
+//                    Range<Long> interval  = ((TimeIntervalDataFilter)f).getInterval();
+//                    Range<Long> newInterval = new Range<Long>(interval.getStart() + startTimeStamp, interval.getEnd() + startTimeStamp);
+//                    TimeIntervalDataFilter newFilter  = TimeIntervalDataFilterFactory.create(newInterval);
+//                    changedFilters.add(newFilter);
+//                }else{
+//                    changedFilters.add(f);
+//                }
+//            }
+//        }
+
+        Collection<TimeIntervalDataFilter> timeFilters = getDataFilters(TimeIntervalDataFilter.class);
         Collection<DataTableMetadataFilter> tableFilters = new ArrayList<DataTableMetadataFilter>();
         DataTableMetadataFilterSupport filtersSupport = DataTableMetadataFilterSupport.getInstance();
         for (TimeIntervalDataFilter timeFilter : timeFilters) {

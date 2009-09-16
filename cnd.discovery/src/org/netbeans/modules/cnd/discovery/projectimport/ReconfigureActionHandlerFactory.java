@@ -37,16 +37,63 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.threadmap;
+package org.netbeans.modules.cnd.discovery.projectimport;
 
-import java.util.List;
-import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.InputOutput;
 
 /**
- * Represents thread state summary column
  *
  * @author Alexander Simon
  */
-public interface ThreadSummaryColumn {
-    List<StateDuration> getSummary();
+@ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
+public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFactory {
+
+    public boolean canHandle(Type type, Configuration configuration) {
+        switch (type) {
+            case CONFIGURE: 
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public ProjectActionHandler createHandler() {
+        return new ProjectActionHandler() {
+            private ProjectActionEvent pae;
+            private ReconfigureProject reconfigure;
+
+            public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+                this.pae = pae;
+                reconfigure = new ReconfigureProject(pae.getProject());
+            }
+
+            public void execute(InputOutput io) {
+                reconfigure.reconfigure("-g", "-g", ""); // NOI18N
+            }
+
+            public boolean canCancel() {
+                return true;
+            }
+
+            public void cancel() {
+                reconfigure.cancel();
+            }
+
+            public void addExecutionListener(ExecutionListener l) {
+                reconfigure.addExecutionListener(l);
+            }
+
+            public void removeExecutionListener(ExecutionListener l) {
+                reconfigure.removeExecutionListener(l);
+            }
+        };
+    }
+
 }
