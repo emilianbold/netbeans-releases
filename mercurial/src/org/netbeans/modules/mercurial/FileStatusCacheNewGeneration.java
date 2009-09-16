@@ -243,6 +243,9 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         return fi;
     }
 
+    int upToDateAccess = 0;
+    private static final int UTD_NOTIFY_NUMBER = 100;
+
     /**
      * Fast version of {@link #getStatus(java.io.File)}.
      * @param file
@@ -264,6 +267,15 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                     if (info == null) {
                         info = FILE_INFORMATION_UPTODATE;
                         addUpToDate(file);
+                        // XXX delete later
+                        if (++upToDateAccess > UTD_NOTIFY_NUMBER) {
+                            upToDateAccess = 0;
+                            if (LOG_UPTODATE_FILES.isLoggable(Level.FINE)) {
+                                synchronized (upToDateFiles) {
+                                    LOG_UPTODATE_FILES.log(Level.FINE, "Another {0} U2D files added: {1}", new Object[] {new Integer(UTD_NOTIFY_NUMBER), upToDateFiles});
+                                }
+                            }
+                        }
                     } else {
                         // add ignored file to cache
                         RequestProcessor.getDefault().post(new Runnable() {
