@@ -111,6 +111,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private final BaseDocument    document;
     
     private boolean                 sidebarVisible;
+    private boolean                 sidebarTemporarilyDisabled; // flag disallowing the sidebar to ask for file's content
     private boolean                 sidebarInComponentHierarchy;
     private Difference []           currentDiff;
     private DiffMarkProvider        markProvider;
@@ -147,6 +148,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         File file = fileObject != null ? FileUtil.toFile(fileObject) : null;
         ownerVersioningSystem = file != null ? VersioningManager.getInstance().getOwner(file) : null;
         originalContentSerial++;
+        sidebarTemporarilyDisabled = false;
         refreshDiff();
     }
     
@@ -780,7 +782,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private void computeDiff() {
-            if (!sidebarVisible) {
+            if (!sidebarVisible || sidebarTemporarilyDisabled) {
                 currentDiff = null;
                 return;
             }
@@ -817,7 +819,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             if (originalContentBuffer == null) {
                 // no content for the file, setting sidebar visibility to false eliminates repeated asking for the content
                 // file can be deleted, or new?
-                setSidebarVisible(false);
+                sidebarTemporarilyDisabled = true;
                 LOG.log(Level.FINE, "Disabling diffsidebar for {0}, no content available", fileObject.getPath()); //NOI18N
             }
         }
