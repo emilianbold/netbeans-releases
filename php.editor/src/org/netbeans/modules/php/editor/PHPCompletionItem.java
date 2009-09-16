@@ -43,7 +43,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -90,6 +94,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     protected final CompletionRequest request;
     private final ElementHandle element;
     private QualifiedNameKind generateAs;
+    private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
@@ -336,6 +341,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
+            if (CLS_KEYWORDS.contains(getName())) {                
+                scheduleShowingCompletion();
+            }
             KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
             if (type == null) {
                 return null;
@@ -524,6 +532,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append(getName());
                 }
                 builder.append("::${cursor}"); //NOI18N
+                scheduleShowingCompletion();
                 return builder.toString();
             }
             return superTemplate;
@@ -985,5 +994,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public  String prefix;
         public  String currentlyEditedFileURL;
         PHPIndex index;
+    }
+    private static void scheduleShowingCompletion() {
+        service.schedule(new Runnable() {
+
+            public void run() {
+                Completion.get().showCompletion();
+            }
+        }, 750, TimeUnit.MILLISECONDS);
     }
 }

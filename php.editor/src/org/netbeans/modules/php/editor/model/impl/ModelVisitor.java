@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -486,13 +487,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ConstantDeclaration node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
-        //TODO: constants can be also in program scope php53
-        //assert scope != null && scope instanceof TypeScope;
-        List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
-        for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
-            occurencesBuilder.prepare(nodeInfo, ModelElementFactory.create(nodeInfo, modelBuilder));
+        if (scope instanceof NamespaceScope) {
+            List<? extends ConstantDeclarationInfo> constantDeclarationInfos = ConstantDeclarationInfo.create(node);
+            for (ConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
+                ConstantElementImpl createElement = modelBuilder.getCurrentNameSpace().createElement(nodeInfo);
+                occurencesBuilder.prepare(nodeInfo, createElement);
+            }
+        } else {
+            List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
+            for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
+                occurencesBuilder.prepare(nodeInfo, ModelElementFactory.create(nodeInfo, modelBuilder));
+            }
         }
         super.visit(node);
     }
