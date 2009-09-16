@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
 <!--
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -35,9 +36,39 @@
  holder.
 
 -->
-<!DOCTYPE facelet-taglib PUBLIC
-      "-//Sun Microsystems, Inc.//DTD Facelet Taglib 1.0//EN"
-      "http://java.sun.com/dtd/facelet-taglib_1_0.dtd">
-<facelet-taglib>
-    <namespace>http://www.globalcode.com.br/jsf/samples/scrumtoys</namespace>
-</facelet-taglib>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:scrum="http://java.sun.com/jsf/composite/components">
+
+    <ui:composition template="/template.xhtml">
+        <f:metadata>
+            <f:viewParam name="skin" value="#{skinUrlManager.skin}" />
+            <f:event type="preRenderView" listener="#{skinUrlManager.update}" />
+        </f:metadata>
+
+        <ui:define name="pageTitle">
+            <h:outputText value="#{i18n['story.show.title']}"></h:outputText>
+        </ui:define>
+        <ui:define name="content">
+            <h:form id="frmListStories">
+                <h:panelGrid columns="#{skinValuesManager.size + 1}" width="990" >
+                    <h:outputLabel value=""></h:outputLabel>
+                    <ui:repeat value="#{skinValuesManager.names}" var="name">
+                        <td>
+                        <scrum:postitLink color="#{name}" url="changeSkin"
+                            paramName="skin" paramValue="#{name}">
+                            <ui:param name="postitLabel" value=""></ui:param>
+                            <ui:param name="postitText" value="#{name}"></ui:param>
+                        </scrum:postitLink>
+                        </td>
+                    </ui:repeat>
+                </h:panelGrid>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>
