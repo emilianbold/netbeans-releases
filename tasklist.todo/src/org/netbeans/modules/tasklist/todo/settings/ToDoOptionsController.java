@@ -51,7 +51,16 @@ import org.openide.util.Lookup;
  *
  * @author S. Aubrecht
  */
+@OptionsPanelController.SubRegistration(
+    id=ToDoOptionsController.OPTIONS_PATH,
+    displayName="#LBL_Options",
+//    toolTip="#HINT_Options"
+    keywords="#KW_ToDo",
+    keywordsCategory="Advanced/ToDo"
+)
 public class ToDoOptionsController extends OptionsPanelController {
+
+    public static final String OPTIONS_PATH = "ToDo"; // NOI18N
     
     public void update() {
         getCustomizer().update();

@@ -59,10 +59,14 @@ import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import junit.framework.Assert;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
@@ -81,6 +85,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
 /**
@@ -640,4 +645,18 @@ public final class TestUtil extends ProxyLookup {
         }
     }
     
+    @ServiceProvider(service=MimeDataProvider.class)
+    public static final class JavacParserProvider implements MimeDataProvider {
+
+        private Lookup javaLookup = Lookups.fixed(new JavacParserFactory());
+
+        public Lookup getLookup(MimePath mimePath) {
+            if (mimePath.getPath().endsWith(JavacParser.MIME_TYPE)) {
+                return javaLookup;
+            }
+
+            return Lookup.EMPTY;
+        }
+
+    }
 }

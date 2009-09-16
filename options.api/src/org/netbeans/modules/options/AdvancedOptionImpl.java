@@ -62,6 +62,7 @@ public class AdvancedOptionImpl extends AdvancedOption {
     private Callable<OptionsPanelController> controller;
     private String keywordsCategory;
 
+    @SuppressWarnings("deprecation")
     public AdvancedOptionImpl(Callable<OptionsPanelController> controller, String displayName, String tooltip, String keywords, String keywordsCategory) {
         this.controller = controller;
         this.displayName = displayName;

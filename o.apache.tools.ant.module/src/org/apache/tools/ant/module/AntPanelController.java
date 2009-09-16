@@ -52,7 +52,14 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.SubRegistration(
+    id=AntPanelController.OPTIONS_SUBPATH,
+    displayName="#Ant"
+//    toolTip="#Ant_Tooltip"
+)
 public final class AntPanelController extends OptionsPanelController {
+
+    public static final String OPTIONS_SUBPATH = "Ant"; // NOI18N
 
     @Override
     public void update () {

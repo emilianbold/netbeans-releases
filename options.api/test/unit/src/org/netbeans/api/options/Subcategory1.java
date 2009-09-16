@@ -52,6 +52,9 @@ import org.openide.util.Lookup;
 public class Subcategory1 extends AdvancedOption {
 
     public static final String DISPLAY_NAME = "Subcategory1 display name";
+
+    @SuppressWarnings("deprecation")
+    public Subcategory1() {}
     
     @Override
     public String getDisplayName() {
