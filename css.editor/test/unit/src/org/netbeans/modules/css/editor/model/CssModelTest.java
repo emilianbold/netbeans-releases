@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.css.editor.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -49,6 +50,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -179,6 +181,41 @@ public class CssModelTest extends TestBase {
         List<CssRule> rules = model.rules();
         assertNotNull(rules);
         assertEquals(0, rules.size()); //no rules
+    }
+
+
+     public void testImportRule() throws org.netbeans.modules.parsing.spi.ParseException, BadLocationException {
+        String content = " @import \"file.css\";\nh1 { color : red; }";
+        //                0123456789012345678
+        //                0         1
+
+        Document doc = getDocument(content);
+        Source source = Source.create(doc);
+        final Result[] _result = new Result[1];
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                _result[0] = resultIterator.getParserResult();
+            }
+        });
+
+        Result result = _result[0];
+        assertTrue(result instanceof CssParserResult);
+        assertNotNull(result);
+
+        assertNotNull(((CssParserResult)result).root());
+
+        CssModel model = CssModel.create((CssParserResult) result);
+        assertNotNull(model);
+
+        Collection<String> names = model.getImportedFileNames();
+        assertNotNull(names);
+
+        assertEquals(1, names.size());
+
+        assertEquals("file.css", names.iterator().next());
+
     }
 
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.visual.ui.preview;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
@@ -80,23 +81,30 @@ public class CssPreviewGenerator {
         preview.append(HTML_PREFIX);
         
         //generate the <script> ... </script> tag content
-        CssModel model = content.model();
         StringBuilder sb = new StringBuilder();
-        for(CssRule rule : model.rules()) {
-            //pseudo classes hack ( A:link { color: red; }
-            //we need to generate an artificial element so we can spot various states of the element (a:visited, active etc.)
-            //which depends on the state of the browser.
-            String ruleName = rule.name();
-            while (ruleName.indexOf('[') > 0){// remove [ ] blocks !!!FIX ME in future
-                int startBracket = ruleName.indexOf('[');
-                int endBracket = ruleName.indexOf(']', startBracket);
-                ruleName = ruleName.substring(0, startBracket) + ruleName.substring(endBracket+1);
-            }
 
-            sb.append(ruleName.replaceAll(":", "X"));//#118277 a:visited:hover
-            sb.append(" {\n");
-            sb.append(CssRuleContent.create(rule).getFormattedString().replace('"', '\''));
-            sb.append("\n }\n");
+        //extract all rules from all included models
+        Collection<CssModel> models = new ArrayList<CssModel>();
+        models.add(content.model());
+        models.addAll(content.model().getImportedFileModelsRecursively());
+
+        for (CssModel model : models) {
+            for (CssRule rule : model.rules()) {
+                //pseudo classes hack ( A:link { color: red; }
+                //we need to generate an artificial element so we can spot various states of the element (a:visited, active etc.)
+                //which depends on the state of the browser.
+                String ruleName = rule.name();
+                while (ruleName.indexOf('[') > 0) {// remove [ ] blocks !!!FIX ME in future
+                    int startBracket = ruleName.indexOf('[');
+                    int endBracket = ruleName.indexOf(']', startBracket);
+                    ruleName = ruleName.substring(0, startBracket) + ruleName.substring(endBracket + 1);
+                }
+
+                sb.append(ruleName.replaceAll(":", "X"));//#118277 a:visited:hover
+                sb.append(" {\n");
+                sb.append(CssRuleContent.create(rule).getFormattedString().replace('"', '\''));
+                sb.append("\n }\n");
+            }
         }
         preview.append((CharSequence)sb);
         preview.append(HTML_MIDDLE);
