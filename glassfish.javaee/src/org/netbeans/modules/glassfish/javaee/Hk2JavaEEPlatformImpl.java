@@ -381,7 +381,11 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             if (J2eePlatform.TOOL_PROP_JVM_OPTS.equals(propertyName)) {
                 if(domainPath != null) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append("-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader -javaagent:");
+                    sb.append("-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader -Djava.endorsed.dirs=");
+                     sb.append(quotedString(new File(root,"lib/endorsed").getAbsolutePath()));
+                    sb.append(":");
+                     sb.append(quotedString(new File(root,"modules/endorsed").getAbsolutePath()));
+                     sb.append(" -javaagent:");
                      sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath()));
                       sb.append("=mode=acscript,arg=-configxml,arg=");
                       sb.append(quotedString(new File(domainPath, "config/sun-acc.xml").getAbsolutePath()));

@@ -48,10 +48,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -59,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
 
 /**
  * Handler of changes in module folder. Changes can be for example
@@ -431,6 +434,16 @@ class ModuleChangeHandler implements FileChangeListener {
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         List<String> tcRefNameList = new ArrayList<String>(10);
         final TCRefConfig tcRefConfig = wmParser.addTCRef(modeName, tcRefName, tcRefNameList);
+        try {
+            //xml file system warmup to avoid blocking of EDT when deserializing the component
+            DataObject dob = PersistenceManager.getDefault().findTopComponentDataObject(tcRefConfig.tc_id);
+            if( null != dob ) {
+                dob.getCookie(InstanceCookie.class);
+            }
+        } catch( IOException ioE ) {
+            //ignore, the exception will be reported later on anyway
+            Logger.getLogger(ModuleChangeHandler.class.getName()).log(Level.FINER, null, ioE);
+        }
         if (tcRefConfig != null) {
             final String [] tcRefNameArray = tcRefNameList.toArray(new String[tcRefNameList.size()]);
             // #37529 WindowsAPI to be called from AWT thread only.

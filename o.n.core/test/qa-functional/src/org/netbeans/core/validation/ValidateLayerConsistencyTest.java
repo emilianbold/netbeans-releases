@@ -431,16 +431,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     // action included in some binary blob
                     continue;
                 }
-                if (
-                    fo.getPath().startsWith("Loaders/text/x-java/Actions/") ||
-                    fo.getPath().startsWith("Loaders/text/x-jsp/Actions/")
-                ) {
-                    // imho both java and jsp are doing something wrong, they
-                    // should refer to some standard action, not invent their
-                    // own
-                    continue;
-                }
-
                 if (Boolean.TRUE.equals(fo.getAttribute("misplaced.action.allowed"))) {
                     // it seems necessary some actions to stay outside
                     // of the Actions folder
@@ -657,7 +647,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             for (Map.Entry<String,Map<String,Object>> entry2 : entry1.getValue().entrySet()) {
                 if (new HashSet<Object>(entry2.getValue().values()).size() > 1) {
                     // XXX currently do not check if the modules are unrelated by dependency.
-                    sb.append("Some modules conflict on the definition of " + entry2.getKey() + " in " + entry1.getKey() + ": " + entry2.getValue() + "\n");
+                    sb.append("Some modules conflict on the definition of " + entry2.getKey() + " for " + entry1.getKey() + ": " + entry2.getValue() + "\n");
                 }
             }
         }

@@ -47,9 +47,9 @@ import java.util.concurrent.Callable;
 
 /**
  * This class represents one category (like "Ant"
- * or "Form Editor") in Miscellaneous Panel of Options Dialog. Its instances should
- * be registered in layers and created by <code>createSubCategory</code> factory
- * method as follows:
+ * or "Form Editor") in Miscellaneous Panel of Options Dialog.
+ * <p>Normally panels are registered using {@link OptionsPanelController.SubRegistration}.
+ * They may also be registered in a layer manually as follows:
  *
  * <pre style="background-color: rgb(255, 255, 153);">
  * &lt;folder name="OptionsDialog"&gt;
@@ -94,6 +94,12 @@ public abstract class AdvancedOption {
     private static final String KEYWORDS = "keywords";
     private static final String CONTROLLER = "controller";
     private static final String KEYWORDS_CATEGORY = "keywordsCategory";
+
+    /**
+     * @deprecated Use {@link OptionsPanelController.SubRegistration} instead.
+     */
+    @Deprecated
+    protected AdvancedOption() {}
 
     /**
      * Returns name of category used in Advanced Panel of 

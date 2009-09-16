@@ -261,32 +261,35 @@ public class Actions implements ActionsFactory {
     // 1-off actions -----------------------------------------------------------
     
     public static Action compileSingle() {
-        Action a = new FileCommandAction (
-            "compile.single", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/compileSingle.png", false), //NOI18N
-            null ); //NOI18N
+        Action a = new FileCommandAction(
+            ActionProvider.COMMAND_COMPILE_SINGLE,
+            NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/compileSingle.png", true),
+            null);
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/compileSingle.png"); //NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        a.putValue("noIconInMenu", true); //NOI18N
         return a;
     }
     
     public static Action runSingle() {
-        Action a = new FileCommandAction (
-            "run.single", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runSingle.png", false), //NOI18N
+        Action a = new FileCommandAction(
+            ActionProvider.COMMAND_RUN_SINGLE,
+            NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runSingle.png", true),
             null);
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runSingle.png"); //NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        a.putValue("noIconInMenu", true); //NOI18N
         return a;
     }
     
     public static Action testSingle() {
-        Action a = new FileCommandAction (
-            "test.single", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testSingle.png", false), //NOI18N
-            null ); //NOI18N
+        Action a = new FileCommandAction(
+            ActionProvider.COMMAND_TEST_SINGLE,
+            NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testSingle.png", true),
+            null);
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/testSingle.png"); //NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        a.putValue("noIconInMenu", true); //NOI18N
         return a;
     }
     
