@@ -73,8 +73,8 @@ class RfsSyncWorker extends ZipSyncWorker {
         }
     }
 
-    public RfsSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        super(localDir, executionEnvironment, out, err, privProjectStorageDir);        
+    public RfsSyncWorker( ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+        super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
     }
 
     @Override
