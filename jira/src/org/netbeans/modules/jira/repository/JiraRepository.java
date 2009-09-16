@@ -277,7 +277,7 @@ public class JiraRepository extends Repository {
 
     public void removeQuery(JiraQuery query) {
         Jira.getInstance().getStorageManager().removeQuery(this, query);
-        getIssueCache().removeQuery(name);
+        getIssueCache().removeQuery(query.getStoredQueryName());
         synchronized(QUERIES_LOCK) {
             getQueriesIntern().remove(query);
         }
