@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -153,6 +154,11 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
 
             if (root == null) {
                 LOG.log(Level.WARNING, "The file is not on its own source classpath, ignoring.");
+                return;
+            }
+
+            if (!PathRegistry.getDefault().isKnownRoot(root.getURL())) {
+                LOG.log(Level.WARNING, "Not PathRegistry controlled root: " + root);
                 return;
             }
 
