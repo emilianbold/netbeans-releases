@@ -47,6 +47,33 @@ import java.util.StringTokenizer;
  */
 public class SimpleNodeUtil {
 
+    public static String unquotedValue(String value) {
+        return isValueQuoted(value) ? value.substring(1, value.length() - 1) : value;
+    }
+
+    public static boolean isValueQuoted(String value) {
+        if (value.length() < 2) {
+            return false;
+        } else {
+            return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
+                    (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
+        }
+    }
+
+    public static Token getNodeToken(SimpleNode node, int tokenKind) {
+        Token t = node.jjtGetFirstToken();
+        if (t == null) {
+            return null;
+        }
+        do {
+            if(t.kind == tokenKind) {
+                return t;
+            }
+            t = t.next;
+        } while (t != node.jjtGetLastToken());
+        return null;
+    }
+
     public static SimpleNode findDescendant(SimpleNode node, int astOffset) {
         int so = node.startOffset();
         int eo = node.endOffset();

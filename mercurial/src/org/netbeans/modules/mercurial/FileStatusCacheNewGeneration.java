@@ -62,15 +62,17 @@ import org.openide.util.RequestProcessor;
  * @author Ondra Vrabec
  */
 public class FileStatusCacheNewGeneration extends FileStatusCache {
-    
+
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, false);
     private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
     private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, false);
+    private int MAX_COUNT_UPTODATE_FILES = 1000;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial.fileStatusCacheNewGeneration"); //NOI18N
+    private static final Logger LOG_UPTODATE_FILES = Logger.getLogger("mercurial.cache.upToDateFiles"); //NOI18N
 
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
     private Mercurial     hg;
@@ -78,11 +80,12 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      * Keeps cached statuses for managed files
      */
     private final Map<File, FileInformation> cachedFiles;
+    private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
     private final RequestProcessor rp = new RequestProcessor("Mercurial.cacheNG", 1, true);
     /**
      * Copy of cachedFiles. Available for time-consuming read operations, so these operations don't block a fast synchronized access to cachedFiles
      */
-    
+
     FileStatusCacheNewGeneration() {
         this.hg = Mercurial.getInstance();
         cachedFiles = new HashMap<File, FileInformation>();
@@ -143,9 +146,17 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      * @return
      */
     private FileInformation getInfo(File file) {
+        FileInformation info = null;
         synchronized (cachedFiles) {
-            return cachedFiles.get(file);
+            info = cachedFiles.get(file);
+            synchronized (upToDateFiles) {
+                if (info == null && removeUpToDate(file)) {
+                    addUpToDate(file);
+                    info = FILE_INFORMATION_UPTODATE;
+                }
+            }
         }
+        return info;
     }
 
     /**
@@ -156,17 +167,50 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     private void setInfo (File file, FileInformation info) {
         synchronized (cachedFiles) {
             cachedFiles.put(file, info);
+            removeUpToDate(file);
         }
     }
 
     /**
-     * Removes the cached value for the given file. Call e.g. if the file becomes up-to-date 
+     * Removes the cached value for the given file. Call e.g. if the file becomes up-to-date
      * or uninteresting (no longer existing ignored file).
      * @param file
      */
     private void removeInfo (File file) {
         synchronized (cachedFiles) {
             cachedFiles.remove(file);
+            removeUpToDate(file);
+        }
+    }
+
+    /**
+     * Adds an up-to-date file to the cache of UTD files.
+     * The cache should have a limited size, so if a threshold is reached, the oldest file is automatically removed.
+     * @param file file to add
+     */
+    private void addUpToDate (File file) {
+        synchronized (upToDateFiles) {
+            upToDateFiles.add(file);
+            if (upToDateFiles.size() > MAX_COUNT_UPTODATE_FILES) {
+                // XXX exchange the following code
+                // trying to find a reasonable limit for uptodate files in cache
+                LOG_UPTODATE_FILES.log(Level.WARNING, "Cache of uptodate files grows too quickly: {0}", upToDateFiles.size()); //NOI18N
+                MAX_COUNT_UPTODATE_FILES <<= 1;
+                if (LOG_UPTODATE_FILES.isLoggable(Level.FINE)) {
+                    LOG_UPTODATE_FILES.fine(upToDateFiles.toString());
+                    assert false;
+                }
+                // removing the eldest entry
+//                Iterator<File> it = upToDateFiles.iterator();
+//                it.next();
+//                it.remove();
+            }
+        }
+    }
+
+    private boolean removeUpToDate (File file) {
+        synchronized (upToDateFiles) {
+            return upToDateFiles.remove(file);
         }
     }
 
@@ -178,23 +222,29 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      */
     @Override
     public FileInformation getStatus(File file) {
-        boolean isDirectory = file.isDirectory();
-        if (isDirectory && (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)))
-            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
+        // at first get cached info
         FileInformation fi = getInfo(file);
-        if (fi == null) {
-            if (!exists(file)) {
+        if (fi == null) { // no info cached
+            boolean isAdministrative = HgUtils.isAdministrative(file); // is the file a .hg folder?
+            boolean isDirectory = isAdministrative || file.isDirectory(); // is the file a directory? .hg folder is also a directory
+            if (isDirectory && (isAdministrative || HgUtils.isIgnored(file))) { // is ignored?
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
+            }
+            if (!isDirectory && !exists(file)) { // does not exist - if isDirectory, then it SHOULD exist
                 fi = FILE_INFORMATION_UNKNOWN;
-            } else if (HgUtils.isIgnored(file)) {
+            } else if (!isDirectory && HgUtils.isIgnored(file)) { // ignored file
                 fi = FILE_INFORMATION_EXCLUDED;
-            } else if (isDirectory) {
+            } else if (isDirectory) { // is a dir and not in cache - do refresh in here
                 fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            } else {
+            } else { // exists, is a file and is not ignored and is not in cache - so is probably up to date
                 fi = FILE_INFORMATION_UPTODATE;
             }
         }
         return fi;
     }
+
+    int upToDateAccess = 0;
+    private static final int UTD_NOTIFY_NUMBER = 100;
 
     /**
      * Fast version of {@link #getStatus(java.io.File)}.
@@ -202,7 +252,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      * @return always returns a not null value
      */
     @Override
-    public FileInformation getCachedStatus(File file) {
+    public FileInformation getCachedStatus(final File file) {
         FileInformation info = getInfo(file); // cached value
         LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
         if (info == null) {
@@ -216,6 +266,23 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                 } else {
                     if (info == null) {
                         info = FILE_INFORMATION_UPTODATE;
+                        addUpToDate(file);
+                        // XXX delete later
+                        if (++upToDateAccess > UTD_NOTIFY_NUMBER) {
+                            upToDateAccess = 0;
+                            if (LOG_UPTODATE_FILES.isLoggable(Level.FINE)) {
+                                synchronized (upToDateFiles) {
+                                    LOG_UPTODATE_FILES.log(Level.FINE, "Another {0} U2D files added: {1}", new Object[] {new Integer(UTD_NOTIFY_NUMBER), upToDateFiles});
+                                }
+                            }
+                        }
+                    } else {
+                        // add ignored file to cache
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                refreshFileStatus(file, FILE_INFORMATION_EXCLUDED, Collections.EMPTY_MAP, false);
+                            }
+                        });
                     }
                 }
             } else {
@@ -370,7 +437,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         synchronized (this) {
             // XXX the question here is: do we want to keep ignored files in the cache (i mean those ignored by hg, not by SQ)?
             // if yes, add equivalent(FILE_INFORMATION_UNKNOWN, fi) into the following test
-            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && (HgUtils.isIgnored(file) 
+            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && (HgUtils.isIgnored(file)
                     || (getCachedStatus(file.getParentFile()).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0)) {
                 // Sharebility query recognized this file as ignored
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
@@ -386,6 +453,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                 removeInfo(file);
             } else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
                 removeInfo(file);
+                addUpToDate(file);
             } else {
                 setInfo(file, fi);
             }

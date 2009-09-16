@@ -46,6 +46,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -164,7 +165,7 @@ public class Hk2PluginProperties {
     public static List<URL> getClasses(File serverDir) {
         List<String> jars = new ArrayList<String>();
 
-        Set<URL> urlSet = new HashSet<URL>();
+        Set<URI> urlSet = new HashSet<URI>();
 
         try {
             File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), 
@@ -183,7 +184,7 @@ public class Hk2PluginProperties {
                     if(cp != null && cp.length() > 0) {
                         File parent = javaEEJar.getParentFile();
                         for(String jarName: cp.split(" ")) {
-                            urlSet.add(fileToUrl(new File(parent, jarName)));
+                            urlSet.add(fileToUrl(new File(parent, jarName)).toURI());
                         }
                     }
                 }
@@ -192,7 +193,7 @@ public class Hk2PluginProperties {
                 if(urlSet.size() == 0) {
                     Logger.getLogger("glassfish-javaee").log(Level.FINER,
                             javaEEJar.getAbsolutePath() + " contains null classpath or subjars not found.  Using directly.");
-                    urlSet.add(fileToUrl(javaEEJar));
+                    urlSet.add(fileToUrl(javaEEJar).toURI());
                 }
             } else {
                 // v3 (Prelude and Final) doesn't have the javax.javaee jar, since it is not a
@@ -222,40 +223,45 @@ public class Hk2PluginProperties {
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
                 if ((jar != null) && (jar.exists()))  {
-                    urlSet.add(fileToUrl(jar));
+                    urlSet.add(fileToUrl(jar).toURI());
                 }
             }
             // prefer the smaller API jars if they are available...
             File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "endorsed/webservices-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
             if (null != jar) {
-                urlSet.add(fileToUrl(jar));
+                urlSet.add(fileToUrl(jar).toURI());
             } else {
                 jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "webservices-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
                 if (null != jar) {
-                    urlSet.add(fileToUrl(jar));
+                    urlSet.add(fileToUrl(jar).toURI());
                 }
             }
             jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "endorsed/jaxb-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
             if (null != jar) {
-                urlSet.add(fileToUrl(jar));
+                urlSet.add(fileToUrl(jar).toURI());
             } else {
                 jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "jaxb-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
                 if (null != jar) {
-                    urlSet.add(fileToUrl(jar));
+                    urlSet.add(fileToUrl(jar).toURI());
                 }
             }
+            List<URL> retVal = new ArrayList<URL>();
+            for (URI e : urlSet) {
+                retVal.add(e.toURL());
+            }
+            return retVal;
+        } catch (URISyntaxException use) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, use);
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        List<URL> retVal = new ArrayList<URL>();
-        retVal.addAll(urlSet);
-        return retVal;
+        return new ArrayList<URL>();
     }
 
     /**

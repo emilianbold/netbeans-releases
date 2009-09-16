@@ -132,6 +132,7 @@ public class BugzillaIssue extends Issue {
      */
     static final int FIELD_STATUS_MODIFIED = 4;
     private Map<String, String> seenAtributes;
+    private String initialProduct = null;
 
     enum IssueField {
         SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
@@ -613,12 +614,12 @@ public class BugzillaIssue extends Issue {
             assert false : "can't set value into IssueField " + f.name();       // NOI18N
             return;
         }
-        if(f == IssueField.PRODUCT) {
-            setProduct(value);
-        }
         TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
         if(a == null) {
             a = new TaskAttribute(data.getRoot(), f.key);
+        }
+        if(f == IssueField.PRODUCT) {
+            handleProductChange(a);
         }
         a.setValue(value);
     }
@@ -636,14 +637,6 @@ public class BugzillaIssue extends Issue {
             ret.add(getFieldValue(f));
             return ret;
         }
-    }
-
-    void setFieldValues(IssueField f, List<String> ccs) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
-        if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.key);
-        }
-        a.setValues(ccs);
     }
 
     /**
@@ -671,19 +664,10 @@ public class BugzillaIssue extends Issue {
         return new BugzillaIssueNode(this);
     }
 
-
-    void setProduct(String value) {
-        TaskAttribute ta = data.getRoot().getMappedAttribute(IssueField.PRODUCT.key);
-        if(ta == null) {
-            ta = new TaskAttribute(data.getRoot(), IssueField.PRODUCT.key);
+    private void handleProductChange(TaskAttribute a) {
+        if(!data.isNew() && initialProduct == null) {
+            initialProduct = a.getValue();
         }
-        ta.setValue(value);
-
-        ta = data.getRoot().getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
-        if (ta == null) {
-            ta = BugzillaTaskDataHandler.createAttribute(data.getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
-        }
-        ta.setValue("1");                                                       // NOI18N
     }
 
     void resolve(String resolution) {
@@ -849,9 +833,21 @@ public class BugzillaIssue extends Issue {
         addAttachment(file, null, description, null, true);
     }
 
+    private void prepareSubmit() {
+        if (initialProduct != null) {
+            // product change
+            TaskAttribute ta = data.getRoot().getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
+            if (ta == null) {
+                ta = BugzillaTaskDataHandler.createAttribute(data.getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
+            }
+            ta.setValue("1");                                                   // NOI18N
+        }
+    }
+
     boolean submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
+        prepareSubmit();
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
         final RepositoryResponse[] rr = new RepositoryResponse[1];

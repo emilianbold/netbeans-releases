@@ -844,7 +844,7 @@ public abstract class AbstractVariable implements LocalVariable {
                     vend = GdbUtils.findNextComma(value, vstart);
                 }
 
-                addArrayElement(type, maxIndexLog, vend == -1 ? value.substring(vstart) : value.substring(vstart, vend));
+                addArrayElement(t, maxIndexLog, vend == -1 ? value.substring(vstart) : value.substring(vstart, vend));
                 
                 // finish on the last element
                 if (vend == -1) {
