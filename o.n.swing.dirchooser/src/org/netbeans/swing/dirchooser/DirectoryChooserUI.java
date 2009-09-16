@@ -598,7 +598,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
-        if (isMac || upFolderIcon == null) {
+        if (isMac || upFolderIcon == null || jdkBug6840086Workaround() ) {
             upFolderIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif", false);
         }
         upFolderButton.setIcon(upFolderIcon);
@@ -649,7 +649,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
-        if (isMac || newFolderIcon == null) {
+        if (isMac || newFolderIcon == null || jdkBug6840086Workaround()) {
             newFolderIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif", false);
         }
         newFolderButton.setIcon(newFolderIcon);
@@ -744,6 +744,13 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         tree.setInvokesStopCellEditing(true);
         
         return scrollBar;
+    }
+
+    private boolean jdkBug6840086Workaround() {
+        //see issue #167080
+        return Utilities.isWindows()
+                && "Windows 7".equals(System.getProperty("os.name"))
+                && "1.6.0_16".compareTo(System.getProperty("java.version")) >=0;
     }
 
     /** 
