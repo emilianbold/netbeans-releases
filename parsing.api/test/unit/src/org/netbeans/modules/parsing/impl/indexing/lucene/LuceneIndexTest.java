@@ -42,6 +42,8 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,6 +58,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.util.Exceptions;
 
@@ -157,6 +160,33 @@ public class LuceneIndexTest extends NbTestCase {
         assertTrue(indexFolder.listFiles().length==0);
         
     }
+
+// Commented out as it takes a long time
+//    @Test
+//    public void testPerformance() throws Exception {
+//        System.gc(); System.gc(); System.gc();
+//        long st = System.currentTimeMillis();
+//        MemoryMXBean bean = ManagementFactory.getMemoryMXBean();
+//        long start = bean.getHeapMemoryUsage().getUsed();
+//        for (int ic = 0; ic < 2; ic++) {
+//            final LuceneIndex index = new LuceneIndex(new File(getWorkDir(),Integer.toString(ic)).toURI().toURL());
+//            for (int i=0; i< 1000000; i++) {
+//                LuceneDocument doc = new LuceneDocument(SPIAccessor.getInstance().create(new FakeIndexableImpl(i)));
+//                doc.addPair("bin-value", Integer.toBinaryString(i), true, true);
+//                doc.addPair("dec-value", Integer.toString(i), true, true);
+//                index.addDocument(doc);
+//            }
+//            index.store();
+//        }
+//        long et = System.currentTimeMillis();
+//        for (int i=0; i< 2; i++) {
+//            System.gc(); System.gc(); System.gc();
+//            Thread.sleep(500);
+//        }
+//
+//        long end = bean.getHeapMemoryUsage().getUsed();
+//        assertTrue(end < 3 * start);
+//    }
 
     private void clearValidityCache() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
         final Class<LuceneIndex> li = LuceneIndex.class;
