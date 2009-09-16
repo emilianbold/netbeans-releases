@@ -291,7 +291,7 @@ public class ProcFSDataCollector
         }
 
         private final long toMilliOffset(long timenano) {
-            return (timenano - processStartTime.get());// / 1000;
+            return (timenano - processStartTime.get()) / 1000 / 1000;
         }
 
         public void run() {
