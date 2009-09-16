@@ -75,7 +75,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
 
             public void run() {
-                final Repository repo = KenaiRepositories.getInstance().getRepository(project);
+                final Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
                 handle.finish();
                 try {
                     Issue.open(repo, issueID);
@@ -146,7 +146,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         if(project == null) {
             return null;
         }
-        Repository repo = KenaiRepositories.getInstance().getRepository(project);
+        Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
             BugtrackingManager.LOG.warning("No issue tracker available for the given kanei project [" + project.getName() + "," + project.getDisplayName() + "]");
             return null;
