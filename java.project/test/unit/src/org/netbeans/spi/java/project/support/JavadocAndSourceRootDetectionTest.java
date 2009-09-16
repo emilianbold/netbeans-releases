@@ -40,23 +40,14 @@
 package org.netbeans.spi.java.project.support;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.net.URL;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.test.TestFileUtils;
 
-/**
- *
- */
 public class JavadocAndSourceRootDetectionTest extends NbTestCase {
 
     public JavadocAndSourceRootDetectionTest(String testName) {
@@ -108,6 +99,18 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
         javadocRoot = JavadocAndSourceRootDetection.findJavadocRoot(lib);
         assertNotNull(javadocRoot);
         assertEquals(lib.getFileObject("a-library-version-1.0/docs/api"), javadocRoot);
+    }
+
+    public void testParsing() throws Exception {
+        assertParse("/**\n * Some license here\n */\n\npackage foo;\n\npublic class Foo {}\n", false, "foo");
+        assertParse("package foo;", false, "foo");
+        assertParse("/**/package foo;", false, "foo");
+        assertParse("/***/package foo;", false, "foo");
+        assertParse("/*****/package foo;", false, "foo");
+    }
+    private void assertParse(String text, boolean packageInfo, String expectedPackage) {
+        Matcher m = (packageInfo ? JavadocAndSourceRootDetection.PACKAGE_INFO : JavadocAndSourceRootDetection.JAVA_FILE).matcher(text);
+        assertEquals("Misparse of:\n" + text, expectedPackage, m.matches() ? m.group(1) : null);
     }
 
 }
