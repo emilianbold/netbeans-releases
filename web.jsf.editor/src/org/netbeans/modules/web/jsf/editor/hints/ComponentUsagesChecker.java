@@ -132,7 +132,8 @@ public class ComponentUsagesChecker extends HintsProvider {
 
                                 //2. check for unknown attributes
                                 for (AstNode.Attribute nodeAttr : node.getAttributes()) {
-                                    if (tag.getAttribute(nodeAttr.name()) == null) {
+                                    //do not check attributes with a namespace
+                                    if (nodeAttr.namespacePrefix() == null && tag.getAttribute(nodeAttr.name()) == null) {
                                         //unknown attribute
                                         Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
