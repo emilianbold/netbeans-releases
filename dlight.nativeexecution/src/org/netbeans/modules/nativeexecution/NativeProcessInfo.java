@@ -150,10 +150,14 @@ public final class NativeProcessInfo {
     }
 
     public void addPathVariable(String name, String path, boolean prepend) {
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            name = name.toUpperCase();
+        }
+
         if (prepend) {
-            envVariables.put(name, path + ":${" + name + "}"); // NOI18N
-        } else {
             envVariables.put(name, "${" + name + "}:" + path); // NOI18N
+        } else {
+            envVariables.put(name, path + ":${" + name + "}"); // NOI18N
         }
     }
 
