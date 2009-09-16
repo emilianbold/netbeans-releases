@@ -33,10 +33,11 @@ public class Installer {
         //finish
         Utils.stepFinish();
 
-
         //Utils.phaseTwo(data);
         //Utils.phaseThree(data);
         Utils.phaseFour(data);
+
+        Utils.RunCommitTests( data );
 
         Utils.phaseFive( data );
         //Utils.phaseFourWOUninstall(data);

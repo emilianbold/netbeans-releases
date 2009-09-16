@@ -58,6 +58,8 @@ public class TestData implements Serializable {
 
     private String sExecutableName = null;
 
+    private String sTestPackage = null;
+
     public TestData(Logger logger) {
         assert logger != null;
         this.logger = logger;
@@ -279,4 +281,13 @@ public class TestData implements Serializable {
     return;
   }
 
+  public void SetTestPackage( String s )
+  {
+    sTestPackage = s;
+  }
+
+  public String GetTestPackage( )
+  {
+    return sTestPackage;
+  }
 }
