@@ -304,7 +304,7 @@ public final class FileUtil extends Object {
      * @param path File path to listen to (even not existing)
      *
      * @see FileObject#addRecursiveListener
-     * @since org.openide.filesystems 7.25
+     * @since org.openide.filesystems 7.28
      */
     public static void addRecursiveListener(FileChangeListener listener, File path) {
         addFileChangeListener(new DeepListener(listener, path), path);
@@ -317,7 +317,7 @@ public final class FileUtil extends Object {
      * @throws IllegalArgumentException if listener was not listening to given path
      *
      * @see FileObject#removeRecursiveListener
-     * @since org.openide.filesystems 7.25
+     * @since org.openide.filesystems 7.28
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
         DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path), path);

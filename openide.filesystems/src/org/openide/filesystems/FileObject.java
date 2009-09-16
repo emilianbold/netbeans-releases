@@ -438,7 +438,7 @@ public abstract class FileObject extends Object implements Serializable {
      * </p>
      *
      * @param fcl the listener to register
-     * @since 7.24
+     * @since 7.28
      */
     public void addRecursiveListener(FileChangeListener fcl) {
         if (!isFolder()) {
@@ -456,7 +456,7 @@ public abstract class FileObject extends Object implements Serializable {
     /** Removes listener previously added by {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener)}
      *
      * @param fcl the listener to remove
-     * @since 7.24
+     * @since 7.28
      */
     public void removeRecursiveListener(FileChangeListener fcl) {
         if (!isFolder()) {
