@@ -39,18 +39,10 @@
 package org.netbeans.modules.dlight.threadmap.api;
 
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 
 public interface ThreadMapData {
 
     List<ThreadData> getThreadsData();
-
-    /**
-     * "Aproximate" sampling time
-     * @return
-     */
-    @Deprecated
-    TimeDuration getSamplingPeriod();
 
     /**
      * 
