@@ -2013,7 +2013,7 @@ abstract public class CsmCompletionQuery {
             }
 
             if (last && !first && (result == null || result.getItems().isEmpty()) && lastType != null) {
-                CsmClassifier classifier = lastType.getClassifier();
+                CsmClassifier classifier = getClassifier(lastType, contextFile);
                 if(CsmKindUtilities.isInstantiation(classifier)) {
                     boolean instantiatedByTemplateParam = false;
                     CsmInstantiation inst = (CsmInstantiation)classifier;
