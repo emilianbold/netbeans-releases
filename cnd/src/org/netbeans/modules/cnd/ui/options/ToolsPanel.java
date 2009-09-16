@@ -728,8 +728,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     public boolean dataValid() {
         if (csm.getCompilerSets().size() == 0) {
-            valid = false;
-            firePropertyChange(PROP_VALID, !valid, valid);
+            if (valid) {
+                valid = false;
+                firePropertyChange(PROP_VALID, !valid, valid);
+            }
             return false;
         }
         if (updating || changingCompilerSet) {

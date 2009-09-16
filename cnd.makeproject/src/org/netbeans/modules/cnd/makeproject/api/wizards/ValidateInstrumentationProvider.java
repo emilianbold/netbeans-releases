@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.options;
+package org.netbeans.modules.cnd.makeproject.api.wizards;
 
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.openide.util.Lookup;
 
 /**
- * advanced option UI,registred in the layer file.
- * @author Milos Kleint
+ *
+ * @author Alexander Simon
  */
-public class MavenAdvancedOption extends AdvancedOption {
-    
-    /** Creates a new instance of NewClass */
-    public MavenAdvancedOption() {
+public abstract class ValidateInstrumentationProvider {
+
+    private static ValidateInstrumentationProvider DEFAULT = new Default();
+
+    public abstract List<String> validate(Project makeProject);
+
+    protected ValidateInstrumentationProvider() {
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(MavenAdvancedOption.class, "TIT_Maven_Category");
+    public static ValidateInstrumentationProvider getDefault() {
+        return DEFAULT;
     }
 
-    public String getTooltip() {
-        return NbBundle.getMessage(MavenAdvancedOption.class, "TIP_Maven_Category");
-    }
+    private static final class Default extends ValidateInstrumentationProvider {
+        private final Lookup.Result<ValidateInstrumentationProvider> res;
 
-    public OptionsPanelController create() {
-        return new MavenOptionController();
+        private Default() {
+            res = Lookup.getDefault().lookupResult(ValidateInstrumentationProvider.class);
+        }
+
+        private ValidateInstrumentationProvider getService(){
+            for (ValidateInstrumentationProvider validator : res.allInstances()) {
+                return validator;
+            }
+            return null;
+        }
+
+        @Override
+        public List<String> validate(Project makeProject) {
+            ValidateInstrumentationProvider validator = getService();
+            if (validator != null) {
+                return validator.validate(makeProject);
+            }
+            return Collections.<String>emptyList();
+        }
     }
-    
 }

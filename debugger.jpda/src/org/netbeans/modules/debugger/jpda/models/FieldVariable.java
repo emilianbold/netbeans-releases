@@ -133,6 +133,8 @@ org.netbeans.api.debugger.jpda.Field {
             return ReferenceTypeWrapper.name(TypeComponentWrapper.declaringType(field)); //className;
         } catch (InternalExceptionWrapper ex) {
             return ex.getCause().getLocalizedMessage();
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return "";
         } catch (VMDisconnectedExceptionWrapper ex) {
             return "";
         }

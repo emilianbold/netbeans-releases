@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,34 +34,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing.options;
+@OptionsPanelController.ContainerRegistration(
+    id=UiUtils.OPTIONS_PATH,
+    categoryName="#PHPOptionsCategory_name",
+//    title="#PHPOptionsCategory_title",
+    iconBase="org/netbeans/modules/php/project/ui/resources/php-options-icon.png",
+//    keywords="...", keywordsCategory="...",
+    position=650
+)
+package org.netbeans.modules.php.project.ui.options;
 
-import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-
-/**
- *
- * @author Petr Hejl
- */
-public class JsOptions extends AdvancedOption {
-
-    @Override
-    public OptionsPanelController create() {
-        return new JsOptionsController();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(JsOptions.class, "JsOptions.displayName");
-    }
-
-    @Override
-    public String getTooltip() {
-        return NbBundle.getMessage(JsOptions.class, "JsOptions.tooltip");
-    }
-
-}

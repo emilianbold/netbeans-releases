@@ -40,26 +40,17 @@ package org.netbeans.modules.db.sql.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
- * A Test based on NbTestCase. It is a NetBeans extension to JUnit TestCase
- * which among othres allows to compare files via assertFile methods, create
- * working directories for testcases, write to log files, compare log files
- * against reference (golden) files, etc.
- * 
- * More details here http://xtest.netbeans.org/NbJUnit/NbJUnit-overview.html.
- * 
- * @author John Baker
+ * @author John Baker, Jiri Skrivanek
  */
 public class SQLHistoryPersistenceManagerTest extends NbTestCase {
 
@@ -70,70 +61,45 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
         super(testName);
     }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SQLHistoryPersistenceManagerTest("testExecuteStatements"));
-        suite.addTest(new SQLHistoryPersistenceManagerTest("testMultipleExecutions"));
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    // run only selected test case
-    //junit.textui.TestRunner.run(new SQLHistoryPersistentManagerTest("test1"));
-    }
-
     /** Called before every test case. */
+    @Override
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
     }
 
     /** Called after every test case. */
-    public void tearDown() {
-        try {
-            clearWorkDir();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    @Override
+    public void tearDown() throws IOException {
+        clearWorkDir();
     }
 
     /** Test testExecuteStatements passes if no exceptions occur. */
-    public void testExecuteStatements() {
-        try {
-            List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
-            sqlHistoryList.add(new SQLHistory("jdbc:// mysql", "select * from TRAVEL.PERSON", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            FileObject fo = FileUtil.toFileObject(getWorkDir());
-            sqlHistoryList.add(new SQLHistory("jdbc:// oracle", "select * from PERSON", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
-        } catch (SQLHistoryException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        } catch (ParseException pe) {
-            Exceptions.printStackTrace(pe);
-        }
+    public void testExecuteStatements() throws Exception {
+        List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
+        sqlHistoryList.add(new SQLHistory("jdbc:// mysql", "select * from TRAVEL.PERSON", Calendar.getInstance().getTime()));
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        sqlHistoryList.add(new SQLHistory("jdbc:// oracle", "select * from PERSON", Calendar.getInstance().getTime()));
+        SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
     }
-    
-    
+
     /** Test testMultipleExecutions passes if no exceptions occur. */
-    public void testMultipleExecutions() {
-        try {
-            List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
-            sqlHistoryList.add(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            FileObject fo = FileUtil.toFileObject(getWorkDir());
-            SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
-            sqlHistoryList.add(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            fo = FileUtil.toFileObject(getWorkDir());
-            SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
-        } catch (SQLHistoryException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        } catch (ParseException pe) {
-            Exceptions.printStackTrace(pe);
+    public void testMultipleExecutions() throws Exception {
+        List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
+        sqlHistoryList.add(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", Calendar.getInstance().getTime()));
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
+        sqlHistoryList.add(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", Calendar.getInstance().getTime()));
+        fo = FileUtil.toFileObject(getWorkDir());
+        SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
+    }
+
+    /** Tests parsing of date format. */
+    public void testDateParsing() throws Exception {
+        URL u = this.getClass().getResource("sql_history.xml");
+        FileObject fo = FileUtil.toFileObject(new File(u.toURI()));
+        List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(FileUtil.toFile(fo).getAbsolutePath(), fo.getParent());
+        for (SQLHistory sqlHistory : sqlHistoryList) {
+            assertNotNull(sqlHistory.getDate());
         }
     }
 }

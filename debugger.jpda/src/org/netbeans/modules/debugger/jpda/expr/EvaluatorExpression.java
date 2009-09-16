@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.options.filetypes;
 
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.debugger.jpda.expr;
 
-/** Represents File Associations options panel in miscellaneous category.
- * 
- * @author Jiri Skrivanek
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.spi.debugger.jpda.Evaluator;
+
+/**
+ *
+ * @author Martin Entlicher
  */
-public final class FileAssociationsAdvancedOption extends AdvancedOption {
+public class EvaluatorExpression {
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(FileAssociationsAdvancedOption.class, "AdvancedOption.displayName");  //NOI18N
+    private String expression;
+    private Map<Evaluator, AssociatedExpression<?>> associatedExpressions = new HashMap<Evaluator, AssociatedExpression<?>>();
+
+    public EvaluatorExpression(String expression) {
+        this.expression = expression;
     }
 
-    public String getTooltip() {
-        return NbBundle.getMessage(FileAssociationsAdvancedOption.class, "AdvancedOption.tooltip");  //NOI18N
+    public String getExpression() {
+        return expression;
     }
 
-    public OptionsPanelController create() {
-        return new FileAssociationsOptionsPanelController();
+    public Evaluator.Result evaluate(Evaluator<?> e, Evaluator.Context context) throws InvalidExpressionException {
+        AssociatedExpression<?> ae = associatedExpressions.get(e);
+        if (ae == null) {
+            ae = new AssociatedExpression(e, expression);
+            associatedExpressions.put(e, ae);
+        }
+        return ae.evaluate(context);
     }
+
+    private static class AssociatedExpression<PI> {
+        private Evaluator<PI> e;
+        private Evaluator.Expression<PI> expr;
+
+        AssociatedExpression(Evaluator<PI> e, String expression) {
+            this.e = e;
+            this.expr = new Evaluator.Expression<PI>(expression);
+        }
+
+        Evaluator<PI> getEvaluator() {
+            return e;
+        }
+
+        public Evaluator.Result evaluate(Evaluator.Context context) throws InvalidExpressionException {
+            return e.evaluate(expr, context);
+        }
+        
+    }
+
 }

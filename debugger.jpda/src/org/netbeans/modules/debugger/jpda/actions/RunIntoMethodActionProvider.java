@@ -270,6 +270,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             return ;
         } catch (VMDisconnectedExceptionWrapper aiex) {
             return ;
+        } catch (ObjectCollectedExceptionWrapper aiex) {
+            return ;
         } catch (ClassNotPreparedExceptionWrapper aiex) {
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);

@@ -85,7 +85,7 @@ public class ElChecker extends HintsProvider {
             return Collections.emptyList();
         }
         final List<Hint> result = new LinkedList<Hint>();
-        ((BaseDocument)doc).runAtomic(new Runnable(){
+        ((BaseDocument)doc).render(new Runnable(){
             public void run() {
                 TokenHierarchy<?> th = TokenHierarchy.get(doc); 
                 TokenSequence<?> topLevel = th.tokenSequence();

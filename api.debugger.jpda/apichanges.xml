@@ -728,6 +728,24 @@ These are mainly class and thread filters and hit counts.
         <issue number="156687"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>API for ability to plug-in evaluator engine.</summary>
+        <version major="2" minor="21"/>
+        <date day="10" month="9" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+             <p>
+             An <code>Evaluator</code> interface is introduced, with
+             <code>evaluate()</code> method. It's implementation should be registered
+             for the desired language that compiles into bytecode.
+             </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="Evaluator" />
+        <issue number="171342"/>
+    </change>
+
 
 </changes>
 

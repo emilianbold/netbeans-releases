@@ -208,6 +208,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 }
                 break;
             }
+            case DW_TAG_structure_type:
             case DW_TAG_class_type:
                 processEntries(compilationUnit, entry.getChildren(), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
                 break;

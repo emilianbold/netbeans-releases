@@ -142,6 +142,7 @@ public class SystemIncludesUtils {
                 }
             } finally {
                 handle.finish();
+                RemoteCodeModelUtils.scheduleReparse(execEnv);
             }
         }
     }

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import java.util.List;
+
 
 /**
  *
@@ -101,5 +103,14 @@ public interface Developer extends IdPOMComponent {
      */
     String getTimezone();
     void setTimezone(String zone);
+
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    List<String> getRoles();
+    void addRole(String role);
+    void removeRole(String role);
 
 }

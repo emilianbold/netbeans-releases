@@ -52,6 +52,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -285,7 +286,21 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Controller_Converter_Pre"); //NOI18N"Preparing to generate JSF controllers and converters";
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);  
-        
+
+        //If faces-config not exist it should be created
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
+        FileObject fo;
+        if (configFiles.length == 0) {
+            FileObject dest = wm.getWebInf();
+            if (dest == null) {
+                dest = wm.getDocumentBase().createFolder("WEB-INF");
+            }
+            fo = FacesConfigIterator.createFacesConfig(project, dest, "faces-config", false);
+        } else {
+            fo = configFiles[0];
+        }
+
         int[] nameAttemptIndices = new int[entities.size()];
         FileObject[] controllerFileObjects = new FileObject[entities.size()];
         FileObject[] converterFileObjects = new FileObject[entities.size()];
@@ -659,7 +674,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {
+        Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+        String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
+        if (preferredLanguage.equals("Facelets") && (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL))) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
         }
 

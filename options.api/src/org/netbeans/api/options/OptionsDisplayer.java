@@ -45,7 +45,11 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 import org.netbeans.modules.options.CategoryModel;
 import org.netbeans.modules.options.OptionsDisplayerImpl;
+import org.netbeans.spi.options.OptionsPanelController.ContainerRegistration;
+import org.netbeans.spi.options.OptionsPanelController.SubRegistration;
+import org.netbeans.spi.options.OptionsPanelController.TopLevelRegistration;
 import org.openide.util.Mutex;
+
 /**
  * Permits Options Dialog to open the options dialog with some category pre-selected.
  * @since 1.5
@@ -80,26 +84,12 @@ public final class OptionsDisplayer {
     }
     
     /**
-     * Open the options dialog with some category and subcategory pre-selected
-     * according to given path.
-     * @param path path of category and subcategories to be selected. Path is 
-     * composed from registration names divided by slash. E.g. "MyCategory" or 
-     * "MyCategory/Subcategory2" for the following registration:
-     * <pre style="background-color: rgb(255, 255, 153);">
-     * &lt;folder name="OptionsDialog"&gt;
-     *     &lt;file name="MyCategory.instance"&gt;
-     *         &lt;attr name="instanceClass" stringvalue="org.foo.MyCategory"/&gt;
-     *         &lt;attr name="position" intvalue="900"/&gt;
-     *     &lt;/file&gt;
-     *     &lt;folder name="MyCategory"&gt;
-     *         &lt;file name="SubCategory1.instance"&gt;
-     *             &lt;attr name="instanceClass" stringvalue="org.foo.Subcategory1"/&gt;
-     *         &lt;/file&gt;
-     *         &lt;file name="SubCategory2.instance"&gt;
-     *             &lt;attr name="instanceClass" stringvalue="org.foo.Subcategory2"/&gt;
-     *         &lt;/file&gt;
-     *     &lt;/file&gt;
-     * &lt;/folder&gt;</pre>
+     * Open the options dialog with some panel preselected.
+     * To open a top-level panel, pass its {@link TopLevelRegistration#id}.
+     * To open a subpanel, pass its {@link SubRegistration#location} followed by {@code /}
+     * followed by its {@link SubRegistration#id}.
+     * To open a container panel without specifying a particular subpanel, pass its {@link ContainerRegistration#id}.
+     * @param path slash-separated path of category and perhaps subcategories to be selected
      * @return true if optins dialog was sucesfully opened with required category.
      * If this method is called when options dialog is already opened then this method
      * will return immediately false without affecting currently selected category

@@ -36,62 +36,65 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.db.sql.editor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public final class UsageStatistics {
+/** 
+ * Detects UTF-16 encoding for SQL files (see #156585).
+ *
+ * @author Jiri Skrivanek
+ */
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position = 110)
+public class SQLFileEncodingQueryImpl extends FileEncodingQueryImplementation {
 
-//    private static final int s_int = 4;
-//    private static final int s_timestruc_t = s_int * 2;
-//    private static final int s_total = s_int * 2 + s_timestruc_t * 14;
-//    private static final byte[] sharedBuffer = new byte[s_total];
-//    private static final DataReader reader = new DataReader(sharedBuffer);
-//    public final int pr_lwpid;
-//    public final int pr_count;
-//    public final Timestruc pr_tstamp;
-//    public final Timestruc pr_create;
-//    public final Timestruc pr_term;
-//    public final Timestruc pr_rtime;
-//    public final Timestruc pr_utime;
-//    public final Timestruc pr_stime;
-//    public final Timestruc pr_ttime;
-//    public final Timestruc pr_tftime;
-//    public final Timestruc pr_dftime;
-//    public final Timestruc pr_kftime;
-//    public final Timestruc pr_ltime;
-//    public final Timestruc pr_slptime;
-//    public final Timestruc pr_wtime;
-//    public final Timestruc pr_stoptime;
-//
-//    private UsageStatistics() {
-//        reader.seek(0);
-//        pr_lwpid = reader._int();
-//        pr_count = reader._int();
-//        pr_tstamp = reader._time();
-//        pr_create = reader._time();
-//        pr_term = reader._time();
-//        pr_rtime = reader._time();
-//        pr_utime = reader._time();
-//        pr_stime = reader._time();
-//        pr_ttime = reader._time();
-//        pr_tftime = reader._time();
-//        pr_dftime = reader._time();
-//        pr_kftime = reader._time();
-//        pr_ltime = reader._time();
-//        pr_slptime = reader._time();
-//        pr_wtime = reader._time();
-//        pr_stoptime = reader._time();
-//    }
+    private static final String SQL_MIME_TYPE = "text/x-sql";  //NOI18N
 
-    static synchronized UsageStatistics get(final InputStream inputStream) throws IOException {
-        try {
-//            int read = inputStream.read(sharedBuffer, 0, s_total);
-        } finally {
-            inputStream.close();
+    @Override
+    public Charset getEncoding(FileObject file) {
+        String mimeType = FileUtil.getMIMEType(file, SQL_MIME_TYPE);
+        if (mimeType != null && mimeType.equals(SQL_MIME_TYPE)) {
+            byte[] buff = new byte[4];
+            InputStream is = null;
+            int bytesRead = 0;
+            try {
+                is = file.getInputStream();
+                bytesRead = is.read(buff);
+            } catch (Exception ex) {
+                // ignore
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        // ignore
+                    }
+                }
+            }
+            if (bytesRead == 4 && isUTF16(buff)) {
+                return Charset.forName("UTF-16");  //NOI18N
+            }
         }
+        return null;
+    }
 
-        return new UsageStatistics();
+    /** Returns true if given byte buffer contains UTF-16 encoding signs.
+     * @return true for UTF-16 encoding, false otherwise
+     */
+    private static boolean isUTF16(byte[] buff) {
+        switch (buff[0]) {
+            // UTF-16 big-endian marked
+            case (byte) 0xfe:
+                return buff[1] == (byte) 0xff && (buff[2] != 0 || buff[3] != 0);
+            // UTF-16 little-endian marked
+            case (byte) 0xff:
+                return buff[1] == (byte) 0xfe && (buff[2] != 0 || buff[3] != 0);
+        }
+        return false;
     }
 }

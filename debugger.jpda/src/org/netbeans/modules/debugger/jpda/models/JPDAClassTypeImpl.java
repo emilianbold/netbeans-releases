@@ -69,6 +69,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InterfaceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
@@ -114,6 +115,8 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             co = ReferenceTypeWrapper.classObject(classType);
         } catch (InternalExceptionWrapper ex) {
             co = null;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            co = null;
         } catch (VMDisconnectedExceptionWrapper ex) {
             co = null;
         } catch (UnsupportedOperationExceptionWrapper ex) {
@@ -127,6 +130,8 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         try {
             cl = ReferenceTypeWrapper.classLoader(classType);
         } catch (InternalExceptionWrapper ex) {
+            cl = null;
+        } catch (ObjectCollectedExceptionWrapper ex) {
             cl = null;
         } catch (VMDisconnectedExceptionWrapper ex) {
             cl = null;
@@ -222,6 +227,8 @@ public class JPDAClassTypeImpl implements JPDAClassType {
                     }
                 }
             } catch (InternalExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                return Collections.emptyList();
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return Collections.emptyList();
             }
@@ -257,6 +264,8 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             final List<ObjectReference> instances;
             try {
                 instances = ReferenceTypeWrapper.instances(classType, maxInstances);
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                return Collections.emptyList();
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return Collections.emptyList();
             } catch (InternalExceptionWrapper ex) {

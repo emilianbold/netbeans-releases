@@ -582,6 +582,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     }
                 }
             } catch (InternalExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
             }
         }
         return filters;

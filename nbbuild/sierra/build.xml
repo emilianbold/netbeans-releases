@@ -154,6 +154,7 @@
 
     <!-- module -->
     <target name="do-module">
+        <echo message="============= ${module} ============="/>
         <ant dir="${home}/${module}" target="${action}"/>
         <antcall target="run-nbm"/>
     </target>

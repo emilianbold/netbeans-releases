@@ -238,6 +238,8 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
             }
         } catch (InternalExceptionWrapper ex) {
             throw new InvalidExpressionException (ex);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw new InvalidExpressionException(ex);
         } catch (VMDisconnectedExceptionWrapper ex) {
             // Ignore
         } catch (InvalidStackFrameExceptionWrapper ex) {
