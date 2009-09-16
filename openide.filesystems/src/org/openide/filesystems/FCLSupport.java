@@ -128,7 +128,9 @@ class FCLSupport {
         
         private void dispatchEventImpl(FileChangeListener fcl, FileEvent fe, Op operation, Collection<Runnable> postNotify) {
             try {
-                fe.setPostNotify(postNotify);
+                if (postNotify != null) {
+                    fe.setPostNotify(postNotify);
+                }
                 switch (operation) {
                     case DATA_CREATED:
                         fcl.fileDataCreated(fe);
@@ -154,7 +156,9 @@ class FCLSupport {
             } catch (RuntimeException x) {
                 Exceptions.printStackTrace(x);
             } finally {
-                fe.setPostNotify(null);
+                if (postNotify != null) {
+                    fe.setPostNotify(null);
+                }
             }
         }
         
