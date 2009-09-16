@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -138,7 +139,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     public CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
-        return ToolsPanel.getToolsPanel().getToolsCacheManager().getCompilerSetManagerCopy(execEnv, true);
+        ToolsCacheManager manager = ToolsPanel.getToolsCacheManager();
+        return manager.getCompilerSetManagerCopy(execEnv, true);
     }
     
     private void updateCompilerCollections(final CompilerSet csToSelect) {
