@@ -73,7 +73,6 @@ public class ThreadsDataManager {
     private long endTime; // Timestamp of threadData end
     private long startTime; // Timestamp of threadData start
     private final Set<DataManagerListener> listeners = new HashSet<DataManagerListener>();
-    private int monitoredDataInterval;
     private ThreadMapSummaryData summary;
 
     /**
@@ -152,10 +151,6 @@ public class ThreadsDataManager {
      */
     public synchronized long getStartTime() {
         return ThreadStateColumnImpl.timeStampToMilliSeconds(startTime);
-    }
-
-    public synchronized int getInterval() {
-        return monitoredDataInterval;
     }
 
     public synchronized ThreadStateColumnImpl getThreadData(int index) {
@@ -247,7 +242,6 @@ public class ThreadsDataManager {
         if (updateThreadSize == 0) {
             return;
         }
-        monitoredDataInterval = monitoredData.getTimeStampInterval();
         Map<Integer, Integer> IdToNumber = new LinkedHashMap<Integer, Integer>();
         for(int i = 0; i < updateThreadSize; i++){
             ThreadInfo info = monitoredData.getThreadInfo(i);

@@ -49,6 +49,7 @@ public class TestInstallerAndUninstallerJavaSE extends Installer {
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
+        data.SetTestPackage( "java3/org-netbeans-modules-java-kit" );
 
         Utils.phaseOne(data, "javase");
 
@@ -69,6 +70,8 @@ public class TestInstallerAndUninstallerJavaSE extends Installer {
         //Utils.phaseTwo(data);
 
         Utils.phaseFour(data);
+
+        //Utils.RunCommitTests( data );
 
         Utils.phaseFive( data );
 

@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -138,7 +139,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     public CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
-        return ToolsPanel.getToolsPanel().getToolsCacheManager().getCompilerSetManagerCopy(execEnv, true);
+        ToolsCacheManager manager = ToolsPanel.getToolsCacheManager();
+        return manager.getCompilerSetManagerCopy(execEnv, true);
     }
     
     private void updateCompilerCollections(final CompilerSet csToSelect) {
@@ -189,9 +191,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                     // localhost only mode (either cnd.remote is not installed or no devhosts were specified
                     for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                         for (Tool tool : cs.getTools()) {
-                            if (tool.getKind() == Tool.CCompiler | tool.getKind() == Tool.CCCompiler) {
-                                ((CCCCompiler) tool).waitReady();
-                            }
+                            tool.waitReady();
                         }
                         CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
                         if (csToSelect == cs) {

@@ -49,6 +49,7 @@ public class TestInstallerAndUninstallerRuby extends Installer {
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
+        data.SetTestPackage( "ruby2/org-netbeans-modules-ruby-kit" );
 
         Utils.phaseOne(data, "ruby");
 
