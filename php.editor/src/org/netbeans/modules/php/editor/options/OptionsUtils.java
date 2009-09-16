@@ -56,55 +56,106 @@ public final class OptionsUtils {
     private static final PreferenceChangeListener PREFERENCES_TRACKER = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
+
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES.equals(settingName)) {
+                autoCompletionVariables = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES,
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES_DEFAULT);
+            }
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_TYPES.equals(settingName)) {
+                autoCompletionTypes = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_TYPES,
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_TYPES_DEFAULT);
+            }
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_NAMESPACES.equals(settingName)) {
+                autoCompletionNamespaces = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_NAMESPACES,
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_NAMESPACES_DEFAULT);
+            }
+
+            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_STATIC_METHODS.equals(settingName)) {
+                codeCompletionStaticMethods = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_STATIC_METHODS,
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_STATIC_METHODS_DEFAULT);
+            }
+            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_NON_STATIC_METHODS.equals(settingName)) {
+                codeCompletionNonStaticMethods = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_NON_STATIC_METHODS,
+                        CodeCompletionPanel.PHP_CODE_COMPLETION_NON_STATIC_METHODS_DEFAULT);
+            }
+
             if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE.equals(settingName)) {
                 codeCompletionType = CodeCompletionPanel.CodeCompletionType.resolve(preferences.get(CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE, null));
-            }
-            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS.equals(settingName)) {
-                provideStaticMethods = preferences.getBoolean(
-                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS,
-                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS_DEFAULT);
-            }
-            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS.equals(settingName)) {
-                provideNonStaticMethods = preferences.getBoolean(
-                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS,
-                        CodeCompletionPanel.PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS_DEFAULT);
             }
         }
     };
 
     private static Preferences preferences;
+
+    private static Boolean autoCompletionVariables = null;
+    private static Boolean autoCompletionTypes = null;
+    private static Boolean autoCompletionNamespaces = null;
+
+    private static Boolean codeCompletionStaticMethods = null;
+    private static Boolean codeCompletionNonStaticMethods = null;
+
     private static CodeCompletionPanel.CodeCompletionType codeCompletionType = null;;
-    private static Boolean provideStaticMethods = null;
-    private static Boolean provideNonStaticMethods = null;
 
     private OptionsUtils() {
     }
 
     /**
-     * Code completion type for PHP 5.3.
+     * Variables after "$"
      */
-    public static CodeCompletionPanel.CodeCompletionType getCodeCompletionType() {
+    public static boolean autoCompletionVariables() {
+        lazyInit();
+        assert autoCompletionVariables != null;
+        return autoCompletionVariables;
+    }
+
+    /**
+     * Classes including Members after "->", "::", "new", "extends", ...
+     */
+    public static boolean autoCompletionTypes() {
+        lazyInit();
+        assert autoCompletionTypes != null;
+        return autoCompletionTypes;
+    }
+
+    /**
+     * Namespaces after "\\" (PHP 5.3 only)
+     */
+    public static boolean autoCompletionNamespaces() {
+        lazyInit();
+        assert autoCompletionNamespaces != null;
+        return autoCompletionNamespaces;
+    }
+
+    /**
+     * Also Static Methods after "->"
+     */
+    public static boolean codeCompletionStaticMethods() {
+        lazyInit();
+        assert codeCompletionStaticMethods != null;
+        return codeCompletionStaticMethods;
+    }
+
+    /**
+     * Also Non-Static Methods after "::"
+     */
+    public static boolean codeCompletionNonStaticMethods() {
+        lazyInit();
+        assert codeCompletionNonStaticMethods != null;
+        return codeCompletionNonStaticMethods;
+    }
+
+    /**
+     * Type of Code Completion (PHP 5.3 only)
+     */
+    public static CodeCompletionPanel.CodeCompletionType codeCompletionType() {
         lazyInit();
         assert codeCompletionType != null;
         return codeCompletionType;
-    }
-
-    /**
-     * Provide also static methods after "->"
-     */
-    public static boolean provideCodeCompletionWithStaticMethods() {
-        lazyInit();
-        assert provideStaticMethods != null;
-        return provideStaticMethods;
-    }
-
-    /**
-     * Provide also non-static methods after "::"
-     */
-    public static boolean provideCodeCompletionWithNonStaticMethods() {
-        lazyInit();
-        assert provideNonStaticMethods != null;
-        return provideNonStaticMethods;
     }
 
     private static void lazyInit() {
