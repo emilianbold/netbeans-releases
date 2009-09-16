@@ -126,9 +126,12 @@ public class SourceAnalyser {
     
     public void store () throws IOException {
         if (this.references.size() > 0 || this.toDelete.size() > 0) {
-            this.index.store(this.references, toDelete);
-            this.references.clear();
-            this.toDelete.clear();
+            try {
+                this.index.store(this.references, toDelete);
+            } finally {
+                this.references.clear();
+                this.toDelete.clear();
+            }
         }
     }
     
