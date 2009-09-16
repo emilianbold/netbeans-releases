@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositoryUtils;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -133,7 +134,7 @@ public class KenaiUtil {
      * @return null if no repository exists for the given project
      */
     public static Repository getKenaiBugtrackingRepository( KenaiProject project) {
-        return KenaiRepositories.getInstance().getRepository(project);
+        return KenaiRepositoryUtils.getInstance().getRepository(project);
     }
 
     /**
@@ -155,7 +156,7 @@ public class KenaiUtil {
      */
     public static Repository getKenaiRepository(String url) {
         KenaiProject kp = getKenaiProject(url);
-        return kp == null ? null : KenaiRepositories.getInstance().getRepository(kp);
+        return kp == null ? null : KenaiRepositoryUtils.getInstance().getRepository(kp);
     }
 
     /**
