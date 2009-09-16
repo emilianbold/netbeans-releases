@@ -54,7 +54,7 @@ public final class ThreadMapSummaryDataQuery {
      * @param intervals
      * @param fullState
      */
-    private ThreadMapSummaryDataQuery(Collection<TimeIntervalDataFilter> intervals, boolean fullState) {
+    public ThreadMapSummaryDataQuery(Collection<TimeIntervalDataFilter> intervals, boolean fullState) {
         this.intervals = intervals;
         this.fullState = fullState;
     }

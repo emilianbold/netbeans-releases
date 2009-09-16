@@ -75,9 +75,14 @@ public class RemoteProcReader extends ProcReaderImpl {
         lwpsUsageCmd = "cat " + lwpDir + "/*/lwpusage"; // NOI18N
     }
 
-    public PStatus getProcessStatus() throws IOException {
-        Process p = npb.setArguments(statusFile).call();
-        return getProcessStatus(p.getInputStream());
+    public PStatus getProcessStatus() {
+        PStatus result = null;
+        try {
+            Process p = npb.setArguments(statusFile).call();
+            result = getProcessStatus(p.getInputStream());
+        } catch (IOException ex) {
+        }
+        return result;
     }
 
     public PUsage getProcessUsage() throws IOException {
@@ -85,50 +90,53 @@ public class RemoteProcReader extends ProcReaderImpl {
         return getProcessUsage(p.getInputStream());
     }
 
-    public List<LWPUsage> getThreadsInfo() throws IOException {
+    public List<LWPUsage> getThreadsInfo() {
         List<LWPUsage> result = new ArrayList<LWPUsage>();
 
         // cannot use setArguments as it will enclose * in quotes and will
         // prevent from interpreting it by shell
 
-        Process p = npb.setCommandLine(lwpsUsageCmd).call(); // NOI18N
-        int exitCode = -1;
-
         try {
-            exitCode = p.waitFor();
-        } catch (InterruptedException ex) {
-        }
+            Process p = npb.setCommandLine(lwpsUsageCmd).call(); // NOI18N
+            int exitCode = -1;
 
-        if (exitCode != 0) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("cannot exec " + lwpsUsageCmd); // NOI18N
-                InputStream es = p.getErrorStream();
-                if (es.available() > 0) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(es));
-                    while (br.ready()) {
-                        log.fine("\t" + br.readLine()); // NOI18N
+            try {
+                exitCode = p.waitFor();
+            } catch (InterruptedException ex) {
+            }
+
+            if (exitCode != 0) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("cannot exec " + lwpsUsageCmd); // NOI18N
+                    InputStream es = p.getErrorStream();
+                    if (es.available() > 0) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(es));
+                        while (br.ready()) {
+                            log.fine("\t" + br.readLine()); // NOI18N
+                        }
                     }
                 }
+
+                return result;
             }
 
-            return result;
-        }
+            InputStream is = p.getInputStream();
+            MultyFilesStream ss = new MultyFilesStream(is, 256);
 
-        InputStream is = p.getInputStream();
-        MultyFilesStream ss = new MultyFilesStream(is, 256);
-
-        try {
-            while (ss.available() > 0) {
-                result.add(getProcessUsage(ss));
+            try {
+                while (ss.available() > 0) {
+                    result.add(getProcessUsage(ss));
+                }
+            } catch (IOException ex) {
+                // ignore...
+            } finally {
+                ss.doClose();
             }
+
+            // To allow others use setArguments...
+            npb.setCommandLine(null);
         } catch (IOException ex) {
-            // ignore...
-        } finally {
-            ss.doClose();
         }
-
-        // To allow others use setArguments...
-        npb.setCommandLine(null);
 
         return result;
     }

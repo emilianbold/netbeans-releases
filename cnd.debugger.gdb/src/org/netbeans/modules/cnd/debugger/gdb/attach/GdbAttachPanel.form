@@ -19,7 +19,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="projectLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="projectCB" pref="502" max="32767" attributes="0"/>
+              <Component id="projectCB" pref="517" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="allCheckBox" min="-2" max="-2" attributes="0"/>
@@ -28,12 +28,12 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="hostComboBox" pref="519" max="32767" attributes="0"/>
+              <Component id="hostComboBox" pref="532" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="filterField" pref="519" max="32767" attributes="0"/>
+              <Component id="filterField" pref="530" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="procLabel" min="-2" max="-2" attributes="0"/>
