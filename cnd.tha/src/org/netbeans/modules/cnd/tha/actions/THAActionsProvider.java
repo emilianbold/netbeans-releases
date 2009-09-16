@@ -38,14 +38,11 @@
  */
 package org.netbeans.modules.cnd.tha.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.MissingResourceException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.EventListenerList;
@@ -299,7 +296,16 @@ public final class THAActionsProvider {
 
     void sendSignal() {
         if (0 < pid) {
-            CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+            if (!EventQueue.isDispatchThread()){
+                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+            }else{
+                DLightExecutorService.submit(new Runnable() {
+
+                    public void run() {
+                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+                    }
+                }, "Send signal USR1 to pid " + pid + " from THAActionsProvider.sendSignal()");//NOI18N
+            }
         }
     }
 

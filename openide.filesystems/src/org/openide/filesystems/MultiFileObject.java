@@ -1442,8 +1442,13 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         ) {
             return;
         }
-
-        fileAttributeChanged0(new FileAttributeEvent(this, fe.getName(), fe.getOldValue(), fe.getNewValue()));
+        final FileAttributeEvent ev = new FileAttributeEvent(this, fe.getName(), fe.getOldValue(), fe.getNewValue());
+        try {
+            ev.inheritPostNotify(fe);
+            fileAttributeChanged0(ev);
+        } finally {
+            ev.setPostNotify(null);
+        }
     }
 
     /** Copies content of one folder into another.
