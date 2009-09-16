@@ -94,7 +94,7 @@ public class ProfilesModelHelper {
     
     private static HashMap<ConfigVersion, ProfilesModelHelper> instances =
             new HashMap<ConfigVersion, ProfilesModelHelper>();
-    private ConfigVersion configVersion = ConfigVersion.CONFIG_1_3;
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
 
     /**
      * Creates a new instance of ProfilesModelHelper
@@ -231,14 +231,14 @@ public class ProfilesModelHelper {
             } else {
                 sb = (SymmetricBinding)PolicyModelHelper.getTopLevelElement(p, SymmetricBinding.class,false);
             }
-            if (sb != null) { // profiles 4,6,9,10,12
+            if (sb != null) { // profiles 4,6,9,10,12 + PasswdDerived
                 protToken = (ProtectionToken) SecurityTokensModelHelper.getTokenElement(sb, ProtectionToken.class);
                 if (protToken != null) {
                     String tokenType = SecurityTokensModelHelper.getTokenType(protToken);
-                    if (ComboConstants.ISSUED.equals(tokenType)) {  // profile 10
+                    if (ComboConstants.ISSUED.equals(tokenType)) {  // STS Issued Token
                         return ComboConstants.PROF_STSISSUED;
                     }
-                    if (ComboConstants.KERBEROS.equals(tokenType)) {  // profile 9
+                    if (ComboConstants.KERBEROS.equals(tokenType)) {  // Kerberos Profile
                         return ComboConstants.PROF_KERBEROS;
                     }
                     if (ComboConstants.X509.equals(tokenType)) { // profile 12, 6, 4
@@ -789,7 +789,7 @@ public class ProfilesModelHelper {
                 updateServiceUrl(c, isSSLProfile(profile));
             }
             
-            if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
+            if (!ConfigVersion.CONFIG_1_0.equals(configVersion)) {
                 boolean rm = RMModelHelper.getInstance(configVersion).isRMEnabled(c);
                 if (rm) {
                     if (isSSLProfile(profile)) {
@@ -872,79 +872,24 @@ public class ProfilesModelHelper {
 
             SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(configVersion);
             
-            // Profile #1
             if (ComboConstants.PROF_TRANSPORT.equals(profile)) {
                 // do nothing, there are no msg level policies
                 return;
             }
-            // Profile #2
             if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
                 return;
             }
-            // Profile #3
             if (ComboConstants.PROF_SAMLSSL.equals(profile)) {
                 return;
             }
-            // Profile #4
-            if (ComboConstants.PROF_USERNAME.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #5
             if (ComboConstants.PROF_MUTUALCERT.equals(profile)) {
                 spmh.setDefaultTargets(input, true, rm);
                 spmh.setDefaultTargets(output, true, rm);
                 return;
             }
-            // Profile #6
-            if (ComboConstants.PROF_ENDORSCERT.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #7
-            if (ComboConstants.PROF_SAMLSENDER.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #8
-            if (ComboConstants.PROF_SAMLHOLDER.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #9
-            if (ComboConstants.PROF_KERBEROS.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #10
-            if (ComboConstants.PROF_STSISSUED.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #11
-            if (ComboConstants.PROF_STSISSUEDCERT.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #12
-            if (ComboConstants.PROF_STSISSUEDENDORSE.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
-            // Profile #13
-            if (ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile)) {
-                spmh.setDefaultTargets(input, wss11, rm);
-                spmh.setDefaultTargets(output, wss11, rm);
-                return;
-            }
+            //default for all other profiles
+            spmh.setDefaultTargets(input, wss11, rm);
+            spmh.setDefaultTargets(output, wss11, rm);
         } finally {
             if (!isTransaction) {
                 model.endTransaction();

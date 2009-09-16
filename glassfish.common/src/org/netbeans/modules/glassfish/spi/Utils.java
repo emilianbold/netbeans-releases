@@ -64,7 +64,9 @@ public class Utils {
             // read-only directories and files...
             boolean retVal = true;
             java.io.File tmp = null;
-            if (f.isDirectory()) {
+            if (!f.exists()) {
+                retVal = false;
+            } else if (f.isDirectory()) {
                 try             {
                     tmp = java.io.File.createTempFile("foo", ".tmp", f);
                 }

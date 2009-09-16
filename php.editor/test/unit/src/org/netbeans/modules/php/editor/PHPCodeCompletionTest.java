@@ -584,6 +584,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test148213() throws Exception {
         checkCompletion("testfiles/completion/lib/issue148213.php", "$oldguy148213 = $newguy^", false);
     }
+    public void test171178() throws Exception {
+        checkCompletion("testfiles/completion/lib/test171178/html.php", "$hTML->^", false);
+    }
 
     public void testSanitizedCode() throws Exception {
         checkCompletion("testfiles/sanitize/curly04.php", "$baba = $param^", false);

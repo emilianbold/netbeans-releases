@@ -112,6 +112,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private final ComboParameter summaryParameter;
     private final ComboParameter commentsParameter;
+    private final ComboParameter whiteboardParameter;
     private final ComboParameter keywordsParameter;
     private final ComboParameter peopleParameter;
     private final ListParameter productParameter;
@@ -122,6 +123,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final ListParameter priorityParameter;
     private final ListParameter changedFieldsParameter;
     private final ListParameter severityParameter;
+    private final ListParameter issueTypeParameter;
 
     private final Map<String, QueryParameter> parameters;
 
@@ -133,6 +135,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask refreshTask;
     private final IssueTable issueTable;
+    private final boolean isNetbeans;
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
         this(repository, query, urlParameters, false);
@@ -142,10 +145,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.repository = repository;
         this.query = query;
 
-
         issueTable = new IssueTable(query, query.getColumnDescriptors());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this);
+
+        isNetbeans = BugzillaUtil.isNbRepository(repository);
+        panel.setNBFieldsVisible(isNetbeans);
 
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
@@ -178,6 +183,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         panel.summaryTextField.addActionListener(this);
         panel.commentTextField.addActionListener(this);
+        panel.whiteboardTextField.addActionListener(this);
         panel.keywordsTextField.addActionListener(this);
         panel.peopleTextField.addActionListener(this);
         panel.changedFromTextField.addActionListener(this);
@@ -188,6 +194,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         parameters = new LinkedHashMap<String, QueryParameter>();
         summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
         commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");    // NOI18N
+        whiteboardParameter = createQueryParameter(ComboParameter.class, panel.whiteboardComboBox, "status_whiteboard_type"); // NOI18N
         keywordsParameter = createQueryParameter(ComboParameter.class, panel.keywordsComboBox, "keywords_type");    // NOI18N
         peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
         productParameter = createQueryParameter(ListParameter.class, panel.productList, "product");                 // NOI18N
@@ -197,10 +204,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
         changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
-        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
+        if(isNetbeans) {
+            issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, "cf_bug_type");     // NOI18N
+            severityParameter = null;
+        } else {
+            severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");      // NOI18N
+            issueTypeParameter = null;
+        }
 
         createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.whiteboardTextField, "status_whiteboard");             // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
         createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
@@ -357,13 +371,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         panel.productList.setSelectedIndex(0);
                         populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
                     }
-                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
+                    if(isNetbeans) {
+                        issueTypeParameter.setParameterValues(toParameterValues(bc.getIssueTypes()));
+                    } else {
+                        severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
+                    }
                     statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
                     resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
                     priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
                     changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+                    whiteboardParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
                     peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
                     panel.changedToTextField.setText(CHANGED_NOW);

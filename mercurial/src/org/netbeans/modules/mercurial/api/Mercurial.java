@@ -48,7 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.mercurial.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;

@@ -102,6 +102,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private static final String KEYSTORE_LOCATION = "config/keystore.jks";
     private static final String TRUSTSTORE_LOCATION = "config/cacerts.jks";
 
+    private static final String EMBEDDED_EJB_CONTAINER_PATH = "lib/embedded/glassfish-embedded-static-shell.jar";
+
     /**
      * 
      * @param toolName 
@@ -125,11 +127,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         }
         if("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) {
             return true;
-        }        
+        }
+        String gfRootStr = dm.getProperties().getGlassfishRoot();
+        if (J2eePlatform.TOOL_EMBEDDABLE_EJB.equals(toolName)) {
+            File jar = new File(gfRootStr, EMBEDDED_EJB_CONTAINER_PATH);
+            return jar.exists() && jar.isFile() && jar.canRead();
+        }
 
         File wsLib = null;
         
-        String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (gfRootStr != null) {
             wsLib = ServerUtilities.getJarName(gfRootStr, "webservices(|-osgi).jar");
         }
@@ -182,6 +188,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      */
     public File[] getToolClasspathEntries(String toolName) {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
+        if (J2eePlatform.TOOL_EMBEDDABLE_EJB.equals(toolName)) {
+            return new File[] { new File(gfRootStr, EMBEDDED_EJB_CONTAINER_PATH) };
+        }
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
             String[] entries = new String[] {"webservices(|-osgi).jar", //NOI18N
                                              "webservices-api(|-osgi).jar", //NOI18N
@@ -372,7 +381,11 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             if (J2eePlatform.TOOL_PROP_JVM_OPTS.equals(propertyName)) {
                 if(domainPath != null) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append("-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader -javaagent:");
+                    sb.append("-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader -Djava.endorsed.dirs=");
+                     sb.append(quotedString(new File(root,"lib/endorsed").getAbsolutePath()));
+                    sb.append(":");
+                     sb.append(quotedString(new File(root,"modules/endorsed").getAbsolutePath()));
+                     sb.append(" -javaagent:");
                      sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath()));
                       sb.append("=mode=acscript,arg=-configxml,arg=");
                       sb.append(quotedString(new File(domainPath, "config/sun-acc.xml").getAbsolutePath()));

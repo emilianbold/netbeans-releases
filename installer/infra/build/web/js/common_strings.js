@@ -76,8 +76,6 @@ var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/67/install
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
 var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
-var LICENSE_DETAILS_LINK = "http://www.netbeans.org/about/legal/code_dependency_matrix.html";
+var LICENSE_3RD_PARTY_LINK = "http://www.netbeans.info/downloads/licence/netbeans-3rd-party.txt";
 
-var LEGAL_INFO_MESSAGE = "The majority of the NetBeans IDE {0} code is available under a <a href=\"{1}\">dual license consisting of the Common Development and Distribution License (CDDL) v1.0 and the GNU General Public License (GPL) v2</a>. See <a href=\"{2}\">details about the components in NetBeans</a> and the licenses under which they are covered. Read the <a href=\"{3}\">License Notice</a>.";
-
-var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";
+var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. See the <a href=\"{1}\">third-party readme</a> for external components included in NetBeans and their associated licenses."

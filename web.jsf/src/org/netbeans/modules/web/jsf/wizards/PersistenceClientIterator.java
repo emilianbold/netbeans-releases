@@ -42,15 +42,21 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -79,6 +85,7 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
@@ -86,10 +93,18 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsf.palette.items.FromEntityBase;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -102,11 +117,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private transient WizardDescriptor.Panel[] panels;
 
     static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"}; //NOI18N
+    static final String[] UTIL_CLASS_NAMES2 = {"JsfUtil", "PaginationHelper"}; //NOI18N
     static final String UTIL_FOLDER_NAME = "util"; //NOI18N
     private static final String FACADE_SUFFIX = "Facade"; //NOI18N
     private static final String CONTROLLER_SUFFIX = "Controller";  //NOI18N
     private static final String CONVERTER_SUFFIX = "Converter";  //NOI18N
     private static final String JAVA_EXT = "java"; //NOI18N
+    public static final String JSF2_GENERATOR_PROPERTY = "jsf2Generator"; // "true" if set otherwise undefined
+    private static final String CSS_FOLDER = "resources/css/";  //NOI18N
   
     private transient WebModuleExtender wme;
     
@@ -115,12 +133,13 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final List<String> entities = (List<String>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
         final String jsfFolder = (String) wizard.getProperty(WizardProperties.JSF_FOLDER);
         final Project project = Templates.getProject(wizard);
-        final FileObject targetFolder = Templates.getTargetFolder(wizard);
-        final FileObject jpaControllerPackageFileObject = (FileObject)wizard.getProperty(WizardProperties.JPA_CLASSES_PACKAGE_FILE_OBJECT);
+        final FileObject javaPackageRoot = (FileObject)wizard.getProperty(WizardProperties.JAVA_PACKAGE_ROOT_FILE_OBJECT);
         final String jpaControllerPkg = (String) wizard.getProperty(WizardProperties.JPA_CLASSES_PACKAGE);
         final String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
+        final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY));
+        final String bundleName = (String)wizard.getProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME);
         
         PersistenceUnit persistenceUnit = 
                 (PersistenceUnit) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.PERSISTENCE_UNIT);
@@ -153,23 +172,37 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final Runnable r = new Runnable() {
 
             public void run() {
-                boolean genSessionBean=J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();
+                final boolean genSessionBean=J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();
                 try {
-                    handle.start();
-                    int jpaProgressStepCount = genSessionBean ? EjbFacadeWizardIterator.getProgressStepCount(entities.size()) :  JpaControllerIterator.getProgressStepCount(entities.size());
-                    int progressStepCount = jpaProgressStepCount + getProgressStepCount(ajaxify);
-                    progressStepCount += (JSFClientGenerator.PROGRESS_STEP_COUNT * entities.size());
-                    progressContributor.start(progressStepCount);
-                    if(genSessionBean)
-                    {
-                        EjbFacadeWizardIterator.generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, false, false);
-                    }
-                    else
-                    {
-                        JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
-                    }
-                    generateJsfControllers(progressContributor, progressPanel, targetFolder, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
-                    progressContributor.progress(progressStepCount);
+                    javaPackageRoot.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                        public void run() throws IOException {
+                            handle.start();
+                            int jpaProgressStepCount = genSessionBean ? EjbFacadeWizardIterator.getProgressStepCount(entities.size()) :  JpaControllerIterator.getProgressStepCount(entities.size());
+                            int progressStepCount = jpaProgressStepCount + getProgressStepCount(ajaxify, jsf2Generator);
+                            progressStepCount += ((jsf2Generator ? 5 : JSFClientGenerator.PROGRESS_STEP_COUNT) * entities.size());
+                            progressContributor.start(progressStepCount);
+                            FileObject jpaControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, jpaControllerPkg.replace('.', '/'));
+                            if(genSessionBean)
+                            {
+                                EjbFacadeWizardIterator.generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, false, false, true);
+                            }
+                            else
+                            {
+                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
+                                JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
+                            }
+                            FileObject jsfControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, controllerPkg.replace('.', '/'));
+                            if (jsf2Generator) {
+                                Sources srcs = ProjectUtils.getSources(project);
+                                SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+                                FileObject webRoot = sgWeb[0].getRootFolder();
+                                generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot);
+                            } else {
+                                generateJsfControllers(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
+                            }
+                            progressContributor.progress(progressStepCount);
+                        }
+                    });
                 } catch (IOException ioe) {
                     Logger.getLogger(PersistenceClientIterator.class.getName()).log(Level.INFO, null, ioe);
                     NotifyDescriptor nd = new NotifyDescriptor.Message(ioe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
@@ -212,11 +245,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
         });
         
-        return Collections.singleton(DataFolder.findFolder(targetFolder));
+        return Collections.singleton(DataFolder.findFolder(javaPackageRoot));
     }
     
-    private static int getProgressStepCount(boolean ajaxify) {
-        int count = UTIL_CLASS_NAMES.length + 2;    //2 "pre" messages (see generateJsfControllers) before generating util classes and controller/converter classes
+    private static int getProgressStepCount(boolean ajaxify, boolean jsf2Generator) {
+        int count = jsf2Generator ? UTIL_CLASS_NAMES2.length+1+1 : UTIL_CLASS_NAMES.length+2;    //2 "pre" messages (see generateJsfControllers) before generating util classes and controller/converter classes
         if (ajaxify) {
             count++;
         }
@@ -253,7 +286,21 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Controller_Converter_Pre"); //NOI18N"Preparing to generate JSF controllers and converters";
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);  
-        
+
+        //If faces-config not exist it should be created
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
+        FileObject fo;
+        if (configFiles.length == 0) {
+            FileObject dest = wm.getWebInf();
+            if (dest == null) {
+                dest = wm.getDocumentBase().createFolder("WEB-INF");
+            }
+            fo = FacesConfigIterator.createFacesConfig(project, dest, "faces-config", false);
+        } else {
+            fo = configFiles[0];
+        }
+
         int[] nameAttemptIndices = new int[entities.size()];
         FileObject[] controllerFileObjects = new FileObject[entities.size()];
         FileObject[] converterFileObjects = new FileObject[entities.size()];
@@ -306,6 +353,281 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
     }
 
+    public static boolean doesSomeFileExistAlready(FileObject javaPackageRoot, FileObject webRoot,
+            String jpaControllerPkg, String jsfControllerPkg, String jsfFolder, List<String> entities,
+            String bundleName) {
+        for (String entity : entities) {
+            String simpleControllerName = getFacadeFileName(entity);
+            String pkg = jpaControllerPkg;
+            if (pkg.length() > 0) {
+                pkg += ".";
+            }
+            if (javaPackageRoot.getFileObject((pkg+simpleControllerName).replace('.', '/')+".java") != null) {
+                return true;
+            }
+            simpleControllerName = getControllerFileName(entity);
+            pkg = jsfControllerPkg;
+            if (pkg.length() > 0) {
+                pkg += ".";
+            }
+            if (javaPackageRoot.getFileObject((pkg+simpleControllerName).replace('.', '/')+".java") != null) {
+                return true;
+            }
+            String fileName = getJsfFileName(entity, jsfFolder, "");
+            if (webRoot.getFileObject(fileName+"View.xhtml") != null ||
+                webRoot.getFileObject(fileName+"Edit.xhtml") != null ||
+                webRoot.getFileObject(fileName+"List.xhtml") != null ||
+                webRoot.getFileObject(fileName+"Create.xhtml") != null) {
+                return true;
+            }
+        }
+        bundleName = getBundleFileName(bundleName);
+        if (javaPackageRoot.getFileObject(bundleName) != null) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static void generateJsfControllers2(
+            ProgressContributor progressContributor,
+            final ProgressPanel progressPanel,
+            FileObject targetFolder,
+            String controllerPkg,
+            String jpaControllerPkg,
+            List<String> entities,
+            boolean ajaxify,
+            Project project,
+            String jsfFolder,
+            FileObject jpaControllerPackageFileObject,
+            JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport,
+            boolean genSessionBean,
+            int progressIndex,
+            FileObject webRoot,
+            String bundleName,
+            FileObject javaPackageRoot) throws IOException {
+        String progressMsg;
+
+        //copy util classes
+        FileObject utilFolder = targetFolder.getFileObject(UTIL_FOLDER_NAME);
+        if (utilFolder == null) {
+            utilFolder = FileUtil.createFolder(targetFolder, UTIL_FOLDER_NAME);
+        }
+        String utilPackage = controllerPkg == null || controllerPkg.length() == 0 ? UTIL_FOLDER_NAME : controllerPkg + "." + UTIL_FOLDER_NAME;
+        for (int i = 0; i < UTIL_CLASS_NAMES2.length; i++){
+            if (utilFolder.getFileObject(UTIL_CLASS_NAMES2[i], JAVA_EXT) == null) {
+                progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", UTIL_CLASS_NAMES2[i] + "."+JAVA_EXT); //NOI18N
+                progressContributor.progress(progressMsg, progressIndex++);
+                progressPanel.setText(progressMsg);
+                FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject("/Templates/JSF/JSF_From_Entity_Wizard/"+UTIL_CLASS_NAMES2[i] + ".ftl");
+                FileObject target = FileUtil.createData(utilFolder, UTIL_CLASS_NAMES2[i] + "."+JAVA_EXT);//NOI18N
+                HashMap<String, Object> params = new HashMap<String, Object>();
+                params.put("packageName", utilPackage);
+                params.put("comment", Boolean.FALSE); // NOI18N
+                JSFPaletteUtilities.expandJSFTemplate(tableTemplate, params, target);
+            } else {
+                progressContributor.progress(progressIndex++);
+            }
+        }
+
+        //int[] nameAttemptIndices = new int[entities.size()];
+        FileObject[] controllerFileObjects = new FileObject[entities.size()];
+        for (int i = 0; i < controllerFileObjects.length; i++) {
+            String simpleControllerName = getControllerFileName(entities.get(i));
+            controllerFileObjects[i] = targetFolder.getFileObject(simpleControllerName, JAVA_EXT);
+            if (controllerFileObjects[i] == null) {
+                controllerFileObjects[i] = targetFolder.createData(simpleControllerName, JAVA_EXT);
+            }
+        }
+
+        Charset encoding = FileEncodingQuery.getEncoding(project.getProjectDirectory());
+        if (webRoot.getFileObject(CSS_FOLDER+JSFClientGenerator.JSFCRUD_STYLESHEET) == null) {
+            String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(JSFClientGenerator.RESOURCE_FOLDER + JSFClientGenerator.JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
+            FileObject target = FileUtil.createData(webRoot, CSS_FOLDER+JSFClientGenerator.JSFCRUD_STYLESHEET);
+            JSFFrameworkProvider.createFile(target, content, encoding.name());
+            progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", target.getNameExt()); //NOI18N
+            progressContributor.progress(progressMsg, progressIndex++);
+            progressPanel.setText(progressMsg);
+        }
+
+        List<TemplateData> bundleData = new ArrayList<TemplateData>();
+
+        for (int i = 0; i < controllerFileObjects.length; i++) {
+            String entityClass = entities.get(i);
+            String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
+            String simpleJpaControllerName = simpleClassName + (genSessionBean ? FACADE_SUFFIX : "JpaController"); //NOI18N
+
+            progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", simpleClassName + "."+JAVA_EXT); //NOI18N
+            progressContributor.progress(progressMsg, progressIndex++);
+            progressPanel.setText(progressMsg);
+
+            FileObject template = FileUtil.getConfigRoot().getFileObject(PersistenceClientSetupPanelVisual.CONTROLLER_TEMPLATE);
+            Map<String, Object> params = new HashMap<String, Object>();
+            String controllerClassName = controllerFileObjects[i].getName();
+            String managedBean = controllerClassName.substring(0, 1).toLowerCase() + controllerClassName.substring(1);
+            params.put("managedBeanName", managedBean);
+            params.put("controllerPackageName", controllerPkg);
+            params.put("controllerClassName", controllerClassName);
+            params.put("entityFullClassName", entityClass);
+            params.put("ejbFullClassName", jpaControllerPkg+"."+simpleJpaControllerName);
+            params.put("ejbClassName", simpleJpaControllerName);
+            params.put("entityClassName", simpleClassName);
+            params.put("comment", Boolean.FALSE); // NOI18N
+            params.put("bundle", bundleName); // NOI18N
+            FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass);
+
+            JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
+
+            params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true);
+            bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
+            params.put("controllerClassName", controllerClassName);
+            expandSingleJSFTemplate("create.ftl", entityClass, jsfFolder, webRoot, "Create", params, progressContributor, progressPanel, progressIndex++);
+            expandSingleJSFTemplate("edit.ftl", entityClass, jsfFolder, webRoot, "Edit", params, progressContributor, progressPanel, progressIndex++);
+            expandSingleJSFTemplate("view.ftl", entityClass, jsfFolder, webRoot, "View", params, progressContributor, progressPanel, progressIndex++);
+            params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".items", true, true);
+            params.put("controllerClassName", controllerClassName);
+            expandSingleJSFTemplate("list.ftl", entityClass, jsfFolder, webRoot, "List", params, progressContributor, progressPanel, progressIndex++);
+
+            String styleAndScriptTags = "<h:outputStylesheet name=\"css/"+JSFClientGenerator.JSFCRUD_STYLESHEET+"\"/>"; //NOI18N
+            JSFClientGenerator.addLinkToListJspIntoIndexJsp(WebModule.getWebModule(project.getProjectDirectory()),
+                    simpleClassName, styleAndScriptTags, "UTF-8", "/"+getJsfFileName(entityClass, jsfFolder, "List"));
+
+        }
+
+        progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", bundleName); //NOI18N
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
+
+        FileObject template = FileUtil.getConfigRoot().getFileObject(PersistenceClientSetupPanelVisual.BUNDLE_TEMPLATE);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("entities", bundleData);
+        params.put("comment", Boolean.FALSE);
+        String bundleFileName = getBundleFileName(bundleName);
+        FileObject target = javaPackageRoot.getFileObject(bundleFileName);
+        if (target == null) {
+            target = FileUtil.createData(javaPackageRoot, bundleFileName);
+        }
+        JSFPaletteUtilities.expandJSFTemplate(template, params, target);
+
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
+        FileObject fo;
+        if (configFiles.length == 0) {
+            FileObject dest = wm.getWebInf();
+            if (dest == null) {
+                dest = webRoot.createFolder("WEB-INF");
+            }
+            fo = FacesConfigIterator.createFacesConfig(project, dest, "faces-config", false);
+        } else {
+            fo = configFiles[0];
+        }
+        JSFConfigModel model = ConfigurationUtils.getConfigModel(fo, true);
+        ResourceBundle rb = model.getFactory().createResourceBundle();
+        rb.setVar("bundle");
+        rb.setBaseName(bundleName);
+        ResourceBundle existing = findBundle(model, rb);
+        model.startTransaction();
+        try {
+            Application app;
+            if (model.getRootComponent().getApplications().size() == 0) {
+                app = model.getFactory().createApplication();
+                model.getRootComponent().addApplication(app);
+            } else {
+                app = model.getRootComponent().getApplications().get(0);
+            }
+            if (existing != null) {
+                app.removeResourceBundle(existing);
+            }
+            app.addResourceBundle(rb);
+        } finally {
+            model.endTransaction();
+            model.sync();
+        }
+
+    }
+
+    private static ResourceBundle findBundle(JSFConfigModel model, ResourceBundle rb) {
+        for (Application app : model.getRootComponent().getApplications()) {
+            for (ResourceBundle bundle : app.getResourceBundles()) {
+                if (bundle.getVar().equals(rb.getVar())) {
+                    return bundle;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String getBundleFileName(String bundleName) {
+        if (bundleName.startsWith("/")) {
+            bundleName = bundleName.substring(1);
+        }
+        if (!bundleName.endsWith(".properties")) {
+            bundleName = bundleName + ".properties"; //.substring(0, bundleName.length()-11);
+        }
+        return bundleName;
+    }
+
+    public static final class TemplateData {
+
+        private String entityClassName;
+        private List<FromEntityBase.TemplateData> entityDescriptors;
+
+        public TemplateData(String entityClassName, List<FromEntityBase.TemplateData> entityDescriptors) {
+            this.entityClassName = entityClassName;
+            this.entityDescriptors = entityDescriptors;
+        }
+
+        public String getEntityClassName() {
+            return entityClassName;
+        }
+
+        public List<FromEntityBase.TemplateData> getEntityDescriptors() {
+            return entityDescriptors;
+        }
+
+    }
+
+    private static String getControllerFileName(String entityClass) {
+        String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
+        return simpleClassName + CONTROLLER_SUFFIX;
+    }
+
+    private static String getFacadeFileName(String entityClass) {
+        String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
+        return simpleClassName + FACADE_SUFFIX;
+    }
+
+    private static String getJsfFileName(String entityClass, String jsfFolder, String name) {
+        String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
+        String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
+        if (jsfFolder.endsWith("/")) {
+            jsfFolder = jsfFolder.substring(0, jsfFolder.length() - 1);
+        }
+        if (jsfFolder.startsWith("/")) {
+            jsfFolder = jsfFolder.substring(1);
+        }
+        if (jsfFolder.length() > 0) {
+            return jsfFolder+"/"+firstLower+"/"+name;
+        } else {
+            return firstLower+"/"+name;
+        }
+    }
+
+    private static void expandSingleJSFTemplate(String templateName, String entityClass,
+            String jsfFolder, FileObject webRoot, String name, Map<String, Object> params,
+            ProgressContributor progressContributor, ProgressPanel progressPanel, int progressIndex) throws IOException {
+        FileObject template = FileUtil.getConfigRoot().getFileObject("/Templates/JSF/JSF_From_Entity_Wizard/"+templateName);
+        String fileName = getJsfFileName(entityClass, jsfFolder, name);
+        String  progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", fileName); //NOI18N
+        progressContributor.progress(progressMsg, progressIndex);
+        progressPanel.setText(progressMsg);
+
+        FileObject jsfFile = webRoot.getFileObject(fileName+".xhtml");
+        if (jsfFile == null) {
+            jsfFile = FileUtil.createData(webRoot, fileName+".xhtml");
+        }
+        JSFPaletteUtilities.expandJSFTemplate(template, params, jsfFile);
+    }
+
     /**
      * Convenience method to obtain the source root folder.
      * @param project the Project object
@@ -342,17 +664,22 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         } catch (IOException ex) {
             targetFolder = DataFolder.findFolder(project.getProjectDirectory());
         }
-        
+
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
                         new HelpCtx("framework_jsf_fromentity"), wizard)); // NOI18N
         PersistenceClientSetupPanel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
-//        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
-//        panels = new WizardDescriptor.Panel[] { javaPanel };
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+
+        Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+        String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
+        if (preferredLanguage.equals("Facelets") && (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL))) {    //NOI18N
+            wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
+        }
+
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         String[] names;
         if (fp.isInWebModule(wm)) {

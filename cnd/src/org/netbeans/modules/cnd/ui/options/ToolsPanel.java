@@ -728,8 +728,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     public boolean dataValid() {
         if (csm.getCompilerSets().size() == 0) {
-            valid = false;
-            firePropertyChange(PROP_VALID, !valid, valid);
+            if (valid) {
+                valid = false;
+                firePropertyChange(PROP_VALID, !valid, valid);
+            }
             return false;
         }
         if (updating || changingCompilerSet) {
@@ -1027,7 +1029,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        if (ServerListDisplayerEx.showServerListDialog(cacheManager)) {
+        if (ServerListUIEx.showServerListDialog(cacheManager)) {
             changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");

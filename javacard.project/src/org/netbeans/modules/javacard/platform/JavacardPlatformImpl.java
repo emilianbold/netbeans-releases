@@ -332,7 +332,6 @@ public final class JavacardPlatformImpl extends JavacardPlatform {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (JavacardPlatformKeyNames.PLATFORM_BOOT_CLASSPATH.equals(evt.getPropertyName())) {
-                System.err.println("Clearing boot classpath cache");
                 bootCps.clear();
             }
         }

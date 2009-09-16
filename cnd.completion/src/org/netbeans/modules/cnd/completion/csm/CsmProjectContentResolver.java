@@ -63,6 +63,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -1060,6 +1061,21 @@ public final class CsmProjectContentResolver {
                 }
                 outerScope = ((CsmClass) outerScope).getScope();
             }
+            CsmProject classProject = clazz.getContainingFile().getProject();
+            if (classProject != null) {
+                CharSequence[] nameParts = splitQualifiedName(clazz.getQualifiedName().toString());
+                if (nameParts.length > 1) {
+                    StringBuilder className = new StringBuilder(""); // NOI18N
+                    for (CharSequence charSequence : nameParts) {
+                        className.append(charSequence);
+                        for (CsmClassifier cls : classProject.findClassifiers(className)) {
+                            if (CsmKindUtilities.isClass(cls)) {
+                                classesAskedForMembers.add((CsmClass) cls);
+                            }
+                        }
+                    }
+                }
+            }
         }
         for (CsmClass csmClass : classesAskedForMembers) {
             handledClasses.add(csmClass);
@@ -1395,5 +1411,13 @@ public final class CsmProjectContentResolver {
             nextInheritanceLevel = CHILD_INHERITANCE;
         }
         return new VisibilityInfo(nextInheritanceLevel, nextMinVisibility, false);
+    }
+
+    public static CharSequence[] splitQualifiedName(String qualified) {
+        List<CharSequence> v = new ArrayList<CharSequence>();
+        for (StringTokenizer t = new StringTokenizer(qualified, ": \t\n\r\f", false); t.hasMoreTokens(); ) {// NOI18N
+            v.add(t.nextToken());
+        }
+        return v.toArray(new CharSequence[v.size()]);
     }
 }

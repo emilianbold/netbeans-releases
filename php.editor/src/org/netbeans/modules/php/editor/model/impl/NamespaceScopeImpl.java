@@ -54,7 +54,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  *
  * @author Radek Matous
  */
-final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, VariableContainerImpl {
+final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, VariableNameFactory {
 
     private final boolean isDefault;
 
@@ -94,7 +94,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
-        return filter(getElements(), new ElementFilter<ModelElement>() {
+        return filter(getElements(), new ElementFilter<ClassScopeImpl>() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.CLASS);
             }
@@ -143,24 +143,9 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
 
 
     public Collection<? extends VariableName> getDeclaredVariables() {
-        return getVariablesImpl();
-    }
-
-
-    public Collection<? extends VariableName> getAllVariablesImpl() {
-        return getVariablesImpl();
-    }
-
-    public Collection<? extends VariableName> getVariablesImpl(String... queryName) {
-        return getVariablesImpl(QuerySupport.Kind.EXACT, queryName);
-    }
-
-    public Collection<? extends VariableName> getVariablesImpl(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
-
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.VARIABLE) &&
-                        (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
+                return element.getPhpKind().equals(PhpKind.VARIABLE);
             }
         });
     }

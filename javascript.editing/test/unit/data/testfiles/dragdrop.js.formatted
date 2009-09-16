@@ -9,8 +9,8 @@ var Droppables = {
   drops: [],
 
   remove: function(element) {
-    this.drops = this.drops.reject(function(d) { 
-      return d.element==$(element) 
+    this.drops = this.drops.reject(function(d) {
+      return d.element==$(element)
     });
   },
 
@@ -28,8 +28,8 @@ var Droppables = {
       var containment = options.containment;
       if((typeof containment == 'object') && 
         (containment.constructor == Array)) {
-        containment.each( function(c) { 
-          options._containers.push($(c)) 
+        containment.each( function(c) {
+          options._containers.push($(c))
         });
       } else {
         options._containers.push($(containment));
@@ -61,8 +61,8 @@ var Droppables = {
     } else {
       containmentNode = element.parentNode;
     }
-    return drop._containers.detect(function(c) { 
-      return containmentNode == c 
+    return drop._containers.detect(function(c) {
+      return containmentNode == c
     });
   },
   
@@ -73,8 +73,8 @@ var Droppables = {
         this.isContained(element, drop)) &&
       ((!drop.accept) ||
         (Element.classNames(element).detect( 
-          function(v) { 
-            return drop.accept.include(v) 
+          function(v) {
+            return drop.accept.include(v)
           } ) )) &&
       Position.within(drop.element, point[0], point[1]) );
   },
@@ -144,8 +144,8 @@ var Draggables = {
   },
   
   unregister: function(draggable) {
-    this.drags = this.drags.reject(function(d) { 
-      return d==draggable 
+    this.drags = this.drags.reject(function(d) {
+      return d==draggable
     });
     if(this.drags.length == 0) {
       Event.stopObserving(document, "mouseup", this.eventMouseUp);
@@ -191,8 +191,8 @@ var Draggables = {
   },
   
   removeObserver: function(element) {  // element instead of observer fixes mem leaks
-    this.observers = this.observers.reject( function(o) { 
-      return o.element==element 
+    this.observers = this.observers.reject( function(o) {
+      return o.element==element
     });
     this._cacheObserverCallbacks();
   },
@@ -207,8 +207,8 @@ var Draggables = {
   _cacheObserverCallbacks: function() {
     ['onStart','onEnd','onDrag'].each( function(eventName) {
       Draggables[eventName+'Count'] = Draggables.observers.select(
-        function(o) { 
-          return o[eventName]; 
+        function(o) {
+          return o[eventName];
         }
         ).length;
     });
@@ -231,7 +231,7 @@ Draggable.prototype = {
       },
       reverteffect: function(element, top_offset, left_offset) {
         var dur = Math.sqrt(Math.abs(top_offset^2)+Math.abs(left_offset^2))*0.02;
-        element._revert = new Effect.Move(element, { 
+        element._revert = new Effect.Move(element, {
           x: -left_offset, 
           y: -top_offset, 
           duration: dur
@@ -305,8 +305,8 @@ Draggable.prototype = {
       
       var pointer = [Event.pointerX(event), Event.pointerY(event)];
       var pos     = Position.cumulativeOffset(this.element);
-      this.offset = [0,1].map( function(i) { 
-        return (pointer[i] - pos[i]) 
+      this.offset = [0,1].map( function(i) {
+        return (pointer[i] - pos[i])
       });
       
       Draggables.activate(this);
@@ -356,8 +356,8 @@ Draggable.prototype = {
       
       var p;
       if (this.options.scroll == window) {
-        with(this._getWindowScroll(this.options.scroll)) { 
-          p = [ left, top, left+width, top+height ]; 
+        with(this._getWindowScroll(this.options.scroll)) {
+          p = [ left, top, left+width, top+height ];
           }
       } else {
         p = Position.page(this.options.scroll);
@@ -429,7 +429,8 @@ Draggable.prototype = {
   draw: function(point) {
     var pos = Position.cumulativeOffset(this.element);
     var d = this.currentDelta();
-    pos[0] -= d[0]; pos[1] -= d[1];
+    pos[0] -= d[0];
+    pos[1] -= d[1];
     
     if(this.options.scroll && (this.options.scroll != window)) {
       pos[0] -= this.options.scroll.scrollLeft-this.originalScrollLeft;
@@ -446,97 +447,97 @@ Draggable.prototype = {
       } else {
         if(this.options.snap instanceof Array) {
           p = p.map( function(v, i) {
-            return Math.round(v/this.options.snap[i])*this.options.snap[i] 
+            return Math.round(v/this.options.snap[i])*this.options.snap[i]
           }.bind(this))
         } else {
           p = p.map( function(v) {
-            return Math.round(v/this.options.snap)*this.options.snap 
+            return Math.round(v/this.options.snap)*this.options.snap
           }.bind(this))
         }
       }
-      }
-    
-    var style = this.element.style;
-    if((!this.options.constraint) || (this.options.constraint=='horizontal'))
-      style.left = p[0] + "px";
-    if((!this.options.constraint) || (this.options.constraint=='vertical'))
-      style.top  = p[1] + "px";
-    if(style.visibility=="hidden") style.visibility = ""; // fix gecko rendering
-  },
-  
-  stopScrolling: function() {
-    if(this.scrollInterval) {
-      clearInterval(this.scrollInterval);
-      this.scrollInterval = null;
-      Draggables._lastScrollPointer = null;
-    }
-  },
-  
-  startScrolling: function(speed) {
-    this.scrollSpeed = [speed[0]*this.options.scrollSpeed,speed[1]*this.options.scrollSpeed];
-    this.lastScrolled = new Date();
-    this.scrollInterval = setInterval(this.scroll.bind(this), 10);
-  },
-  
-  scroll: function() {
-    var current = new Date();
-    var delta = current - this.lastScrolled;
-    this.lastScrolled = current;
-    if(this.options.scroll == window) {
-      with (this._getWindowScroll(this.options.scroll)) {
-        if (this.scrollSpeed[0] || this.scrollSpeed[1]) {
-          var d = delta / 1000;
-          this.options.scroll.scrollTo( left + d*this.scrollSpeed[0], top + d*this.scrollSpeed[1] );
-        }
-        }
-    } else {
-      this.options.scroll.scrollLeft += this.scrollSpeed[0] * delta / 1000;
-      this.options.scroll.scrollTop  += this.scrollSpeed[1] * delta / 1000;
     }
     
-    Position.prepare();
-    Droppables.show(Draggables._lastPointer, this.element);
-    Draggables.notify('onDrag', this);
-    Draggables._lastScrollPointer = Draggables._lastScrollPointer || $A(Draggables._lastPointer);
-    Draggables._lastScrollPointer[0] += this.scrollSpeed[0] * delta / 1000;
-    Draggables._lastScrollPointer[1] += this.scrollSpeed[1] * delta / 1000;
-    if (Draggables._lastScrollPointer[0] < 0)
-      Draggables._lastScrollPointer[0] = 0;
-    if (Draggables._lastScrollPointer[1] < 0)
-      Draggables._lastScrollPointer[1] = 0;
-    this.draw(Draggables._lastScrollPointer);
-    
-    if(this.options.change) this.options.change(this);
-  },
+  var style = this.element.style;
+  if((!this.options.constraint) || (this.options.constraint=='horizontal'))
+    style.left = p[0] + "px";
+  if((!this.options.constraint) || (this.options.constraint=='vertical'))
+    style.top  = p[1] + "px";
+  if(style.visibility=="hidden") style.visibility = ""; // fix gecko rendering
+},
   
-  _getWindowScroll: function(w) {
-    var T, L, W, H;
-    with (w.document) {
-      if (w.document.documentElement && documentElement.scrollTop) {
-        T = documentElement.scrollTop;
-        L = documentElement.scrollLeft;
-      } else if (w.document.body) {
-        T = body.scrollTop;
-        L = body.scrollLeft;
-      }
-      if (w.innerWidth) {
-        W = w.innerWidth;
-        H = w.innerHeight;
-      } else if (w.document.documentElement && documentElement.clientWidth) {
-        W = documentElement.clientWidth;
-        H = documentElement.clientHeight;
-      } else {
-        W = body.offsetWidth;
-        H = body.offsetHeight
-      }
-      }
-    return { 
-      top: T, 
-      left: L, 
-      width: W, 
-      height: H 
-    };
+stopScrolling: function() {
+  if(this.scrollInterval) {
+    clearInterval(this.scrollInterval);
+    this.scrollInterval = null;
+    Draggables._lastScrollPointer = null;
   }
+},
+  
+startScrolling: function(speed) {
+  this.scrollSpeed = [speed[0]*this.options.scrollSpeed,speed[1]*this.options.scrollSpeed];
+  this.lastScrolled = new Date();
+  this.scrollInterval = setInterval(this.scroll.bind(this), 10);
+},
+  
+scroll: function() {
+  var current = new Date();
+  var delta = current - this.lastScrolled;
+  this.lastScrolled = current;
+  if(this.options.scroll == window) {
+    with (this._getWindowScroll(this.options.scroll)) {
+      if (this.scrollSpeed[0] || this.scrollSpeed[1]) {
+        var d = delta / 1000;
+        this.options.scroll.scrollTo( left + d*this.scrollSpeed[0], top + d*this.scrollSpeed[1] );
+      }
+      }
+  } else {
+    this.options.scroll.scrollLeft += this.scrollSpeed[0] * delta / 1000;
+    this.options.scroll.scrollTop  += this.scrollSpeed[1] * delta / 1000;
+  }
+    
+  Position.prepare();
+  Droppables.show(Draggables._lastPointer, this.element);
+  Draggables.notify('onDrag', this);
+  Draggables._lastScrollPointer = Draggables._lastScrollPointer || $A(Draggables._lastPointer);
+  Draggables._lastScrollPointer[0] += this.scrollSpeed[0] * delta / 1000;
+  Draggables._lastScrollPointer[1] += this.scrollSpeed[1] * delta / 1000;
+  if (Draggables._lastScrollPointer[0] < 0)
+    Draggables._lastScrollPointer[0] = 0;
+  if (Draggables._lastScrollPointer[1] < 0)
+    Draggables._lastScrollPointer[1] = 0;
+  this.draw(Draggables._lastScrollPointer);
+    
+  if(this.options.change) this.options.change(this);
+},
+  
+_getWindowScroll: function(w) {
+  var T, L, W, H;
+  with (w.document) {
+    if (w.document.documentElement && documentElement.scrollTop) {
+      T = documentElement.scrollTop;
+      L = documentElement.scrollLeft;
+    } else if (w.document.body) {
+      T = body.scrollTop;
+      L = body.scrollLeft;
+    }
+    if (w.innerWidth) {
+      W = w.innerWidth;
+      H = w.innerHeight;
+    } else if (w.document.documentElement && documentElement.clientWidth) {
+      W = documentElement.clientWidth;
+      H = documentElement.clientHeight;
+    } else {
+      W = body.offsetWidth;
+      H = body.offsetHeight
+    }
+    }
+  return {
+    top: T, 
+    left: L, 
+    width: W, 
+    height: H
+  };
+}
 }
 
 /*--------------------------------------------------------------------------*/
@@ -581,8 +582,8 @@ var Sortable = {
     
     if(s) {
       Draggables.removeObserver(s.element);
-      s.droppables.each(function(d){ 
-        Droppables.remove(d) 
+      s.droppables.each(function(d){
+        Droppables.remove(d)
       });
       s.draggables.invoke('destroy');
       
@@ -624,7 +625,7 @@ var Sortable = {
       scrollSensitivity: options.scrollSensitivity,
       ghosting:    options.ghosting,
       constraint:  options.constraint,
-      handle:      options.handle 
+      handle:      options.handle
     };
 
     if(options.starteffect)
@@ -678,8 +679,8 @@ var Sortable = {
       var handle = options.handle ? 
       Element.childrenWithClassName(e, options.handle)[0] : e;    
       options.draggables.push(
-        new Draggable(e, Object.extend(options_for_draggable, { 
-          handle: handle 
+        new Draggable(e, Object.extend(options_for_draggable, {
+          handle: handle
         })));
       Droppables.add(e, options_for_droppable);
       if(options.tree) e.treeNode = element;
@@ -939,8 +940,8 @@ Element.findChildren = function(element, only, recursive, tagName) {
   var elements = [];
   $A(element.childNodes).each( function(e) {
     if(e.tagName && e.tagName.toUpperCase()==tagName &&
-      (!only || (Element.classNames(e).detect(function(v) { 
-        return only.include(v) 
+      (!only || (Element.classNames(e).detect(function(v) {
+        return only.include(v)
       }))))
       elements.push(e);
     if(recursive) {

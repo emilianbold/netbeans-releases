@@ -38,17 +38,14 @@
  */
 package org.netbeans.modules.cnd.gizmo.ui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -69,6 +66,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
+import org.netbeans.modules.dlight.extras.api.ViewportAware;
+import org.netbeans.modules.dlight.extras.api.support.ViewportManager;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
@@ -186,7 +186,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator> indicators = null;
+        List<Indicator<?>> indicators = null;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
@@ -200,9 +200,9 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
             }
 
         }
-        Collections.sort(indicators, new Comparator<Indicator>() {
+        Collections.sort(indicators, new Comparator<Indicator<?>>() {
 
-            public int compare(Indicator o1, Indicator o2) {
+            public int compare(Indicator<?> o1, Indicator<?> o2) {
                 if (o1.getPosition() < o2.getPosition()) {
                     return -1;
                 } else if (o2.getPosition() < o1.getPosition()) {
@@ -212,11 +212,12 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
                 }
             }
         });
-        setContent(indicators);
+        setContent(session, indicators);
     }
 
-    private void setContent(List<Indicator> indicators) {
-        JComponent componentToAdd;
+    private void setContent(DLightSession session, List<Indicator<?>> indicators) {
+        ViewportManager viewportManager = null;
+        JComponent componentToAdd = null;
         if (indicators != null) {
             JScrollPane scrollPane = new JScrollPane();
             scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -233,7 +234,15 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
                 }
             }
             for (int i = 0; i < indicators.size(); ++i) {
+                Indicator<?> indicator = indicators.get(i);
                 JComponent component = indicators.get(i).getComponent();
+                if (indicator instanceof ViewportAware) {
+                    if (viewportManager == null) {
+                        viewportManager = new ViewportManager((DataFilterManager) session);
+                    }
+                    viewportManager.addManagedComponent((ViewportAware)indicator);
+                }
+
                 indicatorPanels.set(i, component);
                 if (i + 1 < indicators.size()) {
                     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -266,8 +275,11 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
         }
         JPanel panel = getNextPanel();
         panel.removeAll();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(componentToAdd);
+        panel.setLayout(new BorderLayout());
+        panel.add(componentToAdd, BorderLayout.CENTER);
+        if (viewportManager != null) {
+            panel.add(viewportManager, BorderLayout.SOUTH);
+        }
         setActive();
         repaint();
     }

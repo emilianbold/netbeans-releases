@@ -40,6 +40,7 @@
  */
 package org.netbeans.editor.ext.html.dtd;
 
+import org.netbeans.editor.ext.html.dtd.spi.ReaderProvider;
 import java.io.Reader;
 import java.io.PushbackReader;
 import java.io.IOException;

@@ -173,9 +173,9 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
 
         "SCHEMA:http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"                    , "ejb-jar_3_1",
         "SCHEMA:http://java.sun.com/xml/ns/j2ee/jsp_2_2.xsd"                        , "jsp_2_2",
-        "SCHEMA:http://java.sun.com/xml/ns/j2ee/web-app_3_0.xsd"                    , "web-app_3_0",
-        "SCHEMA:http://java.sun.com/xml/ns/j2ee/web-common_3_0.xsd"                    , "web-common_3_0",
-        "SCHEMA:http://java.sun.com/xml/ns/j2ee/web-fragment_3_0.xsd"                    , "web-fragment_3_0",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"                    , "web-app_3_0",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/web-common_3_0.xsd"                    , "web-common_3_0",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"                    , "web-fragment_3_0",
 
     };
 
@@ -478,6 +478,8 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
 
     private static final String WEBFRAGMENT_3_0_XSD="web-fragment_3_0.xsd"; // NOI18N
 
+    private static final String WEBCOMMON_3_0_XSD="web-common_3_0.xsd"; // NOI18N
+
     public static final String PERSISTENCE_NS = "http://java.sun.com/xml/ns/persistence"; // NOI18N
     private static final String PERSISTENCE_TAG="persistence"; //NOI18N
     private static final String PERSISTENCE_XSD="persistence_1_0.xsd"; // NOI18N
@@ -551,6 +553,9 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         }
         else if (systemId!=null && systemId.endsWith(WEBFRAGMENT_3_0_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBFRAGMENT_3_0_XSD);
+        }
+        else if (systemId!=null && systemId.endsWith(WEBCOMMON_3_0_XSD)) {
+            return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBCOMMON_3_0_XSD);
         }
         else if (systemId!=null && systemId.endsWith(APP_5_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+APP_5_XSD);

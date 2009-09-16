@@ -51,6 +51,8 @@ dobuild() {
     ant commit-validation $ANT_PARAM || exit 3
     ant check-sigtests-release $ANT_PARAM || exit 35
 #    ant build-test-dist $ANT_PARAM || exit 4
+    # At least check that there are no cycles in the dep list, as e.g. in 2ca8e9e6fb71:
+    ant init-test-dist $ANT_PARAM || exit 4
 
     testmodule openide.awt || exit 5
 

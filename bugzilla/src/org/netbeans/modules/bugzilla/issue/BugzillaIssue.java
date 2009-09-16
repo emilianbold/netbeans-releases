@@ -59,6 +59,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
@@ -66,11 +67,14 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -88,8 +92,9 @@ import org.openide.util.NbBundle;
 public class BugzillaIssue extends Issue {
 
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
-    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
+    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
+    private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
+    private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private TaskData data;
@@ -100,6 +105,7 @@ public class BugzillaIssue extends Issue {
 
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
     static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";    // NOI18N
+    static final String LABEL_NAME_ISSUE_TYPE   = "bugzilla.issue.issue_type";  // NOI18N
     static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";    // NOI18N
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
@@ -129,6 +135,7 @@ public class BugzillaIssue extends Issue {
 
     enum IssueField {
         SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
+        WHITEBOARD(BugzillaAttribute.STATUS_WHITEBOARD.getKey(), "LBL_WHITEBOARD"),
         STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
         PRIORITY(BugzillaAttribute.PRIORITY.getKey(), "LBL_PRIORITY"),
         RESOLUTION(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"),
@@ -149,6 +156,7 @@ public class BugzillaIssue extends Issue {
         URL(BugzillaAttribute.BUG_FILE_LOC.getKey(), "LBL_URL"),
         KEYWORDS(BugzillaAttribute.KEYWORDS.getKey(), "LBL_KEYWORDS"),
         SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey(), "LBL_SEVERITY"),
+        ISSUE_TYPE("cf_bug_type", "LBL_ISSUE_TYPE"),
         DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey(), "LBL_DESCRIPTION"),
         CREATION(TaskAttribute.DATE_CREATION, "LBL_CREATION"),
         CC(BugzillaAttribute.CC.getKey(), "LBL_CC"),
@@ -190,6 +198,7 @@ public class BugzillaIssue extends Issue {
     }
 
     private Map<String, String> attributes;
+    private Map<String, TaskOperation> availableOperations;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
@@ -263,7 +272,16 @@ public class BugzillaIssue extends Issue {
             new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),         // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")),         // NOI18N
-            new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
+            BugzillaUtil.isNbRepository(repository)
+                                        ?
+                                              new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
+                                              loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Issue_Type_Desc"),         // NOI18N
+                                              BugtrackingUtil.getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Issue_Type_Title"),      // NOI18N
+                                                bc.getIssueTypes(), t))
+                                        :
+                                              new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                               loc.getString("CTL_Issue_Severity_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Severity_Desc"),         // NOI18N
                                               BugtrackingUtil.getLongestWordWidth(
@@ -331,20 +349,64 @@ public class BugzillaIssue extends Issue {
         return attributes;
     }
 
-    @Override
     public void setSeen(boolean seen) throws IOException {
-        super.setSeen(seen);
+        IssueCacheUtils.setSeen(this, seen);
     }
 
-    @Override
+    private boolean wasSeen() {
+        return IssueCacheUtils.wasSeen(this);
+    }
+
+    public Date getLastModifyDate() {
+        String value = getFieldValue(IssueField.MODIFICATION);
+        if(value != null && !value.equals("")) {
+            try {
+                return MODIFIED_DATE_FORMAT.parse(value);
+            } catch (ParseException ex) {
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        return null;
+    }
+
+    public long getLastModify() {
+        Date lastModifyDate = getLastModifyDate();
+        if(lastModifyDate != null) {
+            return lastModifyDate.getTime();
+        } else {
+            return -1;
+        }
+    }
+
+    public Date getCreatedDate() {
+        String value = getFieldValue(IssueField.CREATION);
+        if(value != null && !value.equals("")) {
+            try {
+                return CREATED_DATE_FORMAT.parse(value);
+            } catch (ParseException ex) {
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        return null;
+    }
+
+    public long getCreated() {
+        Date createdDate = getCreatedDate();
+        if (createdDate != null) {
+            return createdDate.getTime();
+        } else {
+            return -1;
+        }
+    }
+
     public String getRecentChanges() {
         if(wasSeen()) {
             return "";                                                          // NOI18N
         }
         int status = repository.getIssueCache().getStatus(getID());
-        if(status == Issue.ISSUE_STATUS_NEW) {
+        if(status == IssueCache.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
-        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
             for (IssueField f : IssueField.values()) {
@@ -413,6 +475,9 @@ public class BugzillaIssue extends Issue {
                             break;
                         case SEVERITY :
                             ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY", new Object[] {changedCount});
+                            break;
+                        case ISSUE_TYPE :
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ISSUE_TYPE", new Object[] {changedCount});
                             break;
                         case PRODUCT :
                             ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT", new Object[] {changedCount});
@@ -487,6 +552,7 @@ public class BugzillaIssue extends Issue {
         assert !taskData.isPartial();
         data = taskData;
         attributes = null; // reset
+        availableOperations = null;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
@@ -547,6 +613,9 @@ public class BugzillaIssue extends Issue {
             assert false : "can't set value into IssueField " + f.name();       // NOI18N
             return;
         }
+        if(f == IssueField.PRODUCT) {
+            setProduct(value);
+        }
         TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
         if(a == null) {
             a = new TaskAttribute(data.getRoot(), f.key);
@@ -600,6 +669,21 @@ public class BugzillaIssue extends Issue {
 
     private IssueNode createNode() {
         return new BugzillaIssueNode(this);
+    }
+
+
+    void setProduct(String value) {
+        TaskAttribute ta = data.getRoot().getMappedAttribute(IssueField.PRODUCT.key);
+        if(ta == null) {
+            ta = new TaskAttribute(data.getRoot(), IssueField.PRODUCT.key);
+        }
+        ta.setValue(value);
+
+        ta = data.getRoot().getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
+        if (ta == null) {
+            ta = BugzillaTaskDataHandler.createAttribute(data.getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
+        }
+        ta.setValue("1");                                                       // NOI18N
     }
 
     void resolve(String resolution) {
@@ -835,7 +919,7 @@ public class BugzillaIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            getBugzillaRepository().getIssueCache().setIssueData(id, td, this); // XXX
+            getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }
@@ -843,6 +927,31 @@ public class BugzillaIssue extends Issue {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    /**
+     * Returns available operations for this issue
+     * @return
+     */
+    Map<String, TaskOperation> getAvailableOperations () {
+        if (availableOperations == null) {
+            HashMap<String, TaskOperation> operations = new HashMap<String, TaskOperation>(5);
+            List<TaskAttribute> allOperations = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_OPERATION);
+            for (TaskAttribute operation : allOperations) {
+                // the test must be here, 'operation' (applying writable action) is also among allOperations
+                if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
+                    operations.put(operation.getId().substring(TaskAttribute.PREFIX_OPERATION.length()), TaskOperation.createFrom(operation));
+                }
+            }
+            availableOperations = operations;
+        }
+
+        return availableOperations;
+    }
+
+    boolean isResolveAvailable () {
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        return operations.containsKey(BugzillaOperation.resolve.name());
     }
 
     private Map<String, String> getSeenAttributes() {

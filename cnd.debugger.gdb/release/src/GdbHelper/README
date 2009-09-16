@@ -8,7 +8,7 @@ To overcome this problem, these shared libraries have a single function
 which sets line buffering on stdout.
 
 If the shared library is installed in either <userdir>/bin or
-<netbeans-install-dir>/cnd2/bin, the shared library will be auto-loaded
+<netbeans-install-dir>/cnd3/bin, the shared library will be auto-loaded
 and the call to setup line buffering will be made. If sucessful, you
 will be guaranteed that output to stdout will be flushed prior to
 stopping at a breakpoint.

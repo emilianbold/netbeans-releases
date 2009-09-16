@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
     <!-- See IZ 112796
@@ -53,26 +53,6 @@ made subject to such option by the copyright holder.
 	</folder>
     </folder>
     -->
-
-    <folder name="OptionsDialog"> 
-        <file name="CndOptionsCategory.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOptionsCategory"/>
-            <attr name="position" intvalue="700"/>
-        </file> 
-        <folder name="CPlusPlus">
-            <attr name="position" intvalue="0"/>
-            <file name="ToolsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.ToolsPanelController"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                <attr name="position" intvalue="100"/>
-            </file>
-            <file name="CndOtherOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOtherOptionsPanelController"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                <attr name="position" intvalue="1000"/>
-            </file>            
-        </folder>
-    </folder>
 
     <folder name="Editors">
         <folder name="AnnotationTypes">

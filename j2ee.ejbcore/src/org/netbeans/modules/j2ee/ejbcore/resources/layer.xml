@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
 
             <!-- Templates accessible from Tools | TemplateManager -->
 
-            <attr name="position" intvalue="500"/>
+            <attr name="position" intvalue="860"/>
             <folder name="EJB21">
                 <attr name="position" intvalue="0"/>
                 <file name="SessionEjbClass.java" url="templates/EJB21SessionEjbClass.template">
@@ -368,16 +368,16 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddSelectMethodCodeGenerator.instance">
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-CallEjbCodeGenerator$Factory.instance">
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entries-CallEjbCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="2000"/>
                     </file>
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-UseDatabaseCodeGenerator$Factory.instance">
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entries-UseDatabaseCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="2100"/>
                     </file>
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-SendJMSMessageCodeGenerator$Factory.instance">
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entries-SendJMSMessageCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="2200"/>
                     </file>
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-SendEmailCodeGenerator$Factory.instance">
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entries-SendEmailCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="2300"/>
                     </file>
                 </folder>

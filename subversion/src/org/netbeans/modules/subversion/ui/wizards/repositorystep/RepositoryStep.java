@@ -208,7 +208,8 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                 repositoryFile = null; // reset
                 ISVNInfo info = null;    
                 try {
-                    repository.storeConfigValues();                     
+                    repository.storeConfigValues();
+                    setCancellableDelegate(client);
                     info = client.getInfo(url);
                 } catch (SVNClientException ex) {
                     annotate(ex);

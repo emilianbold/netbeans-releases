@@ -63,16 +63,20 @@ import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -179,12 +183,31 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         if (elem instanceof IndexedFullyQualified) {
             IndexedFullyQualified ifq = (IndexedFullyQualified) elem;
             final QualifiedName qn = QualifiedName.create(request.prefix);
-            if (generateAs == null) {
-                generateAs = qn.getKind();
-            } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
-                    ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
-                //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
-                generateAs = QualifiedNameKind.FULLYQUALIFIED;
+            final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+            Properties props = fileObject != null ? PhpLanguageOptions.getDefault().getProperties(fileObject) : null;
+            if (props != null && props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
+                if (generateAs == null) {
+                    CodeCompletionType codeCompletionType = OptionsUtils.getCodeCompletionType();
+                    switch (codeCompletionType) {
+                        case QUALIFIED:
+                            template.append(ifq.getFullyQualifiedName());
+                            return template.toString();
+                        case UNQUALIFIED:
+                            template.append(getName());
+                            return template.toString();
+                        case SMART:
+                            generateAs = qn.getKind();
+                            break;
+                    }
+
+                } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
+                        ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+                    //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
+                    generateAs = QualifiedNameKind.FULLYQUALIFIED;
+                }
+            } else {
+                template.append(getName());
+                return template.toString();
             }
             switch(generateAs) {
                 case FULLYQUALIFIED:
@@ -198,18 +221,20 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
-                    Model model = ModelFactory.getModel(request.result);
-                    NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
-                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
+                    if (!(elem instanceof IndexedNamespace)) {
+                        Model model = request.result.getModel();
+                        NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
+                        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
 
-                    if (namespaceScope != null) {
-                        LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
-                        QualifiedName fqna = QualifiedName.create(false, segments);
-                        if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
-                            QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
-                            if (suffix != null) {
-                                template.append(suffix.toString());
-                                break;
+                        if (namespaceScope != null) {
+                            LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                            QualifiedName fqna = QualifiedName.create(false, segments);
+                            if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
+                                QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                                if (suffix != null) {
+                                    template.append(suffix.toString());
+                                    break;
+                                }
                             }
                         }
                     }
@@ -548,20 +573,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
-            final ElementHandle elem = getElement();
-            String typeName = null;
-            if (elem instanceof IndexedConstant) {
-                typeName = ((IndexedConstant)elem).getTypeName();
-            } else if (elem instanceof IndexedClassMember) {
-                typeName = ((IndexedClassMember<IndexedConstant>)elem).getMember().getTypeName();
-            }
-
-            if (typeName == null) {
-                typeName = "?"; //NOI18N
-            }
-
             formatter.type(true);
-            formatter.appendText(typeName);
+            formatter.appendText(getTypeName());
             formatter.type(false);
             formatter.appendText(" "); //NOI18N
             formatter.name(getKind(), true);
@@ -569,6 +582,24 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             formatter.name(getKind(), false);
 
             return formatter.getText();
+        }
+
+        protected String getTypeName() {
+            final ElementHandle elem = getElement();
+            String typeName = null;
+            IndexedConstant indexedConstant = null;
+            if (elem instanceof IndexedConstant) {
+                indexedConstant = ((IndexedConstant) elem);
+            } else if (elem instanceof IndexedClassMember) {
+                indexedConstant = ((IndexedClassMember<IndexedConstant>) elem).getMember();
+            }
+            if (CodeUtils.isVariableTypeResolved(indexedConstant)) {
+                typeName = indexedConstant.getTypeName();
+            }
+            if (typeName == null) {
+                typeName = "?"; //NOI18N
+            }
+            return typeName;
         }
 
         public ElementKind getKind() {

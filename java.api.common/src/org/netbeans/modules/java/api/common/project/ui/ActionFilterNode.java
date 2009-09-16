@@ -156,6 +156,10 @@ final class ActionFilterNode extends FilterNode {
                     if (superAction instanceof OpenAction || superAction instanceof EditAction) {
                         result.add(superAction);
                     }
+                    if (superAction != null &&
+                        "org.netbeans.api.actions.Openable".equals(superAction.getValue("type"))) { //NOI18N
+                        result.add(superAction);
+                    }
                 }
                 result.add (SystemAction.get(ShowJavadocAction.class));
             }

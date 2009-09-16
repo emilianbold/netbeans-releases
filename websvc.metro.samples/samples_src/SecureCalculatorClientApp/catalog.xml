@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
-    <system systemId="http://localhost:8080/SecureCalculatorApp/CalculatorWSService?wsdl" uri="src/conf/xml-resources/web-service-references/CalculatorWSService/wsdl/localhost_8080/SecureCalculatorApp/CalculatorWSService.wsdl"/>
-    <system systemId="http://localhost:8080/SecureCalculatorApp/CalculatorWSService?xsd=1" uri="src/conf/xml-resources/web-service-references/CalculatorWSService/wsdl/localhost_8080/SecureCalculatorApp/CalculatorWSService.xsd_1.xsd"/>
+    <system systemId="http://localhost:8080/SecureCalculatorApp/CalculatorWSService?wsdl" uri="src/conf/xml-resources/web-service-references/CalculatorWSService/wsdl/CalculatorWSService.wsdl"/>
+    <system systemId="http://localhost:8080/SecureCalculatorApp/CalculatorWSService?xsd=1" uri="src/conf/xml-resources/web-service-references/CalculatorWSService/wsdl/CalculatorWSService.xsd_1.xsd"/>
     <nextCatalog catalog="nbproject/private/cache/retriever/catalog.xml"/>
 </catalog>

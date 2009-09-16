@@ -74,6 +74,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -162,7 +163,7 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
                     new OutputListener() {
                 public void outputLineSelected(OutputEvent ev) {}
                 public void outputLineAction(OutputEvent ev) {
-                    OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+                    OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
                 }
                 public void outputLineCleared(OutputEvent ev) {}
             });

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,8 +43,10 @@ package org.netbeans.modules.db.dataview.output;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
+import java.awt.Rectangle;
 import org.netbeans.modules.db.dataview.table.JXTableRowHeader;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -78,6 +80,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 /**
@@ -151,8 +154,22 @@ class InsertRecordDialog extends javax.swing.JDialog {
         getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N
         getRootPane().getActionMap().put("ENTER", enterAction); // NOI18N
 
-        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds((screenSize.width - 50) / 2, (screenSize.height - 200) / 2, (screenSize.width - 50) / 2, (screenSize.height - 50) / 2);
+        Rectangle screenBounds = Utilities.getUsableScreenBounds();
+        Dimension prefSize = getPreferredSize();
+
+        if (prefSize.width > screenBounds.width - 100
+                || prefSize.height > screenBounds.height - 100) {
+            Dimension sz = new Dimension(prefSize);
+            if (sz.width > screenBounds.width - 100) {
+                sz.width = screenBounds.width * 3 / 4;
+            }
+            if (sz.height > screenBounds.height - 100) {
+                sz.height = screenBounds.height * 3 / 4;
+            }
+            setPreferredSize(sz);
+        }
+        pack();
+        setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
     }
 
     /** This method is called from within the constructor to
@@ -193,7 +210,6 @@ class InsertRecordDialog extends javax.swing.JDialog {
         jTextArea1.setRows(3);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jTextArea1.text")); // NOI18N
         jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setAutoscrolls(false);
         jTextArea1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         getContentPane().add(jTextArea1, java.awt.BorderLayout.NORTH);
         jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "insertRecodrDialog.jTextArea")); // NOI18N
@@ -217,10 +233,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
         jScrollPane2.setFont(jScrollPane2.getFont());
 
-        jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.contentType")); // NOI18N
         jEditorPane1.setEditable(false);
         jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
-        jEditorPane1.setFont(jEditorPane1.getFont());
         jEditorPane1.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.toolTipText")); // NOI18N
         jEditorPane1.setOpaque(false);
         jScrollPane2.setViewportView(jEditorPane1);
@@ -394,7 +408,6 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     public void refreshSQL() {
         try {
-            jEditorPane1.setContentType("text/x-sql"); // NOI18N
             String sqlText = "";
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
@@ -402,10 +415,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     String sql = stmtBldr.generateRawInsertStatement(getInsertValues(i));
                     sqlText = sqlText + sql + "\n";
                 }
+                jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql")); // NOI18N
                 jEditorPane1.setText(sqlText);
             }
         } catch (DBException ex) {
             jEditorPane1.setContentType("text/html"); // NOI18N
+            // a hack to avoid Parsing API to don't care about this editor now
+            jEditorPane1.getDocument().putProperty("mimeType", "text/plain"); // NOI18N
             String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
             jEditorPane1.setText(str);//ex.getMessage());
             return;
@@ -456,8 +472,12 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private Object[] getInsertValues(int row) throws DBException {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        Object[] insertData = new Object[jTable1.getRSColumnCount()];
-        for (int i = 0, I = jTable1.getRSColumnCount(); i < I; i++) {
+        int rsColumnCount = jTable1.getRSColumnCount();
+        Object[] insertData = new Object[rsColumnCount];
+        if (jTable1.getRowCount() <= 0) {
+            return insertData;
+        }
+        for (int i = 0; i < rsColumnCount; i++) {
             DBColumn col = jTable1.getDBColumn(i);
             Object val = model.getValueAt(row, i);
 

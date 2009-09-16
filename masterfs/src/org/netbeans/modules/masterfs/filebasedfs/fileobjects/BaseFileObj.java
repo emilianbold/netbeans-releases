@@ -346,10 +346,7 @@ public abstract class BaseFileObj extends FileObject {
         if (attrName.equals("FileSystem.rootPath")) {
             return "";//NOI18N
         } else if (attrName.equals("java.io.File")) {
-            File file = getFileName().getFile();
-            if (file != null && FileChangedManager.getInstance().exists(file)) {
-                return file;
-            }
+            return getFileName().getFile();
         } else if (attrName.equals("ExistsParentNoPublicAPI")) {
             return getExistingParent() != null;
         } else if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
@@ -616,10 +613,12 @@ public abstract class BaseFileObj extends FileObject {
                 }
             }
         } finally {
-            if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-            setValid(false);
+            if (mutexPrivileged != null) {
+                mutexPrivileged.exitWriteAccess();
+            }
         }
 
+        setValid(false);
         fireFileDeletedEvent(false);
 
     }

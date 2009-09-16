@@ -96,16 +96,22 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
     }
 
     public void collect() {
-        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
-        if (ts == null) {
-            return;
-        }
-        Token<? extends GroovyTokenId> token = ts.token();
-        if (token == null) {
-            return;
-        }
-        if (!isValidToken(token)) {
-            return;
+        // FIXME use snapshot TH
+        doc.readLock();
+        try {
+            TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
+            if (ts == null) {
+                return;
+            }
+            Token<? extends GroovyTokenId> token = ts.token();
+            if (token == null) {
+                return;
+            }
+            if (!isValidToken(token)) {
+                return;
+            }
+        } finally {
+            doc.readUnlock();
         }
 
         if (leaf instanceof Variable) {

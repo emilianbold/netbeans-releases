@@ -47,11 +47,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,8 +59,6 @@ import org.openide.util.NbBundle;
  * @author Sergey Grinev
  */
 class HostsListTableModel extends AbstractTableModel {
-
-    private final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private final ProgressHandle phandle;
 
@@ -181,7 +179,7 @@ class HostsListTableModel extends AbstractTableModel {
     private class HostsLoader implements Runnable {
 
         public void run() {
-            log.fine("Hosts Lookup thread started");
+            RemoteUtil.LOGGER.fine("Hosts Lookup thread started");
             try {
                 byte[] ip = InetAddress.getLocalHost().getAddress();
                 if (ip.length < 4) {
@@ -216,7 +214,7 @@ class HostsListTableModel extends AbstractTableModel {
                 }
 
             } catch (UnknownHostException ex) {
-                log.log(Level.WARNING, "Exception when filling hosts table", ex); //NOI18N
+                RemoteUtil.LOGGER.log(Level.WARNING, "Exception when filling hosts table", ex); //NOI18N
             } finally {
                 if (proceed) {
                     // thay means we exited by counter => we are done
@@ -224,9 +222,9 @@ class HostsListTableModel extends AbstractTableModel {
                     if (runOnFinish != null) {
                         SwingUtilities.invokeLater(runOnFinish); //SwingUtilities is a bit cheat here, but otherwise one have to introduce ugly double Runnable in caller
                     }
-                    log.fine("Hosts Lookup thread done " + HostsListTableModel.this.getRowCount() + " host(s) found");
+                    RemoteUtil.LOGGER.fine("Hosts Lookup thread done " + HostsListTableModel.this.getRowCount() + " host(s) found");
                 } else {
-                    log.fine("Hosts Lookup thread interrupted; " + HostsListTableModel.this.getRowCount() + " host(s) found so far");
+                    RemoteUtil.LOGGER.fine("Hosts Lookup thread interrupted; " + HostsListTableModel.this.getRowCount() + " host(s) found so far");
                 }
             }            
         }

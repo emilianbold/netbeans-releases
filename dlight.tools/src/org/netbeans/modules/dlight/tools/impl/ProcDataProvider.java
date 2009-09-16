@@ -262,7 +262,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
         }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     /**

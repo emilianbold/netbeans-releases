@@ -1342,6 +1342,8 @@ public final class ModuleList {
      * @return the matching module, or null if there is none such
      */
     public ModuleEntry getEntry(String codeNameBase) {
+        if (codeNameBase == null)
+            return null;
         ModuleEntry e = entries.get(codeNameBase);
         if (e != null) {
             return e;

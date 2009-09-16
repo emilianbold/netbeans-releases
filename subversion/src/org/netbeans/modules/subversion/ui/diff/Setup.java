@@ -44,13 +44,14 @@ package org.netbeans.modules.subversion.ui.diff;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  * Represents on DIFF setup.
@@ -254,11 +255,39 @@ public final class Setup {
      */
     public Setup(File baseFile, String firstRevision, String secondRevision) {
         this.baseFile = baseFile;
-        this.propertyName = null;        
+        this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
         firstSource = new DiffStreamSource(baseFile, propertyName, firstRevision, firstRevision);
         secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondRevision);
+    }
+
+    /**
+     * Local file vs HEAD
+     * @param baseFile
+     * @param status remote status of the file
+     */
+    public Setup(File baseFile, ISVNStatus status) {
+        this.baseFile = baseFile;
+        this.propertyName = null;
+        this.secondRevision = null;
+        String headTitle;
+        ResourceBundle loc = NbBundle.getBundle(Setup.class);
+        if (status.getRepositoryTextStatus().equals(SVNStatusKind.ADDED)) {
+                    firstRevision = REVISION_HEAD;
+                    headTitle = loc.getString("MSG_DiffPanel_RemoteNew");
+                } else if (status.getRepositoryTextStatus().equals(SVNStatusKind.DELETED)) {
+                    firstRevision = null;
+                    headTitle = loc.getString("MSG_DiffPanel_RemoteDeleted");
+                } else if (status.getRepositoryTextStatus().equals(SVNStatusKind.MODIFIED)) {
+                    firstRevision = REVISION_HEAD;
+                    headTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_RemoteModified"), new Object [] { firstRevision });
+                } else {
+                    firstRevision = REVISION_HEAD;
+                    headTitle = REVISION_HEAD.toString();
+                }
+        firstSource = new DiffStreamSource(baseFile, propertyName, REVISION_HEAD, headTitle);
+        secondSource = new DiffStreamSource(baseFile, propertyName, REVISION_CURRENT, REVISION_CURRENT);
     }
 
     public String getPropertyName() {
@@ -296,7 +325,8 @@ public final class Setup {
     public DiffNode getNode() {
         return node;
     }
-    
+
+    @Override
     public String toString() {
         return title;
     }

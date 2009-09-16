@@ -39,6 +39,7 @@ import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.IScopingNode;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
@@ -49,10 +50,13 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -169,11 +173,12 @@ public class RailsDeprecations extends RubyAstRule {
         // Look for use of deprecated fields
         if (node.getNodeType() == NodeType.INSTVARNODE || node.getNodeType() == NodeType.INSTASGNNODE) {
             String name = ((INameNode)node).getName();
-
             // Skip matches in _test files, since the standard code generator still
             // spits out code which violates the deprecations
             // (such as    @request    = ActionController::TestRequest.new )
-            if (deprecatedFields.contains(name) && !RubyUtils.getFileObject(info).getName().endsWith("_test")) { // NOI18N
+            if (deprecatedFields.contains(name) 
+                    && !RubyUtils.getFileObject(info).getName().endsWith("_test")
+                    && inActionController(info, node)) {
                 // Add a warning - you're using a deprecated field. Use the
                 // method/attribute instead!
                 String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedRailsField", name, name.substring(1));
@@ -223,6 +228,39 @@ public class RailsDeprecations extends RubyAstRule {
             }
             scan(info, child, result);
         }
+    }
+
+    /**
+     * @return true if the given node is within a class that is a subclass
+     * of <code>ActionController::Base</code>.
+     */
+    private boolean inActionController(ParserResult info, Node node) {
+        FileObject fo = RubyUtils.getFileObject(info);
+        // fast check based on path, not really exact but 
+        // avoids using index which can be slow
+        if (!fo.getPath().contains("/app/controllers")) {
+            return false;
+        }
+        Node root = AstUtilities.getRoot(info);
+        if (root == null) {
+            return false;
+        }
+        AstPath path = new AstPath(root, node);
+        IScopingNode clazz = AstUtilities.findClassOrModule(path);
+        if (clazz == null) {
+            return false;
+        }
+        String className = AstUtilities.getClassOrModuleName(clazz);
+        RubyIndex index = getIndex(info);
+        IndexedClass superClass = index.getSuperclass(className);
+        while (superClass != null) {
+            String superClassName = superClass.getName();
+            if (superClassName.equals("ActionController::Base")) {  //NOI18N
+                return true;
+            }
+            superClass = index.getSuperclass(superClassName);
+        }
+        return false;
     }
 
     private void addFix(ParserResult info, Node node, List<Hint> result, String displayName) {

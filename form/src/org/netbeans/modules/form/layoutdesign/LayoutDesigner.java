@@ -3873,8 +3873,12 @@ public class LayoutDesigner implements LayoutConstants {
             assert parent.isParallel() && parent.getSubIntervalCount() > 0;
 
             int groupAlign = parent.getGroupAlignment();
-            if (primary && (groupAlign == LEADING || groupAlign == TRAILING)) {
-                maintainSize(parent, wasResizing, dimension, null, 0);
+            if (primary) {
+                if (groupAlign == LEADING || groupAlign == TRAILING) {
+                    maintainSize(parent, wasResizing, dimension, null, 0);
+                } else {
+                    preventParallelCollapse(parent, dimension);
+                }
             }
 
             if (parent.getSubIntervalCount() == 1 && parent.getParent() != null) { // last interval in parallel group
@@ -4051,6 +4055,183 @@ public class LayoutDesigner implements LayoutConstants {
                 }
             }
         }
+    }
+
+    /**
+     * Deals with a special situation when a large centered or baselined component
+     * is deleted when there's something else in parallel yet not overlapping, but
+     * may overlap with the other components from the group once the big component
+     * disappears. In general this means some components are in parallel in both
+     * dimensions, not overlapping only thanks to the size of the group, supported
+     * by the big component. The solution is to place the components in a sequence
+     * (which might be now possible when the big component is away).
+     * This is just a workaround covering simple cases, mainly for old layouts.
+     * We now try to avoid components that are too high to align on baseline at all.
+     * @param group The group from which an interval has just been deleted.
+     * @param dimension
+     */
+    private void preventParallelCollapse(LayoutInterval group, int dimension) {
+        assert group.getGroupAlignment() == CENTER || group.getGroupAlignment() == BASELINE;
+
+        // first determine if the group gets smaller with the component deleted
+        LayoutRegion groupSpace = group.getCurrentSpace();
+        LayoutRegion reducedSpace = new LayoutRegion();
+        Iterator<LayoutInterval> it = group.getSubIntervals();
+        while (it.hasNext()) {
+            LayoutInterval li = it.next();
+            reducedSpace.expand(li.getCurrentSpace(), dimension);
+        }
+        if (reducedSpace.size(dimension) < groupSpace.size(dimension)) {
+            // collect intervals that are in parallel but should be in sequence with 'group'
+            List<LayoutInterval> seqListL = null;
+            List<LayoutInterval> seqListT = null;
+            int minDistL = Integer.MAX_VALUE;
+            int minDistT = Integer.MAX_VALUE;
+            boolean found = false;
+
+            LayoutInterval parent = group.getParent();
+            while (parent != null) {
+                if (parent.isParallel()) {
+                    if (parent.getGroupAlignment() == CENTER || parent.getGroupAlignment() == BASELINE) {
+                        break;
+                    }
+                    it = parent.getSubIntervals();
+                    while (it.hasNext()) {
+                        LayoutInterval li = it.next();
+                        if (li != group && !li.isParentOf(group)) {
+                            LayoutRegion neighborSpace = li.getCurrentSpace();
+                            if (LayoutRegion.overlap(neighborSpace, groupSpace, dimension^1, 0)
+                                    && LayoutRegion.overlap(neighborSpace, groupSpace, dimension, 0)
+                                    && !LayoutRegion.overlap(neighborSpace, reducedSpace, dimension, 0)) {
+                                // overlapped with original group but not with the reduced space without the removed interval
+                                int dist = LayoutRegion.distance(neighborSpace, reducedSpace, dimension, TRAILING, LEADING);
+                                if (dist >= 0) {
+                                    if (seqListL == null) {
+                                        seqListL = new ArrayList<LayoutInterval>();
+                                    }
+                                    seqListL.add(li);
+                                    if (dist < minDistL) {
+                                        minDistL = dist;
+                                    }
+                                } else {
+                                    dist = LayoutRegion.distance(reducedSpace, neighborSpace, dimension, TRAILING, LEADING);
+                                    if (seqListT == null) {
+                                        seqListT = new ArrayList<LayoutInterval>();
+                                    }
+                                    seqListT.add(li);
+                                    if (dist < minDistT) {
+                                        minDistT = dist;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    found = (seqListL != null && !seqListL.isEmpty()) || (seqListT != null && !seqListT.isEmpty());
+                    if (found) {
+                        break;
+                    }
+                }
+                parent = parent.getParent();
+            }
+
+            if (found) {
+                assert parent.isParallel();
+                LayoutInterval seq = null;
+                if (group.getParent().isParallel()) { // create new sequence
+                    parent = group.getParent();
+                    int index = layoutModel.removeInterval(group);
+                    seq = new LayoutInterval(SEQUENTIAL);
+                    seq.setAlignment(group.getAlignment());
+                    layoutModel.setIntervalAlignment(group, DEFAULT);
+                    layoutModel.addInterval(seq, parent, index);
+                    layoutModel.addInterval(group, seq, -1);
+                } else { // try to reuse the sequence the group is in, the moved
+                    // intervals need to be parallelized with the rest of the sequence
+                    int indexInSeq = 0;
+                    LayoutInterval p = group;
+                    do {
+                        LayoutInterval li = p;
+                        p = p.getParent();
+                        if (p.isSequential()) {
+                            indexInSeq = p.indexOf(li);
+                            seq = p;
+                            break; // not clear which parent sequence to use,
+                                   // stopping here we use the lowest
+                        }
+                    } while (p != parent);
+
+                    if (seqListL != null && !seqListL.isEmpty()) {
+                        // extract the leading intervals, skip neighbor gap
+                        LayoutInterval sub = null;
+                        while (indexInSeq > 0) {
+                            LayoutInterval li = layoutModel.removeInterval(seq, 0);
+                            indexInSeq--;
+                            if (!li.isEmptySpace() || indexInSeq > 0) {
+                                if (sub == null) {
+                                    sub = new LayoutInterval(SEQUENTIAL);
+                                    seqListL.add(sub);
+                                }
+                                layoutModel.addInterval(li, sub, -1);
+                            }
+                        }
+                    }
+                    if (seqListT != null && !seqListT.isEmpty()) {
+                        // exctract the trailing intervals, skip neighbor gap
+                        LayoutInterval sub = null;
+                        while (indexInSeq+1 < seq.getSubIntervalCount()) {
+                            LayoutInterval li = layoutModel.removeInterval(seq, seq.getSubIntervalCount()-1);
+                            if (!li.isEmptySpace() || indexInSeq+1 < seq.getSubIntervalCount()) {
+                                if (sub == null) {
+                                    sub = new LayoutInterval(SEQUENTIAL);
+                                    seqListT.add(sub);
+                                }
+                                layoutModel.addInterval(li, sub, 0);
+                            }
+                        }
+                    }
+                }
+
+                LayoutInterval seqIntL = createIntervalFromList(seqListL, LEADING);
+                if (seqIntL != null) {
+                    LayoutInterval gap = new LayoutInterval(SINGLE);
+                    gap.setSizes(minDistL, minDistL, minDistL);
+                    layoutModel.addInterval(gap, seq, 0);
+                    layoutModel.setIntervalAlignment(seqIntL, DEFAULT);
+                    operations.addContent(seqIntL, seq, 0);
+                }
+                LayoutInterval seqIntT = createIntervalFromList(seqListT, TRAILING);
+                if (seqIntT != null) {
+                    LayoutInterval gap = new LayoutInterval(SINGLE);
+                    gap.setSizes(minDistT, minDistT, minDistT);
+                    layoutModel.addInterval(gap, seq, -1);
+                    layoutModel.setIntervalAlignment(seqIntT, DEFAULT);
+                    operations.addContent(seqIntT, seq, -1);
+                }
+            }
+        }
+    }
+
+    private LayoutInterval createIntervalFromList(List<LayoutInterval> seqList, int alignment) {
+        LayoutInterval seqInt = null;
+        if (seqList != null && !seqList.isEmpty()) {
+            if (seqList.size() == 1) {
+                LayoutInterval li = seqList.get(0);
+                if (li.getParent() != null) {
+                    layoutModel.removeInterval(li);
+                }
+                seqInt = li;
+            } else {
+                seqInt = new LayoutInterval(PARALLEL);
+                seqInt.setGroupAlignment(alignment);
+                for (LayoutInterval li : seqList) {
+                    if (li.getParent() != null) {
+                        layoutModel.removeInterval(li);
+                    }
+                    layoutModel.addInterval(li, seqInt, -1);
+                }
+            }
+        }
+        return seqInt;
     }
 
     public String[] positionCode() {

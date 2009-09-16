@@ -77,8 +77,10 @@ public class PersistenceCatalog implements CatalogReader, CatalogDescriptor, org
     private void initialize(){
         // persistence
         schemas.add(new SchemaInfo("persistence_1_0.xsd", RESOURCE_PATH, PERSISTENCE_NS));
+        schemas.add(new SchemaInfo("persistence_2_0.xsd", RESOURCE_PATH, PERSISTENCE_NS));
         // orm
         schemas.add(new SchemaInfo("orm_1_0.xsd", RESOURCE_PATH, ORM_NS));
+        schemas.add(new SchemaInfo("orm_2_0.xsd", RESOURCE_PATH, ORM_NS));
     }
     
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {

@@ -43,109 +43,23 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
     <folder name="OptionsDialog">
-        <file name="Editor.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
-            <attr name="title" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Editor_Title"/>
-            <attr name="categoryName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Editor"/>
-            <attr name="description" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Editor_Description"/>
-            <attr name="iconBase" stringvalue="org/netbeans/modules/options/resources/editor.png"/>
-            <attr name="advancedOptionsFolder" stringvalue="OptionsDialog/Editor"/>
-            <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_EditorOptions"/>
-            <attr name="keywordsCategory" stringvalue="Editor"/>
-            <attr name="position" intvalue="200"/>
-        </file>    
         <folder name="Editor">
-            <attr name="position" intvalue="0"/>
-            <file name="General.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="controller" newvalue="org.netbeans.modules.options.generaleditor.GeneralEditorPanelController"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_General_DisplayName"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_General_ToolTip"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_General"/>
-                <attr name="keywordsCategory" stringvalue="Editor/General"/>
-                <attr name="position" intvalue="100"/>
-            </file>
-            <folder name="General">
-                <attr name="position" intvalue="0"/>
-            </folder>
-            <file name="Formatting.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="controller" newvalue="org.netbeans.modules.options.indentation.FormattingPanelController"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Formating_ToolTip"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_Formatting"/>
-                <attr name="keywordsCategory" stringvalue="Editor/Formatting"/>
-                <attr name="position" intvalue="200"/>
-            </file>
             <folder name="Formatting">
                 <attr name="position" intvalue="0"/>
             </folder>
-            <file name="CodeCompletion.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="controller" newvalue="org.netbeans.modules.options.editor.completion.CodeCompletionOptionsPanelController"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.completion.Bundle#CTL_CodeCompletion_DisplayName"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.completion.Bundle#CTL_CodeCompletion_ToolTip"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.completion.Bundle#KW_CodeCompletion"/>
-                <attr name="keywordsCategory" stringvalue="Editor/CodeCompletion"/>
-                <attr name="position" intvalue="250"/>
-            </file>
             <folder name="CodeCompletion">
                 <attr name="position" intvalue="0"/>
             </folder>
-            <file name="Hints.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
-                <attr name="optionsSubFolder" stringvalue="Hints/"/>
-                <attr name="helpContextId" stringvalue="netbeans.optionsDialog.editor.hints"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Hints_DisplayName"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Hints_ToolTip"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_Hints"/>
-                <attr name="keywordsCategory" stringvalue="Editor/Hints"/>
-                <attr name="position" intvalue="400"/>
-            </file>
             <folder name="Hints">
                 <attr name="position" intvalue="0"/>
             </folder>
-            <file name="MarkOccurrences.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
-                <attr name="optionsSubFolder" stringvalue="MarkOccurrences/"/>
-                <attr name="helpContextId" stringvalue="netbeans.optionsDialog.editor.markOccurences"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_MarkOccurences_DisplayName"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_MarkOccurences_ToolTip"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_Mark"/>
-                <attr name="keywordsCategory" stringvalue="Editor/MarkOccurrences"/>
-                <attr name="position" intvalue="500"/>
-            </file>
             <folder name="MarkOccurrences">
                 <attr name="position" intvalue="0"/>
             </folder>
-            <file name="TaskList.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
-                <attr name="optionsSubFolder" stringvalue="TaskList/"/>
-                <attr name="helpContextId" stringvalue="netbeans.optionsDialog.editor.tasklist"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Tasklist_DisplayName"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Tasklist_ToolTip"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_TaskList"/>
-                <attr name="keywordsCategory" stringvalue="Editor/TaskList"/>
-                <attr name="position" intvalue="600"/>
-            </file>
             <folder name="TaskList">
                 <attr name="position" intvalue="0"/>
             </folder>
         </folder>
-        <file name="FontsAndColors.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
-            <attr name="title" bundlevalue="org.netbeans.modules.options.colors.Bundle#CTL_Font_And_Color_Options_Title"/>
-            <attr name="categoryName" bundlevalue="org.netbeans.modules.options.colors.Bundle#CTL_Font_And_Color_Options"/>
-            <attr name="description" bundlevalue="org.netbeans.modules.options.colors.Bundle#CTL_Font_And_Color_Options_Description"/>
-            <attr name="iconBase" stringvalue="org/netbeans/modules/options/resources/colors.png"/>
-            <attr name="controller" newvalue="org.netbeans.modules.options.colors.FontAndColorsPanelController"/>
-            <attr name="keywords" bundlevalue="org.netbeans.modules.options.colors.Bundle#KW_FontsAndColorsOptions"/>
-            <attr name="keywordsCategory" stringvalue="FontsAndColors"/>
-            <attr name="position" intvalue="400"/>
-        </file>    
         <folder name="PreviewExamples">
             <attr name="position" intvalue="0"/>
             <file name="Defaults" url="../colors/AllLanguagesExample"/>
@@ -292,42 +206,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.options.colors.AnnotationsPanel"/>
                     <attr name="position" intvalue="300"/>
                 </file>
-            </folder>
-        </folder>
-    </folder>
-    
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-java-j2seproject">
-            <folder name="Customizer">
-                <file name="Formatting.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
-                    <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
-                    <attr name="position" intvalue="1000"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="org-netbeans-modules-ant-freeform">
-            <folder name="Customizer">
-                <file name="Formatting.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
-                    <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
-                    <attr name="position" intvalue="1000"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="org-netbeans-modules-maven">
-            <folder name="Customizer">
-                <folder name="Formatting">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.indentation.Bundle"/>
-                    <attr name="position" intvalue="1000"/>
-                    <file name="Self.instance">
-                        <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
-                        <attr name="position" intvalue="1"/>
-                    </file>
-                </folder>
             </folder>
         </folder>
     </folder>

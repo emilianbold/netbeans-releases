@@ -45,7 +45,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -57,7 +57,7 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
  * of Tree Table visualizer, it should return that it supports model scheme which can be retrieved  using
  * {@link org.netbeans.modules.dlight.api.support.DataModelSchemeProvider#getScheme(java.lang.String)} where id equals to "model:tree:table".
  */
-public class TreeTableVisualizerConfiguration implements VisualizerConfiguration {
+public class TreeTableVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
     private DataTableMetadata dataTableMetadata;
     private Column treeColumn;

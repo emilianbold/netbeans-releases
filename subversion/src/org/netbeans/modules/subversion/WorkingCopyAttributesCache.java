@@ -88,7 +88,7 @@ public final class WorkingCopyAttributesCache {
     public void logUnsupportedWC(final SVNClientException ex, File file) throws SVNClientException {
         String fileName = file.getAbsolutePath();
         if (!isInUnsupportedWorkingCopies(fileName)) {
-            File topManaged = SvnUtils.getTopManagedFolder(file);
+            File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
             unsupportedWorkingCopies.add(topManaged.getAbsolutePath());
             EventQueue.invokeLater(new Runnable() {
             public void run() {

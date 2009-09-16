@@ -51,7 +51,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author mt154047
  */
-public final class AdvancedTableViewVisualizerConfiguration implements VisualizerConfiguration {
+public final class AdvancedTableViewVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
     private final SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
     private final String nodeColumnName;

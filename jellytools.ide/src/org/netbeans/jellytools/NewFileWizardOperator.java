@@ -219,6 +219,8 @@ public class NewFileWizardOperator extends WizardOperator {
     public JTreeOperator treeCategories() {
         if (_treeCategories==null) {
             _treeCategories = new JTreeOperator(this);
+            // comparator needs to be exact -  category can be "Java", but also "JavaServer Faces"
+            _treeCategories.setComparator(new Operator.DefaultStringComparator(true, true));
         }
         return _treeCategories;
     }

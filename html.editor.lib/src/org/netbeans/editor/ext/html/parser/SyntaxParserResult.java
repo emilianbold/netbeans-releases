@@ -55,11 +55,8 @@ public class SyntaxParserResult {
 
     private static final String FALLBACK_DOCTYPE =
             "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
-    private CharSequence source;
+    private SyntaxParserContext context;
 
-    //all elements regardless ns
-    private List<SyntaxElement> elements;
-    
     private String publicID;
 
     //ns URI to AstNode map
@@ -68,17 +65,16 @@ public class SyntaxParserResult {
     //ns URI to PREFIX map
     private Map<String, String> namespaces;
 
-    public SyntaxParserResult(CharSequence source, List<SyntaxElement> elements) {
-        this.source = source;
-        this.elements = elements;
+    public SyntaxParserResult(SyntaxParserContext context) {
+        this.context = context;
     }
 
     public CharSequence getSource() {
-        return source;
+        return context.getSourceText();
     }
 
     public List<SyntaxElement> getElements() {
-        return elements;
+        return context.getElements();
     }
 
     public synchronized AstNode getASTRoot() {
@@ -106,8 +102,9 @@ public class SyntaxParserResult {
                 if(e.type() == SyntaxElement.TYPE_TAG || e.type() == SyntaxElement.TYPE_ENDTAG) {
                     SyntaxElement.Tag tag = (SyntaxElement.Tag)e;
                     String tagNamePrefix = getTagNamePrefix(tag);
-                    if(tagNamePrefix == null && prefix == null ||
-                            tagNamePrefix != null && prefix != null && tagNamePrefix.equals(prefix)) {
+                    if((tagNamePrefix == null && prefix == null) ||
+                            (tagNamePrefix != null && prefix == null && !getDeclaredNamespaces().containsValue(tagNamePrefix)) || //unknown prefixed tags falls to the default html content
+                            (tagNamePrefix != null && prefix != null && tagNamePrefix.equals(prefix))) {
                         //either the tag has no prefix and the prefix is null
                         //or the prefix matches
                         filtered.add(e);
@@ -120,7 +117,8 @@ public class SyntaxParserResult {
 
             //XXX this is also incorrect, html tags can have namespace and can use prefixes as well
             DTD dtd = namespace == null ? getDTD() : null; //do not use DTD for namespaced tags
-            AstNode root = SyntaxTree.makeTree(filtered, dtd);
+            
+            AstNode root = SyntaxTree.makeTree(context.clone().setElements(filtered).setDTD(dtd));
             root.setProperty(AstNode.NAMESPACE_PROPERTY, namespace); //NOI18N
             astRoots.put(namespace, root);
             return root;
@@ -139,7 +137,7 @@ public class SyntaxParserResult {
 
     public synchronized String getPublicID() {
         if (this.publicID == null) {
-            for (SyntaxElement e : elements) {
+            for (SyntaxElement e : getElements()) {
                 if (e.type() == SyntaxElement.TYPE_DECLARATION) {
                     String _publicID = ((SyntaxElement.Declaration) e).getPublicIdentifier();
                     if (_publicID != null) {
@@ -188,18 +186,18 @@ public class SyntaxParserResult {
 
     @Deprecated
     public Map<String, URI> getGlobalNamespaces() {
-        Map<String, URI> namespaces = new HashMap<String, URI>();
+        Map<String, URI> _namespaces = new HashMap<String, URI>();
         AstNode root = getASTRoot();
         //scan all root children (real document root) for namespaces
         for (AstNode n : root.children()) {
             if (n.type() == AstNode.NodeType.OPEN_TAG) {
                 for (String attrName : n.getAttributeKeys()) {
-                    if (attrName.startsWith("xmlns")) {
-                        int colonIndex = attrName.indexOf(':');
-                        String nsPrefix = colonIndex == -1 ? "" : attrName.substring(colonIndex + 1);
-                        String value = n.getAttribute(attrName).toString();
+                    if (attrName.startsWith("xmlns")) { //NOI18N
+                        int colonIndex = attrName.indexOf(':');//NOI18N
+                        String nsPrefix = colonIndex == -1 ? "" : attrName.substring(colonIndex + 1);//NOI18N
+                        AstNode.Attribute attr = n.getAttribute(attrName);
                         try {
-                            namespaces.put(nsPrefix, new URI(value));
+                            _namespaces.put(nsPrefix, new URI(attr.unquotedValue()));
                         } catch (URISyntaxException ex) {
                             //TODO - report error in the editor
                         }
@@ -207,7 +205,7 @@ public class SyntaxParserResult {
                 }
             }
         }
-        return namespaces;
+        return _namespaces;
     }
 
     public DTD getDTD() {

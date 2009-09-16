@@ -42,6 +42,7 @@ package org.netbeans.modules.jira.repository;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -275,6 +276,10 @@ public class JiraConfiguration extends JiraClientCache {
         }
     }
 
+    public Collection<User> getUsers() {
+        return data.usersByName.values();
+    }
+
     @Override
     public User putUser(String name, String fullName) {
 	User user = new User();
@@ -399,6 +404,10 @@ public class JiraConfiguration extends JiraClientCache {
                 // XXX what else !!!
 
                 Project p = data.projectsById.get(project.getId());
+                if(p == null) {
+                    refreshData();
+                    p = data.projectsById.get(project.getId());
+                }
                 if (p.getComponents() == null) {
                     ensureProjectHasInitializedFields(p, project);
                 }

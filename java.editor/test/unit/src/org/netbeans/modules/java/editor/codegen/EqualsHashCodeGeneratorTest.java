@@ -33,6 +33,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -218,6 +219,79 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         
         js.runUserActionTask(t, false);
     }
+
+    public void test171265() throws Exception {
+        EqualsHashCodeGenerator.randomNumber = 1;
+
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "class X {\n" +
+                             "  private String s;\n" +
+                             "  private EE e;\n";
+
+        String what2 =
+            "}\n" +
+            "enum EE { A, B;}";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+
+        class TaskImpl implements Task<WorkingCopy> {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
+                List<VariableElement> vars = new LinkedList<VariableElement>();
+
+                for (Tree m : clazzTree.getMembers()) {
+                    if (m.getKind() == Kind.VARIABLE) {
+                        vars.add((VariableElement) copy.getTrees().getElement(new TreePath(clazz, m)));
+                    }
+                }
+
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, Collections.<VariableElement>emptyList(), vars, -1);
+            }
+        }
+
+        TaskImpl t = new TaskImpl();
+
+        js.runModificationTask(t).commit();
+
+        String result = TestUtilities.copyFileToString(FileUtil.toFile(java));
+
+        String golden = "" +
+                        "class X {\n" +
+                        "  private String s;\n" +
+                        "  private EE e;\n" +
+                        "    @Override\n" +
+                        "    public int hashCode() {\n" +
+                        "        int hash = 1;\n" +
+                        "        hash = 1 * hash + (this.s != null ? this.s.hashCode() : 0);\n" +
+                        "        hash = 1 * hash + (this.e != null ? this.e.hashCode() : 0);\n" +
+                        "        return hash;\n" +
+                        "    }\n" +
+                        "    @Override\n" +
+                        "    public boolean equals(Object obj) {\n" +
+                        "        if (obj == null) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (getClass() != obj.getClass()) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        final X other = (X) obj;\n" +
+                        "        return true;\n" +
+                        "    }\n" +
+                        "}\n" +
+                        "enum EE { A, B;}";
+
+        result = result.replaceAll("[ \t\n]+", " ");
+        golden = golden.replaceAll("[ \t\n]+", " ");
+
+        assertEquals(golden, result);
+
+    }
+
     
     public void test142212() throws Exception {
         EqualsHashCodeGenerator.randomNumber = 1;

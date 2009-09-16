@@ -106,6 +106,29 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="DataEditorSupport.annotateName">
+        <api name="editor"/>
+        <summary>Added <code>annotateName</code> and <code>toolTip</code> to <code>DataEditorSupport</code></summary>
+        <version major="7" minor="7"/>
+        <date day="3" month="9" year="2009"/>
+        <author login="jglick"/>
+        <compatibility>
+            <p>
+                Overrides of <code>messageHtmlName</code> should be reconsidered.
+                Calls to <code>messageName</code> should be paired with calls to
+                <code>messageHtmlName</code> and <code>messageToolTip</code>.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Added two convenience methods permitting modules with nonstandard
+                editor-like windows to use the regular modified and read-only status
+                annotations.
+            </p>
+        </description>
+        <class package="org.openide.text" name="DataEditorSupport"/>
+        <issue number="171428"/>
+    </change>
      <change id="Toolbars.DnD">
         <api name="awt"/>
         <summary>Deprecation of Toolbar drag and drop API</summary>

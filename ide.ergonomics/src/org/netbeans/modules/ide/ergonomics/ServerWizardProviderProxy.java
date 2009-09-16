@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemanWizardIterator;
+import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemandWizardIterator;
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
@@ -79,7 +79,7 @@ public class ServerWizardProviderProxy implements ServerWizardProvider {
         if (originalActive()) {
             return null;
         }
-        return new FeatureOnDemanWizardIterator(fob);
+        return new FeatureOnDemandWizardIterator(fob);
     }
 
     private boolean originalActive() {

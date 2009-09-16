@@ -43,6 +43,7 @@ import java.io.File;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.util.Parameters;
 
 /**
@@ -171,4 +172,15 @@ public abstract class PhpFrameworkProvider {
      * @since 1.11
      */
     public abstract FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule);
+
+    /**
+     * Get a {@link EditorExtender editor extender} for this framework
+     * and the given PHP module.
+     *
+     * @param  phpModule the PHP module for which editor extender is to be gotten
+     * @return editor extender, can be <code>null</code> if the framework doesn't provide
+     *         any additional fields/classes etx. to code completion etc.
+     * @since 1.13
+     */
+    public abstract EditorExtender getEditorExtender(PhpModule phpModule);
 }

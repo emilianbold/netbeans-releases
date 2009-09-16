@@ -82,7 +82,7 @@ public final class PopupUtil  {
     private static final KeyStroke ESC_KEY_STROKE = KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ); 
         
     private static final String POPUP_NAME = "popupComponent"; //NOI18N
-    private static JDialog popupWindow;
+    private static volatile JDialog popupWindow;
     private static HideAWTListener hideListener = new HideAWTListener();
     
     // Singleton

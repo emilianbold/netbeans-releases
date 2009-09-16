@@ -42,9 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -55,12 +53,11 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -142,6 +139,12 @@ public class HtmlHintsProvider implements HintsProvider {
 
             hints.add(h);
         }
+
+        //html extensions
+        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+            ext.computeErrors(manager, context, hints, unhandled);
+        }
+
     }
 
     /**

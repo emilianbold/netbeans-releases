@@ -48,7 +48,9 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import java.beans.PropertyChangeEvent;
@@ -60,12 +62,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Ejbs contained within a module
@@ -104,60 +107,67 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     @Override
     protected void addNotify() {
         super.addNotify();
-        try {
-            updateKeys();
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        setKeys(new Key[]{Key.SCANNING});
+        updateKeys();
     }
 
-    private void updateKeys() throws IOException {
-        
-        Future<List<Key>> future = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
-            public List<Key> run(EjbJarMetadata metadata) throws Exception {
-                EnterpriseBeans beans = metadata.getRoot().getEnterpriseBeans();
-                if (beans != null) {
-                    Key[] sessionBeans = Key.createArray(beans.getSession());
-                    Key[] entityBeans = Key.createArray(beans.getEntity());
-                    Key[] messageBeans = Key.createArray(beans.getMessageDriven());
-                    Comparator<Key> ejbComparator = new Comparator<Key>() {
-                        public int compare(Key key1, Key key2) {
-                            return getEjbDisplayName(key1).compareTo(getEjbDisplayName(key2));
-                        }
+    private void updateKeys(){
+        RequestProcessor.getDefault().post(new Runnable(){
+            public void run() {
+                try {
+                    Future<List<Key>> future = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
 
-                        private String getEjbDisplayName(Key ejb) {
-                            String name = ejb.defaultDisplayName;
-                            if (name == null) {
-                                name = ejb.ejbName;
+                        public List<Key> run(EjbJarMetadata metadata) throws Exception {
+                            EnterpriseBeans beans = metadata.getRoot().getEnterpriseBeans();
+                            if (beans != null) {
+                                Key[] sessionBeans = Key.createArray(beans.getSession());
+                                Key[] entityBeans = Key.createArray(beans.getEntity());
+                                Key[] messageBeans = Key.createArray(beans.getMessageDriven());
+                                Comparator<Key> ejbComparator = new Comparator<Key>() {
+
+                                    public int compare(Key key1, Key key2) {
+                                        return getEjbDisplayName(key1).compareTo(getEjbDisplayName(key2));
+                                    }
+
+                                    private String getEjbDisplayName(Key ejb) {
+                                        String name = ejb.defaultDisplayName;
+                                        if (name == null) {
+                                            name = ejb.ejbName;
+                                        }
+                                        if (name == null) {
+                                            name = "";
+                                        }
+                                        return name;
+                                    }
+                                };
+                                Arrays.sort(sessionBeans, ejbComparator);
+                                Arrays.sort(entityBeans, ejbComparator);
+                                Arrays.sort(messageBeans, ejbComparator);
+                                List<Key> keys = new ArrayList<Key>(sessionBeans.length + entityBeans.length + messageBeans.length);
+                                keys.addAll(Arrays.asList(sessionBeans));
+                                keys.addAll(Arrays.asList(messageBeans));
+                                keys.addAll(Arrays.asList(entityBeans));
+                                return keys;
                             }
-                            if (name == null) {
-                                name = "";
-                            }
-                            return name;
+                            return Collections.<Key>emptyList();
                         }
-                    };
-                    Arrays.sort(sessionBeans, ejbComparator);
-                    Arrays.sort(entityBeans, ejbComparator);
-                    Arrays.sort(messageBeans, ejbComparator);
-                    List<Key> keys = new ArrayList<Key>(sessionBeans.length + entityBeans.length  + messageBeans.length);
-                    keys.addAll(Arrays.asList(sessionBeans));
-                    keys.addAll(Arrays.asList(messageBeans));
-                    keys.addAll(Arrays.asList(entityBeans));
-                    return keys;
+                    });
+                    final List<Key> result = new ArrayList<Key>();
+                    try {
+                        result.addAll(future.get());
+                    } catch (InterruptedException ie) {
+                        Exceptions.printStackTrace(ie);
+                    } catch (ExecutionException ee) {
+                        Exceptions.printStackTrace(ee);
+                    }
+                    setKeys(result);
+                } catch (MetadataModelException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                return Collections.<Key>emptyList();
             }
         });
-        final List<Key> result = new ArrayList<Key>();
-        try {
-            result.addAll(future.get());
-        } catch (InterruptedException ie) {
-            Exceptions.printStackTrace(ie);
-        } catch (ExecutionException ee) {
-            Exceptions.printStackTrace(ee);
-        }
-        
-        setKeys(result);
     }
 
     @Override
@@ -182,25 +192,21 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         if (key.ejbType == Key.EjbType.MESSAGE_DRIVEN && nodeFactory != null) {
             node = nodeFactory.createMessageNode(key.ejbClass, ejbModule, project);
         }
+        if (key == Key.SCANNING){
+            node = new AbstractNode(Children.LEAF);
+            node.setDisplayName(NbBundle.getMessage(EjbContainerChildren.class, "MSG_Scanning_EJBs")); //NOI18N
+            ((AbstractNode)node).setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbjar/project/ui/wait.gif"); //NOI18N
+        }
         return node == null ? new Node[0] : new Node[] { node };
     }
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            
-            public void run() {
-                try {
-                    updateKeys();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-        });
+         updateKeys();
     }
 
     final static class Key {
-        
+        public static final Key SCANNING = new Key(null, null, null, null, false);
+
         private enum EjbType { SESSION, ENTITY, MESSAGE_DRIVEN }
         
         private final EjbType ejbType;

@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
@@ -83,6 +84,8 @@ public final class SessionGenerator {
     public static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
 
     public static final String EJB31_SINGLETON_EJBCLASS = "Templates/J2EE/EJB31/SingletonEjbClass.java"; // NOI18N
+
+    public static final String ANNOTATION_LOCAL_BEAN = "javax.ejb.LocalBean";
 
     // informations collected in wizard
     private final FileObject pkg;
@@ -204,7 +207,7 @@ public final class SessionGenerator {
             assert false;
         }
 
-        FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null, templateParameters);
+        final FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null, templateParameters);
         if (hasRemote) {
             GenerationUtils.createClass(EJB30_REMOTE, pkg, remoteName, null, templateParameters);
         }
@@ -218,6 +221,13 @@ public final class SessionGenerator {
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
                 ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
                 ClassTree newClassTree = classTree;
+                if (!hasLocal && !hasRemote){
+                    Project project = FileOwnerQuery.getOwner(ejbClassFO);
+                    J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
+                    if (projectCap != null && projectCap.isEjb31Supported()){
+                        newClassTree = generationUtils.addAnnotation(newClassTree, generationUtils.createAnnotation(ANNOTATION_LOCAL_BEAN));
+                    }
+                }
                 if (hasRemote) {
                     newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + remoteName);
                 }

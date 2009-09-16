@@ -818,7 +818,7 @@ class BraceCompletion {
         if (javaTS != null) {
             return javaTS.token().id() == tokenId &&
                     (caretOffset - javaTS.offset() == 1 ||
-                     DocumentUtilities.getText(doc).charAt(caretOffset - 1) != quote);
+                     !(DocumentUtilities.getText(doc).charAt(caretOffset - 1) == quote && DocumentUtilities.getText(doc).charAt(caretOffset - 2) != '\\'));
         }
         return false;
     }

@@ -489,8 +489,8 @@ Spry.Effect.Animator.prototype.start = function(queue)
 	
   var currDate = new Date();
   this.startMilliseconds = currDate.getTime();
-  this.timer = setInterval(function() { 
-    self.drawEffect(); 
+  this.timer = setInterval(function() {
+    self.drawEffect();
   }, this.interval);
 };
 

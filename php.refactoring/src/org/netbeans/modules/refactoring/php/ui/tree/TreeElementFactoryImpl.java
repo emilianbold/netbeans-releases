@@ -45,11 +45,10 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -75,7 +74,7 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
             return result;
         if (o instanceof FileObject) {
             FileObject fo = (FileObject) o;
-            if (!isPhpFile(fo)) {return null;}
+            if (!FileUtils.isPhpFile(fo)) {return null;}
             if (fo.isFolder()) {
                 SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
                 if (sg!=null && fo.equals(sg.getRootFolder())) 
@@ -106,11 +105,6 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
             }
         }
         return result;
-    }
-
-    private static boolean isPhpFile(FileObject fo) {
-        String mimeType = FileUtil.getMIMEType(fo, PhpSourcePath.MIME_TYPE);
-        return mimeType == null ? false : PhpSourcePath.MIME_TYPE.equals(mimeType);        
     }
 
     public void cleanUp() {

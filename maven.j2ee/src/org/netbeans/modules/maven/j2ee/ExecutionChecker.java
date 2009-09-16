@@ -203,7 +203,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             if (provider != null) {
                 if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
                     boolean isDefaultGoal = neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
-                    SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal);
+                    SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal, project);
                     DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
                     panel.setNLS(dd.createNotificationLineSupport());
                     Object obj = DialogDisplayer.getDefault().notify(dd);
@@ -213,7 +213,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         if (!ExecutionChecker.DEV_NULL.equals(instanceId)) {
                             boolean permanent = panel.isPermanent();
                             if (permanent) {
-                                persistServer(instanceId, serverId);
+                                persistServer(instanceId, serverId, panel.getChosenProject());
 
                             } else {
                                 SessionContent sc = project.getLookup().lookup(SessionContent.class);
@@ -334,7 +334,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
     }
 
-    private void persistServer(final String iID, final String sID) {
+    private void persistServer(final String iID, final String sID, final Project targetPrj) {
         final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Properties props = model.getProject().getProperties();
@@ -377,11 +377,12 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
         };
 
-        final FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+        final FileObject projDir = targetPrj.getProjectDirectory();
+        final FileObject fo = projDir.getFileObject("pom.xml"); //NOI18N
         try {
             fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    FileObject fo2 = FileUtil.createData(project.getProjectDirectory(), "profiles.xml");
+                    FileObject fo2 = FileUtil.createData(projDir, "profiles.xml");
                     Utilities.performProfilesModelOperations(fo2, Collections.singletonList(profoperation));
                     Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
                 }
@@ -390,8 +391,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             Exceptions.printStackTrace(ex);
         }
         //#109507 workaround
-        POHImpl poh = project.getLookup().lookup(POHImpl.class);
+        POHImpl poh = targetPrj.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
-
+        poh = project.getLookup().lookup(POHImpl.class);
+        poh.hackModuleServerChange();
     }
 }

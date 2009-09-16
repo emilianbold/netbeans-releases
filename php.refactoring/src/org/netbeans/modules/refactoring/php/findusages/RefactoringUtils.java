@@ -72,6 +72,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -103,10 +104,6 @@ import org.openide.xml.XMLUtil;
  * @author Jan Becicka, Tor Norbye, Jan Lahoda, Radek Matous
  */
 public class RefactoringUtils {
-
-    public static boolean isPhpFile(FileObject fo) {
-        return PhpSourcePath.MIME_TYPE.equals(fo.getMIMEType());
-    }
 
     public static Program getRoot(ParserResult info) {
         return (info instanceof PHPParseResult) ? ((PHPParseResult)info).getProgram() : null;
@@ -152,7 +149,7 @@ public class RefactoringUtils {
         StringBuffer buf = new StringBuffer();
         // TODO - check whether we need Js highlighting or rhtml highlighting
         TokenHierarchy tokenH = TokenHierarchy.create(text, PHPTokenId.language());
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(PhpSourcePath.MIME_TYPE));
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(FileUtils.PHP_MIME_TYPE));
         FontColorSettings settings = lookup.lookup(FontColorSettings.class);
         @SuppressWarnings("unchecked")
         TokenSequence<? extends TokenId> tok = tokenH.tokenSequence();
@@ -266,7 +263,7 @@ public class RefactoringUtils {
     }
 
     public static boolean isRefactorable(FileObject file) {
-        return isPhpFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
+        return FileUtils.isPhpFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
 
     public static String getPackageName(FileObject folder) {
@@ -365,7 +362,7 @@ public class RefactoringUtils {
 //    }
 
     public static boolean isOutsidePhp(Lookup lookup, FileObject fo) {
-        if (RefactoringUtils.isPhpFile(fo)) {
+        if (FileUtils.isPhpFile(fo)) {
             EditorCookie ec = lookup.lookup(EditorCookie.class);
             if (isFromEditor(ec)) {
                 JTextComponent textC = ec.getOpenedPanes()[0];

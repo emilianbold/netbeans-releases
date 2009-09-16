@@ -227,7 +227,13 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.RESOLVED);
                     Element element = treePathHandle.resolveElement(parameter);
-                    result[0] = element.asType().toString();
+                    // Fix for IZ159330 - NullPointerException at org.netbeans.modules.web.refactoring.WebRefactoringFactory$2.run
+                    if ( element == null ){
+                        result[0] = null;
+                    }
+                    else {
+                        result[0] = element.asType().toString();
+                    }
                 }
             }, true);
         }catch(IOException ioe){

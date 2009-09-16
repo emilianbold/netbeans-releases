@@ -66,6 +66,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelp
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -205,6 +206,10 @@ public class UsernameAuthenticationProfile extends ProfileBase
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
         ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).setSecureConversation(component, enable);
+    }
+
+    public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
+        return true;
     }
     
 }

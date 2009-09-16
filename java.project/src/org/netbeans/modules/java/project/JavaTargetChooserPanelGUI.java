@@ -50,6 +50,7 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
@@ -94,6 +95,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         this.type = type;
         this.project = p;
         this.groups = groups;
+        for (SourceGroup sourceGroup : groups)
+            if (sourceGroup == null)
+                throw new NullPointerException ();
         
         initComponents();        
                 
@@ -137,6 +141,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         setName( NbBundle.getBundle (JavaTargetChooserPanelGUI.class).getString ("LBL_JavaTargetChooserPanelGUI_Name") ); // NOI18N
     }
             
+    @Override
     public void addNotify () {
         Dimension panel2Size = this.jPanel2.getPreferredSize();
         Dimension bottomPanelSize = this.bottomPanelContainer.getPreferredSize ();
@@ -593,10 +598,22 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
         public GroupListCellRenderer() {}
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            SourceGroup g = (SourceGroup) value;
-            super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
-            setIcon(g.getIcon(false));
+            String name;
+            Icon icon;
+            if (value == null) {
+                name = ""; //NOI18N
+                icon = null;
+            }
+            else {
+                assert value instanceof SourceGroup;
+                SourceGroup g = (SourceGroup) value;
+                name = g.getDisplayName();
+                icon = g.getIcon(false);
+            }
+            super.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+            setIcon(icon);
             return this;
         }
         

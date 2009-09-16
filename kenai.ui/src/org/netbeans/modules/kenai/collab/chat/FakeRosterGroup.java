@@ -45,12 +45,14 @@ import java.util.TreeSet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Becicka
  */
-public class FakeRosterGroup {
+public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
     private MultiUserChat muc;
 
     FakeRosterGroup(MultiUserChat muc) {
@@ -95,5 +97,19 @@ public class FakeRosterGroup {
         return hash;
     }
 
+    public int compareTo(FakeRosterGroup o) {
+        try {
+            String thisName = Kenai.getDefault().getProject(getName()).getDisplayName();
+            String otherName = Kenai.getDefault().getProject(o.getName()).getDisplayName();
+            return thisName.compareToIgnoreCase(otherName);
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
+        }
+        return getName().compareToIgnoreCase(o.getName());
+    }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

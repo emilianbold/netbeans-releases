@@ -57,7 +57,6 @@ import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * Called from Indexing API framework. Simply asks all registered and active
@@ -85,6 +84,8 @@ public class TaskIndexer extends CustomIndexer {
             return;
         }
         TaskFilter filter = tm.getFilter();
+        if( null == filter )
+            filter = TaskFilter.EMPTY;
         TaskScanningScope scope = tm.getScope();
         ArrayList<FileTaskScanner> scanners = null;
         try {

@@ -94,6 +94,7 @@ import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -189,6 +190,48 @@ public class DataEditorSupport extends CloneableEditorSupport {
             obj.getPrimaryFile().getNameExt()
         );
     }
+
+    static boolean TABNAMES_HTML = Boolean.parseBoolean(System.getProperty("nb.tabnames.html", "true")); // #47290
+
+    /**
+     * Marks up a tab name according to modified and read-only status.
+     * Done for subclasses automatically in {@link #messageName} and {@link #messageHtmlName}
+     * but useful for other editor-like windows.
+     * <p class="nonnormative">Behavior currently varies according to the system property {@code nb.tabnames.html}.</p>
+     * @param label incoming label (null not permitted, so take care with {@link Node#getHtmlDisplayName})
+     * @param html if true, {@code label} may include HTML markup (with or without initial {@code <html>}), and result may as well
+     * @param modified mark up the label as for a document which is modified in memory
+     * @param readOnly mark up the label as for a document based on a read-only file
+     * @return a possibly marked-up label
+     * @since org.openide.loaders 7.7
+     */
+    public static String annotateName(String label, boolean html, boolean modified, boolean readOnly) {
+        Parameters.notNull("original", label);
+        if (html && TABNAMES_HTML) {
+            if (label.startsWith("<html>")) {
+                label = label.substring(6);
+            }
+            if (modified) {
+                label = "<b>" + label + "</b>";
+            }
+            if (readOnly) {
+                label = "<i>" + label + "</i>";
+            }
+            return "<html>" + label;
+        } else {
+            if (html && !label.startsWith("<html>")) {
+                label = "<html>" + label;
+            }
+            int version = modified ? (readOnly ? 2 : 1) : (readOnly ? 0 : 3);
+            try {
+                return NbBundle.getMessage(DataObject.class, "LAB_EditorName", version, label);
+            } catch (IllegalArgumentException iae) {
+                String pattern = NbBundle.getMessage(DataObject.class, "LAB_EditorName");
+                ERR.log(Level.WARNING, "#166035: formatting failed. pattern=" + pattern + ", version=" + version + ", name=" + label, iae);  //NOI18N
+                return label;
+            }
+        }
+    }
     
     /** Constructs message that should be used to name the editor component.
     *
@@ -199,7 +242,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             return ""; // NOI18N
         }
 
-        return addFlagsToName(obj.getNodeDelegate().getDisplayName());
+        return annotateName(obj.getNodeDelegate().getDisplayName(), false, isModified(), !obj.getPrimaryFile().canWrite());
     }
     
     @Override
@@ -209,67 +252,46 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
 
         String name = obj.getNodeDelegate().getHtmlDisplayName();
-
-        if (Boolean.getBoolean("nb.tabnames.html")) {
-            if (name == null) {
-                try {
-                    name = XMLUtil.toElementContent(obj.getNodeDelegate().getDisplayName());
-                } catch (CharConversionException ex) {
-                    return null;
-                }
-            } else if (name.startsWith("<html>")) {
-                name = name.substring(6);
-            }
-            if (isModified()) {
-                name = "<b>" + name + "</b>";
-            }
-            if (!obj.getPrimaryFile().canWrite()) {
-                name = "<i>" + name + "</i>";
-            }
-            return "<html>" + name;
-        }
-        
-        if (name != null) {
-            if (!name.startsWith("<html>")) {
-                name = "<html>" + name;
-            }
-            name = addFlagsToName(name);
-        }
-        return name;
-    }
-        
-    /** Helper only. */
-    private String addFlagsToName(String name) {
-        int version = 3;
-        if (isModified ()) {
-            if (!obj.getPrimaryFile().canWrite()) {
-                version = 2;
-            } else {
-                version = 1;
-            }
-        } else {
-            if (!obj.getPrimaryFile().canWrite()) {
-                version = 0;
+        if (name == null) {
+            try {
+                name = XMLUtil.toElementContent(obj.getNodeDelegate().getDisplayName());
+            } catch (CharConversionException ex) {
+                return null;
             }
         }
 
-        try {
-            return NbBundle.getMessage(DataObject.class, "LAB_EditorName",
-                    new Integer(version), name);
-        } catch (IllegalArgumentException iae) {
-            // #166035 - formatting someimes fail, so report input parameters
-            String pattern = NbBundle.getMessage(DataObject.class, "LAB_EditorName");
-            ERR.log(Level.WARNING, "Formatting failed. pattern=" + pattern + ", version=" + version + ", name=" + name, iae);  //NOI18N
-            return name;
-        }
+        return annotateName(name, true, isModified(), !obj.getPrimaryFile().canWrite());
     }
-    
+        
     @Override
     protected String documentID() {
         if (! obj.isValid()) {
             return ""; // NOI18N
         }
         return obj.getPrimaryFile().getName();
+    }
+
+    /**
+     * Constructs a tool tip possibly marked up with document modified and read-only status.
+     * Done for subclasses automatically in {@link #messageToolTip} but useful for other editor-like windows.
+     * <p class="nonnormative">Behavior currently varies according to the system property {@code nb.tabnames.html}.</p>
+     * @param file a file representing the tab
+     * @param modified mark up the tool tip as for a document which is modified in memory
+     * @param readOnly mark up the tool tip as for a document based on a read-only file
+     * @return a tool tip
+     * @since org.openide.loaders 7.7
+     */
+    public static String toolTip(FileObject file, boolean modified, boolean readOnly) {
+        String tip = FileUtil.getFileDisplayName(file);
+        if (TABNAMES_HTML) {
+            if (modified) {
+                tip += NbBundle.getMessage(DataObject.class, "TIP_editor_modified");
+            }
+            if (readOnly) {
+                tip += NbBundle.getMessage(DataObject.class, "TIP_editor_ro");
+            }
+        }
+        return tip;
     }
 
     /** Text to use as tooltip for component.
@@ -279,16 +301,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     @Override
     protected String messageToolTip () {
         // update tooltip
-        String tip = FileUtil.getFileDisplayName(obj.getPrimaryFile());
-        if (Boolean.getBoolean("nb.tabnames.html")) {
-            if (isModified()) {
-                tip += NbBundle.getMessage(DataObject.class, "TIP_editor_modified");;
-            }
-            if (!obj.getPrimaryFile().canWrite()) {
-                tip += NbBundle.getMessage(DataObject.class, "TIP_editor_ro");;
-            }
-        }
-        return tip;
+        return toolTip(obj.getPrimaryFile(), isModified(), !obj.getPrimaryFile().canWrite());
     }
     
     /** Computes display name for a line based on the 

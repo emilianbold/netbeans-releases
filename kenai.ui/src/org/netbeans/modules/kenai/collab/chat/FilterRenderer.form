@@ -20,6 +20,9 @@
   </Layout>
   <SubComponents>
     <Component class="javax.swing.JLabel" name="groupLabel">
+      <Properties>
+        <Property name="opaque" type="boolean" value="true"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

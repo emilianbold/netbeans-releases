@@ -69,6 +69,9 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
         initComponents();
         this.cat = cat;
         keystoreField.setDocument(props.KEYSTORE_DOCUMENT);
+        keystoreAliasField.setDocument (props.KEYSTORE_ALIAS_DOCUMENT);
+        keystorePasswordField.setDocument (props.KEYSTORE_PASSWORD_DOCUMENT);
+        aliasPasswordField.setDocument (props.KEYSTORE_ALIAS_PASSWORD_DOCUMENT);
         signButton.setModel (props.SIGN_JAR_BUTTON_MODEL);
         keystoreField.getDocument().addDocumentListener(this);
         keystoreField.addFocusListener(this);
@@ -115,6 +118,13 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
         keystoreLabel = new javax.swing.JLabel();
         keystoreField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
+        keystorePasswordLabel = new javax.swing.JLabel();
+        keystoreAliasLabel = new javax.swing.JLabel();
+        keystoreAliasField = new javax.swing.JTextField();
+        aliasPasswordLabel = new javax.swing.JLabel();
+        aliasPasswordField = new javax.swing.JPasswordField();
+        keystorePasswordField = new javax.swing.JPasswordField();
+        jLabel1 = new javax.swing.JLabel();
 
         signButton.setSelected(true);
         signButton.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.signButton.text", new Object[] {})); // NOI18N
@@ -126,6 +136,27 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
         browseButton.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.browseButton.text", new Object[] {})); // NOI18N
         browseButton.addActionListener(this);
 
+        keystorePasswordLabel.setLabelFor(keystorePasswordField);
+        keystorePasswordLabel.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.keystorePasswordLabel.text")); // NOI18N
+
+        keystoreAliasLabel.setLabelFor(keystoreAliasField);
+        keystoreAliasLabel.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.keystoreAliasLabel.text")); // NOI18N
+
+        keystoreAliasField.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.keystoreAliasField.text")); // NOI18N
+        keystoreAliasField.setToolTipText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.keystoreAliasField.toolTipText")); // NOI18N
+
+        aliasPasswordLabel.setLabelFor(keystorePasswordField);
+        aliasPasswordLabel.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.aliasPasswordLabel.text")); // NOI18N
+
+        aliasPasswordField.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.aliasPasswordField.text")); // NOI18N
+        aliasPasswordField.setToolTipText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.aliasPasswordField.toolTipText")); // NOI18N
+
+        keystorePasswordField.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.keystorePasswordField.text")); // NOI18N
+        keystorePasswordField.setToolTipText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.keystorePasswordField.toolTipText")); // NOI18N
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(SecurityCustomizer.class, "SecurityCustomizer.jLabel1.text")); // NOI18N
+        jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -133,26 +164,50 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(signButton)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(keystoreLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(keystoreField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton)))
-                .addContainerGap())
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(signButton)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(keystoreLabel)
+                                    .add(keystorePasswordLabel)
+                                    .add(keystoreAliasLabel)
+                                    .add(aliasPasswordLabel))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(keystorePasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
+                                    .add(aliasPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
+                                    .add(keystoreAliasField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
+                                    .add(keystoreField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton)))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(signButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keystoreLabel)
                     .add(keystoreField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(keystorePasswordLabel)
+                    .add(keystorePasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(keystoreAliasLabel)
+                    .add(keystoreAliasField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(aliasPasswordLabel)
+                    .add(aliasPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE)
+                .add(26, 26, 26))
         );
     }
 
@@ -183,9 +238,16 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPasswordField aliasPasswordField;
+    private javax.swing.JLabel aliasPasswordLabel;
     private javax.swing.JButton browseButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextField keystoreAliasField;
+    private javax.swing.JLabel keystoreAliasLabel;
     private javax.swing.JTextField keystoreField;
     private javax.swing.JLabel keystoreLabel;
+    private javax.swing.JPasswordField keystorePasswordField;
+    private javax.swing.JLabel keystorePasswordLabel;
     private javax.swing.JCheckBox signButton;
     // End of variables declaration//GEN-END:variables
 

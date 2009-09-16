@@ -779,18 +779,6 @@ public class TabbedContainer extends JComponent implements Accessible {
 
         int over = dropIndexOfPoint(location);
 
-        if(over < 0) { // XXX PENDING The tab is not found, later simulate the last one.
-            Rectangle r = getBounds();
-            r.setLocation(0, 0);
-            return r;
-        }
-        /*
-        if (over == ix || (over == ix + 1 && ix != -1 && over < getModel().size())) { //+1 - dropping on the next tab will put it in the same place
-            return getUI().getExactTabIndication(over);
-        } else {
-            return getUI().getInsertTabIndication(over);
-        }
-        */
         if (over == ix && ix != -1) {
             return getUI().getExactTabIndication(over);
         } else {

@@ -67,7 +67,7 @@ import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -110,13 +110,9 @@ public class GrabTableAction extends BaseAction {
             String tablename = node.getName();
 
             // Get filename
-
-            JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-            chooser.setDialogTitle(NbBundle.getMessage (GrabTableAction.class, "GrabTableFileSaveDialogTitle")); //NOI18N
-            chooser.setSelectedFile(new File(tablename+".grab")); //NOI18N
-            chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            FileChooserBuilder chooserBuilder = new FileChooserBuilder(RecreateTableAction.class);
+            chooserBuilder.setTitle(NbBundle.getMessage (GrabTableAction.class, "GrabTableFileSaveDialogTitle")); //NOI18N
+            chooserBuilder.setFileFilter(new javax.swing.filechooser.FileFilter() {
                 public boolean accept(File f) {
                   return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                 }
@@ -125,6 +121,8 @@ public class GrabTableAction extends BaseAction {
                   return NbBundle.getMessage (GrabTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
                 }
             });
+            JFileChooser chooser = chooserBuilder.createFileChooser();
+            chooser.setSelectedFile(new File(tablename+".grab")); //NOI18N
 
             java.awt.Component par = WindowManager.getDefault().getMainWindow();
             boolean noResult = true;
@@ -134,8 +132,8 @@ public class GrabTableAction extends BaseAction {
                     file = chooser.getSelectedFile();
                     if (file != null) {
                         if(file.exists()) {
-                            Object yesOption = new JButton(NbBundle.getMessage (GrabTableAction.class, "Yes"));
-                            Object noOption = new JButton (NbBundle.getMessage (GrabTableAction.class, "No"));
+                            Object yesOption = new JButton(NbBundle.getMessage (GrabTableAction.class, "Yes")); // NOI18N
+                            Object noOption = new JButton (NbBundle.getMessage (GrabTableAction.class, "No")); // NOI18N
                             Object result = DialogDisplayer.getDefault ().notify (new NotifyDescriptor
                                             (NbBundle.getMessage (GrabTableAction.class, "MSG_ReplaceFileOrNot", // NOI18N
                                                 file.getName()), //question

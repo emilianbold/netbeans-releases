@@ -68,7 +68,8 @@ import org.netbeans.modules.versioning.util.Utils;
 public class ResolveConflictsExecutor extends HgProgressSupport {
     
     private static final String TMP_PREFIX = "merge"; // NOI18N
-    private static final String ORIG_SUFFIX = ".orig."; // NOI18N  
+    private static final String ORIG_SUFFIX = ".orig."; // NOI18N
+    private static final String LOCAL = "local";                        //NOI18N
     
     static final String CHANGE_LEFT = "<<<<<<< "; // NOI18N
     static final String CHANGE_RIGHT = ">>>>>>> "; // NOI18N
@@ -139,7 +140,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision = leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision = rightFileRevision.trim();
-        if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)){
+        if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)
+                || leftFileRevision.equals(LOCAL)){
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", leftFileRevision); // NOI18N

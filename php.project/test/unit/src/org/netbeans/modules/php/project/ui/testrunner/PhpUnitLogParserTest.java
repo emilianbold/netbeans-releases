@@ -88,7 +88,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertEquals(1, testSuite.getTestCases().size());
 
         testCase = testSuite.getTestCases().get(0);
-        assertEquals(Status.PENDING, testCase.getStatus());
+        assertEquals(Status.SKIPPED, testCase.getStatus());
         assertFalse(testCase.isFailure());
         assertFalse(testCase.isError());
         assertEquals(0, testCase.getStacktrace().length);
@@ -185,7 +185,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertEquals("LoginTest", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
         assertSame(1, testSuite.getTestCases().size());
-        assertEquals(TestCaseVO.pendingTestCase().toString(), testSuite.getTestCases().get(0).toString());
+        assertEquals(TestCaseVO.skippedTestCase().toString(), testSuite.getTestCases().get(0).toString());
 
         testSuite = testSession.getTestSuites().get(1);
         assertEquals("LoginTest: Firefox on Windows", testSuite.getName());
