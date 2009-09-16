@@ -889,7 +889,9 @@ public class TreeModelNode extends AbstractNode {
                 if (evaluatingRefreshingInfo == null) {
                     evaluatingRefreshingInfo = refreshInfo;
                 } else {
-                    evaluatingRefreshingInfo = evaluatingRefreshingInfo.mergeWith(refreshInfo);
+                    if (refreshInfo != null) {
+                        evaluatingRefreshingInfo = evaluatingRefreshingInfo.mergeWith(refreshInfo);
+                    }
                 }
                 refreshInfo = null; // reset after use
             }
