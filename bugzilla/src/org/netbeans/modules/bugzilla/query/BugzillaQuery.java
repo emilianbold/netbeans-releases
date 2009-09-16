@@ -90,7 +90,7 @@ public class BugzillaQuery extends Query {
         this.name = name;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(name));
+        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
         }
@@ -204,7 +204,7 @@ public class BugzillaQuery extends Query {
         return ret[0];
     }
 
-    protected String getStoredQueryName() {
+    public String getStoredQueryName() {
         return getDisplayName();
     }
 

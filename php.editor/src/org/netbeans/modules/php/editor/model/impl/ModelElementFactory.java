@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Scope;
@@ -50,7 +49,6 @@ import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
-import org.openide.filesystems.FileObject;
 
 /**
  *

@@ -43,7 +43,6 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -53,7 +52,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -61,6 +59,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
     
 /**
@@ -70,7 +69,8 @@ import org.openide.util.lookup.Lookups;
 public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     
     private Hk2DeploymentManager dm;
-    private LibraryImplementation[] libraries;
+    private final LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
+    private LibraryImplementation[] libraries = { lib };
     private Hk2JavaEEPlatformFactory pf;
 
     /**
@@ -302,7 +302,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public LibraryImplementation[] getLibraries() {
-        return libraries.clone();
+        synchronized (lib) {
+            return libraries.clone();
+        }
     }
     
     /**
@@ -346,11 +348,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     private void initLibraries() {
-        LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
-        lib.setName(pf.getLibraryName()); 
-        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
-        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
-        libraries = new LibraryImplementation[] {lib};
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                synchronized (lib) {
+                    lib.setName(pf.getLibraryName());
+                    lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
+                    lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
+                }
+            }
+        });
     }
     
     @Override

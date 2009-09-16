@@ -101,7 +101,7 @@ public class JBProperties {
     private static final Logger LOGGER = Logger.getLogger(JBProperties.class.getName());
 
     private final Version version;
-    
+
     /** Creates a new instance of JBProperties */
     public JBProperties(JBDeploymentManager manager) {
         this.manager = manager;
@@ -131,7 +131,7 @@ public class JBProperties {
     public boolean isVersion(Version targetVersion) {
         return (version != null && version.compareToIgnoreUpdate(targetVersion) >= 0); // NOI18N
     }
-    
+
     public File getServerDir() {
         return new File(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
     }
@@ -143,7 +143,7 @@ public class JBProperties {
     public File getLibsDir() {
         return new File(getServerDir(), "lib"); // NOI18N
     }
-    
+
     public boolean getProxyEnabled() {
         String val = ip.getProperty(PROP_PROXY_ENABLED);
         return val != null ? Boolean.valueOf(val).booleanValue()
@@ -186,22 +186,28 @@ public class JBProperties {
         try {
             File rootDir = getRootDir();
             File serverDir = getServerDir();
-            
-            File javaEE = new File(rootDir, "client/jboss-j2ee.jar"); // NOI18N
+            File commonLibDir =  new File(rootDir, "common" + File.separator + "lib");
+
+            File javaEE = new File(commonLibDir, "jboss-javaee.jar");
             if (!javaEE.exists()) {
-                // jboss 5
-                javaEE = new File(rootDir, "client/jboss-javaee.jar"); // NOI18N
+                javaEE = new File(rootDir, "client/jboss-j2ee.jar"); // NOI18N
+                if (!javaEE.exists()) {
+                    // jboss 5
+                    javaEE = new File(rootDir, "client/jboss-javaee.jar"); // NOI18N
+                }
+            } else {
+                assert version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0;
             }
-            
+
             if (javaEE.exists()) {
                 list.add(fileToUrl(javaEE));
             }
-            
+
             File jaxWsAPILib = new File(rootDir, "client/jboss-jaxws.jar"); // NOI18N
             if (jaxWsAPILib.exists()) {
                list.add(fileToUrl(jaxWsAPILib));
             }
-            
+
             File wsClientLib = new File(rootDir, "client/jbossws-client.jar"); // NOI18N
             if (wsClientLib.exists()) {
                 list.add(fileToUrl(wsClientLib));
@@ -210,12 +216,19 @@ public class JBProperties {
             addFiles(new File(rootDir, "lib"), list); // NOI18N
             addFiles(new File(serverDir, "lib"), list); // NOI18N
 
-            // FIXME shouldn't we use whole cmmon in JB5
-            File jspAPI = new File(rootDir, "common" + File.separator + "lib" + File.separator + "jsp-api.jar");
-            if (jspAPI.exists()) {
-                list.add(fileToUrl(jspAPI));
-            }
+            // Add common libs for JBoss 5.x
+            String[] commonLibs = new String[] {"servlet-api.jar", // NOI18N
+                "jsp-api.jar", "el-api.jar", "mail.jar", "jboss-jsr77.jar", //NOI18N
+                "ejb3-persistence.jar", "jbossws-native-jaxws.jar", // NOI18N
+                "jbossws-native-jaxws-ext.jar", "jbossws-native-jaxrpc.jar", // NOI18N
+                "jbossws-native-saaj.jar"}; // NOI18N
 
+            for (String commonLib : commonLibs) {
+                File libJar = new File(commonLibDir, commonLib);
+                if (libJar.exists()) {
+                    list.add(fileToUrl(libJar));
+                }
+            }
 
             if (supportsJavaEE5ejb3()) {
                 File ejb3deployer = new File(serverDir, "/deploy/ejb3.deployer/");  // NOI18N
@@ -263,6 +276,27 @@ public class JBProperties {
             } else if ((jsfIMPL = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
                 try {
                     list.add(fileToUrl(jsfIMPL));
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            }
+
+            File jstlImpl = new File(serverDir, "/deploy/jbossweb.sar/jstl.jar"); // NOI18N
+            if (jstlImpl.exists()) {
+                try {
+                    list.add(fileToUrl(jstlImpl));
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            } else if ((jstlImpl = new File(serverDir, "/deploy/jboss-web.deployer/jstl.jar")).exists()) { // NOI18N
+                try {
+                    list.add(fileToUrl(jstlImpl));
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            } else if ((jstlImpl = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/jstl.jar")).exists()) { // NOI18N
+                try {
+                    list.add(fileToUrl(jstlImpl));
                 } catch (MalformedURLException e) {
                     LOGGER.log(Level.INFO, null, e);
                 }

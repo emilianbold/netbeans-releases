@@ -365,6 +365,12 @@ public final class PathRegistry implements Runnable {
         }
     }
 
+    public boolean isKnownRoot(URL root) {
+        synchronized(this) {
+            return rootPathIds.containsKey(root) || unknownSourcePath.contains(root);
+        }
+    }
+
     public Set<String> getSourceIdsFor(URL root) {
         PathIds pathIds = getRootPathIds().get(root);
         return pathIds != null ? pathIds.getSids() : null;

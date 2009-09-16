@@ -71,6 +71,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
@@ -290,7 +291,12 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         
         try {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+                private Snapshot topLevelSnapshot = null;
+
                 public @Override void run(ResultIterator resultIterator) throws ParseException {
+                    if (topLevelSnapshot == null) {
+                        topLevelSnapshot = resultIterator.getSnapshot();
+                    }
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
                     if (language != null) {
                         if(!(resultIterator.getParserResult() instanceof ParserResult)) {
@@ -316,8 +322,8 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
                                     for (Hint hint : hints) {
                                         OffsetRange range = hint.getRange();
                                         if (range != null &&
-                                                range.getStart() >= 0 && range.getStart() <= r.getSnapshot().getText().length() &&
-                                                range.getEnd() >= 0 && range.getEnd() <= r.getSnapshot().getText().length() &&
+                                                range.getStart() >= 0 && range.getStart() <= topLevelSnapshot.getText().length() &&
+                                                range.getEnd() >= 0 && range.getEnd() <= topLevelSnapshot.getText().length() &&
                                                 range.getStart() <= range.getEnd()
                                         ) {
                                             ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
