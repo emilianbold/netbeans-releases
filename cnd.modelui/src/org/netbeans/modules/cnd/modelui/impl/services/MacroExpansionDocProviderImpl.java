@@ -363,32 +363,32 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
             int startIndex = tt.findInIntervalIndex(offset);
             if (0 <= startIndex && startIndex < tt.intervals.size()) {
-                if (tt.intervals.get(startIndex).inInterval.end == offset) {
+                if (tt.intervals.get(startIndex).inInterval.end == offset && startIndex < tt.intervals.size() - 1) {
                     // use next
                     startIndex++;
                 }
-            }
-            // back to start of macro expansion
-            for (int i = startIndex; i >= 0; i--) {
-                IntervalCorrespondence ic = tt.intervals.get(i);
-                if (ic.macro) {
-                    if (ic.paramsToExpansion != null) {
-                        for (Interval in : ic.paramsToExpansion.keySet()) {
-                            if (in.contains(offset)) {
-                                List<Interval> intervals = ic.paramsToExpansion.get(in);
-                                int usages[][] = new int[intervals.size()][2];
-                                for (int j = 0; j < usages.length; j++) {
-                                    usages[j][0] = intervals.get(j).start;
-                                    usages[j][1] = intervals.get(j).end;
+                // back to start of macro expansion
+                for (int i = startIndex; i >= 0; i--) {
+                    IntervalCorrespondence ic = tt.intervals.get(i);
+                    if (ic.macro) {
+                        if (ic.paramsToExpansion != null) {
+                            for (Interval in : ic.paramsToExpansion.keySet()) {
+                                if (in.contains(offset)) {
+                                    List<Interval> intervals = ic.paramsToExpansion.get(in);
+                                    int usages[][] = new int[intervals.size()][2];
+                                    for (int j = 0; j < usages.length; j++) {
+                                        usages[j][0] = intervals.get(j).start;
+                                        usages[j][1] = intervals.get(j).end;
+                                    }
+                                    return usages;
                                 }
-                                return usages;
                             }
                         }
+                        break;
+                    } else if (ic.outInterval.length() != 0) {
+                        // we are out of macro expansion
+                        return null;
                     }
-                    break;
-                } else if (ic.outInterval.length() != 0) {
-                    // we are out of macro expansion
-                    return null;
                 }
             }
         }
