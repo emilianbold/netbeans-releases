@@ -27,8 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
 #include <string>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "bmp.h"
 #include "fft.h"

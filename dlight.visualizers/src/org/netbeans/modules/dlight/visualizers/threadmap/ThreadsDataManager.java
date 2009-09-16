@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -50,6 +51,9 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.threadmap.api.ThreadData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -70,6 +74,7 @@ public class ThreadsDataManager {
     private long startTime; // Timestamp of threadData start
     private final Set<DataManagerListener> listeners = new HashSet<DataManagerListener>();
     private int monitoredDataInterval;
+    private ThreadMapSummaryData summary;
 
     /**
      * Creates a new instance of ThreadsDataManager
@@ -185,6 +190,27 @@ public class ThreadsDataManager {
      */
     public synchronized boolean hasData() {
         return (getThreadsCount() != 0);
+    }
+
+    public synchronized void processData(ThreadMapSummaryData summaryData) {
+        summary = summaryData;
+    }
+
+    public synchronized ThreadSummaryColumnImpl getThreadSummary(int i){
+        i = getThreadData(i).getThreadID();
+        final ThreadMapSummaryData summaryData = summary;
+        List<StateDuration> state = null;
+        if (summaryData != null) {
+            for(ThreadSummaryData data : summaryData.getThreadsData()){
+                if (data.getThreadInfo().getThreadId() == i){
+                    state = data.getThreadSummary();
+                }
+            }
+        }
+        if (state == null) {
+            state = Collections.<StateDuration>emptyList();
+        }
+        return new ThreadSummaryColumnImpl(state);
     }
 
     /**

@@ -4,6 +4,11 @@
 #pragma D option switchrate=100hz
 #pragma D option dynvarsize=16m
 #pragma D option cleanrate=100hz
+#define ts() (timestamp-starttime) / 1000
+this uint64 starttime;
+BEGIN {
+  starttime=timestamp;
+}
 
 /* the current total amount of memory allocated and not freed */
 int total;
@@ -37,8 +42,8 @@ BEGIN {
 #define ALLOC_EXIT(_addr) \
 	heap[_addr] = self->size; \
 	total += self->size; \
-	/*printf("## alloc timestamp %d size %d address %x total %d", timestamp, self->size, _addr, total); */\
-	printf("%d 1 %d %d %d", timestamp, self->size, _addr, total); \
+	/*printf("## alloc timestamp %d size %d address %x total %d", ts(), self->size, _addr, total); */\
+	printf("%d 1 %d %d %d", ts(), self->size, _addr, total); \
 	/*printf("\nAlloc size=%d addr=%x", self->size, _addr);*/ \
 	PRINT_STACK(); \
 	self->size = 0;
@@ -47,8 +52,8 @@ BEGIN {
 	this->freed = heap[_addr]; \
 	heap[_addr] = 0; \
 	total -= this->freed; \
-	/*printf("## free timestamp %d size %d  address %x total %d", timestamp, this->freed, _addr, total);*/ \
-	printf("%d -1 %d %d %d", timestamp, this->freed, _addr, total); \
+	/*printf("## free timestamp %d size %d  address %x total %d", ts(), this->freed, _addr, total);*/ \
+	printf("%d -1 %d %d %d", ts(), this->freed, _addr, total); \
 	/*printf("\nFree size=%d addr=%x", this->freed, _addr);*/ \
 	PRINT_STACK();
 

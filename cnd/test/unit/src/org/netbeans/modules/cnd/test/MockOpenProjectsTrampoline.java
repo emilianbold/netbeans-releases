@@ -53,7 +53,7 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
  *
  * @author vv159170
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.OpenProjectsTrampoline.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.OpenProjectsTrampoline.class)
 public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline { 
     /** Property change listeners registered through API */
     private PropertyChangeSupport pchSupport;
