@@ -55,6 +55,7 @@ import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
@@ -86,7 +87,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     return null;
                 }
 
-                KenaiRepository repo = createKenaiRepository(project.getDisplayName(), f.getLocation());
+                KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), f.getLocation());
                 if(repo == null) {
                     return null;
                 }
@@ -94,7 +95,13 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     repositories.add(repo);
                 }
 
-                repo.getConfiguration(); // force repo configuration init before controler populate
+                KenaiConfiguration kc = (KenaiConfiguration) repo.getConfiguration(); // force repo configuration init before controler populate
+                if(kc.getRepositoryConfiguration(repo, false) == null) {
+                    // something went wrong, can't use the repo anyway => return null
+                    Bugzilla.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
+                            + project.getDisplayName() + "," + project.getName() + "]");                                // NOI18N
+                    return null;
+                }
                 return repo;
             }
         } catch (KenaiException kenaiException) {
@@ -143,7 +150,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         }
     }
 
-    private KenaiRepository createKenaiRepository(String displayName, String location) {
+    private KenaiRepository createKenaiRepository(KenaiProject kenaiProject, String displayName, String location) {
         final URL loc;
         try {
             loc = new URL(location);
@@ -180,7 +187,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             }
         }
 
-        return new KenaiRepository(displayName, url, host, productParamUrl, product);
+        return new KenaiRepository(kenaiProject, displayName, url, host, productParamUrl, product);
     }
 }
 

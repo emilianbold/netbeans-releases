@@ -45,21 +45,11 @@ import org.netbeans.modules.javacard.api.CardState;
 import org.netbeans.modules.javacard.api.JavacardPlatform;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.javacard.constants.JavacardPlatformKeyNames;
-import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
-import org.netbeans.modules.javacard.project.libraries.LibrariesManager;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -80,6 +70,7 @@ public final class ReferenceImplementation extends SunJavaCardServer {
     private String contactlessPort = "9026";
     private File eepromFile = null;
     private boolean noSuspend = true;
+    private boolean remote;
     /**
      * 
      * @param id
@@ -97,7 +88,8 @@ public final class ReferenceImplementation extends SunJavaCardServer {
             String userName, String password, String ramSize, String e2pSize,
             String corSize, String loggerLevel, String httpPort,
             String contactedPort, String contactedProtocol, 
-            String contactlessPort, boolean secureMode, String proxy2cjcrePort, String proxy2idePort) {
+            String contactlessPort, boolean secureMode, String proxy2cjcrePort, String proxy2idePort,
+            boolean remote) {
 
         super(platform, id, userName, password);
         this.ramSize = ramSize;
@@ -111,6 +103,7 @@ public final class ReferenceImplementation extends SunJavaCardServer {
         this.proxy2cjcrePort = proxy2cjcrePort;
         this.proxy2idePort = proxy2idePort;
         this.eepromFile = Utils.eepromFileForDevice(platform, id, true);
+        this.remote = remote;
     }
 
     @Override
@@ -154,7 +147,7 @@ public final class ReferenceImplementation extends SunJavaCardServer {
             "--classpath", //NOI18N
             new File(p.getProjectDirectory().toString(), p.evaluator().getProperty("dist.bundle")).getAbsolutePath()
             + File.pathSeparator
-            + p.getLookup().lookup(LibrariesManager.class).getProjectLibraryClasspath(p),
+            + p.getClasspathClosureAsString()
         };
     }
 
@@ -251,6 +244,11 @@ public final class ReferenceImplementation extends SunJavaCardServer {
      */
     public final String getE2pSize() {
         return e2pSize;
+    }
+
+    @Override
+    public final boolean isRemote() {
+        return remote;
     }
 
     /**

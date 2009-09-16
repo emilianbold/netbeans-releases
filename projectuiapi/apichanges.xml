@@ -104,6 +104,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CompositeCategoryProvider.Registration">
+            <api name="general"/>
+            <summary>Customizer panel registrations using annotations</summary>
+            <version major="1" minor="38"/>
+            <date day="10" month="9" year="2009"/>
+            <author login="jglick"/>
+            <compatibility semantic="compatible"/>
+            <description>
+                <p>
+                  <code>@CompositeCategoryProvider.Registration</code> may be used
+                  to register project customizer panels.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
+            <issue number="171029"/>
+        </change>
         <change id="ActionProvider.global">
             <api name="general"/>
             <summary>Globally registered <code>ActionProvider</code>s</summary>

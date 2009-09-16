@@ -20,12 +20,12 @@ METHOD     entrySet()                      [PUBLIC]   Set<Entry<K, V>>
 METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
-METHOD     find(Closure)                              Object
-METHOD     findAll(Closure)                           Collection
+METHOD     find(Closure)                              Entry
+METHOD     findAll(Closure)                           Map
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
-METHOD     findIndexValues(int, Closure)              List
+METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     get(Object)                     [PUBLIC]   V

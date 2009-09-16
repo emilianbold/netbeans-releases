@@ -129,6 +129,11 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         return false;
     }
 
+    @Override
+    public String getScmFeatureName() {
+        return feature.getService();
+    }
+
     List<NbProjectHandle> recent = new ArrayList<NbProjectHandle>();
     @Override
     public List<NbProjectHandle> getRecentProjects() {

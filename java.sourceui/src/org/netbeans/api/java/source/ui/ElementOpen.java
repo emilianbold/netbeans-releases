@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2009 Sun Microsystems, Inc.
  */
 package org.netbeans.api.java.source.ui;
 
@@ -32,20 +32,11 @@ import com.sun.source.util.TreePathScanner;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import javax.lang.model.element.Element;
-import javax.swing.text.StyledDocument;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -142,42 +133,10 @@ public final class ElementOpen {
         }
     }
 
-                    
+
+    @SuppressWarnings("deprecation")
     private static boolean doOpen(FileObject fo, int offset) {
-        try {
-            DataObject od = DataObject.find(fo);
-            EditorCookie ec = od.getCookie(org.openide.cookies.EditorCookie.class);
-            LineCookie lc = od.getCookie(org.openide.cookies.LineCookie.class);
-            
-            if (ec != null && lc != null && offset != -1) {                
-                StyledDocument doc = ec.openDocument();                
-                if (doc != null) {
-                    int line = NbDocument.findLineNumber(doc, offset);
-                    int lineOffset = NbDocument.findLineOffset(doc, line);
-                    int column = offset - lineOffset;
-                    
-                    if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line);
-                        
-                        if (l != null) {
-                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
-                            return true;
-                        }
-                    }
-                }
-            }
-            
-            OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
-            
-            if (oc != null) {
-                oc.open();                
-                return true;
-            }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-        
-        return false;
+        return UiUtils.open(fo, offset);
     }
     
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {

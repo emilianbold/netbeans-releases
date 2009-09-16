@@ -55,7 +55,6 @@ import org.openide.awt.Mnemonics;
 
 import javax.swing.*;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -294,19 +293,26 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
         
         for (File file : files) {
-            file = FileUtil.normalizeFile(file);
-            // collect files parents and store them for the refresh
-            for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
-                addToMap(parentsToRefresh, FileUtil.toFileObject(parent));
-            }   
-            
-            // store file for the refresh
-            FileObject fo = FileUtil.toFileObject(file);            
-            addToMap(filesToRefresh, fo);                                                    
+            // try to limit the number of normalizeFile calls:
+            // let's find the closest existent FO, then list it's parents with FileObject.getParent();
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (fo == null) {
+                fo = getExistingParent(file);
+            } else {
+                // file exists, plan it to refresh
+                addToMap(filesToRefresh, fo);
+                fo = fo.getParent();
+            }
+
+            // fo is the closest existing parent
+            for (FileObject parent = fo; parent != null; parent = parent.getParent()) {
+                // plan parent to refresh
+                addToMap(parentsToRefresh, parent);
+            }
         }
         
         fireFileStatusChangedTask.schedule(2000);
-    }    
+    }
     
     /**
      * Stores all files which have to be refreshed 
@@ -420,6 +426,21 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             }
             set.add(fo);
         }
-    }               
+    }
+
+    /**
+     * Finds and return the closest existing ancestor FO for the given file
+     * @param file file to get an ancestor for
+     * @return an ancestor fileobject or null if no such exist
+     */
+    private FileObject getExistingParent (File file) {
+        FileObject fo = null;
+        for (File parent = file; parent != null && fo == null; parent = parent.getParentFile()) {
+            // find the fileobject
+            parent = FileUtil.normalizeFile(parent);
+            fo = FileUtil.toFileObject(parent);
+        }
+        return fo;
+    }
     
 }

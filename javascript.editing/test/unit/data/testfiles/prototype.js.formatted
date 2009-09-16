@@ -14,8 +14,8 @@ var Prototype = {
 
   ScriptFragment: '(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)',
   emptyFunction: function() {},
-  K: function(x) { 
-    return x 
+  K: function(x) {
+    return x
   }
 }
 
@@ -211,8 +211,8 @@ Object.extend(String.prototype, {
   },
 
   evalScripts: function() {
-    return this.extractScripts().map(function(script) { 
-      return eval(script) 
+    return this.extractScripts().map(function(script) {
+      return eval(script)
     });
   },
 
@@ -227,8 +227,8 @@ Object.extend(String.prototype, {
     var div = document.createElement('div');
     div.innerHTML = this.stripTags();
     return div.childNodes[0] ? (div.childNodes.length > 1 ?
-      $A(div.childNodes).inject('',function(memo,node){ 
-        return memo+node.nodeValue 
+      $A(div.childNodes).inject('',function(memo,node){
+        return memo+node.nodeValue
       }) :
       div.childNodes[0].nodeValue) : '';
   },
@@ -300,8 +300,8 @@ Object.extend(String.prototype, {
 String.prototype.gsub.prepareReplacement = function(replacement) {
   if (typeof replacement == 'function') return replacement;
   var template = new Template(replacement);
-  return function(match) { 
-    return template.evaluate(match) 
+  return function(match) {
+    return template.evaluate(match)
   };
 }
 
@@ -873,8 +873,8 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
         this.options.asynchronous);
 
       if (this.options.asynchronous)
-        setTimeout(function() { 
-          this.respondToReadyState(1) 
+        setTimeout(function() {
+          this.respondToReadyState(1)
         }.bind(this), 10);
 
       this.transport.onreadystatechange = this.onStateChange.bind(this);
@@ -928,8 +928,8 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
         for (var i = 0, length = extras.length; i < length; i += 2)
           headers[extras[i]] = extras[i+1];
       else
-        $H(extras).each(function(pair) { 
-          headers[pair.key] = pair.value 
+        $H(extras).each(function(pair) {
+          headers[pair.key] = pair.value
         });
     }
 
@@ -977,8 +977,8 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
   getHeader: function(name) {
     try {
       return this.transport.getResponseHeader(name);
-    } catch (e) { 
-      return null 
+    } catch (e) {
+      return null
     }
   },
 
@@ -986,8 +986,8 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
     try {
       var json = this.getHeader('X-JSON');
       return json ? eval('(' + json + ')') : null;
-    } catch (e) { 
-      return null 
+    } catch (e) {
+      return null
     }
   },
 
@@ -1601,13 +1601,13 @@ if (document.all && !window.opera){
       $A(element.childNodes).each(function(node){
         element.removeChild(node)
       });
-      depth.times(function(){ 
-        div = div.firstChild 
+      depth.times(function(){
+        div = div.firstChild
       });
 
       $A(div.childNodes).each(
-        function(node){ 
-          element.appendChild(node) 
+        function(node){
+          element.appendChild(node)
         });
     } else {
       element.innerHTML = html.stripScripts();
@@ -1801,8 +1801,8 @@ Selector.prototype = {
   },
 
   parseExpression: function() {
-    function abort(message) { 
-      throw 'Parse error in selector: ' + message; 
+    function abort(message) {
+      throw 'Parse error in selector: ' + message;
     }
 
     if (this.expression == '')  abort('empty expression');
@@ -1823,11 +1823,18 @@ Selector.prototype = {
     while (match = expr.match(/^([^a-z0-9_-])?([a-z0-9_-]+)(.*)/i)) {
       modifier = match[1], clause = match[2], rest = match[3];
       switch (modifier) {
-        case '#':       params.id = clause; break;
-        case '.':       params.classNames.push(clause); break;
+        case '#':
+          params.id = clause;
+          break;
+        case '.':
+          params.classNames.push(clause);
+          break;
         case '':
-        case undefined: params.tagName = clause.toUpperCase(); break;
-        default:        abort(expr.inspect());
+        case undefined:
+          params.tagName = clause.toUpperCase();
+          break;
+        default:
+          abort(expr.inspect());
       }
       expr = rest;
     }
@@ -1855,15 +1862,26 @@ Selector.prototype = {
         }
 
         switch (attribute.operator) {
-          case '=':       conditions.push(value + ' == ' + attribute.value.inspect()); break;
-          case '~=':      conditions.push(splitValueBy(' ') + '.include(' + attribute.value.inspect() + ')'); break;
-          case '|=':      conditions.push(
+          case '=':
+            conditions.push(value + ' == ' + attribute.value.inspect());
+            break;
+          case '~=':
+            conditions.push(splitValueBy(' ') + '.include(' + attribute.value.inspect() + ')');
+            break;
+          case '|=':
+            conditions.push(
             splitValueBy('-') + '.first().toUpperCase() == ' + attribute.value.toUpperCase().inspect()
-            ); break;
-          case '!=':      conditions.push(value + ' != ' + attribute.value.inspect()); break;
+            );
+          break;
+          case '!=':
+            conditions.push(value + ' != ' + attribute.value.inspect());
+            break;
           case '':
-          case undefined: conditions.push('element.hasAttribute(' + attribute.name.inspect() + ')'); break;
-          default:        throw 'Unknown operator ' + attribute.operator + ' in selector';
+          case undefined:
+            conditions.push('element.hasAttribute(' + attribute.name.inspect() + ')');
+            break;
+          default:
+            throw 'Unknown operator ' + attribute.operator + ' in selector';
         }
       });
     }

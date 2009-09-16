@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -66,7 +66,8 @@ public class JdbcUrl extends HashMap<String, String> {
     private HashSet<String> supportedTokens = new HashSet<String>();
     private HashSet<String> requiredTokens = new HashSet<String>();
     private boolean parseUrl;
-        
+
+    public static final String TOKEN_DISPLAY_NAME = "<DISPLAY_NAME>";
     public static final String TOKEN_DB = "<DB>";
     public static final String TOKEN_HOST = "<HOST>";
     public static final String TOKEN_PORT = "<PORT>";

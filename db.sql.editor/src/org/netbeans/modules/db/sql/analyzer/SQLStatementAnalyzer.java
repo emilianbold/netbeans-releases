@@ -88,6 +88,8 @@ public class SQLStatementAnalyzer {
                 return UpdateStatementAnalyzer.analyze(seq, quoter);
             case DELETE:
                 return DeleteStatementAnalyzer.analyze(seq, quoter);
+            case CREATE:
+                return CreateStatementAnalyzer.analyze(seq, quoter);
         }
         return null;
     }
@@ -107,6 +109,8 @@ public class SQLStatementAnalyzer {
             return SQLStatementKind.UPDATE;
         } else if (isKeyword("DELETE", seq)) {  //NOI18N
             return SQLStatementKind.DELETE;
+        } else if (isKeyword("CREATE", seq)) {  //NOI18N
+            return SQLStatementKind.CREATE;
         }
         return null;
     }
@@ -140,7 +144,7 @@ public class SQLStatementAnalyzer {
         boolean move = nextToken(seq);
         if (move) {
             // only if not beginning of SELECT statement
-            if (!(this instanceof SelectStatementAnalyzer) || context.isAfter(Context.SELECT)) {
+            if ((!(this instanceof SelectStatementAnalyzer) || context.isAfter(Context.SELECT)) && context != Context.BEGIN) {
                 return parseSubquery();
             }
         }

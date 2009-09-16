@@ -79,7 +79,6 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -98,6 +97,7 @@ import org.openide.util.UserQuestionException;
 class DiffSidebar extends JPanel implements DocumentListener, ComponentListener, FoldHierarchyListener, FileChangeListener {
     
     private static final int BAR_WIDTH = 9;
+    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(DiffSidebar.class.getName());
     
     private final JTextComponent  textComponent;
     /**
@@ -127,9 +127,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private RequestProcessor.Task   refreshDiffTask;
     private VersioningSystem ownerVersioningSystem;
 
-    public DiffSidebar(JTextComponent target, File file) {
+    public DiffSidebar(JTextComponent target, FileObject file) {
         this.textComponent = target;
-        this.fileObject = FileUtil.toFileObject(file);
+        this.fileObject = file;
         this.editorUI = Utilities.getEditorUI(target);
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.document = editorUI.getDocument();
@@ -380,7 +380,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             SwingUtilities.convertPointToScreen(p, textComponent);
             return p;
         } catch (BadLocationException e) {
-            Logger.getLogger(DiffSidebar.class.getName()).log(Level.WARNING, "scrollToDifference", e); // NOI18N
+            LOG.log(Level.WARNING, "scrollToDifference", e); // NOI18N
         }
         return null;
     }
@@ -481,7 +481,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     line = Utilities.getLineOffset(document, clickOffset);
                 }
             }catch (BadLocationException ble){
-                Logger.getLogger(DiffSidebar.class.getName()).log(Level.WARNING, "getLineFromMouseEvent", ble); // NOI18N
+                LOG.log(Level.WARNING, "getLineFromMouseEvent", ble); // NOI18N
             }
         }
         return line;
@@ -814,6 +814,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             originalContentBufferSerial = serial;
 
             originalContentBuffer = getText(ownerVersioningSystem);
+            if (originalContentBuffer == null) {
+                // no content for the file, setting sidebar visibility to false eliminates repeated asking for the content
+                // file can be deleted, or new?
+                setSidebarVisible(false);
+                LOG.log(Level.FINE, "Disabling diffsidebar for {0}, no content available", fileObject.getPath()); //NOI18N
+            }
         }
     }
 

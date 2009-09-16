@@ -68,6 +68,9 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
     }
+    public static OperationContainerImpl<InstallSupport> createForInternalUpdate () {
+        return new OperationContainerImpl<InstallSupport> (OperationType.INTERNAL_UPDATE);
+    }
     public static OperationContainerImpl<InstallSupport> createForUpdate () {
         return new OperationContainerImpl<InstallSupport> (OperationType.UPDATE);
     }
@@ -130,6 +133,13 @@ public final class OperationContainerImpl<Support> {
                             " and " + updateElement + " cannot be same for operation " + type);
                 }
                 break;
+            case INTERNAL_UPDATE:
+                /*
+                if (updateUnit.getInstalled () != updateElement) {
+                    throw new IllegalArgumentException (updateUnit.getInstalled () +
+                            " and " + updateElement + " must be same for operation " + type);
+                }*/
+                break;
             default:
                 assert false : "Unknown type of operation " + type;
             }
@@ -180,18 +190,28 @@ public final class OperationContainerImpl<Support> {
         return false;
     }
     
-    public List<OperationInfo<Support>> listAll () {
+    private List<OperationInfo<Support>> listAll () {
         return new ArrayList<OperationInfo<Support>>(operations);
     }
     
     synchronized public List<OperationInfo<Support>> listAllWithPossibleEager () {
         if (upToDate) {
-            return new ArrayList<OperationInfo<Support>>(operations);
+            return listAll();
         }
+            
         clearCache ();
+
+        //if operations contains only first class modules - don`t search for eagers.
+        boolean checkEagers = false;
+        for (OperationInfo<?> i : operations) {
+            if(!Utilities.isFirstClassModule(i.getUpdateUnit())) {
+               checkEagers = true;
+               break;
+            }
+        }
         // handle eager modules
-        
-        if (type == OperationType.INSTALL || type == OperationType.UPDATE) {
+
+        if ((type == OperationType.INSTALL || type == OperationType.UPDATE || type==OperationType.INTERNAL_UPDATE) && checkEagers) {
             Collection<UpdateElement> all = new HashSet<UpdateElement> (operations.size ());
             Collection<ModuleInfo> allModuleInfos = new HashSet<ModuleInfo> (operations.size ());
             for (OperationInfo<?> i : operations) {
@@ -219,7 +239,7 @@ public final class OperationContainerImpl<Support> {
                 for(ModuleInfo mi: infos) {
                     Set<UpdateElement> reqs = new HashSet<UpdateElement> ();
                     for (Dependency dep : mi.getDependencies ()) {
-                        UpdateElement req = Utilities.handleDependency (dep, Collections.singleton (mi), new HashSet<Dependency> (), false);
+                        UpdateElement req = Utilities.handleDependency (eagerEl, dep, Collections.singleton (mi), new HashSet<Dependency> (), false);
                         if (req != null) {
                             reqs.add (req);
                         }
@@ -227,7 +247,35 @@ public final class OperationContainerImpl<Support> {
                     if ((! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) ||
                             (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0)) {
                         // adds affectedEager into list of elements for the operation
-                        OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
+                        OperationInfo<Support> i = null;
+                        try {
+                            i = add (eagerEl.getUpdateUnit (), eagerEl);
+                        } catch (IllegalArgumentException e) {
+                            //investigate the reason of 172220, 171975, 169588
+                            boolean firstCondition = (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl));
+                            boolean secondCondition = reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0;
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("\nIAE while adding eager element to the " + type + " container\n");
+                            sb.append("\nEager: " + eagerEl);
+                            sb.append("\nFirst condition : " + firstCondition);
+                            sb.append("\nSecond condition : " + secondCondition);
+                            sb.append("\nInstalled: " + impl.getUpdateUnit().getInstalled());
+                            sb.append("\nPending: " + impl.getUpdateUnit().isPending());
+                            sb.append("\nreqs: " + reqs + " (total : " + reqs.size() + ")");
+                            sb.append("\nall: " + all + " (total : " + all.size() + ")");                            
+                            sb.append("\noperation: " + operations + " (total: " + operations.size()+ ")\n");
+                            sb.append("\nUpdateElements in operations:");
+                            for (OperationInfo<?> op : operations) {
+                                sb.append("\n  " + op.getUpdateElement());
+                            }
+                            sb.append("\nUpdateElements in all:");
+                            for (UpdateElement elem : all) {
+                                sb.append("\n  " + elem );
+                            }
+                            sb.append("\n");
+                            LOGGER.log(Level.INFO, sb.toString(), e);
+                            throw e;
+                        }
                         if (i != null) {
                             affectedEagers.add (i);
                         }
@@ -250,7 +298,7 @@ public final class OperationContainerImpl<Support> {
             LOGGER.log (Level.FINE, "== done. ==");
         }
         upToDate = true;
-        return new ArrayList<OperationInfo<Support>>(operations);
+        return listAll();
     }
     
     public List<OperationInfo<Support>> listInvalid () {
@@ -291,6 +339,19 @@ public final class OperationContainerImpl<Support> {
                 isValid = OperationValidator.isValidOperation (OperationType.INSTALL, updateUnit, updateElement);
             }
             break;
+        case INTERNAL_UPDATE:
+            isValid = OperationValidator.isValidOperation (type, updateUnit, updateElement);
+            // at least first add must pass and respect type of operation
+            if (! isValid && operations.size () > 0) {
+                // try Update
+                isValid = OperationValidator.isValidOperation (OperationType.UPDATE, updateUnit, updateElement);
+            }
+            if (! isValid && operations.size () > 0) {
+                // try Install
+                isValid = OperationValidator.isValidOperation (OperationType.INSTALL, updateUnit, updateElement);
+            }
+            break;
+
         default:
             isValid = OperationValidator.isValidOperation (type, updateUnit, updateElement);
         }
@@ -382,6 +443,8 @@ public final class OperationContainerImpl<Support> {
         INSTALL,
         /** Uninstall <code>UpdateElement</code> */
         UNINSTALL,
+        /** Internally update installed <code>UpdateElement</code> without version increase */
+        INTERNAL_UPDATE,
         /** Uninstall <code>UpdateElement</code> on-the-fly */
         DIRECT_UNINSTALL,
         /** Update installed <code>UpdateElement</code> to newer version. */

@@ -52,11 +52,11 @@ def platform_properties = """\
 disabled.clusters=\
     apisupport1,\
     enterprise5,\
-    groovy1,\
+    groovy2,\
     gsf1,\
     harness,\
-    ide11,\
-    java2,\
+    ide12,\
+    java3,\
     profiler3,\
     visualweb2,\
     webcommon1,\
@@ -85,8 +85,8 @@ disabled.modules=\
     org.openide.options,\
     org.openide.util.enumerations
 enabled.clusters=\
-    nb6.7,\
-    platform10
+    nb6.8,\
+    platform11
 nbplatform.active=default
 
 """

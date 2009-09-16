@@ -143,11 +143,11 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
     @SuppressWarnings ("unchecked")
     public void readSettings (WizardDescriptor settings) {
         this.wd = settings;
-        Object o = settings.getProperty (FeatureOnDemanWizardIterator.CHOSEN_ELEMENTS_FOR_ENABLE);
+        Object o = settings.getProperty (FeatureOnDemandWizardIterator.CHOSEN_ELEMENTS_FOR_ENABLE);
         assert o == null || o instanceof Collection :
             o + " is instanceof Collection<UpdateElement> or null.";
         forEnable = ((Collection<UpdateElement>) o);
-        Object templateO = settings.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
+        Object templateO = settings.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert templateO != null && templateO instanceof FileObject : templateO + " is not null and instanceof FileObject.";
         FileObject templateFO = (FileObject) templateO;
         FeatureInfo info = FoDFileSystem.getInstance().whichProvides(templateFO);
@@ -243,7 +243,7 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
     }
     
     private void waitForDelegateWizard () {
-        Object o = wd.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
+        Object o = wd.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject :
             o + " is not null and instanceof FileObject";
         final String templateResource = ((FileObject) o).getPath ();
@@ -261,7 +261,7 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
         }
         WizardDescriptor.InstantiatingIterator iterator = readWizard(fo);
         iterator.initialize (wd);
-        wd.putProperty (FeatureOnDemanWizardIterator.DELEGATE_ITERATOR, iterator);
+        wd.putProperty (FeatureOnDemandWizardIterator.DELEGATE_ITERATOR, iterator);
         fireChange ();
     }
     

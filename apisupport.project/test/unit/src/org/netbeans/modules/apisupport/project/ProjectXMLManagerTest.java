@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -382,7 +383,8 @@ public class ProjectXMLManagerTest extends TestBase {
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         ManifestManager.PackageExport[] publicPackages = testingPXM.getPublicPackages();
         assertEquals("number of public packages", 1, publicPackages.length);
-        final String[] newPP = {publicPackages[0].getPackage(), "org.netbeans.examples.modules._.čau99"};
+        final Set<String> newPP = new HashSet<String>();
+        Collections.addAll(newPP, publicPackages[0].getPackage(), "org.netbeans.examples.modules._.čau99");
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
@@ -395,9 +397,8 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         ManifestManager.PackageExport[] newPublicPackages = testingPXM.getPublicPackages();
         assertEquals("number of new public packages", 2, newPublicPackages.length);
-        Collection newPPs = Arrays.asList(newPP);
-        assertTrue(newPPs.contains(newPublicPackages[0].getPackage()));
-        assertTrue(newPPs.contains(newPublicPackages[1].getPackage()));
+        assertTrue(newPP.contains(newPublicPackages[0].getPackage()));
+        assertTrue(newPP.contains(newPublicPackages[1].getPackage()));
         assertNull("there must not be friend", testingPXM.getFriends());
     }
     
@@ -406,15 +407,16 @@ public class ProjectXMLManagerTest extends TestBase {
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         assertEquals("one friend", 1, testingPXM.getFriends().length);
         assertEquals("friend org.module.examplemodule", "org.module.examplemodule", testingPXM.getFriends()[0]);
-        final String[] newFriends = new String[] { "org.exampleorg.somefriend", "org.exampleorg.anotherfriend" };
+        final Set<String> newFriends = new HashSet<String>();
+        Collections.addAll(newFriends, "org.exampleorg.somefriend", "org.exampleorg.anotherfriend" );
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
             public Boolean run() throws IOException {
                 ManifestManager.PackageExport pkgs[] = testingPXM.getPublicPackages();
-                String[] packagesToExpose = new String[pkgs.length];
+                Set<String> packagesToExpose = new HashSet<String>();
                 for (int i = 0; i < pkgs.length; i++) {
-                    packagesToExpose[i] = pkgs[i].getPackage();
+                    packagesToExpose.add(pkgs[i].getPackage());
                 }
                 testingPXM.replaceFriends(newFriends, packagesToExpose);
                 return true;
@@ -424,10 +426,9 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         final ProjectXMLManager newTestingPXM = new ProjectXMLManager(testingProject);
         String[] actualFriends = newTestingPXM.getFriends();
-        assertEquals("number of new friend", 2, actualFriends.length);
+        assertEquals("number of new friends", newFriends.size(), actualFriends.length);
         Collection newFriendsCNBs = Arrays.asList(actualFriends);
-        assertTrue(newFriendsCNBs.contains(newFriends[0]));
-        assertTrue(newFriendsCNBs.contains(newFriends[1]));
+        assertTrue("friends correctly replaced", newFriends.containsAll(newFriendsCNBs));
         assertEquals("public packages", 1, newTestingPXM.getPublicPackages().length);
     }
     
@@ -435,7 +436,62 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectXMLManager xercesPXM = createXercesPXM();
         assertEquals("number of binary origins", 1, xercesPXM.getBinaryOrigins().length);
     }
-    
+
+    public void testRemoveClassPathExtensions() throws Exception {
+        final NbModuleProject testingProject = generateTestingProject();
+        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+        // apply and save project
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
+                testingPXM.removeClassPathExtensions();
+                return true;
+            }
+        });
+        assertTrue("removing class-path-extensions", result);
+        ProjectManager.getDefault().saveProject(testingProject);
+
+        final Map<String, String> newCPExts = testingPXM.getClassPathExtensions();
+        assertEquals("number of class-path-extensions", 0, newCPExts.size());
+    }
+
+    public void testReplaceClassPathExtensions() throws Exception {
+        final NbModuleProject testingProject = generateTestingProject();
+        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+        final Map<String, String> newCPE = new HashMap<String, String>();
+        newCPE.put("ext/testing.jar", "release/modules/ext/testing.jar");
+        newCPE.put("ext/jFreeChart-1.0.13.jar", "release/modules/ext/jFreeChart-1.0.13.jar");
+        // apply and save project
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
+                testingPXM.replaceClassPathExtensions(newCPE);
+                return true;
+            }
+        });
+        assertTrue("replacing class-path-extensions", result);
+        ProjectManager.getDefault().saveProject(testingProject);
+
+        // try with another ProjectXMLManager so that c-p-es are not cached
+        Map<String, String> actualCPEs = (new ProjectXMLManager(testingProject)).getClassPathExtensions();
+        assertEquals("number of class-path-extensions", 2, actualCPEs.size());
+        assertEquals("correct class-path-extensions", newCPE, actualCPEs);
+
+        newCPE.clear();
+        newCPE.put("ext/testing2.jar", "release/modules/ext/testing2.jar");
+        // apply and save again
+        result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
+                testingPXM.replaceClassPathExtensions(newCPE);
+                return true;
+            }
+        });
+        assertTrue("replacing class-path-extensions", result);
+        ProjectManager.getDefault().saveProject(testingProject);
+
+        actualCPEs = (new ProjectXMLManager(testingProject)).getClassPathExtensions();
+        assertEquals("number of class-path-extensions", 1, actualCPEs.size());
+        assertEquals("correct class-path-extensions", newCPE, actualCPEs);
+    }
+
     public void testThatFriendPackagesAreGeneratedInTheRightOrder_61882() throws Exception {
         FileObject fo = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "testing");
         FileObject projectXMLFO = fo.getFileObject("nbproject/project.xml");

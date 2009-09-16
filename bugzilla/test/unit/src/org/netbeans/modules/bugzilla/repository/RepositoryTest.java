@@ -86,6 +86,11 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        // cleanup repositories
+        String[] repos = BugzillaConfig.getInstance().getRepositories();
+        for (String id : repos) {
+            BugzillaConfig.getInstance().removeRepository(id);
+        }
     }
 
     @Override
@@ -96,7 +101,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
     public void testController() throws Throwable {
         BugzillaConnector bc = getConnector();
-        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();
+        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();       
         RepositoryController c = getController(repo);
 
         // populate
@@ -178,7 +183,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     }
 
     public void testRepo() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
+        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
 
         // test queries
         Query[] queries = repo.getQueries();
@@ -215,7 +220,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
         String summary1 = "somary" + ts;
         String summary2 = "mary" + ts;
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
+        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
 
         String id1 = TestUtil.createIssue(repo, summary1);
         String id2 = TestUtil.createIssue(repo, summary2);

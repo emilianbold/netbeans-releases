@@ -82,7 +82,7 @@ public class ResolveConflictsAction extends ContextAction {
 
     public boolean isEnabled() {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();                
-        return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true);
+        return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, false, true);
     }
 
     static void resolveConflicts(File[] files) {

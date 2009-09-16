@@ -104,13 +104,13 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -146,7 +146,9 @@ public class GdbDebugger implements PropertyChangeListener {
         CONTINUE, FINISH, STEP, NEXT;
     }
 
-    public static final String DONE_PREFIX = "^done"; // NOI18N
+    public static final String DONE_PREFIX      = "^done"; // NOI18N
+    public static final String RUNNING_PREFIX   = "^running"; // NOI18N
+    public static final String CONNECTED_PREFIX = "^connected"; // NOI18N
 
     private LastGoState                 lastGo;
     private String                      lastStop;
@@ -327,7 +329,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     gdb.file_exec_and_symbols(pgm);
                     isSharedLibrary = true;
                 } else {
-                    gdb.file_exec_and_symbols(path);
+                    gdb.file_symbol_file(path);
                 }
                 
                 CommandBuffer cb = getAttachCommand(attachTarget);
@@ -804,17 +806,22 @@ public class GdbDebugger implements PropertyChangeListener {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             String procdir = "/proc/" + Long.toString(pid); // NOI18N
             File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
-            if (!pathfile.exists()) {
-                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
-            }
-            if (pathfile.exists()) {
-                File exefile = new File(exepath);
-                if (exefile.exists()) {
-                    String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                    if (comparePaths(path, exefile.getAbsolutePath())) {
-                        return true;
+            try {
+                String path = getPathFromSymlink(pathfile.getAbsolutePath());
+                if (path == null) {
+                    pathfile = new File(procdir, "exe"); // NOI18N - Linux?
+                    path = getPathFromSymlink(pathfile.getAbsolutePath());
+                }
+                if (path != null) {
+                    File exefile = new File(exepath);
+                    if (HostInfoUtils.fileExists(execEnv, exepath)) {
+                        if (comparePaths(path, exefile.getAbsolutePath())) {
+                            return true;
+                        }
                     }
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return false;
@@ -874,29 +881,22 @@ public class GdbDebugger implements PropertyChangeListener {
         return null;
     }
 
-    private static String getPathFromSymlink(String path) {
-        File ls = new File("/bin/ls"); // NOI18N
-        if (ls.isFile()) {
-            List<String> list = new ArrayList<String>();
-            list.add(ls.getAbsolutePath());
-            list.add("-l"); // NOI18N
-            list.add(path);
-            ProcessBuilder pb = new ProcessBuilder(list);
-            pb.redirectErrorStream(true);
-
-            try {
-                Process process = pb.start();
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line = br.readLine(); // just read 1st line...
-                br.close();
-                if (line != null) {
-                    int pos = line.indexOf("->"); // NOI18N
-                    if (pos > 0) {
-                        return line.substring(pos + 2).trim();
-                    }
+    private String getPathFromSymlink(String path) {
+        try {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable("/bin/ls").setArguments("-l", path).redirectError(); // NOI18N
+            final NativeProcess process = npb.call();
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = br.readLine(); // just read 1st line...
+            br.close();
+            if (line != null) {
+                int pos = line.indexOf("->"); // NOI18N
+                if (pos > 0) {
+                    return line.substring(pos + 2).trim();
                 }
-            } catch (IOException ioe) {
             }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -1007,7 +1007,11 @@ public class GdbDebugger implements PropertyChangeListener {
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
         currentToken = token + 1;
-        if (msg.startsWith(DONE_PREFIX)) {
+
+        // First finish CB if needed
+        if (msg.startsWith(DONE_PREFIX) ||
+                msg.startsWith(RUNNING_PREFIX) ||
+                msg.startsWith(CONNECTED_PREFIX)) {
             // ^done should finish corresponding commandBuffer
             CommandBuffer cb = gdb.getCommandBuffer(token);
             if (cb != null) {
@@ -1017,7 +1021,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
                 cb.done();
             }
+        }
 
+        if (msg.startsWith(DONE_PREFIX)) {
             if (msg.startsWith("^done,bkpt=")) { // NOI18N (-break-insert)
                 msg = msg.substring(12, msg.length() - 1);
                 Map<String, String> map = GdbUtils.createMapFromString(msg);
@@ -1061,6 +1067,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 disassembly.updateRegModified(msg);
                 GdbContext.getInstance().setProperty(GdbContext.PROP_REGISTERS, disassembly.getRegisterValues());
             } else { // NOI18N
+                CommandBuffer cb = gdb.getCommandBuffer(token);
                 if (cb != null) {
                     if (token == shareToken) {
                         shareTab = createShareTab(cb.getResponse());
@@ -1077,7 +1084,7 @@ public class GdbDebugger implements PropertyChangeListener {
             }
         // end of ^done block
         } else if (msg.startsWith("^running") && isStopped()) { // NOI18N
-            setRunning();
+                setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
             CommandBuffer cb = gdb.getCommandBuffer(token);
@@ -2151,29 +2158,28 @@ public class GdbDebugger implements PropertyChangeListener {
                 } else if (!path.endsWith(".exe")) { // NOI18N
                     path = path + ".exe"; // NOI18N
                 }
-                try {
-                    if (HostInfoUtils.fileExists(execEnv, path)) {
-                        return true;
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
-            
-            // MIME type is checked only localy for now
-            if (execEnv.isLocal()) {
-                File file = new File(path);
-                if (file.exists()) {
+
+            try {
+                // Check that the path exists
+                if (!HostInfoUtils.fileExists(execEnv, path)) {
+                    return false;
+                }
+                // MIME type is checked only localy for now
+                if (execEnv.isLocal()) {
+                    File file = new File(path);
+                    assert file.exists(); // should be always true here
                     String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
                     if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                         return true;
                     }
-                }
+                } 
+                return true;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            return false;
-        } else {
-            return false;
-        }
+        } 
+        return false;
     }
 
     /**
@@ -2715,7 +2721,7 @@ public class GdbDebugger implements PropertyChangeListener {
             MakeConfiguration conf;
 
             for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
-                ProjectConfigurationProvider pcp = proj.getLookup().lookup(ProjectConfigurationProvider.class);
+                ProjectConfigurationProvider<?> pcp = proj.getLookup().lookup(ProjectConfigurationProvider.class);
                 if (pcp != null) {
                     o = pcp.getActiveConfiguration();
                     if (o instanceof MakeConfiguration) {

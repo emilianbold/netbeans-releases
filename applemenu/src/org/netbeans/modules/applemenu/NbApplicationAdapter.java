@@ -45,12 +45,19 @@ import com.apple.eawt.*;
 
 import java.beans.Beans;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 
 import org.openide.ErrorManager;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.ViewCookie;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /** Adapter class which intercepts action events and passes them to the
  * correct action instance as defined in the system filesystem.
@@ -64,8 +71,6 @@ class NbApplicationAdapter implements ApplicationListener {
         "Actions/Window/org-netbeans-modules-options-OptionsWindowAction.instance"; //NOI18N
     private static final String ABOUT_ACTION = 
         "Actions/Help/org-netbeans-core-actions-AboutAction.instance"; //NOI18N
-    private static final String OPENFILE_ACTION = 
-        "Menu/File/org-netbeans-modules-openfile-OpenFileAction"; //NOI18N
     private static final String EXIT_ACTION = 
         "Actions/System/org-netbeans-core-actions-SystemExit.instance"; //NOI18N
     
@@ -106,7 +111,34 @@ class NbApplicationAdapter implements ApplicationListener {
     }
     
     public void handleOpenFile (ApplicationEvent e) {
-        e.setHandled(performAction (OPENFILE_ACTION, e.getFilename()));
+        boolean result = false;
+        String fname = e.getFilename();
+        File f = new File (fname);
+        if (f.exists() && !f.isDirectory()) {
+            FileObject obj = FileUtil.toFileObject(f);
+            if (obj != null) {
+                try {
+                    DataObject dob = DataObject.find(obj);
+                    OpenCookie oc = dob.getLookup().lookup (OpenCookie.class);
+                    if (result = oc != null) {
+                        oc.open();
+                    } else {
+                        EditCookie ec = dob.getLookup().lookup(EditCookie.class);
+                        if (result = ec != null) {
+                            ec.edit();
+                        } else {
+                            ViewCookie v = dob.getLookup().lookup(ViewCookie.class);
+                            if (result = v != null) {
+                                v.view();
+                            }
+                        }
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Logger.getLogger(NbApplicationAdapter.class.getName()).log(Level.INFO, fname, ex);
+                }
+            }
+        }
+        e.setHandled(result);
     }
     
     public void handlePreferences (ApplicationEvent e) {

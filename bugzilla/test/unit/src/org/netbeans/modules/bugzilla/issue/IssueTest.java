@@ -438,7 +438,9 @@ public class IssueTest extends NbTestCase implements TestConstants {
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER4);
         ccs.add(REPO_USER);
-        modIssue.setFieldValues(IssueField.REMOVECC, ccs);
+        for (String c : ccs) {
+            modIssue.setFieldValue(IssueField.REMOVECC, c);
+        }
         submit(modIssue);
         issue.refresh();
         ccs = issue.getFieldValues(IssueField.CC);
@@ -456,7 +458,9 @@ public class IssueTest extends NbTestCase implements TestConstants {
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER3);
         ccs.add(REPO_USER2);
-        modIssue.setFieldValues(IssueField.REMOVECC, ccs);
+        for (String c : ccs) {
+            modIssue.setFieldValue(IssueField.REMOVECC, c);
+        }
         submit(modIssue);
         issue.refresh();
         ccs = issue.getFieldValues(IssueField.CC);
@@ -739,6 +743,54 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertEquals("1 new comment(s)", rc);
     }
 
+    public void testChangeProduct() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
+
+        resetStatusValues(issue);
+
+        issue.setFieldValue(IssueField.PRODUCT, TEST_PROJECT2);
+        issue.setFieldValue(IssueField.COMPONENT, getOtherComponent(issue, TEST_PROJECT2));
+        issue.setFieldValue(IssueField.VERSION, getOtherVersion(issue, TEST_PROJECT2));
+        issue.setFieldValue(IssueField.MILESTONE, getOtherMilestone(issue, TEST_PROJECT2));
+
+        issue.submitAndRefresh();
+        assertEquals(TEST_PROJECT2, issue.getFieldValue(IssueField.PRODUCT));
+    }
+
+    public void testSetResetProduct() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
+
+        resetStatusValues(issue);
+
+        // set new product
+        issue.setFieldValue(IssueField.PRODUCT, TEST_PROJECT2);
+        issue.setFieldValue(IssueField.COMPONENT, getOtherComponent(issue, TEST_PROJECT2));
+        issue.setFieldValue(IssueField.VERSION, getOtherVersion(issue, TEST_PROJECT2));
+        issue.setFieldValue(IssueField.MILESTONE, getOtherMilestone(issue, TEST_PROJECT2));
+
+        // reset back
+        issue.setFieldValue(IssueField.PRODUCT, TEST_PROJECT);
+        issue.setFieldValue(IssueField.COMPONENT, getOtherComponent(issue, TEST_PROJECT));
+        issue.setFieldValue(IssueField.VERSION, getOtherVersion(issue, TEST_PROJECT));
+        issue.setFieldValue(IssueField.MILESTONE, getOtherMilestone(issue, TEST_PROJECT));
+
+        issue.submitAndRefresh();
+        assertEquals(TEST_PROJECT, issue.getFieldValue(IssueField.PRODUCT));
+    }
+
+    // XXX test new issue
 
     private void addHandler(LogHandler lh) {
         Logger l = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
@@ -793,9 +845,13 @@ public class IssueTest extends NbTestCase implements TestConstants {
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.KEYWORDS), IssueField.KEYWORDS.getKey());
     }
 
-    private String getOtherMilestone(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = getRepository().getConfiguration().getTargetMilestones(TEST_PROJECT);
+    private String getOtherMilestone(BugzillaIssue issue, String product) throws IOException, CoreException {
+        List<String> l = getRepository().getConfiguration().getTargetMilestones(product);
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.MILESTONE), IssueField.MILESTONE.getKey());
+    }
+
+    private String getOtherMilestone(BugzillaIssue issue) throws IOException, CoreException {
+        return getOtherMilestone(issue, TEST_PROJECT);
     }
 
     private String getOtherPlatform(BugzillaIssue issue) throws IOException, CoreException {
@@ -813,9 +869,13 @@ public class IssueTest extends NbTestCase implements TestConstants {
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.PRIORITY), IssueField.PRIORITY.getKey());
     }
 
-    private String getOtherVersion(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = getRepository().getConfiguration().getVersions(TEST_PROJECT);
+    private String getOtherVersion(BugzillaIssue issue, String product) throws IOException, CoreException {
+        List<String> l = getRepository().getConfiguration().getVersions(product);
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.VERSION), IssueField.VERSION.getKey());
+    }
+
+    private String getOtherVersion(BugzillaIssue issue) throws IOException, CoreException {
+        return getOtherVersion(issue, TEST_PROJECT);
     }
 
     private String getOtherSeverity(BugzillaIssue issue) throws IOException, CoreException {
@@ -828,9 +888,13 @@ public class IssueTest extends NbTestCase implements TestConstants {
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.RESOLUTION), IssueField.RESOLUTION.getKey());
     }
 
-    private String getOtherComponent(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = getRepository().getConfiguration().getComponents(TEST_PROJECT);
+    private String getOtherComponent(BugzillaIssue issue, String project) throws IOException, CoreException {
+        List<String> l = getRepository().getConfiguration().getComponents(project);
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.COMPONENT), IssueField.COMPONENT.getKey());
+    }
+
+    private String getOtherComponent(BugzillaIssue issue) throws IOException, CoreException {
+        return getOtherComponent(issue, TEST_PROJECT);
     }
 
     private String getDifferentServerValue(List<String> l, String v, String field) {

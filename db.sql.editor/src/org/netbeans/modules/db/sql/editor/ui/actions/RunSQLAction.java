@@ -91,9 +91,7 @@ public class RunSQLAction extends SQLExecutionBaseAction implements ActionProvid
             sqlExecution.execute();
         } else {
             conn = selectDatabaseConnection();
-            if (conn == null) {
-                notifyNoDatabaseConnection();
-            } else {
+            if (conn != null) {
                 LOGGER.finer("Set DatabaseConnection: " + conn);
                 sqlExecution.setDatabaseConnection(conn);
                 sqlExecution.execute();

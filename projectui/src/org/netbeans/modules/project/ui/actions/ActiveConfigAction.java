@@ -30,6 +30,7 @@ import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -57,6 +58,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -109,6 +112,25 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         super();
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         configListCombo = new JComboBox();
+        configListCombo.addPopupMenuListener(new PopupMenuListener() {
+            private Component prevFocusOwner = null;
+
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                prevFocusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+                configListCombo.setFocusable(true);
+                configListCombo.requestFocusInWindow();
+            }
+
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                if( null != prevFocusOwner )
+                    prevFocusOwner.requestFocusInWindow();
+                prevFocusOwner = null;
+                configListCombo.setFocusable(false);
+            }
+
+            public void popupMenuCanceled(PopupMenuEvent e) {
+            }
+        });
         configListCombo.setRenderer(new ConfigCellRenderer());
         configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(getName()));
         configListCombo.setFocusable(false);

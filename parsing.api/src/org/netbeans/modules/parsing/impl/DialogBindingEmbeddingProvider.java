@@ -41,7 +41,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -65,7 +65,7 @@ public final class DialogBindingEmbeddingProvider extends EmbeddingProvider {
             int length = (Integer)attributes.getValue(path, "dialogBinding.length"); //NOI18N
             Document d = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
             if (d != null) {
-                String mimeType = NbEditorUtilities.getMimeType(d);
+                String mimeType = DocumentUtilities.getMimeType(d);
                 ArrayList<Embedding> ret = new ArrayList<Embedding>(3);
                 ret.add(snapshot.create(d.getText(0, offset), mimeType));
                 ret.add(snapshot.create(0, snapshot.getText().length(), mimeType));

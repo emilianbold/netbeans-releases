@@ -48,6 +48,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.ProjectNameProvider;
 import org.openide.WizardDescriptor;
@@ -81,6 +82,8 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
     public abstract void selectSourcesLocation(LocalServer localServer);
     public abstract MutableComboBoxModel getLocalServerModel();
     public abstract void setLocalServerModel(MutableComboBoxModel localServers);
+    public abstract PhpVersion getPhpVersion();
+    public abstract void setPhpVersion(PhpVersion phpVersion);
     public abstract Charset getEncoding();
     public abstract void setEncoding(Charset encoding);
     public abstract void setState(boolean enabled);

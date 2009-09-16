@@ -41,16 +41,23 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.ElementKind;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -66,6 +73,13 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
@@ -201,14 +215,19 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             "(" + type + ") ") +
                         v.getValue ();
                 }
-            else 
+            else
                 toolTipText = expression + " = " + 
                     (type.length () == 0 ? 
                         "" : 
                         "(" + type + ") ") +
                     v.getValue ();
         } catch (InvalidExpressionException e) {
-            toolTipText = expression + " = >" + e.getMessage () + "<";
+            String typeName = resolveTypeName(offset, doc);
+            if (typeName != null) {
+                toolTipText = typeName;
+            } else {
+                toolTipText = expression + " = >" + e.getMessage () + "<";
+            }
         }
         firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
     }
@@ -280,6 +299,31 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         } catch (BadLocationException e) {
             return null;
         }
+    }
+
+    private String resolveTypeName (final int offset, Document doc) {
+        final String[] result = new String[1];
+        result[0] = null;
+        try {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult(offset);
+                    CompilationController controller = CompilationController.get(res);
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
+                    }
+                    TreePath path = controller.getTreeUtilities().pathFor(offset);
+                    javax.lang.model.element.Element elem = controller.getTrees().getElement(path);
+                    ElementKind kind = elem.getKind();
+                    if (kind == ElementKind.CLASS || kind == ElementKind.ENUM || kind == ElementKind.ANNOTATION_TYPE) {
+                        result[0] = elem.asType().toString();
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+        }
+        return result[0];
     }
     
 }

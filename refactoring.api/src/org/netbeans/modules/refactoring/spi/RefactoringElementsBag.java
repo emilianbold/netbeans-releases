@@ -105,7 +105,7 @@ public final class RefactoringElementsBag {
             el.setStatus(el.READ_ONLY);
             delegate.add(el);
         //isQuery should be used
-        } else if (isGuarded(el) && !(refactoring instanceof WhereUsedQuery)) {
+        } else if (!(refactoring instanceof WhereUsedQuery) && isGuarded(el)) {
             ArrayList<RefactoringElementImplementation> proposedChanges = new ArrayList<RefactoringElementImplementation>();
             ArrayList<Transaction> transactions = new ArrayList<Transaction>();
             for (GuardedBlockHandler gbHandler: APIAccessor.DEFAULT.getGBHandlers(refactoring)) {

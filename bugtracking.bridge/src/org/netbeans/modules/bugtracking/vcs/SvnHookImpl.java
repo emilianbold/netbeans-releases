@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -191,6 +192,7 @@ public class SvnHookImpl extends SvnHook {
 
         issue.open();
         LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
+        VCSHooksConfig.logHookUsage("SVN", getSelectedRepository()); // NOI18N
     }
 
     @Override
@@ -209,7 +211,11 @@ public class SvnHookImpl extends SvnHook {
         panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnResolve());
         panel.commitRadioButton.setSelected(false);
 
-        RepositorySelector.setup(panel, referenceFile);
+        if (referenceFile != null) {
+            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
+        } else {
+            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, false);
+        }
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
         panel.changeFormatButton.addActionListener(new ActionListener() {

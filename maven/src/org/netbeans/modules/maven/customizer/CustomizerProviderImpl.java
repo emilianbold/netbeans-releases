@@ -57,16 +57,15 @@ import java.util.List;
 import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.DefaultJDOMFactory;
 import org.jdom.Document;
@@ -143,7 +142,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             Lookup context = Lookups.fixed(new Object[] { project, handle});
             Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/org-netbeans-modules-maven/Customizer", //NOI18N
                                              context, 
-                                             preselectedCategory, listener, null );
+                                             preselectedCategory, listener, listener, null );
             dialog.addWindowListener( listener );
             listener.setDialog(dialog);
             dialog.setTitle( MessageFormat.format(
@@ -181,11 +180,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             source = Utilities.createModelSourceForMissingFile(file, true, PROFILES_SKELETON, "text/x-maven-profile+xml"); //NOI18N
         }
         ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
-        UserActionGoalProvider usr = project.getLookup().lookup(UserActionGoalProvider.class);
         Map<String, ActionToGoalMapping> mapps = new HashMap<String, ActionToGoalMapping>();
         NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
-        ActionToGoalMapping mapping = reader.read(new StringReader(usr.getRawMappingsAsString()));
-        mapps.put(M2Configuration.DEFAULT, mapping);
         List<ModelHandle.Configuration> configs = new ArrayList<ModelHandle.Configuration>();
         ModelHandle.Configuration active = null;
         M2ConfigProvider provider = project.getLookup().lookup(M2ConfigProvider.class);
@@ -258,6 +254,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener extends WindowAdapter implements ActionListener {
         private Dialog dialog;
+        private boolean weAreSaving = false;
         
         OptionListener() {
         }
@@ -269,9 +266,30 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         // Listening to OK button ----------------------------------------------
         
         public void actionPerformed( ActionEvent e ) {
-            if ( dialog != null ) {
-                dialog.setVisible(false);
-                dialog.dispose();
+            if (SwingUtilities.isEventDispatchThread()) {
+                if ( dialog != null ) {
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                    dialog = null;
+                    weAreSaving = true;
+
+                    //we need to finish transactions in the same thread we initiated them, doh..
+                    if (handle.getProfileModel().isIntransaction()) {
+                        if (handle.isModified(handle.getProfileModel())) {
+                            handle.getProfileModel().endTransaction();
+                        } else {
+                            handle.getProfileModel().rollbackTransaction();
+                        }
+                    }
+                    if (handle.getPOMModel().isIntransaction()) {
+                        if (handle.isModified(handle.getPOMModel())) {
+                            handle.getPOMModel().endTransaction();
+                        } else {
+                            handle.getPOMModel().rollbackTransaction();
+                        }
+                    }
+                }
+            } else {
                 try {
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                         public void run() throws IOException {
@@ -290,16 +308,18 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         
         @Override
         public void windowClosed( WindowEvent e) {
-            //TODO where to put elsewhere?
-            project.getLookup().lookup(MavenProjectPropsImpl.class).cancelTransaction();
-            if (handle.getPOMModel().isIntransaction()) {
-                handle.getPOMModel().rollbackTransaction();
+            if (!weAreSaving) {
+                //TODO where to put elsewhere?
+                project.getLookup().lookup(MavenProjectPropsImpl.class).cancelTransaction();
+                if (handle.getPOMModel().isIntransaction()) {
+                    handle.getPOMModel().rollbackTransaction();
+                }
+                assert !handle.getPOMModel().isIntransaction();
+                if (handle.getProfileModel().isIntransaction()) {
+                    handle.getProfileModel().rollbackTransaction();
+                }
+                assert !handle.getProfileModel().isIntransaction();
             }
-            assert !handle.getPOMModel().isIntransaction();
-            if (handle.getProfileModel().isIntransaction()) {
-                handle.getProfileModel().rollbackTransaction();
-            }
-            assert !handle.getProfileModel().isIntransaction();
         }
         
         @Override
@@ -307,6 +327,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();
+                dialog = null;
             }
         }
 
@@ -320,10 +341,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         Utilities.saveChanges(handle.getPOMModel());
         if (handle.isModified(handle.getProfileModel())) {
             Utilities.saveChanges(handle.getProfileModel());
-        } else {
-            if (handle.getProfileModel().isIntransaction()) {
-                handle.getProfileModel().rollbackTransaction();
-            }
         }
         if (handle.isModified(handle.getActionMappings())) {
             writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));

@@ -216,7 +216,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {
-                        HashSet<String> set = new HashSet<String>();
+                        Set<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
                             if (isStoped.get()) {
                                 break;
@@ -224,15 +224,28 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                             set.addAll( ((DwarfSource)source).getIncludedFiles() );
                             set.add(source.getItemPath());
                         }
-                        HashSet<String> unique = new HashSet<String>();
+                        if (progress != null) {
+                            progress.start(set.size());
+                        }
+                        Set<String> unique = new HashSet<String>();
                         for(String path : set){
                             if (isStoped.get()) {
                                 break;
                             }
+                            if (progress != null) {
+                                synchronized(progress) {
+                                    progress.increment();
+                                }
+                            }
                             File file = new File(path);
-                            if (CndFileUtils.exists(file)) {
+                            //if (CndFileUtils.exists(file)) {
+                            // do not use CndFileUtils. It results in a lot of GC
+                            if (file.exists()) {
                                 unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
                             }
+                        }
+                        if (progress != null) {
+                            progress.done();
                         }
                         myIncludedFiles = new ArrayList<String>(unique);
                     }
@@ -248,11 +261,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         HashSet<String> set = new HashSet<String>();
         gatherSubFolders(new File(root), set);
         HashSet<String> map = new HashSet<String>();
-        for (Iterator it = set.iterator(); it.hasNext();){
+        for (Iterator<String> it = set.iterator(); it.hasNext();){
             if (isStoped.get()) {
                 break;
             }
-            File d = new File((String)it.next());
+            File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {

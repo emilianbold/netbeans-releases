@@ -43,8 +43,10 @@ package org.netbeans.modules.java.project;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -62,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  * Wizard to create a new Java file.
@@ -100,8 +103,10 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         assert groups != null : "Cannot return null from Sources.getSourceGroups: " + sources;
+        groups = checkNotNull (groups, sources);
         if (groups.length == 0) {
             groups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
+            groups = checkNotNull (groups, sources);
             return new WizardDescriptor.Panel[] {            
                 Templates.createSimpleTargetChooser( project, groups ),
             };
@@ -120,6 +125,16 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
             }
         }
                
+    }
+
+    private static SourceGroup[] checkNotNull (SourceGroup[] groups, Sources sources) {
+        List<SourceGroup> sourceGroups = new ArrayList<SourceGroup> ();
+        for (SourceGroup sourceGroup : groups)
+            if (sourceGroup == null)
+                Exceptions.printStackTrace (new NullPointerException (sources + " returns null SourceGroup!"));
+            else
+                sourceGroups.add (sourceGroup);
+        return sourceGroups.toArray (new SourceGroup [sourceGroups.size ()]);
     }
     
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
@@ -224,7 +239,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         return panels[index];
     }
     
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     public final void addChangeListener(ChangeListener l) {
         synchronized(listeners) {

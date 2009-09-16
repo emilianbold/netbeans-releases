@@ -46,6 +46,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -55,7 +56,16 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
+@OptionsPanelController.SubRegistration(
+    displayName="#LBL_GeneralOptions",
+//    toolTip="#LBL_GeneralOptionsTooltip",
+    id=PhpOptionsPanelController.ID,
+    location=UiUtils.OPTIONS_PATH,
+    position=100
+)
 public class PhpOptionsPanelController extends OptionsPanelController implements ChangeListener {
+
+    public static final String ID = "General";
 
     private PhpOptionsPanel phpOptionsPanel = null;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);

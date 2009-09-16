@@ -59,9 +59,10 @@ import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.Element;
 import javax.swing.text.View;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.openide.util.NbBundle;
 
 /**
@@ -354,18 +355,38 @@ public class Utilities {
         int best = findBestSpan(c, start, end, x);
         
         if (best<c.getDocument().getLength()){
-            // #56056
-            int tmp = best + 1;
-            int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-                    tmp, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
+			// #56056
+			int tmp = best + 1;
+			int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
+					tmp, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
             if (nextVisualPosition<best && nextVisualPosition >= 0){
-                return nextVisualPosition;
-            }
+				// #164820
+				// We are in the collapsed fold, now try to find which position
+				// is the best, whether foldEnd or foldStart
+				tempRect = c.modelToView(nextVisualPosition);
+				if (tempRect == null) {
+					return nextVisualPosition;
+				}
+				int leftX = tempRect.x;
+				int nextVisualPositionRight = c.getUI().getNextVisualPositionFrom(c,
+						nextVisualPosition, javax.swing.text.Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
+				tempRect = c.modelToView(nextVisualPositionRight);
+				if (tempRect == null) {
+					return nextVisualPosition;
+				}
+				int rightX = tempRect.x;
+
+				if (Math.abs(leftX - x) < Math.abs(rightX - x)) {
+					return nextVisualPosition;
+				} else {
+					return nextVisualPositionRight;
+				}
+			}
         }
-        
+
         return best;
-    }    
-    
+    }
+
     /** Get the position that is one line above and visually at some
     * x-coordinate value.
     * @param c text component to operate on
@@ -1154,7 +1175,7 @@ public class Utilities {
     /** Returns last activated component. If the component was closed, 
      *  then previous component is returned */
     public static JTextComponent getLastActiveComponent() {
-        return Registry.getMostActiveComponent();
+        return EditorRegistry.lastFocusedComponent();
     }
     
     /**

@@ -47,6 +47,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
+@OptionsPanelController.SubRegistration(
+    location="CPlusPlus", // NOI18N
+    displayName="#TAB_ToolsTab", // NOI18N
+    position=100
+)
 public final class ToolsPanelController extends OptionsPanelController {
 
     private ToolsPanel panel = new ToolsPanel();
@@ -72,7 +77,7 @@ public final class ToolsPanelController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
+        return new HelpCtx("cnd.optionsDialog"); // NOI18N
     }
     
     public JComponent getComponent(Lookup masterLookup) {

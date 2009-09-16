@@ -24,33 +24,61 @@
 package org.netbeans.test.installer;
 
 import java.util.logging.Logger;
+import java.util.*;
 
 /**
  *
  * @author Mikhail Vaysman
  */
-public class InstallerAndUninstallerAllTest{
+public class InstallerAndUninstallerAllTest
+{
+  @org.junit.Test
+  public void testInstaller( )
+  {
+    String sInstallerType = System.getProperty(
+        "test.installer.bundle.name.suffix",
+        "all"
+      );
+    //Properties pp = System.getProperties( );
+    //pp.list( System.out );
 
-    @org.junit.Test
-    public void testInstaller() {
-        TestData data = new TestData(Logger.getLogger("global"));
+      Installer I = null;
 
-        Utils.phaseOne(data, "all");
+    if( sInstallerType.equals( "all" ) )
+      I = new Installer( );
+    else
+    if( sInstallerType.equals( "javase" ) )
+      I = new TestInstallerAndUninstallerJavaSE( );
+    else
+    if( sInstallerType.equals( "java" ) )
+      I = new TestInstallerAndUninstallerJava( );
+    else
+    if( sInstallerType.equals( "ruby" ) )
+      I = new TestInstallerAndUninstallerRuby( );
+    else
+    if( sInstallerType.equals( "cpp" ) )
+      I = new TestInstallerAndUninstallerCPP( );
+    else
+    if( sInstallerType.equals( "php" ) )
+      I = new TestInstallerAndUninstallerPHP( );
 
-        //select apache
-        Utils.stepChooseComponet("Apache Tomcat");
-
-        Utils.phaseTwo(data);
-
-        Utils.phaseThree(data);
-
-        Utils.phaseFour(data);
-
-        //TODO Dir removed test
-        //TODO Clean up work dir
-    }
+    I.testInstaller( );
+  }
 
     public static void main(String[] args) {
         org.junit.runner.JUnitCore.runClasses(InstallerAndUninstallerAllTest.class);
     }
 }
+
+/*
+Sample start:
+set WORKSPACE=path_to_workspace
+ant -Djavac.classpath=.:../../jemmy/external/jemmy-2.3.0.0.jar -Dtest-sys-prop.test.installer.url.prefix=http://smetiste.czech.sun.com/builds/netbeans/trunk/latest_daily -Dtest-sys-prop.test.installer.bundle.name.prefix=netbeans-trunk-nightly -Dtest-sys-prop.test.use.build.number=true -Dtest-sys-prop.test.installer.bundle.name.suffix=php test
+
+
+ant test
+-Djavac.classpath=.:../../jemmy/external/jemmy-2.3.0.0.jar:../../nbbuild/build/public-package-jars/org-netbeans-libs-junit4.jar:../../nbbuild\netbeans\platform11\modules\ext/junit-4.5.jar
+-Dtest-sys-prop.test.installer.url.prefix=http://smetiste.czech.sun.com/builds/netbeans/trunk/latest_daily
+-Dtest-sys-prop.test.installer.bundle.name.prefix=netbeans-trunk-nightly
+-Dtest-sys-prop.test.use.build.number=true -Dtest-sys-prop.test.installer.bundle.name.suffix=javase
+*/

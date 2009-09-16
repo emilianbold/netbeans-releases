@@ -73,6 +73,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -87,6 +89,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.ruby.DiffElement;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
@@ -100,9 +103,14 @@ import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedElement;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.OperationEvent.Rename;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
@@ -131,12 +139,13 @@ import org.openide.util.NbBundle;
  */
 public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
-    private RubyElementCtx treePathHandle = null;
-    private Collection overriddenByMethods = null; // methods that override the method to be renamed
-    private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
+    private RubyElementCtx treePathHandle;
+    private final Collection<IndexedMethod> overriddenByMethods = new ArrayList<IndexedMethod>();
+    private final Collection<IndexedMethod> overridesMethods = new ArrayList<IndexedMethod>();; // methods that are overridden by the method to be renamed
 //    private boolean doCheckName = true;
     
     private RenameRefactoring refactoring;
+    private RubyBaseProject project;
     
     /** Creates a new instance of RenameRefactoring */
     public RenameRefactoringPlugin(RenameRefactoring rename) {
@@ -176,38 +185,14 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 Logger.getLogger(RenameRefactoringPlugin.class.getName()).log(Level.WARNING, null, e);
             }
         }
+        if (treePathHandle != null) {
+            Project p = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
+            if (p instanceof RubyBaseProject) {
+                project = (RubyBaseProject) p;
+            }
+        }
     }
 
-    // XXX Parsing API
-//    protected Source getRubySource(Phase p) {
-//        if (treePathHandle == null) {
-//            return null;
-//        }
-//        switch (p) {
-//            case PRECHECK:
-//            case CHECKPARAMETERS:
-//                if (treePathHandle==null) {
-//                    return null;
-//                }
-//                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-//                return RetoucheUtils.createSource(cpInfo, treePathHandle.getFileObject());
-//            case FASTCHECKPARAMETERS:
-//                return RetoucheUtils.getSource(treePathHandle.getFileObject());
-//
-//        }
-//        throw new IllegalStateException();
-//    }
-    
-    // XXX Parsing API
-//    protected Problem preCheck(CompilationController info) throws IOException {
-//        Problem preCheckProblem = null;
-//        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
-//        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-//        fireProgressListenerStop();
-//        return preCheckProblem;
-//    }
-    
-    
     public Problem fastCheckParameters() {
         Problem fastCheckProblem = null;
         ElementKind kind = treePathHandle.getKind();
@@ -262,26 +247,86 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         return fastCheckProblem;
     }
-    
+
+    private Set<String> asNames(Collection<? extends IndexedElement> elems) {
+        Set<String> names = new HashSet<String>(elems.size());
+        for (IndexedElement each : elems) {
+            names.add(each.getName());
+        }
+        return names;
+    }
+
     public Problem checkParameters() {
         
         Problem checkProblem = null;
         int steps = 0;
-        if (overriddenByMethods != null) {
-            steps += overriddenByMethods.size();
+        if (AstUtilities.isCall(treePathHandle.getNode()) || treePathHandle.getKind() == ElementKind.METHOD) {
+            RubyIndex index = RubyIndex.get(treePathHandle.getInfo());
+            String className = treePathHandle.getDefClass();
+            String methodName = AstUtilities.getName(treePathHandle.getNode());
+            Set<IndexedMethod> methodsInSameTree = index.getAllOverridingMethodsInHierachy(methodName, className);
+            overridesMethods.addAll(methodsInSameTree);
+
+            // inherited contains also the method itself
+            if (overridesMethods.size() > 1) {
+                Set<String> superClassNames = asNames(index.getSuperClasses(className));
+                // does the method override a super method that is defined in a class in the project sources
+                boolean overridesFromSources = false;
+                // does the method overrided a super method that is also overridden in a class in a 
+                // different branch of the class hierarhcy
+                boolean classesInOtherBranch = false;
+
+                for (IndexedMethod method : overridesMethods) {
+                    // warn about matches under non-source roots (we don't rename them)
+                    if (!isUnderSourceRoot(method.getFileObject())) {
+                        checkProblem =
+                                createProblem(checkProblem,
+                                false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_Overrides_Method",
+                                method.getIn() + "#" + method.getName(), method.getFileObject().getPath()));
+                    } else if (!method.getFileObject().equals(treePathHandle.getFileObject())){
+                        overridesFromSources = true;
+                    }
+                    if (!classesInOtherBranch 
+                            && !className.equals(method.getIn())
+                            && !superClassNames.contains(method.getIn())) {
+                        classesInOtherBranch = true;
+                    }
+                }
+                if (overridesFromSources) {
+                    checkProblem = createProblem(checkProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_Overrides"));
+                }
+                if (classesInOtherBranch) {
+                    checkProblem = createProblem(checkProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_Overrides_tree"));
+                }
+            }
         }
-        if (overridesMethods != null) {
-            steps += overridesMethods.size();
-        }
-        
+
+        steps += overriddenByMethods.size();
+        steps += overridesMethods.size();
+
         fireProgressListenerStart(RenameRefactoring.PARAMETERS_CHECK, 8 + 3*steps);
-        
-//        Element element = treePathHandle.resolveElement(info);
         
         fireProgressListenerStep();
         fireProgressListenerStep();
         fireProgressListenerStop();
         return checkProblem;
+    }
+
+    private boolean isUnderSourceRoot(FileObject fo) {
+        if (project == null) {
+            return false;
+        }
+        for (FileObject root : project.getSourceRootFiles()) {
+            if (FileUtil.isParentOf(root, fo)) {
+                return true;
+            }
+        }
+        for (FileObject root : project.getTestSourceRootFiles()) {
+            if (FileUtil.isParentOf(root, fo)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override
@@ -289,7 +334,6 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         if (treePathHandle == null || treePathHandle.getFileObject() == null || !treePathHandle.getFileObject().isValid()) {
             return new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "DSC_ElNotAvail")); // NOI18N
         }
-        
         return null;
     }
 
@@ -309,6 +353,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         if (treePathHandle == null) {
             return null;
         }
+        Problem problem  = null;
         Set<FileObject> files = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, files.size());
         if (!files.isEmpty()) {
@@ -348,7 +393,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 
         fireProgressListenerStop();
                 
-        return null;
+        return problem;
     }
 
     private static final String getString(String key) {
@@ -754,10 +799,17 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         }
                         
                         if (!fqn.equals(searchCtx.getDefClass())) {
+                            boolean inherited = false;
+                            for (IndexedMethod method : overridesMethods) {
+                                if (method.getIn().equals(fqn)) {
+                                    inherited = true;
+                                    break;
+                                }
+                            }
                             // XXX THE ABOVE IS NOT RIGHT - I shouldn't
                             // use equals on the class names, I should use the
                             // index and see if one derives fromor includes the other
-                            skip = true;
+                            skip = !inherited;
                         }
 
                         // Check arity

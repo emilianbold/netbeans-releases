@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -61,7 +62,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 
@@ -128,8 +128,11 @@ public class BuiltInTypeFolderNode extends AbstractNode {
         
         private void resetKeys() {
             ArrayList<GlobalSimpleType> keys = new ArrayList<GlobalSimpleType>();
-            keys.addAll(model.getSchema().getSimpleTypes());
-            this.setKeys(keys);
+            Schema schema = model.getSchema();
+            if (schema != null) {
+                keys.addAll(schema.getSimpleTypes());
+                this.setKeys(keys);
+            }
         }
         
     }

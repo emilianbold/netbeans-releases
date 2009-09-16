@@ -59,6 +59,7 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -2389,6 +2390,32 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
+    public void testSetChildrenDoNotCallAddNotify() {
+        final AtomicBoolean addNotifyForbidden = new AtomicBoolean(false);
+        class K extends Keys {
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected void addNotify() {
+                if (addNotifyForbidden.get()) {
+                    fail("addNotify() should not be called now");
+                }
+                super.addNotify();
+            }
+        }
+        K ch = new K(lazy(), "a", "b");
+        Node root = createNode(ch);
+        Node n = root.getChildren().getNodes()[0];
+        WeakReference<Node> wn = new WeakReference<Node>(n);
+        n = null;
+        assertGC("should be GCable", wn);
+        K ch2 = new K(lazy(), "c", "d");
+        addNotifyForbidden.set(true);
+        root.setChildren(ch2);
+    }
     
     /** Sample keys.
     */

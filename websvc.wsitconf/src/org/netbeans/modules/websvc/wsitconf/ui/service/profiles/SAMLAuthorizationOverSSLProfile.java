@@ -63,6 +63,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -209,4 +210,7 @@ public class SAMLAuthorizationOverSSLProfile extends ProfileBase
         return SecurityTokensModelHelper.getTokenProfileVersion(token);
     }    
     
+    public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
+        return true;
+    }
 }

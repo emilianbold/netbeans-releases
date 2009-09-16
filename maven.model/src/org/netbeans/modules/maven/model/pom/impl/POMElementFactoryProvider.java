@@ -131,7 +131,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
 
         if (isElementQName(context.getModel().getPOMQNames().CONTRIBUTORS)) {
-            created = new DeveloperImpl.List(context.getModel(), element);
+            created = new ContributorImpl.List(context.getModel(), element);
             return;
         }
 
@@ -250,6 +250,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Contributor context) {
+        if (isElementQName(context.getModel().getPOMQNames().ROLES)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().ROLE);
+            return;
+        }
+
         createExtensibilityElement(context);
     }
 
@@ -603,6 +608,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Developer context) {
+        if (isElementQName(context.getModel().getPOMQNames().ROLES)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().ROLE);
+            return;
+        }
+
         createExtensibilityElement(context);
     }
 

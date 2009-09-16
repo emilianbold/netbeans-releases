@@ -48,7 +48,6 @@ import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.constants.JCConstants;
 import org.netbeans.modules.javacard.platform.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.platform.JavacardPlatformImpl;
-import org.netbeans.modules.javacard.project.Updater;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
@@ -61,6 +60,7 @@ import org.openide.util.NbBundle;
 
 import java.awt.*;
 import java.io.*;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -110,7 +110,14 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
 
     @Override
     protected JavacardPlatform createFrom(ObservableProperties properties) {
-        if (!getName().equals(properties.getProperty(JavacardPlatformKeyNames.PLATFORM_ID))) {
+        String old = properties.getProperty(JavacardPlatformKeyNames.PLATFORM_ID);
+        boolean idPropMatch = getName().equals(old);
+        if (!idPropMatch) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, JavacardPlatformKeyNames.PLATFORM_ID
+                        + " in " + getPrimaryFile().getPath() + " was set to " + old //NOI18N
+                        + " - resetting to default, triggering save"); //NOI18N
+            }
             //Ensure there is always a property from which the DataObject can
             //be looked up without having to iterate all platforms.
             properties.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, getName());
@@ -194,7 +201,7 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
             }
             sheet.put (set);
             set.setDisplayName(set.getName());
-            PropertiesBasedDataObject ob = getLookup().lookup(PropertiesBasedDataObject.class);
+            PropertiesBasedDataObject<?> ob = getLookup().lookup(PropertiesBasedDataObject.class);
             sheet.put(ob.getPropertiesAsPropertySet());
             return sheet;
         }

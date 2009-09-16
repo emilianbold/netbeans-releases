@@ -76,28 +76,28 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Actions">
-                  <file name="EditServletAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
+                    <file name="EditServletAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-core-jsploader-EditServletAction.instance"/>
                       <attr name="position" intvalue="200"/>
                     </file>
                   <file name="jsp-project-separator-1.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="300"/>
                     </file>
-                  <file name="CompileFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.compile"/>
+                    <file name="CompileFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
                       <attr name="position" intvalue="400"/>
                     </file>
                   <file name="jsp-project-separator-2.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="500"/>
                     </file>
-                  <file name="RunFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.run"/>
+                    <file name="RunFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                       <attr name="position" intvalue="600"/>
                     </file>
-                  <file name="DebugFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.debug"/>
+                    <file name="DebugFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
                       <attr name="position" intvalue="700"/>
                     </file>
                   </folder>
@@ -109,15 +109,13 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="400"/>
                     </file>
-                  <file name="RunFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlRun"/>
+                    <file name="RunFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                       <attr name="position" intvalue="500"/>
-                      <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
-                  <file name="DebugFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlDebug"/>
+                    <file name="DebugFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
                       <attr name="position" intvalue="600"/>
-                      <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                   <file name="webHtml-project-separator-2.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -132,42 +130,6 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-web-project">
             
             <folder name="Customizer">
-                <file name="Sources.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createSources"/>
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="Frameworks.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createFrameworks"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="Libraries.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createLibraries"/>
-                    <attr name="position" intvalue="300"/>
-                </file>
-                <folder name="BuildCategory">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.customizer.Bundle"/>
-                    <attr name="position" intvalue="400"/>
-                    <file name="Build.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createBuild"/>
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="War.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWar"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="Javadoc.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createJavadoc"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                </folder>
-                <file name="Run.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createRun"/>
-                    <attr name="position" intvalue="500"/>
-                </file>
-                <file name="WebServicesCategory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServicesCategory"/>
-                    <attr name="position" intvalue="600"/>
-                </file>
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
@@ -178,7 +140,7 @@ made subject to such option by the copyright holder.
 
             <folder name="Nodes">
                 <file name="org-netbeans-modules-java-api-common-project-ui-JavaSourceNodeFactory.instance">
-                    <attr name="position" intvalue="700"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
             </folder>
             

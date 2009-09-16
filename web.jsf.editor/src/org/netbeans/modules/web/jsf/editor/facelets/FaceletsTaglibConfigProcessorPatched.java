@@ -42,9 +42,7 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import com.sun.faces.config.processor.AbstractConfigProcessor;
 import com.sun.faces.util.FacesLogger;
 import com.sun.faces.facelets.util.ReflectionUtil;
-import com.sun.faces.config.ConfigurationException;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport.Compiler;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -58,7 +56,6 @@ import java.net.MalformedURLException;
 import java.lang.reflect.Method;
 
 import javax.faces.FacesException;
-import javax.faces.view.facelets.FaceletException;
 
 /**
  * <p>
@@ -252,8 +249,6 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
 
         //PENDING: enable this
 
-        System.out.println("Processing Tag Library class is temprorarily disabled.");
-
     }
 
     private void processTagLibrary(Element documentElement,
@@ -273,30 +268,26 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
                 }
             }
 
-            FaceletsLibrary taglibrary;
             if (compositeLibraryName != null) {
-//                taglibrary = new CompositeComponentTagLibrary(taglibNamespace,
-//                                                              compositeLibraryName);
-                taglibrary = new FaceletsLibrary(support, taglibNamespace, true);
-                compiler.addTagLibrary(taglibrary);
+                //nothing to process inside the library definition AFAIR...
+                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace));
             } else {
-                taglibrary = new FaceletsLibrary(support, taglibNamespace);
-
+                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(support, taglibNamespace);
+                //process the library content
+                NodeList tags =
+                        documentElement.getElementsByTagNameNS(namespace, TAG);
+                processTags(documentElement, tags, taglibrary);
+                NodeList functions =
+                        documentElement.getElementsByTagNameNS(namespace, FUNCTION);
+                processFunctions(functions, taglibrary);
+                compiler.addTagLibrary(taglibrary);
             }
-            NodeList tags =
-                    documentElement.getElementsByTagNameNS(namespace, TAG);
-            processTags(documentElement, tags, taglibrary);
-            NodeList functions =
-                    documentElement.getElementsByTagNameNS(namespace, FUNCTION);
-            processFunctions(functions, taglibrary);
-            compiler.addTagLibrary(taglibrary);
         }
-
     }
 
     private void processTags(Element documentElement,
             NodeList tags,
-            FaceletsLibrary taglibrary) {
+            ClassBasedFaceletsLibrary taglibrary) {
 
         if (tags != null && tags.getLength() > 0) {
             for (int i = 0, ilen = tags.getLength(); i < ilen; i++) {
@@ -347,7 +338,7 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
 
     }
 
-    private void processBehavior(NodeList behavior, FaceletsLibrary taglibrary,
+    private void processBehavior(NodeList behavior, ClassBasedFaceletsLibrary taglibrary,
             String tagName) {
         if (behavior != null && behavior.getLength() > 0) {
             String behaviorId = null;
@@ -373,7 +364,7 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
     }
 
     private void processHandlerClass(Node handlerClass,
-            FaceletsLibrary taglibrary,
+            ClassBasedFaceletsLibrary taglibrary,
             String name) {
 
         String className = getNodeText(handlerClass);
@@ -384,7 +375,7 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
 
     private void processSource(Element documentElement,
             Node source,
-            FaceletsLibrary taglibrary,
+            ClassBasedFaceletsLibrary taglibrary,
             String name) {
 
         String docURI = documentElement.getOwnerDocument().getDocumentURI();
@@ -399,7 +390,7 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
     }
 
     private void processValidator(NodeList validator,
-            FaceletsLibrary taglibrary,
+            ClassBasedFaceletsLibrary taglibrary,
             String name) {
 
         if (validator != null && validator.getLength() > 0) {
@@ -426,7 +417,7 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
     }
 
     private void processConverter(NodeList converter,
-            FaceletsLibrary taglibrary,
+            ClassBasedFaceletsLibrary taglibrary,
             String name) {
 
         if (converter != null && converter.getLength() > 0) {
@@ -454,7 +445,7 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
     }
 
     private void processComponent(NodeList component,
-            FaceletsLibrary taglibrary,
+            ClassBasedFaceletsLibrary taglibrary,
             String name) {
 
         if (component != null && component.getLength() > 0) {
@@ -484,7 +475,7 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
 
     }
 
-    private void processFunctions(NodeList functions, FaceletsLibrary taglibrary) {
+    private void processFunctions(NodeList functions, ClassBasedFaceletsLibrary taglibrary) {
 
         if (functions != null && functions.getLength() > 0) {
             for (int i = 0, ilen = functions.getLength(); i < ilen; i++) {

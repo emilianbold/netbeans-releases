@@ -85,6 +85,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -133,6 +134,10 @@ public class BugtrackingUtil {
      * </ol>
      */
     public static final String USG_BUGTRACKING_QUERY             = "USG_BUGTRACKING_QUERY"; // NOI18N
+
+    private static final String USG_ISSUE_TRACKING = "USG_ISSUE_TRACKING"; // NOI18N
+
+    private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
@@ -216,7 +221,7 @@ public class BugtrackingUtil {
     }
 
     public static Repository[] getKnownRepositories() {
-        return BugtrackingManager.getInstance().getKnownRepositories();
+        return BugtrackingManager.getInstance().getKnownRepositories(true);
     }
 
     public static BugtrackingConnector[] getBugtrackingConnectors() {
@@ -508,6 +513,64 @@ public class BugtrackingUtil {
     public static void logAutoRefreshEvent(String connector, String queryName, boolean isKenai, boolean on) {
         queryName = obfuscateQueryName(queryName);
         logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
+    }
+
+    public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
+        if (repository == null) {
+            return;
+        }
+        String btType = getBugtrackingType(repository);
+        if (btType == null) {
+            return;
+        }
+        // log Kenai usage
+        if (KenaiUtil.isKenai(repository)) {
+            UIUtils.logKenaiUsage("ISSUE_TRACKING", btType); // NOI18N
+        }
+        if (operation == null) {
+            return;
+        }
+        // log general bugtracking usage
+        String paramStr = getParamString(btType, operation);
+        if (loggedParams == null || !loggedParams.contains(paramStr)) {
+            // not logged in this session yet
+            LogRecord rec = new LogRecord(Level.INFO, USG_ISSUE_TRACKING);
+            rec.setParameters(new Object[] { btType, operation });
+            rec.setLoggerName(METRICS_LOG.getName());
+            METRICS_LOG.log(rec);
+
+            if (loggedParams == null) {
+                loggedParams = new HashSet<String>();
+            }
+            loggedParams.add(paramStr);
+        }
+    }
+
+    private static String getParamString(Object... parameters) {
+        if (parameters == null || parameters.length == 0) {
+            return ""; // NOI18N
+        }
+        if (parameters.length == 1) {
+            return parameters[0].toString();
+        }
+        StringBuilder buf = new StringBuilder();
+        for (Object p : parameters) {
+            buf.append(p.toString());
+        }
+        return buf.toString();
+    }
+
+    private static String getBugtrackingType(Repository repository) {
+        // XXX hack: there's no clean way to determine the type of bugtracking
+        // from Repository (need BugtrackingConnector.getDisplayName)
+        String clsName = repository.getClass().getName();
+        if (clsName.contains(".bugzilla.")) { // NOI18N
+            return "Bugzilla"; // NOI18N
+        }
+        if (clsName.contains(".jira.")) { // NOI18N
+            return "Jira"; // NOI18N
+        }
+        return null;
     }
 
     public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {

@@ -81,6 +81,8 @@ public class GrailsArtifacts {
             return SourceCategory.SRC_GROOVY;
         } else if (SourceCategory.SRC_JAVA.getRelativePath().equals(dirName)) {
             return SourceCategory.SRC_JAVA;
+        } else if (SourceCategory.SRC_GWT.getRelativePath().equals(dirName)) {
+            return SourceCategory.SRC_GWT;
         } else if (SourceCategory.GRAILSAPP_TAGLIB.getRelativePath().equals(dirName)) {
             return SourceCategory.GRAILSAPP_TAGLIB;
         } else if (SourceCategory.TEST_UNIT.getRelativePath().equals(dirName)) {

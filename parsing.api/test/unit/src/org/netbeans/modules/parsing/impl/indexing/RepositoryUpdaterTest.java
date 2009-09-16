@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,10 +64,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -79,8 +82,11 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -235,6 +241,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNotNull(f4);
         assertEquals(EMIME, f4.getMIMEType());
         embeddedFiles = new URL[] {f3.getURL(), f4.getURL()};
+
 
         waitForRepositoryUpdaterInit();
     }
@@ -809,6 +816,108 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, eindexerFactory.scanFinishedFor.size());
         assertEquals(srcRoot1.getURL(), eindexerFactory.scanFinishedFor.get(0));
         assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanFinishedFor.get(1));        
+    }
+
+    public void testIssue171719() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        
+        File root = FileUtil.toFile(srcRootWithFiles1);
+        File fdf = new File (root, "direct.emb");   //NOI18N
+        eindexerFactory.indexer.setExpectedFile(new URL[]{fdf.toURI().toURL()}, new URL[0], new URL[0]);
+        FileObject df = FileUtil.createData(fdf);
+        assertNotNull(df);
+        assertEquals(EMIME, df.getMIMEType());
+        eindexerFactory.indexer.awaitIndex();
+
+        File newfdf = new File (root, "new_direct.emb");   //NOI18N
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newfdf.toURI().toURL()}, new URL[]{fdf.toURI().toURL()}, new URL[0]);
+        FileLock lock = df.lock();
+        try {
+            df.rename(lock, "new_direct", "emb");
+        } finally {
+            lock.releaseLock();
+        }
+        eindexerFactory.indexer.awaitIndex();
+        eindexerFactory.indexer.awaitDeleted();
+        assertFalse(eindexerFactory.indexer.broken);
+    }
+
+    public void testAWTIndexAndWaitDeadlock() throws Exception {
+        final Class<EventSupport.EditorRegistryListener> erlc = EventSupport.EditorRegistryListener.class;        
+        final Field k24Field = erlc.getDeclaredField("k24");   //NOI18N
+        assertNotNull (k24Field);
+        k24Field.setAccessible(true);
+        final AtomicBoolean cond = (AtomicBoolean) k24Field.get(null);
+        
+        final Source source = Source.create(f3);
+        assertNotNull(source);
+
+        Runnable action = new Runnable() {
+            public void run() {
+                try {
+                    TaskProcessor.resetState(source, false, true);
+                    cond.set(true);
+                } catch (/*ReflectiveOperation*/Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            action.run();
+        }
+        else {
+            SwingUtilities.invokeAndWait(action);
+        }
+
+        action = new Runnable() {
+            public void run() {
+                try {
+                    IndexingManager.getDefault().refreshIndexAndWait(srcRootWithFiles1.getURL(), null);
+                } catch (FileStateInvalidException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            action.run();
+        }
+        else {
+            SwingUtilities.invokeAndWait(action);
+        }
+
+
+        action = new Runnable() {
+            public void run() {
+                try {
+                    cond.set(false);
+                    TaskProcessor.resetStateImpl(source);
+                } catch (/*ReflectiveOperation*/Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            action.run();
+        }
+        else {
+            SwingUtilities.invokeAndWait(action);
+        }
+
     }
 
     public static class TestHandler extends Handler {
@@ -1411,6 +1520,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 //System.out.println("EmbIndexerFactory.filesDeleted: " + i.getURL());
                 indexer.deletedCounter++;
                 if (indexer.expectedDeleted.remove(i.getURL())) {
+                    final String relPath = i.getRelativePath();
+                    if (relPath.charAt(0) == '/') {
+                        indexer.broken = true;
+                    }
                     indexer.deletedFilesLatch.countDown();
                 }
             }
@@ -1455,8 +1568,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private volatile int dirtyCounter;
         private Set<URL> expectedDeleted = new HashSet<URL>();
         private Set<URL> expectedDirty = new HashSet<URL>();
+        private boolean broken;
 
         public void setExpectedFile (URL[] files, URL[] deleted, URL[] dirty) {
+            broken = false;
             expectedIndex.clear();
             expectedIndex.addAll(Arrays.asList(files));
             expectedDeleted.clear();

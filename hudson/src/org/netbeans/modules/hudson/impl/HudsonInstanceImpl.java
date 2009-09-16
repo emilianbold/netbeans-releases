@@ -290,7 +290,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public synchronized void synchronize() {
         if (semaphore.tryAcquire()) {
             final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(
+            final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
+            handle.set(ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()),
                     new Cancellable() {
                 public boolean cancel() {
@@ -298,14 +299,15 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     if (t != null) {
                         LOG.fine("Cancelling synchronization of " + getUrl());
                         t.interrupt();
+                        handle.get().finish();
                         return true;
                     } else {
                         return false;
                     }
                 }
-            });
+            }));
             
-            handle.start();
+            handle.get().start();
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -354,7 +356,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         // Fire all changes
                         fireContentChanges();
                     } finally {
-                        handle.finish();
+                        handle.get().finish();
                         
                         // Release synchronization lock
                         semaphore.release();

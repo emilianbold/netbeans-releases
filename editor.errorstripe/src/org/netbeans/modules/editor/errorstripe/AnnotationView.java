@@ -138,14 +138,12 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         // is turned on for the pane in CustomizableSideBar.
         setName("errorStripe");
         
-        FoldHierarchy.get(pane).addFoldHierarchyListener(this);
-        
-        pane.addPropertyChangeListener(this);
-        
         repaintTask = RequestProcessor.getDefault().create(repaintTaskRunnable = new RepaintTask());
-        
         data = new AnnotationViewDataImpl(this, pane);
         
+        FoldHierarchy.get(pane).addFoldHierarchyListener(this);
+        pane.addPropertyChangeListener(this);
+
         updateForNewDocument();
         
         addMouseListener(this);

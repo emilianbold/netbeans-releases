@@ -97,6 +97,18 @@ public final class OperationContainer<Support> {
     }
 
     /**
+     * The factory method to construct instance of <code>OperationContainer</code> for internal update operation
+     * @return newly constructed instance of <code>OperationContainer</code> for internal update operation
+     * @since 1.11
+     */
+    public static OperationContainer<InstallSupport> createForInternalUpdate() {
+        OperationContainer<InstallSupport> retval =
+                new OperationContainer<InstallSupport>(OperationContainerImpl.createForInternalUpdate(), new InstallSupport());
+        retval.getSupportInner ().setContainer(retval);
+        return retval;
+    }
+
+    /**
      * The factory method to construct  instance of <code>OperationContainer</code> for install operation
      * @return newly constructed instance of <code>OperationContainer</code> for install operation
      */

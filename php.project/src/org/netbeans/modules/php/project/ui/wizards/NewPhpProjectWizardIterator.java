@@ -60,6 +60,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -152,20 +153,21 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         final Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
 
-        final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
-                getProjectDirectory(),
-                getSources(descriptor),
-                (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
-                wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
-                (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
-                getUrl(),
-                wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders),
-                descriptor,
-                isCopyFiles(),
-                getCopySrcTarget(),
-                (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION),
-                (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY),
-                wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD));
+        final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties()
+                .setProjectDirectory(getProjectDirectory())
+                .setSourcesDirectory(getSources(descriptor))
+                .setName((String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME))
+                .setRunAsType(wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType())
+                .setPhpVersion((PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION))
+                .setCharset((Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING))
+                .setUrl(getUrl())
+                .setIndexFile(wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders))
+                .setDescriptor(descriptor)
+                .setCopySources(isCopyFiles())
+                .setCopySourcesTarget(getCopySrcTarget())
+                .setRemoteConfiguration((RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION))
+                .setRemoteDirectory((String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY))
+                .setUploadFiles(wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD));
 
         PhpProjectGenerator.Monitor monitor = null;
         switch (wizardType) {
@@ -352,6 +354,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
         settings.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
         settings.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
+        settings.putProperty(ConfigureProjectPanel.PHP_VERSION, null);
         settings.putProperty(ConfigureProjectPanel.ENCODING, null);
         settings.putProperty(RunConfigurationPanel.VALID, null);
         settings.putProperty(RunConfigurationPanel.RUN_AS, null);

@@ -70,6 +70,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomasz.Slota@Sun.COM
  */
+@Deprecated
 public class JavaJspCompletionProvider implements CompletionProvider {
     private final JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
     private static final Logger logger = Logger.getLogger(JavaJspCompletionProvider.class.getName());
@@ -115,6 +116,7 @@ public class JavaJspCompletionProvider implements CompletionProvider {
     }
 
 
+    @Deprecated
     static class EmbeddedJavaCompletionQuery extends AsyncCompletionQuery {
         protected int queryType;
         protected JTextComponent component;
@@ -156,6 +158,7 @@ public class JavaJspCompletionProvider implements CompletionProvider {
         }
     }
 
+    @Deprecated
     static class CompletionQueryDelegatedToJava extends SimplifiedJspServlet.VirtualJavaClass{
         private int caretOffset;
         private int queryType;

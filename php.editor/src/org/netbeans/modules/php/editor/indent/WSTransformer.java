@@ -39,13 +39,18 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 
 /**
@@ -60,6 +65,13 @@ class WSTransformer extends DefaultTreePathVisitor {
 
     private Context context;
     private List<Replacement> replacements = new LinkedList<WSTransformer.Replacement>();
+    private Collection<CodeRange> unbreakableRanges = new TreeSet<CodeRange>();
+    private Collection<Integer> breakPins = new LinkedList<Integer>();
+
+    private Collection<PHPTokenId> WS_AND_COMMENT_TOKENS = Arrays.asList(PHPTokenId.PHPDOC_COMMENT_START,
+            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.WHITESPACE,
+            PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT,
+            PHPTokenId.PHP_LINE_COMMENT);
 
     public WSTransformer(Context context) {
         this.context = context;
@@ -70,6 +82,12 @@ class WSTransformer extends DefaultTreePathVisitor {
     @Override
     public void visit(Block node) {
         // TODO: check formatting boundaries here
+
+        if (getPath().get(0) instanceof NamespaceDeclaration){
+            return;
+        }
+        
+
         if (node.isCurly()){
             TokenSequence<PHPTokenId> tokenSequence = tokenSequence(node.getStartOffset());
             tokenSequence.move(node.getStartOffset());
@@ -84,11 +102,131 @@ class WSTransformer extends DefaultTreePathVisitor {
                     length = tokenSequence.token().length();
                 }
 
-                Replacement replacement = new Replacement(start, length, newLineReplacement);
-                replacements.add(0, replacement);
+                Replacement preOpenBracket = new Replacement(start, length, newLineReplacement);
+                replacements.add(preOpenBracket);
             }
+
+            tokenSequence.move(node.getStartOffset());
+
+            if (tokenSequence.moveNext() && !wsAndCommentsContainBreak(tokenSequence, true)){
+                Replacement postOpen = new Replacement(tokenSequence.offset() +
+                        tokenSequence.token().length(), 0, "\n"); //NOI18N
+                replacements.add(postOpen);
+            }
+
+            tokenSequence.move(node.getEndOffset());
+
+            if (tokenSequence.movePrevious()){
+                int closPos = tokenSequence.offset();
+                if (!wsAndCommentsContainBreak(tokenSequence, false)){
+                    // avoid adding double line break in case that } is preceded with ;
+                    tokenSequence.movePrevious();
+                    if (tokenSequence.token().id() != PHPTokenId.PHP_SEMICOLON){
+                        Replacement preClose = new Replacement(closPos, 0, "\n"); //NOI18N
+                        replacements.add(preClose);
+                    }
+                    tokenSequence.moveNext();
+                }
+
+                tokenSequence.move(node.getEndOffset());
+                if (tokenSequence.movePrevious() && !wsAndCommentsContainBreak(tokenSequence, true)){
+                    Replacement postClose = new Replacement(tokenSequence.offset() +
+                            tokenSequence.token().length(), 0, "\n"); //NOI18N
+                    replacements.add(postClose);
+                }
+            }
+            
         }
         super.visit(node);
+    }
+
+    @Override
+    public void visit(ForStatement node) {
+        int start = node.getInitializers().get(0).getStartOffset();
+        int end = node.getUpdaters().get(0).getStartOffset();
+
+        unbreakableRanges.add(new CodeRange(start, end));
+
+        super.visit(node);
+    }
+
+    public void tokenScan(){
+        // TODO: check formatting boundaries here
+        TokenSequence<PHPTokenId> tokenSequence = tokenSequence(0);
+        tokenSequence.moveStart();
+
+        while (tokenSequence.moveNext()){
+            if (!isWithinUnbreakableRange(tokenSequence.offset())
+                    && splitTrigger(tokenSequence)){
+                int splitPos = tokenSequence.offset() + 1;
+                if (wsAndCommentsContainBreak(tokenSequence, true)){
+                    continue;
+                }
+
+                Replacement replacement = new Replacement(splitPos, 0, "\n");
+                replacements.add(replacement);
+            }
+        }
+    }
+
+    private boolean splitTrigger(TokenSequence<PHPTokenId> tokenSequence){
+
+        PHPTokenId tokenId = tokenSequence.token().id();
+
+        if (tokenId == PHPTokenId.PHP_SEMICOLON){
+            return true;
+        }
+
+        //TODO: handle 'case:'
+
+        return false;
+    }
+
+    private boolean wsAndCommentsContainBreak(TokenSequence<PHPTokenId> tokenSequence, boolean fwd) {
+        //int orgOffset = tokenSequence.offset();
+        boolean retVal = false;
+        while (fwd && tokenSequence.moveNext() || !fwd && tokenSequence.movePrevious()) {
+            if (WS_AND_COMMENT_TOKENS.contains(tokenSequence.token().id())) {
+                if (textContainsBreak(tokenSequence.token().text())) {
+                    retVal = true;
+                    break;
+                }
+            } else {
+                if (fwd){
+                    tokenSequence.movePrevious();
+                } else {
+                    tokenSequence.moveNext();
+                }
+                break; // return false
+            }
+        }
+
+//        tokenSequence.move(orgOffset);
+//        tokenSequence.moveNext();
+
+        return retVal;
+    }
+
+    private static final boolean textContainsBreak(CharSequence charSequence){
+
+        for (int i = 0; i < charSequence.length(); i++) {
+            if (charSequence.charAt(i) == '\n'){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isWithinUnbreakableRange(int offset){
+        // TODO: optimize for n*log(n) complexity
+        for (CodeRange codeRange : unbreakableRanges){
+            if (codeRange.contains(offset)){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     List<Replacement> getReplacements() {
@@ -99,8 +237,8 @@ class WSTransformer extends DefaultTreePathVisitor {
         return LexUtilities.getPHPTokenSequence(context.document(), offset);
     }
 
-    static class Replacement{
-        private int offset;
+    static class Replacement implements Comparable<Replacement>{
+        private Integer offset;
         private int length;
         private String newString;
 
@@ -121,5 +259,35 @@ class WSTransformer extends DefaultTreePathVisitor {
         public int offset() {
             return offset;
         }
+
+        public int compareTo(Replacement r) {
+            return offset.compareTo(r.offset);
+        }
+    }
+
+    static class CodeRange implements Comparable<CodeRange>{
+        private Integer start;
+        private Integer end;
+
+        public CodeRange(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        boolean contains(int offset){
+            return offset >= start && offset <= end;
+        }
+
+        public int compareTo(CodeRange o) {
+            int r = start.compareTo(o.start);
+
+            if (r == 0){
+                return end.compareTo(o.end);
+            }
+
+            return r;
+        }
+
+        
     }
 }

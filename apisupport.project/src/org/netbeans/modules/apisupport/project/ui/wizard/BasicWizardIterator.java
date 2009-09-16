@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -334,7 +335,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         BaseDocument doc = null;
         DataObject dObj = DataObject.find(fo);
         if (dObj != null) {
-            EditorCookie editor = dObj.getCookie(EditorCookie.class);
+            EditorCookie editor = dObj.getLookup().lookup(EditorCookie.class);
             if (editor != null) {
                 doc = (BaseDocument) editor.openDocument();
             }
@@ -345,27 +346,29 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
     // copy-pasted-adjusted from org.netbeans.editor.ActionFactory.FormatAction
     private static void formatFile(final FileObject fo) {
         assert fo != null;
-        BaseDocument doc = null;
-        boolean reformatted = false;
+        final BaseDocument doc;
         try {
             doc = BasicWizardIterator.getDocument(fo);
             if (doc == null) {
                 return;
             }
-            Reformat reformat = Reformat.get(doc);
+            final Reformat reformat = Reformat.get(doc);
             reformat.lock();
             try {
-                doc.atomicLock();
-                try {
-                    reformat.reformat(0, doc.getLength());
-                } finally {
-                    doc.atomicUnlock();
-                }
+                doc.runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } catch (BadLocationException x) {
+                            throw new RuntimeException(x);
+                        }
+                    }
+                });
             } finally {
                 reformat.unlock();
             }
             try {
-                DataObject.find(fo).getCookie(EditorCookie.class).saveDocument();
+                DataObject.find(fo).getLookup().lookup(EditorCookie.class).saveDocument();
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }

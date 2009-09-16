@@ -41,8 +41,6 @@
 
 package org.netbeans.core.startup.layers;
 
-import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestSuite;
 /** Test absence of layer cache manager.
  * @author Jesse Glick
  */
@@ -53,21 +51,6 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         super(name);
     }
 
-    public static void main(String[] args) {
-        if (System.getProperty("nbjunit.workdir") == null) {
-            // Hope java.io.tmpdir is set...
-            System.setProperty("nbjunit.workdir", System.getProperty("java.io.tmpdir"));
-        }
-        System.setProperty("org.openide.util.Lookup", "-");
-        //System.setProperty("org.netbeans.core.Plain.CULPRIT", "true");
-        System.setProperty("org.netbeans.core.projects.cache", "0");
-        TestRunner.run(new NbTestSuite(NonCacheManagerTest.class));
-    }
-    
-    
-    //
-    // Manager factory methods
-    //
     public LayerCacheManager createManager() throws Exception {
         return LayerCacheManager.manager(false);
     }

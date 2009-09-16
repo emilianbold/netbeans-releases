@@ -8,32 +8,74 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
 import org.netbeans.modules.openide.util.ActionsBridge;
 import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbPreferences;
+import org.openide.util.actions.Presenter;
 
 /** Lazily initialized always enabled action
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class AlwaysEnabledAction extends AbstractAction
+class AlwaysEnabledAction extends AbstractAction
 implements PropertyChangeListener, ContextAwareAction {
 
     // -J-Dorg.openide.awt.AlwaysEnabledAction.level=FINE
     private static final Logger LOG = Logger.getLogger(AlwaysEnabledAction.class.getName());
 
-    private final Map map;
-    private ActionListener delegate;
-    private final Lookup context;
-    private final Object equals;
+    /**
+     * Action property for key in {@link java.util.prefs.Preferences}.
+     * <code>
+     *   String key = (String) action.getValue("PreferencesKey");
+     *   boolean selected = preferencesNode.getBoolean(key, false);
+     * </code>
+     */
+    private static final String PREFERENCES_KEY = "PreferencesKey"; // NOI18N
+
+    /**
+     * Action property for retrieving {@link java.util.prefs.Preferences} node.
+     * Its value can be a String:
+     * <ul>
+     *   <li>"system:/path" for {@link java.util.prefs.Preferences#systemRoot() }.</li>
+     *   <li>"user:/key" for {@link java.util.prefs.Preferences#userRoot() }.</li>
+     *   <li>"nb:/key" for {@link org.openide.util.NbPreferences#root() }.</li>
+     * </ul>
+     * or a method value returning one of the following:
+     * <ul>
+     *   <li>{@link java.util.prefs.Preferences } instance.</li>
+     *   <li>{@link org.openide.util.Lookup }.</li>
+     * </ul>
+     */
+    private static final String PREFERENCES_NODE = "PreferencesNode"; // NOI18N
+
+    static AlwaysEnabledAction create(Map m) {
+        return (m.containsKey(PREFERENCES_KEY)) ? new CheckBox(m) : new AlwaysEnabledAction(m);
+    }
+
+    final Map map;
+    ActionListener delegate;
+    final Lookup context;
+    final Object equals;
 
     public AlwaysEnabledAction(Map m) {
         super();
@@ -42,7 +84,7 @@ implements PropertyChangeListener, ContextAwareAction {
         this.equals = this;
     }
 
-    private AlwaysEnabledAction(Map m, ActionListener delegate, Lookup context, Object equals) {
+    AlwaysEnabledAction(Map m, ActionListener delegate, Lookup context, Object equals) {
         super();
         this.map = m;
         this.delegate = bindToContext(delegate, context);
@@ -107,7 +149,7 @@ implements PropertyChangeListener, ContextAwareAction {
         if (getDelegate() instanceof Action) {
             if (!((Action)getDelegate()).isEnabled()) {
                 Toolkit.getDefaultToolkit().beep();
-                firePropertyChange(null, null, null);
+                firePropertyChange("enabled", null, null); // NOI18N
                 return;
             }
         }
@@ -233,4 +275,165 @@ implements PropertyChangeListener, ContextAwareAction {
     public Action createContextAwareInstance(Lookup actionContext) {
         return new AlwaysEnabledAction(map, delegate, actionContext, equals);
     }
+
+    static final class CheckBox extends AlwaysEnabledAction
+            implements Presenter.Menu, Presenter.Popup, PreferenceChangeListener, LookupListener
+    {
+
+        private static final long serialVersionUID = 1L;
+
+        private JCheckBoxMenuItem menuItem;
+
+        private JCheckBoxMenuItem popupItem;
+
+        private Preferences preferencesNode;
+
+        private Lookup.Result<Preferences> preferencesNodeResult;
+
+        private boolean prefsListening;
+
+        CheckBox(Map m) {
+            super(m);
+        }
+
+        CheckBox(Map m, ActionListener delegate, Lookup context, Object equals) {
+            super(m, delegate, context, equals);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // Toggle state in preferences
+            togglePreferencesSelected();
+
+            super.actionPerformed(e);
+        }
+
+        public JMenuItem getMenuPresenter() {
+            if (menuItem == null) {
+                menuItem = new JCheckBoxMenuItem();
+                menuItem.setSelected(isPreferencesSelected());
+                Actions.connect(menuItem, this, false);
+            }
+            return menuItem;
+        }
+
+        public JMenuItem getPopupPresenter() {
+            if (popupItem == null) {
+                popupItem = new JCheckBoxMenuItem();
+                popupItem.setSelected(isPreferencesSelected());
+                Actions.connect(popupItem, this, true);
+            }
+            return popupItem;
+        }
+
+        public void preferenceChange(PreferenceChangeEvent pce) {
+            updateItemsSelected();
+        }
+
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new CheckBox(map, delegate, actionContext, equals);
+        }
+
+        private boolean isPreferencesSelected() {
+            String key = (String) getValue(PREFERENCES_KEY);
+            Preferences prefs = prefs();
+            boolean value;
+            if (key != null && prefs != null) {
+                value = prefs.getBoolean(key, false);
+                synchronized (this) {
+                    if (!prefsListening) {
+                        prefsListening = true;
+                        prefs.addPreferenceChangeListener(this);
+                    }
+                }
+            } else {
+                value = false;
+            }
+            return value;
+        }
+
+        private void updateItemsSelected() {
+            boolean selected = isPreferencesSelected();
+            if (menuItem != null) {
+                menuItem.setSelected(selected);
+            }
+            if (popupItem != null) {
+                popupItem.setSelected(selected);
+            }
+        }
+
+        private synchronized Preferences prefs() {
+            if (preferencesNode == null) {
+                Object prefsNodeOrLookup = getValue(PREFERENCES_NODE);
+                if (prefsNodeOrLookup instanceof String) {
+                    String nodeName = (String) prefsNodeOrLookup;
+                    if (nodeName.startsWith("system:")) {
+                        preferencesNode = Preferences.systemRoot();
+                        if (preferencesNode != null) {
+                            nodeName = nodeName.substring("system:".length());
+                            try {
+                                preferencesNode = preferencesNode.nodeExists(nodeName) ? preferencesNode.node(nodeName) : null;
+                            } catch (BackingStoreException ex) {
+                                preferencesNode = null;
+                            }
+                        }
+                    } else if (nodeName.startsWith("user:")) {
+                        preferencesNode = Preferences.userRoot();
+                        if (preferencesNode != null) {
+                            nodeName = nodeName.substring("user:".length());
+                            try {
+                                preferencesNode = preferencesNode.nodeExists(nodeName) ? preferencesNode.node(nodeName) : null;
+                            } catch (BackingStoreException ex) {
+                                preferencesNode = null;
+                            }
+                        }
+                    } else if (nodeName.startsWith("nb:")) {
+                        preferencesNode = NbPreferences.root();
+                        if (preferencesNode != null) {
+                            nodeName = nodeName.substring("nb:".length());;
+                            try {
+                                preferencesNode = preferencesNode.nodeExists(nodeName) ? preferencesNode.node(nodeName) : null;
+                            } catch (BackingStoreException ex) {
+                                preferencesNode = null;
+                            }
+                        }
+                    } else {
+                        preferencesNode = null;
+                    }
+
+                } else if (prefsNodeOrLookup instanceof Preferences) {
+                    preferencesNode = (Preferences) prefsNodeOrLookup;
+                } else if (prefsNodeOrLookup instanceof Lookup) {
+                    Lookup prefsLookup = (Lookup) prefsNodeOrLookup;
+                    preferencesNodeResult = prefsLookup.lookupResult(Preferences.class);
+                    Collection<? extends Preferences> instances = preferencesNodeResult.allInstances();
+                    if (instances.size() > 0) {
+                        preferencesNode = instances.iterator().next();
+                        preferencesNodeResult.addLookupListener(this);
+                    }
+                    return prefsLookup.lookup(Preferences.class);
+                } else {
+                    preferencesNode = null;
+                }
+            }
+            return preferencesNode;
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            preferencesNode = null;
+            preferencesNodeResult = null;
+            updateItemsSelected();
+        }
+
+        private void togglePreferencesSelected() {
+            String key = (String) getValue(PREFERENCES_KEY);
+            Preferences prefs = prefs();
+            if (key != null && prefs != null) {
+                prefs.putBoolean(key, !prefs.getBoolean(key, false));
+            }
+        }
+
+    }
+
 }

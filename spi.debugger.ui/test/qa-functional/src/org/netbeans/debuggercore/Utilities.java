@@ -105,7 +105,7 @@ public class Utilities {
     public static String sessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_SessionsAction");
     public static String threadsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_ThreadsAction");
 
-    public static String localVarsViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Variables_view");
+    public static String variablesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Variables_view");
     public static String watchesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view");
     public static String callStackViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Call_stack_view");
     //public static String classesViewTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.heapwalk.views.Bundle", "CTL_Classes_view");
@@ -506,6 +506,20 @@ public class Utilities {
         } catch (Exception e1) {
             // ignore it
         }
+    }
+
+    public static void waitStatusOrConsoleText(String text) throws Throwable
+    {
+        try {
+                Utilities.waitStatusText(text);
+            }
+        catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText(text)) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+
     }
 
     static class ConsoleChooser implements ComponentChooser {

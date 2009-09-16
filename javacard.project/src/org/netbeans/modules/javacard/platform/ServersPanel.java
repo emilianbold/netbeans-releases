@@ -301,7 +301,6 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
                         jPanel1.add(lbl, BorderLayout.CENTER);
                     }
                 } else {
-                    System.err.println("Using customizer provider " + cust);
                     Component customizer = cust.getComponent();
                     if (customizer == null) {
                         throw new NullPointerException ("CardCustomizer " + cust //NOI18N

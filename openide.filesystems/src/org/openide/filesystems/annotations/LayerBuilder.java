@@ -41,6 +41,7 @@ package org.openide.filesystems.annotations;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -90,7 +91,23 @@ public final class LayerBuilder {
      * @return a file builder
      */
     public File file(String path) {
-        File f = new File(path);
+        File f = new File(path, false);
+        unwrittenFiles.add(f);
+        return f;
+    }
+
+    /**
+     * Adds a folder to the layer.
+     * You need to {@link File#write} it in order to finalize the effect.
+     * <p>Normally just using {@link #file} suffices, since parent folders are
+     * created as needed, but you may use this method if you wish to create a folder
+     * (possibly with some attributes) without necessarily creating any children.
+     * @param path the full path to the desired folder in resource format, e.g. {@code "Menu/File"}
+     * @return a file builder
+     * @since org.openide.filesystems 7.26
+     */
+    public File folder(String path) {
+        File f = new File(path, true);
         unwrittenFiles.add(f);
         return f;
     }
@@ -137,6 +154,38 @@ public final class LayerBuilder {
         return f;
     }
 
+    /**
+     * Generates an instance file that is <em>not initialized</em> with an instance.
+     * Useful for {@link LayerGeneratingProcessor}s which define layer fragments
+     * which indirectly instantiate Java objects from the annotated code via a generic factory method.
+     * Invoke the factory using {@link File#methodvalue} on {@code instanceCreate}
+     * and configure it with a {@link File#instanceAttribute} appropriate to the factory.
+     * <p>While you can pick a specific instance file name, if possible you should pass null for {@code name}
+     * as using the generated name will help avoid accidental name collisions between annotations.
+     * @param path path to folder of instance file, e.g. {@code "Menu/File"}
+     * @param name instance file basename, e.g. {@code "my-menu-Item"}, or null to pick a name according to the element
+     * @return an instance file (call {@link File#write} to finalize)
+     * @throws IllegalArgumentException if the builder is not associated with exactly one
+     *                                  {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+     * @throws LayerGenerationException if the associated element would not be loadable as an instance 
+     * @since org.openide.filesystems 7.27
+     */
+    public File instanceFile(String path, String name) throws IllegalArgumentException, LayerGenerationException {
+        String[] clazzOrMethod = instantiableClassOrMethod(null);
+        String clazz = clazzOrMethod[0];
+        String method = clazzOrMethod[1];
+        String basename;
+        if (name == null) {
+            basename = clazz.replace('.', '-');
+            if (method != null) {
+                basename += "-" + method;
+            }
+        } else {
+            basename = name;
+        }
+        return file(path + "/" + basename + ".instance");
+    }
+
     private String[] instantiableClassOrMethod(Class type) throws IllegalArgumentException, LayerGenerationException {
         if (originatingElement == null) {
             throw new IllegalArgumentException("Only applicable to builders with exactly one associated element");
@@ -165,6 +214,9 @@ public final class LayerBuilder {
                 }
                 if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(originatingElement.asType(), typeMirror)) {
                     throw new LayerGenerationException(clazz + " is not assignable to " + typeMirror, originatingElement);
+                }
+                if (!originatingElement.getModifiers().contains(Modifier.PUBLIC)) {
+                    throw new LayerGenerationException(clazz + " is not public", originatingElement);
                 }
                 return new String[] {clazz, null};
             }
@@ -209,12 +261,14 @@ public final class LayerBuilder {
     public final class File {
 
         private final String path;
+        private final boolean folder;
         private final Map<String,String[]> attrs = new LinkedHashMap<String,String[]>();
         private String contents;
         private String url;
 
-        File(String path) {
+        File(String path, boolean folder) {
             this.path = path;
+            this.folder = folder;
         }
 
         /**
@@ -231,7 +285,7 @@ public final class LayerBuilder {
          * @return this builder
          */
         public File contents(String contents) {
-            if (this.contents != null || url != null || contents == null) {
+            if (this.contents != null || url != null || contents == null || folder) {
                 throw new IllegalArgumentException();
             }
             this.contents = contents;
@@ -245,7 +299,7 @@ public final class LayerBuilder {
          * @return this builder
          */
         public File url(String url) {
-            if (contents != null || this.url != null || url == null) {
+            if (contents != null || this.url != null || url == null || folder) {
                 throw new IllegalArgumentException();
             }
             this.url = url;
@@ -524,9 +578,9 @@ public final class LayerBuilder {
         }
 
         /**
-         * Writes the file to the layer.
+         * Writes the file or folder to the layer.
          * Any intervening parent folders are created automatically.
-         * If the file already exists, the old copy is replaced.
+         * If the file already exists, the old copy is replaced (not true in case of a folder).
          * @return the originating layer builder, in case you want to add another file
          */
         public LayerBuilder write() {
@@ -547,10 +601,16 @@ public final class LayerBuilder {
             }
             String piece = pieces[pieces.length - 1];
             org.w3c.dom.Element file = find(e,piece);
-            if (file != null) {
-                e.removeChild(file);
+            if (folder) {
+                if (file == null) {
+                    file = (org.w3c.dom.Element) e.appendChild(doc.createElement("folder"));
+                }
+            } else {
+                if (file != null) {
+                    e.removeChild(file);
+                }
+                file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             }
-            file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             file.setAttribute("name", piece);
             for (Map.Entry<String,String[]> entry : attrs.entrySet()) {
                 org.w3c.dom.Element attr = (org.w3c.dom.Element) file.appendChild(doc.createElement("attr"));

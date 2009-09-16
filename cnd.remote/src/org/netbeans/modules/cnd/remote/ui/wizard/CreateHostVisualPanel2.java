@@ -64,13 +64,17 @@ import org.openide.util.NbBundle;
 
         textLoginName.setText(System.getProperty("user.name"));
         
-        // default password to the last entered one
-        ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
-        if (lastEnv != null) {
-            char[] passwd = PasswordManager.getInstance().get(lastEnv);
-            if (passwd != null) {
-                textPassword.setText(new String(passwd));
+        if (Boolean.getBoolean("cnd.remote.keep.pwd")) {
+            // default password to the last entered one
+            ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
+            if (lastEnv != null) {
+                char[] passwd = PasswordManager.getInstance().get(lastEnv);
+                if (passwd != null) {
+                    textPassword.setText(new String(passwd));
+                }
             }
+        } else {
+            textPassword.setText("");
         }
 
         DocumentListener dl = new DocumentListener() {

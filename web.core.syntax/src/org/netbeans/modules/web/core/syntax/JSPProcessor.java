@@ -183,7 +183,8 @@ public abstract class JSPProcessor {
             return;
         }
 
-        final Collection<String> processedFiles = new TreeSet<String>(Collections.singleton(fobj.getPath()));
+        final Collection<String> processedFiles = new TreeSet<String>(processedIncludes());
+        processedFiles.add(fobj.getPath());
 
         if (pageInfo.getIncludePrelude() != null) {
             for (String preludePath : (List<String>) pageInfo.getIncludePrelude()) {
@@ -228,7 +229,7 @@ public abstract class JSPProcessor {
                     EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
 
                     if (editor != null) {
-                        IncludedJSPFileProcessor includedJSPFileProcessor = new IncludedJSPFileProcessor((BaseDocument) editor.openDocument());
+                        IncludedJSPFileProcessor includedJSPFileProcessor = new IncludedJSPFileProcessor((BaseDocument) editor.openDocument(), processedFiles);
                         includedJSPFileProcessor.process();
                         processIncludedFile(includedJSPFileProcessor);
                     }
@@ -239,11 +240,13 @@ public abstract class JSPProcessor {
         }
     }
 
+    public static boolean ignoreLockFromUnitTest = false;
+    
     public void process() throws BadLocationException {
         processCalled = true;
 
         //workaround>>> issue #120195 - Deadlock in jspparser while reformatting JSP
-        if (DocumentUtilities.isWriteLocked(doc)) {
+        if (DocumentUtilities.isWriteLocked(doc) && !ignoreLockFromUnitTest) {
             processingSuccessful = false;
             return;
         }
@@ -318,4 +321,6 @@ public abstract class JSPProcessor {
         List<String> imports = pi.getImports();
         return imports == null ? null : imports.toArray(new String[imports.size()]);
     }
+
+    protected abstract Collection<String> processedIncludes();
 }

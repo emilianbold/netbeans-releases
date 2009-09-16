@@ -68,7 +68,7 @@ import org.netbeans.modules.db.metadata.model.jdbc.mysql.MySQLMetadata;
  *
  * @author Andrei Badea
  */
-public class JDBCMetadataMySQLTest extends JDBCMetadataTest {
+public class JDBCMetadataMySQLTest extends JDBCMetadataTestBase {
 
     private JDBCMetadata metadata;
     private String defaultCatalogName;

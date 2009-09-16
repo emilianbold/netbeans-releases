@@ -52,6 +52,7 @@
 package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
 
 import javax.swing.JComponent;
+import org.openide.windows.OutputWriter;
 
 /**
  * Advice for Parallel Adviser view.
@@ -66,4 +67,11 @@ public interface Advice {
      * @return component.
      */
     JComponent getComponent();
+
+    /**
+     * Adds notification to Output.
+     *
+     * @param io - output writer
+     */
+    void addNotification(OutputWriter writer);
 }

@@ -248,9 +248,11 @@ final class UnitTestLibrariesNode extends AbstractNode {
                         refreshScheduled = false;
                     }
                 };
-                refreshScheduled = true;
                 if (project.isRunInAtomicAction()) {
-                    EventQueue.invokeLater(r);
+                    if (! refreshScheduled) {
+                        refreshScheduled = true;
+                        EventQueue.invokeLater(r);
+                    }
                 } else {
                     r.run();
                 }

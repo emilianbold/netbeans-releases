@@ -63,11 +63,10 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
-import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileUtil;
 
@@ -94,141 +93,201 @@ final class MultiPassCompileWorker extends CompileWorker {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
 
-        final LowMemoryListenerImpl mem = new LowMemoryListenerImpl();
-        LowMemoryNotifier.getDefault().addLowMemoryListener(mem);
+        final LMListener mem = new LMListener();
 
-        try {
-            final DiagnosticListenerImpl diagnosticListener = new DiagnosticListenerImpl();
-            final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
-            JavacTaskImpl jt = null;
-            CompileTuple active = null;
-            int state = 0;
-            boolean isBigFile = false;
+        final DiagnosticListenerImpl diagnosticListener = new DiagnosticListenerImpl();
+        final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
+        JavacTaskImpl jt = null;
+        CompileTuple active = null;
+        int state = 0;
+        boolean isBigFile = false;
 
-            while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
-                try {
-                    if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt);
-                        mem.isLowMemory();
-                        jt = null;
-                        diagnosticListener.cleanDiagnostics();
-                        if ((state & MEMORY_LOW) != 0) {
+        while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
+            try {
+                if (mem.isLowMemory()) {
+                    dumpSymFiles(fileManager, jt);
+                    mem.isLowMemory();
+                    jt = null;
+                    diagnosticListener.cleanDiagnostics();
+                    if ((state & MEMORY_LOW) != 0) {
+                        break;
+                    } else {
+                        state |= MEMORY_LOW;
+                    }
+                    System.gc();
+                    continue;
+                }
+                if (active == null) {
+                    if (!toProcess.isEmpty()) {
+                        active = toProcess.removeFirst();
+                        if (active == null)
+                            continue;
+                        isBigFile = false;
+                    } else {
+                        active = bigFiles.removeFirst();
+                        isBigFile = true;
+                    }
+                }
+                if (jt == null) {
+                    jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum);
+                    if (JavaIndex.LOG.isLoggable(Level.FINER)) {
+                        JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
+                    }
+                }
+                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active.jfo});
+                if (mem.isLowMemory()) {
+                    dumpSymFiles(fileManager, jt);
+                    mem.isLowMemory();
+                    jt = null;
+                    diagnosticListener.cleanDiagnostics();
+                    trees = null;
+                    if ((state & MEMORY_LOW) != 0) {
+                        if (isBigFile) {
                             break;
                         } else {
-                            state |= MEMORY_LOW;
+                            bigFiles.add(active);
+                            active = null;
+                            state &= ~MEMORY_LOW;
                         }
-                        System.gc();
-                        continue;
-                    }
-                    if (active == null) {
-                        if (!toProcess.isEmpty()) {
-                            active = toProcess.removeFirst();
-                            if (active == null)
-                                continue;
-                            isBigFile = false;
-                        } else {
-                            active = bigFiles.removeFirst();
-                            isBigFile = true;
-                        }
-                    }
-                    if (jt == null) {
-                        jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum);
-                        if (JavaIndex.LOG.isLoggable(Level.FINER)) {
-                            JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
-                        }
-                    }
-                    Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active.jfo});
-                    if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt);
-                        mem.isLowMemory();
-                        jt = null;
-                        diagnosticListener.cleanDiagnostics();
-                        trees = null;
-                        if ((state & MEMORY_LOW) != 0) {
-                            if (isBigFile) {
-                                break;
-                            } else {
-                                bigFiles.add(active);
-                                active = null;
-                                state &= ~MEMORY_LOW;
-                            }
-                        } else {
-                            state |= MEMORY_LOW;
-                        }
-                        System.gc();
-                        continue;
-                    }
-                    Iterable<? extends TypeElement> types = jt.enterTrees(trees);
-                    if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt);
-                        mem.isLowMemory();
-                        jt = null;
-                        diagnosticListener.cleanDiagnostics();
-                        trees = null;
-                        types = null;
-                        if ((state & MEMORY_LOW) != 0) {
-                            if (isBigFile) {
-                                break;
-                            } else {
-                                bigFiles.add(active);
-                                active = null;
-                                state &= ~MEMORY_LOW;
-                            }
-                        } else {
-                            state |= MEMORY_LOW;
-                        }
-                        System.gc();
-                        continue;
-                    }
-                    jt.analyze(types);
-                    if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt);
-                        mem.isLowMemory();
-                        jt = null;
-                        diagnosticListener.cleanDiagnostics();
-                        trees = null;
-                        types = null;
-                        if ((state & MEMORY_LOW) != 0) {
-                            if (isBigFile) {
-                                break;
-                            } else {
-                                bigFiles.add(active);
-                                active = null;
-                                state &= ~MEMORY_LOW;
-                            }
-                        } else {
-                            state |= MEMORY_LOW;
-                        }
-                        System.gc();
-                        continue;
-                    }
-                    boolean[] main = new boolean[1];
-                    if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing() || context.isAllFilesIndexing() || TasklistSettings.getDependencyTracking() == TasklistSettings.DependencyTracking.DISABLED) {
-                        javaContext.sa.analyse(trees, jt, fileManager, active, previous.addedTypes, main);
                     } else {
-                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                        javaContext.sa.analyse(trees, jt, fileManager, active, aTypes, main);
-                        previous.addedTypes.addAll(aTypes);
-                        previous.modifiedTypes.addAll(aTypes);
+                        state |= MEMORY_LOW;
                     }
-                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
-                    for (JavaFileObject generated : jt.generate(types)) {
-                        if (generated instanceof OutputFileObject) {
-                            previous.createdFiles.add(((OutputFileObject) generated).getFile());
+                    System.gc();
+                    continue;
+                }
+                Iterable<? extends TypeElement> types = jt.enterTrees(trees);
+                if (mem.isLowMemory()) {
+                    dumpSymFiles(fileManager, jt);
+                    mem.isLowMemory();
+                    jt = null;
+                    diagnosticListener.cleanDiagnostics();
+                    trees = null;
+                    types = null;
+                    if ((state & MEMORY_LOW) != 0) {
+                        if (isBigFile) {
+                            break;
                         } else {
-                            // presumably should not happen
+                            bigFiles.add(active);
+                            active = null;
+                            state &= ~MEMORY_LOW;
                         }
+                    } else {
+                        state |= MEMORY_LOW;
                     }
-                    if (!active.virtual) {
-                        TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
+                    System.gc();
+                    continue;
+                }
+                jt.analyze(types);
+                if (mem.isLowMemory()) {
+                    dumpSymFiles(fileManager, jt);
+                    mem.isLowMemory();
+                    jt = null;
+                    diagnosticListener.cleanDiagnostics();
+                    trees = null;
+                    types = null;
+                    if ((state & MEMORY_LOW) != 0) {
+                        if (isBigFile) {
+                            break;
+                        } else {
+                            bigFiles.add(active);
+                            active = null;
+                            state &= ~MEMORY_LOW;
+                        }
+                    } else {
+                        state |= MEMORY_LOW;
                     }
-                    Log.instance(jt.getContext()).nerrors = 0;
-                    previous.finishedFiles.add(active.indexable);
+                    System.gc();
+                    continue;
+                }
+                boolean[] main = new boolean[1];
+                if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                    javaContext.sa.analyse(trees, jt, fileManager, active, previous.addedTypes, main);
+                } else {
+                    final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
+                    javaContext.sa.analyse(trees, jt, fileManager, active, aTypes, main);
+                    previous.addedTypes.addAll(aTypes);
+                    previous.modifiedTypes.addAll(aTypes);
+                }
+                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                for (JavaFileObject generated : jt.generate(types)) {
+                    if (generated instanceof OutputFileObject) {
+                        previous.createdFiles.add(((OutputFileObject) generated).getFile());
+                    } else {
+                        // presumably should not happen
+                    }
+                }
+                if (!active.virtual) {
+                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
+                }
+                Log.instance(jt.getContext()).nerrors = 0;
+                previous.finishedFiles.add(active.indexable);
+                active = null;
+                state  = 0;
+            } catch (CouplingAbort ca) {
+                //Coupling error
+                TreeLoader.dumpCouplingAbort(ca, null);
+                jt = null;
+                diagnosticListener.cleanDiagnostics();
+                if ((state & ERR) != 0) {
+                    //When a javac failed with the Exception mark a file
+                    //causing this exceptin as compiled
+                    if (active != null)
+                        previous.finishedFiles.add(active.indexable);
                     active = null;
-                    state  = 0;
-                } catch (CouplingAbort ca) {
-                    //Coupling error
-                    TreeLoader.dumpCouplingAbort(ca, null);
+                    state = 0;
+                } else {
+                    state |= ERR;
+                }
+            } catch (OutputFileManager.InvalidSourcePath isp) {
+                //Deleted project - log & ignore
+                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                active.jfo.toUri().toString(),
+                                FileUtil.getFileDisplayName(context.getRoot()),
+                                bootPath == null   ? null : bootPath.toString(),
+                                classPath == null  ? null : classPath.toString(),
+                                sourcePath == null ? null : sourcePath.toString()
+                                );
+                    JavaIndex.LOG.log(Level.FINEST, message, isp);
+                }
+                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+            } catch (MissingPlatformError mpe) {
+                //No platform - log & ignore
+                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                active.jfo.toUri().toString(),
+                                FileUtil.getFileDisplayName(context.getRoot()),
+                                bootPath == null   ? null : bootPath.toString(),
+                                classPath == null  ? null : classPath.toString(),
+                                sourcePath == null ? null : sourcePath.toString()
+                                );
+                    JavaIndex.LOG.log(Level.FINEST, message, mpe);
+                }
+                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+            } catch (Throwable t) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                }
+                else {
+                    if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
+                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                        final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                    active == null ? null : active.jfo.toUri().toString(),
+                                    FileUtil.getFileDisplayName(context.getRoot()),
+                                    bootPath == null ? null : bootPath.toString(),
+                                    classPath == null ? null : classPath.toString(),
+                                    sourcePath == null ? null : sourcePath.toString()
+                                    );
+                        JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
+                    }
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
                     if ((state & ERR) != 0) {
@@ -241,76 +300,11 @@ final class MultiPassCompileWorker extends CompileWorker {
                     } else {
                         state |= ERR;
                     }
-                } catch (OutputFileManager.InvalidSourcePath isp) {
-                    //Deleted project - log & ignore
-                    if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
-                                    active.jfo.toUri().toString(),
-                                    FileUtil.getFileDisplayName(context.getRoot()),
-                                    bootPath == null   ? null : bootPath.toString(),
-                                    classPath == null  ? null : classPath.toString(),
-                                    sourcePath == null ? null : sourcePath.toString()
-                                    );
-                        JavaIndex.LOG.log(Level.FINEST, message, isp);
-                    }
-                    return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
-                } catch (MissingPlatformError mpe) {
-                    //No platform - log & ignore
-                    if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
-                                    active.jfo.toUri().toString(),
-                                    FileUtil.getFileDisplayName(context.getRoot()),
-                                    bootPath == null   ? null : bootPath.toString(),
-                                    classPath == null  ? null : classPath.toString(),
-                                    sourcePath == null ? null : sourcePath.toString()
-                                    );
-                        JavaIndex.LOG.log(Level.FINEST, message, mpe);
-                    }
-                    return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
-                } catch (Throwable t) {
-                    if (t instanceof ThreadDeath) {
-                        throw (ThreadDeath) t;
-                    }
-                    else {
-                        if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
-                            final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                            final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                            final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                            final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
-                                        active == null ? null : active.jfo.toUri().toString(),
-                                        FileUtil.getFileDisplayName(context.getRoot()),
-                                        bootPath == null ? null : bootPath.toString(),
-                                        classPath == null ? null : classPath.toString(),
-                                        sourcePath == null ? null : sourcePath.toString()
-                                        );
-                            JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
-                        }
-                        jt = null;
-                        diagnosticListener.cleanDiagnostics();
-                        if ((state & ERR) != 0) {
-                            //When a javac failed with the Exception mark a file
-                            //causing this exceptin as compiled
-                            if (active != null)
-                                previous.finishedFiles.add(active.indexable);
-                            active = null;
-                            state = 0;
-                        } else {
-                            state |= ERR;
-                        }
-                    }
                 }
             }
-            if ((state & MEMORY_LOW) != 0) {
-                JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
-            }
-        } finally {
-            LowMemoryNotifier.getDefault().removeLowMemoryListener(mem);
+        }
+        if ((state & MEMORY_LOW) != 0) {
+            JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
         }
         return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
     }

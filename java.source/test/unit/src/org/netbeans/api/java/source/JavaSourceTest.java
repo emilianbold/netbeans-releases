@@ -1935,6 +1935,10 @@ public class JavaSourceTest extends NbTestCase {
             return true;
         }
 
+        public boolean exists() {
+            return true;
+        }
+
         public List<String> getUsagesFQN(String resourceName, Set<UsageType> mask, BooleanOperator operator) throws IOException, InterruptedException {
             await ();
             return Collections.<String>emptyList();

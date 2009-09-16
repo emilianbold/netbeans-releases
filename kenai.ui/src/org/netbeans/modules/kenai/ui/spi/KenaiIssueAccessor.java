@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
+import java.awt.Component;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -48,6 +50,7 @@ import org.openide.util.Lookup;
  * the issue identifier.
  *
  * @author joshis
+ * @author Tomas Stupka
  */
 public abstract class KenaiIssueAccessor {
 
@@ -65,5 +68,71 @@ public abstract class KenaiIssueAccessor {
      * @param issueID ID of the issue
      */
     public abstract void open(KenaiProject proj, String issueID);
+
+    /**
+     * Returns an array of 0 to 5 recently opened kenai issues
+     *
+     * @return 0 to 5 recently opened kenai issues
+     */
+    public abstract IssueHandle[] getRecentIssues();
+
+    /**
+     * Returns an array of 0 to 5 recently opened kenai issues from the given project
+     * 
+     * @param project
+     * @return 0 to 5 recently opened kenai issues or null a problem occured - e.g. no bugtracking repository was
+     * available for the given KenaiProject
+     */
+    public abstract IssueHandle[] getRecentIssues(KenaiProject project);
+
+    /**
+     * Represents a kenai issue
+     */
+    public abstract class IssueHandle {
+
+        /**
+         * Returns the issues id
+         *
+         * @return
+         */
+        public abstract String getID();
+
+        /**
+         * Returns the project this issue belongs to
+         *
+         * @return
+         */
+        public abstract KenaiProject getProject();
+
+        /**
+         * Returns the issues short display name
+         *
+         * @return
+         */
+        public abstract String getShortDisplayName();
+
+        /**
+         * Returns the issues display name
+         *
+         * @return
+         */
+        public abstract String getDisplayName();
+
+        /**
+         * Determines whether this issues TopComponent is opened
+         *
+         * @return
+         * @see TopComponent#isOpened() 
+         */
+        public abstract boolean isOpened();
+
+        /**
+         * Determines whether this issues TopComponent is showing on screen.
+         *
+         * @return
+         * @see Component#isShowing()
+         */
+        public abstract boolean isShowing();
+    }
 
 }

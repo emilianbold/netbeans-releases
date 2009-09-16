@@ -53,12 +53,12 @@ import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
+import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -115,13 +115,7 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
 
     @Override
     public boolean supportsCreateMessageDestination() {
-        boolean enableSupport = false;
-        // FIXME -- what if the module is being deployed to a prelude domain?
-        if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
-                null != FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features")) {
-            enableSupport = true;
-    }
-        return enableSupport;
+        return ResourcesHelper.isEE6(module);
     }
 
     @Override

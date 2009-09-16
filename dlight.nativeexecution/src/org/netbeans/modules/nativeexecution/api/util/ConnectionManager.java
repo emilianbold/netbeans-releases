@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -75,6 +76,7 @@ import org.openide.util.NbBundle;
 public final class ConnectionManager {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
+    private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib");
 
     // Instance of the ConnectionManager
     private final static ConnectionManager instance;
@@ -197,6 +199,10 @@ public final class ConnectionManager {
             char[] password,
             boolean storePassword) throws IOException, CancellationException {
 
+        if (SwingUtilities.isEventDispatchThread()) {
+            // otherwise UI can hang forever
+            throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
+        }
         if (env.isLocal()) {
             return true;
         }
@@ -224,6 +230,10 @@ public final class ConnectionManager {
     public boolean connectTo(
             final ExecutionEnvironment env) throws IOException, CancellationException {
 
+        if (SwingUtilities.isEventDispatchThread()) {
+            // otherwise UI can hang forever
+            throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
+        }
         synchronized (this) {
             if (connecting) {
                 return false;
@@ -290,6 +300,11 @@ public final class ConnectionManager {
                         synchronized (jsch) {
                             Session session = jsch.getSession(user, host, sshPort);
                             session.setUserInfo(userInfo);
+                            if (USE_JZLIB) {
+                                session.setConfig("compression.s2c", "zlib@openssh.com,zlib,none");//NOI18N
+                                session.setConfig("compression.c2s", "zlib@openssh.com,zlib,none");//NOI18N
+                                session.setConfig("compression_level", "9");//NOI18N
+                            }
                             session.connect();
                             return session;
                         }

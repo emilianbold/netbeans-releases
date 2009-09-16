@@ -35,7 +35,7 @@ Contributor(s):
  Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Editors">
         <folder name="AnnotationTypes">
@@ -146,14 +146,4 @@ Contributor(s):
             </file>
         </folder>
    </folder>     
-
-    <folder name="OptionsDialog"> 
-        <folder name="CPlusPlus">
-            <file name="SemanticHighlightingOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptionsPanelController"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>     
-    </folder>
 </filesystem>

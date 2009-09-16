@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.AdvancedSecurityFeature
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ValidatorsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
@@ -77,7 +78,7 @@ import org.openide.DialogDisplayer;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
 public class STSIssuedSupportingTokenProfile extends ProfileBase 
-        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature, AdvancedSecurityFeature {
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature, AdvancedSecurityFeature, ValidatorsFeature {
     
     public int getId() {
         return 120;
@@ -181,4 +182,7 @@ public class STSIssuedSupportingTokenProfile extends ProfileBase
         }
     }    
 
+    public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
+        return ConfigVersion.CONFIG_1_0 != cfgVersion;
+    }
 }
