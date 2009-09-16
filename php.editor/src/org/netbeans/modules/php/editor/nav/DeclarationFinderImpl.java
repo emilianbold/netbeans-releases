@@ -98,6 +98,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     id = token.id();
                     if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
                         return retval;
+                    } if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) {//NOI18N
+                        return retval;
                     }
                 }
             } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {

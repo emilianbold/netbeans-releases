@@ -111,9 +111,8 @@ public class QualifiedName {
                     namesProposals.add(proposedName);
                 }
             }
-        } else {
-            namesProposals.add(name);
         }
+        namesProposals.add(name);
         return namesProposals;
     }
 

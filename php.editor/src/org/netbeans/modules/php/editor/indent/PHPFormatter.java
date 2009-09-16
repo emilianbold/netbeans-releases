@@ -309,7 +309,7 @@ public class PHPFormatter implements Formatter {
                 public void run() {
                     int indentBias = 0;
                     try {
-                        int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1);
+                        int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
                         Map<Integer, Integer> indentDeltaByLine = new LinkedHashMap<Integer, Integer>();
 
                         for (Position pos : indentLevels.keySet()) {

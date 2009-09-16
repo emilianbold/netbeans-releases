@@ -109,24 +109,27 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         //listen on the /WEB-INF folder since the dd is arbitrary and may
         //be created later
-        jsfSupport.getWebModule().getWebInf().addFileChangeListener(new FileChangeAdapter() {
+        FileObject webInf = jsfSupport.getWebModule().getWebInf();
+        if (webInf != null) {
+            webInf.addFileChangeListener(new FileChangeAdapter() {
 
-            @Override
-            public void fileDataCreated(FileEvent fe) {
-                FileObject file = fe.getFile();
-                if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
-                    file.addFileChangeListener(DDLISTENER);
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    FileObject file = fe.getFile();
+                    if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                        file.addFileChangeListener(DDLISTENER);
+                    }
                 }
-            }
 
-            @Override
-            public void fileDeleted(FileEvent fe) {
-                FileObject file = fe.getFile();
-                if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
-                    file.removeFileChangeListener(DDLISTENER);
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    FileObject file = fe.getFile();
+                    if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                        file.removeFileChangeListener(DDLISTENER);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     //TODO cache the context-param entry value and check if has changed,
