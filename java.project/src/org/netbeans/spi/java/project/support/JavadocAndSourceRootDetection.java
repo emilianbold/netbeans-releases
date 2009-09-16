@@ -165,7 +165,7 @@ public class JavadocAndSourceRootDetection {
 
     static final Pattern JAVA_FILE, PACKAGE_INFO;
     static {
-        String whitespace = "(?:(?://[^\n]*\n)|(?:/\\*(?:[^*]|\\*(?!/))*\\*/)|\\s)"; //NOI18N
+        String whitespace = "(?:(?://[^\n]*\n)|(?:/\\*.*?\\*/)|\\s)"; //NOI18N
         String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; //NOI18N
         String packageStatement = "package" + whitespace + "+(" + javaIdentifier + "(?:\\." + javaIdentifier + ")*)" + whitespace + "*;"; //NOI18N
         JAVA_FILE = Pattern.compile("(?ms)" + whitespace + "*" + packageStatement + ".*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N

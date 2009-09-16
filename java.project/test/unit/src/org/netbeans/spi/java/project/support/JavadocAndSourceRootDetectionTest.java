@@ -104,9 +104,11 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
     public void testParsing() throws Exception {
         assertParse("/**\n * Some license here\n */\n\npackage foo;\n\npublic class Foo {}\n", false, "foo");
         assertParse("package foo;", false, "foo");
+        assertParse("package foo; ", false, "foo");
         assertParse("/**/package foo;", false, "foo");
         assertParse("/***/package foo;", false, "foo");
         assertParse("/*****/package foo;", false, "foo");
+        // would like to test stack overflow from #154894, but never managed to reproduce it in a unit test (only in standalone j2seproject)
     }
     private void assertParse(String text, boolean packageInfo, String expectedPackage) {
         Matcher m = (packageInfo ? JavadocAndSourceRootDetection.PACKAGE_INFO : JavadocAndSourceRootDetection.JAVA_FILE).matcher(text);
