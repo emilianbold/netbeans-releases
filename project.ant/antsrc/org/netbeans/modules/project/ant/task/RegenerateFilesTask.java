@@ -47,7 +47,9 @@ import java.io.IOException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 
 // XXX should this task also do XML Schema validation of project.xml?
 
@@ -93,7 +95,7 @@ public final class RegenerateFilesTask extends Task {
         projectDir = f;
     }
     
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         if (projectDir == null) {
             throw new BuildException("Must set 'project' attr", getLocation());
         }
@@ -105,12 +107,10 @@ public final class RegenerateFilesTask extends Task {
             // Might be running inside IDE, in which case already have a mount...
             FileObject projectFO = FileUtil.toFileObject(projectDir);
             if (projectFO == null) {
-                // Probably not running inside IDE, so mount it.
                 // XXX for some reason including masterfs.jar in <taskdef> does not work. Why?
                 // Possibly a bug in AntClassLoader.getResources(String)?
                 LocalFileSystem lfs = new LocalFileSystem();
                 lfs.setRootDirectory(projectDir);
-                Repository.getDefault().addFileSystem(lfs);
                 projectFO = lfs.getRoot();
                 assert projectFO != null;
             }
