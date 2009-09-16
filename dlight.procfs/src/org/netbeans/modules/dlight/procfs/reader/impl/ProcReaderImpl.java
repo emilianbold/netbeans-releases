@@ -64,7 +64,12 @@ public abstract class ProcReaderImpl implements ProcReader {
         // TODO: fixme!
         // Try to set endian ... bad way!
 
-        PStatus.PIDInfo pidinfo = getProcessStatus().getPIDInfo();
+        PStatus pstatus = getProcessStatus();
+        if (pstatus == null) {
+            return;
+        }
+
+        PStatus.PIDInfo pidinfo = pstatus.getPIDInfo();
         if (pidinfo == null) {
             return;
         }
