@@ -259,4 +259,8 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
         return add.length () > 0 ? add : null;
     }
 
+    @Override
+    public boolean isPending () {
+        return UpdateUnitFactory.getDefault().isScheduledForRestart (getUpdateUnit ());
+    }
 }

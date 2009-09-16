@@ -37,55 +37,44 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.kenai;
+package org.openide.windows;
 
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.query.JiraQuery;
-import org.netbeans.modules.jira.query.QueryController;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import java.util.Set;
+import org.netbeans.junit.NbTestCase;
 
-/**
- *
- * @author Tomas Stupka
- */
-public class KenaiQuery extends JiraQuery {
-    private boolean predefinedQuery = false;
-    private String project;
+public class TopComponentRegistryTest extends NbTestCase {
+    public TopComponentRegistryTest(String name) {
+        super(name);
+    }
 
-    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
-        super(name, repository, jf, saved, false);
-        this.predefinedQuery = predefined;
-        this.project = project;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
-        controller = createControler(repository, this, jf);
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-        if(autoRefresh) {
-            getRepository().scheduleForRefresh(this);
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
+    public void testGetOpenedIsSafeToIterate() {
+        TopComponent tc1 = new TopComponent();
+        TopComponent tc2 = new TopComponent();
+        TopComponent tc3 = new TopComponent();
+
+        Set<TopComponent> all = TopComponent.getRegistry().getOpened();
+
+        tc1.open();
+        tc2.open();
+        tc3.open();
+
+        assertEquals("Contains 3 elements: " + all, 3, all.size());
+
+        assertTrue("tc1 in set: ", all.contains(tc1));
+        assertTrue("tc2 in set: ", all.contains(tc2));
+        assertTrue("tc3 in set: ", all.contains(tc3));
+
+        int cnt = 3;
+        for (TopComponent c : all) {
+            assertTrue("Can be closed", c.close());
+            assertEquals("Now there are ", --cnt, all.size());
         }
-    }
 
-    @Override
-    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
-        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
-        return c;
+        assertTrue("All components are closed", all.isEmpty());
     }
-
-    @Override
-    protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
-            JiraConnector.getConnectorName(),
-            getDisplayName(),
-            count,
-            true,
-            autoRefresh);
-    }
-
-    @Override
-    public String getStoredQueryName() {
-        return super.getStoredQueryName() + "-" + project;
-    }
-
 }

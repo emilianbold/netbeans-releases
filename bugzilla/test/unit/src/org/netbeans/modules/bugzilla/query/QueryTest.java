@@ -217,7 +217,12 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         ts = System.currentTimeMillis();
         q.refresh();
-        assertTrue(q.getLastRefresh() >= ts);
+        lastRefresh = q.getLastRefresh();
+        assertTrue(lastRefresh >= ts);
+
+        // emulate restart
+        q = new BugzillaQuery(QueryTestUtil.getRepository());
+        assertEquals(lastRefresh, q.getLastRefresh());
 
     }
 

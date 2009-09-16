@@ -37,55 +37,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.kenai;
+package org.netbeans.core.windows;
 
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.query.JiraQuery;
-import org.netbeans.modules.jira.query.QueryController;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.windows.TopComponentRegistryTest;
 
-/**
+/** Checks that the same behaviour of the registry is kept in the
+ * default implementation as well as in the real one.
  *
- * @author Tomas Stupka
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class KenaiQuery extends JiraQuery {
-    private boolean predefinedQuery = false;
-    private String project;
+public class TopComponentRegistryImplTest extends TopComponentRegistryTest {
 
-    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
-        super(name, repository, jf, saved, false);
-        this.predefinedQuery = predefined;
-        this.project = project;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
-        controller = createControler(repository, this, jf);
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-        if(autoRefresh) {
-            getRepository().scheduleForRefresh(this);
-        }
-    }
-
-    @Override
-    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
-        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
-        return c;
-    }
-
-    @Override
-    protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
-            JiraConnector.getConnectorName(),
-            getDisplayName(),
-            count,
-            true,
-            autoRefresh);
-    }
-
-    @Override
-    public String getStoredQueryName() {
-        return super.getStoredQueryName() + "-" + project;
+    public TopComponentRegistryImplTest(String name) {
+        super(name);
     }
 
 }

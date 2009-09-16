@@ -211,12 +211,17 @@ made subject to such option by the copyright holder.
     </folder>
 
     <!-- used to add items to popup menu -->
+    <folder name="Actions">
+        <folder name="Management">
+            <file name="org-netbeans-modules-jmx-actions-ManagementAllAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-java">
                 <folder name="Actions">
-                    <file name="ManagementAll.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.ManagementAllAction"/>
+                    <file name="org-netbeans-modules-jmx-actions-ManagementAllAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Management/org-netbeans-modules-jmx-actions-ManagementAllAction.instance"/>
                         <attr name="position" intvalue="2071"/>
                     </file>
                 </folder>

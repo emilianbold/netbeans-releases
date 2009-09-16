@@ -378,7 +378,7 @@ public class ELExpression {
         return null;
     }
     
-    protected String removeQuotes( String propertyName ) {
+    public String removeQuotes( String propertyName ) {
         if ( propertyName.length() >0 ){
             char first = propertyName.charAt(0);
             if ( (first == '"' || first == '\'' )&& propertyName.length() >1 

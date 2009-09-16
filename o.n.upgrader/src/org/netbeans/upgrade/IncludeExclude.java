@@ -64,7 +64,7 @@ final class IncludeExclude extends AbstractSet {
      * @param r reader
      * @return set that accepts names based on include exclude from the file
      */
-    public static Set create (Reader r) throws IOException {
+    public static IncludeExclude create (Reader r) throws IOException {
         IncludeExclude set = new IncludeExclude ();
         
         BufferedReader buf = new BufferedReader (r);

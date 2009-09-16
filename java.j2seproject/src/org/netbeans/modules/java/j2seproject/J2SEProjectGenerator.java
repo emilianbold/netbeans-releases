@@ -44,6 +44,8 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
@@ -55,7 +57,6 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -244,7 +245,7 @@ public class J2SEProjectGenerator {
         h.putPrimaryConfigurationData(data, true);
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
+        ep.setProperty("dist.jar", "${dist.dir}/" + validatePropertyValue(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", new String[0]); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
         ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
@@ -399,6 +400,16 @@ public class J2SEProjectGenerator {
                 return v;
             }
         }
+    }
+    
+    private static final Pattern INVALID_NAME = Pattern.compile("[$/\\\\\\p{Cntrl}]");  //NOI18N
+    
+    private static String validatePropertyValue (String value) {
+        final Matcher m = INVALID_NAME.matcher(value);
+        if (m.find()) {
+            value = m.replaceAll("_");  //NOI18N
+        }
+        return value;
     }
     
     /**
