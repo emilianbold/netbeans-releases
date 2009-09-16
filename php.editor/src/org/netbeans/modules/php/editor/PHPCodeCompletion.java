@@ -149,14 +149,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("function", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("new", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("new", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("static", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("var", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("final", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("interface", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("instanceof", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("implements", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("extends", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("implements", KeywordCompletionType.SIMPLE);
+        PHP_KEYWORDS.put("extends", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("public", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("private", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("protected", KeywordCompletionType.ENDS_WITH_SPACE);
@@ -220,7 +220,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             startTime = System.currentTimeMillis();
         }
 
-        String prefix = completionContext.getPrefix();
+        String prefix = completionContext.getPrefix();        
 
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
