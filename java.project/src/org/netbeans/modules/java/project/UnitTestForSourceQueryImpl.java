@@ -41,23 +41,24 @@
 
 package org.netbeans.modules.java.project;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Delegates {@link UnitTestForSourceQueryImplementation} to the project which
  * owns the binary file.
  */
 @SuppressWarnings("deprecation")
-@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation.class)})
+@ServiceProviders({
+    @ServiceProvider(service=MultipleRootsUnitTestForSourceQueryImplementation.class),
+    @ServiceProvider(service=UnitTestForSourceQueryImplementation.class)
+})
 public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImplementation, MultipleRootsUnitTestForSourceQueryImplementation {
     
     /** Default constructor for lookup. */
