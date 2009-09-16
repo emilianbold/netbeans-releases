@@ -1950,6 +1950,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     public Mirror visitIf(IfTree arg0, EvaluationContext evaluationContext) {
         Mirror conditionValue = arg0.getCondition().accept(this, evaluationContext);
         StatementTree statement;
+        if (conditionValue instanceof ObjectReference) {
+            conditionValue = unboxIfCan(arg0, (ObjectReference) conditionValue, evaluationContext);
+        }
+        if (!(conditionValue instanceof BooleanValue)) {
+            String type = "N/A";    // NOI18N
+            if (conditionValue instanceof Value) {
+                type = ((Value) conditionValue).type().name();
+            }
+            Assert.error(arg0, "notABoolean", arg0.getCondition().toString(), conditionValue, type);
+        }
         if (((BooleanValue)conditionValue).value()) {
             statement = arg0.getThenStatement();
         } else {
