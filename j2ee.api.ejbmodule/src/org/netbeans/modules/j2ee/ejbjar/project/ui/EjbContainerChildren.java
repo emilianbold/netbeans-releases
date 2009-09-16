@@ -68,6 +68,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Ejbs contained within a module
@@ -111,7 +112,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     }
 
     private void updateKeys(){
-        new Thread(new Runnable(){
+        RequestProcessor.getDefault().post(new Runnable(){
             public void run() {
                 try {
                     Future<List<Key>> future = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
@@ -166,7 +167,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                     Exceptions.printStackTrace(ex);
                 }
             }
-        }).start();
+        });
     }
 
     @Override

@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,11 +66,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.lang.model.element.TypeElement;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -162,6 +171,9 @@ public final class CreatedModifiedFilesFactory {
         return retval;
     }
     
+    static CreatedModifiedFiles.Operation packageInfo(Project project, String packageName, Map<String,Map<String,Object>> annotations) {
+        return new PackageInfo(project, packageName, annotations);
+    }
     
     public static abstract class OperationBase implements CreatedModifiedFiles.Operation {
         
@@ -790,5 +802,63 @@ public final class CreatedModifiedFilesFactory {
             return properties;
         }
     }
+
+    private static class PackageInfo extends OperationBase {
+        private final String packageName;
+        private final Map<String,Map<String,Object>> annotations;
+        private final String srcFilePath;
+        PackageInfo(Project project, String packageName, Map<String,Map<String,Object>> annotations) {
+            super(project);
+            this.packageName = packageName;
+            this.annotations = annotations;
+            srcFilePath = getModuleInfo().getResourceDirectoryPath(false) + "/" + packageName.replace('.', '/') + "/package-info.java";
+            addCreatedOrModifiedPath(srcFilePath, true);
+        }
+        public void run() throws IOException {
+            final FileObject top = getProject().getProjectDirectory();
+            top.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    FileObject srcFile = top.getFileObject(srcFilePath);
+                    if (srcFile == null) {
+                        srcFile = FileUtil.createData(top, srcFilePath);
+                        OutputStream os = srcFile.getOutputStream();
+                        try {
+                            Writer w = new OutputStreamWriter(os, FileEncodingQuery.getEncoding(srcFile));
+                            w.write("package " + packageName + ";\n");
+                            w.close();
+                        } finally {
+                            os.close();
+                        }
+                    }
+                    if (!annotations.isEmpty()) {
+                        JavaSource.forFileObject(srcFile).runModificationTask(new Task<WorkingCopy>() {
+                            public void run(WorkingCopy wc) throws Exception {
+                                wc.toPhase(JavaSource.Phase.RESOLVED);
+                                CompilationUnitTree old = wc.getCompilationUnit();
+                                CompilationUnitTree nue = old;
+                                TreeMaker make = wc.getTreeMaker();
+                                for (Map.Entry<String,Map<String,Object>> ann : annotations.entrySet()) {
+                                    TypeElement annType = wc.getElements().getTypeElement(ann.getKey());
+                                    if (annType == null) {
+                                        throw new IllegalArgumentException("No such annotation could be found: " + ann.getKey());
+                                    }
+                                    ExpressionTree annotationTypeTree = make.QualIdent(annType);
+                                    List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+                                    for (Map.Entry<String,Object> attr : ann.getValue().entrySet()) {
+                                        arguments.add(make.Assignment(make.Identifier(attr.getKey()), make.Literal(attr.getValue())));
+                                    }
+                                    AnnotationTree annTree = make.Annotation(annotationTypeTree, arguments);
+                                    throw new UnsupportedOperationException("XXX #172324: do not know how to attach " + annTree + " to " + nue);
+                                }
+                                nue = GeneratorUtilities.get(wc).importFQNs(nue);
+                                wc.rewrite(old, nue);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
 }
 

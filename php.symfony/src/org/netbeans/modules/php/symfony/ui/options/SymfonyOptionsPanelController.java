@@ -44,6 +44,7 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -52,6 +53,13 @@ import org.openide.util.Lookup;
 /**
  * @author Tomas Mysik
  */
+@OptionsPanelController.SubRegistration(
+    location=UiUtils.OPTIONS_PATH,
+    id=SymfonyScript.OPTIONS_SUB_PATH,
+    displayName="#LBL_OptionsName",
+//    toolTip="#LBL_OptionsTooltip"
+    position=200
+)
 public class SymfonyOptionsPanelController extends OptionsPanelController implements ChangeListener {
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

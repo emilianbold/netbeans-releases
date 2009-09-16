@@ -47,6 +47,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
+@OptionsPanelController.SubRegistration(
+    location="CPlusPlus",
+    displayName="#TAB_CodeAssistanceTab",
+    position=300
+)
 public final class CodeAssistancePanelController extends OptionsPanelController {
     public static final boolean TRACE_CODEASSIST = Boolean.getBoolean("trace.codeassist.controller");
 //    private CodeAssistancePanel panel = new CodeAssistancePanel();

@@ -23,6 +23,7 @@
 package org.netbeans.test.installer;
 
 import java.awt.event.KeyEvent;
+import java.io.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -202,7 +203,13 @@ public class Utils {
     @SuppressWarnings("empty-statement")
     public static String extractUninstallerJar(TestData data) {
 
-        data.setUninstallerFile(new File(data.getTestWorkDir() + File.separator + NB_DIR_NAME + File.separator + "uninstall." + data.getPlatformExt()));
+        data.setUninstallerFile(
+            new File(
+                data.getTestWorkDir( ) + File.separator
+                + NB_DIR_NAME + File.separator
+                + "uninstall." + data.getPlatformExt( )
+              )
+          );
         int errorLevel = 0;
 
         try {
@@ -570,4 +577,82 @@ public class Utils {
                 build_number + bundleType + "-" +
                 data.getPlatformName() + "." + data.getPlatformExt();
     }
+
+  public static void RunCommitTests( TestData data )
+  {
+    int iExitCode = -1;
+    try
+    {
+    Runtime rt = Runtime.getRuntime( );
+    // Get module path
+    // c:\\work\\hg\\main\\php.editor
+    String sExec =
+        "D:\\Ant\\apache-ant-1.7.1\\bin\\ant.bat"
+        + " -f ../all-tests.xml -Dbasedir=."
+        + " -Dmodules.list=" + data.GetTestPackage( )
+        // + " -Dtest.config=commit"
+        + " -Dnetbeans.dest.dir=" + data.getWorkDirCanonicalPath( ) + File.separator + NB_DIR_NAME
+        ;
+    // Start tests
+    System.out.println( "++++" + sExec );
+    Process pTesting = rt.exec(
+        sExec,
+        null,
+        new File( "E:\\buffer\\btd\\qa-functional" )
+      );
+
+    BufferedReader br = new BufferedReader(
+        new InputStreamReader( pTesting.getInputStream( ) )
+      );
+    BufferedReader bre = new BufferedReader(
+        new InputStreamReader( pTesting.getErrorStream( ) )
+      );
+    while( true )
+    {
+      String s;
+      if( br.ready( ) )
+      {
+        s = br.readLine( );
+        System.out.println( "[out] " + s );
+      }
+      else
+      if( bre.ready( ) )
+      {
+        s = bre.readLine( );
+        System.out.println( "[err] " + s );
+      }
+      else
+      {
+        try
+        {
+          iExitCode = pTesting.exitValue( );
+          break;
+        }
+        catch( IllegalThreadStateException ex )
+        {
+          try
+          {
+            Thread.sleep( 50 );
+          }
+          catch( InterruptedException exx )
+          {
+            exx.printStackTrace( );
+          }
+        }
+      }
+      //pTesting.waitFor( );
+        // ToDo
+      // Check result
+        // ToDo
+    }
+    }
+    catch( IOException ex )
+    {
+      ex.printStackTrace( );
+    }
+
+    TestCase.assertEquals("Commit Test Result", 0, iExitCode );
+
+    return;
+  }
 }

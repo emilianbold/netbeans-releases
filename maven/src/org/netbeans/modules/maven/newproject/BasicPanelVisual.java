@@ -78,6 +78,7 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -384,7 +385,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 }//GEN-LAST:event_comboEEVersionActionPerformed
 
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
-        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
     }//GEN-LAST:event_btnSetupNewerActionPerformed
     
     

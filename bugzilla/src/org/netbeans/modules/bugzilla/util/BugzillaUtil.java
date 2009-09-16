@@ -49,6 +49,7 @@ import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
@@ -160,12 +161,12 @@ public class BugzillaUtil {
 
     /**
      * Determines wheter the given {@link Repository} is the
-     * netbeans bugtracking repository or not
+     * repository hosting netbeans or not
      *
      * @param repo
-     * @return true if the given repository is the netbenas bugzille, otherwise false
+     * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
-    public static boolean isNbRepository(BugzillaRepository repo) {
+    public static boolean isNbRepository(Repository repo) {
         // XXX dummy implementation
         String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
         if(nbUrl == null || nbUrl.equals("")) {

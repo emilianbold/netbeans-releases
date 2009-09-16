@@ -53,12 +53,17 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.SubRegistration(
+    displayName="org.netbeans.modules.options.editor.Bundle#CTL_General_DisplayName",
+    keywords="org.netbeans.modules.options.editor.Bundle#KW_General",
+    keywordsCategory="Editor/General",
+    id="General", // XXX used anywhere?
+    location="Editor",
+    position=100
+//    toolTip="org.netbeans.modules.options.editor.Bundle#CTL_General_ToolTip"
+)
 public final class GeneralEditorPanelController extends OptionsPanelController {
 
-    public GeneralEditorPanelController() {
-        
-    }
-    
     public void update () {
         getGeneralEditorPanel ().update ();
     }

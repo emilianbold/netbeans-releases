@@ -55,6 +55,7 @@ import org.jvyamlb.PositioningParserImpl;
 import org.jvyamlb.PositioningScannerImpl;
 import org.jvyamlb.ResolverImpl;
 import org.jvyamlb.exceptions.PositionedParserException;
+import org.jvyamlb.exceptions.PositionedScannerException;
 import org.jvyamlb.nodes.Node;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -227,6 +228,25 @@ public class YamlParser extends Parser {
             if (ex instanceof PositionedParserException) {
                 PositionedParserException ppe = (PositionedParserException)ex;
                 pos = ppe.getPosition().offset;
+            }
+            else if (ex instanceof PositionedScannerException) {
+                PositionedScannerException pse = (PositionedScannerException)ex;
+                pos = pse.getPosition().offset;
+                // The scanner possition is on the next token. We need to reallocate it
+                // on the previous token.
+                TokenHierarchy th = snapshot.getTokenHierarchy();
+                if (th != null) {
+                    TokenSequence ts = th.tokenSequence();
+                    if (ts != null) {
+                        ts.move(pos);
+                        ts.moveNext();
+                        Token token = ts.token();
+                        // don't move the error, when there is more values on the line. See #171633
+                        if (token != null && token.text().toString().indexOf('{') == -1 && ts.movePrevious()) {
+                            pos = ts.offset();
+                        }
+                    }
+                }
             }
 
             YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, snapshot, false, null, null);

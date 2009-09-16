@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.apache.tools.ant.module;
-
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-
-/**
- * Contains information about Abbreviations Panel, and creates a new
- * instance of it.
  *
- * @author Jan Jancura
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public final class AntOption extends AdvancedOption {
 
-    private static String loc (String key) {
-        return NbBundle.getMessage (AntOption.class, key);
-    }
+@OptionsPanelController.ContainerRegistration(
+    id=UiUtils.OPTIONS_PATH,
+    categoryName="#PHPOptionsCategory_name",
+//    title="#PHPOptionsCategory_title",
+    iconBase="org/netbeans/modules/php/project/ui/resources/php-options-icon.png",
+//    keywords="...", keywordsCategory="...",
+    position=650
+)
+package org.netbeans.modules.php.project.ui.options;
 
-
-    @Override
-    public String getDisplayName () {
-        return loc ("Ant");
-    }
-
-    @Override
-    public String getTooltip () {
-        return loc ("Ant_Tooltip");
-    }
-
-    @Override
-    public OptionsPanelController create () {
-        return new AntPanelController ();
-    }
-}
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.spi.options.OptionsPanelController;

@@ -240,11 +240,13 @@ public abstract class JSPProcessor {
         }
     }
 
+    public static boolean ignoreLockFromUnitTest = false;
+    
     public void process() throws BadLocationException {
         processCalled = true;
 
         //workaround>>> issue #120195 - Deadlock in jspparser while reformatting JSP
-        if (DocumentUtilities.isWriteLocked(doc)) {
+        if (DocumentUtilities.isWriteLocked(doc) && !ignoreLockFromUnitTest) {
             processingSuccessful = false;
             return;
         }

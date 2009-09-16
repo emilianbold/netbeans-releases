@@ -157,10 +157,14 @@ public class Hk2PluginProperties {
      * @return
      */
     public List<URL> getClasses() {
+        File serverDir = new File(getGlassfishRoot());
+        return getClasses(serverDir);
+    }
+
+    public static List<URL> getClasses(File serverDir) {
         List<String> jars = new ArrayList<String>();
 
         Set<URL> urlSet = new HashSet<URL>();
-        File serverDir = new File(getGlassfishRoot());
 
         try {
             File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), 

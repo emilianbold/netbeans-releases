@@ -196,11 +196,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     
     private void removeIconHint() {
         if (hintIcon != null) {
-            Container c = hintIcon.getParent();
-            if (c != null) {
+            Container cont = hintIcon.getParent();
+            if (cont != null) {
                 Rectangle bds = hintIcon.getBounds();
-                c.remove (hintIcon);
-                c.repaint (bds.x, bds.y, bds.width, bds.height);
+                cont.remove (hintIcon);
+                cont.repaint (bds.x, bds.y, bds.width, bds.height);
             }
         }
     }
@@ -406,15 +406,15 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             
             if (f != null) {
                 e.consume();
-                JTextComponent c = getComponent(); 
+                JTextComponent tc = getComponent();
                 invokeHint (f);
-                if (c != null && org.openide.util.Utilities.isMac()) {
+                if (tc != null && org.openide.util.Utilities.isMac()) {
                     // see issue #65326
-                    c.requestFocus();
+                    tc.requestFocus();
                 }
                 removeHints();
                 //the component was reset when setHints was called, set it back so further hints will work:
-                setComponent(c);
+                setComponent(tc);
             }
         }
     }
@@ -438,17 +438,17 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         ListCompletionView view = hintListComponent.getView();
         view.setSelectedIndex(view.locationToIndex(e.getPoint()));
     }
-    
+
     public boolean isActive() {
         boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
         boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
         return bulbShowing || popupShowing;
     }
-    
+
     public boolean isPopupActive() {
         return hintListComponent != null && hintListComponent.isShowing();
     }
-    
+
     private ParseErrorAnnotation findAnnotation(Document doc, AnnotationDesc desc, int lineNum) {
         AnnotationHolder annotations = getAnnotationHolder(doc);
 
@@ -464,12 +464,12 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                 }
             }
         }
-        
+
         return null;
     }
 
     boolean invokeDefaultAction(boolean onlyActive) {
-        JTextComponent comp = getComponent(); 
+        JTextComponent comp = getComponent();
         if (comp == null) {
             Logger.getLogger(HintsUI.class.getName()).log(Level.WARNING, "HintsUI.invokeDefaultAction called, but comp == null");
             return false;
@@ -478,28 +478,30 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         Document doc = comp.getDocument();
 
         cancel.set(false);
-        refresh(doc, comp.getCaretPosition());
         
         if (doc instanceof BaseDocument) {
             Annotations annotations = ((BaseDocument) doc).getAnnotations();
 
             try {
-                Rectangle carretRectangle = comp.modelToView(comp.getCaretPosition());            
+                Rectangle carretRectangle = comp.modelToView(comp.getCaretPosition());
                 int line = Utilities.getLineOffset((BaseDocument) doc, comp.getCaretPosition());
-                AnnotationDesc desc = annotations.getActiveAnnotation(line);
+                String type = annotations.getActiveAnnotation(line).getAnnotationType();
+                refresh(doc, comp.getCaretPosition());
+                AnnotationDesc desc = annotations.getAnnotation(line, type);
+                annotations.frontAnnotation(desc);
                 ParseErrorAnnotation annotation = findAnnotation(doc, desc, line);
-                
+
                 if (annotation == null) {
                     if (onlyActive) {
                         return false;
                     }
-                    
+
                     AnnotationDesc[] pas = annotations.getPasiveAnnotations(line);
-                    
+
                     if (pas == null) {
                         return false;
                     }
-                    
+
                     for (AnnotationDesc ad : pas) {
                         if ((annotation = findAnnotation(doc, ad, line)) != null) {
                             break;
@@ -510,24 +512,24 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                         return false;
                     }
                 }
-                
+
                 Point p = comp.modelToView(Utilities.getRowStartFromLineOffset((BaseDocument) doc, line)).getLocation();
                 p.y += carretRectangle.height;
                 if( comp.getParent() instanceof JViewport ) {
                     p.x += ((JViewport)comp.getParent()).getViewPosition().x;
                 }
-                
+
                 showPopup(annotation.getFixes(), annotation.getDescription(), comp, p);
-                
+
                 return true;
             } catch (BadLocationException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
         }
-        
+
         return false;
     }
-    
+
     public void keyPressed(KeyEvent e) {
         JTextComponent comp = getComponent(); 
         if (comp == null) {
@@ -654,7 +656,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     }
     
     private static void open(ChangeInfo changes, JTextComponent component) {
-        JTextComponent c = component;
+        JTextComponent tc = component;
         if (changes != null && changes.size() > 0) {
             ChangeInfo.Change change = changes.get(0);
             FileObject file = change.getFileObject();
@@ -678,7 +680,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
 
                     JEditorPane[] panes = edit.getOpenedPanes();
                     if (panes != null && panes.length > 0) {
-                        c = panes[0];
+                        tc = panes[0];
                     } else {
                         return;
                     }
@@ -692,10 +694,10 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             Position start = change.getStart();
             Position end = change.getEnd();
             if (start != null) {
-                c.setSelectionStart(start.getOffset());
+                tc.setSelectionStart(start.getOffset());
             }
             if (end != null) {
-                c.setSelectionEnd(end.getOffset());
+                tc.setSelectionEnd(end.getOffset());
             }
         }
     }

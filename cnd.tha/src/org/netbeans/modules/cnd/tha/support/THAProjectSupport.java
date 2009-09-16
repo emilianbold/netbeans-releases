@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.tha.THAServiceInfo;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
+import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.perfan.tha.api.THAInstrumentationSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -102,7 +103,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
     public final void setDLigthSessionHandler(DLightSessionHandler session){
         this.session = session;
     }
-
+    
     public void stop(){
         if (session != null){
             DLightToolkitManagement.getInstance().stopSession(session);
@@ -162,7 +163,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
         return true;
     }
 
-    public boolean isConfiguredForInstrumentation() {
+    public boolean isConfiguredForInstrumentation(THAConfiguration configuration) {
         THAInstrumentationSupport instrSupport = getInstrumentationSupport();
 
         if (instrSupport == null || !instrSupport.isSupported()) {
@@ -175,10 +176,12 @@ public final class THAProjectSupport implements PropertyChangeListener {
         if (mc.isMakefileConfiguration()){
             return isConfiguredForInstrumentationMakefile();
         }
-        if (!instrSupport.isInstrumentationNeeded(mc.getDevelopmentHost().getExecutionEnvironment())){
+        if (!instrSupport.isInstrumentationNeeded(mc.getDevelopmentHost().getExecutionEnvironment(), configuration)){
             return true;
         }
-        if (mc.getLinkerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getLinkerOptions())) {
+        if ((!mc.getCRequired().getValue() || (mc.getCRequired().getValue() &&  mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions())))  &&
+                (!mc.getCppRequired().getValue() || (mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) &&
+                mc.getLinkerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getLinkerOptions())) {
             return true;
         }
 
