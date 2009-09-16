@@ -101,7 +101,7 @@ public class JBProperties {
     private static final Logger LOGGER = Logger.getLogger(JBProperties.class.getName());
 
     private final Version version;
-    
+
     /** Creates a new instance of JBProperties */
     public JBProperties(JBDeploymentManager manager) {
         this.manager = manager;
@@ -131,7 +131,7 @@ public class JBProperties {
     public boolean isVersion(Version targetVersion) {
         return (version != null && version.compareToIgnoreUpdate(targetVersion) >= 0); // NOI18N
     }
-    
+
     public File getServerDir() {
         return new File(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
     }
@@ -143,7 +143,7 @@ public class JBProperties {
     public File getLibsDir() {
         return new File(getServerDir(), "lib"); // NOI18N
     }
-    
+
     public boolean getProxyEnabled() {
         String val = ip.getProperty(PROP_PROXY_ENABLED);
         return val != null ? Boolean.valueOf(val).booleanValue()
@@ -312,7 +312,7 @@ public class JBProperties {
             return name.endsWith(".jar") || new File(dir, name).isDirectory(); // NOI18N
         }
     }
-    
+
     private void addFiles(File folder, List l) {
         File files [] = folder.listFiles(new FF());
         if (files == null)
