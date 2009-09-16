@@ -141,7 +141,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 // remove all which aren't in the returned query list
                 List<String> l = new ArrayList<String>();
                 for (Query q : queries) {
-                    l.add(q.getDisplayName());
+                    if(q != null) {
+                        l.add(q.getDisplayName());
+                    }
                 }
                 m.keySet().retainAll(l);
             }

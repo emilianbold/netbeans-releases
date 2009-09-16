@@ -59,6 +59,7 @@ public class KenaiQuery extends JiraQuery {
         super(name, repository, jf, saved, false);
         this.predefinedQuery = predefined;
         this.project = project;
+        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
         controller = createControler(repository, this, jf);
         boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
         if(autoRefresh) {
@@ -83,7 +84,7 @@ public class KenaiQuery extends JiraQuery {
     }
 
     @Override
-    protected String getStoredQueryName() {
+    public String getStoredQueryName() {
         return super.getStoredQueryName() + "-" + project;
     }
 
