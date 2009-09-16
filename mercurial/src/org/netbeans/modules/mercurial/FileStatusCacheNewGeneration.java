@@ -222,18 +222,21 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      */
     @Override
     public FileInformation getStatus(File file) {
-        boolean isDirectory = file.isDirectory();
-        if (isDirectory && (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)))
-            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
+        // at first get cached info
         FileInformation fi = getInfo(file);
-        if (fi == null) {
-            if (!exists(file)) {
+        if (fi == null) { // no info cached
+            boolean isAdministrative = HgUtils.isAdministrative(file); // is the file a .hg folder?
+            boolean isDirectory = isAdministrative || file.isDirectory(); // is the file a directory? .hg folder is also a directory
+            if (isDirectory && (isAdministrative || HgUtils.isIgnored(file))) { // is ignored?
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
+            }
+            if (!isDirectory && !exists(file)) { // does not exist - if isDirectory, then it SHOULD exist
                 fi = FILE_INFORMATION_UNKNOWN;
-            } else if (HgUtils.isIgnored(file)) {
+            } else if (!isDirectory && HgUtils.isIgnored(file)) { // ignored file
                 fi = FILE_INFORMATION_EXCLUDED;
-            } else if (isDirectory) {
+            } else if (isDirectory) { // is a dir and not in cache - do refresh in here
                 fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            } else {
+            } else { // exists, is a file and is not ignored and is not in cache - so is probably up to date
                 fi = FILE_INFORMATION_UPTODATE;
             }
         }
