@@ -805,17 +805,23 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(indexerFactory.indexer.awaitIndex());
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(2, indexerFactory.scanStartedFor.size());
-        assertEquals(srcRoot1.getURL(), indexerFactory.scanStartedFor.get(0));
-        assertEquals(srcRootWithFiles1.getURL(), indexerFactory.scanStartedFor.get(1));
+        assertEquals(new URL[] {srcRoot1.getURL(), srcRootWithFiles1.getURL()}, indexerFactory.scanStartedFor);
         assertEquals(2, indexerFactory.scanFinishedFor.size());
-        assertEquals(srcRoot1.getURL(), indexerFactory.scanFinishedFor.get(0));
-        assertEquals(srcRootWithFiles1.getURL(), indexerFactory.scanFinishedFor.get(1));
+        assertEquals(new URL[] {srcRoot1.getURL(), srcRootWithFiles1.getURL()}, indexerFactory.scanFinishedFor);
         assertEquals(2, eindexerFactory.scanStartedFor.size());
-        assertEquals(srcRoot1.getURL(), eindexerFactory.scanStartedFor.get(0));
-        assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanStartedFor.get(1));
+        assertEquals(new URL[] {srcRoot1.getURL(), srcRootWithFiles1.getURL()}, eindexerFactory.scanStartedFor);
         assertEquals(2, eindexerFactory.scanFinishedFor.size());
-        assertEquals(srcRoot1.getURL(), eindexerFactory.scanFinishedFor.get(0));
-        assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanFinishedFor.get(1));        
+        assertEquals(new URL[] {srcRoot1.getURL(), srcRootWithFiles1.getURL()}, eindexerFactory.scanFinishedFor);
+    }
+    //where
+    private void assertEquals(final URL[] expected, final Collection<URL> data) throws AssertionError {
+        assertEquals(expected.length, data.size());
+        final Set<URL> expectedSet = new HashSet<URL>(Arrays.asList(expected));
+        final Set<URL> dataSet = new HashSet<URL>(data);
+        assertEquals(expectedSet.size(), dataSet.size());
+        for (URL url : dataSet) {
+            assertTrue(expectedSet.remove(url));
+        }
     }
 
     public void testIssue171719() throws Exception {
