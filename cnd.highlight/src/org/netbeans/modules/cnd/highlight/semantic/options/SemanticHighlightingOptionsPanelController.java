@@ -50,8 +50,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location="CPlusPlus",
-    displayName="#TAB_SemanticHighlightingTab",
+    location="CPlusPlus", // NOI18N
+    displayName="#TAB_SemanticHighlightingTab", // NOI18N
     position=500
 )
 public final class SemanticHighlightingOptionsPanelController extends OptionsPanelController {
