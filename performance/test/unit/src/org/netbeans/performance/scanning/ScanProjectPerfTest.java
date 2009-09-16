@@ -140,6 +140,12 @@ public class ScanProjectPerfTest extends NbTestCase {
         repositoryUpdater.setLevel(Level.INFO);
         ScanningHandler handler = new ScanningHandler(projectName);
         repositoryUpdater.addHandler(handler);
+
+        Logger log = Logger.getLogger("org.openide.filesystems.MIMESupport");
+        log.setLevel(Level.FINE);
+        ReadingHandler readHandler = new ReadingHandler();
+        log.addHandler(readHandler);
+        // assertFalse("File read ", readHandler.wasRead());
         JavaSource src = JavaSource.create(ClasspathInfo.create(projectDir));
 
         src.runWhenScanFinished(new Task<CompilationController>() {
@@ -260,6 +266,30 @@ public class ScanProjectPerfTest extends NbTestCase {
 
         @Override
         public void close() throws SecurityException {
+        }
+    }
+
+    private class ReadingHandler extends Handler {
+
+        private boolean read = false;
+
+        @Override
+        public void publish(LogRecord record) {
+            if ("MSG_CACHED_INPUT_STREAM".equals(record.getMessage())) {
+                read = true;
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        public boolean wasRead() {
+            return read;
         }
     }
 }

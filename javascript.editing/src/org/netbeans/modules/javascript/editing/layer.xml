@@ -146,11 +146,6 @@
                 <file name="javascript" url="JsExample"/>
             </folder>
         </folder>
-        <folder name="Advanced">
-            <file name="JsOptions.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.options.JsOptions"/>
-            </file>
-        </folder>        
     </folder>
 
     <folder name="CslPlugins">
