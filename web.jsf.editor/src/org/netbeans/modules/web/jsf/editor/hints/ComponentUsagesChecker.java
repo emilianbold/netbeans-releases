@@ -80,14 +80,17 @@ public class ComponentUsagesChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
-        Map<String, FaceletsLibrary> libs = JsfSupport.findFor(context.doc).getFaceletsLibraries();
+        JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
+        if (jsfSupport != null) {
+            Map<String, FaceletsLibrary> libs = jsfSupport.getFaceletsLibraries();
 
-        for (String namespace : declaredNamespaces) {
-            FaceletsLibrary lib = libs.get(namespace);
-            if (lib != null) {
-//            if(JsfUtils.isCompositeComponentLibrary(lib)) {
-                declaredLibraries.add(lib);
-//            }
+            for (String namespace : declaredNamespaces) {
+                FaceletsLibrary lib = libs.get(namespace);
+                if (lib != null) {
+    //            if(JsfUtils.isCompositeComponentLibrary(lib)) {
+                    declaredLibraries.add(lib);
+    //            }
+                }
             }
         }
 
