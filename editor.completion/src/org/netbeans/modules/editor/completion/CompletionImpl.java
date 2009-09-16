@@ -600,7 +600,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     }
     
     private void completionQuery(boolean refreshedQuery, boolean delayQuery, int queryType) {
-        Result newCompletionResult = new Result(activeProviders.length);
+        Result newCompletionResult = this.new Result(activeProviders.length);
         synchronized (this) {
             assert (completionResult == null);
             completionResult = newCompletionResult;
@@ -1035,7 +1035,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called in AWT only.
      */
     private void documentationQuery() {
-        Result newDocumentationResult = new Result(1); // Estimate for selected item only
+        Result newDocumentationResult = this.new Result(1); // Estimate for selected item only
         synchronized (this) {
             assert (docResult == null);
             docResult = newDocumentationResult;
@@ -1157,7 +1157,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called in AWT only.
      */
     private void toolTipQuery() {
-        Result newToolTipResult = new Result(1);
+        Result newToolTipResult = this.new Result(1);
         synchronized (this) {
             assert (toolTipResult == null);
             toolTipResult = newToolTipResult;
@@ -1553,7 +1553,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             for (int i = 0; i < size; i++) {
                 CompletionResultSetImpl result = resultSets.get(i);
                 result.getTask().refresh(beforeQuery ? null : result.getResultSet());
-                
             }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
@@ -1580,7 +1579,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * <br>
      * If the result is finished then cancelling physically cancels the result sets.
      */
-    static final class Result {
+    final class Result {
         
         private final List<CompletionResultSetImpl> resultSets;
         
@@ -1661,7 +1660,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 assert (invoked); // had to be invoked
                 invoked = false;
             }
-            Result refreshResult = new Result(getResultSets().size());
+            Result refreshResult = CompletionImpl.this.new Result(getResultSets().size());
             refreshResult.beforeQuery = beforeQuery;
             createRefreshResultSets(resultSets, refreshResult);
             return refreshResult;
@@ -1674,6 +1673,12 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
          */
         void invokeRefresh() {
             refreshResultSets(getResultSets(), beforeQuery);
+            synchronized (CompletionImpl.this) {
+                if (!isAllResultsFinished(completionResult.getResultSets())) {
+                    layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
+                            null, -1, CompletionImpl.this, null, null, 0);
+                }
+            }
             if (!beforeQuery)
                 queryInvoked();
         }
