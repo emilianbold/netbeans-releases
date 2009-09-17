@@ -109,11 +109,7 @@ public class FormNode extends Node {
 
     /** performs OpenAction with this node */    
     public void open() {
-        //Workaround for http://www.netbeans.org/issues/show_bug.cgi?id=168216
-        //TODO: Remove this workaround once the issue is fixed
-        this.callPopup();
-        new Action(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).perform();
-
+        
         openAction.perform(this);
     }
 
