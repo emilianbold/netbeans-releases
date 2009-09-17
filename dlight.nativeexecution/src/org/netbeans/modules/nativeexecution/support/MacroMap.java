@@ -68,7 +68,7 @@ public class MacroMap {
 
     public String put(String key, String value) {
         if (value == null) {
-            log.log(Level.INFO, "Attempt to set env variable '%s' with null value", value); // NOI18N
+            log.log(Level.INFO, "Attempt to set env variable '%s' with null value", key); // NOI18N
         }
 
         String result = value;
