@@ -689,6 +689,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 return true;
             }
 
+            // #169303: on GTK or Nimbus L&F the row height can be initially set
+            // to 0 which disables the "large model" optimizations (#127170)
+            @Override
+            public void setRowHeight(int rowHeight) {
+                if (rowHeight > 0) {
+                    super.setRowHeight(rowHeight);
+                }
+            }
+
             // To work with different font sizes (#106223); see: http://www.javalobby.org/java/forums/t19562.html
             private boolean firstPaint = true;
             @Override

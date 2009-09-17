@@ -806,7 +806,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase java ruby cpp php full javafx javafx-fulle" separator=" " property="bundle.type">
+        <for-each list="javase java ruby cpp php full javafx javafx-full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
