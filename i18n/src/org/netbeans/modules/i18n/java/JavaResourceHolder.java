@@ -42,6 +42,7 @@
 package org.netbeans.modules.i18n.java;
 
 import java.io.IOException;
+import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.ResourceHolder;
 import org.netbeans.modules.properties.BundleStructure;
 import org.netbeans.modules.properties.Element;
@@ -130,6 +131,8 @@ public class JavaResourceHolder extends ResourceHolder {
         BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
         if (bundleStructure == null)
             return null;
+
+        key = Util.getUnescapedKey(key);
 
         return bundleStructure.getItem(getLocalizationFileName(), key);
     }
