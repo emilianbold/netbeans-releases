@@ -87,7 +87,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
-        Repository repo = KenaiRepositories.getInstance().getRepository(project);
+        Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
             FakeJiraSupport jira = FakeJiraSupport.get(project);
             if(jira != null) {
@@ -141,7 +141,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 // remove all which aren't in the returned query list
                 List<String> l = new ArrayList<String>();
                 for (Query q : queries) {
-                    l.add(q.getDisplayName());
+                    if(q != null) {
+                        l.add(q.getDisplayName());
+                    }
                 }
                 m.keySet().retainAll(l);
             }
@@ -189,7 +191,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public Action getFindIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(project);
+        final Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(project);
@@ -211,7 +213,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public Action getCreateIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(project);
+        final Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(project);

@@ -112,6 +112,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private static WeakReference<CodeEvaluator> instanceRef;
 
     private JEditorPane codePane;
+    // Text of the code pane, which is updated in AWT and can be read in any thread.
+    // Solves the problem with calling getText() in non-AWT thread.
+    private volatile String codeText = "";
     private History history;
     private Reference<JPDADebugger> debuggerRef = new WeakReference(null);
     private DbgManagerListener dbgManagerListener;
@@ -158,6 +161,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     public void pasteExpression(String expr) {
         codePane.setText(expr);
+        codeText = expr;
         if (!isOpened()) {
             open();
         }
@@ -241,6 +245,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         codePane.getDocument().addDocumentListener(this);
         if (text != null) {
             codePane.setText(text);
+            codeText = text;
         }
         documentPtr[0] = codePane.getDocument();
     }
@@ -493,6 +498,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         evaluator.open ();
         if (selectedText != null) {
             evaluator.codePane.setText(selectedText);
+            evaluator.codeText = selectedText;
         }
         evaluator.codePane.selectAll();
         evaluator.requestActive ();
@@ -532,7 +538,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     // ..........................................................................
 
     public String getExpression() {
-        return codePane.getText();
+        return codeText;
     }
 
     public void evaluate() {
@@ -629,16 +635,19 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     public void insertUpdate(DocumentEvent e) {
         updateWatch();
+        codeText = codePane.getText();
     }
 
     // DocumentListener
     public void removeUpdate(DocumentEvent e) {
         updateWatch();
+        codeText = codePane.getText();
     }
 
     // DocumentListener
     public void changedUpdate(DocumentEvent e) {
         updateWatch();
+        codeText = codePane.getText();
     }
 
     private void updateWatch() {
@@ -883,6 +892,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
         public void activate() {
             codePane.setText(text);
+            codeText = text;
         }
 
     }

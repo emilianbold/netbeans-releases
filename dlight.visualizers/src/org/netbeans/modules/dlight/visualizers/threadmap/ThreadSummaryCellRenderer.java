@@ -64,7 +64,6 @@ import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration
 public class ThreadSummaryCellRenderer extends JPanel implements TableCellRenderer, Serializable {
     private Color unselectedBackground;
     private Color unselectedForeground;
-    private ThreadStateColumnImpl threadData;
     private ThreadSummaryColumnImpl threadSummary;
     private ThreadsPanel viewManager; // view manager for this cell
     private long threadTime;
@@ -135,9 +134,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             }
         }
 
-        if (value instanceof ThreadStateColumnImpl) {
-            threadData = (ThreadStateColumnImpl) value;
-        } else if (value instanceof ThreadSummaryColumnImpl) {
+        if (value instanceof ThreadSummaryColumnImpl) {
             threadSummary = (ThreadSummaryColumnImpl) value;
         }
         timeFilters = viewManager.getTimeIntervalSelection();
@@ -200,9 +197,6 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         }
         g.setColor(getBackground());
         g.drawString(s, 6 + 3, y);
-        if (threadData != null) {
-            threadData.setRunning(percent);
-        }
     }
 
     @Override
@@ -261,61 +255,25 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
 
     private int countSum(EnumMap<MSAState, AtomicInteger> aMap) {
         int count = 0;
-        if (threadData != null) {
-            for (int i = 0; i < threadData.size(); i++) {
-                ThreadState state = threadData.getThreadStateAt(i);
-                if (!isSelected(state.getTimeStamp())) {
-                    continue;
-                }
-                if (threadData.isAlive(i)) {
-                    int delta = 0; // interval in 10 ms
-                    if (i + 1 < threadData.size()) {
-                        ThreadState next = threadData.getThreadStateAt(i+1);
-                        delta = (int) ((next.getTimeStamp() - state.getTimeStamp())/(1000*1000*10));
-                    } else {
-                        delta = (int) (viewManager.getInterval()/(1000*1000*10));
-                    }
-                    count += delta;
-                    for (int j = 0; j < state.size(); j++) {
-                        MSAState msa = state.getMSAState(j, viewManager.isFullMode());
-                        if (msa != null) {
-                            int value = state.getState(j) * delta;
-                            AtomicInteger v = aMap.get(msa);
-                            if (v != null) {
-                                v.addAndGet(value);
-                            } else {
-                                v = new AtomicInteger(value);
-                                aMap.put(msa, v);
-                            }
-                        } else {
-                            System.err.println("Wrong MSA at index " + i + " MSA=" + state); // NOI18N
-                        }
-                    }
+        for(StateDuration duration : threadSummary.getSummary()){
+            MSAState msa = duration.getState();
+            if (!viewManager.isFullMode()) {
+                msa = ThreadStateMapper.toSimpleState(msa);
+            }
+            if (msa != null) {
+                int value = (int) (duration.getDuration() / 1000 / 1000 /10);
+                count += value;
+                AtomicInteger v = aMap.get(msa);
+                if (v != null) {
+                    v.addAndGet(value);
+                } else {
+                    v = new AtomicInteger(value);
+                    aMap.put(msa, v);
                 }
             }
-            count = (count+50)/100; // in seconds
-            ThreadStateColumnImpl.normilizeMap(aMap, 100, count);
-        } else {
-            for(StateDuration duration : threadSummary.getSummary()){
-                MSAState msa = duration.getState();
-                if (!viewManager.isFullMode()) {
-                    msa = ThreadStateMapper.toSimpleState(msa);
-                }
-                if (msa != null) {
-                    int value = (int) (duration.getDuration() / 1000 / 1000 /10);
-                    count += value;
-                    AtomicInteger v = aMap.get(msa);
-                    if (v != null) {
-                        v.addAndGet(value);
-                    } else {
-                        v = new AtomicInteger(value);
-                        aMap.put(msa, v);
-                    }
-                }
-            }
-            count = (count+50)/100; // in seconds
-            ThreadStateColumnImpl.normilizeMap(aMap, 100, count);
         }
+        count = (count+50)/100; // in seconds
+        ThreadStateColumnImpl.normilizeMap(aMap, 100, count);
         return count;
     }
 

@@ -72,6 +72,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -94,6 +95,7 @@ public class ReconfigureProject {
     private AtomicBoolean canceled = new AtomicBoolean(false);
     private Future<Integer> lastTask;
     private Set<ExecutionListener> listeners = new WeakSet<ExecutionListener>();
+    private InputOutput tab;
 
     public ReconfigureProject(Project makeProject){
         if (TRACE) {
@@ -146,19 +148,20 @@ public class ReconfigureProject {
         return flags;
     }
 
-    public void reconfigure(final String cFlags, final String cxxFlags, final String linkerFlags){
+    public void reconfigure(final String cFlags, final String cxxFlags, final String linkerFlags, final InputOutput io){
         if (SwingUtilities.isEventDispatchThread()){
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true);
+                    reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true, io);
                 }
             });
         } else {
-            reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true);
+            reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true, io);
         }
     }
 
-    public void reconfigure(String cFlags, String cxxFlags, String linkerFlags, String otherOptions, boolean waitFinished){
+    public void reconfigure(String cFlags, String cxxFlags, String linkerFlags, String otherOptions, boolean waitFinished, final InputOutput io){
+        tab = io;
         if (waitFinished) {
             final AtomicInteger res = new AtomicInteger();
             final AtomicBoolean finished = new AtomicBoolean(false);
@@ -239,7 +242,7 @@ public class ReconfigureProject {
             if (canceled.get()) {
                 listener.executionFinished(-1);
             } else {
-                lastTask = CMakeAction.performAction(cmake.getNodeDelegate(), listener, null, makeProject, null);
+                lastTask = CMakeAction.performAction(cmake.getNodeDelegate(), listener, null, makeProject, tab);
             }
         } else if (qmake != null && make != null){
             String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
@@ -273,7 +276,7 @@ public class ReconfigureProject {
             if (canceled.get()) {
                 listener.executionFinished(-1);
             } else {
-                lastTask = QMakeAction.performAction(qmake.getNodeDelegate(), listener, null, makeProject, null);
+                lastTask = QMakeAction.performAction(qmake.getNodeDelegate(), listener, null, makeProject, tab);
             }
         } else if (configure != null && make != null) {
             String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
@@ -309,7 +312,7 @@ public class ReconfigureProject {
             if (canceled.get()) {
                 listener.executionFinished(-1);
             } else {
-                lastTask = ShellRunAction.performAction(configure.getNodeDelegate(), listener, null, makeProject, null);
+                lastTask = ShellRunAction.performAction(configure.getNodeDelegate(), listener, null, makeProject, tab);
             }
         } else if (make != null && make != null) {
             postClean(true);
@@ -337,7 +340,7 @@ public class ReconfigureProject {
         if (canceled.get()) {
             listener.executionFinished(-1);
         } else {
-            lastTask = MakeAction.execute(make.getNodeDelegate(), "clean", listener, null, makeProject, null, null); // NOI18N
+            lastTask = MakeAction.execute(make.getNodeDelegate(), "clean", listener, null, makeProject, null, tab); // NOI18N
         }
     }
 
@@ -368,7 +371,7 @@ public class ReconfigureProject {
         if (canceled.get()) {
             listener.executionFinished(-1);
         } else {
-            lastTask = MakeAction.execute(node, "", listener, null, makeProject,vars, null); // NOI18N
+            lastTask = MakeAction.execute(node, "", listener, null, makeProject,vars, tab); // NOI18N
         }
     }
 

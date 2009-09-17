@@ -292,8 +292,13 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             String cspath = getCompilerSetPath(pae);
             // see IZ 158224, gdb should be run with the default environment
-            gdb = new GdbProxy(this, gdbCommand, /*pae.getProfile().getEnvironment().getenv()*/new String[]{},
-                    runDirectory, termpath, cspath);
+            // see IZ 170287, PATH should be set on Windows
+            String[] debuggerEnv = new String[0];
+            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                String path = pae.getProfile().getEnvironment().getenvEntry("Path"); //NOI18N
+                debuggerEnv = new String[]{path}; //NOI18N
+            }
+            gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
             initGdbVersion();
 
@@ -1115,6 +1120,11 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                         "ERR_NoSymbolTable"))); // NOI18N
+                killSession();
+            } else if (msg.contains("\"You can't do that without a process to debug.\"")) { // NOI18N
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                        "ERR_ApplicationCrashed"))); // NOI18N
                 killSession();
             } else if (msg.contains("Cannot access memory at address")) { // NOI18N
                 // ignore - probably dereferencing an uninitialized pointer

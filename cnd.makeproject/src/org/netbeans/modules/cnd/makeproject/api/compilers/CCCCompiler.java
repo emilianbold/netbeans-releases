@@ -135,27 +135,23 @@ public abstract class CCCCompiler extends BasicCompiler {
         }
     }
 
-    /**
-     * Call this to check whether the compiler is initialized,
-     * i.e. whether include search path and redefined symbols are filled
-     * @return true in the case this compiler is ready, otherwise false
-     */
+    @Override
     public boolean isReady() {
         return compilerDefinitions != null;
     }
 
-    /**
-     * Wait until this compiler is initialized,
-     * i.e. until include search path and redefined symbols are determined
-     */
+    @Override
     public void waitReady() {
-        //CndUtils.assertNonUiThread();
+        CndUtils.assertNonUiThread();
         getSystemIncludesAndDefines();
     }
 
     private synchronized void getSystemIncludesAndDefines() {
         if (compilerDefinitions == null) {
-            //CndUtils.assertNonUiThread();
+            if (getExecutionEnvironment().isRemote()) {
+                // TODO: it's better not to call it even in local mode
+                CndUtils.assertNonUiThread();
+            }
             restoreSystemIncludesAndDefines();
             if (compilerDefinitions == null) {
                 compilerDefinitions = getFreshSystemIncludesAndDefines();
@@ -165,7 +161,10 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
 
     public void resetSystemIncludesAndDefines() {
-        //CndUtils.assertNonUiThread();
+        if (getExecutionEnvironment().isRemote()) {
+            // TODO: it's better not to call it even in local mode
+            CndUtils.assertNonUiThread();
+        }
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }

@@ -247,7 +247,35 @@ public final class OperationContainerImpl<Support> {
                     if ((! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) ||
                             (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0)) {
                         // adds affectedEager into list of elements for the operation
-                        OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
+                        OperationInfo<Support> i = null;
+                        try {
+                            i = add (eagerEl.getUpdateUnit (), eagerEl);
+                        } catch (IllegalArgumentException e) {
+                            //investigate the reason of 172220, 171975, 169588
+                            boolean firstCondition = (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl));
+                            boolean secondCondition = reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0;
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("\nIAE while adding eager element to the " + type + " container\n");
+                            sb.append("\nEager: " + eagerEl);
+                            sb.append("\nFirst condition : " + firstCondition);
+                            sb.append("\nSecond condition : " + secondCondition);
+                            sb.append("\nInstalled: " + impl.getUpdateUnit().getInstalled());
+                            sb.append("\nPending: " + impl.getUpdateUnit().isPending());
+                            sb.append("\nreqs: " + reqs + " (total : " + reqs.size() + ")");
+                            sb.append("\nall: " + all + " (total : " + all.size() + ")");                            
+                            sb.append("\noperation: " + operations + " (total: " + operations.size()+ ")\n");
+                            sb.append("\nUpdateElements in operations:");
+                            for (OperationInfo<?> op : operations) {
+                                sb.append("\n  " + op.getUpdateElement());
+                            }
+                            sb.append("\nUpdateElements in all:");
+                            for (UpdateElement elem : all) {
+                                sb.append("\n  " + elem );
+                            }
+                            sb.append("\n");
+                            LOGGER.log(Level.INFO, sb.toString(), e);
+                            throw e;
+                        }
                         if (i != null) {
                             affectedEagers.add (i);
                         }

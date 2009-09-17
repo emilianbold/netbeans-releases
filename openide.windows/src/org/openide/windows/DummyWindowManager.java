@@ -53,6 +53,7 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -635,7 +636,18 @@ final class DummyWindowManager extends WindowManager {
         private PropertyChangeSupport pcs;
 
         public R() {
-            opened = new HashSet<TopComponent>();
+            opened = new HashSet<TopComponent>() {
+                @Override
+                public Iterator<TopComponent> iterator() {
+                    HashSet<TopComponent> copy = new HashSet<TopComponent>();
+                    Iterator<TopComponent> it = super.iterator();
+                    while (it.hasNext()) {
+                        TopComponent topComponent = it.next();
+                        copy.add(topComponent);
+                    }
+                    return copy.iterator();
+                }
+            };
             nodes = new Node[0];
         }
 
@@ -676,7 +688,7 @@ final class DummyWindowManager extends WindowManager {
         }
 
         public synchronized Set<TopComponent> getOpened() {
-            return new HashSet<TopComponent>(opened);
+            return Collections.unmodifiableSet(opened);
         }
 
         synchronized void setActive(TopComponent tc) {

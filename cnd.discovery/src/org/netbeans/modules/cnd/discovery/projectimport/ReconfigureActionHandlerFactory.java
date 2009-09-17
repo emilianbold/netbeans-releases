@@ -75,7 +75,7 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
             }
 
             public void execute(InputOutput io) {
-                reconfigure.reconfigure("-g", "-g", ""); // NOI18N
+                reconfigure.reconfigure("-g", "-g", "", io); // NOI18N
             }
 
             public boolean canCancel() {

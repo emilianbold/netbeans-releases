@@ -202,24 +202,32 @@ class JsfElResourceBundleContextChecker implements JsfElContextChecker {
     public boolean check( JsfElExpression expression, Document document,
             FileObject fileObject, List<Hint> hints ) 
     {
+        /*
+         * Fix for IZ#172143 - False EL Error 'Unknown resource bunde key "]".'
+         */
+        String property = expression.getPropertyBeingTypedName();
+        if ( property.length() >0 && property.charAt(property.length()-1) == ']'){
+            property = property.substring( 0, property.length()-1);
+        }
+        property = expression.removeQuotes(property);
         List<CompletionItem> propertyKeys = expression.getPropertyKeys(
                 expression.getBundleName(), 0, 
-                expression.getReplace());
+                property );
         for (CompletionItem completionItem : propertyKeys) {
             String key = ((JspCompletionItem)completionItem).getItemText();
-            if ( key!= null && key.equals(expression.getReplace())){
+            if ( key!= null && key.equals(property)){
                 return true;
             }
         }
         int offset = expression.getExpression().lastIndexOf( 
-                expression.getReplace());
+                property);
         Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
                 NbBundle.getMessage(HintsProvider.class, 
                         "MSG_UNKNOWN_RESOURCE_BUNDLE_CONTEXT", 
-                        expression.getReplace()),fileObject,
+                        property),fileObject,
                 new OffsetRange(expression.getStartOffset()+offset, 
                         expression.getStartOffset()+offset +
-                        expression.getReplace().length()),
+                        property.length()),
                 Collections.<HintFix>emptyList(), 
                 HintsProvider.DEFAULT_ERROR_HINT_PRIORITY); 
         hints.add(hint);

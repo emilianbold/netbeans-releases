@@ -267,21 +267,24 @@ public class BugtrackingOwnerSupport {
         FileObject fileObject = FileUtil.toFileObject(file);
         if (fileObject == null) {
             LOG.log(Level.WARNING, " did not find a FileObject for file {0}", new Object[] {file}); //NOI18N
-            return null;
-        }
-
-        try {
-            repo = getKenaiBugtrackingRepository(fileObject);
-            if (repo != null) {
-                return repo;
+        } else {
+            try {
+                repo = getKenaiBugtrackingRepository(fileObject);
+                if (repo != null) {
+                    return repo;
+                }
+            } catch (KenaiException ex) {
+                LOG.log(Level.WARNING,
+                      " communication with Kenai failed while loading " //NOI18N
+                          + "information about bugtracking repository", //NOI18N
+                      ex);
+                return null;
             }
-        } catch (KenaiException ex) {
-            return null;
         }
 
         File context = BugtrackingUtil.getLargerContext(file, fileObject);
         if (context == null) {
-            return null;
+            context = file;
         }
 
         return getRepositoryForContext(context, issueId, askIfUnknown);

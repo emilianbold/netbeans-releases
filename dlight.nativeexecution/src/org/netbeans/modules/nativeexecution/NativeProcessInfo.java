@@ -145,13 +145,25 @@ public final class NativeProcessInfo {
      * @param name
      * @param value
      */
-    public void addEnvironmentVariable(final String name, final String value) {
+    public void putEnvironmentVariable(final String name, final String value) {
         envVariables.put(name, value);
     }
 
-    public void addEnvironmentVariables(Map<String, String> envs) {
+    public void addPathVariable(String name, String path, boolean prepend) {
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            name = name.toUpperCase();
+        }
+
+        if (prepend) {
+            envVariables.put(name, "${" + name + "}:" + path); // NOI18N
+        } else {
+            envVariables.put(name, path + ":${" + name + "}"); // NOI18N
+        }
+    }
+
+    public void putAllEnvironmentVariables(Map<String, String> envs) {
         for (String key : envs.keySet()) {
-            addEnvironmentVariable(key, envs.get(key));
+            putEnvironmentVariable(key, envs.get(key));
         }
     }
 
