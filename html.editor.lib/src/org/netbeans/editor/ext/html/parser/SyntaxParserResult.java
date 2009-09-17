@@ -86,6 +86,11 @@ public class SyntaxParserResult {
     //doesn't take namespaces context into account
     //doesn't support multiple prefixes for one namespace
     public synchronized AstNode getASTRoot(String namespace) {
+        if(namespace != null && !getDeclaredNamespaces().containsKey(namespace)) {
+            //unknown namespace, not parse tree for it
+            return null;
+        }
+
         if(astRoots == null) {
              astRoots = new HashMap<String, AstNode>();
         }
