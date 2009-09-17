@@ -59,6 +59,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -116,7 +117,15 @@ public class ELExpression {
      * if EL expression is attribute value. 
      */
     private String myAttributeValue;
-
+    
+    /**
+     * @author ads
+     * Lexer for facelet file doesn't inform you about attribute.
+     * So  I have added this attribute which contains token text with 
+     * context EL inside.
+     */
+    private String myXhtmlToken;
+    
     private int contextOffset = -1;
     private int myStartOffset = -1;
 
@@ -171,6 +180,15 @@ public class ELExpression {
                         if ( JspTokenId.ATTR_VALUE == last.token().id() ){
                             isAttribute = true;
                             myAttributeValue = last.token().text().toString();
+                        }
+                        /*
+                         *  This is a little hack . I don't know why NoClassDefFoundError 
+                         *  appears in runtime. Compilation works perfectly. 
+                         */
+                        else if ( last.token().id().toString().equals("HTML")
+                                && last.language().mimeType().equals("text/xhtml"))// NOI18N
+                        {
+                            myXhtmlToken = last.token().text().toString();
                         }
                     }
                     break;
@@ -403,6 +421,62 @@ public class ELExpression {
             }
         }
         return propertyName;
+    }
+    
+    public String getInsert( String propertyName , char startChar ) {
+        int bracketIndex = getExpression().lastIndexOf("[");    // NOI18N
+        
+        if ( bracketIndex >-1 ){
+            String quote = null;
+            if ( startChar == '"' || startChar =='\''){
+                quote = ""+startChar;
+            }
+            else if ( isAttribute && myAttributeValue!= null && 
+                    myAttributeValue.length() > 0 )
+            {
+                quote = getQuote(  myAttributeValue.charAt( 0 ) ,
+                        myAttributeValue );
+            }
+            else if ( myXhtmlToken != null ){
+                int dQuoteIndex = myXhtmlToken.lastIndexOf('"');
+                int sQuoteIndex = myXhtmlToken.lastIndexOf('\'');
+                if ( sQuoteIndex> dQuoteIndex ){
+                    quote = getQuote( '\'', myXhtmlToken);
+                }
+                else if ( dQuoteIndex>=0 ){
+                    quote = getQuote( '"', myXhtmlToken);
+                }
+            }
+            if ( quote == null ){
+                quote = "\"";                   // NOI18N
+            }
+            StringBuilder builder = new StringBuilder( quote);
+            builder.append( propertyName );
+            builder.append( quote );
+            builder.append("]");                    // NOI18N
+            return builder.toString();
+        }
+        return propertyName;
+    }
+
+    private String getQuote( char ch, String text ) {
+        if ( ch == '"'){
+            if ( text.indexOf("'")!=-1){
+                return "\\\"";                         // NOI18N
+            }
+            else {
+                return "'";                             // NOI18N
+            }
+        }
+        else if( ch == '\''){
+            if ( text.indexOf('"')!=-1){
+                return "\\'";                         // NOI18N
+            }
+            else {
+                return "\"";                           // NOI18N
+            }
+        }
+        return null;
     }
 
     static String getPropertyName(String methodName, int prefixLength) {
@@ -873,48 +947,6 @@ public class ELExpression {
                     }
                 }
             }
-        }
-
-        private String getInsert( String propertyName , char startChar ) {
-            int bracketIndex = getExpression().lastIndexOf("[");    // NOI18N
-            int dotIndex = getExpression().lastIndexOf(".");        // NOI18N
-            
-            if ( dotIndex < bracketIndex ){
-                String quote = null;
-                if ( startChar == '"' || startChar =='\''){
-                    quote = ""+startChar;
-                }
-                else if ( isAttribute && myAttributeValue!= null && 
-                        myAttributeValue.length() > 0 )
-                {
-                    char firstChar = myAttributeValue.charAt( 0 );
-                    if ( firstChar == '"'){
-                        if ( myAttributeValue.indexOf("'")!=-1){
-                            quote = "\\\"";                         // NOI18N
-                        }
-                        else {
-                            quote ="'";                             // NOI18N
-                        }
-                    }
-                    else if( firstChar == '\''){
-                        if ( myAttributeValue.indexOf('"')!=-1){
-                            quote = "\\'";                         // NOI18N
-                        }
-                        else {
-                            quote ="\"";                           // NOI18N
-                        }
-                    }
-                }
-                if ( quote == null ){
-                    quote = "\"";                   // NOI18N
-                }
-                StringBuilder builder = new StringBuilder( quote);
-                builder.append( propertyName );
-                builder.append( quote );
-                builder.append("]");                    // NOI18N
-                return builder.toString();
-            }
-            return propertyName;
         }
 
         public List<CompletionItem> getCompletionItems() {
