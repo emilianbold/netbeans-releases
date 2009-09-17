@@ -80,7 +80,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final boolean isWindows;
     private final boolean isMacOS;
 
-
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
@@ -300,13 +299,14 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         int exitCode = -1;
 
+        BufferedReader statusReader = null;
+
         try {
             resultFile.deleteOnExit();
             int attempts = 10;
-
             while (attempts-- > 0) {
                 if (resultFile.exists() && resultFile.length() > 0) {
-                    BufferedReader statusReader = new BufferedReader(new FileReader(resultFile));
+                    statusReader = new BufferedReader(new FileReader(resultFile));
                     String exitCodeString = statusReader.readLine();
                     if (exitCodeString != null) {
                         exitCode = Integer.parseInt(exitCodeString.trim());
@@ -320,6 +320,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             throw new InterruptedException();
         } catch (IOException ex) {
         } catch (NumberFormatException ex) {
+        } finally {
+            if (statusReader != null) {
+                try {
+                    statusReader.close();
+                } catch (IOException ex) {
+                }
+            }
         }
 
         return exitCode;
@@ -364,9 +371,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
 
             if (pidFile.exists() && pidFile.length() > 0) {
-                InputStream pidIS = new FileInputStream(pidFile);
-                readPID(pidIS);
-                pidIS.close();
+                InputStream pidIS = null;
+                try {
+                    pidIS = new FileInputStream(pidFile);
+                    readPID(pidIS);
+                } finally {
+                    if (pidIS != null) {
+                        pidIS.close();
+                    }
+                }
                 break;
             }
 

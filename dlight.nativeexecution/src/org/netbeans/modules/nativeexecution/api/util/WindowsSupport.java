@@ -404,7 +404,7 @@ public final class WindowsSupport {
         return result;
     }
 
-    private class StreamReader implements Callable<List<String>> {
+    private static class StreamReader implements Callable<List<String>> {
 
         private final InputStream is;
         private final List<String> result;

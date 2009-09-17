@@ -123,7 +123,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
     }
 
     @Override
-    public void invalidate() {
+    public synchronized void invalidate() {
         super.invalidate();
         pid = null;
     }

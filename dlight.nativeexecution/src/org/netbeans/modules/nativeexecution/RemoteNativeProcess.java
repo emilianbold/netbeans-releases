@@ -22,7 +22,7 @@ import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-    private final static Object lock = new String(RemoteNativeProcess.class.getName());
+    private final static Object lock = RemoteNativeProcess.class.getName() + "Lock"; // NOI18N
     private ChannelStreams cstreams = null;
     private Integer exitValue = null;
 
