@@ -41,6 +41,9 @@
 
 package org.netbeans.performance.languages.actions;
 
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.util.concurrent.atomic.AtomicLong;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.languages.Projects;
@@ -59,6 +62,12 @@ import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.actions.Action.Shortcut;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -93,6 +102,7 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
     }
 
     public static NbTestSuite suite() {
+        CountingSecurityManager.initialize("non-existant");
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
              .addTest(OpenScriptingFilesTest.class)
@@ -163,8 +173,8 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "ruby20kb.rb";
-        nodePath = "Source Files";        
-        doMeasurement();        
+        nodePath = "Source Files";
+        doMeasurement();
     }
 
     public void testOpening20kbRHTMLFile() {
@@ -173,7 +183,7 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         menuItem = OPEN;
         fileName = "rhtml20kb.rhtml";
         nodePath = "Test Files|unit";
-        doMeasurement();          
+        doMeasurement();
     }
 
     public void testOpening20kbJSFile() {
@@ -181,8 +191,8 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "javascript20kb.js";
-        nodePath = "Web Pages";        
-        doMeasurement();          
+        nodePath = "Web Pages";
+        doMeasurement();
     }
 
     public void testOpening20kbPHPFile() {
@@ -191,43 +201,35 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         menuItem = OPEN;
         fileName = "php20kb.php";
         nodePath = "Source Files";
+
+        String path = nodePath+"|"+fileName;
+        fileToBeOpened = new Node(getProjectNode(testProject),path);
+        popup =  fileToBeOpened.callPopup();
+        popup.pushMenu(menuItem);
+
+        EditorOperator editorOperator1 = EditorWindowOperator.getEditor(fileName);
+        editorOperator1.makeComponentVisible();
+        editorOperator1.select(1, 1);
+
+        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
+        assertNotNull("File object found", fo);
+        assertEquals("Correct name", "php20kb.php", fo.getNameExt());
+        File dir = FileUtil.toFile(fo.getParent());
+        assertNotNull("Directory is backed by java.io.File", dir);
+
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator1);
+//        try {
+//            SourceUtils.waitScanFinished();
+//        } catch (InterruptedException ex) {
+//            fail("No interrupts please");
+//        }
+        AtomicLong l = new AtomicLong();
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator1);
+        CountingSecurityManager.initialize(dir.getPath());
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator1);
+        CountingSecurityManager.assertCounts("At most 40 touches", 40, l);
+
         doMeasurement();
-    }
-
-    public void testOpening20kbJSONFile() {
-        testProject = Projects.SCRIPTING_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        nodePath = "Web Pages";
-        fileName = "json20kb.json";
-        doMeasurement();          
-    }
-
-    public void testOpening20kbCSSFile() {
-        testProject = Projects.SCRIPTING_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        nodePath = "Web Pages";
-        fileName = "css20kb.css";
-        doMeasurement();          
-    }
-
-    public void testOpening20kbYMLFile() {
-        testProject = Projects.RAILS_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        fileName = "yaml20kb.yml";
-        nodePath = "Test Files|unit";
-        doMeasurement();          
-    }
-
-    public void testOpening20kbBATFile() {
-        testProject = Projects.SCRIPTING_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        nodePath = "Web Pages";
-        fileName = "bat20kb.bat";
-        doMeasurement();          
     }
 
     public void testOpening20kbDIFFFile() {
@@ -236,25 +238,8 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         menuItem = OPEN;
         nodePath = "Web Pages";
         fileName = "diff20kb.diff";
-        doMeasurement();          
+        doMeasurement();
     }
 
-    public void testOpening20kbManifestFile() {
-        testProject = Projects.SCRIPTING_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        nodePath = "Web Pages";
-        fileName = "manifest20kb.mf";
-        doMeasurement();          
-    }
-
-    public void testOpening20kbShFile() {
-        testProject = Projects.SCRIPTING_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        nodePath = "Web Pages";
-        fileName = "sh20kb.sh";
-        doMeasurement();          
-    }
 
 }

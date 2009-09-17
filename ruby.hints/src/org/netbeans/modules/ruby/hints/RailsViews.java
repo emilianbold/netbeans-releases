@@ -91,7 +91,7 @@ public class RailsViews extends RubyAstRule {
         
         String name = ((INameNode)node).getName();
 
-        FileObject view = RubyUtils.getRailsViewFor(file, name, false, true);
+        FileObject view = RubyUtils.getRailsViewFor(file, name, "_controller", "controllers", true);
 
         if (view == null && shouldHaveView(info, node) && isPublic(context.parserResult, node)) {
             String displayName = NbBundle.getMessage(RailsViews.class, "MissingView");

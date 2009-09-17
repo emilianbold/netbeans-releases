@@ -1022,7 +1022,7 @@ class Resolv
         return @labels.length
       end
 
-      def |>METHOD:[]<|(|>PARAMETER:i<|)
+      def [](|>PARAMETER:i<|)
         return @labels[|>PARAMETER:i<|]
       end
 

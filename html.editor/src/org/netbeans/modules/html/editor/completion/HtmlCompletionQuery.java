@@ -255,12 +255,15 @@ public class HtmlCompletionQuery extends UserTask {
                 }
                 result = items;
             } else {
-                if (node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+                if (node.type() == AstNode.NodeType.UNKNOWN_TAG || node.type() == AstNode.NodeType.ROOT) {
                     //nothing to complete in an unknown tag
                     return null;
                 }
-                //should be open tag if not unknown
+                //should be open tag if not unknown or root in case of the text being broken
+                //that the parser cannot recognize the tag node
                 assert node.type() == AstNode.NodeType.OPEN_TAG : "Unexpecet node type " + node.type();
+
+                
 
                 DTD.Element tag = node.getDTDElement();
                 List possible = tag.getAttributeList(prefix); // All attribs of given tag
