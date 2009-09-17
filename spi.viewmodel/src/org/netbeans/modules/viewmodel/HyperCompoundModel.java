@@ -37,32 +37,44 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.viewmodel;
 
-import java.io.File;
-import java.io.PrintWriter;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.Model;
+import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
 
 /**
- * Test for ScpSyncWorker
- * @author Vladimir Kvashin
+ *
+ * @author Martin Entlicher
  */
-public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
+public class HyperCompoundModel implements Model {
 
-    public ZipSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    private Models.CompoundModel main;
+    private Models.CompoundModel[] models;
+    private TreeModelFilter treeFilter;
+
+    public HyperCompoundModel(Models.CompoundModel main,
+                              Models.CompoundModel[] models,
+                              TreeModelFilter treeFilter) {
+        this.main = main;
+        this.models = models;
+        this.treeFilter = treeFilter;
     }
 
-    @Override
-    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        return new ZipSyncWorker(execEnv, out, err, privProjectStorageDir, src);
+    ColumnModel[] getColumns() {
+        return main.getColumns();
     }
 
+    Models.CompoundModel getMain() {
+        return main;
+    }
 
-    public static Test suite() {
-        return new RemoteDevelopmentTest(ZipSyncWorkerTestCase.class);
+    Models.CompoundModel[] getModels() {
+        return models;
+    }
+
+    TreeModelFilter getTreeFilter() {
+        return treeFilter;
     }
 }

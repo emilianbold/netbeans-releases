@@ -50,6 +50,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
@@ -350,6 +351,10 @@ public class EvaluationContext {
             return value;
         }
 
+        public Type getType() {
+            return type;
+        }
+
         public void setValue(Mirror value) {
             this.value = value;
             // check value type [TODO]
@@ -361,6 +366,9 @@ public class EvaluationContext {
     public static abstract class VariableInfo {
 
         public abstract void setValue(Value value);
+
+        public abstract Type getType() throws ClassNotLoadedException;
+
 
         private static class FieldInf extends VariableInfo {
 
@@ -374,6 +382,11 @@ public class EvaluationContext {
             FieldInf(Field field, ObjectReference fieldObject) {
                 this.field = field;
                 this.fieldObject = fieldObject;
+            }
+
+            @Override
+            public Type getType() throws ClassNotLoadedException {
+                return field.type();
             }
 
             @Override
@@ -405,6 +418,11 @@ public class EvaluationContext {
             }
 
             @Override
+            public Type getType() throws ClassNotLoadedException {
+                return var.type();
+            }
+
+            @Override
             public void setValue(Value value) {
                 try {
                     context.getFrame().setValue(var, value);
@@ -427,6 +445,11 @@ public class EvaluationContext {
             }
 
             @Override
+            public Type getType() throws ClassNotLoadedException {
+                return array.type();
+            }
+
+            @Override
             public void setValue(Value value) {
                 try {
                     array.setValue(index, value);
@@ -444,6 +467,11 @@ public class EvaluationContext {
 
             ScriptLocalVarInf(ScriptVariable variable) {
                 this.variable = variable;
+            }
+
+            @Override
+            public Type getType() throws ClassNotLoadedException {
+                return variable.getType();
             }
 
             @Override
