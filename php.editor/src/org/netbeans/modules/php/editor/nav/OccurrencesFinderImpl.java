@@ -120,7 +120,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 }
             } 
         } else {
-            OffsetRange referenceSpanForCodeMarkers = getReferenceSpanForCodeMarkers(tokenSequence, offset);
+            OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
                 Model model = ((PHPParseResult) parameter).getModel();
                 OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
