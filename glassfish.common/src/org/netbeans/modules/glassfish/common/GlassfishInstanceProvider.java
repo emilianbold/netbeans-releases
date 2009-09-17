@@ -120,7 +120,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     new String[0],
                     true, new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
-                    null); // prep for v3-b64 -- new String[] {"--nopassword"}); // NOI18N
+                    new String[] {"--nopassword"}); // NOI18N
         }
         return ee6Provider;
     }
