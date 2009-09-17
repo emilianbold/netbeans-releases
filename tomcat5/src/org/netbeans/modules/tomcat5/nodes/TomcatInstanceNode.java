@@ -120,7 +120,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (tm.isTomcat50()) {
             actions.add(SystemAction.get(SharedContextLogAction.class));
         }
-        if (tm.isTomcat55()) {
+        if (tm.isTomcat55() || tm.isTomcat60()) {
             actions.add(SystemAction.get(ServerLogAction.class));
         }
         actions.add(SystemAction.get(OpenServerOutputAction.class));
