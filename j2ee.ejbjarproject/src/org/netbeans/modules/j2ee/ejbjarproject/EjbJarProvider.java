@@ -287,21 +287,18 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     public String getModuleVersion() {
-        // we don't want to use MetadataModel here as it can block
-        String version = null;
-        try {
-            FileObject ddFO = getDeploymentDescriptor();
-            if (ddFO != null) {
-                org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFO);
-                version = ejbJar.getVersion().toString();
-            }
-        } catch (IOException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+        // return a version based on the Java EE version
+        Profile platformVersion = getJ2eeProfile();
+        if (platformVersion == null) {
+            platformVersion = Profile.JAVA_EE_6_FULL;
         }
-        if (version == null) {
-            version = Profile.JAVA_EE_5.equals(getJ2eeProfile()) ? EjbJar.VERSION_3_0 : EjbJar.VERSION_3_1;
+        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion)) {
+            return EjbJar.VERSION_3_1;
+        } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
+            return EjbJar.VERSION_3_0;
+        } else {
+            return EjbJar.VERSION_2_1;
         }
-        return version;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
