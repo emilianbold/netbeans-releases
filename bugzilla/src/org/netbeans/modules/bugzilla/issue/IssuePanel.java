@@ -272,8 +272,9 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
+        boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository);
         GroupLayout layout = (GroupLayout)getLayout();
-        if (isNew) {
+        if (showProductCombo) {
             if (productCombo.getParent() == null) {
                 layout.replace(productField, productCombo);
             }
@@ -491,8 +492,10 @@ public class IssuePanel extends javax.swing.JPanel {
         return currentValue;
     }
 
-    private void selectInCombo(JComboBox combo, Object value, boolean forceInModel) {
-        if (value == null) return;
+    private boolean selectInCombo(JComboBox combo, Object value, boolean forceInModel) {
+        if (value == null) {
+            return false;
+        }
         combo.setSelectedItem(value);
         if (forceInModel && !value.equals("") && !value.equals(combo.getSelectedItem())) { // NOI18N
             // Reload of server attributes is needed - workarounding it
@@ -502,6 +505,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 combo.setSelectedIndex(0);
             }
         }
+        return value.equals(combo.getSelectedItem());
     }
 
     private String fieldName(JLabel fieldLabel) {
@@ -757,13 +761,49 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private void updateNoComponent() {
+        boolean newNoComponent = (componentCombo.getSelectedItem() == null);
+        if (noComponent != newNoComponent) {
+            noComponent = newNoComponent;
+            updateMessagePanel();
+        }
+    }
+
+    private void updateNoVersion() {
+        boolean newNoVersion = (versionCombo.getSelectedItem() == null);
+        if (noVersion != newNoVersion) {
+            noVersion = newNoVersion;
+            updateMessagePanel();
+        }
+    }
+
+    private void updateNoTargetMilestone() {
+        boolean newNoTargetMilestone = (targetMilestoneCombo.getSelectedItem() == null);
+        if (noTargetMilestione != newNoTargetMilestone) {
+            noTargetMilestione = newNoTargetMilestone;
+            updateMessagePanel();
+        }
+    }
+
     private boolean noSummary = false;
     private boolean invalidKeyword = false;
     private boolean cyclicDependency = false;
+    private boolean noComponent = false;
+    private boolean noVersion = false;
+    private boolean noTargetMilestione = false;
     private List<String> fieldErrors = new LinkedList<String>();
     private List<String> fieldWarnings = new LinkedList<String>();
     private void updateMessagePanel() {
         messagePanel.removeAll();
+        if (noComponent) {
+            addMessage("IssuePanel.noComponent"); // NOI18N
+        }
+        if (noVersion) {
+            addMessage("IssuePanel.noVersion"); // NOI18N
+        }
+        if (noTargetMilestione) {
+            addMessage("IssuePanel.noTargetMilestone"); // NOI18N
+        }
         if (noSummary) {
             JLabel noSummaryLabel = new JLabel();
             noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
@@ -783,7 +823,7 @@ public class IssuePanel extends javax.swing.JPanel {
             invalidKeywordLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(invalidKeywordLabel);
         }
-        if (noSummary || cyclicDependency || invalidKeyword) {
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -798,12 +838,20 @@ public class IssuePanel extends javax.swing.JPanel {
             warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
             messagePanel.add(warningLabel);
         }
-        if (noSummary || cyclicDependency || invalidKeyword || (fieldErrors.size() + fieldWarnings.size() > 0)) {
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || (fieldErrors.size() + fieldWarnings.size() > 0)) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
         } else {
             messagePanel.setVisible(false);
         }
+    }
+
+    void addMessage(String messageKey) {
+        JLabel messageLabel = new JLabel();
+        messageLabel.setText(NbBundle.getMessage(IssuePanel.class, messageKey));
+        String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+        messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
+        messagePanel.add(messageLabel);
     }
 
     @Override
@@ -1593,10 +1641,16 @@ public class IssuePanel extends javax.swing.JPanel {
         targetMilestoneCombo.setModel(toComboModel(targetMilestones));
         // Attempt to keep selection
         boolean isNew = issue.getTaskData().isNew();
-        selectInCombo(componentCombo, component, !isNew);
-        selectInCombo(versionCombo, version, !isNew);
+        if (!isNew && !selectInCombo(componentCombo, component, false) && (componentCombo.getModel().getSize()>1)) {
+            componentCombo.setSelectedItem(null);
+        }
+        if (!isNew && !selectInCombo(versionCombo, version, false) && (versionCombo.getModel().getSize()>1)) {
+            versionCombo.setSelectedItem(null);
+        }
         if (usingTargetMilestones) {
-            selectInCombo(targetMilestoneCombo, targetMilestone, !isNew);
+            if (!isNew && !selectInCombo(targetMilestoneCombo, targetMilestone, false) && (targetMilestoneCombo.getModel().getSize()>1)) {
+                targetMilestoneCombo.setSelectedItem(null);
+            }
         }
         targetMilestoneLabel.setVisible(usingTargetMilestones);
         targetMilestoneCombo.setVisible(usingTargetMilestones);
@@ -1855,10 +1909,12 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void componentComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_componentComboActionPerformed
         cancelHighlight(componentLabel);
+        updateNoComponent();
     }//GEN-LAST:event_componentComboActionPerformed
 
     private void versionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionComboActionPerformed
         cancelHighlight(versionLabel);
+        updateNoVersion();
     }//GEN-LAST:event_versionComboActionPerformed
 
     private void platformComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformComboActionPerformed
@@ -1875,6 +1931,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void targetMilestoneComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetMilestoneComboActionPerformed
         cancelHighlight(targetMilestoneLabel);
+        updateNoTargetMilestone();
     }//GEN-LAST:event_targetMilestoneComboActionPerformed
 
     private void osComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_osComboActionPerformed
