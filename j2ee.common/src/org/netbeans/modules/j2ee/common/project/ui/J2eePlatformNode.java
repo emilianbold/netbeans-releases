@@ -53,6 +53,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
@@ -171,7 +172,11 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         //The caller holds ProjectManager.mutex() read lock
         
         if (platformPropName.equals(evt.getPropertyName())) {
-            refresh();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    refresh();
+                }
+            });
         }
     }
     

@@ -172,6 +172,7 @@ public class ProjectClassPathModifier {
      * adding of a root to the classpath of the given type.
      * @since org.netbeans.modules.java.project/1 1.16
      */
+    @SuppressWarnings("deprecation")
     public static boolean addRoots (final URI[] classPathRoots, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
         final Extensible extensible = findExtensible(projectArtifact, classPathType);
         if (extensible.pcmi != null) {
