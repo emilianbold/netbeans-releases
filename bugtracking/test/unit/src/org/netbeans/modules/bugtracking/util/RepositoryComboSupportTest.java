@@ -162,7 +162,7 @@ public class RepositoryComboSupportTest {
         }
     }
 
-    @Test
+    @Test(timeout=10000)
     public void testNoRepoAvailable() throws InterruptedException {
         printTestName("testNoRepoAvailable");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -195,7 +195,7 @@ public class RepositoryComboSupportTest {
      * @see #testSingleRepoNoMatchingNodeFalse
      * @see #testSingleRepoMatchingNodeFalse
      */
-    @Test
+    @Test(timeout=10000)
     public void testSingleRepoTrue() throws InterruptedException {
         printTestName("testSingleRepoNoNodeTrue");
         runRepositoryComboTest(new SingleRepoComboTest() {
@@ -222,7 +222,7 @@ public class RepositoryComboSupportTest {
      * argument. It also tests that the routine correctly determines no
      * repository should be preselected if there is no node selected.
      */
-    @Test
+    @Test(timeout=10000)
     public void testSingleRepoNoNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoNoNodeFalse");
         runRepositoryComboTest(new SingleRepoComboTest() {
@@ -253,7 +253,7 @@ public class RepositoryComboSupportTest {
      * repository should be preselected if there is no node selected that
      * would refer to the repository.
      */
-    @Test
+    @Test(timeout=10000)
     public void testSingleRepoNoMatchingNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoNoMatchingNodeFalse");
         runRepositoryComboTest(new SingleRepoComboTest() {
@@ -287,7 +287,7 @@ public class RepositoryComboSupportTest {
      * argument. It also tests that the routine correctly determines that
      * the repository should be preselected.
      */
-    @Test
+    @Test(timeout=10000)
     public void testSingleRepoMatchingNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoMatchingNodeFalse");
         runRepositoryComboTest(new SingleRepoComboTest() {
@@ -327,7 +327,7 @@ public class RepositoryComboSupportTest {
      * value of parameter {@code selectRepoIfSingle} of method
      * {@code setup()} has no impact if there are two repositories.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposNoMatchingNodeFalse() throws InterruptedException {
         printTestName("testMoreReposNoMatchingNodeFalse");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -361,7 +361,7 @@ public class RepositoryComboSupportTest {
      * value of parameter {@code selectRepoIfSingle} of method
      * {@code setup()} has no impact if there are two repositories.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposNoMatchingNodeTrue() throws InterruptedException {
         printTestName("testMoreReposNoMatchingNodeTrue");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -395,7 +395,7 @@ public class RepositoryComboSupportTest {
      * there is one node selected and the node refers to some issue tracking
      * repository.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposMatchingNode() throws InterruptedException {
         printTestName("testMoreReposMatchingNode");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -439,7 +439,7 @@ public class RepositoryComboSupportTest {
      * there are multiple nodes selected but all the nodes refer to the same
      * issue tracking repository.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposMoreMatchingNodesSameRepo() throws InterruptedException {
         printTestName("testMoreReposMoreMatchingNodesSameRepo");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -490,7 +490,7 @@ public class RepositoryComboSupportTest {
      * nodes are selected and the nodes refer to several different issue
      * tracking repositories.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposMatchingNodesDifferentRepos() throws InterruptedException {
         printTestName("testMoreReposMatchingNodesDifferentRepos");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -523,7 +523,7 @@ public class RepositoryComboSupportTest {
      * Tests that no repository is preselected in the combo-box if multiple
      * nodes are selected but not all of the nodes refer to the some repository.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposMatchingNodesRepoAndNull() throws InterruptedException {
         printTestName("testMoreReposMatchingNodesRepoAndNull");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -558,7 +558,7 @@ public class RepositoryComboSupportTest {
      * plus the repository to be preselected, if any) is available at the moment
      * the EDT is about to display the list of available repositories.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposNoMatchingNodeAwtRetarded() throws InterruptedException {
         printTestName("testMoreReposNoMatchingNodeAwtRetarded");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -595,7 +595,7 @@ public class RepositoryComboSupportTest {
      * in one shot if all information is available at the moment the AWT thread
      * is about to display the list of available repositories.
      */
-    @Test
+    @Test(timeout=10000)
     public void testMoreReposMatchingNodeAwtRetarded() throws InterruptedException {
         printTestName("testMoreReposMatchingNodeAwtRetarded");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
@@ -632,7 +632,7 @@ public class RepositoryComboSupportTest {
         });
     }
 
-    @Test
+    @Test(timeout=10000)
     public void testDefaultRepoExplicitlySet() throws InterruptedException {
         printTestName("testDefaultRepoExplicitlySet");
         runRepositoryComboTest(new AbstractRepositoryComboTest() {
