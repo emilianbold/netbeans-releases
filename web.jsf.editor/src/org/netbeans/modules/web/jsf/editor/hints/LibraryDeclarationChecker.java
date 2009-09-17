@@ -148,6 +148,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //2. find for unused declarations
         for (FaceletsLibrary lib : declaredLibraries) {
             AstNode rootNode = result.root(lib.getNamespace());
+            if(rootNode == null) {
+                continue; //no parse result for this namespace, the namespace is not declared
+            }
             final int[] usages = new int[1];
             AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
 
