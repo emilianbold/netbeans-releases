@@ -206,7 +206,7 @@ Current java platform setup is:
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.qa-functional.results.dir}" timeout="${test.timeout}">
             <batchtest todir="${build.test.qa-functional.results.dir}">
                 <fileset dir="${build.test.qa-functional.classes.dir}" erroronmissingdir="false">
-                    <include name="**/LocalVariablesTest.class"/>
+                    <include name="**/*.class"/>
                 </fileset>
 
             </batchtest>
