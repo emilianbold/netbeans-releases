@@ -1673,14 +1673,17 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
          */
         void invokeRefresh() {
             refreshResultSets(getResultSets(), beforeQuery);
-            synchronized (CompletionImpl.this) {
-                if (!isAllResultsFinished(completionResult.getResultSets())) {
-                    layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
-                            null, -1, CompletionImpl.this, null, null, 0);
+            if (!beforeQuery) {
+                queryInvoked();
+                synchronized (CompletionImpl.this) {
+                    if (completionResult != null) {
+                        if (!isAllResultsFinished(completionResult.getResultSets())) {
+                            layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
+                                    null, -1, CompletionImpl.this, null, null, 0);
+                        }
+                    }
                 }
             }
-            if (!beforeQuery)
-                queryInvoked();
         }
 
     }
