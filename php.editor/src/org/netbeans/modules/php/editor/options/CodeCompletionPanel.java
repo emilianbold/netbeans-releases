@@ -62,7 +62,7 @@ public class CodeCompletionPanel extends JPanel {
 
     public static enum CodeCompletionType {
         SMART,
-        QUALIFIED,
+        FULLY_QUALIFIED,
         UNQUALIFIED;
 
         public static CodeCompletionType resolve(String value) {
@@ -77,15 +77,23 @@ public class CodeCompletionPanel extends JPanel {
         }
     }
 
+    static final String PHP_AUTO_COMPLETION_VARIABLES = "phpAutoCompletionVariables"; // NOI18N
+    static final String PHP_AUTO_COMPLETION_TYPES = "phpAutoCompletionTypes"; // NOI18N
+    static final String PHP_AUTO_COMPLETION_NAMESPACES = "phpAutoCompletionNamespaces"; // NOI18N
+    static final String PHP_CODE_COMPLETION_STATIC_METHODS = "phpCodeCompletionStaticMethods"; // NOI18N
+    static final String PHP_CODE_COMPLETION_NON_STATIC_METHODS = "phpCodeCompletionNonStaticMethods"; // NOI18N
     static final String PHP_CODE_COMPLETION_TYPE = "phpCodeCompletionType"; // NOI18N
-    static final String PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS = "phpCodeCompletionProvideStaticMethods"; // NOI18N
-    static final String PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS = "phpCodeCompletionProvideNonStaticMethods"; // NOI18N
 
     // default values
-    static final boolean PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS_DEFAULT = true;
-    static final boolean PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS_DEFAULT = false;
+    static final boolean PHP_AUTO_COMPLETION_VARIABLES_DEFAULT = true;
+    static final boolean PHP_AUTO_COMPLETION_TYPES_DEFAULT = true;
+    static final boolean PHP_AUTO_COMPLETION_NAMESPACES_DEFAULT = true;
+    static final boolean PHP_CODE_COMPLETION_STATIC_METHODS_DEFAULT = true;
+    static final boolean PHP_CODE_COMPLETION_NON_STATIC_METHODS_DEFAULT = false;
 
     private final Preferences preferences;
+    private final ItemListener defaultCheckBoxListener = new DefaultCheckBoxListener();
+    private final ItemListener defaultRadioButtonListener = new DefaultRadioButtonListener();
 
     public CodeCompletionPanel(Preferences preferences) {
         assert preferences != null;
@@ -94,8 +102,9 @@ public class CodeCompletionPanel extends JPanel {
 
         initComponents();
 
-        initCodeCompletionType();
+        initAutoCompletion();
         initCodeCompletionForMethods();
+        initCodeCompletionType();
     }
 
     public static PreferencesCustomizer.Factory getCustomizerFactory() {
@@ -107,14 +116,48 @@ public class CodeCompletionPanel extends JPanel {
         };
     }
 
+    private void initAutoCompletion() {
+        boolean autoCompletionVariables = preferences.getBoolean(
+                PHP_AUTO_COMPLETION_VARIABLES,
+                PHP_AUTO_COMPLETION_VARIABLES_DEFAULT);
+        autoCompletionVariablesCheckBox.setSelected(autoCompletionVariables);
+        autoCompletionVariablesCheckBox.addItemListener(defaultCheckBoxListener);
+
+        boolean autoCompletionTypes = preferences.getBoolean(
+                PHP_AUTO_COMPLETION_TYPES,
+                PHP_AUTO_COMPLETION_TYPES_DEFAULT);
+        autoCompletionTypesCheckBox.setSelected(autoCompletionTypes);
+        autoCompletionTypesCheckBox.addItemListener(defaultCheckBoxListener);
+
+        boolean autoCompletionNamespaces = preferences.getBoolean(
+                PHP_AUTO_COMPLETION_NAMESPACES,
+                PHP_AUTO_COMPLETION_NAMESPACES_DEFAULT);
+        autoCompletionNamespacesCheckBox.setSelected(autoCompletionNamespaces);
+        autoCompletionNamespacesCheckBox.addItemListener(defaultCheckBoxListener);
+    }
+
+    private void initCodeCompletionForMethods() {
+        boolean codeCompletionStaticMethods = preferences.getBoolean(
+                PHP_CODE_COMPLETION_STATIC_METHODS,
+                PHP_CODE_COMPLETION_STATIC_METHODS_DEFAULT);
+        codeCompletionStaticMethodsCheckBox.setSelected(codeCompletionStaticMethods);
+        codeCompletionStaticMethodsCheckBox.addItemListener(defaultCheckBoxListener);
+
+        boolean codeCompletionNonStaticMethods = preferences.getBoolean(
+                PHP_CODE_COMPLETION_NON_STATIC_METHODS,
+                PHP_CODE_COMPLETION_NON_STATIC_METHODS_DEFAULT);
+        codeCompletionNonStaticMethodsCheckBox.setSelected(codeCompletionNonStaticMethods);
+        codeCompletionNonStaticMethodsCheckBox.addItemListener(defaultCheckBoxListener);
+    }
+
     private void initCodeCompletionType() {
         CodeCompletionType type = CodeCompletionType.resolve(preferences.get(PHP_CODE_COMPLETION_TYPE, null));
         switch (type) {
             case SMART:
                 smartRadioButton.setSelected(true);
                 break;
-            case QUALIFIED:
-                qualifiedRadioButton.setSelected(true);
+            case FULLY_QUALIFIED:
+                fullyQualifiedRadioButton.setSelected(true);
                 break;
             case UNQUALIFIED:
                 unqualifiedRadioButton.setSelected(true);
@@ -122,42 +165,29 @@ public class CodeCompletionPanel extends JPanel {
             default:
                 throw new IllegalArgumentException("Unknown code completion type: " + type);
         }
-
-        ItemListener defaultRadioButtonListener = new DefaultRadioButtonListener();
         smartRadioButton.addItemListener(defaultRadioButtonListener);
-        qualifiedRadioButton.addItemListener(defaultRadioButtonListener);
+        fullyQualifiedRadioButton.addItemListener(defaultRadioButtonListener);
         unqualifiedRadioButton.addItemListener(defaultRadioButtonListener);
     }
 
-    private void initCodeCompletionForMethods() {
-        boolean provideStaticMethods = preferences.getBoolean(
-                PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS,
-                PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS_DEFAULT);
-        provideStaticMethodsCheckBox.setSelected(provideStaticMethods);
-
-        boolean provideNonStaticMethods = preferences.getBoolean(
-                PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS,
-                PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS_DEFAULT);
-        provideNonStaticMethodsCheckBox.setSelected(provideNonStaticMethods);
-
-        ItemListener defaultCheckBoxListener = new DefaultCheckBoxListener();
-        provideStaticMethodsCheckBox.addItemListener(defaultCheckBoxListener);
-        provideNonStaticMethodsCheckBox.addItemListener(defaultCheckBoxListener);
-    }
-
     void validateData() {
+        preferences.putBoolean(PHP_AUTO_COMPLETION_VARIABLES, autoCompletionVariablesCheckBox.isSelected());
+        preferences.putBoolean(PHP_AUTO_COMPLETION_TYPES, autoCompletionTypesCheckBox.isSelected());
+        preferences.putBoolean(PHP_AUTO_COMPLETION_NAMESPACES, autoCompletionNamespacesCheckBox.isSelected());
+
+        preferences.putBoolean(PHP_CODE_COMPLETION_STATIC_METHODS, codeCompletionStaticMethodsCheckBox.isSelected());
+        preferences.putBoolean(PHP_CODE_COMPLETION_NON_STATIC_METHODS, codeCompletionNonStaticMethodsCheckBox.isSelected());
+
         CodeCompletionType type = null;
         if (smartRadioButton.isSelected()) {
             type = CodeCompletionType.SMART;
-        } else if (qualifiedRadioButton.isSelected()) {
-            type = CodeCompletionType.QUALIFIED;
+        } else if (fullyQualifiedRadioButton.isSelected()) {
+            type = CodeCompletionType.FULLY_QUALIFIED;
         } else if (unqualifiedRadioButton.isSelected()) {
             type = CodeCompletionType.UNQUALIFIED;
         }
         assert type != null;
         preferences.put(PHP_CODE_COMPLETION_TYPE, type.name());
-        preferences.putBoolean(PHP_CODE_COMPLETION_PROVIDE_STATIC_METHODS, provideStaticMethodsCheckBox.isSelected());
-        preferences.putBoolean(PHP_CODE_COMPLETION_PROVIDE_NON_STATIC_METHODS, provideNonStaticMethodsCheckBox.isSelected());
     }
 
     /** This method is called from within the constructor to
@@ -169,18 +199,37 @@ public class CodeCompletionPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+
+
+
+
+
         codeCompletionButtonGroup = new ButtonGroup();
+        enableAutocompletionLabel = new JLabel();
+        autoCompletionVariablesCheckBox = new JCheckBox();
+        autoCompletionTypesCheckBox = new JCheckBox();
+        autoCompletionNamespacesCheckBox = new JCheckBox();
+        methodCodeCompletionLabel = new JLabel();
+        codeCompletionStaticMethodsCheckBox = new JCheckBox();
+        codeCompletionNonStaticMethodsCheckBox = new JCheckBox();
         codeCompletionTypeLabel = new JLabel();
         smartRadioButton = new JRadioButton();
         smartInfoLabel = new JLabel();
-        qualifiedRadioButton = new JRadioButton();
-        qualifiedInfoLabel = new JLabel();
+        fullyQualifiedRadioButton = new JRadioButton();
+        fullyQualifiedInfoLabel = new JLabel();
         unqualifiedRadioButton = new JRadioButton();
         unqualifiedInfoLabel = new JLabel();
-        methodCodeCompletionLabel = new JLabel();
-        provideStaticMethodsCheckBox = new JCheckBox();
-        provideNonStaticMethodsCheckBox = new JCheckBox();
 
+        enableAutocompletionLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.text")); // NOI18N
+        autoCompletionVariablesCheckBox.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionVariablesCheckBox.text")); // NOI18N
+        autoCompletionTypesCheckBox.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionTypesCheckBox.text")); // NOI18N
+        autoCompletionNamespacesCheckBox.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionNamespacesCheckBox.text")); // NOI18N
+        methodCodeCompletionLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.methodCodeCompletionLabel.text")); // NOI18N
+        codeCompletionStaticMethodsCheckBox.setSelected(true);
+
+
+        codeCompletionStaticMethodsCheckBox.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionStaticMethodsCheckBox.text")); // NOI18N
+        codeCompletionNonStaticMethodsCheckBox.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionNonStaticMethodsCheckBox.text")); // NOI18N
         codeCompletionTypeLabel.setLabelFor(smartRadioButton);
 
         codeCompletionTypeLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionTypeLabel.text")); // NOI18N
@@ -191,12 +240,12 @@ public class CodeCompletionPanel extends JPanel {
         smartInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.smartInfoLabel.text")); // NOI18N
         smartInfoLabel.setEnabled(false);
 
-        codeCompletionButtonGroup.add(qualifiedRadioButton);
+        codeCompletionButtonGroup.add(fullyQualifiedRadioButton);
 
-        qualifiedRadioButton.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.qualifiedRadioButton.text")); // NOI18N
-        qualifiedInfoLabel.setLabelFor(qualifiedRadioButton);
-        qualifiedInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.qualifiedInfoLabel.text")); // NOI18N
-        qualifiedInfoLabel.setEnabled(false);
+        fullyQualifiedRadioButton.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedRadioButton.text")); // NOI18N
+        fullyQualifiedInfoLabel.setLabelFor(fullyQualifiedRadioButton);
+        fullyQualifiedInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedInfoLabel.text")); // NOI18N
+        fullyQualifiedInfoLabel.setEnabled(false);
 
         codeCompletionButtonGroup.add(unqualifiedRadioButton);
 
@@ -205,13 +254,6 @@ public class CodeCompletionPanel extends JPanel {
         unqualifiedInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedInfoLabel.text")); // NOI18N
         unqualifiedInfoLabel.setEnabled(false);
 
-
-        methodCodeCompletionLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.methodCodeCompletionLabel.text")); // NOI18N
-        provideStaticMethodsCheckBox.setSelected(true);
-
-
-        provideStaticMethodsCheckBox.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.provideStaticMethodsCheckBox.text")); // NOI18N
-        provideNonStaticMethodsCheckBox.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.provideNonStaticMethodsCheckBox.text")); // NOI18N
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -219,66 +261,89 @@ public class CodeCompletionPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(methodCodeCompletionLabel)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(codeCompletionNonStaticMethodsCheckBox)
+                            .add(codeCompletionStaticMethodsCheckBox))))
+                .addContainerGap(332, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(codeCompletionTypeLabel)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(21, 21, 21)
                                 .add(smartInfoLabel))
                             .add(smartRadioButton)
-                            .add(qualifiedRadioButton)
+                            .add(fullyQualifiedRadioButton)
                             .add(layout.createSequentialGroup()
                                 .add(21, 21, 21)
-                                .add(qualifiedInfoLabel))
+                                .add(fullyQualifiedInfoLabel))
                             .add(unqualifiedRadioButton)
                             .add(layout.createSequentialGroup()
                                 .add(21, 21, 21)
                                 .add(unqualifiedInfoLabel))))
-                    .add(methodCodeCompletionLabel)
+                    .add(enableAutocompletionLabel)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(provideNonStaticMethodsCheckBox)
-                            .add(provideStaticMethodsCheckBox))))
-                .addContainerGap(27, Short.MAX_VALUE))
+                            .add(autoCompletionTypesCheckBox)
+                            .add(autoCompletionVariablesCheckBox)
+                            .add(autoCompletionNamespacesCheckBox))))
+                .addContainerGap(109, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(enableAutocompletionLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(autoCompletionVariablesCheckBox)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(autoCompletionTypesCheckBox)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(autoCompletionNamespacesCheckBox)
+                .add(18, 18, 18)
+                .add(methodCodeCompletionLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(codeCompletionStaticMethodsCheckBox)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(codeCompletionNonStaticMethodsCheckBox)
+                .add(18, 18, 18)
                 .add(codeCompletionTypeLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(smartRadioButton)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(smartInfoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(qualifiedRadioButton)
+                .add(fullyQualifiedRadioButton)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(qualifiedInfoLabel)
+                .add(fullyQualifiedInfoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(unqualifiedRadioButton)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(unqualifiedInfoLabel)
-                .add(18, 18, 18)
-                .add(methodCodeCompletionLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(provideStaticMethodsCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(provideNonStaticMethodsCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox autoCompletionNamespacesCheckBox;
+    private JCheckBox autoCompletionTypesCheckBox;
+    private JCheckBox autoCompletionVariablesCheckBox;
     private ButtonGroup codeCompletionButtonGroup;
+    private JCheckBox codeCompletionNonStaticMethodsCheckBox;
+    private JCheckBox codeCompletionStaticMethodsCheckBox;
     private JLabel codeCompletionTypeLabel;
+    private JLabel enableAutocompletionLabel;
+    private JLabel fullyQualifiedInfoLabel;
+    private JRadioButton fullyQualifiedRadioButton;
     private JLabel methodCodeCompletionLabel;
-    private JCheckBox provideNonStaticMethodsCheckBox;
-    private JCheckBox provideStaticMethodsCheckBox;
-    private JLabel qualifiedInfoLabel;
-    private JRadioButton qualifiedRadioButton;
     private JLabel smartInfoLabel;
     private JRadioButton smartRadioButton;
     private JLabel unqualifiedInfoLabel;

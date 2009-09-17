@@ -231,6 +231,9 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
      *  for which the language embedding is defined that should be excluded
      *  from the embedded section. The excluded characters will not be lexed
      *  and there will be no tokens created for them.
+     * @param joinSections whether the embedding joins sections. Currently if this value is false
+     *  but there is a joining token list list for this embedding then this parameter
+     *  will be updated to true automatically.
      */
     public static <T extends TokenId, ET extends TokenId> boolean createEmbedding(
     TokenList<T> tokenList, int index, Language<ET> embeddedLanguage,
@@ -274,16 +277,23 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
             // Token is now wrapped with the EmbeddingContainer and the embedding can be added
             if (startSkipLength + endSkipLength > token.length()) // Check for appropriate size
                 return false;
+
+            // Check presence of token list list for the embedded language path
+            // If it exists and it's joining sections then the requested embedding must also join sections
+            // even if the joinSections parameter would be false.
+            LanguagePath languagePath = tokenList.languagePath();
+            LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
+            TokenListList<ET> tll = tokenHierarchyOperation.existingTokenListList(embeddedLanguagePath);
+            if (tll != null && tll.joinSections()) {
+                joinSections = true;
+            }
             // Add the new embedding as the first one in the single-linked list
             embedding = LanguageEmbedding.create(embeddedLanguage,
                 startSkipLength, endSkipLength, joinSections);
-            LanguagePath languagePath = tokenList.languagePath();
-            LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
             tokenHierarchyOperation.addLanguagePath(embeddedLanguagePath);
             // Make the embedded token list to be the first in the list
 
-            etl = new EmbeddedTokenList<ET>(
-                    ec, embeddedLanguagePath, embedding);
+            etl = new EmbeddedTokenList<ET>(ec, embeddedLanguagePath, embedding);
             ec.addEmbeddedTokenList(null, etl, false);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath() +
@@ -303,11 +313,9 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                     tokenStartOffset, 0, "", 0);
             eventInfo.setMaxAffectedEndOffset(tokenStartOffset + token.length());
 
-            // Check presence of token list list for the embedded language path
             // When joining sections ensure that the token list list gets created
             // and the embedded tokens get created because they must exist
             // before possible next updating of the token list.
-            TokenListList<ET> tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
             if (!embedding.joinSections()) {
                 etl.initAllTokens();
             }
