@@ -99,6 +99,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
@@ -1772,7 +1773,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             final Source source = Source.create(doc);
             if (source != null) {
                 LOGGER.fine ("Invalidating source: " + source + " due to RootsWork");   //NOI18N
-                SourceAccessor.getINSTANCE().invalidate(source, true);
+                final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
+                assert support != null;
+                support.resetState(true, -1, -1);
             }
         }
 
