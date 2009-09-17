@@ -96,11 +96,12 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         // create mapping map
         if (CsmKindUtilities.isTemplate(declaration)) {
             Iterator<CsmSpecializationParameter> typeIter = instType.getInstantiationParams().iterator();
+            int index = 0;
             for (CsmTemplateParameter param : ((CsmTemplate) declaration).getTemplateParameters()) {
                 if (typeIter.hasNext()) {
                     mapping.put(param, typeIter.next());
                 } else {
-                    CsmObject defaultValue = param.getDefaultValue();
+                    CsmObject defaultValue = getTemplateParameterDefultValue((CsmTemplate) declaration, param, index);
                     if (CsmKindUtilities.isType(defaultValue)) {
                         CsmType defaultType = (CsmType) defaultValue;
                         defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) declaration));
@@ -111,6 +112,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                         }
                     }
                 }
+                index++;
             }
         }
     }
@@ -139,6 +141,77 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     @Override
     public int hashCode() {
         return getFullName().hashCode();
+    }
+
+    private CsmObject getTemplateParameterDefultValue(CsmTemplate declaration, CsmTemplateParameter param, int index) {
+        CsmObject res = param.getDefaultValue();
+        if (res != null) {
+            return res;
+        }
+        if (CsmKindUtilities.isClass(declaration)) {
+            CsmClass cls = (CsmClass) declaration;
+            CsmClassForwardDeclaration fdecl;
+            fdecl = findCsmClassForwardDeclaration(cls.getContainingFile(), cls);
+            if (fdecl != null) {
+                List<CsmTemplateParameter> templateParameters = ((CsmTemplate) fdecl).getTemplateParameters();
+                if (templateParameters.size() > index) {
+                    CsmTemplateParameter p = templateParameters.get(index);
+                    if (p != null) {
+                        res = p.getDefaultValue();
+                        if (res != null) {
+                            return res;
+                        }
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    private CsmClassForwardDeclaration findCsmClassForwardDeclaration(CsmScope scope, CsmClass cls) {
+        if (scope != null) {
+            if (CsmKindUtilities.isFile(scope)) {
+                CsmFile file = (CsmFile) scope;
+                CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION);
+                Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(file, filter);
+                for (Iterator<CsmOffsetableDeclaration> it = declarations; it.hasNext();) {
+                    CsmOffsetableDeclaration decl = it.next();
+                    if (((CsmClassForwardDeclaration) decl).getCsmClass().equals(cls)) {
+                        return (CsmClassForwardDeclaration) decl;
+                    }
+                }
+                filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION);
+                declarations = CsmSelect.getDeclarations(file, filter);
+                for (Iterator<CsmOffsetableDeclaration> it = declarations; it.hasNext();) {
+                    CsmOffsetableDeclaration decl = it.next();
+                    CsmClassForwardDeclaration fdecl = findCsmClassForwardDeclaration((CsmNamespaceDefinition) decl, cls);
+                    if (fdecl != null) {
+                        return fdecl;
+                    }
+                }
+            }
+            if (CsmKindUtilities.isNamespaceDefinition(scope)) {
+                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) scope;
+                CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION);
+                Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(nsd, filter);
+                for (Iterator<CsmOffsetableDeclaration> it = declarations; it.hasNext();) {
+                    CsmOffsetableDeclaration decl = it.next();
+                    if (((CsmClassForwardDeclaration) decl).getCsmClass().equals(cls)) {
+                        return (CsmClassForwardDeclaration) decl;
+                    }
+                }
+                filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION);
+                declarations = CsmSelect.getDeclarations(nsd, filter);
+                for (Iterator<CsmOffsetableDeclaration> it = declarations; it.hasNext();) {
+                    CsmOffsetableDeclaration decl = it.next();
+                    CsmClassForwardDeclaration fdecl = findCsmClassForwardDeclaration((CsmNamespaceDefinition) decl, cls);
+                    if (fdecl != null) {
+                        return fdecl;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private synchronized String getFullName() {

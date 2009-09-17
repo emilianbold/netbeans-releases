@@ -668,14 +668,23 @@ public class JsfElExpression extends ELExpression {
                                 controller .getClasspathInfo());
 
                         // Not a regular Java data object (may be a multi-view data object), open it first
-                        DataObject od = DataObject.find(fo);
-                        if (!"org.netbeans.modules.java.JavaDataObject".equals(
-                                od.getClass().getName())) { // NOI18N
-                            EditorCookie oc = od.getCookie(EditorCookie.class);
-                            oc.open();
+                        // Fix for IZ#172418 - Invoking Go To Source for property inside EL could throw IllegalArgumentException
+                        if (fo != null) {
+                            DataObject od = DataObject.find(fo);
+                            if (!"org.netbeans.modules.java.JavaDataObject"
+                                    .equals(od.getClass().getName()))
+                            { // NOI18N
+                                EditorCookie oc = od
+                                        .getCookie(EditorCookie.class);
+                                oc.open();
+                            }
+                            success = ElementOpen.open(fo, el);
+                        }
+                        else {
+                            success = ElementOpen.open(controller.getClasspathInfo(), 
+                                    el);
                         }
                       
-                        success = ElementOpen.open(fo, el);
                         break;
                     }
                 }

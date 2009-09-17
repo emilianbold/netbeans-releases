@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -55,7 +57,11 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -82,7 +88,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         this.pf = pf;
         initLibraries();
     }
-    
+
     // Persistence provider strings
     private static final String PERSISTENCE_PROV_ECLIPSELINK = "org.eclipse.persistence.jpa.PersistenceProvider"; //NOI18N
 
@@ -188,59 +194,63 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      */
     public File[] getToolClasspathEntries(String toolName) {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
-        if (J2eePlatform.TOOL_EMBEDDABLE_EJB.equals(toolName)) {
-            return new File[] { new File(gfRootStr, EMBEDDED_EJB_CONTAINER_PATH) };
-        }
-        if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
-            String[] entries = new String[] {"webservices(|-osgi).jar", //NOI18N
-                                             "webservices-api(|-osgi).jar", //NOI18N
-                                             "jaxb(|-osgi).jar", //NOI18N
-                                             "jaxb-api(|-osgi).jar", //NOI18N
-                                             "javax.activation.jar"}; //NOI18N
-            List<File> cPath = new ArrayList<File>();
-            
-            for (String entry : entries) {
-                File f = ServerUtilities.getWsJarName(gfRootStr, entry);
-                if ((f != null) && (f.exists())) {
-                    cPath.add(f);
+        if (null != gfRootStr) {
+            if (J2eePlatform.TOOL_EMBEDDABLE_EJB.equals(toolName)) {
+                return new File[]{new File(gfRootStr, EMBEDDED_EJB_CONTAINER_PATH)};
+            }
+            if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
+                String[] entries = new String[]{"webservices(|-osgi).jar", //NOI18N
+                    "webservices-api(|-osgi).jar", //NOI18N
+                    "jaxb(|-osgi).jar", //NOI18N
+                    "jaxb-api(|-osgi).jar", //NOI18N
+                    "javax.activation.jar"}; //NOI18N
+                List<File> cPath = new ArrayList<File>();
+
+                for (String entry : entries) {
+                    File f = ServerUtilities.getWsJarName(gfRootStr, entry);
+                    if ((f != null) && (f.exists())) {
+                        cPath.add(f);
+                    }
+                }
+                return cPath.toArray(new File[cPath.size()]);
+            }
+
+            if (TOOL_WSCOMPILE.equals(toolName)) {
+                String[] entries = new String[]{"webservices", //NOI18N
+                    "javax.activation"}; //NOI18N
+                List<File> cPath = new ArrayList<File>();
+
+                for (String entry : entries) {
+                    File f = ServerUtilities.getWsJarName(gfRootStr, entry);
+                    if ((f != null) && (f.exists())) {
+                        cPath.add(f);
+                    }
+                }
+                return cPath.toArray(new File[cPath.size()]);
+            }
+
+            File domainDir = null;
+            File gfRoot = new File(gfRootStr);
+            if ((gfRoot != null) && (gfRoot.exists())) {
+                String domainDirName = dm.getProperties().getDomainDir();
+                if (domainDirName != null) {
+                    domainDir = new File(domainDirName);
+
+                    if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
+                        return new File[]{
+                                    new File(domainDir, KEYSTORE_LOCATION) //NOI18N
+                                };
+                    }
+
+                    if (TOOL_TRUSTSTORE.equals(toolName) || TOOL_TRUSTSTORECLIENT.equals(toolName)) {
+                        return new File[]{
+                                    new File(domainDir, TRUSTSTORE_LOCATION) //NOI18N
+                                };
+                    }
                 }
             }
-            return cPath.toArray(new File[cPath.size()]);
-        }
-
-        if (TOOL_WSCOMPILE.equals(toolName)) {
-            String[] entries = new String[] {"webservices", //NOI18N
-                                             "javax.activation"}; //NOI18N
-            List<File> cPath = new ArrayList<File>();
-
-            for (String entry : entries) {
-                File f = ServerUtilities.getWsJarName(gfRootStr, entry);
-                if ((f != null) && (f.exists())) {
-                    cPath.add(f);
-                }
-            }
-            return cPath.toArray(new File[cPath.size()]);
-        }
-
-        File domainDir = null;
-        File gfRoot = new File(gfRootStr);
-        if ((gfRoot != null) && (gfRoot.exists())) {
-            String domainDirName = dm.getProperties().getDomainDir();
-            if(domainDirName != null) {
-                domainDir = new File(domainDirName);
-
-                if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
-                    return new File[] {
-                        new File(domainDir, KEYSTORE_LOCATION)  //NOI18N
-                    };
-                }
-
-                if (TOOL_TRUSTSTORE.equals(toolName) || TOOL_TRUSTSTORECLIENT.equals(toolName)) {
-                    return new File[] {
-                        new File(domainDir, TRUSTSTORE_LOCATION)  //NOI18N
-                    };
-                }
-            }
+        } else {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, "dm has no root???", new Exception());
         }
         
         return new File[0];

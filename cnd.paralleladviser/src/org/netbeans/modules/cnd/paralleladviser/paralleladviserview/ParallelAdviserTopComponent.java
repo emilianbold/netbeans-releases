@@ -175,7 +175,7 @@ public final class ParallelAdviserTopComponent extends TopComponent {
     public
     @Override
     int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
 }

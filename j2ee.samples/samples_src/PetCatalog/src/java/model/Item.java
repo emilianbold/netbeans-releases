@@ -2,6 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package model;
 
 import java.io.Serializable;
@@ -10,8 +11,6 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -21,73 +20,60 @@ import javax.persistence.Table;
  * @author caroljmcdonald
  */
 @Entity
-@Table(name = "item")
-@NamedQueries({@NamedQuery(name = "Item.findAll", query = "SELECT i FROM Item i"), @NamedQuery(name = "Item.findById", query = "SELECT i FROM Item i WHERE i.id = :id"),@NamedQuery(name = "Item.findByName", query = "SELECT i FROM Item i WHERE i.name = :name"), @NamedQuery(name = "Item.findByDescription", query = "SELECT i FROM Item i WHERE i.description = :description"), @NamedQuery(name = "Item.findByImageurl", query = "SELECT i FROM Item i WHERE i.imageurl = :imageurl"), @NamedQuery(name = "Item.findByImagethumburl", query = "SELECT i FROM Item i WHERE i.imagethumburl = :imagethumburl"), @NamedQuery(name = "Item.findByPrice", query = "SELECT i FROM Item i WHERE i.price = :price")})
+@Table(name = "ITEM")
+@NamedQueries({@NamedQuery(name = "Item.findAll", query = "SELECT i FROM Item i"), @NamedQuery(name = "Item.findByItemid", query = "SELECT i FROM Item i WHERE i.itemid = :itemid"), @NamedQuery(name = "Item.findByProductid", query = "SELECT i FROM Item i WHERE i.productid = :productid"), @NamedQuery(name = "Item.findByName", query = "SELECT i FROM Item i WHERE i.name = :name"), @NamedQuery(name = "Item.findByDescription", query = "SELECT i FROM Item i WHERE i.description = :description"), @NamedQuery(name = "Item.findByImageurl", query = "SELECT i FROM Item i WHERE i.imageurl = :imageurl"), @NamedQuery(name = "Item.findByImagethumburl", query = "SELECT i FROM Item i WHERE i.imagethumburl = :imagethumburl"), @NamedQuery(name = "Item.findByPrice", query = "SELECT i FROM Item i WHERE i.price = :price")})
 public class Item implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "id")
-    private Integer id;
+    @Column(name = "ITEMID")
+    private String itemid;
     @Basic(optional = false)
-    @Column(name = "name")
+    @Column(name = "PRODUCTID")
+    private String productid;
+    @Basic(optional = false)
+    @Column(name = "NAME")
     private String name;
     @Basic(optional = false)
-    @Column(name = "description")
+    @Column(name = "DESCRIPTION")
     private String description;
-    @Column(name = "imageurl")
+    @Column(name = "IMAGEURL")
     private String imageurl;
-    @Column(name = "imagethumburl")
+    @Column(name = "IMAGETHUMBURL")
     private String imagethumburl;
     @Basic(optional = false)
-    @Column(name = "price")
+    @Column(name = "PRICE")
     private BigDecimal price;
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
-    @ManyToOne
-    private Address address;
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
-    @ManyToOne
-    private Product product;
 
     public Item() {
     }
 
-    public Item(Integer id) {
-        this.id = id;
+    public Item(String itemid) {
+        this.itemid = itemid;
     }
 
-    public Item(Integer id,  String name, String description, BigDecimal price) {
-        this.id = id;
-  
+    public Item(String itemid, String productid, String name, String description, BigDecimal price) {
+        this.itemid = itemid;
+        this.productid = productid;
         this.name = name;
         this.description = description;
         this.price = price;
-  
     }
 
-    public Integer getId() {
-        return id;
+    public String getItemid() {
+        return itemid;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setItemid(String itemid) {
+        this.itemid = itemid;
     }
 
-    public Address getAddress() {
-        return address;
+    public String getProductid() {
+        return productid;
     }
 
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setProductid(String productid) {
+        this.productid = productid;
     }
 
     public String getName() {
@@ -130,12 +116,10 @@ public class Item implements Serializable {
         this.price = price;
     }
 
-
-
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
+        hash += (itemid != null ? itemid.hashCode() : 0);
         return hash;
     }
 
@@ -146,7 +130,7 @@ public class Item implements Serializable {
             return false;
         }
         Item other = (Item) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if ((this.itemid == null && other.itemid != null) || (this.itemid != null && !this.itemid.equals(other.itemid))) {
             return false;
         }
         return true;
@@ -154,6 +138,7 @@ public class Item implements Serializable {
 
     @Override
     public String toString() {
-        return "model.Item[id=" + id + "]";
+        return "model.Item[itemid=" + itemid + "]";
     }
+
 }

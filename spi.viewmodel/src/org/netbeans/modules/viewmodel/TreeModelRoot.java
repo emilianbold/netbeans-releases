@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author   Jan Jancura
  */
-public class TreeModelRoot implements ModelListener {
+public class TreeModelRoot {
     /** generated Serialized Version UID */
     static final long                 serialVersionUID = -1259352660663524178L;
 
@@ -82,8 +82,10 @@ public class TreeModelRoot implements ModelListener {
     // variables ...............................................................
 
     private Models.CompoundModel model;
+    private HyperCompoundModel hyperModel;
+    private ModelChangeListener[] modelListeners;
     private TreeModelNode rootNode;
-    private WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
+    private final WeakHashMap<Object, WeakReference<TreeModelNode>[]> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>[]>();
     private DefaultTreeFeatures treeFeatures;
     private ExplorerManager manager;
     
@@ -100,7 +102,23 @@ public class TreeModelRoot implements ModelListener {
         this.manager = ExplorerManager.find(treeView);
         this.treeFeatures = new DefaultTreeFeatures(treeView);
         getRP();
-        model.addModelListener (this);
+        modelListeners = new ModelChangeListener[] { new ModelChangeListener(model) };
+        model.addModelListener (modelListeners[0]);
+    }
+
+    public TreeModelRoot (HyperCompoundModel model, TreeView treeView) {
+        this.hyperModel = model;
+        this.model = model.getMain();
+        this.manager = ExplorerManager.find(treeView);
+        this.treeFeatures = new DefaultTreeFeatures(treeView);
+        getRP();
+        int nl = model.getModels().length;
+        modelListeners = new ModelChangeListener[nl];
+        for (int i = 0; i < nl; i++) {
+            Models.CompoundModel m = model.getModels()[i];
+            modelListeners[i] = new ModelChangeListener(m);
+            m.addModelListener(modelListeners[i]);
+        }
     }
 
     public TreeModelRoot (Models.CompoundModel model, OutlineView outlineView) {
@@ -108,7 +126,23 @@ public class TreeModelRoot implements ModelListener {
         this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
         getRP();
-        model.addModelListener (this);
+        modelListeners = new ModelChangeListener[] { new ModelChangeListener(model) };
+        model.addModelListener (modelListeners[0]);
+    }
+
+    public TreeModelRoot (HyperCompoundModel model, OutlineView outlineView) {
+        this.hyperModel = model;
+        this.model = model.getMain();
+        this.manager = ExplorerManager.find(outlineView);
+        this.treeFeatures = new DefaultTreeFeatures(outlineView);
+        getRP();
+        int nl = model.getModels().length;
+        modelListeners = new ModelChangeListener[nl];
+        for (int i = 0; i < nl; i++) {
+            Models.CompoundModel m = model.getModels()[i];
+            modelListeners[i] = new ModelChangeListener(m);
+            m.addModelListener(modelListeners[i]);
+        }
     }
 
     private void getRP() {
@@ -135,102 +169,67 @@ public class TreeModelRoot implements ModelListener {
     }
 
     public TreeModelNode getRootNode () {
-        if (rootNode == null)
-            rootNode = new TreeModelNode (model, this, model.getRoot ());
+        if (rootNode == null) {
+            if (hyperModel != null) {
+                rootNode = new TreeModelHyperNode (hyperModel, this, model.getRoot ());
+            } else {
+                rootNode = new TreeModelNode (model, this, model.getRoot ());
+            }
+        }
         return rootNode;
     }
     
     void registerNode (Object o, TreeModelNode n) {
-        objectToNode.put (o, new WeakReference<TreeModelNode>(n));
-    }
-    
-    TreeModelNode findNode (Object o) {
-        WeakReference<TreeModelNode> wr = objectToNode.get (o);
-        if (wr == null) return null;
-        return wr.get ();
-    }
-    
-    public void modelChanged (final ModelEvent event) {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                if (model == null) 
-                    return; // already disposed
-                if (event instanceof ModelEvent.TableValueChanged) {
-                    ModelEvent.TableValueChanged tvEvent = (ModelEvent.TableValueChanged) event;
-                    Object node = tvEvent.getNode();
-                    if (node != null) {
-                        TreeModelNode tmNode = findNode(node);
-                        if (tmNode != null) {
-                            String column = tvEvent.getColumnID();
-                            if (column != null) {
-                                tmNode.refreshColumn(column);
-                            } else {
-                                tmNode.refresh();
-                            }
-                        }
-                        return ; // We're done
+        synchronized (objectToNode) {
+            WeakReference<TreeModelNode>[] wrs = objectToNode.get(o);
+            if (wrs == null) {
+                objectToNode.put (o, new WeakReference[] { new WeakReference<TreeModelNode>(n) });
+            } else {
+                for (int i = 0; i < wrs.length; i++) {
+                    WeakReference<TreeModelNode> wr = wrs[i];
+                    TreeModelNode tn = wr.get();
+                    if (tn == n) {
+                        return ;
+                    } else if (tn == null) {
+                        wrs[i] = new WeakReference<TreeModelNode>(n);
+                        return ;
                     }
                 }
-                if (event instanceof ModelEvent.NodeChanged) {
-                    ModelEvent.NodeChanged nchEvent = (ModelEvent.NodeChanged) event;
-                    Object node = nchEvent.getNode();
-                    if (node != null) {
-                        TreeModelNode tmNode = findNode(node);
-                        if (tmNode != null) {
-                            tmNode.refresh(nchEvent.getChange());
-                        }
-                        return ; // We're done
-                    } else { // Refresh all nodes
-                        List<TreeModelNode> nodes = new ArrayList<TreeModelNode>(objectToNode.size());
-                        for (WeakReference<TreeModelNode> wr : objectToNode.values()) {
-                            TreeModelNode tm = wr.get();
-                            if (tm != null) {
-                                nodes.add(tm);
-                            }
-                        }
-                        for (TreeModelNode tmNode : nodes) {
-                            tmNode.refresh(nchEvent.getChange());
-                        }
-                        return ; // We're done
-                    }
-                }
-                if (event instanceof ModelEvent.SelectionChanged) {
-                    final Object[] nodes = ((ModelEvent.SelectionChanged) event).getNodes();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            TreeModelNode[] tmNodes = new TreeModelNode[nodes.length];
-                            int i = 0;
-                            for (Object node : nodes) {
-                                TreeModelNode tmNode = findNode(node);
-                                if (tmNode != null) {
-                                    tmNodes[i++] = tmNode;
-                                }
-                            }
-                            if (i < nodes.length) {
-                                TreeModelNode[] tmNodes2 = new TreeModelNode[i];
-                                System.arraycopy(tmNodes, 0, tmNodes2, 0, i);
-                                tmNodes = tmNodes2;
-                            }
-                            try {
-                                manager.setSelectedNodes(tmNodes);
-                            } catch (PropertyVetoException ex) {
-                                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Selection of "+Arrays.toString(nodes)+" vetoed.", ex); // NOI18N
-                            }
-                        }
-                    });
-                    return ;
-                }
-                rootNode.setObject (model.getRoot ());
+                WeakReference<TreeModelNode>[] wrs2 = new WeakReference[wrs.length + 1];
+                System.arraycopy(wrs, 0, wrs2, 0, wrs.length);
+                wrs2[wrs.length] = new WeakReference<TreeModelNode>(n);
+                objectToNode.put (o, wrs2);
             }
-        });
-//        Iterator i = new HashSet (objectToNode.values ()).iterator ();
-//        while (i.hasNext ()) {
-//            WeakReference wr = (WeakReference) i.next ();
-//            if (wr == null) continue;
-//            TreeModelNode it = (TreeModelNode) wr.get ();
-//            if (it != null)
-//                it.refresh ();
-//        }
+        }
+    }
+    
+    TreeModelNode[] findNode (Object o) {
+        WeakReference<TreeModelNode>[] wrs;
+        synchronized (objectToNode) {
+            wrs = objectToNode.get (o);
+        }
+        TreeModelNode[] tns = null;
+        if (wrs != null) {
+            for (int i = 0; i < wrs.length; i++) {
+                // Suppose that it's unlikely that wrs.length > 1
+                WeakReference<TreeModelNode> wr = wrs[i];
+                TreeModelNode tn = wr.get ();
+                if (tn == null) continue;
+                if (tns == null) {
+                    tns = new TreeModelNode[] { tn };
+                } else {
+                    TreeModelNode[] ntns = new TreeModelNode[tns.length + 1];
+                    System.arraycopy(tns, 0, ntns, 0, tns.length);
+                    ntns[tns.length] = tn;
+                    tns = ntns;
+                }
+            }
+        }
+        if (tns == null) {
+            return new TreeModelNode[0];
+        } else {
+            return tns;
+        }
     }
     
 //    public void treeNodeChanged (Object parent) {
@@ -259,16 +258,113 @@ public class TreeModelRoot implements ModelListener {
 
     public synchronized void destroy () {
         if (model != null) {
-            model.removeModelListener (this);
+            for (ModelChangeListener mchl : modelListeners) {
+                mchl.model.removeModelListener (mchl);
+            }
             treeFeatures.destroy();
             treeFeatures = null;
         }
         model = null;
-        objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
+        synchronized (objectToNode) {
+            objectToNode.clear();
+        }
     }
 
     public synchronized Models.CompoundModel getModel() {
         return model;
+    }
+
+    private final class ModelChangeListener implements ModelListener {
+
+        private final Models.CompoundModel model;
+
+        public ModelChangeListener(Models.CompoundModel model) {
+            this.model = model;
+        }
+
+        public void modelChanged (final ModelEvent event) {
+            //System.err.println("TreeModelRoot.modelChanged("+event.getClass()+") from "+model);
+            //Thread.dumpStack();
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    if (model == null)
+                        return; // already disposed
+                    if (event instanceof ModelEvent.TableValueChanged) {
+                        ModelEvent.TableValueChanged tvEvent = (ModelEvent.TableValueChanged) event;
+                        Object node = tvEvent.getNode();
+                        //System.err.println("TableValueChanged("+node+")");
+                        if (node != null) {
+                            TreeModelNode[] tmNodes = findNode(node);
+                            //System.err.println("  nodes = "+Arrays.toString(tmNodes));
+                            for (TreeModelNode tmNode : tmNodes) {
+                                String column = tvEvent.getColumnID();
+                                if (column != null) {
+                                    tmNode.refreshColumn(column);
+                                } else {
+                                    tmNode.refresh(model);
+                                }
+                            }
+                            return ; // We're done
+                        }
+                    }
+                    if (event instanceof ModelEvent.NodeChanged) {
+                        ModelEvent.NodeChanged nchEvent = (ModelEvent.NodeChanged) event;
+                        Object node = nchEvent.getNode();
+                        //System.err.println("NodeChanged("+node+")");
+                        if (node != null) {
+                            TreeModelNode[] tmNodes = findNode(node);
+                            //System.err.println("  nodes = "+Arrays.toString(tmNodes));
+                            for (TreeModelNode tmNode : tmNodes) {
+                                tmNode.refresh(model, nchEvent.getChange());
+                            }
+                            return ; // We're done
+                        } else { // Refresh all nodes
+                            List<TreeModelNode> nodes = new ArrayList<TreeModelNode>(objectToNode.size());
+                            for (WeakReference<TreeModelNode>[] wrs : objectToNode.values()) {
+                                for (WeakReference<TreeModelNode> wr : wrs) {
+                                    TreeModelNode tm = wr.get();
+                                    if (tm != null) {
+                                        nodes.add(tm);
+                                    }
+                                }
+                            }
+                            for (TreeModelNode tmNode : nodes) {
+                                tmNode.refresh(model, nchEvent.getChange());
+                            }
+                            return ; // We're done
+                        }
+                    }
+                    if (event instanceof ModelEvent.SelectionChanged) {
+                        final Object[] nodes = ((ModelEvent.SelectionChanged) event).getNodes();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                TreeModelNode[] tmNodes = new TreeModelNode[nodes.length];
+                                int i = 0;
+                                for (Object node : nodes) {
+                                    TreeModelNode[] tmNodesf = findNode(node);
+                                    for (TreeModelNode tmNode : tmNodesf) {
+                                        tmNodes[i++] = tmNode;
+                                    }
+                                }
+                                if (i < nodes.length) {
+                                    TreeModelNode[] tmNodes2 = new TreeModelNode[i];
+                                    System.arraycopy(tmNodes, 0, tmNodes2, 0, i);
+                                    tmNodes = tmNodes2;
+                                }
+                                try {
+                                    manager.setSelectedNodes(tmNodes);
+                                } catch (PropertyVetoException ex) {
+                                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Selection of "+Arrays.toString(nodes)+" vetoed.", ex); // NOI18N
+                                }
+                            }
+                        });
+                        return ;
+                    }
+                    rootNode.setObject (model, model.getRoot ());
+                }
+            });
+        }
+
     }
 
     /**
@@ -324,12 +420,12 @@ public class TreeModelRoot implements ModelListener {
         public boolean isExpanded (
             Object node
         ) {
-            Node n = findNode (node);
-            if (n == null) return false; // Something what does not exist is not expanded ;-)
+            Node[] ns = findNode (node);
+            if (ns.length == 0) return false; // Something what does not exist is not expanded ;-)
             if (outline != null) {
-                return outline.isExpanded(n);
+                return outline.isExpanded(ns[0]);
             } else {
-                return view.isExpanded (n);
+                return view.isExpanded (ns[0]);
             }
 
         }
@@ -342,8 +438,8 @@ public class TreeModelRoot implements ModelListener {
         public void expandNode (
             Object node
         ) {
-            Node n = findNode (node);
-            if (n != null) {
+            Node[] ns = findNode (node);
+            for (Node n : ns) {
                 if (outline != null) {
                     outline.expandNode(n);
                 } else {
@@ -360,8 +456,8 @@ public class TreeModelRoot implements ModelListener {
         public void collapseNode (
             Object node
         ) {
-            Node n = findNode (node);
-            if (n != null) {
+            Node[] ns = findNode (node);
+            for (Node n : ns) {
                 if (outline != null) {
                     outline.collapseNode(n);
                 } else {

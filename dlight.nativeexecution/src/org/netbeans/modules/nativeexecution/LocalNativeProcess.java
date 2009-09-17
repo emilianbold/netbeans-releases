@@ -171,7 +171,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 if (val != null) {
                     pb.environment().put(envVarName, val);
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{envVarName, val});
+                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{envVarName, val}); // NOI18N
                     }
                 }
             }
