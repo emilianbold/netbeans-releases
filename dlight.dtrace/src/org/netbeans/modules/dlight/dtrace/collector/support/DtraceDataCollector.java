@@ -602,8 +602,6 @@ public final class DtraceDataCollector
 
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {
 
-        private long maxTimestamp;
-
         public void processLine(String line) {
             DataRow dataRow = parser.process(line);
             addDataRow(dataRow);
@@ -614,39 +612,20 @@ public final class DtraceDataCollector
                 if (storage != null && tableMetaData != null) {
                     storage.addData(tableMetaData.getName(), Arrays.asList(dataRow));
                 }
-                long curTimestamp = getTimestamp(dataRow);
-                if (curTimestamp == -1 || maxTimestamp < curTimestamp) {
-                    synchronized (indicatorDataBuffer) {
-                        if (curTimestamp != -1) {
-                            maxTimestamp = curTimestamp;
-                        }
-                        indicatorDataBuffer.add(dataRow);
-                        if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
-                            if (isSlave) {
-                                if (parentCollector != null) {
-                                    parentCollector.notifyIndicators(indicatorDataBuffer);
-                                }
-                            } else {
-                                notifyIndicators(indicatorDataBuffer);
+                synchronized (indicatorDataBuffer) {
+                    indicatorDataBuffer.add(dataRow);
+                    if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
+                        if (isSlave) {
+                            if (parentCollector != null) {
+                                parentCollector.notifyIndicators(indicatorDataBuffer);
                             }
-                            indicatorDataBuffer.clear();
+                        } else {
+                            notifyIndicators(indicatorDataBuffer);
                         }
+                        indicatorDataBuffer.clear();
                     }
                 }
             }
-        }
-
-        private long getTimestamp(DataRow row) {
-            Object timestamp = row.getData("timestamp"); // NOI18N
-            if (timestamp instanceof Number) {
-                return ((Number) timestamp).longValue();
-            } else if (timestamp instanceof String) {
-                try {
-                    return Long.parseLong((String) timestamp);
-                } catch (NumberFormatException ex) {
-                }
-            }
-            return -1;
         }
 
         public void processClose() {
