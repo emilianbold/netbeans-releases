@@ -169,12 +169,21 @@ public class FileBufferDoc extends AbstractFileBuffer {
     }
     
     public String getText() throws IOException {
-        try {
-            return doc.getText(0, doc.getLength());
-        } catch( BadLocationException e ) {
-            //e.printStackTrace(System.err);
-            throw convert(e);
+        final String out[] = new String[] { null };
+        final BadLocationException exc[] = new BadLocationException[] { null };
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    out[0] = doc.getText(0, doc.getLength());
+                } catch( BadLocationException e ) {
+                    exc[0] = e;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw convert(exc[0]);
         }
+        return out[0];
     }
     
     public String getText(int start, int end) throws IOException {
