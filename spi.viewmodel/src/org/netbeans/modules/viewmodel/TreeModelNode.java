@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyEditor;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -373,6 +374,15 @@ public class TreeModelNode extends AbstractNode {
             if (task == null) {
                 task = getRequestProcessor ().create (new Runnable () {
                     public void run () {
+                        if (!SwingUtilities.isEventDispatchThread()) {
+                            try {
+                                SwingUtilities.invokeAndWait(this);
+                            } catch (InterruptedException ex) {
+                            } catch (InvocationTargetException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            return ;
+                        }
                         refreshNode ();
                         doFireShortDescriptionChange();
 
@@ -427,7 +437,7 @@ public class TreeModelNode extends AbstractNode {
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
-            getRequestProcessor ().post (new Runnable () {
+            SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
                 }
@@ -879,7 +889,9 @@ public class TreeModelNode extends AbstractNode {
                 if (evaluatingRefreshingInfo == null) {
                     evaluatingRefreshingInfo = refreshInfo;
                 } else {
-                    evaluatingRefreshingInfo = evaluatingRefreshingInfo.mergeWith(refreshInfo);
+                    if (refreshInfo != null) {
+                        evaluatingRefreshingInfo = evaluatingRefreshingInfo.mergeWith(refreshInfo);
+                    }
                 }
                 refreshInfo = null; // reset after use
             }
