@@ -26,6 +26,8 @@ pack_all_components()
     DIST_DIR=${1}
     NAME=${2}
 
+    mkdir $DIST_DIR/zip/moduleclusters
+
     if [ $RUNJAVAFX == 1 ]; then
 	cd $NB_ALL/nbbuild
 
@@ -52,8 +54,6 @@ pack_all_components()
     ant zip-cluster-config -Dcluster.config=ruby -Dzip.name=$DIST_DIR/zip/$NAME-ruby.zip || exit 1
     ant zip-cluster-config -Dcluster.config=php -Dzip.name=$DIST_DIR/zip/$NAME-php.zip || exit 1
     ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST_DIR/zip/$NAME-cpp.zip || exit 1
-
-    mkdir $DIST_DIR/zip/moduleclusters
 
     cd $NB_ALL/nbbuild/netbeans
 

@@ -71,7 +71,15 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     @Override
     public String getNamespace() {
-        return super.getNamespace() != null ? super.getNamespace() : JsfUtils.COMPOSITE_LIBRARY_NS + "/" + getLibraryName();
+        return getDeclaredNamespace() != null ? getDeclaredNamespace() : getDefaultNamespace();
+    }
+    
+    public String getDeclaredNamespace() {
+        return super.getNamespace();
+    }
+
+    public String getDefaultNamespace() {
+        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + getLibraryName();
     }
 
     @Override

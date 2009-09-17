@@ -42,6 +42,8 @@ package org.netbeans.core.ui.options.general;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 
 /**
  *
@@ -53,6 +55,7 @@ public class AdvancedProxyPanel extends javax.swing.JPanel {
     private String oldHttpsPort;
     private String oldSocksHost;
     private String oldSocksPort;
+    private DialogDescriptor dd = null;
     
     /** Creates new form AdvancedProxyPanel */
     AdvancedProxyPanel (GeneralOptionsModel model) {
@@ -82,6 +85,34 @@ public class AdvancedProxyPanel extends javax.swing.JPanel {
 
             public void changedUpdate(DocumentEvent arg0) {
                 followHttpPortIfDemand ();
+            }
+        });
+        tfHttpsProxyPort.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent arg0) {
+                validatePortValue(tfHttpsProxyPort.getText());
+            }
+
+            public void removeUpdate(DocumentEvent arg0) {
+                validatePortValue(tfHttpsProxyPort.getText());
+            }
+
+            public void changedUpdate(DocumentEvent arg0) {
+                validatePortValue(tfHttpsProxyPort.getText());
+            }
+        });
+        tfSocksPort.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent arg0) {
+                validatePortValue(tfSocksPort.getText());
+            }
+
+            public void removeUpdate(DocumentEvent arg0) {
+                validatePortValue(tfSocksPort.getText());
+            }
+
+            public void changedUpdate(DocumentEvent arg0) {
+                validatePortValue(tfSocksPort.getText());
             }
         });
     }
@@ -176,12 +207,54 @@ public class AdvancedProxyPanel extends javax.swing.JPanel {
     }
     
     private void followHttpPortIfDemand () {
+        String port = tfHttpProxyPort.getText();
+        validatePortValue(port);
+
         if (! cbSameProxySettings.isSelected ()) {
             return ;
         }
-        String port = tfHttpProxyPort.getText ();
+
         tfHttpsProxyPort.setText (port);
         tfSocksPort.setText (port);
+    }
+
+    private void validatePortValue(String port) {
+        clearError();
+        if (port != null && port.length() > 0) {
+            try {
+                Integer.parseInt(port);
+            } catch (NumberFormatException nfex) {
+                showError(org.openide.util.NbBundle.getMessage(
+                        AdvancedProxyPanel.class,
+                        "LBL_AdvancedProxyPanel_PortError")); // NOI18N
+            }
+        }
+    }
+
+    private void showError(String message) {
+        if (dd != null) {
+            NotificationLineSupport notificationLineSupport =
+                    dd.getNotificationLineSupport();
+            if (notificationLineSupport != null) {
+                notificationLineSupport.setErrorMessage(message);
+            }
+            dd.setValid(false);
+        }
+    }
+
+    private void clearError() {
+        if (dd != null) {
+            NotificationLineSupport notificationLineSupport =
+                    dd.getNotificationLineSupport();
+            if (notificationLineSupport != null) {
+                notificationLineSupport.clearMessages();
+            }
+            dd.setValid(true);
+        }
+    }
+
+    public void setDialogDescriptor(DialogDescriptor dd) {
+        this.dd = dd;
     }
     
     /** This method is called from within the constructor to

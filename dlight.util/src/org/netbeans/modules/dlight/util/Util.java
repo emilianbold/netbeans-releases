@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -88,8 +89,11 @@ public class Util {
             return null;
         }
 
+        InputStream is = null;
+        OutputStream os = null;
+
         try {
-            InputStream is = resourceUrl.openStream();
+            is = resourceUrl.openStream();
 
             if (is == null) {
                 return null;
@@ -111,16 +115,28 @@ public class Util {
             File result_file = File.createTempFile(prefix, "", new File(tmpDirBase));//NOI18N
             result_file.deleteOnExit();
 
-            OutputStream os = new FileOutputStream(result_file);
+            os = new FileOutputStream(result_file);
             FileUtil.copy(is, os);
-            is.close();
             os.flush();
-            os.close();
             return result_file.getCanonicalPath();
         } catch (IOException ex) {
             log.info("copyResource failed: " + ex.getMessage()); // NOI18N
-        }catch(NullPointerException ex1){
+        } catch (NullPointerException ex1) {
             return null;
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                }
+            }
+
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {
+                }
+            }
         }
         return null;
     }
@@ -207,7 +223,10 @@ public class Util {
                     if (files[i].isDirectory()) {
                         deleteLocalDirectory(files[i]);
                     } else {
-                        files[i].delete();
+                        boolean result = files[i].delete();
+                        if (!result && log.isLoggable(Level.FINE)) {
+                            log.fine("Unable to delete file " + files[i].getAbsolutePath()); // NOI18N
+                        }
                     }
                 }
             }

@@ -65,7 +65,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -143,7 +142,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
     }
 
     /** @return preffered size */
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         Dimension prev = super.getPreferredSize();
         return new Dimension(Math.max(300, prev.width), Math.max(150, prev.height));
     }
@@ -193,7 +192,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
      */
     private void save (DataObject dataObject) {
         try {
-            SaveCookie sc = (SaveCookie)dataObject.getCookie(SaveCookie.class);
+            SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
             if (sc != null) {
                 sc.save();
             }
@@ -209,7 +208,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
  
     public static void doSave (DataObject dataObject) {
         try {
-            SaveCookie sc = (SaveCookie)dataObject.getCookie(SaveCookie.class);
+            SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
             if (sc != null) {
                 sc.save();
             }

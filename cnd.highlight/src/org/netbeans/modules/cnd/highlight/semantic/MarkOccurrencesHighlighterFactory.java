@@ -68,7 +68,8 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
                     ph = new MarkOccurrencesHighlighter(doc);
                 }
             } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+                // file object or data object can be already invalid
+                // Exceptions.printStackTrace(ex);
             }
         }
         return ph != null ? ph :new PhaseRunner() {

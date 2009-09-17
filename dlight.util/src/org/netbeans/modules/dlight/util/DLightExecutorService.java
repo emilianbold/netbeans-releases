@@ -60,9 +60,8 @@ public class DLightExecutorService {
     private final static RequestProcessor processor = new RequestProcessor(PREFIX, 50);
     private final static Object lock;
 
-
     static {
-        lock = new String(DLightExecutorService.class.getName());
+        lock = DLightExecutorService.class.getName() + "Lock"; // NOI18N
     }
 
     public static <T> Future<T> submit(final Callable<T> task, final String name) {
@@ -107,7 +106,7 @@ public class DLightExecutorService {
 
                     // When try to shutdown service without
                     // AccessController.doPrivileged get security exception...
-                    
+
                     AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
                         public Object run() {
