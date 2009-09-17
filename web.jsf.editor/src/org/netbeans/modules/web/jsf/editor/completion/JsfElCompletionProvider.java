@@ -133,7 +133,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         complItems.addAll(items);
                         break;
                     case JsfElExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeys(
+                        List<CompletionItem> bitems = elExpr.getPropertyKeysCompletionItems(
                                 elExpr.getBundleName(), anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;

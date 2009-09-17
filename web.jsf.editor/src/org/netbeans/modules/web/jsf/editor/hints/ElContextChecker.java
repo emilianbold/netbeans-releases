@@ -210,11 +210,9 @@ class JsfElResourceBundleContextChecker implements JsfElContextChecker {
             property = property.substring( 0, property.length()-1);
         }
         property = expression.removeQuotes(property);
-        List<CompletionItem> propertyKeys = expression.getPropertyKeys(
-                expression.getBundleName(), 0, 
-                property );
-        for (CompletionItem completionItem : propertyKeys) {
-            String key = ((JspCompletionItem)completionItem).getItemText();
+        List<String> propertyKeys = expression.getPropertyKeys(
+                expression.getBundleName(), property , null );
+        for (String key : propertyKeys) {
             if ( key!= null && key.equals(property)){
                 return true;
             }
