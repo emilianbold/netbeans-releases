@@ -456,7 +456,11 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private void handleRemoteDomains(Set<ServerInstance> result, File ir) {
         // TODO - vbk : get the real port from the server. Doable, but hard to do right.
         httpPort = 8080;
-        GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, null, null, httpPort, adminPort, formatUri(glassfishRoot, getHostName(), adminPort), gip.getUriFragment(), gip);
+        String hn = getHostName();
+        if ("localhost".equals(hn)) {
+            hn = "127.0.0.1";
+        }
+        GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, null, null, httpPort, adminPort, formatUri(glassfishRoot, hn, adminPort), gip.getUriFragment(), gip);
         result.add(instance.getCommonInstance());
     }
 
