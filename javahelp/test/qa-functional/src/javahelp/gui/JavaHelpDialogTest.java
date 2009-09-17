@@ -40,20 +40,32 @@
  */
 package javahelp.gui;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.HelpOperator;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.actions.HelpAction;
-
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 
-import junit.framework.Test; 
+//import org.netbeans.jellytools.Bundle;
+//import org.netbeans.jellytools.JellyTestCase;
+//import org.netbeans.jellytools.HelpOperator;
+//import org.netbeans.jellytools.MainWindowOperator;
+//import org.netbeans.jellytools.NbDialogOperator;
+//import org.netbeans.jellytools.OptionsOperator;
+//import org.netbeans.jellytools.actions.HelpAction;
+//
+//import org.netbeans.jemmy.operators.JButtonOperator;
+//import org.netbeans.jemmy.operators.JMenuBarOperator;
+//import org.netbeans.jemmy.operators.JTreeOperator;
+//import org.netbeans.junit.NbModuleSuite;
+//import junit.framework.Test;
 
 /**
  * JellyTestCase test case with implemented Java Help Test support stuff
@@ -78,13 +90,16 @@ public class JavaHelpDialogTest extends JellyTestCase {
                 .addTest("testHelpByButtonModal")
                 .addTest("testContextualSearch")
                 .addTest("testHelpByButtonNestedModal")
+                .gui(true)
                 .enableModules(".*")
                 .clusters(".*") );
     }
 
+    @Override
     public void setUp() {
     }
 
+    @Override
     public void tearDown() {
         closeAllModal();
 
@@ -124,7 +139,8 @@ public class JavaHelpDialogTest extends JellyTestCase {
     }
 
     public void testHelpByButtonModal() {
-        String toolsMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // Tools
+        String toolsMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // Tools
+        
         String javaPlatformMenu = Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle", "CTL_PlatformManager"); // Java Platforms
 
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(toolsMenu + "|" + javaPlatformMenu, "|");
@@ -133,7 +149,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
     }
 
     public void testHelpByButtonNestedModal() {
-        String toolsMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // Tools
+        String toolsMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // Tools
         String javaPlatformMenu = Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle", "CTL_PlatformManager"); // Java Platforms
 
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(toolsMenu + "|" + javaPlatformMenu, "|");
@@ -175,7 +191,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
      */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+//    public static void main(String[] args) {
+//        junit.textui.TestRunner.run(suite());
+//    }
 }

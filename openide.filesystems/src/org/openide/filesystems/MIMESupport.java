@@ -368,10 +368,12 @@ final class MIMESupport extends Object {
 
         public InputStream getInputStream() throws java.io.FileNotFoundException {
             if (fixIt == null) {
-                LogRecord rec = new LogRecord(Level.FINE, "MSG_CACHED_INPUT_STREAM");
-                rec.setParameters(new Object[] { this });
-                rec.setResourceBundle(NbBundle.getBundle(MIMESupport.class));
-                ERR.log(rec);
+                if (ERR.isLoggable(Level.FINE)) {
+                    LogRecord rec = new LogRecord(Level.FINE, "MSG_CACHED_INPUT_STREAM");
+                    rec.setParameters(new Object[] { this });
+                    rec.setResourceBundle(NbBundle.getBundle(MIMESupport.class));
+                    ERR.log(rec);
+                }
                 InputStream is = fileObj.getInputStream();
 
                 if (!(is instanceof BufferedInputStream)) {

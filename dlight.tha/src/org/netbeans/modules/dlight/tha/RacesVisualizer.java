@@ -97,6 +97,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
     public synchronized void refresh() {
         if (refreshTask == null) {
+            @SuppressWarnings("unchecked")
             final MasterSlaveView<Datarace, DataraceTHANodeFactory> view = (MasterSlaveView<Datarace, DataraceTHANodeFactory>) getComponent();
             refreshTask = RequestProcessor.getDefault().post(new Runnable() {
 
