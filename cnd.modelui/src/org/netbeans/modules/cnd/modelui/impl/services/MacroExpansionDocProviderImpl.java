@@ -319,36 +319,36 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (tt != null) {
             int startIndex = tt.findInIntervalIndex(offset);
             if (0 <= startIndex && startIndex < tt.intervals.size()) {
-                if (tt.intervals.get(startIndex).inInterval.end == offset) {
+                if (tt.intervals.get(startIndex).inInterval.end == offset && startIndex < tt.intervals.size() - 1) {
                     // use next
                     startIndex++;
                 }
-            }
-            boolean foundMacroExpansion = false;
-            int macroIndex = tt.intervals.size();
-            // back to start of macro expansion
-            for (int i = startIndex; i >= 0; i--) {
-                IntervalCorrespondence ic = tt.intervals.get(i);
-                if (ic.macro) {
-                    span[0] = ic.inInterval.start;
-                    span[1] = ic.inInterval.end;
-                    foundMacroExpansion = true;
-                    macroIndex = i;
-                    break;
-                } else if (ic.outInterval.length() != 0) {
-                    // we are out of macro expansion
-                    return span;
-                }
-            }
-            if (foundMacroExpansion) {
-                // forward to the end of macro expansion
-                for (int i = macroIndex+1; i < tt.intervals.size(); i++) {
+                boolean foundMacroExpansion = false;
+                int macroIndex = tt.intervals.size();
+                // back to start of macro expansion
+                for (int i = startIndex; i >= 0; i--) {
                     IntervalCorrespondence ic = tt.intervals.get(i);
-                    if (ic.outInterval.length() == 0) {
-                        // we are in macro expansion
+                    if (ic.macro) {
+                        span[0] = ic.inInterval.start;
                         span[1] = ic.inInterval.end;
-                    } else {
+                        foundMacroExpansion = true;
+                        macroIndex = i;
+                        break;
+                    } else if (ic.outInterval.length() != 0) {
+                        // we are out of macro expansion
                         return span;
+                    }
+                }
+                if (foundMacroExpansion) {
+                    // forward to the end of macro expansion
+                    for (int i = macroIndex + 1; i < tt.intervals.size(); i++) {
+                        IntervalCorrespondence ic = tt.intervals.get(i);
+                        if (ic.outInterval.length() == 0) {
+                            // we are in macro expansion
+                            span[1] = ic.inInterval.end;
+                        } else {
+                            return span;
+                        }
                     }
                 }
             }
