@@ -90,6 +90,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     public synchronized void refresh() {
         if (refreshTask == null) {
+            @SuppressWarnings("unchecked")
             final MasterSlaveView<Deadlock, DeadlockTHANodeFactory> view = (MasterSlaveView<Deadlock, DeadlockTHANodeFactory>) getComponent();
             refreshTask = RequestProcessor.getDefault().post(new Runnable() {
 
@@ -165,7 +166,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     private final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
 
-        public THANode create(Deadlock object) {
+        public THANode<Deadlock> create(Deadlock object) {
             return new DeadlockNode(object);
         }
     }
