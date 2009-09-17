@@ -81,9 +81,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private static final int OPTION_CANCEL = 1;
     private static final int OPTION_APPLY = 2;
     // Option command names
-    private static final String COMMAND_OK = "OK";          // NOI18N
-    private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
-    private static final String COMMAND_APPLY = "APPLY";  // NOI18N
+    public static final String COMMAND_OK = "OK";          // NOI18N
+    public static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
+    public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
     private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
     private ConfigurationDescriptorProvider projectDescriptorProvider;
