@@ -235,9 +235,8 @@ public class SyncFileNode extends AbstractNode {
                     }
                 };
                 repoload = Subversion.getInstance().getRequestProcessor().post(run);
-                return org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_RepositoryPath_LoadingProgress"); // NOI18N
             }
-            return shortPath;
+            return shortPath == null ? org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_RepositoryPath_LoadingProgress") : shortPath;
         }
     }
 
