@@ -63,8 +63,10 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -114,9 +116,18 @@ import org.openide.util.TaskListener;
 public class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener  {
     
     private static HintsUI INSTANCE;
+    private static final Set<String> fixableAnnotations;
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
     private static final int POPUP_VERTICAL_OFFSET = 5;
-    
+
+    static {
+        fixableAnnotations = new HashSet<String>(3);
+
+        fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_err_fixable"); // NOI18N
+        fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_hint_fixable"); // NOI18N
+        fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_verifier_fixable"); // NOI18N
+    }
+
     public static synchronized HintsUI getDefault() {
         if (INSTANCE == null)
             INSTANCE = new HintsUI();
@@ -487,7 +498,14 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             try {
                 Rectangle carretRectangle = comp.modelToView(comp.getCaretPosition());
                 int line = Utilities.getLineOffset((BaseDocument) doc, comp.getCaretPosition());
-                String type = annotations.getActiveAnnotation(line).getAnnotationType();
+                AnnotationDesc activeAnnotation = annotations.getActiveAnnotation(line);
+                if (activeAnnotation == null) {
+                    return false;
+                }
+                String type = activeAnnotation.getAnnotationType();
+                if (!fixableAnnotations.contains(type)) {
+                    return false;
+                }
                 refresh(doc, comp.getCaretPosition());
                 AnnotationDesc desc = annotations.getAnnotation(line, type);
                 annotations.frontAnnotation(desc);

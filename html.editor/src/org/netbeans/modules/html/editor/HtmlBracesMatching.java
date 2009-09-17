@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import java.util.Collections;
 import java.util.List;

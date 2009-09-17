@@ -76,7 +76,9 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
                 locationText.setText(FileUtil.getFileDisplayName(metaDir));
             }
             else {
-                FileObject metaDir = Utils.createDirs(project.getProjectDirectory(), new String[] {"src", META_INF}); // NOI18N
+                FileObject srcFolder = Utils.getSourceRoot(project);
+                assert srcFolder != null;
+                FileObject metaDir = Utils.createDirs(project.getProjectDirectory(), new String[] {srcFolder.getName(), META_INF}); // NOI18N
                 locationText.setText(FileUtil.getFileDisplayName(metaDir));
             }
         }

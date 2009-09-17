@@ -192,9 +192,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             Properties props = fileObject != null ? PhpLanguageOptions.getDefault().getProperties(fileObject) : null;
             if (props != null && props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
                 if (generateAs == null) {
-                    CodeCompletionType codeCompletionType = OptionsUtils.getCodeCompletionType();
+                    CodeCompletionType codeCompletionType = OptionsUtils.codeCompletionType();
                     switch (codeCompletionType) {
-                        case QUALIFIED:
+                        case FULLY_QUALIFIED:
                             template.append(ifq.getFullyQualifiedName());
                             return template.toString();
                         case UNQUALIFIED:

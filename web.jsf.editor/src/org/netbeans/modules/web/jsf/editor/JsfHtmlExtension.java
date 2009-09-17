@@ -177,21 +177,22 @@ public class JsfHtmlExtension extends HtmlExtension {
         for (String namespace : nss.keySet()) {
 
             AstNode root = result.root(namespace);
-            final FaceletsLibrary tldl = libs.get(namespace);
-            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            if (root != null) {
+                final FaceletsLibrary tldl = libs.get(namespace);
+                AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
-                public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.OPEN_TAG ||
-                            node.type() == AstNode.NodeType.ENDTAG) {
+                    public void visit(AstNode node) {
+                        if (node.type() == AstNode.NodeType.OPEN_TAG ||
+                                node.type() == AstNode.NodeType.ENDTAG) {
 
-                        if (node.getNamespacePrefix() != null) {
-                            Set<ColoringAttributes> coloring = tldl == null ? ColoringAttributes.CLASS_SET : ColoringAttributes.METHOD_SET;
-                            highlight(snapshot, node, highlights, coloring);
+                            if (node.getNamespacePrefix() != null) {
+                                Set<ColoringAttributes> coloring = tldl == null ? ColoringAttributes.CLASS_SET : ColoringAttributes.METHOD_SET;
+                                highlight(snapshot, node, highlights, coloring);
+                            }
                         }
                     }
-                }
-            });
-
+                });
+            }
         }
 
     }
