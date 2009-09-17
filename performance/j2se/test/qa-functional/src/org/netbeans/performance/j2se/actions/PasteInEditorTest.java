@@ -43,6 +43,10 @@ package org.netbeans.performance.j2se.actions;
 
 import java.awt.event.KeyEvent;
 
+import java.io.File;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.swing.JEditorPane;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -56,6 +60,11 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Test of Paste text to opened source editor.
@@ -81,6 +90,7 @@ public class PasteInEditorTest extends PerformanceTestCase {
     }
 
     public static NbTestSuite suite() {
+        CountingSecurityManager.initialize("non-existing");
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
              .addTest(PasteInEditorTest.class)
@@ -109,7 +119,30 @@ public class PasteInEditorTest extends PerformanceTestCase {
         new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).perform(editorOperator1);
         editorOperator2.makeComponentVisible();
         editorOperator2.setCaretPositionToLine(29);
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+        EditorCookie ec = Utilities.actionsGlobalContext().lookup(EditorCookie.class);
+        assertNotNull("Editor is selected", ec);
+        int len = ec.getDocument().getLength();
+        JEditorPane[] arr = ec.getOpenedPanes();
+        assertNotNull("Pane opened", arr);
+        assertEquals("One Pane opened", 1, arr.length);
+        arr[0].setCaretPosition(len);
+        try {
+            SourceUtils.waitScanFinished();
+        } catch (InterruptedException ex) {
+            fail("No interrupts please");
+        }
+
+        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
+        assertNotNull("File object found", fo);
+        assertEquals("Correct name", "TestClassForCopyPaste.java", fo.getNameExt());
+        File dir = FileUtil.toFile(fo.getParent());
+        assertNotNull("Directory is backed by java.io.File", dir);
+
+        AtomicLong l = new AtomicLong();
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator2);
+        CountingSecurityManager.initialize(dir.getPath());
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator2);
+        CountingSecurityManager.assertCounts("30+ files touched is our current state, could be less if we tried more, see issue 171330", 40, l);
    }
     
     public ComponentOperator open(){

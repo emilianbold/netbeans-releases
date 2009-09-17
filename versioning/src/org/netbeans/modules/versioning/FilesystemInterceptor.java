@@ -56,7 +56,7 @@ import java.util.*;
 class FilesystemInterceptor extends ProvidedExtensions implements FileChangeListener {
 
     /**
-     * A verioned files remote repository or origin.
+     * A versioned files remote repository or origin.
      */
     private static final String ATTRIBUTE_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
 
@@ -64,6 +64,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      * A Runnable to refresh the file given in {@link #getAttribute()}.
      */
     private static final String ATTRIBUTE_REFRESH = "ProvidedExtensions.Refresh";
+    /**
+     * Determines if a file is versioned or not
+     */
+    private static final String ATTRIBUTE_VCS_MANAGED = "ProvidedExtensions.VCSManaged";
 
     private VersioningManager master;
 
@@ -107,9 +111,12 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public Object getAttribute(File file, String attrName) {
-        if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName) ||
-           ATTRIBUTE_REFRESH.equals(attrName)) {
+        if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName) ||           
+           ATTRIBUTE_REFRESH.equals(attrName))
+        {
             return getInterceptor(file, file.isDirectory()).getAttribute(attrName);
+        } else if (ATTRIBUTE_VCS_MANAGED.equals(attrName)) {
+            return master.getOwner(file) != null;
         } else {
             return null;
         }

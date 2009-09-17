@@ -202,17 +202,18 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
     // XXX shoud be on the spi
     public void testLastRefresh() {
-        BugzillaQuery q = new BugzillaQuery(QueryTestUtil.getRepository());
+        String parameters = "query_format=advanced&" +
+          "short_desc_type=allwordssubstr&" +
+          "short_desc=whatever112233445566778899&" +
+          "product=TestProduct";
+        String qname = "q" + System.currentTimeMillis();
+        BugzillaQuery q = new BugzillaQuery(qname, QueryTestUtil.getRepository(), parameters, true, true, false);
         long lastRefresh = q.getLastRefresh();
         assertEquals(0, lastRefresh);
-
         long ts = System.currentTimeMillis();
 
         ts = System.currentTimeMillis();
-        q.refresh("query_format=advanced&" +
-                  "short_desc_type=allwordssubstr&" +
-                  "short_desc=whatever112233445566778899&" +
-                  "product=TestProduct", false);
+        q.refresh(parameters, false);
         assertTrue(q.getLastRefresh() >= ts);
 
         ts = System.currentTimeMillis();
@@ -221,8 +222,8 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(lastRefresh >= ts);
 
         // emulate restart
-        q = new BugzillaQuery(QueryTestUtil.getRepository());
-        assertEquals(lastRefresh, q.getLastRefresh());
+        q = new BugzillaQuery(qname, QueryTestUtil.getRepository(), parameters, true, true, false);
+        assertEquals((int)(lastRefresh/1000), (int)(q.getLastRefresh()/1000));
 
     }
 
