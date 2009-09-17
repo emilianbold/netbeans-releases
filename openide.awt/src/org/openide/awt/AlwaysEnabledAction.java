@@ -149,7 +149,8 @@ implements PropertyChangeListener, ContextAwareAction {
         if (getDelegate() instanceof Action) {
             if (!((Action)getDelegate()).isEnabled()) {
                 Toolkit.getDefaultToolkit().beep();
-                firePropertyChange("enabled", null, null); // NOI18N
+                // Do not fire newValue == null (see #165838)
+                firePropertyChange("enabled", null, isEnabled()); // NOI18N
                 return;
             }
         }
