@@ -517,7 +517,9 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                     progress.switchToIndeterminate();
 
                     Connection conn = DatabaseUtils.connect(getURL(), getUser(), getPassword());
-                    assert(conn != null);
+                    if (conn == null) {
+                        throw new DatabaseException(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_UnableToConnect", getURL(), getUser())); // NOI8N
+                    }
                     connProcessor.setConnection(conn);
                     setState(ServerState.CONNECTED);
                 } catch (DatabaseException dbe) {
