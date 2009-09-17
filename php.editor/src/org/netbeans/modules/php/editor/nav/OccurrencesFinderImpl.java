@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -117,7 +118,12 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                         result.add(occurence.getOccurenceRange());
                     }
                 }
-            } else {
+            } 
+        } else {
+            OffsetRange referenceSpanForCodeMarkers = getReferenceSpanForCodeMarkers(tokenSequence, offset);
+            if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
+                Model model = ((PHPParseResult) parameter).getModel();
+                OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
                 CodeMarker codeMarker = occurencesSupport.getCodeMarker();
                 if (codeMarker != null) {
                     Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
@@ -128,6 +134,18 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             }
         }
         return result;
+    }
+
+    private static OffsetRange getReferenceSpanForCodeMarkers(TokenSequence<PHPTokenId> ts, final int caretOffset) {
+        ts.move(caretOffset);
+        if (ts.moveNext()) {
+            Token<PHPTokenId> token = ts.token();
+            PHPTokenId id = token.id();
+            if (id.equals(PHPTokenId.PHP_FUNCTION) || id.equals(PHPTokenId.PHP_RETURN)) {
+                return new OffsetRange(ts.offset(), ts.offset() + token.length());
+            }
+        }
+        return OffsetRange.NONE;
     }
 
     @Override
