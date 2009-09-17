@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor;
+package org.netbeans.modules.html.editor.api;
 
 import java.util.List;
 import java.util.Set;
