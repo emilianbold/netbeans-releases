@@ -61,6 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
+    private static final boolean TRACE = false;
 
     public SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         try {
@@ -77,35 +78,18 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             if (csmProject == null) {
                 return null;
             }
-            String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName; // NOI18N
-            CsmFunction function = getFunction(csmProject, name);
-            if (function == null){
-                return null;
+            if (TRACE) {
+                System.err.println("Model search for: "+functionName); // NOI18N
             }
-            String sourceFile =    function.getContainingFile().getAbsolutePath().toString();
-            int startOffset = function.getStartOffset();
-            if (lineNumber > 0){
-                return new SourceFileInfo(sourceFile,  lineNumber, 0);
+
+            String name = getFunctionSignature(functionName);
+            SourceFileInfo res = findFunction(csmProject, name, lineNumber);
+            if (TRACE) {
+                if (res != null) {
+                    System.err.println("\tFound: "+res); // NOI18N
+                }
             }
-            return new SourceFileInfo(sourceFile, startOffset);//) + offset);
-//            CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
-//            if (csmDeclaration == null) {
-//                Collection<CsmProject> libraries = csmProject.getLibraries();
-//                for (CsmProject library : libraries) {
-//                    csmDeclaration = library.findDeclaration(functionName);
-//                    if (csmDeclaration != null) {
-//                        break;
-//                    }
-//                }
-//            }
-//            if (csmDeclaration == null) {
-//                throw new SourceFileInfoCannotBeProvided();
-////            }
-//            if (!CsmKindUtilities.isOffsetableDeclaration(csmDeclaration)) {
-//                //do not know how to deal with this
-//                throw new SourceFileInfoCannotBeProvided();
-//            }
-//            return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable) csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable) csmDeclaration).getStartOffset());
+            return res;
         } catch (IOException ex) {
             return null;
         } catch (IllegalArgumentException ex) {
@@ -113,24 +97,71 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         }
     }
 
+    private SourceFileInfo findFunction(CsmProject csmProject, String name, int lineNumber) {
+        CsmFunction function = getFunction(csmProject, name);
+        if (function == null) {
+            return null;
+        }
+        String sourceFile = function.getContainingFile().getAbsolutePath().toString();
+        int startOffset = function.getStartOffset();
+        if (lineNumber > 0) {
+            return new SourceFileInfo(sourceFile, lineNumber, 0);
+        }
+        return new SourceFileInfo(sourceFile, startOffset); //) + offset);
+    }
 
     private static CsmFunction getFunction(CsmProject project, CharSequence qualifiedName) {
-       Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
-       CsmFunction declaration = null;
-       while (iter.hasNext()) {
-           CsmFunction function = iter.next();
-           if (CsmKindUtilities.isFunctionDefinition(function)) {
-               return function;
-           } else { // declaration
-               CsmFunctionDefinition definition = function.getDefinition();
-               if (definition != null) {
-                   return definition;
-               } else {
-                   declaration = function;
-               }
-           }
-       }
-       return declaration;
-   }
-
+        Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
+        CsmFunction declaration = null;
+        while (iter.hasNext()) {
+            CsmFunction function = iter.next();
+            if (CsmKindUtilities.isFunctionDefinition(function)) {
+                return function;
+            } else { // declaration
+                CsmFunctionDefinition definition = function.getDefinition();
+                if (definition != null) {
+                    return definition;
+                } else {
+                    declaration = function;
+                }
+            }
+        }
+        return declaration;
+    }
+    
+    public static String getFunctionSignature(String functionName){
+        int start = 0;
+        int templateLevel = 0;
+        boolean isOperator = false;
+        for(int i = 0; i < functionName.length(); i++) {
+            char c = functionName.charAt(i);
+            switch (c) {
+                case '<':
+                    templateLevel++;
+                    break;
+                case '>':
+                    templateLevel++;
+                    break;
+                case 'o':
+                    if (functionName.substring(i).startsWith("operator") && // NOI18N
+                        functionName.length() > i + 8 &&
+                        functionName.charAt(i+8) == ' ') {
+                        isOperator = true;
+                    }
+                    break;
+                case ' ':
+                case '*':
+                case '&':
+                    if (templateLevel == 0) {
+                        if (!isOperator) {
+                            start = i + 1;
+                        }
+                    }
+                    break;
+                case '(':
+                    return functionName.substring(start, i);
+            }
+        }
+        return functionName.substring(start);
+    }
 }
