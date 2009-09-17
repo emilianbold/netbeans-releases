@@ -50,13 +50,13 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildTestCase extends RemoteBuildTestBase {
+public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 
-    public RemoteBuildTestCase(String testName) {
+    public RemoteBuildSamplesTestCase(String testName) {
         super(testName);
     }
 
-    public RemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RemoteBuildSamplesTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
     }
 
@@ -71,7 +71,7 @@ public class RemoteBuildTestCase extends RemoteBuildTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildTestCase.class);
+        return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
     }
 
 

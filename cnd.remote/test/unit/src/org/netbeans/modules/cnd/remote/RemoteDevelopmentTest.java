@@ -45,6 +45,8 @@ import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
+import org.netbeans.modules.cnd.remote.project.RemoteBuildMakefileTestCase;
+import org.netbeans.modules.cnd.remote.project.RemoteBuildSamplesTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
 import org.netbeans.modules.cnd.remote.sync.RemoteBinaryServiceTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
@@ -103,7 +105,9 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
              ZipSyncWorkerTestCase.class,
              HostSetupTestCase.class,
              RemoteFileTestCase.class,
-             RemoteFileSystemTestCase.class);
+             RemoteFileSystemTestCase.class,
+             RemoteBuildSamplesTestCase.class,
+             RemoteBuildMakefileTestCase.class);
     }
 
 

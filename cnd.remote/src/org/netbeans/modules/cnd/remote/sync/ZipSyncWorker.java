@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -88,7 +89,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         long time = 0;
         
         if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
-            System.out.printf("Uploading %s to %s ...\n", localDir.getAbsolutePath(), executionEnvironment); // NOI18N
+            System.out.printf("Uploading %s to %s ...\n", topLocalDir.getAbsolutePath(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
         filter = createFilter();
@@ -110,19 +111,29 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             // nb: here we only launch the task! we'll wait for the completion after local zip is created
             Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
 
-            String localDirName = localDir.getName();
+            String localDirName = topLocalDir.getName();
             if (localDirName.length() < 3) {
                 localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
             }
             zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
             Zipper zipper = createZipper(zipFile);
             {
-                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
-                long zipStart = System.currentTimeMillis();                
-                zipper.add(localDir, filter);
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", topLocalDir.getAbsolutePath(), zipFile); } // NOI18N
+                long zipStart = System.currentTimeMillis();
+                int topDirLen = topLocalDir.getAbsolutePath().length();
+                for (File dir : localDirs) {
+                    String base;
+                    if (dir.equals(topLocalDir)) {
+                        base = null;
+                    } else {
+                        base = dir.getAbsolutePath().substring(topDirLen+1);
+                    }
+                    zipper.add(dir, filter, base);
+                }
+                zipper.close();
                 float zipTime = ((float) (System.currentTimeMillis() - zipStart))/1000f;
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\t%d files zipped; file size is %d\n", zipper.getFileCount(), zipFile.length()); } // NOI18N
-                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", localDir.getAbsolutePath(), zipFile, zipTime); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", topLocalDir.getAbsolutePath(), zipFile, zipTime); } // NOI18N
             }
 
             if (zipper.getFileCount() == 0) {
@@ -213,7 +224,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         return false;
     }
 
-    protected Zipper createZipper(File zipFile) {
+    protected Zipper createZipper(File zipFile) throws FileNotFoundException {
         return new Zipper(zipFile);
     }
 }
