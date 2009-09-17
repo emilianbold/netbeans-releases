@@ -92,10 +92,15 @@ public class JavaResourceHolder extends ResourceHolder {
     /** Implements superclass abstract method.
     /* Gets all keys which are stored in underlying resource object. */
     public String[] getAllKeys() {
-        if(resource == null)
-            return new String[0];
-
-        return ((PropertiesDataObject)resource).getBundleStructure().getKeys();
+        try {
+            return ((PropertiesDataObject) resource).getBundleStructure().getKeys();
+        } catch (IllegalStateException ise) {
+            // #167356 ISE: "Resource Bundles: KeyList not initialized"
+            // if a Bundle.properties is accidentally removed from project
+        } catch (NullPointerException npe) {
+            // NPE if resource == null
+        }
+        return new String[0];
     }
 
     /**
