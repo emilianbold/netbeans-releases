@@ -62,7 +62,7 @@ public abstract class DLightTarget {
     //@GuardedBy("this")
     private final List<DLightTargetListener> listeners;
     private final Info info;
-    private final DLightTargetExecutionService<DLightTarget> executionService;
+    private final DLightTargetExecutionService<? extends DLightTarget> executionService;
 
 
     static {
@@ -74,13 +74,13 @@ public abstract class DLightTarget {
      * can start and terminated target should be passed
      * @param executionService service to start and terminate target
      */
-    protected DLightTarget(DLightTarget.DLightTargetExecutionService executionService) {
+    protected DLightTarget(DLightTarget.DLightTargetExecutionService<? extends DLightTarget> executionService) {
         this.executionService = executionService;
         this.listeners = new ArrayList<DLightTargetListener>();
         this.info = new Info();
     }
 
-    private final DLightTargetExecutionService<DLightTarget> getExecutionService() {
+    private final DLightTargetExecutionService<? extends DLightTarget> getExecutionService() {
         return executionService;
     }
 
@@ -254,7 +254,7 @@ public abstract class DLightTarget {
     private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
 
         @Override
-        public DLightTargetExecutionService<DLightTarget> getDLightTargetExecution(DLightTarget target) {
+        public DLightTargetExecutionService<? extends DLightTarget> getDLightTargetExecution(DLightTarget target) {
             return target.getExecutionService();
         }
 

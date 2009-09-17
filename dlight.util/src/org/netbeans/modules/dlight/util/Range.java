@@ -227,7 +227,7 @@ public final class Range<T extends Number & Comparable<? super T>> {
      * @return extended range
      */
     public Range<T> extend(Range<T> range) {
-        return new Range<T>(DLightMath.min(start, range.getStart()), DLightMath.max(end, range.getEnd()));
+        return new Range<T>(DLightMath.<T>min(start, range.getStart()), DLightMath.<T>max(end, range.getEnd()));
     }
 
     @Override

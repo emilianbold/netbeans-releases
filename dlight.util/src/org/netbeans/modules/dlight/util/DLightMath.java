@@ -91,7 +91,7 @@ public class DLightMath {
         }
     }
 
-    public static<T extends Comparable> T max(T a, T b) {
+    public static<T extends Comparable<? super T>> T max(T a, T b) {
         if (a == null || b == null) {
             return null;
         } else if (0 < a.compareTo(b)) {
@@ -101,7 +101,7 @@ public class DLightMath {
         }
     }
 
-    public static<T extends Comparable> T min(T a, T b) {
+    public static<T extends Comparable<? super T>> T min(T a, T b) {
         if (a == null || b == null) {
             return null;
         } else if (a.compareTo(b) <= 0) {
