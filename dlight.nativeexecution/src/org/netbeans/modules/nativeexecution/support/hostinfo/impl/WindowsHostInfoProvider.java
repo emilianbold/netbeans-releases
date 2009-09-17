@@ -104,19 +104,23 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
             File _tmpDirFile = null;
             String _tmpDir = null;
-            String _path = null;
+            String _path = "";
+
+            String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
+
+            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.getProperty("USERNAME")); // NOI18N
+            _tmpDir = _tmpDirFile.getAbsolutePath();
 
             try {
-                _tmpDirFile = new File(System.getProperty("java.io.tmpdir"), "dlight_" + env.getProperty("USERNAME")).getCanonicalFile(); // NOI18N
+                _tmpDirFile = _tmpDirFile.getCanonicalFile();
+                _tmpDir = _tmpDirFile.getCanonicalPath();
             } catch (IOException ex) {
             }
 
-            try {
-                _tmpDir = (shell == null) ? _tmpDirFile.getCanonicalPath() : WindowsSupport.getInstance().convertToShellPath(_tmpDirFile.getCanonicalPath());
-            } catch (IOException ex) {
+            if (shell != null) {
+                _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
+                _path = env.getProperty("PATH"); // NOI18N
             }
-
-            _path = (shell == null) ? _path = "" : env.getProperty("PATH"); // NOI18N
 
             tmpDirFile = _tmpDirFile;
             tmpDir = _tmpDir;
