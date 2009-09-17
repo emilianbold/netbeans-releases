@@ -309,6 +309,16 @@ public class AstNode {
         return children == null ? Collections.EMPTY_LIST : children;
     }
 
+    public List<AstNode> children(NodeFilter filter) {
+        List<AstNode> filtered = new ArrayList<AstNode>(children().size());
+        for(AstNode child : children()) {
+            if(filter.accepts(child)) {
+                filtered.add(child);
+            }
+        }
+        return filtered;
+    }
+
     public boolean isEmpty() {
         return isEmpty;
     }
