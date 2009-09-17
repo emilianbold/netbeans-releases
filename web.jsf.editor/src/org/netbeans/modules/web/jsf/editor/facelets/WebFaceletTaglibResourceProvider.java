@@ -75,24 +75,22 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
     public Collection<URL> getResources(ServletContext ignored) {
         try {
             MetadataModel<WebAppMetadata> model = wm.getMetadataModel();
-            String faceletsLibrariesList = null;
-            if (model !=null) {
-                faceletsLibrariesList = model.runReadAction(new MetadataModelAction<WebAppMetadata, String>() {
-                    public String run(WebAppMetadata metadata) throws Exception {
-                        //TODO can be init param specified by some annotation or the dd must be present?
-                        WebApp ddRoot = metadata.getRoot();
-                        if (ddRoot != null) {
-                            InitParam[] contextParams = ddRoot.getContextParam();
-                            for (InitParam param : contextParams) {
-                                if (FACELETS_LIBRARIES_PROPERTY_NAME.equals(param.getParamName())) {
-                                    return param.getParamValue();
-                                }
+            assert model != null : "WebModule "+wm.getClass()+" does not implement getMetadataModel properly";
+            String faceletsLibrariesList = model.runReadAction(new MetadataModelAction<WebAppMetadata, String>() {
+                public String run(WebAppMetadata metadata) throws Exception {
+                    //TODO can be init param specified by some annotation or the dd must be present?
+                    WebApp ddRoot = metadata.getRoot();
+                    if (ddRoot != null) {
+                        InitParam[] contextParams = ddRoot.getContextParam();
+                        for (InitParam param : contextParams) {
+                            if (FACELETS_LIBRARIES_PROPERTY_NAME.equals(param.getParamName())) {
+                                return param.getParamValue();
                             }
                         }
-                        return null;
                     }
-                });
-            }
+                    return null;
+                }
+            });
 
             FileObject webModuleRoot = wm.getDocumentBase();
             Collection<URL> librariesURLs = new ArrayList<URL>();

@@ -162,8 +162,8 @@ public final class NativeProcessInfo {
     }
 
     public void putAllEnvironmentVariables(Map<String, String> envs) {
-        for (String key : envs.keySet()) {
-            putEnvironmentVariable(key, envs.get(key));
+        for (Map.Entry<String, String> entry : envs.entrySet()) {
+            putEnvironmentVariable(entry.getKey(), entry.getValue());
         }
     }
 
