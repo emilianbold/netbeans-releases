@@ -203,7 +203,9 @@ public class ELExpression {
             // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
             // it can be start of the function or start of a simple expression.
             Token<?> token = ts.token();
-            while ((!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) 
+            boolean rBracket = false;
+            while (rBracket || 
+                    (!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) 
                     || ts.token().id() == ELTokenId.DOT || 
                         ts.token().id() == ELTokenId.LBRACKET
                         || ts.token().id() == ELTokenId.RBRACKET) &&
@@ -211,11 +213,17 @@ public class ELExpression {
                     (!ELTokenCategories.KEYWORDS.hasCategory(ts.token().id()) ||
                     ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id()))) 
             {
-
+                if ( ts.token().id() == ELTokenId.RBRACKET ){
+                    rBracket = true;
+                }
+                else if ( ts.token().id() == ELTokenId.LBRACKET ){
+                    rBracket = false;
+                }
+                
                 //repeat until not ( and ' ' and keyword or number
                 if (value == null) {
                     value = ts.token().text().toString();
-                    if (ts.token().id() == ELTokenId.DOT || 
+                    if ( ts.token().id() == ELTokenId.DOT  || 
                             ts.token().id() == ELTokenId.LBRACKET) 
                     {
                         replace = "";
@@ -358,13 +366,19 @@ public class ELExpression {
         int dotPos = elExp.lastIndexOf('.');            // NOI18N
         int bracketIndex = elExp.lastIndexOf('[');          // NOI18N
 
-        if ( bracketIndex >-1 || dotPos >-1 ){
-            return elExp.substring( Math.max( bracketIndex, dotPos) + 1);
+        /*
+         * Fix for IZ#172413 - Unexpected error in EL with dot inside array notation
+         */
+        if ( bracketIndex >0 ){
+            return elExp.substring( bracketIndex+ 1);
+        }
+        else if ( dotPos >-1 ){
+            return elExp.substring( dotPos + 1);
         }
         return null;
     }
     
-    protected String removeQuotes( String propertyName ) {
+    public String removeQuotes( String propertyName ) {
         if ( propertyName.length() >0 ){
             char first = propertyName.charAt(0);
             if ( (first == '"' || first == '\'' )&& propertyName.length() >1 
