@@ -557,6 +557,86 @@ public class RepositoryComboSupportTest {
         });
     }
 
+    /**
+     * Tests that setup of the combo-box is done by one job scheduled to the EDT
+     * (event-dispatch thread) if all information (list of repositories,
+     * plus the repository to be preselected, if any) is available at the moment
+     * the EDT is about to display the list of available repositories.
+     */
+    @Test
+    public void testMoreReposNoMatchingNodeAwtRetarded() throws InterruptedException {
+        printTestName("testMoreReposNoMatchingNodeAwtRetarded");
+        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+            @Override
+            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
+                return RepositoryComboSupport.setup(null, comboBox, false);
+            }
+            @Override
+            protected void scheduleTests(ProgressTester progressTester) {
+                progressTester.scheduleTest          (Progress.STARTED, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                LOADING_REPOSITORIES));
+                progressTester.scheduleTest          (Progress.WILL_LOAD_REPOS, NON_AWT);
+                progressTester.scheduleTest          (Progress.LOADED_REPOS, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_DISPLAY_OF_REPOS, NON_AWT);
+                progressTester.scheduleSuspendingTest(Progress.WILL_DISPLAY_REPOS, AWT);
+                progressTester.scheduleTest          (Progress.SCHEDULED_DISPLAY_OF_REPOS, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleResumingTest  (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.DISPLAYED_REPOS, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                SELECT_REPOSITORY,
+                                                                repository1,
+                                                                repository2,
+                                                                repository3),
+                                                        new SelectedItemTest(
+                                                                SELECT_REPOSITORY));
+            }
+        });
+    }
+
+    /**
+     * Tests that the combo-box is filled and the default repository  selected
+     * in one shot if all information is available at the moment the AWT thread
+     * is about to display the list of available repositories.
+     */
+    @Test
+    public void testMoreReposMatchingNodeAwtRetarded() throws InterruptedException {
+        printTestName("testMoreReposMatchingNodeAwtRetarded");
+        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+            @Override
+            protected void setUpEnvironment() {
+                selectNodes(repoNode2);
+            }
+            @Override
+            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
+                return RepositoryComboSupport.setup(null, comboBox, false);
+            }
+            @Override
+            protected void scheduleTests(ProgressTester progressTester) {
+                progressTester.scheduleTest          (Progress.STARTED, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                LOADING_REPOSITORIES));
+                progressTester.scheduleTest          (Progress.WILL_LOAD_REPOS, NON_AWT);
+                progressTester.scheduleTest          (Progress.LOADED_REPOS, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_DISPLAY_OF_REPOS, NON_AWT);
+                progressTester.scheduleSuspendingTest(Progress.WILL_DISPLAY_REPOS, AWT);
+                progressTester.scheduleTest          (Progress.SCHEDULED_DISPLAY_OF_REPOS, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleResumingTest  (Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.DISPLAYED_REPOS, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                repository1,
+                                                                repository2,
+                                                                repository3),
+                                                        new SelectedItemTest(
+                                                                repository2));
+            }
+        });
+    }
+
     @Test
     public void testDefaultRepoExplicitlySet() throws InterruptedException {
         printTestName("testDefaultRepoExplicitlySet");

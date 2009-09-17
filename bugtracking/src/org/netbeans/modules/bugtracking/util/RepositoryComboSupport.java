@@ -429,6 +429,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     }
 
     private void displayRepositories() {
+        updateProgress(Progress.WILL_DISPLAY_REPOS);
+
         boolean computationPending = defaultRepoComputationPending;
         Repository knownDefaultRepo = computationPending ? null : defaultRepo;
 
@@ -442,6 +444,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         } finally {
             repositoriesDisplayed = true;
             defaultRepoSelected = !computationPending;
+            updateProgress(Progress.DISPLAYED_REPOS);
         }
     }
 
@@ -527,7 +530,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private void setRepositories(Repository[] repos,
                                  Repository knownDefaultRepository) {
         assert EventQueue.isDispatchThread();
-        updateProgress(Progress.WILL_DISPLAY_REPOS);
 
         int reposCount = (repos != null) ? repos.length : 0;
         Object[] comboData;
@@ -552,8 +554,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             assert (comboBox.getSelectedItem() == SELECT_REPOSITORY);
             comboBox.addItemListener(this);
         }
-
-        updateProgress(Progress.DISPLAYED_REPOS);
     }
 
     private void refreshComboBoxData(Repository[] repos) {
