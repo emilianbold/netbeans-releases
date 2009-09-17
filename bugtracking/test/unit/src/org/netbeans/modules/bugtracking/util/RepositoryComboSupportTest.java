@@ -186,6 +186,42 @@ public class RepositoryComboSupportTest {
         });
     }
 
+    /**
+     * Tests that the routine for determination if initial repository selection
+     * is skipped (not performed) if there is only one repository available
+     * and method {@code setup()} was passed {@code true} as its third argument.
+     *
+     * @see #testSingleRepoNoNodeFalse
+     * @see #testSingleRepoNoMatchingNodeFalse
+     * @see #testSingleRepoMatchingNodeFalse
+     */
+    @Test
+    public void testSingleRepoTrue() throws InterruptedException {
+        printTestName("testSingleRepoNoNodeTrue");
+        runRepositoryComboTest(new SingleRepoComboTest() {
+            @Override
+            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
+                return RepositoryComboSupport.setup(null, comboBox, true);
+            }
+            @Override
+            protected void scheduleTests(ProgressTester progressTester) {
+                super.scheduleTests(progressTester);
+                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                repository1),
+                                                        new SelectedItemTest(
+                                                                repository1));
+            }
+        });
+    }
+
+    /**
+     * Tests that the routine for determination if initial repository selection
+     * is performed (not skipped) if there is only one repository available
+     * and method {@code setup()} was passed {@code false} as its third
+     * argument. It also tests that the routine correctly determines no
+     * repository should be preselected if there is no node selected.
+     */
     @Test
     public void testSingleRepoNoNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoNoNodeFalse");
@@ -207,26 +243,14 @@ public class RepositoryComboSupportTest {
         });
     }
 
-    @Test
-    public void testSingleRepoNoNodeTrue() throws InterruptedException {
-        printTestName("testSingleRepoNoNodeTrue");
-        runRepositoryComboTest(new SingleRepoComboTest() {
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, true);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
-                                                                repository1),
-                                                        new SelectedItemTest(
-                                                                repository1));
-            }
-        });
-    }
-
+    /**
+     * Tests that the routine for determination if initial repository selection
+     * is performed (not skipped) if there is only one repository available
+     * and method {@code setup()} was passed {@code false} as its third
+     * argument. It also tests that the routine correctly determines no
+     * repository should be preselected if there is no node selected that
+     * would refer to the repository.
+     */
     @Test
     public void testSingleRepoNoMatchingNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoNoMatchingNodeFalse");
@@ -254,30 +278,13 @@ public class RepositoryComboSupportTest {
         });
     }
 
-    @Test
-    public void testSingleRepoNoMatchingNodeTrue() throws InterruptedException {
-        printTestName("testSingleRepoNoMatchingNodeTrue");
-        runRepositoryComboTest(new SingleRepoComboTest() {
-            @Override
-            protected void setUpEnvironment() {
-                selectNodes(node1);
-            }
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, true);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
-                                                                repository1),
-                                                        new SelectedItemTest(
-                                                                repository1));
-            }
-        });
-    }
-
+    /**
+     * Tests that the routine for determination if initial repository selection
+     * is performed (not skipped) if there is only one repository available
+     * and method {@code setup()} was passed {@code false} as its third
+     * argument. It also tests that the routine correctly determines that
+     * the repository should be preselected.
+     */
     @Test
     public void testSingleRepoMatchingNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoMatchingNodeFalse");
@@ -305,30 +312,6 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
                 progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTest(
-                                                                repository1),
-                                                        new SelectedItemTest(
-                                                                repository1));
-            }
-        });
-    }
-
-    @Test
-    public void testSingleRepoMatchingNodeTrue() throws InterruptedException {
-        printTestName("testSingleRepoMatchingNodeTrue");
-        runRepositoryComboTest(new SingleRepoComboTest() {
-            @Override
-            protected void setUpEnvironment() {
-                selectNodes(repoNode1);
-            }
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, true);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
                                                         new ComboBoxItemsTest(
                                                                 repository1),
                                                         new SelectedItemTest(
@@ -406,9 +389,9 @@ public class RepositoryComboSupportTest {
     }
 
     /**
-     * Checks that the correct repository is selected according to the selected
-     * node.
-     * @throws InterruptedException
+     * Tests that the correct repository is preselected in the combo-box if
+     * there is one node selected and the node refers to some issue tracking
+     * repository.
      */
     @Test
     public void testMoreReposMatchingNode() throws InterruptedException {
@@ -450,8 +433,9 @@ public class RepositoryComboSupportTest {
     }
 
     /**
-     * Tests that
-     * @throws InterruptedException
+     * Tests that the correct repository is preselected in the combo-box if
+     * there are multiple nodes selected but all the nodes refer to the same
+     * issue tracking repository.
      */
     @Test
     public void testMoreReposMoreMatchingNodesSameRepo() throws InterruptedException {
@@ -499,6 +483,11 @@ public class RepositoryComboSupportTest {
         });
     }
 
+    /**
+     * Tests that no repository is preselected in the combo-box if multiple
+     * nodes are selected and the nodes refer to several different issue
+     * tracking repositories.
+     */
     @Test
     public void testMoreReposMatchingNodesDifferentRepos() throws InterruptedException {
         printTestName("testMoreReposMatchingNodesDifferentRepos");
@@ -528,6 +517,10 @@ public class RepositoryComboSupportTest {
         });
     }
 
+    /**
+     * Tests that no repository is preselected in the combo-box if multiple
+     * nodes are selected but not all of the nodes refer to the some repository.
+     */
     @Test
     public void testMoreReposMatchingNodesRepoAndNull() throws InterruptedException {
         printTestName("testMoreReposMatchingNodesRepoAndNull");
@@ -596,7 +589,7 @@ public class RepositoryComboSupportTest {
     }
 
     /**
-     * Tests that the combo-box is filled and the default repository  selected
+     * Tests that the combo-box is filled and the default repository preselected
      * in one shot if all information is available at the moment the AWT thread
      * is about to display the list of available repositories.
      */
