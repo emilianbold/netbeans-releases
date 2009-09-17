@@ -302,7 +302,7 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
         switch(init){
             
             case INJECT :
-                anns.add(getGenUtils().createAnnotation(PERSISTENCE_CONTEXT_FQN));
+                anns.add(getGenUtils().createAnnotation(PERSISTENCE_CONTEXT_FQN, Collections.singletonList(getGenUtils().createAnnotationArgument("unitName", getPersistenceUnitName()))));//NOI18N
                 break;
                 
             case EMF:
@@ -349,7 +349,7 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
                 result = getTreeMaker().addClassMember(result, destroyMethod);
                 
                 if(needsEmf){
-                    ExpressionTree annArgument = getGenUtils().createAnnotationArgument("name", getPersistenceUnitName());
+                    ExpressionTree annArgument = getGenUtils().createAnnotationArgument("name", getPersistenceUnitName());//NOI18N
                     AnnotationTree puAnn = getGenUtils().createAnnotation(PERSISTENCE_UNIT_FQN, Collections.<ExpressionTree>singletonList(annArgument));
                     VariableTree emf = getTreeMaker().Variable(
                             getTreeMaker().Modifiers(
