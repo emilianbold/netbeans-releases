@@ -189,14 +189,14 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         jpaPackageComboBox.setEditable(true);
 
-        overrideExistingCheckBox.setText("Override existing files");
+        overrideExistingCheckBox.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.overrideExistingFiles")); // NOI18N
         overrideExistingCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 overrideExistingCheckBoxActionPerformed(evt);
             }
         });
 
-        customizeTemplatesLabel.setText("<html><u>Customize Template</u>");
+        customizeTemplatesLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.customizeTemplate")); // NOI18N
         customizeTemplatesLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 customizeTemplatesLabelMouseClicked(evt);
