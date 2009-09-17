@@ -391,7 +391,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                 }
                 if (defaultRepo != null) {
                     /* schedule selection of default repository (if any) */
+                    updateProgress(Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO);
                     EventQueue.invokeLater(this);
+                    updateProgress(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO);
                 }
             }
         } else {
@@ -449,6 +451,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
          * We are going to preselect the default repository.
          */
         LOG.finest("going to select the default repository");           //NOI18N
+        updateProgress(Progress.WILL_SELECT_DEFAULT_REPO);
         try {
             if ((comboBox.getSelectedItem() instanceof Repository)
                     && !comboBox.isPopupVisible()) {
@@ -460,6 +463,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             }
         } finally {
             defaultRepoSelected = true;
+            updateProgress(Progress.SELECTED_DEFAULT_REPO);
         }
     }
 
@@ -641,6 +645,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         DISPLAYED_REPOS,
         WILL_DETERMINE_DEFAULT_REPO,
         DETERMINED_DEFAULT_REPO,
+        WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO,
+        SCHEDULED_SELECTION_OF_DEFAULT_REPO,
         WILL_SELECT_DEFAULT_REPO,
         SELECTED_DEFAULT_REPO,
         WILL_DISPLAY_REPOS_AND_SELECT_DEFAULT,
