@@ -311,12 +311,13 @@ public final class OpenProjectList {
                         progress.finish();
                     }
                     updateGlobalState();
-                    StringBuffer os = details;
+                    StringBuffer os = null;
                     boolean verify = false;
                     assert verify = true;
                     if (verify) {
-                        ProjectsRootNode.checkNoLazyNode(os);
+                        os = details;
                     }
+                    ProjectsRootNode.checkNoLazyNode(os);
                     details = null;
                     os = null;
                     return;
