@@ -145,7 +145,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
                 case 'o':
                     if (functionName.substring(i).startsWith("operator") && // NOI18N
                         functionName.length() > i + 8 &&
-                        functionName.charAt(i+8) == ' ') {
+                        !Character.isLetter(functionName.charAt(i+8))) {
                         isOperator = true;
                     }
                     break;

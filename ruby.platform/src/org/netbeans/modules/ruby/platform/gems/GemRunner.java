@@ -214,7 +214,10 @@ final class GemRunner {
             }
         }
 
-        argList.add("--verbose"); // NOI18N
+        if (RubyPreferences.isGemVerboseOutput()) {
+            argList.add("--verbose"); // NOI18N
+        }
+        
         if (!rdoc) {
             argList.add("--no-rdoc"); // NOI18N
         }

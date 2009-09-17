@@ -221,6 +221,8 @@ public final class GemPanel extends JPanel {
         } else {
             gemsTab.setSelectedIndex(INSTALLED.getPosition());
         }
+
+        verboseCheckBox.setSelected(RubyPreferences.isGemVerboseOutput());
     }
 
     private void platformChanged() {
@@ -592,6 +594,7 @@ public final class GemPanel extends JPanel {
         proxyButton = new javax.swing.JButton();
         allVersionsCheckbox = new javax.swing.JCheckBox();
         descriptionCheckbox = new javax.swing.JCheckBox();
+        verboseCheckBox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
         platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         manageButton = new javax.swing.JButton();
@@ -640,7 +643,7 @@ public final class GemPanel extends JPanel {
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, updatedPanelLayout.createSequentialGroup()
                         .add(reloadUpdatedButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 436, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 442, Short.MAX_VALUE)
                         .add(searchUpdatedLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchUpdatedText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -648,12 +651,12 @@ public final class GemPanel extends JPanel {
                         .add(updateButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(updateAllButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 362, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 366, Short.MAX_VALUE)
                         .add(updatedProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(updatedProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, updatedPanelLayout.createSequentialGroup()
-                        .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                        .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -727,18 +730,18 @@ public final class GemPanel extends JPanel {
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
                         .add(reloadInstalledButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 436, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 442, Short.MAX_VALUE)
                         .add(searchInstLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchInstText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(installedPanelLayout.createSequentialGroup()
                         .add(uninstallButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 455, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 468, Short.MAX_VALUE)
                         .add(installedProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installedProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
-                        .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                        .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -812,7 +815,7 @@ public final class GemPanel extends JPanel {
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, newPanelLayout.createSequentialGroup()
                         .add(reloadNewButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 436, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 442, Short.MAX_VALUE)
                         .add(searchNewLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -820,12 +823,12 @@ public final class GemPanel extends JPanel {
                         .add(installButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installLocalButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 348, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 347, Short.MAX_VALUE)
                         .add(newProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(newProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, newPanelLayout.createSequentialGroup()
-                        .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                        .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -872,6 +875,9 @@ public final class GemPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(descriptionCheckbox, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.descriptionCheckbox.text")); // NOI18N
         descriptionCheckbox.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(verboseCheckBox, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.verboseCheckBox.text")); // NOI18N
+        verboseCheckBox.addItemListener(formListener);
+
         org.jdesktop.layout.GroupLayout settingsPanelLayout = new org.jdesktop.layout.GroupLayout(settingsPanel);
         settingsPanel.setLayout(settingsPanelLayout);
         settingsPanelLayout.setHorizontalGroup(
@@ -879,10 +885,11 @@ public final class GemPanel extends JPanel {
             .add(settingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(verboseCheckBox)
                     .add(descriptionCheckbox)
                     .add(proxyButton)
                     .add(allVersionsCheckbox))
-                .addContainerGap(459, Short.MAX_VALUE))
+                .addContainerGap(458, Short.MAX_VALUE))
         );
         settingsPanelLayout.setVerticalGroup(
             settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -893,7 +900,9 @@ public final class GemPanel extends JPanel {
                 .add(allVersionsCheckbox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(descriptionCheckbox)
-                .addContainerGap(243, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(verboseCheckBox)
+                .addContainerGap(216, Short.MAX_VALUE))
         );
 
         proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -921,7 +930,7 @@ public final class GemPanel extends JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 819, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(gemHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -934,7 +943,7 @@ public final class GemPanel extends JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, manageButton)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, browseGemHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, oldRubyGemsText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, oldRubyGemsText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 819, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -977,10 +986,13 @@ public final class GemPanel extends JPanel {
 
     // Code for dispatching events from components to event handlers.
 
-    private class FormListener implements java.awt.event.ActionListener {
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.ItemListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == reloadUpdatedButton) {
+            if (evt.getSource() == searchUpdatedText) {
+                GemPanel.this.searchUpdatedTextActionPerformed(evt);
+            }
+            else if (evt.getSource() == reloadUpdatedButton) {
                 GemPanel.this.reloadUpdatedButtonActionPerformed(evt);
             }
             else if (evt.getSource() == updateButton) {
@@ -989,11 +1001,17 @@ public final class GemPanel extends JPanel {
             else if (evt.getSource() == updateAllButton) {
                 GemPanel.this.updateAllButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == searchInstText) {
+                GemPanel.this.searchInstTextActionPerformed(evt);
+            }
             else if (evt.getSource() == reloadInstalledButton) {
                 GemPanel.this.reloadInstalledButtonActionPerformed(evt);
             }
             else if (evt.getSource() == uninstallButton) {
                 GemPanel.this.uninstallButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == searchNewText) {
+                GemPanel.this.searchNewTextActionPerformed(evt);
             }
             else if (evt.getSource() == reloadNewButton) {
                 GemPanel.this.reloadNewButtonActionPerformed(evt);
@@ -1019,14 +1037,11 @@ public final class GemPanel extends JPanel {
             else if (evt.getSource() == browseGemHome) {
                 GemPanel.this.browseGemHomeActionPerformed(evt);
             }
-            else if (evt.getSource() == searchUpdatedText) {
-                GemPanel.this.searchUpdatedTextActionPerformed(evt);
-            }
-            else if (evt.getSource() == searchInstText) {
-                GemPanel.this.searchInstTextActionPerformed(evt);
-            }
-            else if (evt.getSource() == searchNewText) {
-                GemPanel.this.searchNewTextActionPerformed(evt);
+        }
+
+        public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            if (evt.getSource() == verboseCheckBox) {
+                GemPanel.this.verboseCheckBoxItemStateChanged(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -1228,6 +1243,10 @@ public final class GemPanel extends JPanel {
     private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
         // see comment in #searchUpdatedTextActionPerformed
     }//GEN-LAST:event_searchNewTextActionPerformed
+
+    private void verboseCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_verboseCheckBoxItemStateChanged
+        RubyPreferences.setGemVerboseOutput(verboseCheckBox.isSelected());
+    }//GEN-LAST:event_verboseCheckBoxItemStateChanged
 
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
@@ -1481,6 +1500,7 @@ public final class GemPanel extends JPanel {
     private javax.swing.JProgressBar updatedProgress;
     private javax.swing.JLabel updatedProgressLabel;
     private javax.swing.JScrollPane updatedSP;
+    private javax.swing.JCheckBox verboseCheckBox;
     // End of variables declaration//GEN-END:variables
     
     private final class FilterFieldListener implements DocumentListener {
