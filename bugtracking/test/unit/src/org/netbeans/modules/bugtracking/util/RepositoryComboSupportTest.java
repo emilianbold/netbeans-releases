@@ -239,6 +239,8 @@ public class RepositoryComboSupportTest {
                                                                 repository1),
                                                         new SelectedItemTest(
                                                                 SELECT_REPOSITORY));
+                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
             }
         });
     }
