@@ -48,8 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -59,6 +57,7 @@ import javax.swing.JMenuItem;
 import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
@@ -341,6 +340,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("MyNamedAction", MyAction.last.getValue(Action.NAME));
     }
 
+    @RandomlyFails
     public void testPreferencesAction() throws Exception {
 //        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
         checkPreferencesAction("testUserPreferences.instance", Preferences.userRoot());
