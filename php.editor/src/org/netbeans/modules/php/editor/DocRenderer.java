@@ -307,52 +307,6 @@ class DocRenderer {
             }
         }
         
-        private String getElementValue(Program program, ASTNode node){
-            if (node instanceof Identifier) {
-
-                if ("define".equals(((Identifier) node).getName())) {  //NOI18N
-                    FunctionInvocation invocation = (FunctionInvocation) Utils.getNodeAtOffset(
-                            program, indexedElement.getOffset(), FunctionInvocation.class);
-
-                    if (invocation != null) {
-                        assert invocation.getStartOffset() == node.getStartOffset();
-
-                        if (invocation.getParameters().size() > 1) {
-                            Expression valExpr = invocation.getParameters().get(1);
-
-                            if (valExpr instanceof Scalar) {
-                                Scalar val = (Scalar) valExpr;
-                                return val.getStringValue();
-                            }
-                        }
-                    }
-                }
-            } else if (node instanceof ConstantDeclaration) {
-                ConstantDeclaration classConstantDeclaration = (ConstantDeclaration) node;
-                int constIdx = -1;
-
-                for (int i = 0; i < classConstantDeclaration.getNames().size(); i++) {
-                    Identifier id = classConstantDeclaration.getNames().get(i);
-
-                    if (id.getName().equals(indexedElement.getName())) {
-                        constIdx = i;
-                        break;
-                    }
-                }
-
-                if (constIdx >= 0) {
-                    Expression valExpr = classConstantDeclaration.getInitializers().get(constIdx);
-
-                    if (valExpr instanceof Scalar) {
-                        Scalar val = (Scalar) valExpr;
-                        return val.getStringValue();
-                    }
-                }
-            }
-            
-            return null;
-        }
-
          @Override
         public void run(ResultIterator resultIterator) throws Exception {
             ParserResult presult = (ParserResult)resultIterator.getParserResult();
@@ -373,13 +327,7 @@ class DocRenderer {
                 } else {
                     header.name(indexedElement.getKind(), true);
                     header.appendText(indexedElement.getDisplayName());
-                    header.name(indexedElement.getKind(), false);
-                    
-                    String valueStr = getElementValue(program, node);
-                    
-                    if (valueStr != null){
-                        header.appendText(" = " + valueStr);
-                    }
+                    header.name(indexedElement.getKind(), false);                    
                 }
 
                 header.appendHtml("<br/><br/>"); //NOI18N
