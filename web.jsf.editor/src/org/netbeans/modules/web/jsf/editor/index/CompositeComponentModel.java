@@ -118,7 +118,7 @@ public class CompositeComponentModel extends JsfPageModel {
     @Override
     public void storeToIndex(IndexDocument document) {
         //store library name
-        String libraryName = getLibraryFolder(sourceFile).getName();
+        String libraryName = getLibraryPath();
         document.addPair(LIBRARY_NAME_KEY, libraryName, true, true);
 
         //store attributes
@@ -148,38 +148,51 @@ public class CompositeComponentModel extends JsfPageModel {
 
     }
 
-    private FileObject getLibraryFolder(FileObject member) {
-        assert isCompositeLibraryMember(member);
-        return member.getParent();
+    private String getLibraryPath() {
+        FileObject sourceFileFolder = sourceFile.getParent();
+        FileObject resources = getResourcesDirectory(sourceFile);
+
+        assert resources != null;
+        assert !sourceFileFolder.equals(resources);
+
+        return FileUtil.getRelativePath(resources, sourceFileFolder);
     }
 
     private static boolean isCompositeLibraryMember(FileObject file) {
+        FileObject resourcesFolder = getResourcesDirectory(file);
+        if (resourcesFolder != null) {
+                if (FileUtil.isParentOf(resourcesFolder, file)) {
+                    return true;
+                }
+            }
+        return false;
+    }
+
+    private static FileObject getResourcesDirectory(FileObject file) {
         WebModule wm = WebModule.getWebModule(file);
         if (wm != null) {
             //we are in webmodule
             FileObject docRoot = wm.getDocumentBase();
             assert docRoot != null;
-            FileObject resourcesFolder = getChild(docRoot, RESOURCES_FOLDER_NAME);
-            if (resourcesFolder != null) {
-                if (FileUtil.isParentOf(resourcesFolder, file)) {
-                    return true;
-                }
-            }
+            return getChild(docRoot, RESOURCES_FOLDER_NAME);
         } else {
             //out of a webmodule, means in a library archive
             //just check if the parent's parent directory is resources and then META-INF
-            FileObject libraryFolder = file.getParent();
-            if(libraryFolder != null) {
-                FileObject resourcesFolder = libraryFolder.getParent();
-                if(resourcesFolder != null && resourcesFolder.getName().equalsIgnoreCase("resources")) { //NOI18N
-                    FileObject metainfFolder = resourcesFolder.getParent();
-                    if(metainfFolder != null && metainfFolder.getName().equalsIgnoreCase("META-INF")) { //NOI18N
-                        return true;
+            FileObject folder = file;
+            do {
+                if (folder.getName().equalsIgnoreCase("resources")) {
+                    //check if its parent is META-INF
+                    FileObject parent = folder.getParent();
+                    if (parent != null && parent.getNameExt().startsWith("META-INF")) {
+                        //the folder seems to be the right resources folder
+                        return folder;
                     }
                 }
-            }
+                folder = folder.getParent();
+            } while (folder != null);
+
         }
-        return false;
+        return null;
     }
 
     private static FileObject getChild(FileObject parent, String name) {
