@@ -469,7 +469,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         return null;
     }
     
-    public final ErrorDescription createDescription(Hint desc, RuleContext context, boolean allowDisableEmpty) {
+    public final ErrorDescription createDescription(Hint desc, RuleContext context, boolean allowDisableEmpty, boolean last) {
         Rule rule = desc.getRule();
         HintSeverity severity;
         if (rule instanceof UserConfigurableRule) {
@@ -499,14 +499,13 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
                 }
             }
             
-            if (rule instanceof UserConfigurableRule && !isTest) {
-                // Add a hint for disabling this fix
-                fixList.add(new DisableHintFix(this, context, (UserConfigurableRule)rule, sortText));
+            if (last && rule instanceof UserConfigurableRule && !isTest) {
+                // Add a hint for opening options dialog
+                fixList.add(new DisableHintFix(this, context));
             }
-        } else if (allowDisableEmpty && rule instanceof UserConfigurableRule && !isTest) {
-            // Add a hint for disabling this fix
-            String sortText = Integer.toString(10000+desc.getPriority());
-            fixList = Collections.<org.netbeans.spi.editor.hints.Fix>singletonList(new DisableHintFix(this, context, (UserConfigurableRule)rule, sortText));
+        } else if (last && allowDisableEmpty && rule instanceof UserConfigurableRule && !isTest) {
+            // Add a hint for openening options dialog
+            fixList = Collections.<org.netbeans.spi.editor.hints.Fix>singletonList(new DisableHintFix(this, context));
         } else {
             fixList = Collections.emptyList();
         }
@@ -531,9 +530,10 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         if (caretPos == -1) {
             provider.computeHints(hintsManager, context, descriptions);
             List<ErrorDescription> result = new ArrayList<ErrorDescription>(descriptions.size());
-            for (Hint desc : descriptions) {
-                boolean allowDisable = true;                
-                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable);
+            for (int i = 0; i < descriptions.size(); i++) {
+                Hint desc = descriptions.get(i);
+                boolean allowDisable = true;
+                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable, i == descriptions.size()-1);
                 result.add(errorDesc);
             }
 
@@ -541,9 +541,10 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         } else {
             provider.computeSuggestions(hintsManager, context, descriptions, caretPos);
             List<ErrorDescription> result = new ArrayList<ErrorDescription>(descriptions.size());
-            for (Hint desc : descriptions) {
+            for (int i = 0; i < descriptions.size(); i++) {
+                Hint desc = descriptions.get(i);
                 boolean allowDisable = true;                
-                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable);
+                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable, i == descriptions.size()-1);
                 result.add(errorDesc);
             }
 

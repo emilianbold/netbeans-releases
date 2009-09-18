@@ -57,6 +57,7 @@ import javax.tools.JavaFileObject;
 import java.util.List;
 import java.util.Set;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 
@@ -70,6 +71,7 @@ import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.save.PositionEstimator;
+import org.openide.util.Parameters;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /**
@@ -774,7 +776,8 @@ public final class TreeMaker {
      * @see com.sun.source.tree.PrimitiveTypeTree
      * @see javax.lang.model.type.TypeKind
      */
-    public PrimitiveTypeTree PrimitiveType(TypeKind typekind) {
+    public @NonNull PrimitiveTypeTree PrimitiveType(@NonNull TypeKind typekind) {
+        Parameters.notNull("typekind", typekind);
         return delegate.PrimitiveType(typekind);
     }
     
@@ -783,7 +786,8 @@ public final class TreeMaker {
      *
      * @param element the element to use.
      */
-    public ExpressionTree QualIdent(Element element) {
+    public @NonNull ExpressionTree QualIdent(@NonNull Element element) {
+        Parameters.notNull("element", element);
         return delegate.QualIdent(element);
     }
     
@@ -849,7 +853,8 @@ public final class TreeMaker {
      * @param type       TypeMirror for which a Tree should be created
      * @see com.sun.source.tree.ExpressionTree
      */
-    public Tree Type(TypeMirror type) {
+    public @NonNull Tree Type(@NonNull TypeMirror type) {
+        Parameters.notNull("type", type);
         return delegate.Type(type);
     }
 
