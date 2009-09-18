@@ -63,7 +63,7 @@ abstract class FileOperationFactory {
     private final FileObject nbprojectDir;
     private final PhpVisibilityQuery phpVisibilityQuery;
 
-    volatile boolean factoryError = false;
+    private volatile boolean factoryError = false;
 
     public FileOperationFactory(PhpProject project) {
         assert project != null;
@@ -107,20 +107,25 @@ abstract class FileOperationFactory {
     }
 
     abstract Logger getLogger();
+    protected abstract boolean isEnabled();
     protected abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
     protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
     protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
     protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
 
-    void reset() {
+    final void reset() {
         factoryError = false;
+        resetInternal();
     }
 
-    void invalidate() {
+    protected void resetInternal() {
+    }
+
+    final void invalidate() {
         factoryError = true;
     }
 
-    boolean isInvalid() {
+    final boolean isInvalid() {
         return factoryError;
     }
 
