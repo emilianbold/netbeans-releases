@@ -304,13 +304,14 @@ public class Utilities {
     
     private static void writeMarkedFilesToFile (Collection<File> files, File dest) {
         // don't forget for content written before
-        String content = "";
+        StringBuilder content = new StringBuilder();
         if (dest.exists ()) {
-            content += ModuleDeactivator.readStringFromFile (dest);
+            content.append(ModuleDeactivator.readStringFromFile (dest));
         }
         
         for (File f : files) {
-            content += f.getAbsolutePath () + UpdateTracking.PATH_SEPARATOR;
+            content.append(f.getAbsolutePath ());
+            content.append(UpdateTracking.PATH_SEPARATOR);
         }
         
         if (content == null || content.length () == 0) {
@@ -325,7 +326,7 @@ public class Utilities {
         try {
             try {
                 fos = new FileOutputStream (dest);
-                is = new ByteArrayInputStream (content.getBytes());
+                is = new ByteArrayInputStream (content.toString().getBytes());
                 FileUtil.copy (is, fos);
             } finally {
                 if (is != null) is.close();
