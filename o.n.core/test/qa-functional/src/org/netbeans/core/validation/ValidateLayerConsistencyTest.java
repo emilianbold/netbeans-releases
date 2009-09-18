@@ -922,9 +922,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
                     Integer prior = definitionCountById.get(id);
                     definitionCountById.put(id, prior == null ? 1 : prior + 1);
-                } else {
+                } else if (!d.getPrimaryFile().hasExt("shadow")) {
                     warnings.add("Anomalous file " + d);
-                }
+                } // else #172453: BrokenDataShadow, OK
             }
         }
         for (FileObject shortcut : FileUtil.getConfigFile("Shortcuts").getChildren()) {
@@ -937,7 +937,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     String layers = Arrays.toString((URL[]) d.getPrimaryFile().getAttribute("layers"));
                     warnings.add(d.getPrimaryFile().getPath() + " " + layers + " useless since " + id + " is bound (somehow) in all keymaps");
                 }
-            } else {
+            } else if (!d.getPrimaryFile().hasExt("shadow")) {
                 warnings.add("Anomalous file " + d);
             }
         }
