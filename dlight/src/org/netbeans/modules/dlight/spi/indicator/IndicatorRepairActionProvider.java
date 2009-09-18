@@ -83,9 +83,19 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         this.targetToRepairFor = targetToRepairFor;
         // TODO: FIXME.
         // hotfix to avoid NPE ...
-        this.currentStatus = ValidationStatus.invalidStatus(configuration.getConfigurationOptions(false).getNoIndicatorDataProvidersMessage() == null ? getMessage("NoIndicatorDataProviderFound") : configuration.getConfigurationOptions(false).getNoIndicatorDataProvidersMessage()); // NOI18N
+
+
+        //hmm if we do not have indicator data providers registered in current context
+        //and the status is invalid - print status
+        //otherwise print select another data provider
         //if we have no indicator data provider - please provide some message : when it will work
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
+        this.currentStatus = providers == null || providers.isEmpty() ?  tool.validateIndicatorDataProviders(targetToRepairFor) : ValidationStatus.invalidStatus(getMessage("NoIndicatorDataProviderFound"));//NOI18N
+        if (providers == null || providers.isEmpty()){
+            if (!currentStatus.isKnown()){
+                currentStatus = ValidationStatus.invalidStatus(getMessage("IndicatorDataProviderNotFound"));
+            }
+        }
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
             if (!idp.getValidationStatus().isKnown() || (idp.getValidationStatus().isKnown() && idp.getValidationStatus().isInvalid())) {

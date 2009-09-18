@@ -86,7 +86,6 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         this.targetToValidateWith = targetToValidateWith;
         this.currentTool = tool;
         List<DataCollector<?>> collectors = configuration.getConfigurationOptions(false).getCollectors(currentTool);
-        List<DataCollector<?>> notSortedCollectors = configuration.getConfigurationOptions(true).getCollectors(currentTool);
         List<DataCollector<?>> toRepairList = new ArrayList<DataCollector<?>>();
         panelsList = new ArrayList<JPanel>();
         //get the first one
@@ -98,7 +97,12 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             JPanel p = new JPanel();
             p.setBorder(new EmptyBorder(10, 10, 10, 10));
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-            JEditorPane editorPane = UIUtilities.createJEditorPane(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NoCollectorsFound"), true);//NOI18N
+            ValidationStatus status = tool.validateDataCollectors(targetToValidateWith);
+            if (!status.isKnown()){
+                status = ValidationStatus.invalidStatus(NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled"));//NOI18N
+            }
+            JEditorPane editorPane = UIUtilities.createJEditorPane(status.getReason(), true);//
+                    //NbBundle.getMessage(EmptyDetailsViewPanel.class, "NoCollectorsFound"), true);//NOI18N
             p.add(editorPane);
             repairPanel.add(p);
             repairPanel.add(Box.createVerticalGlue());
