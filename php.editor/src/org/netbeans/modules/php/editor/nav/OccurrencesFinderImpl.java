@@ -74,9 +74,10 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
  */
 public class OccurrencesFinderImpl extends OccurrencesFinder {
     private Map<OffsetRange, ColoringAttributes> range2Attribs;
-
+    private int caretPosition;
     public void setCaretPosition(int position) {
         range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
+        this.caretPosition = position;
     }
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
@@ -91,7 +92,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         Preferences node = MarkOccurencesSettings.getCurrentNode();
 
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
-            for (OffsetRange r : compute((ParserResult) result, GsfUtilities.getLastKnownCaretOffset(result.getSnapshot(), event))) {
+            for (OffsetRange r : compute((ParserResult) result, caretPosition)) {
                 range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
             }
         }
