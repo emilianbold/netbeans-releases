@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -162,5 +163,24 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         }
     }
 
+    protected void changeProjectHost(File projectDir) throws Exception {
+        File nbproject = new File(projectDir, "nbproject");
+        assertTrue("file does not exist: " + projectDir.getAbsolutePath(), nbproject.exists());
+        File confFile = new File(nbproject, "configurations.xml");
+        assertTrue(confFile.exists());
+        String text = readFile(confFile);
+        String openTag = "<developmentServer>";
+        String closeTag = "</developmentServer>";
+        int start = text.indexOf(openTag);
+        start += openTag.length();
+        assertTrue(start >= 0);
+        int end = text.indexOf(closeTag);
+        assertTrue(end >= 0);
+        StringBuilder newText = new StringBuilder();
+        newText.append(text.substring(0, start));
+        newText.append(ExecutionEnvironmentFactory.toUniqueID(getTestExecutionEnvironment()));
+        newText.append(text.substring(end));
+        writeFile(confFile, newText);
+    }
 
 }
