@@ -49,6 +49,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.filesystems.FileChangeAdapter;
@@ -66,8 +67,11 @@ import org.openide.util.RequestProcessor;
  *
  * @author Radek Matous
  */
-public class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener {
+public final class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener {
     private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
+
+    public static final boolean ALLOW_BROKEN = Boolean.getBoolean("org.netbeans.modules.php.project.util.CopySupport.allowBroken"); // NOI18N
+
     private static final RequestProcessor COPY_SUPPORT_RP = new RequestProcessor("PHP file change handler (copy support)"); // NOI18N
     private static final int FILE_CHANGE_DELAY = 300; // ms
     private static final int PROPERTY_CHANGE_DELAY = 500; // ms
@@ -77,21 +81,25 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
     static final RequestProcessor.Task COPY_TASK = createCopyTask();
 
     final PhpProject project;
+    final PhpVisibilityQuery phpVisibilityQuery;
 
     // process property changes just once
     private final RequestProcessor.Task initTask;
 
-    private volatile boolean projectOpened;
+    private volatile boolean projectOpened = false;
+    // @GuardedBy(this)
+    private boolean fileChangeListenerRegistered = false;
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
     private FileSystem fileSystem;
     // @GuardedBy(this)
-    private FileChangeListener weakFileChangeListener;
+    private FileChangeListener fileChangeListener;
 
     private CopySupport(final PhpProject project) {
         assert project != null;
 
         this.project = project;
+        phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
         proxyOperationFactory = new ProxyOperationFactory(project);
         ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
 
@@ -164,30 +172,44 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         LOGGER.log(Level.FINE, "Copy support REGISTERING FS listener for project {0}", project.getName());
         assert Thread.holdsLock(this);
 
-        if (weakFileChangeListener != null) {
+        if (fileChangeListenerRegistered) {
             LOGGER.log(Level.FINE, "\t-> not needed for project {0} (already registered)", project.getName());
             return;
         }
-        try {
-            fileSystem = getSources().getFileSystem();
-            weakFileChangeListener = FileUtil.weakFileChangeListener(this, fileSystem);
-            fileSystem.addFileChangeListener(weakFileChangeListener);
-            LOGGER.log(Level.FINE, "\t-> registered for {0}", fileSystem.getDisplayName());
-        } catch (FileStateInvalidException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
+        if (ALLOW_BROKEN) {
+            assert fileChangeListener == null : "FS listener cannot yet exist for project " + project.getName();
+            try {
+                fileSystem = getSources().getFileSystem();
+                fileChangeListener = FileUtil.weakFileChangeListener(this, fileSystem);
+                fileSystem.addFileChangeListener(fileChangeListener);
+                LOGGER.log(Level.FINE, "\t-> NON-RECURSIVE listener registered for project {0}", project.getName());
+            } catch (FileStateInvalidException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        } else {
+            FileUtil.addRecursiveListener(this, FileUtil.toFile(getSources()));
+            LOGGER.log(Level.FINE, "\t-> RECURSIVE listener registered for project {0}", project.getName());
         }
+        fileChangeListenerRegistered = true;
     }
 
     private synchronized void unregisterFileChangeListener() {
         LOGGER.log(Level.FINE, "Copy support UNREGISTERING FS listener for project {0}", project.getName());
-        if (weakFileChangeListener == null) {
+        if (!fileChangeListenerRegistered) {
             LOGGER.log(Level.FINE, "\t-> not needed for project {0} (not registered)", project.getName());
         } else {
-            fileSystem.removeFileChangeListener(weakFileChangeListener);
-            LOGGER.log(Level.FINE, "\t-> unregistered for {0}", fileSystem.getDisplayName());
+            if (ALLOW_BROKEN) {
+                assert fileChangeListener != null : "FS listener must be known already for project " + project.getName();
+                fileSystem.removeFileChangeListener(fileChangeListener);
+                LOGGER.log(Level.FINE, "\t-> NON-RECURSIVE listener unregistered for project {0}", project.getName());
+            } else {
+                FileUtil.removeRecursiveListener(this, FileUtil.toFile(getSources()));
+                LOGGER.log(Level.FINE, "\t-> RECURSIVE listener unregistered for project {0}", project.getName());
+            }
             fileSystem = null;
-            weakFileChangeListener = null;
+            fileChangeListener = null;
         }
+        fileChangeListenerRegistered = false;
     }
 
     public void waitFinished() {
@@ -260,6 +282,10 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
     private FileObject getValidProjectSource(FileEvent fileEvent) {
         LOGGER.log(Level.FINEST, "Getting source file for project {0} from {1}", new Object[] {project.getName(), fileEvent});
         FileObject source = fileEvent.getFile();
+        if (!PhpProjectUtils.isVisible(phpVisibilityQuery, source)) {
+            LOGGER.finest("\t-> null (invisible source)");
+            return null;
+        }
         if (!CommandUtils.isUnderSources(project, source)) {
             LOGGER.finest("\t-> null (invalid source)");
             return null;

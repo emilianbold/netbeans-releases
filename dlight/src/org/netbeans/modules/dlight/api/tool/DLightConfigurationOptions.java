@@ -67,8 +67,6 @@ public interface DLightConfigurationOptions   {
 
     Collection<String> getActiveToolNames();
 
-    String getNoIndicatorDataProvidersMessage();
 
-    String getNoDataCollectorsMessage();
     
 }

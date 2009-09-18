@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.paralleladviser.codemodel.CodeModelUtils;
 import org.netbeans.modules.cnd.paralleladviser.hints.ParallelAdviserFileTaskFactory;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.ParallelAdviserTopComponent;
-import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -125,6 +124,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     private ParallelAdviserMonitor() {
         highLoadFinder = new CpuHighLoadIntervalFinder();
         unnecessaryThreadsFinder = new UnnecessaryThreadsIntervalFinder();
+        notificationTips = new ArrayList<Advice>();
     }
 
     public void startup() {
@@ -177,7 +177,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             }
 
             ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
-            hints.propertyChange(null);
+            if (hints != null) {
+                hints.propertyChange(null);
+            }
         }
     }
 
@@ -195,10 +197,6 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             highLoadFinder.update(dataRow);
 
             if (highLoadFinder.isHighLoadInterval()) {
-
-                DLightSession session = DLightManager.getDefault().getActiveSession();
-                InputOutput io = session.getInputOutput();
-
                 SunStudioDataCollector collector = new SunStudioDataCollector();
 
                 for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
@@ -335,7 +333,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
 
     private static class SunStudioDataCollector {
 
-        private DataProvider dataProvider;
+        private DataProvider dataProvider = null;
         private DataTableMetadata metadata;
 
         public SunStudioDataCollector() {
@@ -348,7 +346,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             DataModelScheme dataModel = DataModelSchemeProvider.getInstance().getScheme("model:functions"); //NOI18N
 
             DLightSession session = DLightManager.getDefault().getActiveSession();
-            dataProvider = session.createDataProvider(dataModel, metadata);
+            if (session != null) {
+                dataProvider = session.createDataProvider(dataModel, metadata);
+            }
         }
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
@@ -434,7 +434,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             DataModelScheme dataModel = DataModelSchemeProvider.getInstance().getScheme("model:functions"); //NOI18N
 
             DLightSession session = DLightManager.getDefault().getActiveSession();
-            dataProvider = session.createDataProvider(dataModel, metadata);
+            if (session != null) {
+                dataProvider = session.createDataProvider(dataModel, metadata);
+            }
         }
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {

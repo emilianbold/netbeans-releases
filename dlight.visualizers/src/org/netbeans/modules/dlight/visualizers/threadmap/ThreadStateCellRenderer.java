@@ -64,6 +64,7 @@ import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.util.Range;
+import org.openide.util.NbBundle;
 
 /**
  * @author Jiri Sedlacek
@@ -181,8 +182,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             long ms = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp()) - dataStart;
             StringBuilder buf = new StringBuilder();
             buf.append("<html>");// NOI18N
-            buf.append("Time ");// NOI18N
-            buf.append(TimeLineUtils.getMillisValue(ms));
+            buf.append(NbBundle.getMessage(ThreadStateCellRenderer.class, "StateColumnTimeTip", TimeLineUtils.getMillisValue(ms))); // NOI18N
             EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
             ThreadStateColumnImpl.fillMap(viewManager, state, aMap);
             ThreadStateColumnImpl.roundMap(aMap);
