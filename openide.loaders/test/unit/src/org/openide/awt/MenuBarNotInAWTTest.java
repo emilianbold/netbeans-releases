@@ -87,7 +87,9 @@ public class MenuBarNotInAWTTest extends NbTestCase {
         static int cnt;
 
         public MyLaF() {
-            assertTrue("Created only in AWT", EventQueue.isDispatchThread());
+            if (!Thread.currentThread().getName().contains("AWT-")) {
+                assertTrue("Created only in AWT", EventQueue.isDispatchThread());
+            }
             cnt++;
         }
 
