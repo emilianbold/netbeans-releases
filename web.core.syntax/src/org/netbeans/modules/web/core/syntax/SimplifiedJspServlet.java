@@ -61,12 +61,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -76,7 +74,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
