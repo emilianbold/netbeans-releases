@@ -217,7 +217,7 @@ public final class EntityManagerGenerator {
                 if(pus.length>1) {//searchh for best match
                     PersistenceUnit forAll=null;
                     PersistenceUnit forOne=null;
-                    for(int i=0;i<pus.length;i++) {
+                    for(int i=0;i<pus.length && forOne==null;i++) {
                         PersistenceUnit tmp=pus[i];
                         if(forAll ==null && !tmp.isExcludeUnlistedClasses()) forAll=tmp;//first match sutable for all entities in the project
                         if(tmp.isExcludeUnlistedClasses()) {
