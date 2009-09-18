@@ -927,7 +927,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 // XXX getRelationshipFieldType() does not work well when entity classes
                 // are not all generated to the same package - fixed in issue 139804
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
-                TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
+                TypeElement typeEl = copy.getElements().getTypeElement(typeName);
+                assert typeEl != null : "null TypeElement for \"" +typeName+ "\"";
+                TypeMirror fieldType = typeEl.asType();
                 if (role.isToMany()) {
                     // Use the collection type the user wants
                     TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionType.className());
