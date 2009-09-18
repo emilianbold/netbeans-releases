@@ -502,10 +502,6 @@ public class InstallSupportImpl {
             affectedFeatureImpls = null;
         }
         
-        //Issue #169588
-        //Clear cache and re-initialize it *here* as it usually takes a lot of time
-        UpdateManagerImpl.getInstance().clearCache();
-        UpdateManagerImpl.getInstance().getAvailableEagers();
     }
 
     public void doRestart (Restarter restarter, ProgressHandle progress/*or null*/) throws OperationException {
