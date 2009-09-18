@@ -129,7 +129,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();
-        toolConfiguration.addDataCollectorConfiguration(dcc);
+        toolConfiguration.addDataCollectorConfiguration(dtcc);
         // it's an indicator data provider as well!
         toolConfiguration.addIndicatorDataProviderConfiguration(dtcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(
