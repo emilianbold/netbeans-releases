@@ -371,11 +371,13 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if (RequestProcessor.getDefault().isRequestProcessorThread()) {
             loadRepositories();
 
-            if ((defaultRepoComputationPending)
-                    && (repositories.length == 1)
-                    && preselectSingleRepo) {
-                defaultRepo = repositories[0];
-                defaultRepoComputationPending = false;
+            if (defaultRepoComputationPending) {
+                if (repositories.length == 0) {
+                    defaultRepoComputationPending = false;
+                } else if ((repositories.length == 1) && preselectSingleRepo) {
+                    defaultRepo = repositories[0];
+                    defaultRepoComputationPending = false;
+                }
             }
 
             /* schedule display of list of repositories */
