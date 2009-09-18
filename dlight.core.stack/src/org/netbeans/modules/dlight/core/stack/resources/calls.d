@@ -32,10 +32,28 @@ profile-100hz
 }
 
 /* sched probes should catch thread in states other than running */
-sched:::sleep, sched:::on-cpu, sched:::off-cpu
+sched:::sleep
+/pid == $1/
+{
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, curthread->t_state, 7 /* LMS_SLEEP curthread->t_mstate*/, 0);
+    ustack();
+    printf("\n"); /* empty line indicates end of ustack */
+}
+
+/* sched probes should catch thread in states other than running */
+sched:::on-cpu
 /pid == $1/
 {
     printf("%d %d %d %d %d %d", ts(), cpu, tid, curthread->t_state, curthread->t_mstate, 0);
+    ustack();
+    printf("\n"); /* empty line indicates end of ustack */
+}
+
+/* sched probes should catch thread in states other than running */
+sched:::preempt
+/pid == $1/
+{
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, curthread->t_state, 8 /* LMS_WAIT_CPU curthread->t_mstate*/, 0);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
 }
