@@ -60,6 +60,8 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
@@ -858,6 +860,9 @@ public class RepositoryComboSupportTest {
                                   = new ConcurrentLinkedQueue<ProgressTest>();
         private volatile boolean listening;
         private volatile Throwable failure;
+        private Boolean[] threadFinished
+                                   = new Boolean[ThreadType.values().length];
+        private int numRunningThreads;
         private ProgressTest pendingSuspendingProgressTest;
         private boolean pendingSuspendingProgressTestResumeExecuted;
 
@@ -890,7 +895,7 @@ public class RepositoryComboSupportTest {
          * thread (unless the test failed). This allows that other tests
          * being executed in other threads finish before next tests
          * for the current are started.
-         * 
+         *
          * @param  progressState
          * @param  threadType
          * @see  #scheduleResumingTest
@@ -929,7 +934,7 @@ public class RepositoryComboSupportTest {
         }
 
         /**
-         * 
+         *
          * @param progressState
          * @param threadType
          */
@@ -939,7 +944,7 @@ public class RepositoryComboSupportTest {
         }
 
         /**
-         * 
+         *
          * @param progressState
          * @param threadType
          * @param additionalTest
@@ -960,6 +965,12 @@ public class RepositoryComboSupportTest {
         }
 
         private void scheduleTest(ProgressTest progressTest) {
+            if (progressTest.progressState == Progress.THREAD_PROGRESS_DONE) {
+                throw new IllegalArgumentException(
+                        "Test for progress " + Progress.THREAD_PROGRESS_DONE
+                        + " cannot be scheduled.");
+            }
+
             progressTestQueue.add(progressTest);
         }
 
@@ -991,14 +1002,16 @@ public class RepositoryComboSupportTest {
                                        + getCurrThreadType().getDisplayName() + " thread.");
                     pendingSuspendingProgressTest = null;
                 } else {
-                    progressTest = progressTestQueue.poll();
+                    boolean skip = false;
+                    if (comboSupport.getProgress() == Progress.THREAD_PROGRESS_DONE) {
+                        progressTest = progressTestQueue.peek();
+                        skip = (progressTest == null)
+                               || (progressTest.threadType != getCurrThreadType());
+                    }
+                    progressTest = skip ? null : progressTestQueue.poll();
                     System.out.println("Polled a test (" + progressTest + ") by "
                                        + getCurrThreadType().getDisplayName() + " thread.");
-                    if (progressTest == null) {
-                        System.out.println(" - it's <null> - quit");
-                        return;
-                    }
-                    if (progressTest.isSuspending()) {
+                    if ((progressTest != null) && progressTest.isSuspending()) {
                         assert pendingSuspendingProgressTest == null;
                         if (getCurrThreadType() != progressTest.threadType) {
                             pendingSuspendingProgressTest = progressTest;
@@ -1011,7 +1024,9 @@ public class RepositoryComboSupportTest {
                     }
                 }
 
-                if (progressTest.isSuspending()) {
+                if (progressTest == null) {
+                    //do nothing
+                } else if (progressTest.isSuspending()) {
                     if (isPendingSuspendingTest && pendingSuspendingProgressTestResumeExecuted) {
                         System.out.println(
                                 " - it's a suspending thread but the corresponding"
@@ -1035,7 +1050,8 @@ public class RepositoryComboSupportTest {
 
                 performTest(progressTest);
 
-                if (isLastTest || (failure != null)) {
+                if (isLastTest && (numRunningThreads == 0)
+                        || (failure != null)) {
                     System.out.println("   - IS LAST TEST - WILL RESUME (if there is a test thread suspended)");
                     stopListening();
                     resumeSuspendedThread();
@@ -1054,15 +1070,49 @@ public class RepositoryComboSupportTest {
 
         private void performTest(ProgressTest progressTest) {
             try {
-                assertSame(progressTest.progressState, comboSupport.getProgress());
-                assertSame(progressTest.threadType,    getCurrThreadType());
-                if (progressTest.additionalTests != null) {
-                    for (Runnable additionalTest : progressTest.additionalTests) {
-                        additionalTest.run();
+                final ThreadType currThreadType = getCurrThreadType();
+                final int threadTypeIndex = currThreadType.ordinal();
+
+                if (comboSupport.getProgress() == Progress.THREAD_PROGRESS_DONE) {
+                    if (threadFinished[threadTypeIndex] == FALSE) {
+                        numRunningThreads--;
+                    }
+                    threadFinished[threadTypeIndex] = TRUE;
+
+                    /*
+                     * if (progressTest == null)
+                     *     OK
+                     * else
+                     *     the test below will fail
+                     */
+                } else {
+                    if (threadFinished[threadTypeIndex] == TRUE) {
+                        fail("Thread " + currThreadType + " has been already marked as finished.");
+                    }
+                    if (threadFinished[threadTypeIndex] == null) {
+                        numRunningThreads++;
+                    }
+                    threadFinished[threadTypeIndex] = FALSE;
+
+                    if (progressTest == null) {
+                        fail("No more progress updates were expected for "
+                             + currThreadType.getDisplayName() + " thread, "
+                             + "but got " + comboSupport.getProgress() + '.');
+                    }
+                }
+
+                if (progressTest != null) {
+                    assertSame(progressTest.progressState, comboSupport.getProgress());
+                    assertSame(progressTest.threadType,    getCurrThreadType());
+                    if (progressTest.additionalTests != null) {
+                        for (Runnable additionalTest : progressTest.additionalTests) {
+                            additionalTest.run();
+                        }
                     }
                 }
             } catch (Throwable t) {
-                handleException(t, progressTest.callStack);
+                handleException(t, (progressTest != null) ? progressTest.callStack
+                                                          : null);
             }
         }
 
@@ -1075,7 +1125,8 @@ public class RepositoryComboSupportTest {
             try {
                 suspendedThreadLock.wait();
             } catch (InterruptedException ex) {
-                handleException(ex, progressTest.callStack);
+                handleException(ex, (progressTest != null) ? progressTest.callStack
+                                                           : null);
             }
         }
 
@@ -1086,9 +1137,11 @@ public class RepositoryComboSupportTest {
 
         private void handleException(Throwable t,
                                      StackTraceElement[] callersStackTrace) {
-            synchronized (this) {
-                if (failure == null) {
+            if (failure == null) {
+                if (callersStackTrace != null) {
                     failure = addCallersCallStack(t, callersStackTrace); //store information about the exception
+                } else {
+                    failure = t;
                 }
             }
         }

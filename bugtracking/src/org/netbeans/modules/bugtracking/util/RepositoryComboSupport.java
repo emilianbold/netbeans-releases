@@ -398,6 +398,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                     updateProgress(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO);
                 }
             }
+
+            notifyProgressDone();
         } else {
             doGuiJob();
         }
@@ -652,11 +654,26 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         WILL_SELECT_DEFAULT_REPO,
         SELECTED_DEFAULT_REPO,
         WILL_DISPLAY_REPOS_AND_SELECT_DEFAULT,
-        DISPLAYED_REPOS_AND_SELECTED_DEFAULT
+        DISPLAYED_REPOS_AND_SELECTED_DEFAULT,
+        THREAD_PROGRESS_DONE;
     }
 
     private final ThreadLocal<Progress> progress = new ThreadLocal<Progress>();
     private volatile ChangeListener progressListener;
+
+    private void notifyProgressDone() {
+        if (progressListener != null) {
+            assert !EventQueue.isDispatchThread();
+
+            Runnable doneNotifier = new Runnable() {
+                public void run() {
+                    updateProgress(Progress.THREAD_PROGRESS_DONE);
+                }
+            };
+            doneNotifier.run();
+            EventQueue.invokeLater(doneNotifier);
+        }
+    }
 
     private void updateProgress(Progress progress) {
         this.progress.set(progress);
