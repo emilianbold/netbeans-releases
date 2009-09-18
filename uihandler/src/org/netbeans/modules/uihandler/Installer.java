@@ -51,6 +51,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -1909,23 +1910,49 @@ public class Installer extends ModuleInstall implements Runnable {
             d = null;
         }
 
+        private void procesLog(LogRecord r, LinkedList<Node> nodes, StringBuilder builder){
+            Node n = UINode.create(r);
+            nodes.add(n);
+            try {
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                int offset = builder.length();
+                n.setValue("offset", offset); // NOI18N
+                LogRecords.write(os, r);
+                builder.append(os.toString("UTF-8"));
+            } catch (IOException ex) {
+                Installer.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+
+        private class DataLoader implements Runnable{
+            private final StringBuilder panelContent = new StringBuilder();
+            private final AbstractNode root = new AbstractNode(new Children.Array());
+            public void run() {
+                if (EventQueue.isDispatchThread()){
+                    panel.setText(panelContent.toString());
+                    panel.getExplorerManager().setRootContext(root);
+                } else {
+                    LinkedList<Node> nodes = new LinkedList<Node>();
+                    root.setName("root"); // NOI18N
+                    root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size() + 1, new Date()));
+                    root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
+                    for (LogRecord r : recs) {
+                        procesLog(r, nodes, panelContent);
+                    }
+                    procesLog(getUserData(false, reportPanel), nodes, panelContent);
+                    root.getChildren().add(nodes.toArray(new Node[0]));
+                    EventQueue.invokeLater(this);
+                }
+            }
+        }
+        
         protected void viewData() {
             if (panel == null) {
+                TimeToFailure.logAction();
                 panel = new SubmitPanel();
-                AbstractNode root = new AbstractNode(new Children.Array());
-                root.setName("root"); // NOI18N
-                List<LogRecord> shownRecs = new ArrayList<LogRecord>(recs);
-                shownRecs.add(getUserData(false, reportPanel));
-                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", shownRecs.size(), new Date()));
-                root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-                LinkedList<Node> nodes = new LinkedList<Node>();
-                for (LogRecord r : shownRecs) {
-                    Node n = UINode.create(r);
-                    nodes.add(n);
-                    panel.addRecord(r, n);
-                }
-                root.getChildren().add(nodes.toArray(new Node[0]));
-                panel.getExplorerManager().setRootContext(root);
+                RequestProcessor.getDefault().post(new DataLoader());
+                panel.setText(NbBundle.getBundle(Installer.class).getString("LOADING_TEXT"));
+                panel.getExplorerManager().setRootContext(Node.EMPTY);
             }
             DialogDescriptor viewDD;
             if (!report){
