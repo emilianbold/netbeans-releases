@@ -131,7 +131,7 @@ abstract class FileOperationFactory {
 
     protected final boolean isSourceFileValid(FileObject source) {
         assert CommandUtils.isUnderSources(project, source) : String.format("File %s not underneath sources of project %s", getPath(source), project.getName());
-        return !isNbProjectMetadata(source) && phpVisibilityQuery.isVisible(source);
+        return !isNbProjectMetadata(source) && PhpProjectUtils.isVisible(phpVisibilityQuery, source);
     }
 
     boolean isNbProjectMetadata(FileObject fo) {
