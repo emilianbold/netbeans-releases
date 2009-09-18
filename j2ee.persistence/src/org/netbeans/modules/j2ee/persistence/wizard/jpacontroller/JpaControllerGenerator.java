@@ -87,7 +87,7 @@ public class JpaControllerGenerator {
     public static void generateJpaController(Project project, final String entityClass, final String controllerClass, String exceptionPackage, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
         final boolean isInjection = Util.isContainerManaged(project); 
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
-        String persistenceUnit = getPersistenceUnitAsString(project);
+        String persistenceUnit = getPersistenceUnitAsString(project, entityClass);
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
 
         final List<ElementHandle<ExecutableElement>> idGetter = new ArrayList<ElementHandle<ExecutableElement>>();
@@ -144,7 +144,7 @@ public class JpaControllerGenerator {
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, getPersistenceVersion(project));
     }
     
-    private static String getPersistenceUnitAsString(Project project) throws IOException {
+    private static String getPersistenceUnitAsString(Project project, String entity) throws IOException {
         String persistenceUnit = null;
         PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
         if (persistenceScopes.length > 0) {
@@ -154,6 +154,40 @@ public class JpaControllerGenerator {
                 PersistenceUnit units[] = persistence.getPersistenceUnit();
                 if (units.length > 0) {
                     persistenceUnit = units[0].getName();
+                    if(units.length>1) {//find best
+                        String forAll=null;
+                        String forOne=null;
+                        for(int i=0;i<units.length && forOne==null;i++) {
+                            PersistenceUnit tmp=units[i];
+                            if(forAll ==null && !tmp.isExcludeUnlistedClasses()) forAll=tmp.getName();//first match sutable for all entities in the project
+                            if(tmp.isExcludeUnlistedClasses()) {
+                                String []classes = tmp.getClass2();
+                                for(String clas:classes){
+                                    if(entity.equals(clas)) {
+                                        forOne = tmp.getName();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        //try again with less restrictions (i.e. for j2se even without exclude-unlisted-classes node, it's by default true)
+                        if(forOne==null && forAll!=null){//there is exist pu without exclude-unlisted-classes
+                            for(int i=0;i<units.length && forOne==null;i++) {
+                                PersistenceUnit tmp=units[i];
+                                if(!tmp.isExcludeUnlistedClasses()) {//verify only pu without exclude-unlisted-classes as all other was examined in previos try
+                                    String []classes = tmp.getClass2();
+                                    for(String clas:classes){
+                                        if(entity.equals(clas)) {
+                                            forOne = tmp.getName();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        persistenceUnit = forOne != null ? forOne : (forAll != null ? forAll : persistenceUnit);
+                    }
                 }
             }
         }
