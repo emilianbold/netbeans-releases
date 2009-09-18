@@ -133,9 +133,10 @@ public class RemoteProcReader extends ProcReaderImpl {
                 ss.doClose();
             }
 
+        } catch (IOException ex) {
+        } finally {
             // To allow others use setArguments...
             npb.setCommandLine(null);
-        } catch (IOException ex) {
         }
 
         return result;
