@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -73,10 +74,10 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
  */
 public class OccurrencesFinderImpl extends OccurrencesFinder {
     private Map<OffsetRange, ColoringAttributes> range2Attribs;
-    private static OffsetRange cachedReferenceSpan = OffsetRange.NONE;
-
+    private int caretPosition;
     public void setCaretPosition(int position) {
         range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
+        this.caretPosition = position;
     }
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
@@ -91,7 +92,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         Preferences node = MarkOccurencesSettings.getCurrentNode();
 
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
-            for (OffsetRange r : compute((ParserResult) result, GsfUtilities.getLastKnownCaretOffset(result.getSnapshot(), event))) {
+            for (OffsetRange r : compute((ParserResult) result, caretPosition)) {
                 range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
             }
         }
@@ -107,33 +108,45 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, offset) : null;
         OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
-            if (!cachedReferenceSpan.containsInclusive(offset)) {
-                Model model = ((PHPParseResult) parameter).getModel();
-                OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
-                Occurence caretOccurence = occurencesSupport.getOccurence();
-                if (caretOccurence != null) {
-                    ModelElement decl = caretOccurence.getDeclaration();
-                    if (decl != null && !decl.getPhpKind().equals(PhpKind.INCLUDE)) {
-                        Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
-                        for (Occurence occurence : allOccurences) {
-                            result.add(occurence.getOccurenceRange());
-                        }
-                    }
-                } else {
-                    CodeMarker codeMarker = occurencesSupport.getCodeMarker();
-                    if (codeMarker != null) {
-                        Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
-                        for (CodeMarker marker : allMarkers) {
-                            result.add(marker.getOffsetRange());
-                        }
+            Model model = ((PHPParseResult) parameter).getModel();
+            OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
+            Occurence caretOccurence = occurencesSupport.getOccurence();
+            if (caretOccurence != null) {
+                ModelElement decl = caretOccurence.getDeclaration();
+                if (decl != null && !decl.getPhpKind().equals(PhpKind.INCLUDE)) {
+                    Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
+                    for (Occurence occurence : allOccurences) {
+                        result.add(occurence.getOccurenceRange());
                     }
                 }
-            } else {
-                result.add(cachedReferenceSpan);
+            } 
+        } else {
+            OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
+            if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
+                Model model = ((PHPParseResult) parameter).getModel();
+                OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
+                CodeMarker codeMarker = occurencesSupport.getCodeMarker();
+                if (codeMarker != null) {
+                    Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
+                    for (CodeMarker marker : allMarkers) {
+                        result.add(marker.getOffsetRange());
+                    }
+                }
             }
         }
-        cachedReferenceSpan = referenceSpan;
         return result;
+    }
+
+    private static OffsetRange getReferenceSpanForCodeMarkers(TokenSequence<PHPTokenId> ts, final int caretOffset) {
+        ts.move(caretOffset);
+        if (ts.moveNext()) {
+            Token<PHPTokenId> token = ts.token();
+            PHPTokenId id = token.id();
+            if (id.equals(PHPTokenId.PHP_FUNCTION) || id.equals(PHPTokenId.PHP_RETURN)) {
+                return new OffsetRange(ts.offset(), ts.offset() + token.length());
+            }
+        }
+        return OffsetRange.NONE;
     }
 
     @Override
