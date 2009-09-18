@@ -277,7 +277,7 @@ public class SourceAnalyser {
 
     static class UsagesVisitor extends TreeScanner<Void,Map<Pair<String,String>,Data>> {
         
-        enum State {EXTENDS, IMPLEMENTS, GT, OTHER};
+        enum State {EXTENDS, IMPLEMENTS, GT, OTHER, IMPORT, PACKAGE_ANN};
         
         private final Stack<Pair<String,String>> activeClass;
         private JavaFileManager manager;
@@ -293,7 +293,9 @@ public class SourceAnalyser {
         private final Set<? super ElementHandle<TypeElement>> newTypes;
         private final Set<String> imports;
         private final Set<String> staticImports;
+        private final Set<Pair<String,ClassIndexImpl.UsageType>> packageAnnotations;
         private final Set<CharSequence> importIdents;
+        private final Set<CharSequence> packageAnnotationIdents;
         private final boolean virtual;
         private final boolean storeIndex;
         private boolean isStaticImport;
@@ -315,6 +317,8 @@ public class SourceAnalyser {
             this.imports = new HashSet<String> ();
             this.staticImports = new HashSet<String> ();
             this.importIdents = new HashSet<CharSequence>();
+            this.packageAnnotationIdents = new HashSet<CharSequence>();
+            this.packageAnnotations = new HashSet<Pair<String, ClassIndexImpl.UsageType>>();
             this.jt = jt;
             this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
@@ -341,6 +345,8 @@ public class SourceAnalyser {
             this.imports = new HashSet<String> ();
             this.staticImports = new HashSet<String>();
             this.importIdents = new HashSet<CharSequence>();
+            this.packageAnnotationIdents = new HashSet<CharSequence>();
+            this.packageAnnotations = new HashSet<Pair<String, ClassIndexImpl.UsageType>>();
             this.jt = jt;
             this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
@@ -375,36 +381,67 @@ public class SourceAnalyser {
 
         @Override
         public Void visitCompilationUnit(CompilationUnitTree node, Map<Pair<String,String>, Data> p) {
-            super.visitCompilationUnit(node, p);
-            if (!imports.isEmpty()) {
+            State oldState = state;
+            try {
+                state = State.PACKAGE_ANN;
+                scan(node.getPackageAnnotations(),p);
+                scan(node.getPackageName(),p);
+                state = State.IMPORT;
+                scan(node.getImports(),p);
+            } finally {
+                state=oldState;
+            }
+            scan(node.getTypeDecls(),p);
+
+            String className = null;
+            if (!imports.isEmpty() || !staticImports.isEmpty()) {
                 //Empty file
-                String className = getResourceName(node);
+                className = getResourceName(node);
                 if (className != null) {
                     final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);                            
                     final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
                     for (String s : imports) {
                         addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    }
-                    imports.clear();
+                    }                    
                     for (String s : staticImports) {
                         addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         addUsage(name, s, p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
                         addUsage(name, s, p, ClassIndexImpl.UsageType.FIELD_REFERENCE);
-                    }
-                    staticImports.clear();
+                    }                    
                     for (CharSequence s : importIdents) {
                         addIdent(name, s, p, false);
-                    }
-                    importIdents.clear();
+                    }                    
                 }
+                imports.clear();
+                staticImports.clear();
+                importIdents.clear();
             }
+
+            if (!packageAnnotations.isEmpty()) {
+                if (className == null) {
+                    className = getResourceName(node);
+                }
+                if (className != null) {
+                    final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
+                    final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
+                    for (Pair<String,ClassIndexImpl.UsageType> usage : packageAnnotations) {
+                        addUsage(name, usage.first, p, usage.second);
+                    }
+                    for (CharSequence ident : packageAnnotationIdents) {
+                        addIdent(name, ident, p, false);
+                    }
+                }
+                packageAnnotations.clear();
+                packageAnnotationIdents.clear();
+            }
+            
             return null;
         }
 
         public @Override Void visitMemberSelect(final MemberSelectTree node,  final Map<Pair<String,String>, Data> p) {
             handleVisitIdentSelect (((JCTree.JCFieldAccess)node).sym, node.getIdentifier(), p);
             State oldState = this.state;
-            this.state = State.OTHER;
+            this.state = (this.state == State.IMPORT || state == State.PACKAGE_ANN) ? state : State.OTHER;
             Void ret = super.visitMemberSelect (node, p);
             this.state = oldState;
             return ret;
@@ -473,18 +510,58 @@ public class SourceAnalyser {
                 }
             }
             else {
-                importIdents.add(name);
-                if (sym != null && (sym.getKind().isClass() || sym.getKind().isInterface())) {            
-                    final String className = encodeClassName(sym);
-                    if (className != null) {
-                        if (this.isStaticImport) {
-                            this.staticImports.add(className);                        
-                        }
-                        else {
-                            this.imports.add(className);
+                if (state == State.IMPORT) {
+                    importIdents.add(name);
+                    if (sym != null && (sym.getKind().isClass() || sym.getKind().isInterface())) {
+                        final String className = encodeClassName(sym);
+                        if (className != null) {
+                            if (this.isStaticImport) {
+                                this.staticImports.add(className);
+                            }
+                            else {
+                                this.imports.add(className);
+                            }
                         }
                     }
                 }
+                else if (state == State.PACKAGE_ANN) {
+                    packageAnnotationIdents.add(name);
+                    if (sym != null) {
+                        if (sym.kind == Kinds.ERR) {
+                            final Symbol owner = sym.getEnclosingElement();
+                            if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                                final String className = encodeClassName(owner);
+                                if (className != null) {
+                                    packageAnnotations.add (Pair.of(className,ClassIndexImpl.UsageType.TYPE_REFERENCE));
+                                }
+                            }
+                        }
+                        if (sym.getKind().isClass() || sym.getKind().isInterface()) {
+                            final String className = encodeClassName(sym);
+                            if (className != null) {
+                                packageAnnotations.add (Pair.of(className,ClassIndexImpl.UsageType.TYPE_REFERENCE));
+                            }
+                        }
+                        else if (sym.getKind().isField()) {
+                            final Symbol owner = sym.getEnclosingElement();
+                            if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                                final String className = encodeClassName(owner);
+                                if (className != null) {
+                                    packageAnnotations.add (Pair.of(className,ClassIndexImpl.UsageType.FIELD_REFERENCE));
+                                }
+                            }
+                        }
+                        else if (sym.getKind() == ElementKind.CONSTRUCTOR || sym.getKind() == ElementKind.METHOD) {
+                            final Symbol owner = sym.getEnclosingElement();
+                            if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                                final String className = encodeClassName(owner);
+                                if (className != null) {
+                                    packageAnnotations.add(Pair.of(className,ClassIndexImpl.UsageType.METHOD_REFERENCE));
+                                }
+                            }
+                        }
+                    }
+                }                
             }
         }
         
