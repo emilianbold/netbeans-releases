@@ -707,7 +707,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         
         List<URL> urls = new ArrayList<URL>();
-        boolean atLeastOne = false;
         Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements ()) {
             URL u = en.nextElement();
@@ -722,8 +721,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             if (module == null) continue;
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
             if (layer == null) continue;
-            
-            atLeastOne = true;
             URL layerURL = new URL(u, "../" + layer);
             urls.add(layerURL);
         }
