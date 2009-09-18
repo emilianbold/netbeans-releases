@@ -652,8 +652,13 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 boolean cellHasFocus) {
             // #89393: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
-
-            setText(((JavaPlatform)value).getDisplayName());
+            JavaPlatform jp = (JavaPlatform)value;
+            //#171354 weird null value coming on mac..
+            if (jp != null) {
+                setText(jp.getDisplayName());
+            } else {
+                setText("");
+            }
 
             if ( isSelected ) {
                 setBackground(list.getSelectionBackground());
