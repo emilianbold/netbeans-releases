@@ -80,17 +80,34 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             final boolean copyComments,
             final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq) {
-        this(info, copyComments, resolveImports, seq, info.getTrees().getSourcePositions());
+        this(info, copyComments, resolveImports, seq, info.getCompilationUnit());
     }
 
-    public TranslateIdentifier(final CompilationInfo info, 
-            final boolean copyComments, 
+    public TranslateIdentifier(final CompilationInfo info,
+            final boolean copyComments,
+            final boolean resolveImports,
+            final TokenSequence<JavaTokenId> seq,
+            final CompilationUnitTree cut) {
+        this(info, copyComments, resolveImports, seq, cut, info.getTrees().getSourcePositions());
+    }
+
+    public TranslateIdentifier(final CompilationInfo info,
+            final boolean copyComments,
             final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq,
             final SourcePositions positions) {
+        this(info, copyComments, resolveImports, seq, info.getCompilationUnit(), positions);
+    }
+
+    private TranslateIdentifier(final CompilationInfo info,
+            final boolean copyComments, 
+            final boolean resolveImports,
+            final TokenSequence<JavaTokenId> seq,
+            final CompilationUnitTree cut,
+            final SourcePositions positions) {
         this.info = info;
         this.make = info instanceof WorkingCopy ? ((WorkingCopy) info).getTreeMaker() : null;
-        this.unit = info.getCompilationUnit();
+        this.unit = cut;
         this.seq = seq;
         this.copyComments = copyComments;
         this.resolveImports = resolveImports;
