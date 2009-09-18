@@ -221,7 +221,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         if (filter == null) {
             return;
         }
-        endTimeSpinner.setValue((long)(filter.getInterval().getEnd()/NANOSECONDS_PER_SECOND));
+        endTimeSpinner.setValue((filter.getInterval().getEnd() / NANOSECONDS_PER_SECOND));
         startTimeSpinner.setValue((long)filter.getInterval().getStart()/NANOSECONDS_PER_SECOND);
         
     }
