@@ -43,21 +43,16 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.URI;
 import java.util.List;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
 import org.openide.awt.NotificationDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -77,34 +72,25 @@ public class KenaiNotificationListener implements PropertyChangeListener {
     }
 
     private void handleVCSNotification(final VCSKenaiNotification notification) {
-        if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
+        if(notification.getService() != VCSKenaiSupport.Service.VCS_HG) {
             return;
         }
         rp.post(new Runnable() {
             public void run() {
-                URI uri = notification.getUri();
-                String notificationUrl = uri.toString();
+                File projectDir = notification.getProjectDirectory();
+                if(!Mercurial.getInstance().isManaged(projectDir)) {
+                    assert false : "project at " + projectDir + " notified, yet not versioned.";
+                    return;
+                }
+                
+                File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(projectDir);
+                List<VCSKenaiModification> modifications = notification.getModifications();
 
-                Project projects[] = OpenProjects.getDefault().getOpenProjects();
-                for (Project project : projects) {
-                    File root = FileUtil.toFile(project.getProjectDirectory());
-                    if(!Mercurial.getInstance().isManaged(root)) {
-                        continue;
-                    }
-
-                    String repositoryUrl = HgUtils.getRemoteRepository(root);
-
-                    if(repositoryUrl.equals(notificationUrl)) {
-                        File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(root);
-                        List<VCSKenaiModification> modifications = notification.getModifications();
-
-                        for (File file : files) {
-                            for (VCSKenaiModification modification : modifications) {
-                                String resource = modification.getResource();
-                                if(file.equals(new File(root, resource))) {
-                                    notifyChange(file, notification, modification);
-                                }
-                            }
+                for (File file : files) {
+                    for (VCSKenaiModification modification : modifications) {
+                        String resource = modification.getResource();
+                        if(file.equals(new File(projectDir, resource))) {
+                            notifyChange(file, notification, modification);
                         }
                     }
                 }
@@ -112,7 +98,8 @@ public class KenaiNotificationListener implements PropertyChangeListener {
         });
 
     }
-    
+
+    // XXX unify with svn
     private void notifyChange(File file, VCSKenaiNotification notification, VCSKenaiModification modification) {
         notifyFileChange(file, notification.getUri().toString(), modification.getId());
     }

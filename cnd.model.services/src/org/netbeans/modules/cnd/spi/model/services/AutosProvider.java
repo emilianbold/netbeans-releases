@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common.spi;
+package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Set;
 import javax.swing.text.StyledDocument;

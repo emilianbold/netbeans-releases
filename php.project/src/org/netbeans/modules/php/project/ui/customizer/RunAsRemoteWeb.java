@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import java.awt.event.ItemEvent;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
@@ -51,6 +52,7 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
@@ -166,9 +168,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 remoteUploadConvertor));
 
         // upload directory hint
-        remoteConnectionComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                updateRemoteConnectionHint();
+        remoteConnectionComboBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    updateRemoteConnectionHint();
+                }
             }
         });
         uploadDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {

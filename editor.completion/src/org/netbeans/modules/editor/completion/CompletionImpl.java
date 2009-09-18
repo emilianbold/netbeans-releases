@@ -200,7 +200,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private WeakReference<CompletionItem> lastSelectedItem = null;
     
     /** Ending offset of the recent autopopup modification. */
-    private int autoModEndOffset;
+    private int autoModEndOffset = -1;
     
     private boolean pleaseWaitDisplayed = false;
     private String completionShortcut = null;
@@ -347,9 +347,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             synchronized (this) {
                 localCompletionResult = completionResult;
             }
-            if ((completionAutoPopupTimer.isRunning() || localCompletionResult != null)
-                && (!layout.isCompletionVisible() || pleaseWaitDisplayed)
-                && e.getDot() != autoModEndOffset) {
+            if (autoModEndOffset >= 0 && e.getDot() != autoModEndOffset
+                    && (completionAutoPopupTimer.isRunning() || localCompletionResult != null)
+                    && (!layout.isCompletionVisible() || pleaseWaitDisplayed)) {
                 hideCompletion(false);
             }
 
@@ -776,6 +776,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called from any thread but it will be rescheduled into AWT.
      */
     public void showCompletion() {
+        autoModEndOffset = -1;
         showCompletion(true, false, false, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
 
@@ -815,7 +816,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * Can be called from any thread - is called synchronously
      * from the thread that finished last unfinished result.
      */
-    void requestShowCompletionPane(Result result) {
+    void requestShowCompletionPane(final Result result) {
         pleaseWaitTimer.stop();
         
         // Compute total count of the result sets
@@ -891,6 +892,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final boolean displayAdditionalItems = hasAdditionalItems;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
+                synchronized(this) {
+                    if (result != completionResult)
+                        return;
+                }
                 JTextComponent c = getActiveComponent();
                 int caretOffset = c.getSelectionStart();
                 // completionResults = null;
@@ -1450,6 +1455,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
 
         public void actionPerformed(ActionEvent e) {
+            autoModEndOffset = -1;
             showCompletion(true, false, false, queryType);
         }
     }

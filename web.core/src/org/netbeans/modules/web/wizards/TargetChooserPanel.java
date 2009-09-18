@@ -156,7 +156,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         
         String filename = gui.getTargetName();
         if (INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
-            templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TargetChooserPanel.class, "MSG_invalid_filename", filename)); // NOI18N
+                templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TargetChooserPanel.class, "MSG_invalid_filename")); // NOI18N
             return false;
         }
 

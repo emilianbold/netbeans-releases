@@ -238,6 +238,11 @@ public abstract class VCSKenaiSupport {
          * @return
          */
         public abstract String getAuthor();
+
+        /**
+         * Returns the netbeans projects directoru
+         */
+        public abstract File getProjectDirectory();
     }
 
     /**
