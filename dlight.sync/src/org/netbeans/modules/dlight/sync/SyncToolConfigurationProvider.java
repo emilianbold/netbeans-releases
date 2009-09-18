@@ -141,7 +141,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private List<DataCollectorConfiguration> initDataCollectorConfigurations() {
         List<DataCollectorConfiguration> result = new ArrayList<DataCollectorConfiguration>();
-
+        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
+        result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
         URL scriptUrl = getClass().getResource("resources/sync.d"); // NOI18N
 
         DTDCConfiguration dataCollectorConfiguration =
@@ -151,8 +152,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         dataCollectorConfiguration.setOutputPrefix("sync:"); // NOI18N
         result.add(dataCollectorConfiguration);
-        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
-        result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
+
         return result;
     }
 
