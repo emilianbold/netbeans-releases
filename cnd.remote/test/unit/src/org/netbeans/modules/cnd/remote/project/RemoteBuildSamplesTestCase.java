@@ -62,7 +62,7 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 
 
     @ForAllEnvironments
-    public void testBuildSampleArguments() throws Exception {
+    public void testBuildSampleArgumentsOnce() throws Exception {
         setupHost();
         setSyncFactory("scp");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
@@ -70,9 +70,21 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
         buildProject(makeProject);
     }
 
+    @ForAllEnvironments
+    public void testBuildSampleArgumentsTwice() throws Exception {
+        setupHost();
+        setSyncFactory("scp");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_02");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        System.err.printf("BUILDING FIRST TIME\n");
+        buildProject(makeProject);
+        System.err.printf("BUILDING SECOND TIME\n");
+        buildProject(makeProject);
+        System.err.printf("BUILDING THIRD TIME\n");
+        buildProject(makeProject);
+    }
+
     public static Test suite() {
         return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
     }
-
-
 }

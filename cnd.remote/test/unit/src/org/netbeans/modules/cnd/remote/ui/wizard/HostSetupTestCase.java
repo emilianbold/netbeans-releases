@@ -81,8 +81,7 @@ public class HostSetupTestCase extends RemoteTestBase {
                     found = true;
                     String csReferenceDir = rcFile.get(section, csReferenceName);
                     assertEquals("Directory differs for compiler set " + cs.getName() +
-                            " at " + mspec + " (" + execEnv + "): " +
-                            cs.getDirectory() + " should be " + csReferenceDir,
+                            " at " + mspec + " (" + execEnv + "): ",
                             csReferenceDir, cs.getDirectory());
                     break;
                 }
