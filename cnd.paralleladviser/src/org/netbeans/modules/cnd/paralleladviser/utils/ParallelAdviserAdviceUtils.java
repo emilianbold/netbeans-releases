@@ -86,17 +86,17 @@ public class ParallelAdviserAdviceUtils {
         URL bl = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_left.png");
         URL bm = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_middle.png");
 
-        String html = "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
+        String html =
+                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
                 "        <tr>" + // NOI18N
-                "            <td><img src=\"" + tl + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "            <td valign=\"top\" bgcolor=\"#c7e3e8\"><img src=\"" + tl + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
                 "            <td bgcolor=\"#c7e3e8\" colspan=\"2\" width=\"" + (width - 14) + "\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>" + title + "</b></td>" + // NOI18N
-                "            <td><img src=\"" + tr + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "            <td valign=\"top\" bgcolor=\"#c7e3e8\"><img src=\"" + tr + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
                 "        </tr>" + // NOI18N
                 "    </table>" + // NOI18N
                 "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
                 "        <tr>" + // NOI18N
                 "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>"; // NOI18N
-
         if (icon != null) {
             html += "            <td width=\"50\" style=\"margin:4px;\">" + // NOI18N
                     "                <img src=\"" + icon + "\">" + // NOI18N

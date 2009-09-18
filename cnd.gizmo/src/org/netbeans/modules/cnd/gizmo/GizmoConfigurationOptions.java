@@ -245,13 +245,5 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             }
         }
     }
-
-    public String getNoIndicatorDataProvidersMessage() {
-        //we can have indicators but they can be switched off because of what??
-        return null;
-    }
-
-    public String getNoDataCollectorsMessage() {
-        return null;
-    }
+  
 }

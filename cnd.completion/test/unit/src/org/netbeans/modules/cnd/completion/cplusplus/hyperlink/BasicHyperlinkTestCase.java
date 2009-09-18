@@ -609,6 +609,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ169750.cc", 5, 37, "IZ169750.cc", 5, 12);
     }
 
+    public void testIZ165961() throws Exception {
+        // IZ#165961 : Unresolved ids in construction with macros
+        performTest("IZ165961.cc", 9, 27, "IZ165961.cc", 9, 10);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
