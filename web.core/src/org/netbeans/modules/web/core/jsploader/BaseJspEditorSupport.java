@@ -519,13 +519,18 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
 
             if (dataObject instanceof JspDataObject &&
                     (mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) {
-                try {
-                    PaletteController pc = JspPaletteFactory.getPalette();
-                    instanceContent.add(pc);
-                } catch (IOException ioe) {
-                    //TODO exception handling
-                    ioe.printStackTrace();
-                }
+                //do not call palette creation in AWT, it can be quite slow
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            PaletteController pc = JspPaletteFactory.getPalette();
+                            instanceContent.add(pc);
+                        } catch (IOException ioe) {
+                            //TODO exception handling
+                            ioe.printStackTrace();
+                        }
+                    }
+                });
             }
         }
 
