@@ -66,14 +66,27 @@ final class LocalOperationFactory extends FileOperationFactory {
         super(project);
     }
 
+    @Override
+    protected boolean isEnabled() {
+        return isEnabled(true);
+    }
+
+    private boolean isEnabled(boolean verbose) {
+        boolean copySourcesEnabled = ProjectPropertiesSupport.isCopySourcesEnabled(project);
+        if (verbose) {
+            LOGGER.log(Level.FINE, "LOCAL copying enabled for project {0}: {1}", new Object[] {project.getName(), copySourcesEnabled});
+        }
+        return copySourcesEnabled;
+    }
+
     private boolean isEnabledAndValidConfig() {
-        if (isInvalid()) {
-            LOGGER.log(Level.FINE, "LOCAL copying invalid for project {0}", project.getName());
+        if (!isEnabled(false)) {
+            LOGGER.log(Level.FINE, "LOCAL copying not enabled for project {0}", project.getName());
             return false;
         }
-        boolean copySourcesEnabled = ProjectPropertiesSupport.isCopySourcesEnabled(project);
-        if (!copySourcesEnabled) {
-            LOGGER.log(Level.FINE, "LOCAL copying disabled for project {0}", project.getName());
+
+        if (isInvalid()) {
+            LOGGER.log(Level.FINE, "LOCAL copying invalid for project {0}", project.getName());
             return false;
         }
 
@@ -137,6 +150,7 @@ final class LocalOperationFactory extends FileOperationFactory {
                     }
                     LOGGER.log(Level.FINE, "Directory {0} created", target);
                 }
+                Boolean work = null;
                 String[] list = target.list();
                 if (list != null && target.list().length == 0) {
                     for (FileObject child : getAllChildren(source)) {
@@ -148,9 +162,10 @@ final class LocalOperationFactory extends FileOperationFactory {
                         if (!doCopy(child, target)) {
                             return false;
                         }
+                        work = true;
                     }
                 }
-                return true;
+                return work;
             }
         };
     }
