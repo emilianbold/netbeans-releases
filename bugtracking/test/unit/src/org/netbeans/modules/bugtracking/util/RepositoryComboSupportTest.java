@@ -548,6 +548,16 @@ public class RepositoryComboSupportTest {
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
+                progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                repository1,
+                                                                repository2,
+                                                                repository3),
+                                                        new SelectedItemTest(
+                                                                repository2));
             }
         });
     }
