@@ -169,15 +169,21 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         Project project = Templates.getProject(wizard);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         if (customPanel==null) {
-            if (sourceGroups.length == 0)
+            if (sourceGroups.length == 0) {
+                Sources sources = ProjectUtils.getSources(project);
+                sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
                 return Templates.createSimpleTargetChooser(project, sourceGroups);
-            else
+            }else {
                 return JavaTemplates.createPackageChooser(project, sourceGroups);
+            }
         } else {
-            if (sourceGroups.length == 0)
+            if (sourceGroups.length == 0) {
+                Sources sources = ProjectUtils.getSources(project);
+                sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
                 return Templates.createSimpleTargetChooser(project, sourceGroups, customPanel);
-            else
+            } else {
                 return JavaTemplates.createPackageChooser(project, sourceGroups, customPanel);
+            }
         }
     }
     
