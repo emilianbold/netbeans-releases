@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.cls" abbreviation="cls" contexts="php-code">
         <code>
 <![CDATA[class ${class_name} {
-    function __construct() {
-        ${cursor};
+    function ${__construct}() {
+        ${cursor}
     }
 }]]>
         </code>
@@ -73,7 +73,7 @@ ${cursor}]]>
 
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.echo" abbreviation="eco" contexts="php-code">
         <code>
-<![CDATA[echo("${message}");
+<![CDATA[echo "${message}";
 ${cursor}]]>
         </code>
     </codetemplate>
@@ -101,7 +101,7 @@ ${cursor}]]>
 
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.print.variable" abbreviation="prv" contexts="php-code">
         <code>
-<![CDATA[print("\$$${variable} = ". $$${variable});
+<![CDATA[print "\$$${variable} = ".$$${variable};
 ${cursor}]]>
         </code>
     </codetemplate>
@@ -109,7 +109,7 @@ ${cursor}]]>
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.if" abbreviation="if"  contexts="php-code">
         <code>
 <![CDATA[if (${condition}) {
-	${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -117,7 +117,7 @@ ${cursor}]]>
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.else" abbreviation="els" contexts="php-code">
         <code>
 <![CDATA[else {
-    ${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -125,7 +125,7 @@ ${cursor}]]>
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.elif" abbreviation="elif" contexts="php-code">
         <code>
 <![CDATA[elseif (${condition}) {
-	${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -133,12 +133,12 @@ ${cursor}]]>
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.switch" abbreviation="swi" contexts="php-code">
         <code>
 <![CDATA[switch ($$${variable}) {
-case ${value}:
-    ${cursor};
-    break;
+    case ${value}:
+        ${cursor}
+        break;
 
-default:
-    break;
+    default:
+        break;
 }]]>
         </code>
     </codetemplate>
@@ -146,7 +146,7 @@ default:
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.instanceof" abbreviation="inst" contexts="php-code">
         <code>
 <![CDATA[if ($$${variable} instanceof ${class}) {
-    ${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -154,24 +154,24 @@ default:
     <!-- add alternative abbrev 'function' -->
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.fnc" abbreviation="fnc" contexts="php-code">
         <code>
-<![CDATA[function ${function_name}() {
-    ${cursor};
+<![CDATA[function ${function_name}($$${param}) {
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
 
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.foreach" abbreviation="fore" contexts="php-code">
         <code>
-<![CDATA[foreach ($$${array_variable} as $$${variable}) {
-    ${cursor};
+<![CDATA[foreach ($$${array} as $$${value}) {
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
     
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.foreachkey" abbreviation="forek" contexts="php-code">
         <code>
-<![CDATA[foreach ($$${array_variable} as $$${number_variable} => $$${variable}) {
-    ${cursor};
+<![CDATA[foreach ($$${array} as $$${key} => $$${value}) {
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -179,17 +179,17 @@ default:
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.while" abbreviation="while" contexts="php-code">
         <code>
 <![CDATA[while (${condition}) {
-    ${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
 
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.itdir" abbreviation="itdir" contexts="php-code">
         <code>
-<![CDATA[$$${dirh} = opendir(${dirname});
+<![CDATA[$$${dirh} = opendir(${$dirname});
 if ($$${dirh}) {
     while ($$${dir_element} = readdir($$${dirh})) {
-        ${cursor};
+        ${cursor}
     }
     unset($$${dir_element});
     closedir($$${dirh});
@@ -199,8 +199,8 @@ if ($$${dirh}) {
 
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.arrayIterator" abbreviation="iter" contexts="php-code">
         <code>
-<![CDATA[for ($$${number_variable} = 0 ; $$${number_variable} < count($$${array_variable}) ; $$${number_variable}++) {
-    ${cursor};
+<![CDATA[for ($$${index} = 0; $$${index} < count($$${array}); $$${index}++) {
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -208,7 +208,7 @@ if ($$${dirh}) {
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.mySql.fa" abbreviation="my_fa" contexts="php-code">
         <code>
 <![CDATA[while ($$${row} = mysql_fetch_array($$${query})) {
-    ${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -216,7 +216,7 @@ if ($$${dirh}) {
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.mySql.fo" abbreviation="my_fo" contexts="php-code">
         <code>
 <![CDATA[while ($$${row} = mysql_fetch_object($$${query})) {
-    ${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -224,7 +224,7 @@ if ($$${dirh}) {
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.mySql.fr" abbreviation="my_fr" contexts="php-code">
         <code>
 <![CDATA[while ($$${row} = mysql_fetch_row($$${query})) {
-    ${cursor};
+    ${cursor}
 }]]>
         </code>
     </codetemplate>
@@ -233,7 +233,7 @@ if ($$${dirh}) {
         <code>
 <![CDATA[ob_start();
 	
-${cursor};
+${cursor}
 
 $$${contents} = ob_get_contents();
 ob_end_clean();]]>
@@ -254,7 +254,7 @@ ${cursor}]]>
         <code>
 <![CDATA[try {
     ${selection}${cursor}
-} catch (Exception $e) {
+} catch (${Exception} $$${exc}) {
 }
 ]]>
         </code>
@@ -279,4 +279,3 @@ ${selection}${cursor}// </editor-fold>
    </codetemplate>
 
 </codetemplates>
-
