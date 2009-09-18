@@ -83,9 +83,22 @@ import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerU
  * @author mbohm
  */
 public class JpaControllerGenerator {
-    
-    public static void generateJpaController(Project project, final String entityClass, final String controllerClass, String exceptionPackage, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
-        final boolean isInjection = Util.isContainerManaged(project); 
+
+
+    /**
+     *
+     * @param project
+     * @param entityClass
+     * @param controllerClass
+     * @param exceptionPackage
+     * @param pkg
+     * @param controllerFileObject
+     * @param embeddedPkSupport
+     * @param managed - controller classe is expectd to be properly managed (for example by specification in faces-congic) so it will support persistence annotations
+     * @throws IOException
+     */
+    public static void generateJpaController(Project project, final String entityClass, final String controllerClass, String exceptionPackage, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, boolean managed) throws IOException {
+        final boolean isInjection = Util.isContainerManaged(project) && managed;
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         String persistenceUnit = getPersistenceUnitAsString(project, entityClass);
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
@@ -618,7 +631,7 @@ public class JpaControllerGenerator {
                     
                     String BEGIN = isInjection ? "utx.begin();\nem = getEntityManager();" : "em = getEntityManager();\nem.getTransaction().begin();";
                     String COMMIT = isInjection ? "utx.commit();" : "em.getTransaction().commit();";
-                    String ROLLBACK = isInjection ? "try {\n" + 
+                    String ROLLBACK = isInjection ? "try {\n" +
                             "utx.rollback();" + 
                             "\n} catch (Exception re) {\n" +
                             "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
