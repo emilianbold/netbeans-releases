@@ -37,29 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.cnd.remote.project;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 
-public final class FutureException<T> {
-    private final Exception e;
-
-    public FutureException(final Exception e) {
-        this.e = e;
+    public RemoteBuildSamplesTestCase(String testName) {
+        super(testName);
     }
 
-    public Future<T> get() {
-        FutureTask<T> task = new FutureTask<T>(new Callable<T>() {
-
-            public T call() throws Exception {
-                throw e;
-            }
-        });
-
-        task.run();
-        
-        return task;
+    public RemoteBuildSamplesTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
     }
+
+
+    @ForAllEnvironments
+    public void testBuildSampleArguments() throws Exception {
+        setupHost();
+        setSyncFactory("scp");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject);
+    }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
+    }
+
+
 }

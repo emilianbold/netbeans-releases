@@ -78,7 +78,7 @@ class RfsSyncWorker extends ZipSyncWorker {
     }
 
     @Override
-    protected Zipper createZipper(File zipFile) {
+    protected Zipper createZipper(File zipFile) throws FileNotFoundException {
         return new Zipper(zipFile) {
             @Override
             protected InputStream getFileInputStream(File file) throws FileNotFoundException {
@@ -105,7 +105,7 @@ class RfsSyncWorker extends ZipSyncWorker {
 
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
-        lastParameters = new Parameters(localDir, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
+        lastParameters = new Parameters(topLocalDir, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
         super.synchronizeImpl(remoteDir);
     }
 

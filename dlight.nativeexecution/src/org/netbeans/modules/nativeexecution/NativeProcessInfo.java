@@ -150,20 +150,22 @@ public final class NativeProcessInfo {
     }
 
     public void addPathVariable(String name, String path, boolean prepend) {
+        char delimiter = ':';
         if (execEnv.isLocal() && Utilities.isWindows()) {
             name = name.toUpperCase();
+            delimiter = ';';
         }
 
         if (prepend) {
-            envVariables.put(name, "${" + name + "}:" + path); // NOI18N
+            envVariables.put(name, "${" + name + '}' + delimiter + path); // NOI18N
         } else {
-            envVariables.put(name, path + ":${" + name + "}"); // NOI18N
+            envVariables.put(name, path + delimiter +"${" + name + '}'); // NOI18N
         }
     }
 
     public void putAllEnvironmentVariables(Map<String, String> envs) {
-        for (String key : envs.keySet()) {
-            putEnvironmentVariable(key, envs.get(key));
+        for (Map.Entry<String, String> entry : envs.entrySet()) {
+            putEnvironmentVariable(entry.getKey(), entry.getValue());
         }
     }
 

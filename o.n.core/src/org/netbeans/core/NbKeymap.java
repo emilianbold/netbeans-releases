@@ -227,7 +227,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
         return bindings;
     }
     
-    private static List<KeyStroke> context; // accessed reflectively from org.netbeans.editor.MultiKeymap
+    private static final List<KeyStroke> context = new ArrayList<KeyStroke>(); // accessed reflectively from org.netbeans.editor.MultiKeymap
     
     private static void resetContext() {
         context.clear();
@@ -261,7 +261,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     private static final Logger LOG = Logger.getLogger(NbKeymap.class.getName());
     
     public NbKeymap() {
-        context = new ArrayList<KeyStroke>();
+        context.clear(); // may be useful in unit testing
     }
 
     public Action getDefaultAction() {

@@ -133,10 +133,11 @@ public class Utilities {
             }
         }
         Project p = ProjectManager.getDefault().findProject(projdir);
-        OpenProjects.getDefault().open(new Project[]{p}, false);
         if (p == null) {
-            throw new IOException("Project is not opened " + projectName);
+            throw new IOException("Project is not found " + projectName);
         }
+        OpenProjects.getDefault().open(new Project[]{p}, false);
+
         return projdir;
     }
 

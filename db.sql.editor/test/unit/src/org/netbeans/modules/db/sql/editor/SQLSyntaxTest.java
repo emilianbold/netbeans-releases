@@ -90,6 +90,22 @@ public class SQLSyntaxTest extends NbTestCase {
         assertTokens("'Frank\\'", SQLTokenContext.INCOMPLETE_STRING);
     }
 
+    public void testSlash() {
+        assertTokens("((EndTime-StartTime)/2)*5", new TokenID[] {
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.IDENTIFIER,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.IDENTIFIER,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.INT_LITERAL,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.INT_LITERAL,
+        });
+    }
+
     private void assertTokens(String m, TokenID... tokens) {
         Syntax s = new SQLSyntax();
         s.load(null, m.toCharArray(), 0, m.length(), true, m.length());

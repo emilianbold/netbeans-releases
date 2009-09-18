@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import org.netbeans.modules.html.editor.api.Utils;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.editor.completion.Completion;
