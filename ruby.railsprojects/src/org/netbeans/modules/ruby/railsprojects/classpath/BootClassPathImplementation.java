@@ -59,6 +59,7 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -156,8 +157,14 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             
             GemManager gemManager = platform.getGemManager();
             assert gemManager != null : "not null when RubyGems are installed";
-            Map<String, URL> gemUrls = gemManager.getGemUrls();
-            Map<String, String> gemVersions = gemManager.getGemVersions();
+            
+            boolean useVendorGemsOnly = useVendorGemsOnly();
+            Map<String, URL> gemUrls = !useVendorGemsOnly
+                    ? gemManager.getGemUrls()
+                    : new HashMap<String, URL>();
+            Map<String, String> gemVersions = !useVendorGemsOnly
+                    ? gemManager.getGemVersions()
+                    : new HashMap<String, String>();
 
             for (URL url : gemManager.getNonGemLoadPath()) {
                 result.add(ClassPathSupport.createResource(url));
@@ -242,6 +249,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //            RubyInstallation.getInstance().addPropertyChangeListener(this);
         }
         return this.resourcesCache;
+    }
+
+    private boolean useVendorGemsOnly() {
+        return new File(projectDirectory, "vendor" + File.separator + "gems").exists() //NOI18N
+                && RubyPreferences.isIndexVendorGemsOnly();
     }
 
     private static String getGemName(URL gemUrl) {
