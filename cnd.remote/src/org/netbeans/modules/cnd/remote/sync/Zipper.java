@@ -57,39 +57,39 @@ import java.util.zip.ZipOutputStream;
 public class Zipper {
 
     private final File zipFile;
+    private final ZipOutputStream out;
     private int count;
 
-    public Zipper(File zipFile) {
+    public Zipper(File zipFile) throws FileNotFoundException {
         this.zipFile = zipFile;
-        count = 0;
+        this.out = new ZipOutputStream(new FileOutputStream(zipFile));
+        this.count = 0;
     }
 
-    public void add(File srcDir, FileFilter filter) {
-        long time = System.currentTimeMillis();
+    public void add(File srcDir, FileFilter filter) throws IOException {
+        add(srcDir, filter, null);
+    }
+
+    public void add(File srcDir, FileFilter filter, String base) throws IOException {
         // Create a buffer for reading the files
         File[] srcFiles = srcDir.listFiles(filter);
         byte[] readBuf = new byte[1024*32];
-        try {
-            // Create the ZIP file
-            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile));
-            // Compress the files
-            for (File file : srcFiles) {
-                addImpl(file, out, readBuf, null, filter);
-            }
-            // Complete the ZIP file
-            out.close();
-        } catch (ZipException e) {
-            if (count != 0) { // count==0 means there were no entries
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        // Compress the files
+        for (File file : srcFiles) {
+            addImpl(file, out, readBuf, base, filter);
         }
-        //System.err.printf("Zipping %s to %s took %d ms\n", srcDir, zipFile, System.currentTimeMillis() - time);
+    }
+
+    public void close() throws IOException {
+        out.close();
     }
 
     public int getFileCount() {
         return count;
+    }
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.length() == 0;
     }
 
     private void addImpl(File file, ZipOutputStream out, byte[] readBuf, String base, FileFilter filter) throws IOException, FileNotFoundException {
@@ -97,7 +97,7 @@ public class Zipper {
         if (file.isDirectory()) {
             File[] children = file.listFiles(filter);
             for (File child : children) {
-                String newBase = (base == null) ? file.getName() : (base + "/" + file.getName()); // NOI18N
+                String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
                 addImpl(child, out, readBuf, newBase, filter);
             }
             return;
@@ -105,7 +105,7 @@ public class Zipper {
         count++;
         InputStream in = getFileInputStream(file);
         // Add ZIP entry to output stream.
-        String name = (base == null) ? file.getName() : base + '/' + file.getName();
+        String name = isEmpty(base) ? file.getName() : base + '/' + file.getName();
         //System.err.printf("Zipping %s\n", name);
         out.putNextEntry(new ZipEntry(name));
         // Transfer bytes from the file to the ZIP file
