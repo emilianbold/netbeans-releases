@@ -200,22 +200,22 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 super.mouseClicked(e);
             }
         });
-        List<Property> result = new ArrayList<Property>();
+        List<Property<?>> result = new ArrayList<Property<?>>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
             String displayedTooltip = columnsUIMapping == null || columnsUIMapping.getTooltip(c.getColumnName()) == null ? c.getColumnLongUName() : columnsUIMapping.getTooltip(c.getColumnName());
-            result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
+            @SuppressWarnings("unchecked")
+            Property<?> property = new PropertySupport(c.getColumnName(), c.getColumnClass(),
                     displayedName, displayedTooltip, true, false) {
-
                 @Override
                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
                     return null;
                 }
-
                 @Override
                 public void setValue(Object arg0) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                 }
-            });
+            };
+            result.add(property);
 
         }
         //add Alt+Column Number for sorting
@@ -636,10 +636,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                 @Override
                 public Property<?>[] getProperties() {
-                    List<Property> result = new ArrayList<Property>();
+                    List<Property<?>> result = new ArrayList<Property<?>>();
                     //create for metrics
                     for (final Column metric : metrics) {
-                        result.add(new PropertySupport(metric.getColumnName(), metric.getColumnClass(),
+                        @SuppressWarnings("unchecked")
+                        Property<?> property = new PropertySupport(metric.getColumnName(), metric.getColumnClass(),
                                 metric.getColumnUName(), metric.getColumnLongUName(), true, false) {
 
                             @Override
@@ -650,7 +651,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
                             @Override
                             public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                             }
-                        });
+                        };
+                        result.add(property);
                     }
                     return result.toArray(new Property[0]);
 
