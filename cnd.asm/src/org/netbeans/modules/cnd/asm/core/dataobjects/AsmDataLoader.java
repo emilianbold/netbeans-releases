@@ -54,7 +54,7 @@ public class AsmDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
     
     public AsmDataLoader() {
-        super("org.netbeans.modules.asm.core.dataobjects.AsmDataObject"); // NOI18N
+        super("org.netbeans.modules.cnd.asm.core.dataobjects.AsmDataObject"); // NOI18N
     }
          
     @Override
