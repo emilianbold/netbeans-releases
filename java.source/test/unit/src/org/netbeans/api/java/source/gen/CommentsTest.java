@@ -958,6 +958,96 @@ public class CommentsTest extends GeneratorTest {
         assertEquals(golden, res);
     }
 
+    public void testLostJavadoc172386() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "public abstract class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    public void method() {\n" +
+            "        \n" +
+            "        new Runnable() {\n" +
+            "\n" +
+            "            /**\n" +
+            "             * x\n" +
+            "             */\n" +
+            "            int x;\n" +
+            "            \n" +
+            "            /**\n" +
+            "             * f\n" +
+            "             */\n" +
+            "            int f;\n" +
+            "\n" +
+            "            /**\n" +
+            "             * run\n" +
+            "             */\n" +
+            "            public void run() {\n" +
+            "            }\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n");
+        String golden = "package test;\n" +
+                        "import java.io.File;\n" +
+                        "import java.io.FileInputStream;\n" +
+                        "import java.io.FileNotFoundException;\n" +
+                        "public abstract class Test {\n" +
+                        "    public Test() {\n" +
+                        "    }\n" +
+                        "    public void method() {\n" +
+                        "    }\n" +
+                        "\n" +
+                        "    class R {\n" +
+                        "\n" +
+                        "        /**\n" +
+                        "         * x\n" +
+                        "         */\n" +
+                        "        int x;\n" +
+//                        "        \n" +
+                        "        /**\n" +
+                        "         * f\n" +
+                        "         */\n" +
+                        "        int f;\n" +
+                        "\n" +
+                        "        /**\n" +
+                        "         * run\n" +
+                        "         */\n" +
+                        "        public void run() {\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) topLevel.getMembers().get(1);
+                NewClassTree toMove = (NewClassTree) ((ExpressionStatementTree) method.getBody().getStatements().get(0)).getExpression();
+                ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                ClassTree toMoveClass = toMove.getClassBody();
+                toMoveClass = gu.importComments(toMoveClass, cut);
+                ClassTree nue = make.Class(mt, "R", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), toMoveClass.getMembers());
+
+                workingCopy.rewrite(method.getBody(), make.removeBlockStatement(method.getBody(), 0));
+                workingCopy.rewrite(topLevel, make.addClassMember(topLevel, nue));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

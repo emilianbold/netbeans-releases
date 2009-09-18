@@ -770,6 +770,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         if (tree == null) {
             return null;
         } else {
+            //XXX:
+            if (copyComments && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(info.getCompilationUnit()), tree)))
+                return tree;
             if (copyComments) {
                 mapComments2(tree, true);
             }
