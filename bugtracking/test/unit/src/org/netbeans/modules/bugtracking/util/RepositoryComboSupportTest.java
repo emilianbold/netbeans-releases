@@ -644,6 +644,11 @@ public class RepositoryComboSupportTest {
         });
     }
 
+    /**
+     * Tests that the given repository is preselected in the combo-box if
+     * it is explicitly specified by the third argument of method
+     * {@code setup()}.
+     */
     @Test(timeout=10000)
     public void testDefaultRepoExplicitlySet() throws InterruptedException {
         printTestName("testDefaultRepoExplicitlySet");
