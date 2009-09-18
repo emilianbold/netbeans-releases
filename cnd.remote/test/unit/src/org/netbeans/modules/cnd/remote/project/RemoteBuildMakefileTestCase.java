@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.i18n.java;
-
-import org.openide.util.*;
-
-/**
- * Bundle access, ...
  *
- * @author  Petr Kuzel
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-final class Util {
 
-    public static String getString(String key) {
-        return NbBundle.getMessage(Util.class, key);
+package org.netbeans.modules.cnd.remote.project;
+
+import java.io.File;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.openide.filesystems.FileUtil;
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
+
+    public RemoteBuildMakefileTestCase(String testName) {
+        super(testName);
     }
 
-    public static char getChar(String key) {
-        return getString(key).charAt(0);
+    public RemoteBuildMakefileTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
     }
 
-    /**
-     * Returns unescaped Java string. See clarifications
-     * {@link org.netbeans.modules.properties.PropertiesStructure#getItem(java.lang.String)
-     * here}.
-     * @param key a key string.
-     */
-    static String getUnescapedKey(String key) {
-        String unescapedKey =
-        // #168798
-                key.replace(" ", "\\ "); // NOI18N
-        // TODO probably additional unescaping is needed
-        return unescapedKey;
+
+    @ForAllEnvironments
+    public void testBuildMakefileWithExt() throws Exception {
+        File projectDirFile = getDataFile("makefile_proj_1_nbproject");
+        changeProjectHost(projectDirFile);
+        setupHost();
+        setSyncFactory("scp");
+        assertTrue(projectDirFile.exists());
+        FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        assertNotNull("project is null", makeProject);
+        buildProject(makeProject);
     }
 
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteBuildMakefileTestCase.class);
+    }
 }

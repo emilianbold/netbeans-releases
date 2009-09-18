@@ -445,8 +445,11 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
             CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip);
+            int newHttpPort = cd.getHttpPort();
+            int newAdminPort = cd.getAdminPort();
             cd.start();
-            result.add(gip.getInstance(domainsDir));
+            GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, domainsDir, domainName, newHttpPort, newAdminPort, formatUri(glassfishRoot, "localhost", newAdminPort), gip.getUriFragment(), gip);
+            result.add(instance.getCommonInstance());
         } else {
             GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort, formatUri(glassfishRoot, "localhost", adminPort), gip.getUriFragment(), gip);
             result.add(instance.getCommonInstance());
