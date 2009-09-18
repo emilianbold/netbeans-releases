@@ -309,13 +309,6 @@ public final class DLightConfiguration {
        //     throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public String getNoIndicatorDataProvidersMessage() {
-            return null;
-        }
-
-        public String getNoDataCollectorsMessage() {
-            return null;
-        }
     }
 
     private final class DLightConfigurationOptionsListenerImpl implements DLightConfigurationOptionsListener{

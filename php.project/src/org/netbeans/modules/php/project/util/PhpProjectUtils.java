@@ -56,6 +56,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -211,5 +212,25 @@ public final class PhpProjectUtils {
         if (saveCookie != null) {
             saveCookie.save();
         }
+    }
+
+    /**
+     * "Deep" check whether file is visible or not. It is a work around for #172571.
+     * @param phpVisibilityQuery PHP visibility query
+     * @param fileObject file object to check
+     * @return <code>true</code> if file object is visible, <code>false</code> otherwise
+     */
+    public static boolean isVisible(PhpVisibilityQuery phpVisibilityQuery, FileObject fileObject) {
+        assert phpVisibilityQuery != null;
+        assert fileObject != null;
+
+        FileObject fo = fileObject;
+        while (fo != null) {
+            if (!phpVisibilityQuery.isVisible(fo)) {
+                return false;
+            }
+            fo = fo.getParent();
+        }
+        return true;
     }
 }

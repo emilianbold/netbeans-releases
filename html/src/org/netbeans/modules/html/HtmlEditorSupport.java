@@ -77,6 +77,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -217,6 +218,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
      */
+    @Override
     protected boolean notifyModified() {
         if (!super.notifyModified()) {
             return false;
@@ -228,6 +230,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     }
 
     /** Overrides superclass method. Adds removing of save cookie. */
+    @Override
     protected void notifyUnmodified() {
         super.notifyUnmodified();
 
@@ -332,6 +335,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
          * Overrides superclass method.
          * @return text editor support (instance of enclosing class)
          */
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return (HtmlEditorSupport) getDataObject().getCookie(HtmlEditorSupport.class);
         }
@@ -340,6 +344,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     /** A method to create a new component. Overridden in subclasses.
      * @return the {@link HtmlEditor} for this support
      */
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new HtmlEditor(this);
     }
@@ -350,25 +355,28 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
 
         void associatePalette(HtmlEditorSupport s) {
-            DataObject dataObject = s.getDataObject();
+            final DataObject dataObject = s.getDataObject();
             if (!dataObject.isValid()) {
                 return;
             }
 
             Node nodes[] = {dataObject.getNodeDelegate()};
-            InstanceContent instanceContent = new InstanceContent();
+            final InstanceContent instanceContent = new InstanceContent();
             associateLookup(new ProxyLookup(new Lookup[]{new AbstractLookup(instanceContent), nodes[0].getLookup()}));
             instanceContent.add(getActionMap());
 
             setActivatedNodes(nodes);
             if (dataObject instanceof HtmlDataObject) {
-                PaletteController pc;
-                try {
-                    pc = HtmlPaletteFactory.getPalette(dataObject.getPrimaryFile());
-                    instanceContent.add(pc);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                 RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            PaletteController pc = HtmlPaletteFactory.getPalette(dataObject.getPrimaryFile());
+                            instanceContent.add(pc);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             }
         }
 
@@ -382,6 +390,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             associatePalette((HtmlEditorSupport) cloneableEditorSupport());
         }
 
+        @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             initialize();

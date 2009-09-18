@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -73,6 +74,9 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected final static String successLine = "BUILD SUCCESSFUL";
     protected final static String failureLine = "BUILD FAILED";
+    protected final static String[] errorLines = new String[] {
+            "Error copying project files"
+        };
 
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {
@@ -102,6 +106,10 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     }
 
     protected void buildProject(MakeProject makeProject) throws InterruptedException, IllegalArgumentException {
+        buildProject(makeProject, 0, null);
+    }
+
+    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
 
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
@@ -114,16 +122,18 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                     if (line.startsWith(successLine)) {
                         build_rc.set(0);
                         done.countDown();
-                    } else if (line.startsWith(failureLine)) {
-                        // message is:
-                        // BUILD FAILED (exit value 1, total time: 326ms)
+                    } else if (isFailureLine(line)) {
                         int rc = -1;
-                        String[] tokens = line.split("[ ,]");
-                        if (tokens.length > 4) {
-                            try {
-                                rc = Integer.parseInt(tokens[4]);
-                            } catch (NumberFormatException nfe) {
-                                nfe.printStackTrace();
+                        if (line.startsWith(failureLine)) {
+                            // message is:
+                            // BUILD FAILED (exit value 1, total time: 326ms)
+                            String[] tokens = line.split("[ ,]");
+                            if (tokens.length > 4) {
+                                try {
+                                    rc = Integer.parseInt(tokens[4]);
+                                } catch (NumberFormatException nfe) {
+                                    nfe.printStackTrace();
+                                }
                             }
                         }
                         build_rc.set(rc);
@@ -131,10 +141,28 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                     }
                 }
             }
+
+            private boolean isFailureLine(String line) {
+                if (line.startsWith(failureLine)) {
+                    return true;
+                }
+                for (int i = 0; i < errorLines.length; i++) {
+                    if (line.startsWith(errorLines[i])) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         });
         MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
         makeActionProvider.invokeAction("build", null);
-        done.await();
+        if (timeout <= 0) {
+            done.await();
+        } else {
+            if (!done.await(timeout, unit)) {
+                assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
+            }
+        }
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
