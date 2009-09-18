@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.project;
 
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -67,7 +68,7 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
         setSyncFactory("scp");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject);
+        buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
 
     @ForAllEnvironments
@@ -77,11 +78,11 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_02");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject);
+        buildProject(makeProject, 60, TimeUnit.SECONDS);
         System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject);
+        buildProject(makeProject, 30, TimeUnit.SECONDS);
         System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject);
+        buildProject(makeProject, 30, TimeUnit.SECONDS);
     }
 
     public static Test suite() {
