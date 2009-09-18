@@ -444,7 +444,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip);
+            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip,false);
             int newHttpPort = cd.getHttpPort();
             int newAdminPort = cd.getAdminPort();
             cd.start();

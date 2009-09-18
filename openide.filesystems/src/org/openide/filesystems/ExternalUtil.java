@@ -90,7 +90,7 @@ final class ExternalUtil {
         return orig;
     }
 
-    private static Logger LOG = Logger.getLogger("org.openide.filesystems"); // NOI18N
+    final static Logger LOG = Logger.getLogger("org.openide.filesystems"); // NOI18N
     /** Logs a text.
      */
     public static void log(String msg) {
