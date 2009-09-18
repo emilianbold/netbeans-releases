@@ -60,6 +60,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -382,8 +383,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     
     private static void chooseGems(File[] gems, Map<String, String> gemVersions,
             Map<String, URL> gemUrls) {
-        // Try to match foo-1.2.3, foo-bar-1.2.3, foo-bar-1.2.3-ruby
-        Pattern GEM_FILE_PATTERN = Pattern.compile("(\\S|-)+-((\\d+)\\.(\\d+)\\.(\\d+))(-\\S+)?"); // NOI18N
 
         for (File f : gems) {
             if (!f.isDirectory()) {
@@ -412,18 +411,16 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 continue;
             }
 
-            Matcher m = GEM_FILE_PATTERN.matcher(n);
-            if (!m.matches()) {
+            String[] info = GemFilesParser.parseNameAndVersion(n);
+            if (info == null) {
                 continue;
             }
-            
+
             File lib = new File(f, "lib");
             if (lib.exists()) {
                 try {
                     URL url = lib.toURI().toURL();
-                    String name = m.group(1);
-                    String version = m.group(2);
-                    addGem(gemVersions, gemUrls, name, version, url);
+                    addGem(gemVersions, gemUrls, info[0], info[1], url);
                 } catch (MalformedURLException mufe) {
                     Exceptions.printStackTrace(mufe);
                 }
