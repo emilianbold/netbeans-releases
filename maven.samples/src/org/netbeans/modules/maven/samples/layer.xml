@@ -22,6 +22,13 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    <file name="MavenScrumToys" url="MavenScrumToys.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/MavenScrumToys.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
