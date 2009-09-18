@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -63,6 +65,7 @@ import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -142,6 +145,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     ensureEclipseLinkSupport(glassfishRoot);
                     ensureCometSupport(glassfishRoot);
                     ensureRestLibSupport(glassfishRoot);
+                    ensureGlassFishApiSupport(glassfishRoot);
                     // lookup the javadb register service here and use it.
                     RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
                     if (null != db) {
@@ -271,30 +275,65 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return addLibrary(name, libraryList, null);
     }
 
+    private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N
+    private static final String JAVA_EE_5_LIB = "Java-EE-GlassFish-v3-Prelude"; // NOI18N
+
+    private static synchronized boolean ensureGlassFishApiSupport(String installRoot) {
+        List<URL> libraryList = Hk2PluginProperties.getClasses(new File(installRoot));
+        String name = JAVA_EE_5_LIB;
+
+        File f = ServerUtilities.getJarName(installRoot, "gmbal" + ServerUtilities.GFV3_VERSION_MATCHER);
+        if (f != null && f.exists()) {
+            name = JAVA_EE_6_LIB;
+        }
+
+        return addLibrary(name, libraryList, null);
+    }
+
     private static synchronized boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
+
+        int size = 0;
 
         Library lib = lmgr.getLibrary(name);
 
         // Verify that existing library is still valid.
         if (lib != null) {
             List<URL> libList = lib.getContent(CLASSPATH_VOLUME);
+            size = libList.size();
             for (URL libUrl : libList) {
                 String libPath = libUrl.getFile();
-                if (!new File(libPath).exists()) {
-                    Logger.getLogger("glassfish-javaee").log(Level.FINE,
-                            "libPath does not exist.  Updating " + name);
+                // file seems to want to return a file: protocol string... not the FILE portion of the URL
+                if (libPath.length() > 5) {
+                    libPath = libPath.substring(5);
+                }
+                if (!new File(libPath.replace("!/", "")).exists()) {
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating " + name);
                     try {
                         lmgr.removeLibrary(lib);
                     } catch (IOException ex) {
                         Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException ex) {
                         // Already removed somehow, ignore.
-                    }
+                        }
                     lib = null;
+                    size = 0;
                     break;
                 }
             }
+        }
+
+        // verify that there are not new components in the 'new' definition
+        // of the library...  If there are new components... rebuild the library.
+        if (lib != null && size < libraryList.size()) {
+            try {
+                lmgr.removeLibrary(lib);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            } catch (IllegalArgumentException ex) {
+                // Already removed somehow, ignore.
+            }
+            lib = null;
         }
 
         if (lib == null) {
