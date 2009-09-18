@@ -194,6 +194,14 @@ public class CreateDomain extends Thread {
         }
     }
 
+    public int getHttpPort() {
+        return Integer.parseInt(ip.get(GlassfishModule.HTTPPORT_ATTR));
+    }
+
+    public int getAdminPort() {
+        return Integer.parseInt(ip.get(GlassfishModule.ADMINPORT_ATTR));
+    }
+
     static class PDCancel implements Cancellable {
 
         final private Process p;
