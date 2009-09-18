@@ -616,16 +616,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
                 </folder>
             </folder>
-            <folder name="x-dd-ejbjar3.0">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
-                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
-                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
-                    <file name="org-netbeans-modules-j2ee-ddloaders-client-ClientDataLoader.instance"/>
-                    <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
-                </folder>
-            </folder>
             <folder name="x-dd-client1.3">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">

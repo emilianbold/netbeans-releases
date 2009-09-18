@@ -45,8 +45,6 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="J2ME_MIDP">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/j2meSamplesCategory.html"/>
                     <attr name="position" intvalue="400"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/midp.html"/>
