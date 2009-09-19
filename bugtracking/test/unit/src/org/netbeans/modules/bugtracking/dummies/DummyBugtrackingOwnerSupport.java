@@ -40,6 +40,9 @@
 package org.netbeans.modules.bugtracking.dummies;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
@@ -51,6 +54,58 @@ import org.openide.nodes.Node;
  * @author Marian Petras
  */
 public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
+
+    private final class FileToRepoAssociation {
+        private final File file;
+        private final Repository repository;
+        private FileToRepoAssociation(File file, Repository repository) {
+            assert ((file != null) && (repository != null));
+            this.file = file;
+            this.repository = repository;
+        }
+    }
+
+    private List<FileToRepoAssociation> fileToRepoAssociations;
+
+    public void setAssociation(File file, Repository repository) {
+        if ((file == null) && (repository == null)) {
+            throw new IllegalArgumentException("file and repository are <null>");
+        }
+        if (file == null) {
+            throw new IllegalArgumentException("file is <null>");
+        }
+        if (repository == null) {
+            throw new IllegalArgumentException("repository is <null>");
+        }
+
+        boolean alreadyPresent = false;
+        if (fileToRepoAssociations == null) {
+            fileToRepoAssociations = new ArrayList<FileToRepoAssociation>(7);
+        } else {
+            Iterator<FileToRepoAssociation> it = fileToRepoAssociations.iterator();
+            while (it.hasNext()) {
+                FileToRepoAssociation association = it.next();
+                if (association.file.equals(file)) {
+                    if (association.repository == repository) {
+                        alreadyPresent = true;
+                    } else {
+                        it.remove();
+                    }
+                    break;
+                }
+            }
+        }
+        if (!alreadyPresent) {
+            fileToRepoAssociations.add(new FileToRepoAssociation(file, repository));
+        }
+    }
+
+    public void reset() {
+        if (fileToRepoAssociations != null) {
+            fileToRepoAssociations.clear();     //decompose for easier GC
+            fileToRepoAssociations = null;
+        }
+    }
 
     @Override
     synchronized protected Repository getRepository(Node node) {
@@ -71,7 +126,19 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
 
     @Override
     public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (file == null) {
+            throw new IllegalArgumentException("file is <null>");
+        }
+
+        if (fileToRepoAssociations == null) {
+            return null;
+        }
+        for (FileToRepoAssociation association : fileToRepoAssociations) {
+            if (association.file == file) {
+                return association.repository;
+            }
+        }
+        return null;
     }
 
     @Override

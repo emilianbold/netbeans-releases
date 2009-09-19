@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.JComboBox;
@@ -93,6 +94,7 @@ public class RepositoryComboSupportTest {
         comboSupport = null;
         getBugtrackingConnector().reset();
         getTopComponentRegistry().reset();
+        getBugtrackingOwnerSupport().reset();
     }
 
     private static DummyBugtrackingConnector getBugtrackingConnector() {
@@ -101,6 +103,10 @@ public class RepositoryComboSupportTest {
 
     private static DummyTopComponentRegistry getTopComponentRegistry() {
         return Lookup.getDefault().lookup(DummyTopComponentRegistry.class);
+    }
+
+    private static DummyBugtrackingOwnerSupport getBugtrackingOwnerSupport() {
+        return Lookup.getDefault().lookup(DummyBugtrackingOwnerSupport.class);
     }
 
     abstract class AbstractRepositoryComboTest {
@@ -672,12 +678,96 @@ public class RepositoryComboSupportTest {
     }
 
     /**
-     * 
-     * @param testName
+     * Tests that an {@code IllegalArgumentException} is thrown
+     * if <em>null</em> {@code Repository} is passed as the third argument
+     * of method {@code setup()}.
      */
     @Test(timeout=10000,expected=IllegalArgumentException.class)
     public void testDefaultRepoExplicitlySetNull() throws InterruptedException {
         RepositoryComboSupport.setup(null, new JComboBox(), (Repository) null);
+    }
+
+    /**
+     * Tests that the correct repository is preselected in the combo-box
+     * if a file is passed as the third argument of method {@code setup()}
+     * and the given file is associated with some repository.
+     */
+    @Test(timeout=10000)
+    public void testDefaultRepoByFile() throws InterruptedException {
+        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+            private File dummyFile = new File("dummy file");
+            @Override
+            protected void setUpEnvironment() {
+                getBugtrackingOwnerSupport().setAssociation(dummyFile, repository2);
+            }
+            @Override
+            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
+                return RepositoryComboSupport.setup(null, comboBox, dummyFile);
+            }
+            @Override
+            protected void scheduleTests(ProgressTester progressTester) {
+                super.scheduleTests(progressTester);
+                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                SELECT_REPOSITORY,
+                                                                repository1,
+                                                                repository2,
+                                                                repository3),
+                                                        new SelectedItemTest(
+                                                                SELECT_REPOSITORY));
+                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
+                progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                repository1,
+                                                                repository2,
+                                                                repository3),
+                                                        new SelectedItemTest(
+                                                                repository2));
+            }
+        });
+    }
+
+    /**
+     * Tests that the no repository is preselected in the combo-box
+     * if a file is passed as the third argument of method {@code setup()}
+     * but the given file is not associated with any repository.
+     */
+    @Test(timeout=10000)
+    public void testDefaultRepoByFileNotFound() throws InterruptedException {
+        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+            @Override
+            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
+                return RepositoryComboSupport.setup(null, comboBox, new File("dummy file name.dummy"));
+            }
+            @Override
+            protected void scheduleTests(ProgressTester progressTester) {
+                super.scheduleTests(progressTester);
+                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
+                                                        new ComboBoxItemsTest(
+                                                                SELECT_REPOSITORY,
+                                                                repository1,
+                                                                repository2,
+                                                                repository3),
+                                                        new SelectedItemTest(
+                                                                SELECT_REPOSITORY));
+                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
+                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
+            }
+        });
+    }
+
+    /**
+     * Tests that an {@code IllegalArgumentException} is thrown
+     * if <em>null</em> {@code File} is passed as the third argument of method
+     * {@code setup()}.
+     */
+    @Test(timeout=10000,expected=IllegalArgumentException.class)
+    public void testDefaultRepoByFileNull() throws InterruptedException {
+        RepositoryComboSupport.setup(null, new JComboBox(), (File) null);
     }
 
     private void printTestName(String testName) {
