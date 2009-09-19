@@ -71,6 +71,8 @@ public final class EarDataNode extends DataNode {
     /** Name of property for spec version */
     public static final String PROPERTY_DOCUMENT_TYPE = "documentType"; // NOI18N
     
+    private static final String OPEN_ACTION_NAME = new OpenAction().getName();
+    
     /** Listener on dataobject */
     private PropertyChangeListener ddListener;
 
@@ -96,9 +98,18 @@ public final class EarDataNode extends DataNode {
             Action[] origActions = super.getActions(context);
             List/*<Action>*/ actions = new ArrayList/*<Action>*/();
             for (int i = 0; i < origActions.length; i++) {
-                if (!(origActions[i] instanceof OpenAction)) {
-                    actions.add(origActions[i]);
+                if (origActions[i] instanceof OpenAction) {
+                    continue;
                 }
+                /*
+                 * Fix for IZ#172558 - Cannot open application.xml
+                 */
+                if ( origActions[i] != null && OPEN_ACTION_NAME.equals(
+                        origActions[i].getValue(Action.NAME)))
+                {
+                    continue;
+                }
+                actions.add(origActions[i]);
             }
             filteredActions = (Action[]) actions.toArray(new Action[actions.size()]);
         }

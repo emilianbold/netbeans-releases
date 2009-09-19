@@ -119,6 +119,15 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                     break;
                                 }
                             }
+                            if (node == null || !node.getRange().containsInclusive(caretOffset)) {
+                                tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.VARIABLE);
+                                for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
+                                    if (typeTagInfo.getKind().equals(Kind.VARIABLE)) {
+                                        node = typeTagInfo;
+                                        break;
+                                    }
+                                }
+                            }
                             if (node != null && !PHPDocTypeTag.ORDINAL_TYPES.contains(node.getOriginalNode().getValue().toUpperCase())) {
                                 return node.getRange().containsInclusive(caretOffset) ? node.getRange() : OffsetRange.NONE;
                             }
