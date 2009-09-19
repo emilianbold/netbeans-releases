@@ -46,6 +46,34 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileChooserBuilder.SelectionApprover">
+            <api name="filesystems"/>
+            <summary>Added FileChooserBuilder.setSelectionApprover(FileChooserBuilder.SelectionApprover) and FileChooserBuilder.addFileFilter()</summary>
+            <version major="7" minor="26"/>
+            <date day="16" month="9" year="2009"/>
+            <author login="tboudreau"/>
+            <compatibility modification="yes">
+                <p>
+                    Added FileChooserBuilder.setSelectionApprover(),
+                    FileChooserBuilder.addFileFilter() and the interface
+                    FileChooserBuilder.SelectionApprover.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added FileChooserBuilder.setSelectionApprover() which enables
+                    JFileChoosers created by a FileChooserBuilder to intercept
+                    JFileChooser.approveSelection() (for example, to ask the user
+                    if it is ok to overwrite a file);  added
+                    FileChooserBuilder.addFileFilter() which operates similarly
+                    to JFileChooser.addChoosableFileFilter(), so JFileChoosers
+                    created by a FileChooserBuilder can be given user-selectable
+                    file filters.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileChooserBuilder"/>
+            <issue number="171928"/>
+        </change>
         <change id="Repository.defaultFileSystem.status">
             <api name="filesystems"/>
             <summary>System filesystem label/icon annotations work without full module system</summary>
