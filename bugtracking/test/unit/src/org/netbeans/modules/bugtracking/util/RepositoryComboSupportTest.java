@@ -671,6 +671,15 @@ public class RepositoryComboSupportTest {
         });
     }
 
+    /**
+     * 
+     * @param testName
+     */
+    @Test(timeout=10000,expected=IllegalArgumentException.class)
+    public void testDefaultRepoExplicitlySetNull() throws InterruptedException {
+        RepositoryComboSupport.setup(null, new JComboBox(), (Repository) null);
+    }
+
     private void printTestName(String testName) {
         System.out.println();
         System.out.println("--- " + testName + " ---");
