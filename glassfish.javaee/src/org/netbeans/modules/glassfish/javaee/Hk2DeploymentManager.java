@@ -443,6 +443,10 @@ public class Hk2DeploymentManager implements DeploymentManager {
      */
     public Target[] getTargets() throws IllegalStateException {
         InstanceProperties ip = getInstanceProperties();
+        if (null == ip) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, "instance props are null for URI: "+getUri(), new Exception());
+            return new Hk2Target[] {};
+        }
         String serverUri = constructServerUri(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
                 ip.getProperty(GlassfishModule.HTTPPORT_ATTR), null);
         String name = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);

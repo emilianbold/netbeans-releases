@@ -55,6 +55,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +65,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
+import org.netbeans.modules.viewmodel.HyperCompoundModel;
 import org.netbeans.modules.viewmodel.OutlineTable;
 import org.netbeans.modules.viewmodel.TreeModelRoot;
 
@@ -112,7 +114,11 @@ public final class Models {
         CompoundModel compoundModel
     ) {
         OutlineTable ot = new OutlineTable ();
-        ot.setModel (compoundModel);
+        if (compoundModel != null && compoundModel.isHyperModel()) {
+            ot.setModel(compoundModel.createHyperModel());
+        } else {
+            ot.setModel (compoundModel);
+        }
         return ot;
     }
     
@@ -130,7 +136,11 @@ public final class Models {
         CompoundModel compoundModel,
         TreeView treeView
     ) {
-        return new TreeModelRoot (compoundModel, treeView).getRootNode();
+        if (compoundModel != null && compoundModel.isHyperModel()) {
+            return new TreeModelRoot (compoundModel.createHyperModel(), treeView).getRootNode();
+        } else {
+            return new TreeModelRoot (compoundModel, treeView).getRootNode();
+        }
     }
     
     /**
@@ -150,7 +160,11 @@ public final class Models {
             System.out.println (compoundModel);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                ((OutlineTable) view).setModel (compoundModel);
+                if (compoundModel != null && compoundModel.isHyperModel()) {
+                    ((OutlineTable) view).setModel (compoundModel.createHyperModel());
+                } else {
+                    ((OutlineTable) view).setModel (compoundModel);
+                }
             }
         });
     }
@@ -187,6 +201,26 @@ public final class Models {
     // TODO: Add createCompoundModel(List models, String propertiesHelpID, RequestProcessor rp)
     // Or instead of RP use some interface that could provide the desired thread to run in (current, AWT, RP thread,...)
     public static CompoundModel createCompoundModel (List models, String propertiesHelpID) {
+        if (models.size() > 1 && models.get(0) instanceof CompoundModel && models.get(1) instanceof CompoundModel) {
+            // Hypermodel
+            ArrayList<CompoundModel> subModels = new ArrayList<CompoundModel>();
+            CompoundModel mainModel = null;
+            TreeModelFilter treeFilter = null;
+            for (Object o : models) {
+                if (o instanceof CompoundModel) {
+                    if (subModels.contains((CompoundModel) o)) {
+                        mainModel = (CompoundModel) o;
+                        continue;
+                    }
+                    subModels.add((CompoundModel) o);
+                } else if (o instanceof TreeModelFilter) {
+                    treeFilter = (TreeModelFilter) o;
+                }
+            }
+            if (mainModel == null) mainModel = subModels.get(0);
+            return new CompoundModel(mainModel, subModels.toArray(new CompoundModel[]{}), treeFilter, propertiesHelpID);
+        }
+
         List<TreeModel>                 treeModels;
         List<TreeModelFilter>           treeModelFilters;
         List<TreeExpansionModel>        treeExpansionModels;
@@ -1389,6 +1423,26 @@ public final class Models {
                 models [i].addModelListener (l);
         }
 
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        void addModelListener (ModelListener l, Set<Model> modelsListenersAddedTo) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                TreeModel m = models [i];
+                if (!modelsListenersAddedTo.add(m)) {
+                    continue;
+                }
+                if (m instanceof DelegatingTreeModel) {
+                    ((DelegatingTreeModel) m).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    m.addModelListener (l);
+                }
+            }
+        }
+
         /** 
          * Unregisters given listener.
          *
@@ -1720,6 +1774,26 @@ public final class Models {
             int i, k = models.length;
             for (i = 0; i < k; i++)
                 models [i].addModelListener (l);
+        }
+
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        void addModelListener (ModelListener l, Set<Model> modelsListenersAddedTo) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                TableModel m = models [i];
+                if (!modelsListenersAddedTo.add(m)) {
+                    continue;
+                }
+                if (m instanceof DelegatingTableModel) {
+                    ((DelegatingTableModel) m).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    m.addModelListener (l);
+                }
+            }
         }
 
         /** 
@@ -2069,6 +2143,26 @@ public final class Models {
             int i, k = models.length;
             for (i = 0; i < k; i++)
                 models [i].addModelListener (l);
+        }
+
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        void addModelListener (ModelListener l, Set<Model> modelsListenersAddedTo) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                NodeModel m = models [i];
+                if (!modelsListenersAddedTo.add(m)) {
+                    continue;
+                }
+                if (m instanceof DelegatingNodeModel) {
+                    ((DelegatingNodeModel) m).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    m.addModelListener (l);
+                }
+            }
         }
 
         /** 
@@ -3112,13 +3206,17 @@ public final class Models {
         private ColumnModel[]   columnModels;
         private TableModel      tableModel;
         private TreeExpansionModel treeExpansionModel;
+        private RequestProcessor rp; // Accessed from TreeModelRoot
+
+        private CompoundModel   mainSubModel;
+        private CompoundModel[] subModels;
+        private TreeModelFilter subModelsFilter;
         
         // <RAVE>
         // New field, setter/getter for propertiesHelpID, which is used
         // for property sheet help
         private String propertiesHelpID = null;
         // </RAVE>
-        private RequestProcessor rp;
         
         // init ....................................................................
 
@@ -3159,6 +3257,33 @@ public final class Models {
             );
             this.propertiesHelpID = propertiesHelpID;
             this.rp = rp;
+        }
+
+        private CompoundModel(CompoundModel mainSubModel,
+                              CompoundModel[] models,
+                              TreeModelFilter treeFilter,
+                              String propertiesHelpID) {
+            this.mainSubModel = mainSubModel;
+            this.subModels = models;
+            this.subModelsFilter = treeFilter;
+            this.propertiesHelpID = propertiesHelpID;
+        }
+
+        /*CompoundModel[] getSubModels() {
+            return subModels;
+        }
+
+        TreeModelFilter getSubModelsFilter() {
+            return subModelsFilter;
+        }*/
+
+        boolean isHyperModel() {
+            return subModels != null;
+        }
+
+        HyperCompoundModel createHyperModel() {
+            if (!isHyperModel()) throw new IllegalStateException();
+            return new HyperCompoundModel(mainSubModel, subModels, subModelsFilter);
         }
 
         // <RAVE>
@@ -3401,12 +3526,26 @@ public final class Models {
          * @param l the listener to add
          */
         public void addModelListener (ModelListener l) {
-            treeModel.addModelListener (l);
-            if (nodeModel != treeModel) {
-                nodeModel.addModelListener (l);
+            Set<Model> modelsListenersAddedTo = new HashSet<Model>();
+            if (treeModel instanceof DelegatingTreeModel) {
+                ((DelegatingTreeModel) treeModel).addModelListener(l, modelsListenersAddedTo);
+            } else {
+                treeModel.addModelListener (l);
+                modelsListenersAddedTo.add(treeModel);
             }
-            if (tableModel != treeModel && tableModel != nodeModel) {
-                tableModel.addModelListener (l);
+            if (nodeModel != treeModel && !modelsListenersAddedTo.contains(nodeModel)) {
+                if (nodeModel instanceof DelegatingNodeModel) {
+                    ((DelegatingNodeModel) nodeModel).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    nodeModel.addModelListener (l);
+                }
+            }
+            if (tableModel != treeModel && tableModel != nodeModel && !modelsListenersAddedTo.contains(tableModel)) {
+                if (tableModel instanceof DelegatingTableModel) {
+                    ((DelegatingTableModel) tableModel).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    tableModel.addModelListener (l);
+                }
             }
             if (treeExpansionModel instanceof CompoundTreeExpansionModel) {
                 ((CompoundTreeExpansionModel) treeExpansionModel).addModelListener(l);
@@ -3433,6 +3572,21 @@ public final class Models {
 
         @Override
         public String toString () {
+            /*String str = super.toString () +
+                   "\n  TreeModel = " + treeModel +
+                   "\n  NodeModel = " + nodeModel +
+                   "\n  TableModel = " + tableModel +
+                   "\n  NodeActionsProvider = " + nodeActionsProvider +
+                   "\n  ColumnsModel = " + java.util.Arrays.asList(columnModels);
+            if (str.indexOf("WatchesTableModel") > 0) {
+                return "CompoundModel [WATCHES]";
+            }
+            if (str.indexOf("EvaluatorTableModel") > 0) {
+                return "CompoundModel [EVALUATOR]";
+            }
+            if (str.indexOf("VariablesTableModel") > 0) {
+                return "CompoundModel [VARIABLES]";
+            }*/
             return super.toString () + 
                    "\n  TreeModel = " + treeModel +
                    "\n  NodeModel = " + nodeModel +

@@ -58,13 +58,14 @@ import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends BasicCompiler {
-    private Pair compilerDefinitions;
+    private volatile Pair compilerDefinitions;
     private static File tmpFile = null;
     
     protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
@@ -134,8 +135,23 @@ public abstract class CCCCompiler extends BasicCompiler {
         }
     }
 
+    @Override
+    public boolean isReady() {
+        return compilerDefinitions != null;
+    }
+
+    @Override
+    public void waitReady() {
+        CndUtils.assertNonUiThread();
+        getSystemIncludesAndDefines();
+    }
+
     private synchronized void getSystemIncludesAndDefines() {
         if (compilerDefinitions == null) {
+            if (getExecutionEnvironment().isRemote()) {
+                // TODO: it's better not to call it even in local mode
+                CndUtils.assertNonUiThread();
+            }
             restoreSystemIncludesAndDefines();
             if (compilerDefinitions == null) {
                 compilerDefinitions = getFreshSystemIncludesAndDefines();
@@ -145,6 +161,10 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
 
     public void resetSystemIncludesAndDefines() {
+        if (getExecutionEnvironment().isRemote()) {
+            // TODO: it's better not to call it even in local mode
+            CndUtils.assertNonUiThread();
+        }
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }

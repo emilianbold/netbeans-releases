@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.deployment.plugins.api;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -150,6 +152,12 @@ public final class UISupport {
         InputOutput io = (InputOutput) ioWeakMap.get(si);
         if (io != null) {
             return io;
+        }
+
+        if (si.getDisplayName() == null) {
+            Logger.getLogger(UISupport.class.getName()).log(Level.INFO,
+                    "Server without display name requested IO tab: {0}", si);
+            return null;
         }
 
         Action[] actions = new Action[] {

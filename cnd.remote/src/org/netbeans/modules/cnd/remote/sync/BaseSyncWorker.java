@@ -58,18 +58,49 @@ import org.openide.util.NbBundle;
  */
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
-    protected final File localDir;
+    protected final File topLocalDir;
+    protected final File topDir;
+    protected final File[] localDirs;
     protected final File privProjectStorageDir;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
 
-    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        this.localDir = localDir;
+    public BaseSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+        this.localDirs = new File[localDirs.length];
+        System.arraycopy(localDirs, 0, this.localDirs, 0, localDirs.length);
+        this.topLocalDir = getTopDir(localDirs);
         this.privProjectStorageDir = privProjectStorageDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;
         this.err = err;
+        topDir = findCommonTop(localDirs);
+    }
+
+    private static File getTopDir(File[] dirs) {
+        if (dirs == null || dirs.length == 0) {
+            return null;
+        }
+        if (dirs.length == 1) {
+            return dirs[0];
+        }
+        File top = dirs[0];
+        while (top != null) {
+            boolean isParent = true;
+            for (int i = 1; i < dirs.length; i++) {
+                String currPath = dirs[i].getAbsolutePath();
+                if (!currPath.startsWith(top.getAbsolutePath())) {
+                    isParent = false;
+                    break;
+                }
+            }
+            if (isParent) {
+                return top;
+            } else {
+                top = top.getParentFile();
+            }
+        }
+        return null;
     }
 
     /**
@@ -101,20 +132,25 @@ import org.openide.util.NbBundle;
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
             }
-            return false; // TODO:
+            return false; // TODO: error processing
         }
-        String remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
+        if (topLocalDir == null) {
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_top_dir"));
+            }
+        }
+        String remoteDir = remoteParent + '/' + topLocalDir.getName(); //NOI18N
 
         boolean success = false;
         try {
             boolean same;
             try {
-                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, localDir);
+                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, topLocalDir);
             } catch (InterruptedException e) {
                 return false;
             }
             if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + localDir.getAbsolutePath() + //NOI18N
+                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + topLocalDir.getAbsolutePath() + //NOI18N
                         (same ? " are same - skipping" : " arent same - copying")); //NOI18N
             }
             if (!same) {
@@ -124,7 +160,7 @@ import org.openide.util.NbBundle;
                 }
                 synchronizeImpl(remoteDir);
                 RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
-                mapper.addMapping(localDir.getParentFile().getAbsolutePath(), remoteParent);
+                mapper.addMapping(topLocalDir.getParentFile().getAbsolutePath(), remoteParent);
             }
             success = true;
         } catch (InterruptedException ex) {
@@ -147,6 +183,11 @@ import org.openide.util.NbBundle;
             }
         }
         return success;
+    }
+
+    private File findCommonTop(File[] dirs) {
+        // TODO: implement
+        return dirs[0];
     }
 
 }

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -61,10 +62,12 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -138,6 +141,12 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         SourceUtilsTestUtil.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
         
         SourceUtilsTestUtil2.disableLocks();
+
+        if (Util.allMimeTypes == null) {
+            Util.allMimeTypes = new HashSet<String>();
+        }
+
+        Util.allMimeTypes.add("text/x-java");
     }
     
     static {
@@ -386,7 +395,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     @ServiceProvider(service=MimeDataProvider.class)
     public static final class JavacParserProvider implements MimeDataProvider {
 
-        private Lookup javaLookup = Lookups.fixed(new JavacParserFactory());
+        private Lookup javaLookup = Lookups.fixed(new JavacParserFactory(), new JavaCustomIndexer.Factory());
 
         public Lookup getLookup(MimePath mimePath) {
             if (mimePath.getPath().endsWith(JavacParser.MIME_TYPE)) {

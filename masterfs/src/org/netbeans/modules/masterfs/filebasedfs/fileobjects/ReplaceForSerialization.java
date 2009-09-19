@@ -91,10 +91,6 @@ public class ReplaceForSerialization extends Object implements java.io.Serializa
             return false;
         }
 
-        public Date lastModified() {
-            return new Date(0L);
-        }
-
         /* Test whether the file is valid. The file can be invalid if it has been deserialized
         * and the file no longer exists on disk; or if the file has been deleted.
         *

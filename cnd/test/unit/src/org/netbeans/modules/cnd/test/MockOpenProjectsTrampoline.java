@@ -51,7 +51,7 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
 /**
  *
- * @author vv159170
+ * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.OpenProjectsTrampoline.class)
 public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline { 

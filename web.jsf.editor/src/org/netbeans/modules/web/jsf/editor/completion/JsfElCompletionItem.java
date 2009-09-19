@@ -108,12 +108,29 @@ public class JsfElCompletionItem {
         private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesKey.gif";  //NOI18N
 
         public JsfResourceItem(String text, int substitutionOffset, String type) {
+            this(text, text, substitutionOffset, type);
+        }
+        
+        public JsfResourceItem(String text, String insertText , 
+                int substitutionOffset, String type) 
+        {
             super(text, substitutionOffset, type);
+            myInsertText = insertText;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem#getSubstituteText()
+         */
+        @Override
+        protected String getSubstituteText() {
+            return myInsertText;
         }
 
         @Override
         protected ImageIcon getIcon() {
             return ImageUtilities.loadImageIcon(BUNDLE_ICON_PATH, false);
         }
+        
+        private String myInsertText;
     }
 }

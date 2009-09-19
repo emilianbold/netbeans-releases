@@ -444,9 +444,12 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip);
+            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip,false);
+            int newHttpPort = cd.getHttpPort();
+            int newAdminPort = cd.getAdminPort();
             cd.start();
-            result.add(gip.getInstance(domainsDir));
+            GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, domainsDir, domainName, newHttpPort, newAdminPort, formatUri(glassfishRoot, "localhost", newAdminPort), gip.getUriFragment(), gip);
+            result.add(instance.getCommonInstance());
         } else {
             GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort, formatUri(glassfishRoot, "localhost", adminPort), gip.getUriFragment(), gip);
             result.add(instance.getCommonInstance());
@@ -456,7 +459,11 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private void handleRemoteDomains(Set<ServerInstance> result, File ir) {
         // TODO - vbk : get the real port from the server. Doable, but hard to do right.
         httpPort = 8080;
-        GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, null, null, httpPort, adminPort, formatUri(glassfishRoot, getHostName(), adminPort), gip.getUriFragment(), gip);
+        String hn = getHostName();
+        if ("localhost".equals(hn)) {
+            hn = "127.0.0.1";
+        }
+        GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, null, null, httpPort, adminPort, formatUri(glassfishRoot, hn, adminPort), gip.getUriFragment(), gip);
         result.add(instance.getCommonInstance());
     }
 

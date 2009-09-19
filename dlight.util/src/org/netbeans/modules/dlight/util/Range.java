@@ -71,6 +71,14 @@ public final class Range<T extends Number & Comparable<? super T>> {
         return end;
     }
 
+    public int getStartMilliSeconds() {
+        return (int) (start.longValue() / 1000 / 1000);
+    }
+
+    public int getEndMilliSeconds() {
+        return (int) (end.longValue() / 1000 / 1000);
+    }
+
     public boolean cotains(T t){
         return t.longValue() >= start.longValue() && t.longValue() <= end.longValue();
     }
@@ -219,7 +227,7 @@ public final class Range<T extends Number & Comparable<? super T>> {
      * @return extended range
      */
     public Range<T> extend(Range<T> range) {
-        return new Range<T>(DLightMath.min(start, range.getStart()), DLightMath.max(end, range.getEnd()));
+        return new Range<T>(DLightMath.<T>min(start, range.getStart()), DLightMath.<T>max(end, range.getEnd()));
     }
 
     @Override

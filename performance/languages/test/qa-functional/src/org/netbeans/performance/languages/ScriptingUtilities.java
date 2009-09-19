@@ -57,8 +57,18 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
  * @author mkhramov@netneans.org
  */
 public class ScriptingUtilities extends CommonUtilities {
-    private static final String menuItemName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_Fix_Missing_Server_Action");
-    private static final String dialogName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "LBL_Resolve_Missing_Server_Title");
+    private static  String menuItemName;
+    static {
+        try {
+        menuItemName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_Fix_Missing_Server_Action");
+        } catch (Exception ex) {}
+    }
+    private static  String dialogName;
+    static {
+        try {
+        dialogName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "LBL_Resolve_Missing_Server_Title");
+        } catch (Exception ex) {}
+    }
     
     public static void verifyAndResolveMissingWebServer(String projectName, String serverName) {
         ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);

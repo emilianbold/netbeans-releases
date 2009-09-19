@@ -87,38 +87,20 @@ public class KenaiNotificationListener implements PropertyChangeListener {
         }
         rp.post(new Runnable() {
             public void run() {
-                URI uri = notification.getUri();
-                SVNUrl notificationUrl;
-                try {
-                    notificationUrl = new SVNUrl(uri.toString());
-                } catch (MalformedURLException ex) {
-                    Subversion.LOG.log(Level.WARNING, null, ex);
+                File projectDir = notification.getProjectDirectory();
+                if(!SvnUtils.isManaged(projectDir)) {
+                    assert false : "project at " + projectDir + " notified, yet not versioned.";
                     return;
                 }
-                Project projects[] = OpenProjects.getDefault().getOpenProjects();
-                for (Project project : projects) {
-                    File root = FileUtil.toFile(project.getProjectDirectory());
-                    if(!SvnUtils.isManaged(root)) {
-                        continue;
-                    }
-                    SVNUrl repositoryRoot;
-                    try {
-                        repositoryRoot = SvnUtils.getRepositoryRootUrl(root);
-                    } catch (SVNClientException ex) {
-                        Subversion.LOG.log(Level.WARNING, null, ex);
-                        continue;
-                    }
-                    if(repositoryRoot.equals(notificationUrl)) {
-                        File[] files = Subversion.getInstance().getStatusCache().listFiles(root);
-                        List<VCSKenaiModification> modifications = notification.getModifications();
 
-                        for (File file : files) {
-                            for (VCSKenaiModification modification : modifications) {
-                                String resource = modification.getResource();
-                                if(file.equals(new File(root, resource))) {
-                                    notifyChange(file, notification, modification);
-                                }
-                            }
+                File[] files = Subversion.getInstance().getStatusCache().listFiles(projectDir);
+                List<VCSKenaiModification> modifications = notification.getModifications();
+
+                for (File file : files) {
+                    for (VCSKenaiModification modification : modifications) {
+                        String resource = modification.getResource();
+                        if(file.equals(new File(projectDir, resource))) {
+                            notifyChange(file, notification, modification);
                         }
                     }
                 }

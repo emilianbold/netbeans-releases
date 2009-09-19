@@ -45,6 +45,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
@@ -67,8 +68,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             String remotePath, File cache) {
-        assert execEnv.isRemote();
-        assert cache.exists();
+        CndUtils.assertTrue(execEnv.isRemote());
+        CndUtils.assertTrue(cache.exists());
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
         this.remotePath = remotePath;

@@ -149,14 +149,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("function", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("new", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("new", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("static", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("var", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("final", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("interface", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("instanceof", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("implements", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("extends", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("implements", KeywordCompletionType.SIMPLE);
+        PHP_KEYWORDS.put("extends", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("public", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("private", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("protected", KeywordCompletionType.ENDS_WITH_SPACE);
@@ -221,7 +221,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         String prefix = completionContext.getPrefix();
-
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
 
@@ -250,6 +249,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (context == CompletionContext.NONE) {
                 return CodeCompletionResult.NONE;
             }
+            if (!context.equals(CompletionContext.PHPDOC)) {
+                prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
+            }
+
 
             PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
             request.anchor = caretOffset - prefix.length();
@@ -675,8 +678,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (PHPDocTypeTag.ORDINAL_TYPES.contains(typeName.toUpperCase())) {
                         continue;
                     }
-                    boolean staticAllowed = OptionsUtils.provideCodeCompletionWithStaticMethods();
-                    boolean nonstaticAllowed = OptionsUtils.provideCodeCompletionWithNonStaticMethods();
+                    boolean staticAllowed = OptionsUtils.codeCompletionStaticMethods();
+                    boolean nonstaticAllowed = OptionsUtils.codeCompletionNonStaticMethods();
                     final QualifiedName qualifiedTypeName = typeScope.getNamespaceName().append(typeName);
                     if (!processedTypeNames.add(qualifiedTypeName)) continue;
                     Collection<IndexedClassMember<IndexedFunction>> methods =

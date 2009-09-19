@@ -48,8 +48,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location="CPlusPlus",
-    displayName="#TAB_CodeAssistanceTab",
+    location="CPlusPlus", // NOI18N
+    displayName="#TAB_CodeAssistanceTab", // NOI18N
     position=300
 )
 public final class CodeAssistancePanelController extends OptionsPanelController {

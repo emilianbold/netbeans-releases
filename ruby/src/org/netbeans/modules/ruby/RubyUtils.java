@@ -604,8 +604,14 @@ public class RubyUtils {
     // This does not include the various RHTML extensions: .rhtml, .erb, .html.erb, ... See isRhtmlFile
     public static final String[] RUBY_VIEW_EXTS = { 
         "rhtml", "erb", "dryml", "mab", "rjs", // NOI18N
-        "haml", "rxml", "dryml", "html.erb" }; // NOI18N
+        "haml", "rxml", "dryml", "html.erb"}; // NOI18N
 
+    /*
+     * Possible extensions for action mailer views.
+     */
+    private static final String[] ACTIONMAILER_VIEW_EXTS = {
+        "text.rhtml", "html.erb", "html.rhtml", "text.html.rhtml", "text.html.erb" //NOI18N
+    };
     /**
      * Move from something like app/controllers/credit_card_controller.rb#debit()
      * to app/views/credit_card/debit.rhtml
@@ -614,9 +620,8 @@ public class RubyUtils {
      * @param isHelper If false, it's a controller, else it's a helper
      * 
      */
-    public static FileObject getRailsViewFor(FileObject file, String methodName, boolean isHelper, boolean strict) {
-        String fileSuffix = isHelper ? "_helper" : "_controller"; // NOI18N
-        String parentAppDir = isHelper ? "helpers" : "controllers"; // NOI18N
+    public static FileObject getRailsViewFor(FileObject file, String methodName, 
+            String fileSuffix, String parentAppDir, boolean strict) {
         
         FileObject viewFile = null;
 
@@ -652,7 +657,10 @@ public class RubyUtils {
             }
 
             if (methodName != null) {
-                for (String ext : RUBY_VIEW_EXTS) {
+                List<String> viewExts = new ArrayList<String>();
+                viewExts.addAll(Arrays.asList(RUBY_VIEW_EXTS));
+                viewExts.addAll(Arrays.asList(ACTIONMAILER_VIEW_EXTS));
+                for (String ext : viewExts) {
                     viewFile = viewsFolder.getFileObject(methodName, ext);
                     if (viewFile != null) {
                         break;
@@ -664,7 +672,7 @@ public class RubyUtils {
                 }
             }
 
-            if (viewFile == null) {
+            if (viewFile == null && fileSuffix.length() > 0) {
                 // The caret was likely not inside any of the methods, or in a method that
                 // isn't directly tied to a view
                 // Just pick one of the views. Try index first.
@@ -698,47 +706,59 @@ public class RubyUtils {
         return viewFile;
     }
     
+    /**
+     * Gets the Rails controller or ActionMailer model class for the given view.
+     * 
+     * @param file the view to get the controller/model for.
+     * @return the controller/model or <code>null</code>.
+     *
+     */
     public static FileObject getRailsControllerFor(FileObject file) {
+
+        if (file.getParent() == null) {
+            return null;
+        }
         // TODO - instead of relying on Path manipulation here, should I just
         // use the RubyIndex to locate the class and method?
-        FileObject controllerFile = null;
+        FileObject result = null;
+        
+        file = file.getParent();
 
-        try {
-            file = file.getParent();
 
-            String fileName = file.getName();
-            String path = "";
+        String fileName = file.getName();
+        String path = "";
 
-            if (!fileName.startsWith("_")) { // NOI18N
-                                             // For partials like "_foo", just use the surrounding view
-                path = fileName;
-            }
+        if (!fileName.startsWith("_")) { // NOI18N
+            // For partials like "_foo", just use the surrounding view
+            path = fileName;
+        }
 
-            // Find app dir, and build up a relative path to the view file in the process
-            FileObject app = file.getParent();
+        // Find app dir, and build up a relative path to the view file in the process
+        FileObject app = file.getParent();
 
-            while (app != null) {
-                if (app.getName().equals("views") && // NOI18N
-                        ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
-                    app = app.getParent();
-
-                    break;
-                }
-
-                path = app.getNameExt() + "/" + path; // NOI18N
+        while (app != null) {
+            if (app.getName().equals("views") && // NOI18N
+                    ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
                 app = app.getParent();
+
+                break;
             }
 
-            if (app == null) {
-                return null;
-            }
+            path = app.getNameExt() + "/" + path; // NOI18N
+            app = app.getParent();
+        }
 
-            controllerFile = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
-        } catch (Exception e) {
+        if (app == null) {
             return null;
         }
 
-        return controllerFile;
+        result = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
+        if (result == null) {
+            // possibly a view for an action mailer model
+            result = app.getFileObject("models/" + path + ".rb"); // NOI18N
+        }
+
+        return result;
     }
 
     static String join(final String[] arr, final String separator) {

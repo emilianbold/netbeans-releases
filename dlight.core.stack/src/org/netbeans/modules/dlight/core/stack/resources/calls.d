@@ -1,6 +1,11 @@
-#!/usr/sbin/dtrace -Zs
+#!/usr/sbin/dtrace -ZCs
 
 #pragma D option quiet
+#define ts() (timestamp-starttime) / 1000 / 1000
+this uint64 starttime;
+BEGIN {
+  starttime=timestamp;
+}
 
 /*
  * Previous vtimestamp the thread was seen on CPU
@@ -20,17 +25,35 @@ profile-100hz
 /pid == $1/
 {
     this->vcurr = vtimestamp;
-    printf("%d %d %d %d %d %d", timestamp, cpu, tid, curthread->t_state, curthread->t_mstate, this->vcurr - self->vprev);
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, curthread->t_state, curthread->t_mstate, this->vcurr - self->vprev);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
     self->vprev = this->vcurr;
 }
 
 /* sched probes should catch thread in states other than running */
-sched:::sleep, sched:::on-cpu, sched:::off-cpu
+sched:::sleep
 /pid == $1/
 {
-    printf("%d %d %d %d %d %d", timestamp, cpu, tid, curthread->t_state, curthread->t_mstate, 0);
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, curthread->t_state, 7 /* LMS_SLEEP curthread->t_mstate*/, 0);
+    ustack();
+    printf("\n"); /* empty line indicates end of ustack */
+}
+
+/* sched probes should catch thread in states other than running */
+sched:::on-cpu
+/pid == $1/
+{
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, curthread->t_state, curthread->t_mstate, 0);
+    ustack();
+    printf("\n"); /* empty line indicates end of ustack */
+}
+
+/* sched probes should catch thread in states other than running */
+sched:::preempt
+/pid == $1/
+{
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, curthread->t_state, 8 /* LMS_WAIT_CPU curthread->t_mstate*/, 0);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
 }
@@ -39,7 +62,7 @@ sched:::sleep, sched:::on-cpu, sched:::off-cpu
 proc:::lwp-start
 /pid == $1/
 {
-    printf("%d %d %d %d %d %d", timestamp, cpu, tid, 0x10 /*curthread->t_state*/, curthread->t_mstate, 0);
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, 0x10 /*curthread->t_state*/, curthread->t_mstate, 0);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
 }
@@ -48,7 +71,7 @@ proc:::lwp-start
 proc:::lwp-exit
 /pid == $1/
 {
-    printf("%d %d %d %d %d %d", timestamp, cpu, tid, 0x08 /*curthread->t_state*/, curthread->t_mstate, 0);
+    printf("%d %d %d %d %d %d", ts(), cpu, tid, 0x08 /*curthread->t_state*/, curthread->t_mstate, 0);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
     vprev[curlwpsinfo->pr_addr] = 0;

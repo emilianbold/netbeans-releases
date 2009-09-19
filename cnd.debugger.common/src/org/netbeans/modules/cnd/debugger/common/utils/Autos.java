@@ -39,17 +39,23 @@
 
 package org.netbeans.modules.cnd.debugger.common.utils;
 
+import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.debugger.common.spi.AutosProvider;
+import org.netbeans.modules.cnd.spi.model.services.AutosProvider;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class Autos {
+public final class Autos {
     private static AutosProvider DEFAULT = null;
+    private static final AutosProvider EMPTY = new AutosProvider() {
+        public Set<String> getAutos(StyledDocument document, int offset) {
+            return Collections.<String>emptySet();
+        }
+    };
 
     private Autos() {
     }
@@ -59,7 +65,7 @@ public class Autos {
             // Take the first one
             DEFAULT = Lookup.getDefault().lookup(AutosProvider.class);
         }
-        return DEFAULT;
+        return DEFAULT == null ? EMPTY : DEFAULT;
     }
 
     public static Set<String> get(final StyledDocument document, int offset) {

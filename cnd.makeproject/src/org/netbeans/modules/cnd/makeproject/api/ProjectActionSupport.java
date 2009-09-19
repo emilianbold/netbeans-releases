@@ -45,11 +45,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
@@ -65,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -74,6 +78,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -353,25 +358,40 @@ public class ProjectActionSupport {
         private boolean checkRemotePath(ProjectActionEvent pae) {
             boolean success = true;
             MakeConfiguration conf = pae.getConfiguration();
-            if (!conf.getDevelopmentHost().isLocalhost()) {
-                // Make sure the project and 1st level subprojects are visible remotely
-                String baseDir = pae.getProfile().getBaseDir();
-                ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+            ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+            if (env.isRemote()) {
+                // the project itself
+                File baseDir = new File(pae.getProfile().getBaseDir()).getAbsoluteFile(); // or canonical?
+                List<File> extraSourceRoots = new ArrayList<File>();
+                MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(pae.getProject());
+                for(String soorceRoot : mcs.getSourceRoots()) {
+                    String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
+                    File file = new File(path); // or canonical?
+                    extraSourceRoots.add(file);
+                }
+                // Make sure 1st level subprojects are visible remotely
+                // First, remembr all subproject locations
+                Set<File> subprojectDirs = new HashSet<File>();
                 for (String subprojectDir : conf.getSubProjectLocations()) {
-                    subprojectDir = IpeUtils.toAbsolutePath(baseDir, subprojectDir);
-                    success &= sync(subprojectDir, env);
-                    if (!success) {
-                        break;
+                    subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
+                    subprojectDirs.add(new File(subprojectDir));
+                }
+                // Then go trough open subprojects and add their external source roots
+                for (Project subProject : conf.getSubProjects()) {
+                    File subProjectDir = FileUtil.toFile(subProject.getProjectDirectory());
+                    MakeConfigurationDescriptor subMcs =
+                            MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
+                    for(String soorceRoot : mcs.getSourceRoots()) {
+                        File file = new File(soorceRoot).getAbsoluteFile(); // or canonical?
+                        extraSourceRoots.add(file);
                     }
                 }
-                if (success) {
-                    success &= sync(baseDir, env);
-                }
+                success = sync(env, baseDir, extraSourceRoots);
             }
             return success;
         }
 
-        private boolean sync(String projectDir, ExecutionEnvironment env) {
+        private boolean sync(ExecutionEnvironment env, File projectDir, List<File> externSourceRoots) {
             PrintWriter err = null;
             PrintWriter out = null;
             InputOutput tab = getTab();
@@ -379,10 +399,12 @@ public class ProjectActionSupport {
                 out = this.ioTab.getOut();
                 err = this.ioTab.getErr();
             }
-            File dir2sync = new File(projectDir);
-            File privProjectStorage = new File(new File(dir2sync, "nbproject"), "private"); //NOI18N
+            File privProjectStorage = new File(new File(projectDir, "nbproject"), "private"); //NOI18N
+            List<File> allFiles = new ArrayList<File>(externSourceRoots.size() + 1);
+            allFiles.add(projectDir);
+            allFiles.addAll(externSourceRoots);
             RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
-                    dir2sync, env, out, err, privProjectStorage);
+                    env, out, err, privProjectStorage, allFiles.toArray(new File[allFiles.size()]));
             return syncWorker.synchronize();
         }
 

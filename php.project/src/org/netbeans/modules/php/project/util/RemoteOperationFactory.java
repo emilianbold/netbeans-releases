@@ -59,6 +59,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
+
 /**
  * @author Radek Matous
  */
@@ -73,13 +74,41 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
+    protected boolean isEnabled() {
+        return isEnabled(true);
+    }
+
+    private boolean isEnabled(boolean verbose) {
+        boolean remoteConfigSelected = isRemoteConfigSelected();
+        boolean uploadOnSave = false;
+        if (remoteConfigSelected) {
+            uploadOnSave = isUploadOnSave();
+        }
+        if (verbose) {
+            LOGGER.log(Level.FINE, "REMOTE copying enabled for project {0}: {1}", new Object[] {project.getName(), remoteConfigSelected && uploadOnSave});
+            if (!remoteConfigSelected) {
+                LOGGER.fine("\t-> remote config not selected");
+            }
+            if (!uploadOnSave) {
+                LOGGER.fine("\t-> upload on save not selected");
+            }
+        }
+        return remoteConfigSelected && uploadOnSave;
+    }
+
+    @Override
+    protected synchronized void resetInternal() {
+        remoteClient = null;
+    }
+
+    @Override
     Logger getLogger() {
         return LOGGER;
     }
 
     @Override
     protected Callable<Boolean> createInitHandlerInternal(final FileObject source) {
-        LOGGER.log(Level.FINE, "No INIT handler needed project {0}", project.getName());
+        LOGGER.log(Level.FINE, "No INIT handler needed for project {0}", project.getName());
         return null;
     }
 
@@ -157,20 +186,16 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     protected boolean isRemoteConfigValid() {
+        if (!isEnabled(false)) {
+            LOGGER.log(Level.FINE, "REMOTE copying not enabled for project {0}", project.getName());
+            return false;
+        }
         if (isInvalid()) {
             LOGGER.log(Level.FINE, "REMOTE copying invalid for project {0}", project.getName());
             return false;
         }
         if (getSources() == null) {
             LOGGER.log(Level.WARNING, "REMOTE copying disabled for project {0}. Reason: source root is null", project.getName());
-            return false;
-        }
-        if (!isRemoteConfigSelected()) {
-            LOGGER.log(Level.FINE, "REMOTE copying disabled for project {0}. Reason: remote config not selected", project.getName());
-            return false;
-        }
-        if (!isUploadOnSave()) {
-            LOGGER.log(Level.FINE, "REMOTE copying disabled for project {0}. Reason: REMOTE copying not selected", project.getName());
             return false;
         }
         if (getRemoteConfiguration() == null) {
@@ -219,12 +244,6 @@ final class RemoteOperationFactory extends FileOperationFactory {
                     .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
         }
         return remoteClient;
-    }
-
-    @Override
-    synchronized void reset() {
-        super.reset();
-        remoteClient = null;
     }
 
     protected boolean isUploadOnSave() {

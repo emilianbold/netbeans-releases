@@ -224,11 +224,8 @@ public class SQLSyntax extends Syntax {
                             state = ISI_BLOCK_COMMENT;
                             break;
                         default:
-                            if(Character.isWhitespace(actChar) ||
-                                    actChar == '(') {
-                                state = INIT;
-                                return SQLTokenContext.OPERATOR;
-                            }
+                            state = INIT;
+                            return SQLTokenContext.OPERATOR;
                     }
                     break;
 

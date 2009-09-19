@@ -44,6 +44,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -138,6 +140,14 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         final MacroMap env = info.getEnvVariables();
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
+        final Map<String, String> envVars = new HashMap<String, String>();
+
+        // To deal with different cases of env vars names (Path vs. PATH)
+        // Create a map to make binding between upper-case name and used in
+        // pb.environment() name...
+        for (String key : pb.environment().keySet()) {
+            envVars.put(key.toUpperCase(), key);
+        }
 
         if (isInterrupted()) {
             throw new InterruptedException();
@@ -146,17 +156,23 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         UnbufferSupport.initUnbuffer(info, env);
 
         pb.command(info.getCommand());
-        LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
+
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
+        }
 
 
         String val = null;
 
         if (!env.isEmpty()) {
             for (String var : env.keySet()) {
+                String envVarName = envVars.containsKey(var.toUpperCase()) ? envVars.get(var.toUpperCase()) : var;
                 val = env.get(var);
                 if (val != null) {
-                    pb.environment().put(var, val);
-                    LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{var, val});
+                    pb.environment().put(envVarName, val);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{envVarName, val}); // NOI18N
+                    }
                 }
             }
         }
@@ -166,7 +182,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             File wd = new File(wdir);
             if (wd.exists()) {
                 pb.directory(wd);
-                LOG.log(Level.FINEST, "Working directory: {0}", wdir);
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.FINEST, "Working directory: {0}", wdir);
+                }
             }
         }
 
@@ -178,6 +196,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         // Fake PID...
         ByteArrayInputStream bis = new ByteArrayInputStream("12345".getBytes()); // NOI18N
+
         readPID(bis);
     }
 
@@ -207,7 +226,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
          * This is to avoid a problem with short-running tasks, when
          * this Thread (that waits for process' termination) doesn't see
          * that it has been interrupted....
-         * TODO: describe situation in details... 
+         * TODO: describe situation in details...
          */
 
         int result = -1;
@@ -224,8 +243,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             // This sleep is to avoid lost interrupted exception...
             try {
                 Thread.sleep(200);
-            // 200 - to make this check not so often...
-            // actually, to avoid the problem, 1 is OK.
+                // 200 - to make this check not so often...
+                // actually, to avoid the problem, 1 is OK.
             } catch (InterruptedException ex) {
                 throw ex;
             }

@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://sun.com/stockquote.wsdl" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsd1="http://sun.com/stockquote.xsd" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://sun.com/stockquote.wsdl">
 <types>
         <xsd:schema>
-            <xsd:import namespace="http://sun.com/stockquote.xsd" schemaLocation="http://localhost:8080/StockQuoteService/StockService?xsd=1"></xsd:import>
+            <xsd:import namespace="http://sun.com/stockquote.xsd" schemaLocation="StockService.xsd"></xsd:import>
         </xsd:schema>
     </types>
 <message name="QuoteRequest">

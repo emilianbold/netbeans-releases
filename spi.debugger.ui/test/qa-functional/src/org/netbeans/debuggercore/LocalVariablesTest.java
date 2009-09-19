@@ -64,11 +64,11 @@ public class LocalVariablesTest extends DebuggerTestCase {
     
     private static String[] tests = new String[]{
         "testLocalVariablesThisNode",
-     /*   "testLocalVariablesStaticNode",
+        "testLocalVariablesStaticNode",
         "testLocalVariablesStaticInherited",
         "testLocalVariablesInheritedNode",
         "testLocalVariablesExtended",
-        "testLocalVariablesValues",*/
+        "testLocalVariablesValues",
         "testLocalVariablesSubExpressions"
     };
 

@@ -458,10 +458,38 @@ public class JsfElExpression extends ELExpression {
         return bundles;
     }
     
-    public  List<CompletionItem> getPropertyKeys(String propertyFile, 
+    public  List<CompletionItem> getPropertyKeysCompletionItems(String propertyFile, 
             int anchorOffset, String prefix) 
     {
-        ArrayList<CompletionItem> items = new ArrayList<CompletionItem>();
+        java.util.ResourceBundle[] bundle = new java.util.ResourceBundle[1];
+        List<String> keys = getPropertyKeys(propertyFile, prefix ,bundle);
+        List<CompletionItem> result = new ArrayList<CompletionItem>( keys.size() );
+        
+        char firstChar =0;
+        if ( prefix.length()> 0){
+            firstChar = prefix.charAt(0);
+        }
+        if ( firstChar == '"' || firstChar == '\''){
+            prefix = prefix.substring( 1 );
+        }
+        
+        for (String key : keys) {
+            if (key.startsWith(prefix)) {
+                StringBuffer helpText = new StringBuffer();
+                helpText.append(key).append("=<font color='#ce7b00'>"); // NOI18N
+                helpText.append(bundle[0].getString(key)).append("</font>"); // NOI18N
+                result.add(new JsfElCompletionItem.JsfResourceItem(key,
+                        getInsert( key , firstChar), anchorOffset, 
+                        helpText.toString()));
+            }
+        }
+        
+        return result;
+    }
+    
+    public  List<String> getPropertyKeys(String propertyFile, String prefix,
+            java.util.ResourceBundle[]  bundle) 
+    {
         java.util.ResourceBundle labels = null;
         ClassPath classPath;
         ClassLoader classLoader;
@@ -484,23 +512,22 @@ public class JsfElExpression extends ELExpression {
             }
         }
         
+        List<String> result = new LinkedList<String>();
         if (labels != null) {  
+            if ( bundle!= null && bundle.length >0 ){
+                bundle[0] = labels;
+            }
             // the property file was found
             Enumeration<String> keys = labels.getKeys();
-            String key;
             while (keys.hasMoreElements()) {
-                key = keys.nextElement();
+                String key = keys.nextElement();
                 if (key.startsWith(prefix)) {
-                    StringBuffer helpText = new StringBuffer();
-                    helpText.append(key).append("=<font color='#ce7b00'>"); //NOI18N
-                    helpText.append(labels.getString(key)).append("</font>"); //NOI18N
-                    items.add(new JsfElCompletionItem.JsfResourceItem(key, 
-                            anchorOffset, helpText.toString()));
+                    result.add( key );
                 }
             }
         }
         
-        return items;
+        return result;
     }
     
     public List<CompletionItem> /*getListenerMethodCompletionItems*/
@@ -668,14 +695,23 @@ public class JsfElExpression extends ELExpression {
                                 controller .getClasspathInfo());
 
                         // Not a regular Java data object (may be a multi-view data object), open it first
-                        DataObject od = DataObject.find(fo);
-                        if (!"org.netbeans.modules.java.JavaDataObject".equals(
-                                od.getClass().getName())) { // NOI18N
-                            EditorCookie oc = od.getCookie(EditorCookie.class);
-                            oc.open();
+                        // Fix for IZ#172418 - Invoking Go To Source for property inside EL could throw IllegalArgumentException
+                        if (fo != null) {
+                            DataObject od = DataObject.find(fo);
+                            if (!"org.netbeans.modules.java.JavaDataObject"
+                                    .equals(od.getClass().getName()))
+                            { // NOI18N
+                                EditorCookie oc = od
+                                        .getCookie(EditorCookie.class);
+                                oc.open();
+                            }
+                            success = ElementOpen.open(fo, el);
+                        }
+                        else {
+                            success = ElementOpen.open(controller.getClasspathInfo(), 
+                                    el);
                         }
                       
-                        success = ElementOpen.open(fo, el);
                         break;
                     }
                 }

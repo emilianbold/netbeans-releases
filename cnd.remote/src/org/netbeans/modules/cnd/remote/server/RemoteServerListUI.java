@@ -117,6 +117,15 @@ public class RemoteServerListUI extends ServerListUIEx {
         return res.get();
     }
 
+    public static void revalidate(ExecutionEnvironment env, char[] password, boolean rememberPassword) {        
+        ServerRecord record = ServerList.get(env);
+        if (record.isDeleted()) {
+            ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+        } else if (!record.isOnline()) {
+            record.validate(true);
+        }
+    }
+
     @Override
     protected boolean ensureRecordOnlineImpl(ExecutionEnvironment env, String customMessage) {
         CndUtils.assertNonUiThread();

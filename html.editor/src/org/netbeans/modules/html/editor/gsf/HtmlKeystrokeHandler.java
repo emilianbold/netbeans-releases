@@ -60,7 +60,7 @@ import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.HtmlAutoCompletion;
-import org.netbeans.modules.html.editor.Utils;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

@@ -104,24 +104,12 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
-            String functionName = functionSignature;
-            int parenIdx = functionSignature.indexOf('(');
-            if (0 <= parenIdx) {
-                functionName = functionSignature.substring(0, parenIdx);
-            }
+            String functionName = CodeModelSourceFileInfoProvider.getFunctionSignature(functionSignature);
             Map<String, AbstractFunctionToLine> sourceInfoMap = getSourceInfo(executable);
             if (TRACE) {
                 System.err.println("Search for:"+functionName+"+"+offset); // NOI18N
             }
             AbstractFunctionToLine fl = sourceInfoMap.get(functionName);
-            int space = functionName.indexOf(' ');
-            if (fl == null && space > 0) {
-                fl = sourceInfoMap.get(functionName.substring(space+1));
-            }
-            int star = functionName.indexOf('*');
-            if (fl == null && star > 0) {
-                fl = sourceInfoMap.get(functionName.substring(star+1));
-            }
             if (fl != null) {
                 if (TRACE) {
                     System.err.println("Found:"+fl); // NOI18N
@@ -142,7 +130,6 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     private synchronized Map<String, AbstractFunctionToLine> getSourceInfo(String executable) {
         onePath = new HashMap<String, String>();
         Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executable);
-        Set<Long> antiLoop = new HashSet<Long>();
         if (sourceInfoMap == null) {
             sourceInfoMap = new HashMap<String, AbstractFunctionToLine>();
             try {
@@ -155,6 +142,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                         TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);
                         String filePath = compilationUnit.getSourceFileAbsolutePath();
                         String compDir = compilationUnit.getCompilationDir();
+                        Set<Long> antiLoop = new HashSet<Long>();
                         processEntries(compilationUnit, compilationUnit.getDeclarations(false), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
                     }
                 } finally {
@@ -208,6 +196,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 }
                 break;
             }
+            case DW_TAG_structure_type:
             case DW_TAG_class_type:
                 processEntries(compilationUnit, entry.getChildren(), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
                 break;

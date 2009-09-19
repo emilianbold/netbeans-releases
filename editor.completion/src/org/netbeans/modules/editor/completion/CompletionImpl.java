@@ -200,7 +200,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private WeakReference<CompletionItem> lastSelectedItem = null;
     
     /** Ending offset of the recent autopopup modification. */
-    private int autoModEndOffset;
+    private int autoModEndOffset = -1;
     
     private boolean pleaseWaitDisplayed = false;
     private String completionShortcut = null;
@@ -347,9 +347,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             synchronized (this) {
                 localCompletionResult = completionResult;
             }
-            if ((completionAutoPopupTimer.isRunning() || localCompletionResult != null)
-                && (!layout.isCompletionVisible() || pleaseWaitDisplayed)
-                && e.getDot() != autoModEndOffset) {
+            if (autoModEndOffset >= 0 && e.getDot() != autoModEndOffset
+                    && (completionAutoPopupTimer.isRunning() || localCompletionResult != null)
+                    && (!layout.isCompletionVisible() || pleaseWaitDisplayed)) {
                 hideCompletion(false);
             }
 
@@ -600,7 +600,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     }
     
     private void completionQuery(boolean refreshedQuery, boolean delayQuery, int queryType) {
-        Result newCompletionResult = new Result(activeProviders.length);
+        Result newCompletionResult = this.new Result(activeProviders.length);
         synchronized (this) {
             assert (completionResult == null);
             completionResult = newCompletionResult;
@@ -776,6 +776,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called from any thread but it will be rescheduled into AWT.
      */
     public void showCompletion() {
+        autoModEndOffset = -1;
         showCompletion(true, false, false, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
 
@@ -815,7 +816,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * Can be called from any thread - is called synchronously
      * from the thread that finished last unfinished result.
      */
-    void requestShowCompletionPane(Result result) {
+    void requestShowCompletionPane(final Result result) {
         pleaseWaitTimer.stop();
         
         // Compute total count of the result sets
@@ -891,6 +892,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final boolean displayAdditionalItems = hasAdditionalItems;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
+                synchronized(this) {
+                    if (result != completionResult)
+                        return;
+                }
                 JTextComponent c = getActiveComponent();
                 int caretOffset = c.getSelectionStart();
                 // completionResults = null;
@@ -1035,7 +1040,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called in AWT only.
      */
     private void documentationQuery() {
-        Result newDocumentationResult = new Result(1); // Estimate for selected item only
+        Result newDocumentationResult = this.new Result(1); // Estimate for selected item only
         synchronized (this) {
             assert (docResult == null);
             docResult = newDocumentationResult;
@@ -1157,7 +1162,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called in AWT only.
      */
     private void toolTipQuery() {
-        Result newToolTipResult = new Result(1);
+        Result newToolTipResult = this.new Result(1);
         synchronized (this) {
             assert (toolTipResult == null);
             toolTipResult = newToolTipResult;
@@ -1450,6 +1455,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
 
         public void actionPerformed(ActionEvent e) {
+            autoModEndOffset = -1;
             showCompletion(true, false, false, queryType);
         }
     }
@@ -1553,7 +1559,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             for (int i = 0; i < size; i++) {
                 CompletionResultSetImpl result = resultSets.get(i);
                 result.getTask().refresh(beforeQuery ? null : result.getResultSet());
-                
             }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
@@ -1580,7 +1585,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * <br>
      * If the result is finished then cancelling physically cancels the result sets.
      */
-    static final class Result {
+    final class Result {
         
         private final List<CompletionResultSetImpl> resultSets;
         
@@ -1661,7 +1666,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 assert (invoked); // had to be invoked
                 invoked = false;
             }
-            Result refreshResult = new Result(getResultSets().size());
+            Result refreshResult = CompletionImpl.this.new Result(getResultSets().size());
             refreshResult.beforeQuery = beforeQuery;
             createRefreshResultSets(resultSets, refreshResult);
             return refreshResult;
@@ -1674,8 +1679,17 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
          */
         void invokeRefresh() {
             refreshResultSets(getResultSets(), beforeQuery);
-            if (!beforeQuery)
+            if (!beforeQuery) {
                 queryInvoked();
+                synchronized (CompletionImpl.this) {
+                    if (completionResult != null) {
+                        if (!isAllResultsFinished(completionResult.getResultSets())) {
+                            layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
+                                    null, -1, CompletionImpl.this, null, null, 0);
+                        }
+                    }
+                }
+            }
         }
 
     }

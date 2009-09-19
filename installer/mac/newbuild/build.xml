@@ -126,7 +126,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
+            <arg value="unzip -o -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
         </exec>      
     </target>
     

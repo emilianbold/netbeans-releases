@@ -111,6 +111,9 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
     private String addReference(final EjbReference ejbReference, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
         WebApp webApp = getWebApp();
+        if (webApp == null){
+            return null;
+        }
         
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
         final String[] ejbName = new String[1];
@@ -190,7 +193,9 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         if (webApp==null) {
             ProjectWebModule jp = webProject.getLookup().lookup(ProjectWebModule.class);
             FileObject fo = jp.getDeploymentDescriptor();
-            webApp = DDProvider.getDefault().getDDRoot(fo);
+            if (fo != null){
+                webApp = DDProvider.getDefault().getDDRoot(fo);
+            }
         }
         return webApp;
     }

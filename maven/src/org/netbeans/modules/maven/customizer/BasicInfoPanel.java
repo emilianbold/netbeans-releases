@@ -59,7 +59,7 @@ import org.openide.xml.XMLUtil;
  * @author  mkleint
  */
 public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListener {
-    private ModelHandle handle;
+    private final ModelHandle handle;
     private List<TextComponentUpdater> listeners;
     private final Category category;
     

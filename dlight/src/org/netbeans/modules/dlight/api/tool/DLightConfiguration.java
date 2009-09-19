@@ -308,6 +308,7 @@ public final class DLightConfiguration {
         public void removeListener(DLightConfigurationOptionsListener listener) {
        //     throw new UnsupportedOperationException("Not supported yet.");
         }
+
     }
 
     private final class DLightConfigurationOptionsListenerImpl implements DLightConfigurationOptionsListener{

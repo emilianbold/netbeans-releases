@@ -64,6 +64,7 @@ import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.util.Range;
+import org.openide.util.NbBundle;
 
 /**
  * @author Jiri Sedlacek
@@ -181,8 +182,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             long ms = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp()) - dataStart;
             StringBuilder buf = new StringBuilder();
             buf.append("<html>");// NOI18N
-            buf.append("Time ");// NOI18N
-            buf.append(TimeLineUtils.getMillisValue(ms));
+            buf.append(NbBundle.getMessage(ThreadStateCellRenderer.class, "StateColumnTimeTip", TimeLineUtils.getMillisValue(ms))); // NOI18N
             EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
             ThreadStateColumnImpl.fillMap(viewManager, state, aMap);
             ThreadStateColumnImpl.roundMap(aMap);
@@ -230,13 +230,15 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                             int x; // Begin of rectangle
                             int xx; // End of rectangle
 
-                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
+                            ThreadState threadStateAt = threadData.getThreadStateAt(index);
+                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadStateAt.getTimeStamp()) - viewStart) * factor), 0);
 
                             if (index < (threadData.size() - 1)) {
                                 xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
                             } else {
                                 //xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
-                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()+viewManager.getInterval()) - viewStart) * factor + 0.5f), width);
+                                int interval = ThreadStateColumnImpl.timeInervalToMilliSeconds(threadStateAt.getMSASamplePeriod());
+                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadStateAt.getTimeStamp()) + interval - viewStart) * factor + 0.5f), width);
                             }
                             if (x <= point.x && point.x < xx) {
                                 return index;
@@ -393,13 +395,14 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         int x; // Begin of rectangle
         int xx; // End of rectangle
 
-        x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
+        x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadStateColor.getTimeStamp()) - viewStart) * factor), 0);
 
         if (index < (threadData.size() - 1)) {
             xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
         } else {
             //xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
-            xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()+viewManager.getInterval()) - viewStart) * factor + 0.5f), width);
+            int interval = ThreadStateColumnImpl.timeInervalToMilliSeconds(threadStateColor.getMSASamplePeriod());
+            xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadStateColor.getTimeStamp()) + interval - viewStart) * factor + 0.5f), width);
         }
 
         int delta = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;

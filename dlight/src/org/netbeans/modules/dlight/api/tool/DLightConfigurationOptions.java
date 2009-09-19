@@ -66,5 +66,7 @@ public interface DLightConfigurationOptions   {
     boolean validateToolsRequiredUserInteraction();
 
     Collection<String> getActiveToolNames();
+
+
     
 }

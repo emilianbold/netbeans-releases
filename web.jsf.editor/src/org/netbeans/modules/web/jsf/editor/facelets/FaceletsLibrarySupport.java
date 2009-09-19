@@ -39,7 +39,6 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import com.sun.faces.config.ConfigManager;
-import com.sun.faces.config.configprovider.MetaInfFaceletTaglibraryConfigProvider;
 import com.sun.faces.facelets.tag.AbstractTagLibrary;
 import com.sun.faces.facelets.tag.TagLibrary;
 import com.sun.faces.facelets.tag.composite.CompositeLibrary;
@@ -81,6 +80,14 @@ import org.w3c.dom.Document;
 public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     private JsfSupport jsfSupport;
+
+    /**
+     * Library's namespace to library instance map.
+     *
+     * A composite library can be mapped to two namespaces,
+     * the default and the declared one when
+     * there is a tag library descriptor for the composite library
+     */
     private Map<String, FaceletsLibrary> faceletsLibraries;
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
@@ -109,24 +116,27 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         //listen on the /WEB-INF folder since the dd is arbitrary and may
         //be created later
-        jsfSupport.getWebModule().getWebInf().addFileChangeListener(new FileChangeAdapter() {
+        FileObject webInf = jsfSupport.getWebModule().getWebInf();
+        if (webInf != null) {
+            webInf.addFileChangeListener(new FileChangeAdapter() {
 
-            @Override
-            public void fileDataCreated(FileEvent fe) {
-                FileObject file = fe.getFile();
-                if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
-                    file.addFileChangeListener(DDLISTENER);
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    FileObject file = fe.getFile();
+                    if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                        file.addFileChangeListener(DDLISTENER);
+                    }
                 }
-            }
 
-            @Override
-            public void fileDeleted(FileEvent fe) {
-                FileObject file = fe.getFile();
-                if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
-                    file.removeFileChangeListener(DDLISTENER);
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    FileObject file = fe.getFile();
+                    if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                        file.removeFileChangeListener(DDLISTENER);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     //TODO cache the context-param entry value and check if has changed,
@@ -155,26 +165,37 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 //            debugLibraries();
         }
 
-        updateUndeclaredCompositeLibraries(faceletsLibraries);
+        updateCompositeLibraries(faceletsLibraries);
 
         return faceletsLibraries;
     }
 
-    private void updateUndeclaredCompositeLibraries(Map<String, FaceletsLibrary> faceletsLibraries) {
-        //process default undeclared composite libraries
+    // This method creates a library instances for the composite libraries without
+    // a library descriptor and also adds the default composite library
+    // namespace as a new key to the libraries map.
+    private void updateCompositeLibraries(Map<String, FaceletsLibrary> faceletsLibraries) {
         List<String> libraryNames = new ArrayList<String>(jsfSupport.getIndex().getAllCompositeLibraryNames());
-        //check if the libraries have been declared
+        //go through all the declared libraries, filter composite libraries
+        //and add default namespace to the libraries map
+        Map<String, FaceletsLibrary> cclibsMap = new HashMap<String, FaceletsLibrary>();
         for (FaceletsLibrary lib : faceletsLibraries.values()) {
             if (lib instanceof CompositeComponentLibrary) {
-                String libraryName = ((CompositeComponentLibrary) lib).getLibraryName();
+                CompositeComponentLibrary cclib = (CompositeComponentLibrary)lib;
+                //add default namespace to the map
+                cclibsMap.put(cclib.getDefaultNamespace(), cclib);
+
+                String libraryName = cclib.getLibraryName();
                 libraryNames.remove(libraryName);
             }
         }
 
+        faceletsLibraries.putAll(cclibsMap);
+
         //create libraries for the rest of undeclared libs
         for (String libraryName : libraryNames) {
             CompositeComponentLibrary ccl = new CompositeComponentLibrary(this, libraryName);
-            faceletsLibraries.put(ccl.getNamespace(), ccl);
+            //map the library only to the default namespace, it has no declaration
+            faceletsLibraries.put(ccl.getDefaultNamespace(), ccl);
         }
 
     }

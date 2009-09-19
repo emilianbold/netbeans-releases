@@ -129,7 +129,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();
-        toolConfiguration.addDataCollectorConfiguration(dcc);
+        toolConfiguration.addDataCollectorConfiguration(dtcc);
         // it's an indicator data provider as well!
         toolConfiguration.addIndicatorDataProviderConfiguration(dtcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(
@@ -275,6 +275,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         private final List<Column> columns;
         private int mem;
+        private long memTimestamp;
         private int max;
 
         public DataRowToMemory(List<Column> columns) {
@@ -282,12 +283,19 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         }
 
         public void addDataRow(DataRow row) {
+            long timestamp = DataUtil.getTimestamp(row);
             for (String columnName : row.getColumnNames()) {
                 for (Column column : columns) {
                     if (column.getColumnName().equals(columnName)) {
-                        mem = DataUtil.toInt(row.getData(columnName));
-                        if (max < mem) {
-                            max = mem;
+                        int newMem = DataUtil.toInt(row.getData(columnName));
+                        if (memTimestamp < timestamp || timestamp == -1) {
+                            mem = newMem;
+                            if (max < mem) {
+                                max = mem;
+                            }
+                            if (timestamp != -1) {
+                                memTimestamp = timestamp;
+                            }
                         }
                     }
                 }

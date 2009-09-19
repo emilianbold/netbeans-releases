@@ -85,7 +85,11 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
-        Map<String, FaceletsLibrary> libs = JsfSupport.findFor(context.doc).getFaceletsLibraries();
+        JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
+        Map<String, FaceletsLibrary> libs = Collections.EMPTY_MAP;
+        if (jsfSupport != null) {
+             libs = jsfSupport.getFaceletsLibraries();
+        }
 
         //Find the namespaces declarations itself
         //a.take the html AST
@@ -144,6 +148,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //2. find for unused declarations
         for (FaceletsLibrary lib : declaredLibraries) {
             AstNode rootNode = result.root(lib.getNamespace());
+            if(rootNode == null) {
+                continue; //no parse result for this namespace, the namespace is not declared
+            }
             final int[] usages = new int[1];
             AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
 

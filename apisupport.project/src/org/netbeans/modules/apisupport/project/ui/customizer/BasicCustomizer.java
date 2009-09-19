@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -58,6 +59,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -96,6 +98,8 @@ abstract class BasicCustomizer implements CustomizerProvider {
      * Be sure that you will prepare all the data (typically subclass of {@link
      * ModuleProperties}) needed by a customizer and its panels and that the
      * data is always up-to-date after this method was called.
+     *
+     * <i>NOTE: Since 6.8 called from background thread.</i>
      */
     abstract Lookup prepareData();
     
@@ -116,24 +120,29 @@ abstract class BasicCustomizer implements CustomizerProvider {
         showCustomizer(preselectedCategory, null);
     }
     
-    public void showCustomizer(String preselectedCategory, String preselectedSubCategory) {
+    public void showCustomizer(String preselectedCategory, final String preselectedSubCategory) {
         if (dialog != null) {
             dialog.setVisible(true);
             return;
         } else {
-            Lookup context = prepareData();
-            if (preselectedCategory == null) {
-                preselectedCategory = lastSelectedCategory;
-            }
-            context = new ProxyLookup(context, Lookups.fixed(new SubCategoryProvider(preselectedCategory, preselectedSubCategory)));
-            OptionListener listener = new OptionListener();
-            dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context, 
-                    preselectedCategory, listener,
-                    null);
-            dialog.addWindowListener(listener);
-            dialog.setTitle(NbBundle.getMessage(getClass(), "LBL_CustomizerTitle",
-                    ProjectUtils.getInformation(getProject()).getDisplayName()));
-            dialog.setVisible(true);
+            final String category = (preselectedCategory != null) ? preselectedCategory : lastSelectedCategory;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final Lookup context = new ProxyLookup(prepareData(), Lookups.fixed(new SubCategoryProvider(category, preselectedSubCategory)));
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            OptionListener listener = new OptionListener();
+                            dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context,
+                                    category, listener,
+                                    null);
+                            dialog.addWindowListener(listener);
+                            dialog.setTitle(NbBundle.getMessage(getClass(), "LBL_CustomizerTitle",
+                                    ProjectUtils.getInformation(getProject()).getDisplayName()));
+                            dialog.setVisible(true);
+                        }
+                    });
+                }
+            });
         }
     }
     

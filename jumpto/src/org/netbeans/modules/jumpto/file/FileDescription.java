@@ -83,6 +83,12 @@ public class FileDescription {
 //    static long time;
     
     public static final String SEARCH_IN_PROGRES = NbBundle.getMessage(FileDescription.class, "TXT_SearchingOtherProjects"); // NOI18N
+    /**
+     * The icon used if unknown project, i.e. {@code project == null}.
+     * In such case, we use {@code find.png} - "a file belongs to the find".
+     */
+    public static Icon UNKNOWN_PROJECT_ICON = ImageUtilities.loadImageIcon(
+             "org/netbeans/modules/jumpto/resources/find.gif", false); // NOI18N
     
     private final FileObject fileObject;
     private final String relativePath;
@@ -95,7 +101,8 @@ public class FileDescription {
     
     private static final String EMPTY_STRING = ""; // NOI18N
     
-    public FileDescription(FileObject file, String relativePath, Project project, boolean prefered) {
+    public FileDescription(FileObject file, String relativePath, 
+                           Project project, boolean prefered) {
         this.fileObject = file;
         this.relativePath = relativePath;
         this.project = project;
@@ -205,9 +212,19 @@ public class FileDescription {
     }
     
     private void initProjectInfo() {
-        ProjectInformation pi = ProjectUtils.getInformation( project );
-        projectName = pi.getDisplayName();
-        projectIcon = pi.getIcon();
+        // Issue #167198: A file may not belong to any project.
+        // Hence, FileOwnerQuery.getOwner(file) can return null as a project,
+        // and fileDescription.project will be null too.
+        // But! We should not call ProjectUtils.getInformation(null).
+        if(project != null) {
+            ProjectInformation pi = ProjectUtils.getInformation( project );
+            projectName = pi.getDisplayName();
+            projectIcon = pi.getIcon();
+        }
+        else {
+            projectName = EMPTY_STRING;
+            projectIcon = UNKNOWN_PROJECT_ICON;
+        }
     }
     
     // Innerclasses ------------------------------------------------------------
