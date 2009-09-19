@@ -335,7 +335,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                     }
                     return result;
                 }
-            }, "Validate IndicatorDataProviders for tool " + getID());//NO18N
+            }, "Validate IndicatorDataProviders for tool " + getID());//NO18N // NOI18N
             try {
                 indicatorDataProvidersValidationStatus = task.get();
                 return indicatorDataProvidersValidationStatus;
@@ -379,7 +379,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                     }
                     return result;
                 }
-            }, "Validate DataCollectors for tool " + getID());//NO18N
+            }, "Validate DataCollectors for tool " + getID());//NO18N // NOI18N
             try {
                 dataCollectorsValidationStatus = task.get();
                 return dataCollectorsValidationStatus;
@@ -422,7 +422,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                     }
                     return result;
                 }
-            }, "Validate DataCollectors and IndicatorDataProviders for tool " + getID());//NO18N
+            }, "Validate DataCollectors and IndicatorDataProviders for tool " + getID());//NO18N // NOI18N
             try {
                 //NO18N
                 return task.get();
