@@ -28,17 +28,21 @@
 package org.netbeans.modules.web.refactoring.rename;
 
 import org.openide.util.Parameters;
+import org.netbeans.modules.refactoring.api.Problem;
 
 /**
  * Encapsulates the new and old name.
  * TODO: needs a better name
  *
  * @author Erno Mononen
+ * @author ads 
  */
 class RenameItem {
 
     private final String oldFqn;
     private final String newFqn;
+    
+    private final Problem myProblem;
 
     /**
      * Creates a new RenameItem.
@@ -53,6 +57,15 @@ class RenameItem {
         Parameters.notEmpty("oldFqn", oldFqn); //NO18N
         this.newFqn = newFqn;
         this.oldFqn = oldFqn;
+        myProblem = null;
+    }
+    
+    public RenameItem(String newFqn, String oldFqn, Problem problem) {
+        Parameters.notEmpty("newFqn", newFqn); //NO18N
+        Parameters.notEmpty("oldFqn", oldFqn); //NO18N
+        this.newFqn = newFqn;
+        this.oldFqn = oldFqn;
+        myProblem = problem;
     }
     
     public String getNewFqn() {
@@ -61,6 +74,10 @@ class RenameItem {
     
     public String getOldFqn() {
         return oldFqn;
+    }
+    
+    public Problem getProblem(){
+        return myProblem;
     }
     
 }

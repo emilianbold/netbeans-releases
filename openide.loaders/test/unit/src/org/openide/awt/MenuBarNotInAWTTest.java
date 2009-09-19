@@ -38,47 +38,84 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.uihandler;
 
-import java.nio.charset.Charset;
+package org.openide.awt;
+
+import java.awt.EventQueue;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import junit.framework.TestCase;
-import org.openide.nodes.Node;
+import javax.swing.LookAndFeel;
+import org.netbeans.junit.NbTestCase;
+import org.openide.loaders.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- *
- * @author Jaroslav Tulach
- */
-public class SubmitPanelTest extends TestCase {
-    SubmitPanel instance;
+public class MenuBarNotInAWTTest extends NbTestCase {
+    private DataFolder df;
+    private MenuBar mb;
+
+    static {
+        System.setProperty("swing.defaultlaf", MyLaF.class.getName());
+    }
     
-    public SubmitPanelTest(String testName) {
+    public MenuBarNotInAWTTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        instance = new SubmitPanel();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testAddRecord() throws Exception {
-        LogRecord r = new LogRecord(Level.FINE, "Skákal pes, přes oves, přes zelenou louku");
-        Node n = Node.EMPTY.cloneNode();
-        instance.addRecord(r, n);
-        
-        String res = instance.text.getDocument().getText(0, instance.text.getDocument().getLength());
-        
-        
-        if (res.indexOf(r.getMessage()) == -1) {
-            fail("Localized message is not distorted:\n"+res);
-        }
-        
-        assertEquals("Offset at right position", 0, n.getValue("offset"));
+    @Override
+    protected Level logLevel() {
+        return Level.WARNING;
     }
     
+    @Override
+    protected void setUp() throws Exception {
+        FileObject fo = FileUtil.createFolder(
+            FileUtil.getConfigRoot(),
+            "Folder" + getName()
+        );
+        df = DataFolder.findFolder(fo);
+    }
+
+    public void testCreateAndWait() throws Exception {
+        mb = new MenuBar(df);
+        mb.waitFinished();
+
+        assertEquals("Laf created", 1, MyLaF.cnt);
+    }
+
+
+    public static final class MyLaF extends LookAndFeel {
+        static int cnt;
+
+        public MyLaF() {
+            if (!Thread.currentThread().getName().contains("AWT-")) {
+                assertTrue("Created only in AWT", EventQueue.isDispatchThread());
+            }
+            cnt++;
+        }
+
+        @Override
+        public String getName() {
+            return "MyLaf";
+        }
+
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getDescription() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isNativeLookAndFeel() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isSupportedLookAndFeel() {
+            return true;
+        }
+    }
 }

@@ -59,6 +59,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.Document;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.manager.WagonManager;
@@ -88,6 +89,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -534,6 +536,17 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
 
         wizardDescriptor.putProperty(ERROR_MSG, ""); //NOI18N
+        
+        /*
+         * Fix for IZ#153294 - Error message when renaming a package that contains a dash character
+         */
+        if ( !isValidPackageName( txtPackage.getText())){
+            wizardDescriptor.putProperty(ERROR_MSG,
+                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_InvalidPackageName",
+                    txtPackage.getText()));
+            return false;
+        }
+        
         return true;
     }
 
@@ -547,6 +560,33 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         }
         return false;
+    }
+
+    /*
+     * Copied from org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers
+     */
+    static boolean isValidPackageName(String packageName) {
+
+        if ("".equals(packageName)) {
+            return true;
+        }
+        if (packageName.startsWith(".") || packageName.endsWith(".")) {// NOI18N
+            return false;
+        }
+        if(packageName.equals("java") || packageName.startsWith("java.")) {//NOI18N
+            return false;
+        }
+
+        String[] tokens = packageName.split("\\."); //NOI18N
+        if (tokens.length == 0) {
+            return Utilities.isJavaIdentifier(packageName);
+        }
+        for(String token : tokens) {
+            if (!Utilities.isJavaIdentifier(token)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isMavenTooOld () {

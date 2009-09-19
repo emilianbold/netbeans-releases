@@ -406,9 +406,6 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
-            </folder>
-
-            <folder name="x-java">
                 <folder name="text">
                     <folder name="x-java-string">
                         <folder name="CodeTemplates">

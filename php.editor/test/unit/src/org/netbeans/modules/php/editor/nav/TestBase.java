@@ -49,6 +49,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -96,6 +97,7 @@ public abstract class TestBase extends CslTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
         PHPIndex.setClusterUrl("file:/bogus"); // No translation
         FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
         
