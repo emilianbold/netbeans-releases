@@ -97,6 +97,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private volatile boolean startedByIde = false;
     private transient boolean isRemote = false;
     private GlassfishInstanceProvider instanceProvider;
+    // prevent j2eeserver from stopping an authenticated domain that
+    // the IDE did not start.
+    private boolean stopDisabled = false;
     
     CommonServerSupport(Lookup lookup, Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
         this.lookup = lookup;
@@ -321,6 +324,12 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StopTask(this, stopServerListener, stateListener));
+        // prevent j2eeserver from stopping a server it did not start.
+        if (stopDisabled) {
+            stopServerListener.operationStateChanged(OperationState.COMPLETED, "");
+            stateListener.operationStateChanged(OperationState.COMPLETED, "");
+            return task;
+        }
         RequestProcessor.getDefault().post(task);
         return task;
     }
@@ -467,10 +476,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     public boolean isReallyRunning() {
-        return isRunning(getHostName(), getHttpPortNumber()) && isReady(false);
+        return isRunning(getHostName(), getHttpPortNumber()) && isReady(false,30,TimeUnit.SECONDS);
     }
 
-    public boolean isReady(boolean retry) {
+    public boolean isReady(boolean retry, int timeout, TimeUnit units) {
         boolean isReady = false;
         int maxtries = retry ? 3 : 1;
         int tries = 0;
@@ -480,7 +489,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             Commands.LocationCommand command = new Commands.LocationCommand();
             try {
                 Future<OperationState> result = execute(command);
-                if(result.get(30, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                if(result.get(timeout, units) == OperationState.COMPLETED) {
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " responded in " + (end - start)/1000000 + "ms");  // NOI18N
                     String domainRoot = getDomainsRoot() + File.separator + getDomainName();
@@ -501,7 +510,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                     // and some do not but are still V3 and might the ones the user
                     // is using.
                     result = execute(new Commands.VersionCommand());
-                    isReady = result.get(30, TimeUnit.SECONDS) == OperationState.COMPLETED;
+                    isReady = result.get(timeout, units) == OperationState.COMPLETED;
                     break;
                 } else {
                     long end = System.nanoTime();
@@ -607,6 +616,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
     }
 
+    void disableStop() {
+        stopDisabled = true;
+    }
+
     class StartOperationStateListener implements OperationStateListener {
         private ServerState endState;
 
@@ -618,7 +631,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             if(newState == OperationState.RUNNING) {
                 setServerState(ServerState.STARTING);
             } else if(newState == OperationState.COMPLETED) {
-                startedByIde = true;
+                startedByIde = isReady(false,300,TimeUnit.MILLISECONDS);
                 setServerState(endState);
             } else if(newState == OperationState.FAILED) {
                 setServerState(ServerState.STOPPED);
