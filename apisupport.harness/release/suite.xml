@@ -522,4 +522,18 @@ Property testcoverage.report.dir not set. Test coverage script may be missing in
         </fail>
         <nbbrowse file="${testcoverage.report.dir}/index.html"/>
     </target>
+
+    <target 
+        name="clusterize" depends="-taskdefs"
+        description="Scans a directory for list of NetBeans module JARs or OSGi bundles and generates necessary config files to make that look like NetBeans cluster"
+    >
+        <fail unless="cluster" message="You have to specify -Dcluster=... as a path to the root of your JAR tree"/>
+        <property name="config.dir" location="${cluster}/config/Modules"/>
+        <mkdir dir="${config.dir}"/>
+        <createmodulexml xmldir="${config.dir}" failonmissingmanifest="false">
+            <autoload dir="${cluster}">
+                <include name="${includes}"/>
+            </autoload>
+        </createmodulexml>
+    </target>
 </project>
