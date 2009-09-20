@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -83,11 +86,35 @@ public class BugzillaIssueFinder extends IssueFinder {
 
     private static final class Impl {
 
-        private static final String[] BUGWORDS = new String[] {"bug", "issue",  //NOI18N
-                                                               "Bug", "Issue",  //NOI18N
-                                                               "BUG", "ISSUE"}; //NOI18N
+        /*
+         * This implementation is quite simple because of two preconditions:
+         *
+         * #1 - all defined bug-words ("bug", "issue") and all words of the
+         *      bug number prefix ("duplicate of") consist of lowercase
+         *      characters from the basic latin alphabet (a-z), no spaces
+         * #2 - all words that make a defined bug number prefix ("duplicate of")
+         *      are unique
+         *
+         * This implementation relies on these preconditions and will may not
+         * work correctly if one or more of the preconditions are not met.
+         *
+         * 
+         * Note that although all the bug words and the bug number prefix
+         * must be defined as lowercase, the implementation ignores case
+         * of characters that are passed to input of the finder, as long as
+         * these are from the basic latin alphabet. All letters that do not
+         * belong to the basic latin alphabet are considered as garbage,
+         * no matter what is their case.
+         */
+
+        private static final String[] BUGWORDS = new String[] {"bug", "issue"}; //NOI18N
+        private static final String BUG_NUMBER_PREFIX = "duplicate of"; //NOI18N
+        private static final String[] BUGNUM_PREFIX_PARTS;
 
         private static final String PUNCT_CHARS = ",:;()[]{}";          //NOI18N
+
+        private static final int LOWER_A = 'a';     //automatic conversion to int
+        private static final int LOWER_Z = 'z';     //automatic conversion to int
 
         private static final int INIT       = 0;
         private static final int CHARS      = 1;
@@ -103,6 +130,42 @@ public class BugzillaIssueFinder extends IssueFinder {
         private int pos;
         private int state;
 
+        static {
+            BUGNUM_PREFIX_PARTS = BUG_NUMBER_PREFIX.split(" ");         //NOI18N
+
+            boolean asserts = false;
+            assert asserts = true;
+            if (asserts) {
+                /*
+                 * Checks that precondition #1 is met
+                 * - all bugwords the bug number prefix are lowercase:
+                 */
+                for (int i = 0; i < BUGWORDS.length; i++) {
+                    assert BUGWORDS[i].equals(
+                                BUGWORDS[i].toLowerCase());
+                }
+                for (int i = 0; i < BUGNUM_PREFIX_PARTS.length; i++) {
+                    assert BUGNUM_PREFIX_PARTS[i].equals(
+                                BUGNUM_PREFIX_PARTS[i].toLowerCase());
+                }
+
+                /*
+                 * Checks that precondition #2 is met
+                 * - all elements of BUGNUM_PREFIX_PARTS are unique:
+                 */
+                Set<String> bugnumPrefixPartsSet = new HashSet<String>(7);
+                bugnumPrefixPartsSet.addAll(Arrays.asList(BUGNUM_PREFIX_PARTS));
+                assert bugnumPrefixPartsSet.size() == BUGNUM_PREFIX_PARTS.length;
+            }
+        }
+
+        /**
+         * how many parts of the bugnum prefix ({@code "duplicate of"})
+         * have been already parsed
+         */
+        private int bugnumPrefixPartsProcessed;
+
+        int startOfWord;
         int start;
         int end;
         int[] result;
@@ -128,6 +191,9 @@ public class BugzillaIssueFinder extends IssueFinder {
             pos = 0;
             state = INIT;
 
+            bugnumPrefixPartsProcessed = 0;
+
+            startOfWord = -1;
             start = -1;
             end = -1;
 
@@ -141,7 +207,7 @@ public class BugzillaIssueFinder extends IssueFinder {
                     if (c == '#') {
                         rememberIsStart();
                         newState = HASH;
-                    } else if (Character.isLetter(c)) {
+                    } else if (isLetter(c)) {
                         rememberIsStart();
                         newState = CHARS;
                     } else {
@@ -149,10 +215,11 @@ public class BugzillaIssueFinder extends IssueFinder {
                     }
                     break;
                 case CHARS:
-                    if (Character.isLetter(c)) {
+                    if (isLetter(c)) {
                         newState = CHARS;
                     } else if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n')) {
-                        if (isBugword()) {
+                        if ((bugnumPrefixPartsProcessed == 0) && isBugword()
+                                || tryHandleBugnumPrefixPart()) {
                             newState = ((c == ' ') || (c == '\t')) ? BUGWORD
                                                                    : BUGWORD_NL;
                         } else {
@@ -188,30 +255,40 @@ public class BugzillaIssueFinder extends IssueFinder {
                     }
                     break;
                 case BUGWORD:
-                    if ((c == ' ') || (c == '\t')) {
-                        newState = BUGWORD;
+                case BUGWORD_NL:
+                    if ((state == BUGWORD_NL) && (c == '*')) {
+                        newState = STAR;
+                    } else if ((c == ' ') || (c == '\t')) {
+                        newState = state;
                     } else if ((c == '\r') || (c == '\n')) {
                         newState = BUGWORD_NL;
                     } else if (c == '#') {
                         newState = HASH;
+                        if (isBugnumPrefix()) {
+                            start = pos;        //exclude "duplicate of"
+                        }
                     } else if (isDigit(c)) {
-                        newState = NUM;
+                        if (isPartialBugnumPrefix()) {
+                            newState = getInitialState(c);
+                        } else {
+                            newState = NUM;
+                            if (isFullBugnumPrefix()) {
+                                start = pos;    //exclude "duplicate of"
+                            }
+                        }
+                    } else if (isLetter(c)) {
+                        newState = CHARS;
+                        if (isPartialBugnumPrefix()) {
+                            startOfWord = pos;
+                        } else {
+                            /* relies on precondition #2 (see top of the class) */
+                            bugnumPrefixPartsProcessed = 0;
+                            rememberIsStart();
+                        }
                     } else {
                         newState = getInitialState(c);
                     }
-                    break;
-                case BUGWORD_NL:
-                    if ((c == '\r') || (c == '\n') || (c == ' ') || (c == '\t')) {
-                        newState = BUGWORD_NL;
-                    } else if (c == '*') {
-                        newState = STAR;
-                    } else if (c == '#') {
-                        newState = HASH;
-                    } else if (isDigit(c)) {
-                        newState = NUM;
-                    } else {
-                        newState = getInitialState(c);
-                    }
+
                     break;
                 case STAR:
                     if ((c == ' ') || (c == '\t')) {
@@ -246,8 +323,8 @@ public class BugzillaIssueFinder extends IssueFinder {
         }
 
         private void rememberIsStart() {
-            assert start == -1;
             start = pos;
+            startOfWord = pos;
         }
 
         private void storeResult(int start, int end) {
@@ -261,6 +338,12 @@ public class BugzillaIssueFinder extends IssueFinder {
                 newResult[result.length + 1] = end;
                 result = newResult;
             }
+        }
+
+        private static boolean isLetter(int c) {
+            /* relies on precondition #1 (see the top of the class) */
+            c |= 0x20;
+            return ((c >= LOWER_A) && (c <= LOWER_Z));
         }
 
         private static boolean isDigit(int c) {
@@ -277,15 +360,62 @@ public class BugzillaIssueFinder extends IssueFinder {
         }
 
         private boolean isBugword() {
+            /* relies on precondition #1 (see the top of the class) */
             String word = str.substring(start, pos);
             for (int i = 0; i < BUGWORDS.length; i++) {
-                if (word.equals(BUGWORDS[i])) {
+                if (equalsIgnoreCase(BUGWORDS[i], word)) {
                     return true;
                 }
             }
             return false;
         }
 
+        private boolean tryHandleBugnumPrefixPart() {
+            String word = str.substring(startOfWord, pos);
+            if (equalsIgnoreCase(BUGNUM_PREFIX_PARTS[bugnumPrefixPartsProcessed], word)) {
+                bugnumPrefixPartsProcessed++;
+                return true;
+            } else if ((bugnumPrefixPartsProcessed != 0)
+                    && equalsIgnoreCase(BUGNUM_PREFIX_PARTS[0], word)) {
+                /* handles strings such as "duplicate duplicate of" */
+                bugnumPrefixPartsProcessed = 1;
+                start = startOfWord;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private boolean isBugnumPrefix() {
+            return (bugnumPrefixPartsProcessed != 0);
+        }
+
+        private boolean isPartialBugnumPrefix() {
+            return (bugnumPrefixPartsProcessed > 0)
+                   && (bugnumPrefixPartsProcessed < BUGNUM_PREFIX_PARTS.length);
+        }
+
+        private boolean isFullBugnumPrefix() {
+            return bugnumPrefixPartsProcessed == BUGNUM_PREFIX_PARTS.length;
+        }
+
+    }
+
+    private static boolean equalsIgnoreCase(String pattern, String str) {
+        final int patternLength = pattern.length();
+
+        if (str.length() != patternLength) {
+            return false;
+        }
+
+        /* relies on precondition #1 (see the top of the class) */
+        for (int i = 0; i < patternLength; i++) {
+            if ((str.charAt(i) | 0x20) != pattern.charAt(i)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
