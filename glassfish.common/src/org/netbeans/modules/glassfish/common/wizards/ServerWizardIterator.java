@@ -256,6 +256,10 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         this.httpPort = httpPort;
     }
     
+    int getAdminPort() {
+        return this.adminPort;
+    }
+
     public void setAdminPort(int adminPort) {
         this.adminPort = adminPort;
     }
