@@ -100,7 +100,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     private List<DataStorage> storages = null;
     private ServiceInfoDataStorage serviceInfoDataStorage = null;
     private List<DataCollector> collectors = null;
-    private Map<String, Map<String, Visualizer>> visualizers = null;
+    private Map<String, Map<String, Visualizer>> visualizers = null;//toolID, visualizer
     private SessionState state;
     private final int sessionID;
     private String description = null;
@@ -236,11 +236,11 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return state == SessionState.RUNNING;
     }
 
-    boolean hasVisualizer(String toolName, String visualizerID) {
-        if (visualizers == null || !visualizers.containsKey(toolName)) {
+    boolean hasVisualizer(String toolID, String visualizerID) {
+        if (visualizers == null || !visualizers.containsKey(toolID)) {
             return false;
         }
-        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolID);
         return toolVisualizers.containsKey(visualizerID);
     }
 
@@ -259,11 +259,11 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     }
 
-    Visualizer getVisualizer(String toolName, String visualizerID) {
-        if (visualizers == null || !visualizers.containsKey(toolName)) {
+    Visualizer getVisualizer(String toolID, String visualizerID) {
+        if (visualizers == null || !visualizers.containsKey(toolID)) {
             return null;
         }
-        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolID);
         return toolVisualizers.get(visualizerID);
     }
 
@@ -696,6 +696,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 DataProvider provider = DataProvidersManager.getInstance().createProvider(providerFactory);
                 provider.attachTo(storage);
                 provider.attachTo(serviceInfoDataStorage);
+                provider.dataFiltersChanged(this.dataFiltersSupport.getFilters(), false);
                 addDataFilterListener(provider);
                 return provider;
             }
@@ -831,6 +832,20 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
         for (ExecutionContext c : contexts) {
             DLightTool tool = c.getToolByName(toolName);
+            if (tool != null) {
+                return tool;
+            }
+        }
+        return null;
+    }
+
+    DLightTool getToolByID(String toolID) {
+        if (toolID == null) {
+            throw new IllegalArgumentException("Cannot use NULL as a tool name ");//NOI18N
+        }
+
+        for (ExecutionContext c : contexts) {
+            DLightTool tool = c.getToolByID(toolID);
             if (tool != null) {
                 return tool;
             }
