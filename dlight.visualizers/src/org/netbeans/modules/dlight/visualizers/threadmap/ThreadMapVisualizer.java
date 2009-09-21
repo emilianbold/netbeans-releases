@@ -59,12 +59,9 @@ import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
-import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
+import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -106,6 +103,7 @@ public class ThreadMapVisualizer extends JPanel implements
     private TimerBasedVisualizerSupport timerSupport;
     private DLightSession session;
     private Collection<TimeIntervalDataFilter> lastTimeFilters;
+    private String toolID;
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
 
@@ -120,7 +118,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
-            public ThreadStackVisualizer showStack(long startTime, final ThreadDumpQuery query) {
+            public void showStack(long startTime, final ThreadDumpQuery query) {
                 Future<ThreadDump> task = DLightExecutorService.submit(new Callable<ThreadDump>() {
 
                     public ThreadDump call() {
@@ -136,15 +134,18 @@ public class ThreadMapVisualizer extends JPanel implements
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                DataProvider d = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE); //NOI18N
-                final StackDataProvider stackDataProvider = d == null || !(d instanceof StackDataProvider) ? null : (StackDataProvider) d;
-                ThreadStackVisualizer visualizer = new ThreadStackVisualizer(stackDataProvider, threadDump, query.getStartTime());
-                CallStackTopComponent tc = CallStackTopComponent.findInstance();
-                tc.addVisualizer(visualizer.getDisplayName(), visualizer);
-                tc.open();
-                tc.requestVisible();
-                tc.requestFocus(true);
-                return visualizer;
+                session.cleanAllDataFilter(ThreadDumpFilter.class);
+                session.addDataFilter(new ThreadDumpFilter(query.getStartTime(), threadDump), false);
+                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump));
+//                DataProvider d = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE); //NOI18N
+  //              final StackDataProvider stackDataProvider = d == null || !(d instanceof StackDataProvider) ? null : (StackDataProvider) d;
+//                ThreadStackVisualizer visualizer = new ThreadStackVisualizer(stackDataProvider, threadDump, query.getStartTime());
+//                CallStackTopComponent tc = CallStackTopComponent.findInstance();
+//                tc.addVisualizer(toolID, visualizer.getDisplayName(), visualizer);
+//                tc.open();
+//                tc.requestVisible();
+//                tc.requestFocus(true);
+                //return null;
 
             }
         });
@@ -164,6 +165,10 @@ public class ThreadMapVisualizer extends JPanel implements
 
         setLayout(new BorderLayout());
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);
+    }
+
+    public final void setToolID(String toolID){
+        this.toolID = toolID;
     }
 
 

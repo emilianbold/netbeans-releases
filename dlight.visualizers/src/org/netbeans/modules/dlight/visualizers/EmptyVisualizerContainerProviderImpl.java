@@ -54,4 +54,10 @@ public final  class EmptyVisualizerContainerProviderImpl implements EmptyVisuali
         return VisualizerTopComponentTopComponent.findInstance();
     }
 
+    public VisualizerContainer getEmptyVisualizerContainer(String vcID) {
+        return null;
+    }
+
+
+
 }
