@@ -892,7 +892,7 @@ public class ELExpression {
                 String suffix = removeQuotes(getPropertyBeingTypedName());
 
                 for (ExecutableElement method : ElementFilter.methodsIn(
-                        bean.getEnclosedElements())) 
+                        controller.getElements().getAllMembers(bean))) 
                 {
                     String propertyName = getExpressionSuffix(method, controller );
 
