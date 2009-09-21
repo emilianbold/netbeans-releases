@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,6 +111,15 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+        setupUserDir();
+    }
+
+    private void setupUserDir() {
+        File dataDir = getDataDir();
+        File dataDirParent = dataDir.getParentFile();
+        File userDir = new File(dataDirParent, "userdir");
+        userDir.mkdirs();
+        System.setProperty("netbeans.user", userDir.getAbsolutePath());
     }
 
     @Override

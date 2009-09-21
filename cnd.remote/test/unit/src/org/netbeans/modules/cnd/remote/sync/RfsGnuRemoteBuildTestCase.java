@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import junit.framework.Test;
+import org.junit.Ignore;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -66,7 +67,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         log.setLevel(Level.ALL); // TODO: comment out
         setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_01");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
@@ -74,7 +75,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
     @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_02");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
         buildProject(makeProject, 60, TimeUnit.SECONDS);
