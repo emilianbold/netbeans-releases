@@ -44,6 +44,7 @@ package org.netbeans.performance.j2se.actions;
 import java.awt.event.KeyEvent;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.JEditorPane;
 import org.netbeans.api.java.source.SourceUtils;
@@ -138,11 +139,25 @@ public class PasteInEditorTest extends PerformanceTestCase {
         File dir = FileUtil.toFile(fo.getParent());
         assertNotNull("Directory is backed by java.io.File", dir);
 
+        try {
+            ec.saveDocument();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assertFalse("not modified yet", ec.isModified());
         AtomicLong l = new AtomicLong();
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator2);
+        editorOperator2.pushKey(KeyEvent.VK_ENTER);
+        assertTrue("modified now", ec.isModified());
         CountingSecurityManager.initialize(dir.getPath());
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator2);
-        CountingSecurityManager.assertCounts("30+ files touched is our current state, could be less if we tried more, see issue 171330", 40, l);
+        editorOperator2.pushKey(KeyEvent.VK_ENTER);
+        CountingSecurityManager.assertCounts("The file is touched twice in our current state, could be zero if we tried more, see issue 171330", 4, l);
+        assertTrue("still modified", ec.isModified());
+        try {
+            ec.saveDocument();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assertFalse("no longer modified", ec.isModified());
    }
     
     public ComponentOperator open(){
