@@ -609,38 +609,91 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return result;
     }
 
-    private ThreadDump _getThreadDump(ThreadDumpQuery query) {
-        ThreadDump res = getThreadDump1(query);
-        if (res != null) {
-            return res;
-        }
-        return getThreadDump2(query);
+    private MSAState getTrueState(ThreadSnapshot dump, ThreadDumpQuery query){
+        MSAState state = dump.getState();
+//        List<FunctionCall> stack = dump.getStack();
+//        String where = ""; // NOI18N
+//        if (stack.size() > 0) {
+//            where = stack.get(stack.size()-1).getDisplayedName();
+//        }
+//        if (where.indexOf("__lwp_park+")>=0) {
+//            if (query.isFullMode()) {
+//                state = MSAState.SleepingUserLock;
+//            } else {
+//                state = MSAState.Blocked;
+//            }
+//        } else if (where.indexOf("__nanosleep+")>=0) {
+//            if (query.isFullMode()) {
+//                state = MSAState.Sleeping;
+//            } else {
+//                state = MSAState.SleepingOther;
+//            }
+//        }
+        return state;
     }
 
-    private ThreadDump getThreadDump1(ThreadDumpQuery query) {
-        TimeFilter time = new TimeFilter(query.getThreadState().getTimeStamp(), query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000, TimeFilter.Mode.ALL);
+    private ThreadDump _getThreadDump(ThreadDumpQuery query) {
+        long start = query.getThreadState().getTimeStamp();
+        long middle = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000/2;
+        long end = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000;
+        // 1. try to find needed thread in needed state in sampling interval
+        TimeFilter time = new TimeFilter(start, end, TimeFilter.Mode.ALL);
         ThreadFilter threads = new ThreadFilter(query.getShowThreads());
         List<ThreadSnapshot> res = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
         ThreadSnapshot found = null;
+        long foundTimeSamp = -1;
         for(ThreadSnapshot dump : res) {
-            //if (true) {
-            //    String where = "";
-            //    List<FunctionCall> stack = dump.getStack();
-            //    if (stack.size() > 0) {
-            //        where = stack.get(stack.size()-1).getDisplayedName();
-            //    }
-            //    System.err.println("Dump "+dump.getThreadInfo().getThreadId()+" "+dump.getTimestamp()+" "+dump.getState()+" "+where);
-            //}
             if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                query.getPreferredState() == dump.getState()) {
-                //if (true) {
-                //    System.err.println("FOUND!");
-                //}
+                query.getPreferredState() == getTrueState(dump, query)) {
                 found = dump;
+                foundTimeSamp = found.getTimestamp();
                 break;
             }
         }
+        if (found == null) {
+            // 2. try to find needed thread in needed state before middle of the sampling interval
+            time = new TimeFilter(0, middle, TimeFilter.Mode.LAST);
+            threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int)query.getThreadID())));
+            List<ThreadSnapshot> res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
+            long foundAny = -1;
+            for(ThreadSnapshot dump : res2) {
+                foundAny = dump.getTimestamp();
+                if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
+                    query.getPreferredState() == getTrueState(dump, query)) {
+                    found = dump;
+                    foundTimeSamp = middle;
+                    break;
+                }
+            }
+            // 3. try to find needed thread in needed state in case equals time stamps
+            if (found == null && foundAny > 0) {
+                time = new TimeFilter(foundAny - 1, foundAny + 1, TimeFilter.Mode.ALL);
+                threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int)query.getThreadID())));
+                res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
+                for(ThreadSnapshot dump : res2) {
+                    foundAny = dump.getTimestamp();
+                    if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
+                        query.getPreferredState() == getTrueState(dump, query)) {
+                        found = dump;
+                        foundTimeSamp = middle;
+                        break;
+                    }
+                }
+                if (found == null) {
+                    // 4. take any dump of the thread
+                    for(ThreadSnapshot dump : res2) {
+                        foundAny = dump.getTimestamp();
+                        if (query.getThreadID() == dump.getThreadInfo().getThreadId()) {
+                            found = dump;
+                            foundTimeSamp = middle;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         if (found != null) {
+            // 5. find closed other thread in the sampling interval
             HashMap<Integer, ThreadSnapshot> map = new HashMap<Integer, ThreadSnapshot>();
             map.put(found.getThreadInfo().getThreadId(), found);
             for(ThreadSnapshot dump : res) {
@@ -650,20 +703,21 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     if (prev == null) {
                         map.put(id, dump);
                     } else {
-                        if (Math.abs(prev.getTimestamp() - found.getTimestamp()) > Math.abs(dump.getTimestamp() - found.getTimestamp())) {
+                        if (Math.abs(prev.getTimestamp() - foundTimeSamp) > Math.abs(dump.getTimestamp() - foundTimeSamp)) {
                             map.put(id, dump);
                         }
                     }
                 }
             }
             Set<Integer> toAdd = new HashSet<Integer>(query.getShowThreads());
-            ThreadDumpImpl result = new ThreadDumpImpl(found.getTimestamp());
+            ThreadDumpImpl result = new ThreadDumpImpl(foundTimeSamp);
             for(ThreadSnapshot dump : map.values()) {
                 toAdd.remove(dump.getThreadInfo().getThreadId());
                 result.addStack(dump);
             }
+            // 6. complete other thread by last call stacks
             if (!toAdd.isEmpty()) {
-                time = new TimeFilter(0, query.getThreadState().getTimeStamp(), TimeFilter.Mode.LAST);
+                time = new TimeFilter(0, foundTimeSamp, TimeFilter.Mode.LAST);
                 threads = new ThreadFilter(toAdd);
                 res = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
                 for(ThreadSnapshot dump : res) {
@@ -673,84 +727,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             return result;
         }
         return null;
-    }
-
-
-    private ThreadDump getThreadDump2(ThreadDumpQuery query) {
-        ThreadDumpImpl result = null;
-
-        try {
-
-            PreparedStatement statement = getPreparedStatement(
-                    "SELECT mstate, MAX(time_stamp) FROM CallStack WHERE thread_id = ? and time_stamp <= ? GROUP BY mstate"); // NOI18N
-            statement.setLong(1, query.getThreadID());
-            statement.setLong(2, query.getThreadState().getTimeStamp()+query.getThreadState().getMSASamplePeriod()/1000/1000);
-
-            ResultSet threadAndTimestampResult = statement.executeQuery();
-            int bestState = -1;
-            long bestTimestamp = -1;
-            while (threadAndTimestampResult.next()) {
-                int state = threadAndTimestampResult.getInt(1);
-                long timestamp = threadAndTimestampResult.getLong(2);
-                if ((query.getPreferredState().matches(state) && !query.getPreferredState().matches(bestState)) ||
-                        (query.getPreferredState().matches(state) || !query.getPreferredState().matches(bestState)) && bestTimestamp < timestamp) {
-                    bestState = state;
-                    bestTimestamp = timestamp;
-                }
-            }
-            threadAndTimestampResult.close();
-
-            if (bestTimestamp < 0) {
-                // Means that no callstack found for this thread in this state
-                //System.out.println("No callstack found!!!");
-                return new ThreadDumpImpl(query.getThreadState().getTimeStamp());
-            }
-
-            //System.out.println("Nearest callstack found at " + ts);
-
-            result = new ThreadDumpImpl(bestTimestamp);
-
-            // Next, get all times for all threads for alligned stacks (time <= ts)
-            // select threadid, max(ts) from test where ts <= 6 group by threadid;
-
-            statement = getPreparedStatement(
-                    "SELECT thread_id, MAX(time_stamp) FROM CallStack WHERE " + // NOI18N
-                    "time_stamp <= ? GROUP BY thread_id"); // NOI18N
-            statement.setLong(1, bestTimestamp);
-            threadAndTimestampResult = statement.executeQuery();
-
-            HashMap<Integer, Long> idToTime = new HashMap<Integer, Long>();
-
-            while (threadAndTimestampResult.next()) {
-                int callStackThreadId = threadAndTimestampResult.getInt(1);
-                long callStackTimeStamp = threadAndTimestampResult.getLong(2);
-                if (query.getShowThreads().contains(callStackThreadId)) {
-                    idToTime.put(callStackThreadId, callStackTimeStamp);
-                }
-            }
-            threadAndTimestampResult.close();
-
-            //get leaf_id's
-            for (Map.Entry<Integer, Long> entry : idToTime.entrySet()) {
-                int thread_id = entry.getKey();
-                long t = entry.getValue();
-                statement = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
-                statement.setInt(1, thread_id);
-                statement.setLong(2, t);
-                ResultSet stackAndStateResult = statement.executeQuery();
-                if (stackAndStateResult.next()) {
-                    int stackID = stackAndStateResult.getInt(1);
-                    int mstate = stackAndStateResult.getInt(2);
-                    result.addStack(new SnapshotImpl(this, t, thread_id, stackID, MSAState.fromCode(mstate, query.isFullMode())));
-                }
-                stackAndStateResult.close();
-            }
-
-        } catch (SQLException ex) {
-            System.err.println("ex: " + ex.getSQLState());  // NOI18N
-        }
-
-        return result;
     }
 
     public List<FunctionCall> getCallStack(final long stackId) {
