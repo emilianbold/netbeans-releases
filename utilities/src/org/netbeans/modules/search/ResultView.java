@@ -543,7 +543,9 @@ final class ResultView extends TopComponent {
                 if (butCurrent && c[i]==current) {
                     continue;
                 }
-                removePanel((ResultViewPanel) c[i]);
+                if(c[i] instanceof ResultViewPanel) { // #172546
+                    removePanel((ResultViewPanel) c[i]);
+                }
             }
         }
     }
