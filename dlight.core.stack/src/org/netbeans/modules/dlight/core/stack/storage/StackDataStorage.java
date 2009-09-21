@@ -62,14 +62,24 @@ public interface StackDataStorage {//extends StackSupport {
             FunctionMetric.CpuTimeExclusiveMetric, FunctionMetric.CpuTimeInclusiveMetric);
 
     /**
-     * Submits new stack (sample) to the storage.
+     * Submits new stack to the storage.
      *
      * @param stack  call stack represented as a list of function names,
      *      leaf function of the stack goes last in the list
-     * @param sampleDuration  number of nanoseconds the program spent in this stack
-     * @return
+     * @return stack id
      */
-    long putStack(List<CharSequence> stack, long sampleDuration);
+    long putStack(List<CharSequence> stack);
+
+    /**
+     * Submits new sample to the storage.
+     *
+     * @param stack  call stack represented as a list of function names,
+     *      leaf function of the stack goes last in the list
+     * @param timestamp  sample timestamp
+     * @param duration  sample duration
+     * @return stack id
+     */
+    long putSample(List<CharSequence> stack, long timestamp, long duration);
 
     List<FunctionCall> getCallStack(long stackId);
 

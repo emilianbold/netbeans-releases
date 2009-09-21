@@ -220,17 +220,21 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    public long putStack(List<CharSequence> stack, long sampleDuration) {
+    public long putStack(List<CharSequence> stack) {
+        return putSample(stack, -1, -1);
+    }
+
+    public long putSample(List<CharSequence> stack, long timestamp, long duration) {
         long callerId = 0;
         Set<Long> funcs = new HashSet<Long>();
         for (int i = 0; i < stack.size(); ++i) {
             boolean isLeaf = i + 1 == stack.size();
             CharSequence funcName = stack.get(i);
             long funcId = generateFuncId(funcName);
-            updateMetrics(funcId, false, sampleDuration, !funcs.contains(funcId), isLeaf);
+            updateMetrics(funcId, false, timestamp, duration, !funcs.contains(funcId), isLeaf);
             funcs.add(funcId);
             long nodeId = generateNodeId(callerId, funcId, getOffset(funcName));
-            updateMetrics(nodeId, true, sampleDuration, true, isLeaf);
+            updateMetrics(nodeId, true, timestamp, duration, true, isLeaf);
             callerId = nodeId;
         }
         return callerId;
@@ -291,9 +295,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
+            TimeIntervalDataFilter timeFilter = null;
             PreparedStatement select = getPreparedStatement(
-                    "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
-                    "FROM Func ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
+                    "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, SUM(FuncMetricAggr.time_excl) AS time_excl " + //NOI18N
+                    "FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
+                    (timeFilter != null? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
+                    "GROUP BY Func.func_id, Func.func_name, Func.func_full_name " + // NOI18N
+                    "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
+            if (timeFilter != null) {
+                select.setLong(1, timeFilter.getInterval().getStartMilliSeconds());
+                select.setLong(2, timeFilter.getInterval().getEndMilliSeconds());
+            }
             select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
             while (rs.next()) {
@@ -309,6 +321,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
             return funcList;
         } catch (SQLException ex) {
+            ex.printStackTrace();
         }
         return Collections.emptyList();
     }
@@ -369,16 +382,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    private void updateMetrics(long id, boolean funcOrNode, long sampleDuration, boolean addIncl, boolean addExcl) {
-        if (0 < sampleDuration) {
+    private void updateMetrics(long id, boolean funcOrNode, long timestamp, long duration, boolean addIncl, boolean addExcl) {
+        if (0 < duration) {
             UpdateMetrics cmd = new UpdateMetrics();
             cmd.objId = id;
+            cmd.bucketId = timestamp / 1000; // bucket is 1 second
             cmd.funcOrNode = funcOrNode;
             if (addIncl) {
-                cmd.cpuTimeInclusive = sampleDuration;
+                cmd.cpuTimeInclusive = duration;
             }
             if (addExcl) {
-                cmd.cpuTimeExclusive = sampleDuration;
+                cmd.cpuTimeExclusive = duration;
             }
             executor.submitCommand(cmd);
         }
@@ -928,8 +942,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     private static class UpdateMetrics {
 
-        public long objId;
         public boolean funcOrNode; // false => func, true => node
+        public long objId;
+        public long bucketId;
         public long cpuTimeInclusive;
         public long cpuTimeExclusive;
 
@@ -1004,7 +1019,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                             }
                         }
 
-                        // second pass: execute inserts
+                        // second pass: insert new functions/nodes
                         cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
                             if (!isRunning) {
@@ -1015,27 +1030,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                 if (cmd instanceof AddFunction) {
                                     AddFunction addFunctionCmd = (AddFunction) cmd;
                                     //demagle here
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)"); //NOI18N
+                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name) VALUES (?, ?, ?)"); //NOI18N
                                     stmt.setLong(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
-//                                    if (demanglingService == null) {
                                     stmt.setString(3, addFunctionCmd.name.toString());
-//                                    } else {
-//                                        Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
-//                                        try {
-//                                            stmt.setString(3, demangled.get());
-//                                        } catch (ExecutionException ex) {
-//                                            stmt.setString(3, addFunctionCmd.name.toString());
-//                                        }
-//                                    }
-                                    UpdateMetrics metrics = funcMetrics.remove(addFunctionCmd.id);
-                                    if (metrics == null) {
-                                        stmt.setLong(4, 0);
-                                        stmt.setLong(5, 0);
-                                    } else {
-                                        stmt.setLong(4, metrics.cpuTimeInclusive);
-                                        stmt.setLong(5, metrics.cpuTimeExclusive);
-                                    }
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
                                     AddNode addNodeCmd = (AddNode) cmd;
@@ -1060,14 +1058,29 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                         }
                         cmds.clear();
 
-                        // third pass: execute updates
+                        // third pass: record metrics
                         for (UpdateMetrics cmd : funcMetrics.values()) {
                             try {
-                                PreparedStatement stmt = getPreparedStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?"); //NOI18N
-                                stmt.setLong(1, cmd.cpuTimeInclusive);
-                                stmt.setLong(2, cmd.cpuTimeExclusive);
-                                stmt.setLong(3, cmd.objId);
-                                stmt.executeUpdate();
+                                PreparedStatement stmt = getPreparedStatement("SELECT func_id, bucket_id, time_incl, time_excl FROM FuncMetricAggr WHERE func_id = ? AND bucket_id = ? FOR UPDATE"); //NOI18N
+                                stmt.setLong(1, cmd.objId);
+                                stmt.setLong(2, cmd.bucketId);
+                                ResultSet rs = stmt.executeQuery();
+                                try {
+                                    if (rs.next()) {
+                                        rs.updateLong(3, rs.getLong(3) + cmd.cpuTimeInclusive);
+                                        rs.updateLong(4, rs.getLong(4) + cmd.cpuTimeExclusive);
+                                        rs.updateRow();
+                                    } else {
+                                        rs.moveToInsertRow();
+                                        rs.updateLong(1, cmd.objId);
+                                        rs.updateLong(2, cmd.bucketId);
+                                        rs.updateLong(3, cmd.cpuTimeInclusive);
+                                        rs.updateLong(4, cmd.cpuTimeExclusive);
+                                        rs.insertRow();
+                                    }
+                                } finally {
+                                    rs.close();
+                                }
                             } catch (SQLException ex) {
                                 ex.printStackTrace();
                             }

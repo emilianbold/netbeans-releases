@@ -128,7 +128,11 @@ public class DtraceParserTest extends NbTestCase {
             knownStacks = new ArrayList<String>();
         }
 
-        public long putStack(List<CharSequence> stack, long sampleDuration) {
+        public long putStack(List<CharSequence> stack) {
+            return putSample(stack, -1, -1);
+        }
+
+        public long putSample(List<CharSequence> stack, long timestamp, long duraction) {
             String stackAsString = stack.toString();
             long id = 0;
             while (id < knownStacks.size()) {
@@ -141,7 +145,7 @@ public class DtraceParserTest extends NbTestCase {
                 knownStacks.add((int)id, stackAsString);
             }
             ++id;
-            ref("putStack(" + stack + ", " + sampleDuration + ") = " + id);
+            ref("putStack(" + stack + ", " + duraction + ") = " + id);
             return id;
         }
 
