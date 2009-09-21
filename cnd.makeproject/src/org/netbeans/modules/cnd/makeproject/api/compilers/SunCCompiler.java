@@ -98,7 +98,7 @@ public class SunCCompiler extends SunCCCCompiler {
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
             }
             // Adding "__STDC__=0". It's missing from dryrun output
-            pair.systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N
+            pair.systemPreprocessorSymbolsList.addUnique("__STDC__=0"); // NOI18N
             
             reader.close();
         } catch (IOException ioe) {

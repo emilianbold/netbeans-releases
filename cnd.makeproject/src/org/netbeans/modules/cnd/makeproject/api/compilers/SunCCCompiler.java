@@ -50,7 +50,7 @@ import org.openide.ErrorManager;
 
 public class SunCCCompiler extends SunCCCCompiler {
     /** 
-     * Creates a new instance of SunCCompiler
+     * Creates a new instance of SunCCCompiler
      */
     protected SunCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
@@ -71,7 +71,7 @@ public class SunCCCompiler extends SunCCCCompiler {
 
     @Override
     public CompilerDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getC();
+        return getFlavor().getToolchainDescriptor().getCpp();
     }
     
     @Override
@@ -113,7 +113,7 @@ public class SunCCCompiler extends SunCCCCompiler {
                     int i = line.indexOf(' ', 8);
                     if (i > 0) {
                         String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                        pair.systemPreprocessorSymbolsList.add(token);
+                        pair.systemPreprocessorSymbolsList.addUnique(token);
                     }
                 }
             }
