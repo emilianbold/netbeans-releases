@@ -46,6 +46,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
@@ -78,13 +79,13 @@ public abstract class CommonStackDataStorageTests {
 
     @Test
     public void testSimple() {
-        db.putStack(Arrays.<CharSequence>asList("func1"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 10l);
+        db.putSample(Arrays.<CharSequence>asList("func1"), 0, 10);
+        db.putSample(Arrays.<CharSequence>asList("func1", "func2"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 3, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(4, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
@@ -114,13 +115,13 @@ public abstract class CommonStackDataStorageTests {
 
     @Test
     public void testCallersCallees() {
-        db.putStack(Arrays.<CharSequence>asList("func1", "func1"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("func2", "func1"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("func3", "func2", "func1"), 10l);
+        db.putSample(Arrays.<CharSequence>asList("func1", "func1"), 0, 10);
+        db.putSample(Arrays.<CharSequence>asList("func2", "func1"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("func3", "func2", "func1"), 3, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(3, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
@@ -162,14 +163,14 @@ public abstract class CommonStackDataStorageTests {
 
     @Test
     public void testDeepCallers() {
-        db.putStack(Arrays.<CharSequence>asList("x", "a", "b", "c", "x"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("x", "a", "b", "x"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("a", "b", "c"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("x", "x", "a", "b", "c"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("x", "b", "c"), 10l);
+        db.putSample(Arrays.<CharSequence>asList("x", "a", "b", "c", "x"), 0, 10);
+        db.putSample(Arrays.<CharSequence>asList("x", "a", "b", "x"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("a", "b", "c"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("x", "x", "a", "b", "c"), 3, 10);
+        db.putSample(Arrays.<CharSequence>asList("x", "b", "c"), 4, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(4, hotSpots.size());
 
         FunctionCallWithMetric c = find(hotSpots, "c");
@@ -197,15 +198,15 @@ public abstract class CommonStackDataStorageTests {
 
     @Test
     public void testDeepCallees() {
-        db.putStack(Arrays.<CharSequence>asList("a", "b", "c", "d", "e"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("a", "b", "c", "d", "f"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("b", "c", "d", "e"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("b", "c", "d", "f"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("c", "d", "e"), 10l);
-        db.putStack(Arrays.<CharSequence>asList("c", "d", "f"), 10l);
+        db.putSample(Arrays.<CharSequence>asList("a", "b", "c", "d", "e"), 0, 10);
+        db.putSample(Arrays.<CharSequence>asList("a", "b", "c", "d", "f"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("b", "c", "d", "e"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("b", "c", "d", "f"), 3, 10);
+        db.putSample(Arrays.<CharSequence>asList("c", "d", "e"), 4, 10);
+        db.putSample(Arrays.<CharSequence>asList("c", "d", "f"), 5, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(6, hotSpots.size());
 
         FunctionCallWithMetric b = find(hotSpots, "b");

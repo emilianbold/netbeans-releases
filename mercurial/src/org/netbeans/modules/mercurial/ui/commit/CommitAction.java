@@ -356,6 +356,7 @@ public class CommitAction extends ContextAction {
         Iterator<HgFileNode> it = commitFiles.keySet().iterator();
 
         List<String> excPaths = new ArrayList<String>();
+        boolean locallyModifiedExcluded = false;
         List<String> incPaths = new ArrayList<String>();
         while (it.hasNext()) {
              if (support.isCanceled()) {
@@ -374,6 +375,10 @@ public class CommitAction extends ContextAction {
                  incPaths.add(node.getFile().getAbsolutePath());
              }else{
                  excPaths.add(node.getFile().getAbsolutePath());
+                 if (!locallyModifiedExcluded) {
+                     int status = cache.getCachedStatus(node.getFile()).getStatus();
+                     locallyModifiedExcluded = (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0; // not interested in excluded locally new files
+                 }
              }
         }
         if (support.isCanceled()) {
@@ -455,7 +460,7 @@ public class CommitAction extends ContextAction {
                 if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
                     // committing after a merge, all modified files have to be committed, even excluded files
                     // ask the user for confirmation
-                    if (support.isCanceled() || !commitAfterMerge()) {
+                    if (support.isCanceled() || !commitAfterMerge(locallyModifiedExcluded, repository)) {
                         return;
                     } else {
                         HgCommand.doCommit(repository, Collections.EMPTY_LIST, message, logger);
@@ -504,8 +509,10 @@ public class CommitAction extends ContextAction {
         }
     }
 
-    private static boolean commitAfterMerge () {
-        if (HgModuleConfig.getDefault().getConfirmCommitAfterMerge()) { // ask before commit?
+    private static boolean commitAfterMerge (boolean locallyModifiedExcluded, File repository) {
+        // XXX consider usage of repository to determine if there are any non-included files which have to be committed, too
+        // and thus removing the option HgModuleConfig.getDefault().getConfirmCommitAfterMerge()
+        if (locallyModifiedExcluded || HgModuleConfig.getDefault().getConfirmCommitAfterMerge()) { // ask before commit?
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_AFTER_MERGE_QUERY")); // NOI18N
             descriptor.setTitle(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_AFTER_MERGE_TITLE")); // NOI18N
             descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);

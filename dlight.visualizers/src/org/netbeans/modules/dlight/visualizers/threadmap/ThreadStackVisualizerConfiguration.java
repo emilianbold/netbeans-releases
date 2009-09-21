@@ -36,17 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-package org.netbeans.modules.dlight.management.ui.spi;
-
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 
 /**
  *
  * @author mt154047
  */
-public interface EmptyVisualizerContainerProvider {
+public final class ThreadStackVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
-    VisualizerContainer getEmptyVisualizerContainer();
-    VisualizerContainer getEmptyVisualizerContainer(String vcID);
+    public static final String ID = "ThreadStackVisualizerConfiguration.id";//NOI18N
+    private final ThreadDump threadDump;
+    private final long dumpTime;
+
+    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump) {
+        this.dumpTime = dumpTime;
+        this.threadDump = threadDump;
+    }
+
+    public ThreadDump getThreadDump() {
+        return threadDump;
+    }
+
+    public long getDumpTime() {
+        return dumpTime;
+    }
+
+    public DataModelScheme getSupportedDataScheme() {
+        return DataModelSchemeProvider.getInstance().getScheme("model:stack");//NOI18N
+    }
+
+    public String getID() {
+        return ID;
+    }
+
+    public DataTableMetadata getMetadata() {
+        return CpuSamplingSupport.CPU_SAMPLE_TABLE;
+    }
 }
