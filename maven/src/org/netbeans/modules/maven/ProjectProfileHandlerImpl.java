@@ -54,10 +54,8 @@ import org.apache.maven.model.Profile;
 import org.apache.maven.profiles.ProfilesRoot;
 import org.apache.maven.profiles.io.xpp3.ProfilesXpp3Reader;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.build.model.ModelLineage;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.profile.ProfilesModel;
@@ -97,7 +95,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     public List<String> getAllProfiles() {
         Set<String> profileIds = new HashSet<String>();
         //pom+profiles.xml profiles come first
-        extractProfiles(profileIds, nmp.getPOMFile());
+        extractProfiles(profileIds, nmp);
         //Add settings file Properties
         profileIds.addAll(MavenSettingsSingleton.getInstance().createUserSettingsModel().
                 getProfilesAsMap().keySet());
@@ -199,10 +197,9 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         }
     }
 
-    private static void extractProfiles(Set<String> profileIds, File file) {
-        extractProfilesFromModelLineage(file, profileIds);
-        File basedir = FileUtil.normalizeFile(file.getParentFile());
-        FileObject fileObject = FileUtil.toFileObject(basedir);
+    private static void extractProfiles(Set<String> profileIds, NbMavenProjectImpl prj) {
+        extractProfilesFromModelLineage(prj, profileIds);
+        FileObject fileObject = prj.getProjectDirectory();
         //read from profiles.xml
         if (fileObject != null) { //144159
             FileObject profiles = fileObject.getFileObject("profiles.xml");
@@ -227,38 +224,38 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         }
     }
     
-    private static void extractProfilesFromModelLineage(File file, Set<String> profileIds) {
-        try {
-            ModelLineage lineage = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder(), true);
-            Iterator it = lineage.modelIterator();
-            while (it.hasNext()) {
-                Model mdl = (Model) it.next();
-                List mdlProfiles = mdl.getProfiles();
-                if (mdlProfiles != null) {
-                    Iterator it2 = mdlProfiles.iterator();
-                    while (it2.hasNext()) {
-                        Profile prf = (Profile) it2.next();
-                        profileIds.add(prf.getId());
-                    }
+    private static void extractProfilesFromModelLineage(NbMavenProjectImpl prj, Set<String> profileIds) {
+        ModelLineage lineage = prj.getOriginalMavenProjectLineage();
+        if (lineage == null) return;
+        Iterator it = lineage.modelIterator();
+        while (it.hasNext()) {
+            Model mdl = (Model) it.next();
+            List mdlProfiles = mdl.getProfiles();
+            if (mdlProfiles != null) {
+                Iterator it2 = mdlProfiles.iterator();
+                while (it2.hasNext()) {
+                    Profile prf = (Profile) it2.next();
+                    profileIds.add(prf.getId());
                 }
             }
-            if (lineage != null && lineage.getOriginatingModel() != null) {
-                @SuppressWarnings("unchecked")
-                List<String> modules = lineage.getOriginatingModel().getModules();
-                File basedir = FileUtil.normalizeFile(file.getParentFile());
-                for (String module : modules) {
-                    File childPom = FileUtil.normalizeFile(new File(basedir, module));
-                    if (childPom.exists() && !childPom.isFile()) {
-                        childPom = new File(childPom, "pom.xml"); //NOI18N
-                    }
-                    if (childPom.isFile()) {
-                            extractProfilesFromModelLineage(childPom, profileIds);
-                    }
-                }
-            }
-        } catch (ProjectBuildingException ex) {
-            Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
         }
+// this is *very* expensive in root projects with very little added value.. people
+// can always declare the needed child profiles manually..
+// slow -> especially when a new online embedder was always started for each recursive call..
+//            if (lineage != null && lineage.getOriginatingModel() != null) {
+//                @SuppressWarnings("unchecked")
+//                List<String> modules = lineage.getOriginatingModel().getModules();
+//                File basedir = FileUtil.normalizeFile(file.getParentFile());
+//                for (String module : modules) {
+//                    File childPom = FileUtil.normalizeFile(new File(basedir, module));
+//                    if (childPom.exists() && !childPom.isFile()) {
+//                        childPom = new File(childPom, "pom.xml"); //NOI18N
+//                    }
+//                    if (childPom.isFile()) {
+//                            extractProfilesFromModelLineage(childPom, profileIds);
+//                    }
+//                }
+//            }
     }
 
     private List<String> retrieveActiveProfiles(AuxiliaryConfiguration ac, boolean shared) {
