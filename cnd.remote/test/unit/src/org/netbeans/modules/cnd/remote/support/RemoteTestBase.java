@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
@@ -70,13 +72,36 @@ import org.openide.windows.IOProvider;
  */
 public abstract class RemoteTestBase extends CndBaseTestCase {
 
-    protected final Logger log = Logger.getLogger("cnd.remote.logger");
+    protected static final Logger log = RemoteUtil.LOGGER;
 
-    protected final static String successLine = "BUILD SUCCESSFUL";
-    protected final static String failureLine = "BUILD FAILED";
-    protected final static String[] errorLines = new String[] {
+    private final static String successLine = "BUILD SUCCESSFUL";
+    private final static String failureLine = "BUILD FAILED";
+    private final static String[] errorLines = new String[] {
             "Error copying project files"
         };
+
+    static {
+        //log.setLevel(Level.ALL);
+        log.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                // Log if parent cannot log the message ONLY.
+                if (!log.getParent().isLoggable(record.getLevel())) {
+                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
+                    if (record.getThrown() != null) {
+                        record.getThrown().printStackTrace(System.err);
+                    }
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+    }
+
 
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {

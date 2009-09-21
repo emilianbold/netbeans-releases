@@ -79,6 +79,9 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     protected static void instantiateSample(String name, File destdir) throws IOException {
+        if(destdir.exists()) {
+            assertTrue("Can not remove directory " + destdir.getAbsolutePath(), removeDirectory(destdir));
+        }
         FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
         DataObject templateDO = DataObject.find(templateFO);
