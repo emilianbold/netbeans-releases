@@ -391,8 +391,11 @@ public class ELExpression {
         if ( rBracketIndex <lBracketIndex   ){
             return elExp.substring( lBracketIndex+ 1);
         }
-        else if ( lBracketIndex > - 1 || dotPos >-1 ){
-            return elExp.substring( Math.max(dotPos,lBracketIndex) + 1);
+        else if ( lBracketIndex > -1 && dotPos < rBracketIndex ){ 
+            return elExp.substring(lBracketIndex + 1);
+        }
+        else if (dotPos >-1 ){
+            return elExp.substring( dotPos + 1);
         }
         return null;
     }
