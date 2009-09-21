@@ -147,7 +147,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         Future<Integer> task = service.run();
         try {
             if (task.get().intValue() == 0) {
-                freshCommands = new ArrayList<FrameworkCommand>(lineProcessor.getCommands());
+                freshCommands = lineProcessor.getCommands();
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -159,7 +159,8 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     class CommandsLineProcessor implements LineProcessor {
 
-        private List<FrameworkCommand> commands = Collections.synchronizedList(new ArrayList<FrameworkCommand>());
+        // @GuardedBy(commands)
+        private final List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>();
         private String prefix;
 
         public void processLine(String line) {
@@ -179,12 +180,18 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
                     command = prefix + ":" + command; // NOI18N
                 }
                 String description = commandMatcher.group(2);
-                commands.add(new SymfonyCommand(phpModule, command, description, command));
+                synchronized (commands) {
+                    commands.add(new SymfonyCommand(phpModule, command, description, command));
+                }
             }
         }
 
         public List<FrameworkCommand> getCommands() {
-            return commands;
+            List<FrameworkCommand> copy = null;
+            synchronized (commands) {
+                copy = new ArrayList<FrameworkCommand>(commands);
+            }
+            return copy;
         }
 
         public void close() {
