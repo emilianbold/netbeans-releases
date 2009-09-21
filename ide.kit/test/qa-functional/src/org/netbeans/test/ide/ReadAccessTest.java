@@ -47,25 +47,30 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.Stamps;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 /**
  * Read access test
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  *
- * To run this test do the following:
- * 1. specify stage = 1 in suite method and run the test
- *                      to initilize the environment
- * 2. specify stage = 2 and run the test to perform measurement
+ * This test starts the VM three times. During first start (with new userdir)
+ * it generates caches (classes, resources, etc.). The next two starts are
+ * then verifying that no JAR file is opened (e.g. the caches functioning
+ * correctly).
  *
- * @author mrkam@netbeans.org
+ * @author mrkam@netbeans.org, Jaroslav Tulach
  */
-public class ReadAccessTest extends JellyTestCase {
-    private static void initCheckReadAccess() throws IOException {
+public class ReadAccessTest extends NbTestCase {
+    private static void initCheckReadAccess() throws Exception {
+        Thread.sleep(10000);
+        Stamps.getModulesJARs().shutdown();
+
+        System.getProperties().remove("netbeans.dirs");
+
         Set<String> allowedFiles = new HashSet<String>();
         InputStream is = ReadAccessTest.class.getResourceAsStream("allowed-file-reads.txt");
         BufferedReader r = new BufferedReader(new InputStreamReader(is));
@@ -94,7 +99,8 @@ public class ReadAccessTest extends JellyTestCase {
         {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
                 ReadAccessTest.class
-            ).clusters(".*").enableModules(".*").reuseUserDir(false).enableClasspathModules(false);
+            ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
+            .reuseUserDir(false).enableClasspathModules(false);
             conf = conf.addTest("testInitUserDir");
             suite.addTest(NbModuleSuite.create(conf));
         }
@@ -102,8 +108,18 @@ public class ReadAccessTest extends JellyTestCase {
         {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
                 ReadAccessTest.class
-            ).clusters(".*").enableModules(".*").reuseUserDir(true).enableClasspathModules(false);
-            conf = conf.addTest("testReadAccess");
+            ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
+            .reuseUserDir(true).enableClasspathModules(false);
+            conf = conf.addTest("testSndStart");
+            suite.addTest(NbModuleSuite.create(conf));
+        }
+
+        {
+            NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+                ReadAccessTest.class
+            ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
+            .reuseUserDir(true).enableClasspathModules(false);
+            conf = conf.addTest("testThirdStart");
             suite.addTest(NbModuleSuite.create(conf));
         }
 
@@ -111,25 +127,30 @@ public class ReadAccessTest extends JellyTestCase {
     }
 
     public void testInitUserDir() throws Exception {
-        Thread.sleep(10000);
-        // will be reset next time the system starts
-        System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         initCheckReadAccess();
     }
 
-    public void testReadAccess() throws Exception {
+    public void testSndStart() throws Exception {
+        assertAccess();
+        
+        // initializes counting, but waits till netbeans.dirs are provided
+        // by NbModuleSuite
+        initCheckReadAccess();
+    }
+
+    public void testThirdStart() throws Exception {
+        assertAccess();
+    }
+
+    private void assertAccess() throws Exception {
         try {
-            if (CountingSecurityManager.isEnabled()) {
-                CountingSecurityManager.assertCounts("No reads during startup", 0);
-            } else {
-                System.out.println("Initialization mode, counting is disabled");
-            }
+            assertTrue("Security manager is on", CountingSecurityManager.isEnabled());
+            CountingSecurityManager.assertCounts("No reads during 2nd startup", 0);
         } catch (Error e) {
             e.printStackTrace(getLog("file-reads-report.txt"));
             throw e;
         }
     }
-
 }
