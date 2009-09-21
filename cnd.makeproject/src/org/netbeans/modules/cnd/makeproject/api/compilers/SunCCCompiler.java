@@ -49,9 +49,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
 
 public class SunCCCompiler extends SunCCCCompiler {
-    private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
-    private static final String compilerStderrCommand2 = " -xdumpmacros=defs,sys -E"; // NOI18N
-    
     /** 
      * Creates a new instance of SunCCompiler
      */
@@ -124,15 +121,5 @@ public class SunCCCompiler extends SunCCCCompiler {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
-    }
-    
-    @Override
-    protected String getCompilerStderrCommand() {
-        return compilerStderrCommand;
-    }
-
-    @Override
-    protected String getCompilerStderrCommand2() {
-        return compilerStderrCommand2;
-    }
+    }   
 }

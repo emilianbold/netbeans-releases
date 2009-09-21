@@ -49,8 +49,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
 
 public class SunCCompiler extends SunCCCCompiler {
-    private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
-    
     /**
      * Creates a new instance of SunCCompiler
      * private: use factory methods instead
@@ -106,11 +104,6 @@ public class SunCCompiler extends SunCCCCompiler {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
-    }
-    
-    @Override
-    protected String getCompilerStderrCommand() {
-        return compilerStderrCommand;
     }
 
     @Override
