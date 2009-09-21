@@ -148,7 +148,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         
         BaseDocument doc = (BaseDocument)document;
         FileObject fo = RubyUtils.getFileObject(document);
-        if (RubyUtils.isRhtmlDocument(doc) || (fo != null && RubyUtils.isRailsController(fo))) {
+        if (RubyUtils.isRhtmlDocument(doc) || (fo != null && RubyUtils.isRailsProject(fo))) {
             RailsTarget target = findRailsTarget(doc, th, lexOffset);
             if (target != null) {
                 return target.range;
@@ -266,7 +266,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
 
             boolean view = RubyUtils.isRhtmlFile(RubyUtils.getFileObject(parserResult));
-            if (view || RubyUtils.isRailsController(RubyUtils.getFileObject(parserResult))) {
+            if (view || RubyUtils.isRailsProject(RubyUtils.getFileObject(parserResult))) {
                 DeclarationLocation loc = findRailsFile(parserResult, doc, th, lexOffset, astOffset, view);
 
                 if (loc != DeclarationLocation.NONE) {
@@ -1367,7 +1367,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         Node closest = root;
         int astOffset = 0;
         int lexOffset = 0;
-        RubyIndex index = RubyIndex.get(info);
+        RubyIndex index = getIndex(info);
 
         if (root == null) {
             return DeclarationLocation.NONE;

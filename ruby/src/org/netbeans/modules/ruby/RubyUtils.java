@@ -871,6 +871,23 @@ public class RubyUtils {
     }
 
     /**
+     * @return true if the given file appears to belong to a Rails project.
+     */
+    static boolean isRailsProject(FileObject fo) {
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return false;
+        }
+        // just a simple check, can't depend on ruby.railsprojects here.
+        FileObject app = owner.getProjectDirectory().getFileObject("app");
+        FileObject config = owner.getProjectDirectory().getFileObject("config");
+        FileObject db = owner.getProjectDirectory().getFileObject("db");
+        return app != null && config != null && db != null;
+        
+        
+    }
+
+    /**
      * Gets the "app" dir of the project the given file belongs to.
      * @param fo
      * @return
