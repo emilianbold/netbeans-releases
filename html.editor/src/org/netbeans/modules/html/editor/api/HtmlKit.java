@@ -323,8 +323,8 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, final char lastChar) throws BadLocationException {
             if (lastChar == '>') {
-                TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-                for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
+                TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(doc);
+                for (final LanguagePath languagePath : tokenHierarchy.languagePaths()) {
                     if (languagePath.innerLanguage() == HTMLTokenId.language()) {
                         final Indent indent = Indent.get(doc);
                         indent.lock();
