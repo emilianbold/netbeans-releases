@@ -164,6 +164,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
         public void processLine(String line) {
             if (!StringUtils.hasText(line)) {
+                prefix = null;
                 return;
             }
             String trimmed = line.trim();
@@ -171,13 +172,14 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             if (prefixMatcher.matches()) {
                 prefix = prefixMatcher.group(1);
             }
-            if (prefix != null) {
-                Matcher commandMatcher = COMMAND_PATTERN.matcher(trimmed);
-                if (commandMatcher.matches()) {
-                    String command = prefix + ":" + commandMatcher.group(1); // NOI18N
-                    String description = commandMatcher.group(2);
-                    commands.add(new SymfonyCommand(phpModule, command, description, command));
+            Matcher commandMatcher = COMMAND_PATTERN.matcher(trimmed);
+            if (commandMatcher.matches()) {
+                String command = commandMatcher.group(1);
+                if (prefix != null) {
+                    command = prefix + ":" + command; // NOI18N
                 }
+                String description = commandMatcher.group(2);
+                commands.add(new SymfonyCommand(phpModule, command, description, command));
             }
         }
 
