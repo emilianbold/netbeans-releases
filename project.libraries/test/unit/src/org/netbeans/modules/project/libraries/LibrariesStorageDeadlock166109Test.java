@@ -91,7 +91,6 @@ public class LibrariesStorageDeadlock166109Test extends NbTestCase {
         // thus can yield wrong results. To workaround that (and simulate the
         // deadlock) here is direct call to reset the cache.
         // Ideally it shall not be necessary for arr1 to have length 1
-        LibraryManagerTest.resetCache();
         Library[] arr1 = LibraryManager.getDefault().getLibraries();
         assertEquals("One", 1, arr1.length);
     }
