@@ -36,41 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-package org.netbeans.modules.cnd.gizmo.support;
-
-import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 
 /**
  *
  * @author mt154047
  */
-public final class GizmoServiceInfo {
+public final class ThreadStackVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
-    static{
-        GizmoServiceInfoAccessor.setDefault(new GizmoServiceInfoAccessorImpl());
-    }
-    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
-    public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
-    public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
-    public static final String CPP_COMPILER = "GizmoCppCompiler";//NOI18N
-    public static final String CPP_COMPILER_BIN_PATH = "GizmoCppCompilerBinPath";//NOI18N
-    public static final String PLATFORM = "gizmo.platform";//NOI18N
-    static final String GIZMO_RUN = "project.gizmo.run";//NOI18N
+    public static final String ID = "ThreadStackVisualizerConfiguration.id";//NOI18N
+    private final ThreadDump threadDump;
+    private final long dumpTime;
 
-    public static   boolean isPlatformSupported(String platform){
-        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
+    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump) {
+        this.dumpTime = dumpTime;
+        this.threadDump = threadDump;
     }
 
-    static final class GizmoServiceInfoAccessorImpl extends GizmoServiceInfoAccessor{
-
-        @Override
-        public String getGIZMO_RUN() {
-            return GIZMO_RUN;
-        }
-
+    public ThreadDump getThreadDump() {
+        return threadDump;
     }
 
-    private GizmoServiceInfo() {
+    public long getDumpTime() {
+        return dumpTime;
+    }
+
+    public DataModelScheme getSupportedDataScheme() {
+        return DataModelSchemeProvider.getInstance().getScheme("model:stack");//NOI18N
+    }
+
+    public String getID() {
+        return ID;
+    }
+
+    public DataTableMetadata getMetadata() {
+        return CpuSamplingSupport.CPU_SAMPLE_TABLE;
     }
 }

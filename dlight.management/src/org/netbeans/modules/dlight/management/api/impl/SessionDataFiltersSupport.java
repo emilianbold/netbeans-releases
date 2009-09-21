@@ -68,6 +68,10 @@ public class SessionDataFiltersSupport {
         }
     }
 
+    public List<DataFilter> getFilters(){
+        return filters;
+    }
+
     public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
         synchronized (lock) {
             Collection<T> result = new ArrayList<T>();

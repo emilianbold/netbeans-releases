@@ -37,40 +37,31 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.support;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mt154047
  */
-public final class GizmoServiceInfo {
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
+public final class ThreadStackVisualizerFactory implements VisualizerFactory<ThreadStackVisualizerConfiguration>{
 
-    static{
-        GizmoServiceInfoAccessor.setDefault(new GizmoServiceInfoAccessorImpl());
-    }
-    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
-    public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
-    public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
-    public static final String CPP_COMPILER = "GizmoCppCompiler";//NOI18N
-    public static final String CPP_COMPILER_BIN_PATH = "GizmoCppCompilerBinPath";//NOI18N
-    public static final String PLATFORM = "gizmo.platform";//NOI18N
-    static final String GIZMO_RUN = "project.gizmo.run";//NOI18N
-
-    public static   boolean isPlatformSupported(String platform){
-        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
+    public String getID() {
+        return ThreadStackVisualizerConfiguration.ID;
     }
 
-    static final class GizmoServiceInfoAccessorImpl extends GizmoServiceInfoAccessor{
 
-        @Override
-        public String getGIZMO_RUN() {
-            return GIZMO_RUN;
+    public Visualizer<ThreadStackVisualizerConfiguration> create(ThreadStackVisualizerConfiguration configuration, VisualizerDataProvider provider) {
+        if (!(provider instanceof StackDataProvider)){
+            return null;
         }
-
+        return new ThreadStackVisualizer(configuration, (StackDataProvider)provider);
     }
 
-    private GizmoServiceInfo() {
-    }
 }
