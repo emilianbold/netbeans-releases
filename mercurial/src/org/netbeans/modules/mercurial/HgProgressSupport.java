@@ -43,10 +43,12 @@ package org.netbeans.modules.mercurial;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
