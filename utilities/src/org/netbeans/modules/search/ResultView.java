@@ -533,27 +533,16 @@ final class ResultView extends TopComponent {
         return getClass().getName();
     }
 
-    private void closeAllButCurrent() {
+    private void closeAll(boolean butCurrent) {
         Component comp = getComponent(0);
         if (comp instanceof JTabbedPane) {
             JTabbedPane tabs = (JTabbedPane) comp;
             Component current = tabs.getSelectedComponent();
             Component[] c =  tabs.getComponents();
             for (int i = 0; i< c.length; i++) {
-                if (c[i]!=current) {
-                    removePanel((ResultViewPanel) c[i]);
+                if (butCurrent && c[i]==current) {
+                    continue;
                 }
-            }
-        }
-    }
-
-    private void closeAll() {
-        Component comp = getComponent(0);
-        if (comp instanceof JTabbedPane) {
-            JTabbedPane tabs = (JTabbedPane) comp;
-            Component current = tabs.getSelectedComponent();
-            Component[] c =  tabs.getComponents();
-            for (int i = 0; i< c.length; i++) {
                 removePanel((ResultViewPanel) c[i]);
             }
         }
@@ -587,7 +576,7 @@ final class ResultView extends TopComponent {
             super(NbBundle.getMessage(ResultView.class, "LBL_CloseAll"));  //NOI18N
         }
         public void actionPerformed(ActionEvent e) {
-            closeAll();
+            closeAll(false);
         }
     }
 
@@ -596,7 +585,7 @@ final class ResultView extends TopComponent {
             super(NbBundle.getMessage(ResultView.class, "LBL_CloseAllButCurrent"));  //NOI18N
         }
         public void actionPerformed(ActionEvent e) {
-            closeAllButCurrent();
+            closeAll(true);
         }
     }
 
