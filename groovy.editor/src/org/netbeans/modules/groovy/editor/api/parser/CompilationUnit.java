@@ -54,10 +54,13 @@ import java.util.Stack;
 import java.util.concurrent.CancellationException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MixinNode;
@@ -134,7 +137,12 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
 //                }
                 Task<CompilationController> task = new Task<CompilationController>() {
                     public void run(CompilationController controller) throws Exception {
-                        TypeElement typeElement = controller.getElements().getTypeElement(name);
+                        Elements elemnts = controller.getElements();
+                        TypeElement typeElement = elemnts.getTypeElement(name);
+                        if (typeElement == null) {
+                            typeElement = getInnerClass(elemnts, name);
+                        }
+
                         synchronized (cache) {
                             if (typeElement != null) {
                                 ClassNode node = createClassNode(name, typeElement);
@@ -158,6 +166,43 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             synchronized (cache) {
                 return cache.get(name);
             }
+        }
+
+        private TypeElement getInnerClass(Elements elements, String name) {
+            int index = name.indexOf("$"); // NOI18N
+            TypeElement typeElement = null;
+            if (index > 0 && name.length() > index + 1) {
+                TypeElement enclosingElement = elements.getTypeElement(name.substring(0, index));
+
+                int nextIndex = index;
+                while (enclosingElement != null && nextIndex >= 0) {
+                    String subName = name.substring(nextIndex + 1);
+                    int subIndex = subName.indexOf("$"); // NOI18N
+                    if (subIndex >= 0) {
+                        subName = subName.substring(0, subIndex);
+                        nextIndex = nextIndex + 1 + subIndex;
+                    } else {
+                        nextIndex = -1;
+                    }
+
+                    boolean found = false;
+                    for (TypeElement elem : ElementFilter.typesIn(enclosingElement.getEnclosedElements())) {
+                        Name elemName = elem.getSimpleName();
+
+                        if (elemName.toString().equals(subName)) {
+                            enclosingElement = elem;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        enclosingElement = null;
+                    }
+                }
+                typeElement = enclosingElement;
+            }
+            return typeElement;
         }
 
         private ClassNode createClassNode(String name, TypeElement typeElement) {

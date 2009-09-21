@@ -45,10 +45,8 @@ import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -86,6 +84,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.common.utils.PathUtils;
 import org.netbeans.modules.cnd.debugger.gdb.attach.AttachTarget;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -104,7 +103,6 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -330,8 +328,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
 
                 if ((pae.getConfiguration()).isDynamicLibraryConfiguration()) {
-                    pgm = getExePath(programPID);
-                    gdb.file_exec_and_symbols(pgm);
+                    if (platform != PlatformTypes.PLATFORM_WINDOWS) {
+                        pgm = PathUtils.getExePath(programPID, execEnv);
+                        gdb.file_exec_and_symbols(pgm);
+                    }
                     isSharedLibrary = true;
                 } else {
                     gdb.file_symbol_file(path);
@@ -809,44 +809,21 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     private boolean validAttachViaSlashProc(long pid, String exepath) {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-            String procdir = "/proc/" + Long.toString(pid); // NOI18N
-            File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
-            try {
-                String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                if (path == null) {
-                    pathfile = new File(procdir, "exe"); // NOI18N - Linux?
-                    path = getPathFromSymlink(pathfile.getAbsolutePath());
-                }
-                if (path != null) {
-                    File exefile = new File(exepath);
+            String path = PathUtils.getExePath(pid, execEnv);
+            if (path != null) {
+                File exefile = new File(exepath);
+                try {
                     if (HostInfoUtils.fileExists(execEnv, exepath)) {
                         if (comparePaths(path, exefile.getAbsolutePath())) {
                             return true;
                         }
                     }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
         return false;
-    }
-
-    private String getExePath(long pid) {
-        if (platform != PlatformTypes.PLATFORM_WINDOWS && pid > 0) {
-            String procdir = "/proc/" + Long.toString(pid); // NOI18N
-            File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
-            if (!pathfile.exists()) {
-                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
-            }
-            if (pathfile.exists()) {
-                String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                if (path != null && path.length() > 0) {
-                    return path;
-                }
-            }
-        }
-        return null;
     }
 
     private String getMacExePath() {
@@ -882,26 +859,6 @@ public class GdbDebugger implements PropertyChangeListener {
             if (map.containsKey("loaded_addr")) { // NOI18N
                 return map.get("loaded_addr"); // NOI18N
             }
-        }
-        return null;
-    }
-
-    private String getPathFromSymlink(String path) {
-        try {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable("/bin/ls").setArguments("-l", path).redirectError(); // NOI18N
-            final NativeProcess process = npb.call();
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line = br.readLine(); // just read 1st line...
-            br.close();
-            if (line != null) {
-                int pos = line.indexOf("->"); // NOI18N
-                if (pos > 0) {
-                    return line.substring(pos + 2).trim();
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return null;
     }
