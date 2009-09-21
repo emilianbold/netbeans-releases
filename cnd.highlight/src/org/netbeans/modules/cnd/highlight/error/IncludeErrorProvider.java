@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.awt.event.InputEvent;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -48,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,14 +90,23 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             return severity;
         }
     }
-    
+
+    private final static String decorateWithExtraHyperlinkTip(String tooltip) {
+        Preferences prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        int shortCut = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
+        int altShortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
+        return NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_HyperlinkActionsHints", tooltip,  // NOI18N
+                InputEvent.getModifiersExText(shortCut),
+                InputEvent.getModifiersExText(altShortCut));
+    }
+
     private static class IncludeErrorInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
         private String message;
         
         public IncludeErrorInfo(CsmInclude incl) {
             super(incl, Severity.ERROR);
-            this.message = NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissed", getIncludeText(incl));
+            this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissed", getIncludeText(incl)));
         }
 
         public String getMessage() {
@@ -114,7 +128,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
 
         public IncludeWarningInfo(CsmInclude incl) {
             super(incl, Severity.WARNING);
-            this.message = NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissedWarning", getIncludeText(incl));
+            this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissedWarning", getIncludeText(incl)));
         }
 
         public String getMessage() {
