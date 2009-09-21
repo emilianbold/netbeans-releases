@@ -1793,7 +1793,7 @@ final class ModuleList implements Stamps.Updater {
                     } catch (FileNotFoundException fnfe) {
                         //LOG.fine("Cannot find: " + fnfe.getMessage());
                         ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), enabledB);
-                        if (!Boolean.FALSE.equals(enabledB)) {
+                        if (f != null && !Boolean.FALSE.equals(enabledB)) {
                             try {
                                 f.delete();
                             } catch (IOException ioe) {
