@@ -69,10 +69,9 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
-    //not used. HTMLKit coveres this functionality
     @Override
     public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        return false;
+        return HtmlAutoCompletion.beforeCharInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
     }
 
     @Override
