@@ -316,7 +316,7 @@ public abstract class CCCCompiler extends BasicCompiler {
                         token = token.substring(0,token.length()-1);
                     }
                 }
-                preprocessorList.add(token);
+                preprocessorList.addUnique(token);
                 defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
             } else {
                 token = line.substring(defineIndex+2);
@@ -325,7 +325,7 @@ public abstract class CCCCompiler extends BasicCompiler {
                         token = token.substring(0,token.length()-1);
                     }
                 }
-                preprocessorList.add(token);
+                preprocessorList.addUnique(token);
                 break;
             }
         }

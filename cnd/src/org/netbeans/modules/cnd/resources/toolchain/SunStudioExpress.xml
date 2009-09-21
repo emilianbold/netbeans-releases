@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
         <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun Ceres C++ 5.10"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
-        <system_macros flags="c" parser="Sun"/>
+        <system_macros flags="-xdumpmacros=defs,sys -E" parser="Sun"/>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
         <development_mode>

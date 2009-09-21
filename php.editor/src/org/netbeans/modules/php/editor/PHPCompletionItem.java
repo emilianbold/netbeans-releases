@@ -996,11 +996,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         PHPIndex index;
     }
     private static void scheduleShowingCompletion() {
-        service.schedule(new Runnable() {
+        if (OptionsUtils.autoCompletionTypes()) {
+            service.schedule(new Runnable() {
 
-            public void run() {
-                Completion.get().showCompletion();
-            }
-        }, 750, TimeUnit.MILLISECONDS);
+                public void run() {
+                    Completion.get().showCompletion();
+                }
+            }, 750, TimeUnit.MILLISECONDS);
+        }
     }
 }
