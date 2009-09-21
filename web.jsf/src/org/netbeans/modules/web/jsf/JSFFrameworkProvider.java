@@ -77,6 +77,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -330,6 +331,22 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             //faces servlet mapping
             String facesMapping = panel == null ? "faces/*" : panel.getURLPattern();
             
+            boolean isJSF20 = false;
+            Library jsfLibrary = null;
+            if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
+                jsfLibrary = panel.getLibrary();
+            } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.NEW) {
+                jsfLibrary = LibraryManager.getDefault().getLibrary(panel.getNewLibraryName());
+            }
+
+            if (jsfLibrary !=null) {
+                List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
+                isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+            } else {
+                ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+                isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
+            }
+
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
@@ -369,6 +386,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     
                     boolean faceletsEnabled = panel.isEnableFacelets();
 
+                    if (isJSF20) {
+                        InitParam contextParam = (InitParam) ddRoot.createBean("InitParam");
+                        contextParam.setParamName(JSFUtils.FACES_PROJECT_STAGE);
+                        contextParam.setParamValue("Development"); //NOI18N
+                        ddRoot.addContextParam(contextParam);
+                    }
                     if (isMyFaces) {
                         boolean listenerDefined = false;
                         Listener listeners[] = ddRoot.getListener();
@@ -424,22 +447,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 } catch (ClassNotFoundException cnfe){
                     LOGGER.log(Level.WARNING, "Exception in JSFMoveClassPlugin", cnfe); //NOI18N
                 }
-            }
-
-            boolean isJSF20 = false;
-            Library jsfLibrary = null;
-            if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
-                jsfLibrary = panel.getLibrary();
-            } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.NEW) {
-                jsfLibrary = LibraryManager.getDefault().getLibrary(panel.getNewLibraryName());
-            }
-
-            if (jsfLibrary !=null) {
-                List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
-                isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-            } else {
-                ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
             }
 
             // copy faces-config.xml
