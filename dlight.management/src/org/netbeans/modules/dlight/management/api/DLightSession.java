@@ -563,7 +563,16 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 }
 
                 if (currentStorages != null && !currentStorages.isEmpty()) {
+                    if (storages == null) {
+                        storages = new ArrayList<DataStorage>();
+                    }
 
+                    for (DataStorage storage : currentStorages.values()) {
+                        if (!storages.contains(storage)) {
+                            storage.attachTo(serviceInfoDataStorage);
+                            storages.add(storage);
+                        }
+                    }
                     toolCollector.init(currentStorages, target);
                     addDataFilterListener(toolCollector);
 
@@ -572,15 +581,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                         idp.init(serviceInfoDataStorage);
                     }
 
-                    if (storages == null) {
-                        storages = new ArrayList<DataStorage>();
-                    }
 
-                    for (DataStorage storage : currentStorages.values()) {
-                        if (!storages.contains(storage)) {
-                            storages.add(storage);
-                        }
-                    }
 
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
