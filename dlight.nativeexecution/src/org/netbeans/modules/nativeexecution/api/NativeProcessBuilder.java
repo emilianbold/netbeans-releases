@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
  * <p>
- * Depending on {@link ExecutionEnvironment} it creates whether local process or
- * remote one. This class was designed to be used with {@link ExecutionService}
+ * Depending on {@link ExecutionEnvironment} it creates either local process or
+ * remote one. This class was designed to be usable with {@link ExecutionService}
  * provided by the
  * <a href="http://bits.netbeans.org/dev/javadoc/org-netbeans-modules-extexecution/index.html?overview-summary.html" target="_blank">External Execution Support</a>
  * NetBeans module.
