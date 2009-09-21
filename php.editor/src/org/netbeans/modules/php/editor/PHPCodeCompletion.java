@@ -96,7 +96,6 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
-import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -195,8 +194,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Arrays.asList('=', ';', '+', '-', '*', '/',
                 '%', '(', ')', '[', ']', '{', '}', '?'));
 
-    private final static Collection<PHPTokenId> TOKENS_TRIGGERING_AUTOPUP_B4_WS =
-            Arrays.asList(PHPTokenId.PHP_NS_SEPARATOR, PHPTokenId.PHP_NEW, PHPTokenId.PHP_EXTENDS, PHPTokenId.PHP_IMPLEMENTS);
+    private final static Collection<PHPTokenId> TOKENS_TRIGGERING_AUTOPUP_TYPES_WS =
+            Arrays.asList(PHPTokenId.PHP_NEW, PHPTokenId.PHP_EXTENDS, PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.PHP_INSTANCEOF);
 
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
@@ -1301,29 +1300,44 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         int diff = ts.move(offset);
         if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
             Token t = ts.token();
+            if (OptionsUtils.autoCompletionTypes()) {
+                if (lastChar == ' ' || lastChar == '\t'){
+                    if (ts.movePrevious()
+                            && TOKENS_TRIGGERING_AUTOPUP_TYPES_WS.contains(ts.token().id())){
 
-            if (lastChar == ' ' || lastChar == '\t'){
-                if (ts.movePrevious()
-                        && TOKENS_TRIGGERING_AUTOPUP_B4_WS.contains(ts.token().id())){
+                        return QueryType.ALL_COMPLETION;
+                    } else {
+                        return QueryType.STOP;
+                    }
+                }
 
+                if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
                     return QueryType.ALL_COMPLETION;
-                } else {
-                    return QueryType.STOP;
                 }
             }
-
-            if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR
-                    || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
-                    || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
-                    || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$'
-                    //|| t.id() == PHPTokenId.PHP_NS_SEPARATOR
-                    || t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
+            if (OptionsUtils.autoCompletionVariables()) {
+                if((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$') ||
+                        (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
+                    return QueryType.ALL_COMPLETION;
+                }
+            }
+            if (OptionsUtils.autoCompletionNamespaces()) {                
+                if(t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
+                    return isPhp_53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
+                }
+            }
+            if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                 return QueryType.ALL_COMPLETION;
             }
         }
         return QueryType.NONE;
     }
 
+    public static  boolean isPhp_53(Document document) {
+        final FileObject fileObject = CodeUtils.getFileObject(document);
+        assert fileObject != null;
+        return fileObject != null ? CodeUtils.isPhp_53(fileObject) : false;
+    }
 
 
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
