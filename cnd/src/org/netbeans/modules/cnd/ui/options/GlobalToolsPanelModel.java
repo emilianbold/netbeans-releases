@@ -71,11 +71,11 @@ import org.netbeans.modules.cnd.settings.CppSettings;
     }
     
     public boolean isMakeRequired() {
-        return true;
+        return false;
     }
     
     public boolean isDebuggerRequired() {
-        return true;
+        return false;
     }
     
     public void setDebuggerRequired(boolean value) {
@@ -87,7 +87,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 //    }
     
     public boolean isCRequired() {
-        return true; //return CppSettings.getDefault().isCRequired();
+        return false; //return CppSettings.getDefault().isCRequired();
     }
     
     public void setCRequired(boolean value) {
@@ -95,7 +95,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
     }
     
     public boolean isCppRequired() {
-        return true; //return CppSettings.getDefault().isCppRequired();
+        return false; //return CppSettings.getDefault().isCppRequired();
     }
     
     public void setCppRequired(boolean value) {
@@ -113,7 +113,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
     }
 
     public boolean isAsRequired() {
-        return true;
+        return false;
     }
 
     public void setAsRequired(boolean value) {

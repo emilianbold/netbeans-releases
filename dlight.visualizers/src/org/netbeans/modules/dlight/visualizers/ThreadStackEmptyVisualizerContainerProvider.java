@@ -37,19 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.ui.spi.impl;
+package org.netbeans.modules.dlight.visualizers;
 
 import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mt154047
  */
-public final class DefaultEmptyVisualizerContainerProvider implements EmptyVisualizerContainerProvider{
+@ServiceProvider(service=EmptyVisualizerContainerProvider.class)
+public final class ThreadStackEmptyVisualizerContainerProvider implements EmptyVisualizerContainerProvider{
 
     public VisualizerContainer getEmptyVisualizerContainer() {
-        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        return null;
+    }
+
+    public VisualizerContainer getEmptyVisualizerContainer(String vcID) {
+        if (ThreadStackVisualizerConfiguration.ID.equals(vcID)){
+            return CallStackTopComponent.findInstance();
+        }
+        return null;
     }
 
 }

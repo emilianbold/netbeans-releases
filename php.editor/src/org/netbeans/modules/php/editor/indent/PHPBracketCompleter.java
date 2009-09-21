@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -450,13 +451,14 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             
             if (isEmptyComment) {
                 final int indent = GsfUtilities.getLineIndent(doc, ts.offset());
-                
                 //XXX: workaround for issue #133210:
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
-                    }
-                });
+                if (!IndexingManager.getDefault().isIndexing()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                        }
+                    });
+                }
             }
             
             return (Integer) ret[0];

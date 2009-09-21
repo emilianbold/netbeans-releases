@@ -487,9 +487,6 @@ public class JsfElExpression extends ELExpression {
             int anchorOffset, String prefix) 
     {
         java.util.ResourceBundle[] bundle = new java.util.ResourceBundle[1];
-        List<String> keys = getPropertyKeys(propertyFile, prefix ,bundle);
-        List<CompletionItem> result = new ArrayList<CompletionItem>( keys.size() );
-        
         char firstChar =0;
         if ( prefix.length()> 0){
             firstChar = prefix.charAt(0);
@@ -497,6 +494,9 @@ public class JsfElExpression extends ELExpression {
         if ( firstChar == '"' || firstChar == '\''){
             prefix = prefix.substring( 1 );
         }
+        
+        List<String> keys = getPropertyKeys(propertyFile, prefix ,bundle);
+        List<CompletionItem> result = new ArrayList<CompletionItem>( keys.size() );
         
         for (String key : keys) {
             if (key.startsWith(prefix)) {
