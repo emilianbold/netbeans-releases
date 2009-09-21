@@ -85,6 +85,7 @@ import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.Util;
 import org.openide.util.Lookup;
@@ -98,6 +99,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;
     private final Map<String, PreparedStatement> stmtCache;
+    private CppSymbolDemangler demangler = null;
+    private ServiceInfoDataStorage serviceInfoDataStorage;
 
     public SQLStackDataStorage() {
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
@@ -108,13 +111,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         executor = new ExecutorThread();
         executor.setPriority(Thread.MIN_PRIORITY);
         executor.start();
+        this.stmtCache = new HashMap<String, PreparedStatement>();
+    }
+
+    public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
+        this.serviceInfoDataStorage = serviceInfoStorage;
         CppSymbolDemanglerFactory factory = Lookup.getDefault().lookup(CppSymbolDemanglerFactory.class);
         if (factory != null) {
-            demangler = factory.getForCurrentSession();
+            demangler = factory.getForCurrentSession(serviceInfoStorage.getInfo());
         } else {
             demangler = null;
         }
-        this.stmtCache = new HashMap<String, PreparedStatement>();
     }
 
     public DataStorageType getBackendDataStorageType() {
@@ -185,8 +192,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     private long funcIdSequence;
     private long nodeIdSequence;
     private final ExecutorThread executor;
-    private boolean isRunning = true;
-    private final CppSymbolDemangler demangler;
+    private boolean isRunning = true;    
 
     private synchronized PreparedStatement getPreparedStatement(String sql) throws SQLException {
         PreparedStatement stmt = stmtCache.get(sql);
