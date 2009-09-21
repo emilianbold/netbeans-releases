@@ -503,7 +503,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                     return false;
                 }
                 String type = activeAnnotation.getAnnotationType();
-                if (!fixableAnnotations.contains(type)) {
+                if (!fixableAnnotations.contains(type) && onlyActive) {
                     return false;
                 }
                 refresh(doc, comp.getCaretPosition());

@@ -523,24 +523,29 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
         
     private void updateText() {
-        
-        SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
-        FileObject rootFolder = g.getRootFolder();
-        String packageName = getPackageFileName();
-        String documentName = documentNameTextField.getText().trim();
-        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
-            documentName = documentName.replace( '.', '/' ); // NOI18N
+        final Object selectedItem =  rootComboBox.getSelectedItem();
+        String createdFileName;
+        if (selectedItem instanceof SourceGroup) {
+            SourceGroup g = (SourceGroup) selectedItem;
+            FileObject rootFolder = g.getRootFolder();
+            String packageName = getPackageFileName();
+            String documentName = documentNameTextField.getText().trim();
+            if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
+                documentName = documentName.replace( '.', '/' ); // NOI18N
+            }
+            else if ( documentName.length() > 0 ) {
+                documentName = documentName + expectedExtension;
+            }
+            createdFileName = FileUtil.getFileDisplayName( rootFolder ) +
+                ( packageName.startsWith("/") || packageName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
+                packageName +
+                ( packageName.endsWith("/") || packageName.endsWith( File.separator ) || packageName.length() == 0 ? "" : "/" ) + // NOI18N
+                documentName;
+        } else {
+            //May be null iff nothing selected
+            createdFileName = "";   //NOI18N
         }
-        else if ( documentName.length() > 0 ) {
-            documentName = documentName + expectedExtension;
-        }
-        String createdFileName = FileUtil.getFileDisplayName( rootFolder ) + 
-            ( packageName.startsWith("/") || packageName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
-            packageName + 
-            ( packageName.endsWith("/") || packageName.endsWith( File.separator ) || packageName.length() == 0 ? "" : "/" ) + // NOI18N
-            documentName;
-        
-        fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N        
+        fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N
     }
     
     private SourceGroup getPreselectedGroup(FileObject folder) {
