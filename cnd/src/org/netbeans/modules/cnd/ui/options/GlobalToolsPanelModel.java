@@ -103,7 +103,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
     }
     
     public boolean isFortranRequired() {
-        return true;
+        return false;
         //return CppSettings.getDefault().isFortranEnabled();
         //return CppSettings.getDefault().isFortranRequired();
     }
