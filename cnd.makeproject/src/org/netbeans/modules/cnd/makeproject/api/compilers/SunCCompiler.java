@@ -49,8 +49,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
 
 public class SunCCompiler extends SunCCCCompiler {
-    private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
-    
     /**
      * Creates a new instance of SunCCompiler
      * private: use factory methods instead
@@ -100,17 +98,12 @@ public class SunCCompiler extends SunCCCCompiler {
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
             }
             // Adding "__STDC__=0". It's missing from dryrun output
-            pair.systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N
+            pair.systemPreprocessorSymbolsList.addUnique("__STDC__=0"); // NOI18N
             
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
-    }
-    
-    @Override
-    protected String getCompilerStderrCommand() {
-        return compilerStderrCommand;
     }
 
     @Override
