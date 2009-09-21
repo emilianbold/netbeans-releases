@@ -28,6 +28,7 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -38,9 +39,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.services.AutoupdateSettings;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -84,7 +89,7 @@ public class NetworkAccess {
                     connect = es.submit (connectTask);
                     InputStream is = null;
                     try {
-                        is = connect.get ();
+                        is = connect.get (AutoupdateSettings.getOpenConnectionTimeout(), TimeUnit.MILLISECONDS);
                         if (connect.isDone ()) {
                             listener.streamOpened (is, connectTask.getContentLength() );
                         } else if (connect.isCancelled ()) {
@@ -96,7 +101,12 @@ public class NetworkAccess {
                         listener.notifyException (ix);
                     } catch (ExecutionException ex) {
                         listener.notifyException (ex);
+                    } catch(TimeoutException tx) {
+                        IOException io = new IOException(NbBundle.getMessage(NetworkAccess.class, "NetworkAccess_Timeout", url));
+                        io.initCause(tx);
+                        listener.notifyException (io);
                     }
+
                 }
             });
         }
