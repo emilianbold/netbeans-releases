@@ -196,8 +196,7 @@ public class AntActionInstance extends AbstractAction
                 String pname = el.getAttribute ("name"); // NOI18N
                 int idx = Mnemonics.findMnemonicAmpersand(pname);
                 if (idx != -1) {
-                    // XXX this is wrong, should use some method in Mnemonics...
-                    return pname.charAt(idx + 1);
+                    return Integer.valueOf(pname.charAt(idx + 1));
                 }
             }
             return 0; // #: 13084
