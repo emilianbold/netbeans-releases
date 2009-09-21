@@ -57,6 +57,8 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
 import org.w3c.dom.Document;
@@ -77,10 +79,6 @@ public class HudsonMercurialSCM implements HudsonSCM {
         if (source == null) {
             return null;
         }
-        if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
-            LOG.log(Level.FINE, "{0} is a local file location", source);
-            return null;
-        }
         return new Configuration() {
             public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
@@ -90,6 +88,13 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 configXmlSCM.appendChild(doc.createElement("modules")).appendChild(doc.createTextNode("")); // NOI18N
                 configXmlSCM.appendChild(doc.createElement("clean")).appendChild(doc.createTextNode("true")); // NOI18N
                 Helper.addTrigger(doc);
+            }
+            public ConfigurationStatus problems() {
+                if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
+                    return ConfigurationStatus.withWarning(NbBundle.getMessage(HudsonMercurialSCM.class, "warning.local_repo", source));
+                } else {
+                    return null;
+                }
             }
         };
     }
