@@ -177,6 +177,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
     
     private final Action EXECUTE = new ExecuteAction();
     private final Action CREATE_SHORTCUT = new CreateShortcutAction();
+    private final Action REMOVE_SHORTCUT = new RemoveShortcutAction();
 
     @Override
     public Action[] getActions(boolean context) {
@@ -186,6 +187,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
                 null,
                 EXECUTE,
                 CREATE_SHORTCUT,
+                REMOVE_SHORTCUT,
                 null,
                 SystemAction.get(PropertiesAction.class),
             };
@@ -235,6 +237,15 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
             ShortcutWizard.show(project, target.getElement());
         }
         
+    }
+
+    private final class RemoveShortcutAction extends AbstractAction {
+        RemoveShortcutAction() {
+            super(NbBundle.getMessage(AntTargetNode.class, "LBL_remove_shortcut"));
+        }
+        public void actionPerformed(ActionEvent e) {
+            ShortcutWizard.remove(project, target.getElement());
+        }
     }
 
     @Override
