@@ -187,7 +187,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Plugin " + name + " installation failed"); //NOI18N
+            //LOGGER.log(Level.WARNING, "Plugin installation failed {0}", fo.toString()); //NOI18N
             LOGGER.log(Level.INFO, null, e);
         }
     }

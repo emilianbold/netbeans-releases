@@ -341,7 +341,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         Collection<TimeIntervalDataFilter> intervals = query.getIntervals();
 
-        System.out.println("Intervals size: " + intervals.size()); // NOI18N
+        //System.out.println("Intervals size: " + intervals.size()); // NOI18N
 
         if (intervals.isEmpty()) {
             intervals = new ArrayList<TimeIntervalDataFilter>(1);

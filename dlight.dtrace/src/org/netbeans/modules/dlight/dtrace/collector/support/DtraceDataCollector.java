@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.acl.NotOwnerException;
@@ -63,12 +62,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
@@ -88,11 +81,11 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -101,7 +94,6 @@ import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
  * Collector which collects data using DTrace scripts.
@@ -143,7 +135,6 @@ public final class DtraceDataCollector
     private final List<DataRow> indicatorDataBuffer = new ArrayList<DataRow>();
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
-
     private boolean isSlave;
     private final boolean multiScriptMode;
     private DtraceDataCollector parentCollector;
@@ -184,12 +175,12 @@ public final class DtraceDataCollector
             }
 
             // super(cmd_dtrace, null,
-    //            configuration.getParser() == null
-    //        ? (configuration.getDatatableMetadata() != null &&
-    //        configuration.getDatatableMetadata().size() > 0
-    //        ? new DtraceParser(configuration.getDatatableMetadata().get(0))
-    //        : (DtraceParser) null)
-    //        : configuration.getParser(), configuration.getDatatableMetadata());
+            //            configuration.getParser() == null
+            //        ? (configuration.getDatatableMetadata() != null &&
+            //        configuration.getDatatableMetadata().size() > 0
+            //        ? new DtraceParser(configuration.getDatatableMetadata().get(0))
+            //        : (DtraceParser) null)
+            //        : configuration.getParser(), configuration.getDatatableMetadata());
 
 
             this.localScriptUrl = cfgInfo.getScriptUrl(configuration);
@@ -293,7 +284,7 @@ public final class DtraceDataCollector
         this.storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
         StackDataStorage stackStorage = (StackDataStorage) storages.get(dstf.getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
         if (this.parser instanceof DtraceDataAndStackParser) {
-            ((DtraceDataAndStackParser)this.parser).setStackDataStorage(stackStorage);
+            ((DtraceDataAndStackParser) this.parser).setStackDataStorage(stackStorage);
         }
 
         if (isSlave) {
@@ -521,22 +512,14 @@ public final class DtraceDataCollector
         }
 
         final String extraParams = getCollectorTaskExtraParams();
+
         if (extraParams != null) {
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
-        npb.setCommandLine(taskCommand);
-
-        ExecutionDescriptor descr = new ExecutionDescriptor();
-        descr = descr.outProcessorFactory(new DtraceInputProcessorFactory());
-        descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
-        descr = descr.inputOutput(InputOutput.NULL);
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descr, "DTraceDataCollector " + taskCommand); // NOI18N
-
-        dtraceTask = execService.run();
+        dtraceTask = DLightExecutorService.submit(
+                new DTraceTask(target.getExecEnv(), taskCommand, callback),
+                "DTrace output processor"); // NOI18N
 
         log.fine("DtraceDataCollector (" + dtraceTask.toString() + // NOI18N
                 ") for " + taskCommand + " STARTED"); // NOI18N
@@ -659,38 +642,39 @@ public final class DtraceDataCollector
         }
     }
 
-    private class DtraceInputProcessorFactory implements InputProcessorFactory {
-
-        public InputProcessor newInputProcessor(InputProcessor p) {
-            return InputProcessors.bridge(new LineProcessor() {
-
-                @Override
-                public void processLine(String line) {
-                    callback.processLine(line);
-                }
-
-                public void reset() {
-                }
-
-                public void close() {
-                    callback.processClose();
-                }
-            });
-        }
-    }
-
-    private static class StdErrRedirectorFactory
-            implements InputProcessorFactory {
-
-        public InputProcessor newInputProcessor(InputProcessor p) {
-            return InputProcessors.copying(new OutputStreamWriter(System.err) {
-                @Override
-                public void close() throws IOException {
-                    //Do not close System.err
-                }
-            });
-        }
-    }
+//    private class DtraceInputProcessorFactory implements InputProcessorFactory {
+//
+//        public InputProcessor newInputProcessor(InputProcessor p) {
+//            return InputProcessors.bridge(new LineProcessor() {
+//
+//                @Override
+//                public void processLine(String line) {
+//                    callback.processLine(line);
+//                }
+//
+//                public void reset() {
+//                }
+//
+//                public void close() {
+//                    callback.processClose();
+//                }
+//            });
+//        }
+//    }
+//
+//    private static class StdErrRedirectorFactory
+//            implements InputProcessorFactory {
+//
+//        public InputProcessor newInputProcessor(InputProcessor p) {
+//            return InputProcessors.copying(new OutputStreamWriter(System.err) {
+//
+//                @Override
+//                public void close() throws IOException {
+//                    //Do not close System.err
+//                }
+//            });
+//        }
+//    }
 
     private File mergeScripts() {
         try {

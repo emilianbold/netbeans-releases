@@ -80,6 +80,7 @@ import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.YieldNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.SelfNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -111,6 +112,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
     private FileObject file;
+    private Node root;
 
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
@@ -154,7 +156,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             return;
         }
 
-        Node root = rpr.getRootNode();
+        root = rpr.getRootNode();
         if (root == null) {
             return;
         }
@@ -321,7 +323,8 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                     List<Arity> defArities = new ArrayList<Arity>();
                     findDefArities(defArities, root, name, callArity);
 
-                    if (defArities.size() == 0) {
+                    boolean noMatchingDefs = defArities.isEmpty();
+                    if (noMatchingDefs) {
                         // No matching declarations; just use this call
                         defArities.add(callArity);
                     }
@@ -330,6 +333,13 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                     // While it's a method call it's not what the user thinks of as one, so suppress it.
                     if (!name.equals("[]")) {
                         highlightMethod(root, name, defArities, highlights);
+                    }
+                    if (closest instanceof CallNode
+                            && ((CallNode) closest).getReceiverNode() instanceof SelfNode
+                            && noMatchingDefs
+                            && callArity.getMinArgs() == 0 && callArity.getMaxArgs() == 0) {
+                        // could be self.inst_var
+                        highlightInstance(root, "@" + name, highlights);
                     }
                 }
             } else if (closest instanceof YieldNode || closest instanceof ReturnNode) {
@@ -761,6 +771,20 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
                 OffsetRange range = AstUtilities.getRange(node);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+        } else if (node instanceof CallNode) {
+            CallNode callNode = (CallNode) node;
+            Node receiver = callNode.getReceiverNode();
+            if (receiver != null && receiver instanceof SelfNode) {
+                // check first this isn't a method call - not really exact
+                // as it could be an inherited method, but we can't use index here
+                String methodName = name.startsWith("@") ? name.substring(1) : name;
+                Node method = AstUtilities.findMethod(root, methodName, Arity.getCallArity(callNode));
+                if (method == null && methodName.equals(callNode.getName())) {
+                    // seems to be self.inst_var, so highlight it
+                    OffsetRange range = AstUtilities.getRange(callNode);
+                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                }
             }
         }
 

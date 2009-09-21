@@ -319,14 +319,15 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
                                     provider.computeErrors(manager, ruleContext, hints, unhandled);
                                     errors = unhandled;
                                     boolean allowDisableEmpty = true;
-                                    for (Hint hint : hints) {
+                                    for (int i = 0; i < hints.size(); i++) {
+                                        Hint hint = hints.get(i);
                                         OffsetRange range = hint.getRange();
                                         if (range != null &&
                                                 range.getStart() >= 0 && range.getStart() <= topLevelSnapshot.getText().length() &&
                                                 range.getEnd() >= 0 && range.getEnd() <= topLevelSnapshot.getText().length() &&
                                                 range.getStart() <= range.getEnd()
                                         ) {
-                                            ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
+                                            ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty, i == hints.size()-1);
                                             descriptions.add(errorDesc);
                                         } else {
                                             String msg = provider + " supplied hint " + hint + " with invalid range " + range; //NOI18N
