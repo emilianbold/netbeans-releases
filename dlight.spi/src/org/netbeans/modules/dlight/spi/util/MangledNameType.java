@@ -39,12 +39,9 @@
 package org.netbeans.modules.dlight.spi.util;
 
 import java.beans.PropertyEditorManager;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.Collections;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -60,7 +57,7 @@ public final class MangledNameType {//implements Comparable<MangledNameType> {
     static {
         CppSymbolDemanglerFactory factory = Lookup.getDefault().lookup(CppSymbolDemanglerFactory.class);
         if (factory != null) {
-            demanglingService = factory.getForCurrentSession();
+            demanglingService = factory.getForCurrentSession(Collections.<String,String>emptyMap());
         } else {
             demanglingService = null;
         }
