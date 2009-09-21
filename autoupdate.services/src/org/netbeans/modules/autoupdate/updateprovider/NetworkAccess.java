@@ -89,7 +89,7 @@ public class NetworkAccess {
                     connect = es.submit (connectTask);
                     InputStream is = null;
                     try {
-                        is = connect.get (AutoupdateSettings.getOpenConnectionTimeout(), TimeUnit.MILLISECONDS);
+                        is = connect.get (timeout, TimeUnit.MILLISECONDS);
                         if (connect.isDone ()) {
                             listener.streamOpened (is, connectTask.getContentLength() );
                         } else if (connect.isCancelled ()) {
