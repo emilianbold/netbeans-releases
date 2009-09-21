@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
@@ -84,8 +83,8 @@ import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFact
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.openide.loaders.FileEntry.Folder;
 
 /** A web module implementation on top of project.
  *
@@ -575,6 +574,16 @@ public final class ProjectWebModule extends J2eeModuleProvider
                     J2eeModule.PROP_RESOURCE_DIRECTORY, 
                     oldValue == null ? null : new File(oldValue),
                     newValue == null ? null : new File(newValue));
+        }  else if (WebProjectProperties.WEB_DOCBASE_DIR.equals(evt.getPropertyName())) {
+            getPropertyChangeSupport().firePropertyChange(
+                    WebModuleImplementation2.PROPERTY_DOCUMENT_BASE,
+                    (String)evt.getOldValue(),
+                    (String)evt.getNewValue());
+        }  else if (WebProjectProperties.WEBINF_DIR.equals(evt.getPropertyName())) {
+            getPropertyChangeSupport().firePropertyChange(
+                    WebModuleImplementation2.PROPERTY_WEB_INF,
+                    (String)evt.getOldValue(),
+                    (String)evt.getNewValue());
         }
     }
         
@@ -613,6 +622,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
        return getWebInf().getFileObject(WebServicesConstants.WEBSERVICES_DD, "xml"); // NOI18N
    }
     
+    @Override
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);

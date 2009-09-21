@@ -171,7 +171,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 // packed them to the war file by default.
                 ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
             }
-            
+
             boolean isMyFaces;
             if (jsfLibrary != null) {
                 // find out whether the added library is myfaces jsf implementation
