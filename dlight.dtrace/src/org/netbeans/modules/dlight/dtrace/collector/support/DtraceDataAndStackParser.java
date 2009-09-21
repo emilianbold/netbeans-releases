@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -176,7 +177,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     return null;
                 } else {
                     Collections.reverse(currStack);
-                    long stackId = sds == null? -1 : sds.putStack(currStack, currSampleDuration);
+                    long stackId = sds == null? -1 : sds.putSample(currStack, DataUtil.toLong(currData.get(0)), currSampleDuration);
                     currStack.clear();
                     //colNames.get(colNames.size()-1);
                     state = State.WAITING_DATA;

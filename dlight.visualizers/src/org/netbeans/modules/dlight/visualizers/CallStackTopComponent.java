@@ -173,7 +173,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
         return PREFERRED_ID;
     }
 
-    public void addVisualizer(String toolName, Visualizer v) {
+    public void addVisualizer(String toolID, String toolName, Visualizer v) {
         setContent(toolName, v.getComponent());
     }
 

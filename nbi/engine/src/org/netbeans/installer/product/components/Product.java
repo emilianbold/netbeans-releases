@@ -245,8 +245,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                         executableName,
                         iconName)));
                 
-                //Fix #172000: NetBeans folder stay at Applications after uninstallation
-                installedFiles.add(ds_store);
+                //Fix #172000: NetBeans folder stay at Applications after uninstallation		
+                //installedFiles.add(ds_store);
 
             } catch (IOException e) {
                 throw new InstallationException(

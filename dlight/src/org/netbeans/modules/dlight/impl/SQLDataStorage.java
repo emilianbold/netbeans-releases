@@ -538,8 +538,11 @@ public abstract class SQLDataStorage implements DataStorage {
             logger.fine("SQL: prepare statement " + sql); //NOI18N
         }
         PreparedStatement stmt;
-        if (sql.toUpperCase().startsWith("INSERT INTO ")) { //NOI18N
+        String sqlUpper = sql.toUpperCase();
+        if (sqlUpper.startsWith("INSERT INTO ")) { //NOI18N
             stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        } else if (sqlUpper.endsWith(" FOR UPDATE")) { // NOI18N
+            stmt = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
         } else {
             stmt = connection.prepareStatement(sql);
         }

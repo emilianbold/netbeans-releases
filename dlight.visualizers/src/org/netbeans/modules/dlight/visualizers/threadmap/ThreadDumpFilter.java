@@ -37,16 +37,32 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.ui.spi;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 
 /**
  *
  * @author mt154047
  */
-public interface EmptyVisualizerContainerProvider {
+public final class ThreadDumpFilter implements DataFilter{
+    private final ThreadDump threadDump;
+    private final long dumpTime;
 
-    VisualizerContainer getEmptyVisualizerContainer();
-    VisualizerContainer getEmptyVisualizerContainer(String vcID);
+    public ThreadDumpFilter(long dumpTime, ThreadDump threadDump) {
+        this.dumpTime = dumpTime;
+        this.threadDump = threadDump;
+    }
+
+
+    public ThreadDump getThreadDump(){
+        return threadDump;
+    }
+
+    public long getDumpTime(){
+        return dumpTime;
+    }
+
+
 }
