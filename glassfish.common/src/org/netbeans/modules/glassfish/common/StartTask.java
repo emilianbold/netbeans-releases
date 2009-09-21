@@ -123,7 +123,7 @@ public class StartTask extends BasicTask<OperationState> {
                 RequestProcessor.getDefault().post(new Runnable() {
 
                     public void run() {
-                        GetPropertyCommand gpc = new GetPropertyCommand("*.enable-comet-support");
+                        GetPropertyCommand gpc = new GetPropertyCommand("*.comet-support-enabled");
                         Future<OperationState> result = support.execute(gpc);
                                 //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
                         try {
