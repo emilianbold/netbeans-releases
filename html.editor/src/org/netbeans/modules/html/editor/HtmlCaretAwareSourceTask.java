@@ -68,7 +68,7 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
             if(mimeType.equals("text/html")) {
                 return Collections.singletonList(new HtmlCaretAwareSourceTask());
             } else {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
         }
     }

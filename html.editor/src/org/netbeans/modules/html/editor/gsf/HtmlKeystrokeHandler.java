@@ -182,14 +182,14 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //I need to do it this lexical way since we do not
         //add the text nodes into the ast due to performance reasons
         Document doc = info.getSnapshot().getSource().getDocument(true);
-        TokenHierarchy hierarchy = TokenHierarchy.get(doc);
-        TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+        TokenHierarchy<Document> hierarchy = TokenHierarchy.get(doc);
+        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc);
         if(ts == null) {
             return Collections.emptyList();
         }
         ts.move(caretOffset);
         if(ts.moveNext() || ts.movePrevious()) {
-            Token token = ts.token();
+            Token<HTMLTokenId> token = ts.token();
 
             if(token.id() == HTMLTokenId.TEXT) {
                 CharSequence text = token.text();
@@ -198,10 +198,10 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
                     int to = from + token.text().length();
 
                     //properly compute end offset of joined tokens
-                    List<Token> tokenParts = token.joinedParts();
+                    List<? extends Token<HTMLTokenId>> tokenParts = token.joinedParts();
                     if(tokenParts != null) {
                         //get last part token
-                        Token last = tokenParts.get(tokenParts.size() - 1);
+                        Token<HTMLTokenId> last = tokenParts.get(tokenParts.size() - 1);
                         to = last.offset(hierarchy) + last.length();
                     }
 
