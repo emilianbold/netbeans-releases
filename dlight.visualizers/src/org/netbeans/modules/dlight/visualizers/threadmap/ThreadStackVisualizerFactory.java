@@ -37,16 +37,31 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.ui.spi;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mt154047
  */
-public interface EmptyVisualizerContainerProvider {
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
+public final class ThreadStackVisualizerFactory implements VisualizerFactory<ThreadStackVisualizerConfiguration>{
 
-    VisualizerContainer getEmptyVisualizerContainer();
-    VisualizerContainer getEmptyVisualizerContainer(String vcID);
+    public String getID() {
+        return ThreadStackVisualizerConfiguration.ID;
+    }
+
+
+    public Visualizer<ThreadStackVisualizerConfiguration> create(ThreadStackVisualizerConfiguration configuration, VisualizerDataProvider provider) {
+        if (!(provider instanceof StackDataProvider)){
+            return null;
+        }
+        return new ThreadStackVisualizer(configuration, (StackDataProvider)provider);
+    }
+
 }
