@@ -86,7 +86,6 @@ public class ArchiveURLMapper extends URLMapper {
                         JarFileSystem jfs = (JarFileSystem) fs;
                         File archiveFile = jfs.getJarFile();
                         if (isRoot(archiveFile)) {
-                            // XXX supposedly JarURLConnection determines entryName by String.substring(int,int)
                             return new URL("jar:" + archiveFile.toURI() + "!/" +
                                     new URI(null, fo.getPath(), null).getRawSchemeSpecificPart() +
                                     (fo.isFolder() && !fo.isRoot() ? "/" : "")); // NOI18N
@@ -123,6 +122,7 @@ public class ArchiveURLMapper extends URLMapper {
                     if (archiveFile == null) {
                         archiveFile = copyJAR(fo, archiveFileURI);
                     }
+                    // XXX new URI("substring").getPath() might be better?
                     String offset = path.length()>index+2 ? URLDecoder.decode(path.substring(index+2),"UTF-8"): "";   //NOI18N
                     JarFileSystem fs = getFileSystem(archiveFile);
                     FileObject resource = fs.findResource(offset);
