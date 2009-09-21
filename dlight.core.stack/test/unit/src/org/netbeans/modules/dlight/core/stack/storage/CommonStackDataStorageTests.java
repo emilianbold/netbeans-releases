@@ -85,7 +85,7 @@ public abstract class CommonStackDataStorageTests {
         db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 3, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(4, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
@@ -121,7 +121,7 @@ public abstract class CommonStackDataStorageTests {
         db.putSample(Arrays.<CharSequence>asList("func3", "func2", "func1"), 3, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(3, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
@@ -170,7 +170,7 @@ public abstract class CommonStackDataStorageTests {
         db.putSample(Arrays.<CharSequence>asList("x", "b", "c"), 4, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(4, hotSpots.size());
 
         FunctionCallWithMetric c = find(hotSpots, "c");
@@ -206,7 +206,7 @@ public abstract class CommonStackDataStorageTests {
         db.putSample(Arrays.<CharSequence>asList("c", "d", "f"), 5, 10);
         flush(db);
 
-        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
         assertEquals(6, hotSpots.size());
 
         FunctionCallWithMetric b = find(hotSpots, "b");

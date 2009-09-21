@@ -89,7 +89,7 @@ public interface StackDataStorage {//extends StackSupport {
 
     List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate);
 
-    List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
+    List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, List<DataFilter> filters, int limit);
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters);
 }

@@ -169,7 +169,7 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
+        public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, List<DataFilter> filters, int limit) {
             fail("Parser is not expected to call this method");
             return null;
         }

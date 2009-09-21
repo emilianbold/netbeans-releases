@@ -292,10 +292,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
+    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, List<DataFilter> filters, int limit) {
         try {
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
-            TimeIntervalDataFilter timeFilter = null;
+            TimeIntervalDataFilter timeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, filters);
             PreparedStatement select = getPreparedStatement(
                     "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, SUM(FuncMetricAggr.time_excl) AS time_excl " + //NOI18N
                     "FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
@@ -303,8 +303,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     "GROUP BY Func.func_id, Func.func_name, Func.func_full_name " + // NOI18N
                     "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             if (timeFilter != null) {
-                select.setLong(1, timeFilter.getInterval().getStartMilliSeconds());
-                select.setLong(2, timeFilter.getInterval().getEndMilliSeconds());
+                select.setLong(1, timeToBucketId(timeFilter.getInterval().getStartMilliSeconds()));
+                select.setLong(2, timeToBucketId(timeFilter.getInterval().getEndMilliSeconds()));
             }
             select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
@@ -386,7 +386,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         if (0 < duration) {
             UpdateMetrics cmd = new UpdateMetrics();
             cmd.objId = id;
-            cmd.bucketId = timestamp / 1000; // bucket is 1 second
+            cmd.bucketId = timeToBucketId(timestamp);
             cmd.funcOrNode = funcOrNode;
             if (addIncl) {
                 cmd.cpuTimeInclusive = duration;
@@ -808,6 +808,15 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 ((FunctionImpl) calls.get(i).getFunction()).setName(demangled.get(i));
             }
         }
+    }
+
+    /**
+     *
+     * @param timestamp  in milliseconds
+     * @return bucket id
+     */
+    private static long timeToBucketId(long timestamp) {
+        return timestamp / 1000;  // bucket is 1 second
     }
 
 ////////////////////////////////////////////////////////////////////////////////
