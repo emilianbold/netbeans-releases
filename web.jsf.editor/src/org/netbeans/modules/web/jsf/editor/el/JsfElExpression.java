@@ -624,8 +624,8 @@ public class JsfElExpression extends ELExpression {
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
                 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.
-                        getEnclosedElements()))
+                for (ExecutableElement method : ElementFilter.methodsIn(
+                        controller.getElements().getAllMembers(bean)))
                 {
                     /* EL 2.1 for JSF allows to call any method , not just action listener 
                      * if (isActionListenerMethod(method)) {
@@ -708,8 +708,8 @@ public class JsfElExpression extends ELExpression {
             if (bean != null){
                 String suffix = removeQuotes(getPropertyBeingTypedName());
 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.
-                        getEnclosedElements()))
+                for (ExecutableElement method : ElementFilter.methodsIn(
+                        controller.getElements().getAllMembers(bean)))
                 {
                     String propertyName = getExpressionSuffix(method, controller);
 
