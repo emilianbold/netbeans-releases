@@ -93,11 +93,8 @@ public class IncludeErrorProvider extends CsmErrorProvider {
 
     private final static String decorateWithExtraHyperlinkTip(String tooltip) {
         Preferences prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-        int shortCut = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
         int altShortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
-        return NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_HyperlinkActionsHints", tooltip,  // NOI18N
-                InputEvent.getModifiersExText(shortCut),
-                InputEvent.getModifiersExText(altShortCut));
+        return NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_HyperlinkActionsHints", tooltip,  InputEvent.getModifiersExText(altShortCut));// NOI18N
     }
 
     private static class IncludeErrorInfo extends OffsetableErrorInfo implements CsmErrorInfo {
