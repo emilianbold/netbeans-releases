@@ -241,7 +241,7 @@ public class CheckinAction extends AbstractAction {
         ClearcaseModuleConfig.removeExclusionPaths(removeExclusions);
         ClearcaseModuleConfig.setForceUnmodifiedCheckin(forceUnmodified);
         ClearcaseModuleConfig.setPreserveTimeCheckin(preserveTime);
-        Utils.insert(ClearcaseModuleConfig.getPreferences(), RECENT_CHECKIN_MESSAGES, message, 20);
+        Utils.insert(ClearcaseModuleConfig.getPreferences(), RECENT_CHECKIN_MESSAGES, message.trim(), 20);
 
         files = ciFiles.toArray(new File[ciFiles.size()]);
         CheckinCommand cmd = new CheckinCommand(files, message, forceUnmodified, preserveTime, new OutputWindowNotificationListener(), new AfterCommandRefreshListener(files));
