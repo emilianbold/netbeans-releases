@@ -326,7 +326,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         this.session = session;
-        if (session != null) {
+        if (session != null && newState != SessionState.CLOSED) {
             session.addDataFilterListener(this);
         }
         switch (newState) {
