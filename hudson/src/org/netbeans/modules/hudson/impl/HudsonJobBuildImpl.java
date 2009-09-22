@@ -101,7 +101,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
     private Collection<? extends HudsonJobChangeItem> changes;
     public Collection<? extends HudsonJobChangeItem> getChanges() {
-        if (changes == null) {
+        if (changes == null || /* #171978 */changes.isEmpty()) {
             Document changeSet = connector.getDocument(getUrl() +
                     HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet"); // NOI18N
             if (changeSet != null) {

@@ -876,6 +876,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz151583.cc", 14, 5, "iz151583.cc", 8, 1);
     }
 
+    public void testIZ166897() throws Exception {
+        // IZ#166897 : Unable to resolve member variable in typedef function definition
+        performTest("iz166897.cc", 12, 19, "iz166897.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
