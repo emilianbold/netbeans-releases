@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
@@ -59,6 +60,8 @@ final class KenaiTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; // NOI18N
     private static final String PREFERRED_ID = "KenaiTopComponent"; // NOI18N
+
+    private JComponent dashboardComponent;
 
     private KenaiTopComponent() {
         initComponents();
@@ -121,12 +124,14 @@ final class KenaiTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         removeAll();
-        add( DashboardImpl.getInstance().getComponent(), BorderLayout.CENTER );
+        dashboardComponent = DashboardImpl.getInstance().getComponent();
+        add(dashboardComponent, BorderLayout.CENTER);
     }
 
     @Override
     public void componentClosed() {
         DashboardImpl.getInstance().close();
+        dashboardComponent = null;
         removeAll();
     }
 
@@ -136,6 +141,27 @@ final class KenaiTopComponent extends TopComponent {
         if (Kenai.getDefault().getPasswordAuthentication() != null
                 || DashboardImpl.getInstance().getOpenProjects().length > 0) {
             UIUtils.logKenaiUsage("DASHBOARD"); // NOI18N
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean requestFocusInWindow() {
+        // Needed to transfer focus to dashboard e.g. when switched to it from Window menu.
+        boolean b = super.requestFocusInWindow();
+        if (dashboardComponent != null) {
+            b = dashboardComponent.requestFocusInWindow();
+        }
+        return b;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void requestFocus() {
+        // Needed to transfer focus to dashboard e.g. if it is the active TopComponent after restart.
+        super.requestFocus();
+        if (dashboardComponent != null) {
+            dashboardComponent.requestFocus();
         }
     }
 
