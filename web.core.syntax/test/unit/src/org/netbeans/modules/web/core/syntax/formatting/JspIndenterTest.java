@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.core.syntax.formatting;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -419,6 +420,12 @@ public class JspIndenterTest extends TestBase2 {
 
         public MetadataModel<WebAppMetadata> getMetadataModel() {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
 
     }

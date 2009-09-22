@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.spi.webmodule;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -52,6 +53,16 @@ import org.openide.filesystems.FileObject;
  */
 public interface WebModuleImplementation2 {
 
+    /**
+     * @since org.netbeans.api.web.webmodule/1 1.16
+     */
+    static final String PROPERTY_DOCUMENT_BASE = "documentBase";
+    
+    /**
+     * @since org.netbeans.api.web.webmodule/1 1.16
+     */
+    static final String PROPERTY_WEB_INF = "webInf";
+    
     /**
      * Returns the folder that contains sources of the static documents for
      * the web module (html, JSPs, etc.).
@@ -99,7 +110,7 @@ public interface WebModuleImplementation2 {
      * </div>
      *
      * @return this web module's Java source roots; never null.
-     * 
+     *
      * @deprecated This method is deprecated, because its return values does
      * not contain enough information about the source roots. Source roots
      * are usually implemented by a <code>org.netbeans.api.project.SourceGroup</code>,
@@ -115,4 +126,18 @@ public interface WebModuleImplementation2 {
      * @return this web module's metadata model; never null.
      */
     MetadataModel<WebAppMetadata> getMetadataModel();
+
+    /**
+     * Add propertty change listener.
+     *
+     * @since org.netbeans.api.web.webmodule/1 1.16
+     */
+    void addPropertyChangeListener(PropertyChangeListener listener);
+    
+    /**
+     * Remove propertty change listener.
+     *
+     * @since org.netbeans.api.web.webmodule/1 1.16
+     */
+    void removePropertyChangeListener(PropertyChangeListener listener);
 }
