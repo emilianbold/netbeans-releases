@@ -414,11 +414,12 @@ public class Utilities {
             } finally {
                 if (is != null) is.close();
                 if (fos != null) fos.close();
+                updaterJar.close();
             }                
         } catch (java.io.FileNotFoundException fnfe) {
-            getLogger ().log (Level.INFO, fnfe.getLocalizedMessage (), fnfe);
+            getLogger ().log (Level.SEVERE, fnfe.getLocalizedMessage (), fnfe);
         } catch (java.io.IOException ioe) {
-            getLogger ().log (Level.INFO, ioe.getLocalizedMessage (), ioe);
+            getLogger ().log (Level.SEVERE, ioe.getLocalizedMessage (), ioe);
         }
     }
     
