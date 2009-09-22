@@ -80,8 +80,8 @@ import org.openide.util.RequestProcessor;
  */
 
 public class PresenceIndicator {
-    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png"));
-    private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/offline.png"));
+    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png")); // NOI18N
+    private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/offline.png")); // NOI18N
     private static PresenceIndicator instance;
 
     private JLabel label;
@@ -90,8 +90,8 @@ public class PresenceIndicator {
     public void setStatus(Kenai.Status status) {
         label.setIcon(status == Kenai.Status.ONLINE?ONLINE:OFFLINE);
         if (status!=Kenai.Status.ONLINE) {
-            label.setText("");
-            label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
+            label.setText(""); // NOI18N
+            label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
         }
             label.setVisible(status!=Kenai.Status.OFFLINE);
     }
@@ -112,7 +112,7 @@ public class PresenceIndicator {
         label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
         label.setVisible(false);
         label.setBorder(new EmptyBorder(0, 5, 0, 5));
-        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
+        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
         helper = new MouseL();
         label.addMouseListener(helper);
         Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
@@ -146,9 +146,9 @@ public class PresenceIndicator {
             } else {
                 if (s!=Kenai.Status.OFFLINE) {
                     JPopupMenu menu = new JPopupMenu();
-                    final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem("Online On Chat",s==Kenai.Status.ONLINE);
+                    final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
-                    final JMenuItem logoutItem = new JMenuItem("Logout from Kenai");
+                    final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
                     final Kenai kenai = Kenai.getDefault();
                     onlineCheckBox.addActionListener(new ActionListener() {
@@ -210,7 +210,7 @@ public class PresenceIndicator {
                     });
                     for (MultiUserChat muc : chats) {
                         String chatName = StringUtils.parseName(muc.getRoom());
-                        assert chatName!=null: "muc.getRoom() = " + muc.getRoom();
+                        assert chatName!=null: "muc.getRoom() = " + muc.getRoom(); // NOI18N
                         tipBuffer.append("<font color=gray>" + getDisplayName(muc) + "</font><br>"); // NOI18N
                         Iterator<String> i = muc.getOccupants();
                         ArrayList<String> occupants = new ArrayList<String>();
