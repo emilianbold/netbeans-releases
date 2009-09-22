@@ -41,7 +41,6 @@
 package org.netbeans.modules.versioning.diff;
 
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.api.diff.Difference;
 import org.openide.text.CloneableEditorSupport;
 
