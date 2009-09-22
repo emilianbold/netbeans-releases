@@ -54,10 +54,13 @@ import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -82,40 +85,56 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     private static final String SS_DEMANGLER = "dem"; //NOI18N
     private static final String EQUALS_EQUALS = " == "; //NOI18N
 
-    /*package*/ CppSymbolDemanglerImpl() {
-        Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
-        if (project == null) {
-             Project[] projects = org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
-             if (projects.length == 1) {
-                 project = projects[0];
-             }
-        }
-        NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
-        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-        if (nPrj == null || conf == null) {
-            cppCompiler = CPPCompiler.GNU;
-            demanglerTool = GNU_DEMANGLER_1;
-            checkGnuDemangler = true;
-            env = ExecutionEnvironmentFactory.getLocal();
-            return;
-        }
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String demangle_utility = SS_DEMANGLER;
-        if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
-            cppCompiler = CPPCompiler.GNU;
-            demangle_utility = GNU_DEMANGLER_1;
-            checkGnuDemangler = true;
+    /*package*/ CppSymbolDemanglerImpl(Map<String, String> serviceInfo) {
+
+
+        ///Here we are
+        if (serviceInfo == null) {
+            Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
+            if (project == null) {
+                Project[] projects = org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
+                if (projects.length == 1) {
+                    project = projects[0];
+                }
+            }
+            NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
+            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+            if (nPrj == null || conf == null) {
+                cppCompiler = CPPCompiler.GNU;
+                demanglerTool = GNU_DEMANGLER_1;
+                checkGnuDemangler = true;
+                env = ExecutionEnvironmentFactory.getLocal();
+                return;
+            }
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+            String demangle_utility = SS_DEMANGLER;
+            if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
+                cppCompiler = CPPCompiler.GNU;
+                demangle_utility = GNU_DEMANGLER_1;
+                checkGnuDemangler = true;
+            } else {
+                cppCompiler = CPPCompiler.SS;
+            }
+            String binDir = compilerSet.getDirectory();
+            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+            if (execEnv.isRemote()) {
+                env = ExecutionEnvironmentFactory.createNew(execEnv.getUser(), execEnv.getHost());
+            } else {
+                env = ExecutionEnvironmentFactory.getLocal();
+            }
+            demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         } else {
-            cppCompiler = CPPCompiler.SS;
+            env = ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
+            cppCompiler = CppSymbolDemanglerFactory.CPPCompiler.valueOf(serviceInfo.get(GizmoServiceInfo.CPP_COMPILER));
+            String binDir = serviceInfo.get(GizmoServiceInfo.CPP_COMPILER_BIN_PATH);
+            String demangle_utility = SS_DEMANGLER;
+            if (cppCompiler == CPPCompiler.GNU) {
+                demangle_utility = GNU_DEMANGLER_1;
+                checkGnuDemangler = true;
+            }
+            demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         }
-        String binDir = compilerSet.getDirectory();
-        ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
-        if (execEnv.isRemote()) {
-            env = ExecutionEnvironmentFactory.createNew(execEnv.getUser(), execEnv.getHost());
-        } else {
-            env = ExecutionEnvironmentFactory.getLocal();
-        }
-        demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
+
     }
 
     /*package*/ CppSymbolDemanglerImpl(CPPCompiler cppCompiler) {
@@ -246,7 +265,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         npb.setArguments(mangledNames.toArray(new String[mangledNames.size()]));
 
         try {
-            Future<NativeProcess> task  = DLightExecutorService.submit(new Callable<NativeProcess>() {
+            Future<NativeProcess> task = DLightExecutorService.submit(new Callable<NativeProcess>() {
 
                 public NativeProcess call() throws Exception {
                     return npb.call();
@@ -279,10 +298,8 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
             }
         } catch (IOException ex) {
             // hide it
-        }catch(InterruptedException e){
-            
-        }catch(ExecutionException execException){
-
+        } catch (InterruptedException e) {
+        } catch (ExecutionException execException) {
         }
     }
 

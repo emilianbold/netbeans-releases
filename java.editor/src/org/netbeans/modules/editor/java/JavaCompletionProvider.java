@@ -1555,7 +1555,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         if (smart.getKind() == TypeKind.DECLARED) {
                                             for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
                                                 TypeElement elem = (TypeElement)subtype.asElement();
-                                                if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                                if ((toExclude != elem || !subtype.getTypeArguments().isEmpty()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
                                                     results.add(JavaCompletionItem.createTypeItem(elem, subtype, anchorOffset, true, elements.isDeprecated(elem), true, true));
                                                 subtypes.add(elem);
                                             }

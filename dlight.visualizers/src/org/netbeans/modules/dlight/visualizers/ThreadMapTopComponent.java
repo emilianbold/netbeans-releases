@@ -170,7 +170,10 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
         return PREFERRED_ID;
     }
 
-    public void addVisualizer(String toolName, Visualizer view) {
+    public void addVisualizer(String toolID, String toolName, Visualizer view) {
+        if (view instanceof ThreadMapVisualizer){
+            ((ThreadMapVisualizer)view).setToolID(toolID);
+        }
         setContent(toolName, view.getComponent());
         view.refresh();
     }

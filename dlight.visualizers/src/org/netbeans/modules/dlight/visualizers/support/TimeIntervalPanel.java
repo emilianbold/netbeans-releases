@@ -65,12 +65,14 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
 
     private static final long NANOSECONDS_PER_SECOND = 1000000000;
     private DataFilterManager manager;
+    private final ChangeListener startTimeChangeListener = new StartTimeSpinnerListener();
+    private final ChangeListener endTimeChangeListener = new EndTimeSpinnerListener();
 
     /** Creates new form TimeIntervalPanel */
     public TimeIntervalPanel(DataFilterManager manager) {
         initComponents();
         this.manager = manager;
-        if (manager != null){
+        if (manager != null) {
             this.manager.addDataFilterListener(this);
             update(manager.getDataFilter(TimeIntervalDataFilter.class));
         }
@@ -94,14 +96,8 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
                 TimeIntervalPanel.this.manager.cleanAllDataFilter(TimeIntervalDataFilter.class);
             }
         });
-        startTimeSpinner.addChangeListener(new ChangeListener() {
-
-            public void stateChanged(ChangeEvent e) {
-                //if end time more then start re-set end
-                if (((Long)startTimeSpinner.getValue()) >= (Long)endTimeSpinner.getValue())
-                    endTimeSpinner.setValue((Long)startTimeSpinner.getValue() + 1);
-            }
-        });
+        startTimeSpinner.addChangeListener(startTimeChangeListener);
+        endTimeSpinner.addChangeListener(endTimeChangeListener);
     }
 
     public void update(DataFilterManager manager) {
@@ -110,12 +106,12 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         }
 
         this.manager = manager;
-        
 
-        
+
+
         applyButton.setEnabled(manager != null);
-        
-        if (this.manager != null){
+
+        if (this.manager != null) {
             this.manager.addDataFilterListener(this);
             update(manager.getDataFilter(TimeIntervalDataFilter.class));
         }
@@ -207,7 +203,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         update(manager.getDataFilter(TimeIntervalDataFilter.class));
     }
 
-    private final void update(Collection<TimeIntervalDataFilter> filters){
+    private final void update(Collection<TimeIntervalDataFilter> filters) {
         if (filters == null || filters.isEmpty()) {
             return;
         }
@@ -221,10 +217,32 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         if (filter == null) {
             return;
         }
-        endTimeSpinner.setValue((long)(filter.getInterval().getEnd()/NANOSECONDS_PER_SECOND));
-        startTimeSpinner.setValue((long)filter.getInterval().getStart()/NANOSECONDS_PER_SECOND);
-        
+        startTimeSpinner.removeChangeListener(startTimeChangeListener);
+        endTimeSpinner.removeChangeListener(endTimeChangeListener);
+        endTimeSpinner.setValue((filter.getInterval().getEnd() / NANOSECONDS_PER_SECOND));
+        startTimeSpinner.setValue((long) filter.getInterval().getStart() / NANOSECONDS_PER_SECOND);
+        startTimeSpinner.addChangeListener(startTimeChangeListener);
+        endTimeSpinner.addChangeListener(endTimeChangeListener);
+
     }
 
+    private final class StartTimeSpinnerListener implements ChangeListener {
 
+        public void stateChanged(ChangeEvent e) {
+            //if end time more then start re-set end
+            if (((Long) startTimeSpinner.getValue()) >= (Long) endTimeSpinner.getValue()) {
+                endTimeSpinner.setValue((Long) startTimeSpinner.getValue() + 1);
+            }
+        }
+    }
+
+    private final class EndTimeSpinnerListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            //if end time more then start re-set end
+            if (((Long) startTimeSpinner.getValue()) >= (Long) endTimeSpinner.getValue()) {
+                startTimeSpinner.setValue((Long) endTimeSpinner.getValue() - 1);
+            }
+        }
+    }
 }

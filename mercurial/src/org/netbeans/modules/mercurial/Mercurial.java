@@ -437,7 +437,6 @@ public class Mercurial {
     }
 
     public void getOriginalFile(File workingCopy, File originalFile) {
-        System.out.println(" == getOriginalFile " + workingCopy + " " + originalFile);
         FileInformation info = fileStatusCache.getStatus(workingCopy);
         LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
         if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;

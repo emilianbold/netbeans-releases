@@ -119,6 +119,9 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
                             public void setValue(Integer val) {
                                 put(INSTANCE_SYNC, val.toString());
                             }
+                            public @Override boolean canWrite() {
+                                return isPersisted();
+                            }
                         }
             });
         }

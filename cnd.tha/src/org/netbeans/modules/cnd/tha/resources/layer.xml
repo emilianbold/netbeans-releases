@@ -4,6 +4,7 @@
     <folder name="DLight">
         <folder name="Configurations">
             <folder name="THA">
+                <attr name="displayedName" stringvalue="Thread Profiling"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightTHAToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightTHAToolConfigurationProvider.instance"/>

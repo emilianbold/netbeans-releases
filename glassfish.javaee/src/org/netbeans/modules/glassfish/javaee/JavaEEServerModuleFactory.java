@@ -397,9 +397,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                             removeFromListenerList(pcl);
                         }
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                        l = lmgr.getLibrary(name);
+                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                                ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException iae) {
-                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, iae.getLocalizedMessage(), iae);
+                        l = lmgr.getLibrary(name);
+                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                                iae.getLocalizedMessage(), iae);
                     }
                 } else {
                     // The library is there... and the listener is still active... hmmm.
