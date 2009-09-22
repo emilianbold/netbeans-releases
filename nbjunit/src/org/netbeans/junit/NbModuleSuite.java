@@ -1154,7 +1154,7 @@ public class NbModuleSuite {
                 if (previous.equals(xml)) {
                     return;
                 }
-                LOG.info("rewrite module file: " + file);
+                LOG.fine("rewrite module file: " + file);
                 charDump(previous);
                 LOG.fine("new----");
                 charDump(xml);
