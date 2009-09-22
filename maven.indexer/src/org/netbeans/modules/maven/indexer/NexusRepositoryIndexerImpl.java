@@ -892,7 +892,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     BooleanQuery bq = new BooleanQuery();
                     bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                     if (prefix.length() > 0) { //heap out of memory otherwise
-                        bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, prefix)), BooleanClause.Occur.MUST));
+                        bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.GROUP_ID, prefix)), BooleanClause.Occur.MUST));
                     }
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);

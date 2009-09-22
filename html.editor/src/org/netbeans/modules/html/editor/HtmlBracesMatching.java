@@ -93,8 +93,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
             if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
-            TokenSequence ts = Utils.getJoinedHtmlSequence(context.getDocument());
-            TokenHierarchy th = TokenHierarchy.get(context.getDocument());
+            TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(context.getDocument());
+            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
 
             if (ts.language() == HTMLTokenId.language()) {
                 ts.move(context.getSearchOffset());
@@ -104,18 +104,18 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         //check whether the searched position doesn't overlap the token boundaries
                         return null;
                     }
-                    Token t = ts.token();
+                    Token<HTMLTokenId> t = ts.token();
                     if (tokenInTag(t)) {
                         //find the tag beginning
                         do {
-                            Token t2 = ts.token();
+                            Token<HTMLTokenId> t2 = ts.token();
                             if (!tokenInTag(t2)) {
                                 return null;
                             } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                 //find end
                                 int tagNameEnd = -1;
                                 while (ts.moveNext()) {
-                                    Token t3 = ts.token();
+                                    Token<HTMLTokenId> t3 = ts.token();
                                     if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                         return null;
                                     } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {

@@ -135,7 +135,7 @@ public class GotoActionView extends AbstractAction {
             return false;
         }
         Project project = FileOwnerQuery.getOwner(fo);
-        while (parent != null && !parent.equals(project.getProjectDirectory()) && !"app".equals(parent.getName())) { //NOI18N
+        while (parent != null && !isProjectDir(project, parent) && !"app".equals(parent.getName())) { //NOI18N
             FileObject grandParent = parent.getParent();
             if (grandParent == null) {
                 break;
@@ -146,6 +146,15 @@ public class GotoActionView extends AbstractAction {
             parent = parent.getParent();
         }
         return false;
+    }
+
+    // to avoid unnecessarily traversing all the way to the root dir
+    private static boolean isProjectDir(Project project, FileObject fo) {
+        // the file is not part of a project, so no shortcut for us
+        if (project == null) {
+            return false;
+        }
+        return project.getProjectDirectory().equals(fo);
     }
 
     public void actionPerformed(ActionEvent ev) {

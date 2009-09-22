@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import javax.swing.text.Document;
+import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.List;
 import java.util.logging.Level;
@@ -106,7 +108,12 @@ public class HtmlGSFParser extends Parser {
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
         boolean embedded = snapshot.getMimePath().size() > 1;
-        SyntaxParserContext context = SyntaxParserContext.createContext(snapshot.getText());
+
+        //override fallback dtd if set to document property
+        Document sourceDocument = snapshot.getSource().getDocument(false);
+        DTD fallbackDTD = sourceDocument != null ? (DTD)sourceDocument.getProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME) : null;
+        
+        SyntaxParserContext context = SyntaxParserContext.createContext(snapshot.getText()).setDTD(fallbackDTD);
         //disable html structure checks for embedded html code
         if(embedded) {
             context.setProperty(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name(), Boolean.TRUE); //NOI18N

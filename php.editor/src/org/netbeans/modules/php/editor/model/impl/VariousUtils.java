@@ -766,8 +766,9 @@ public class VariousUtils {
         FileObject retval = null;
         if (fileName != null) {
             FileObject parent = sourceFile.getParent();
-            assert parent != null : FileUtil.getFileDisplayName(sourceFile);
-            retval = PhpSourcePath.resolveFile(parent, fileName);
+            if (parent != null) {
+                retval = PhpSourcePath.resolveFile(parent, fileName);
+            }
         }
         return retval;
     }

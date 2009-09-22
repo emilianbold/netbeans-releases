@@ -1492,7 +1492,7 @@ public class AstUtilities {
         return isNodeNameIn(node, ActiveRecordAssociationFinder.AR_ASSOCIATIONS);
     }
 
-    private static boolean isNodeNameIn(Node node, String... names) {
+    static boolean isNodeNameIn(Node node, String... names) {
         String name = getName(node);
         for (String each : names) {
             if (each.equals(name)) {

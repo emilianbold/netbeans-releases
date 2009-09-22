@@ -85,20 +85,14 @@ class SAXHelpHandler extends DefaultHandler {
         private int state;
         private int textState;
         
-        private Hashtable map;
+        private Hashtable<String, TagHelpItem> map = new Hashtable<String, TagHelpItem>();
         private String file;
-        private String location;
-        private String identical;
-        
-        private String mezery;
         
         public SAXHelpHandler(){
             super();
-            map = new Hashtable();
-            file = null;
-            tag = null;
         }
         
+        @Override
         public void startElement(String uri, String localname, String qname, Attributes attrs) throws SAXException {
             int controlCode = qname.hashCode();
             String value;
@@ -206,6 +200,7 @@ class SAXHelpHandler extends DefaultHandler {
             
         }
 
+        @Override
         public void characters(char[] ch, int start, int length) throws SAXException{
             String text = (new String(ch, start, length)).trim();
             if (text != null && text.length() > 0){

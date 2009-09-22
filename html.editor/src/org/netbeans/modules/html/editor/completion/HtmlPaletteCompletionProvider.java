@@ -230,8 +230,8 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
         }
 
         private TokenSequence getTokenSequence(Document doc, int offset) {
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            List<TokenSequence> sequences = th.embeddedTokenSequences(offset, true);
+            TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+            List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, true);
             TokenSequence htmlTs = null;
             for (TokenSequence ts : sequences) {
                 if (ts.language().mimeType().equals("text/html")) { //NOI18N
