@@ -64,6 +64,7 @@ public final class WebFragmentXmlWizardIterator implements WizardDescriptor.Inst
     private int index;
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
+    private static final String META_INF = "META-INF";  //NOI18N
 
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -109,6 +110,7 @@ public final class WebFragmentXmlWizardIterator implements WizardDescriptor.Inst
         Profile profile = wm != null ? wm.getJ2eeProfile() : Profile.JAVA_EE_6_FULL;
         if (dir != null) {
             try {
+                dir = Utils.createDirs(dir, new String[]{META_INF});
                 FileObject dd = DDHelper.createWebFragmentXml(profile, dir);
                 if (dd != null) {
                     DataObject dObj = DataObject.find(dd);

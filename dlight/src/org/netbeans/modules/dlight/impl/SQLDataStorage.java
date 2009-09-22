@@ -62,6 +62,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -87,6 +88,7 @@ public abstract class SQLDataStorage implements DataStorage {
     protected static final HashMap<Class, String> classToType = new HashMap<Class, String>();
     private boolean enabled = false;
     private AsyncThread asyncThread = null;
+    private ServiceInfoDataStorage serviceInfoDataStorage;
 
     static {
         classToType.put(Byte.class, "tinyint"); // NOI18N
@@ -185,6 +187,15 @@ public abstract class SQLDataStorage implements DataStorage {
             enable();
         }
     }
+
+    public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
+        this.serviceInfoDataStorage = serviceInfoStorage;
+    }
+
+    protected final ServiceInfoDataStorage getServiceInfoDataStorage(){
+        return serviceInfoDataStorage;
+    }
+
 
     public boolean shutdown() {
         disable();
@@ -538,8 +549,11 @@ public abstract class SQLDataStorage implements DataStorage {
             logger.fine("SQL: prepare statement " + sql); //NOI18N
         }
         PreparedStatement stmt;
-        if (sql.toUpperCase().startsWith("INSERT INTO ")) { //NOI18N
+        String sqlUpper = sql.toUpperCase();
+        if (sqlUpper.startsWith("INSERT INTO ")) { //NOI18N
             stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        } else if (sqlUpper.endsWith(" FOR UPDATE")) { // NOI18N
+            stmt = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
         } else {
             stmt = connection.prepareStatement(sql);
         }

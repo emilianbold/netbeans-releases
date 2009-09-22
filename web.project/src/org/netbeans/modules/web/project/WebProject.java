@@ -58,7 +58,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -2031,6 +2030,14 @@ public final class WebProject implements Project, AntProjectListener {
 
         public FileObject getWebInf() {
             return webModule.getWebInf();
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            webModule.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            webModule.removePropertyChangeListener(listener);
         }
 
     }

@@ -41,8 +41,10 @@ public abstract class IndicatorAccessor {
   public IndicatorAccessor() {
   }
 
-  public abstract void setToolName(Indicator<?> ind, String toolName);
-  public abstract String getToolName(Indicator<?> ind);
+  public abstract void setToolID(Indicator<?> ind, String toolID);
+
+  public abstract String getToolID(Indicator<?> ind);
+  
   public abstract List<Column> getMetadataColumns(Indicator<?> indicator);
 
   public abstract String getMetadataColumnName(Indicator<?> indicator, int idx);

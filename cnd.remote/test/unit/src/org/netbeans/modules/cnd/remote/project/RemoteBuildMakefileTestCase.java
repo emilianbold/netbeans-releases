@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.project;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -73,7 +74,7 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
         FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         assertNotNull("project is null", makeProject);
-        buildProject(makeProject);
+        buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
 
     public static Test suite() {

@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <!-- Plain <subant> is unusable in Ant 1.7.1: https://issues.apache.org/bugzilla/show_bug.cgi?id=30569 -->
     <taskdef  name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef  name="sortsuitemodules" classname="org.netbeans.nbbuild.SortSuiteModules" classpath="${nbext_root}/nbantext.jar"/>
-    <property name="submodules" value="cnd.lexer,asm,cnd,cnd.makeproject,cnd.api.model,
+    <property name="submodules" value="cnd.lexer,cnd.asm,cnd,cnd.makeproject,cnd.api.model,
         cnd.antlr,cnd.api.project,cnd.modelimpl,cnd.classview,cnd.completion,cnd.debugger.gdb,cnd.modelutil,
         cnd.modelui,cnd.highlight,cnd.gotodeclaration,cnd.apt,cnd.folding,cnd.dwarfdump,
         cnd.repository,cnd.discovery,cnd.dwarfdiscovery,cnd.modeldiscovery,cnd.navigation,
@@ -208,7 +208,7 @@ made subject to such option by the copyright holder.
         <!--
         <exec executable="perl">
             <arg value="../nbbuild/misc/i18ncheck.pl"/>
-            <arg value="../asm/src"/>
+            <arg value="../cnd.asm/src"/>
             <arg value="../cnd/src"/>
             <arg value="../cnd.antlr/src"/>
             <arg value="../cnd.api.model/src"/>

@@ -74,7 +74,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
             RepositoryComboSupport.setup(this, repositoryComboBox, false);
         }
         repositoryComboBox.addItemListener(this);
-        enableFields();
     }
 
     Issue getIssue() {

@@ -69,7 +69,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
@@ -312,19 +311,19 @@ public class JsfElExpression extends ELExpression {
         CC_PROPERTIES_BASE.put(COMPOSITE_COMPONENT_ATTR_NAME, attrsMap); //NOI18N
     }
 
-    //TODO - dot notation syntax only - bug #1
     //TODO - not recursive attributes - bug #2
     //TODO - no need to initialize the composite component model when completing just cc or attrs items
     //XXX - consider using index only - much faster, but may be inaccurate when editing w/o saving the file
     public List<CompletionItem> getCompositeComponentItems(final int anchor) {
         final List<CompletionItem> items = new ArrayList<CompletionItem>();
-        String expression = getExpression();
-        final boolean endsWithDot = expression.charAt(expression.length() - 1) == '.';
 
-        StringTokenizer st = new StringTokenizer(expression, ".");
-        final LinkedList<String> path = new LinkedList<String>();
-        while (st.hasMoreTokens()) {
-            path.add(st.nextToken());
+        /*
+         * Fix for IZ#171833 - Array syntax doesn't work for composite component completion
+         */
+        Part[] parts = getParts();
+        final List<String> path = new LinkedList<String>();
+        for( Part part : parts ){
+            path.add(part.getPart());
         }
 
         //put interface attributes to the CC_PROPERTIES map
@@ -336,9 +335,13 @@ public class JsfElExpression extends ELExpression {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    HtmlParserResult result = (HtmlParserResult)resultIterator.getParserResult(anchor);
-                    CompositeComponentModel.Factory ccmodelFactory = (CompositeComponentModel.Factory)JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
-                    CompositeComponentModel ccmodel = (CompositeComponentModel)ccmodelFactory.getModel(result);
+                    HtmlParserResult result = (HtmlParserResult)resultIterator.
+                        getParserResult(anchor);
+                    CompositeComponentModel.Factory ccmodelFactory = 
+                        (CompositeComponentModel.Factory)JsfPageModelFactory.
+                        getFactory(CompositeComponentModel.Factory.class);
+                    CompositeComponentModel ccmodel = 
+                        (CompositeComponentModel)ccmodelFactory.getModel(result);
                     if(ccmodel == null) {
                         //no library file
                         return ;
@@ -351,7 +354,8 @@ public class JsfElExpression extends ELExpression {
                         }
                     }
 
-                    resolvePropertiesCompletion(path, CC_PROPERTIES_BASE, items, endsWithDot, anchor);
+                    resolvePropertiesCompletion(path, CC_PROPERTIES_BASE, items, 
+                            anchor);
                 }
             });
         } catch (ParseException ex) {
@@ -362,8 +366,16 @@ public class JsfElExpression extends ELExpression {
     }
 
     //generic properties completion
-    private void resolvePropertiesCompletion(List<String> path, Map properties, List<CompletionItem> items, boolean endsWithDot, int anchor) {
-         Map m = properties;
+    private void resolvePropertiesCompletion(List<String> path, Map properties, 
+            List<CompletionItem> items,  int anchor) 
+    {
+        String expression = getExpression();
+        boolean endsWithDot = expression.length() >0 && 
+            expression.charAt(expression.length() - 1) == '.' ; 
+        boolean startsWithBracket = expression.length() >0 && 
+            expression.charAt(expression.length() - 1) == '[' ; 
+        
+        Map m = properties;
         Iterator<String> pathItr = path.iterator();
         while (pathItr.hasNext()) {
             String pathItem = pathItr.next();
@@ -371,23 +383,36 @@ public class JsfElExpression extends ELExpression {
             if (inner != null) {
                 //match, take next item
                 m = inner;
-            } else if (pathItr.hasNext() || endsWithDot) {
+            } else if (pathItr.hasNext() || endsWithDot ||startsWithBracket) {
                 break; //the path doesn't match
             }
 
             if (!pathItr.hasNext()) {
                 //last item => try to complete
-                if (endsWithDot) {
+                if (endsWithDot || startsWithBracket ) {
                     //all items
                     for (Object key : m.keySet()) {
-                        items.add(new ElCompletionItem.ELProperty((String) key, anchor, ""));
+                        String text = (String) key;
+                        items.add(new ElCompletionItem.ELProperty(text, 
+                                 getInsert( text, 
+                                        text.length() >0 ? text.charAt(0): 0 ), anchor, ""));
                     }
                 } else {
                     //filter items
                     for (Object key : m.keySet()) {
-                        String s = (String) key;
-                        if (s.startsWith(pathItem)) {
-                            items.add(new ElCompletionItem.ELProperty(s, anchor, ""));
+                        String text = (String) key;
+                        String prefix = pathItem;
+                        char firstChar =0;
+                        if ( prefix.length()> 0){
+                            firstChar = prefix.charAt(0);
+                        }
+                        if ( firstChar == '"' || firstChar == '\''){
+                            prefix = prefix.substring( 1 );
+                        }
+                        if (text.startsWith(prefix)) {
+                            items.add(new ElCompletionItem.ELProperty(text, 
+                                    getInsert( text, firstChar), anchor, 
+                                    ""));
                         }
                     }
                 }
@@ -462,9 +487,6 @@ public class JsfElExpression extends ELExpression {
             int anchorOffset, String prefix) 
     {
         java.util.ResourceBundle[] bundle = new java.util.ResourceBundle[1];
-        List<String> keys = getPropertyKeys(propertyFile, prefix ,bundle);
-        List<CompletionItem> result = new ArrayList<CompletionItem>( keys.size() );
-        
         char firstChar =0;
         if ( prefix.length()> 0){
             firstChar = prefix.charAt(0);
@@ -472,6 +494,9 @@ public class JsfElExpression extends ELExpression {
         if ( firstChar == '"' || firstChar == '\''){
             prefix = prefix.substring( 1 );
         }
+        
+        List<String> keys = getPropertyKeys(propertyFile, prefix ,bundle);
+        List<CompletionItem> result = new ArrayList<CompletionItem>( keys.size() );
         
         for (String key : keys) {
             if (key.startsWith(prefix)) {
@@ -599,8 +624,8 @@ public class JsfElExpression extends ELExpression {
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
                 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.
-                        getEnclosedElements()))
+                for (ExecutableElement method : ElementFilter.methodsIn(
+                        controller.getElements().getAllMembers(bean)))
                 {
                     /* EL 2.1 for JSF allows to call any method , not just action listener 
                      * if (isActionListenerMethod(method)) {
@@ -683,8 +708,8 @@ public class JsfElExpression extends ELExpression {
             if (bean != null){
                 String suffix = removeQuotes(getPropertyBeingTypedName());
 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.
-                        getEnclosedElements()))
+                for (ExecutableElement method : ElementFilter.methodsIn(
+                        controller.getElements().getAllMembers(bean)))
                 {
                     String propertyName = getExpressionSuffix(method, controller);
 

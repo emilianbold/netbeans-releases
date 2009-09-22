@@ -59,6 +59,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
@@ -82,7 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSelectionListener, KeyListener {
+public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSelectionListener, KeyListener, DocumentListener {
     
     private static final Logger LOG = Logger.getLogger(CodeTemplatesPanel.class.getName());
     private CodeTemplatesModel  model;
@@ -92,8 +94,12 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
 
     /** Language which related info the panel currently displays. */
     private String panelLanguage;
-    
+
+    /** Points to modified template (its row index in templates table). */
     private int unsavedTemplateIndex = -1;
+
+    /** Allows to remember last edited template when templates panel gets reopened. */
+    private int forceRowIndex = -1;
 
     /** 
      * Creates new form CodeTemplatesPanel. 
@@ -159,6 +165,10 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     
     void update () {
         model = new CodeTemplatesModel ();
+        String lastPanelLanguage = panelLanguage;
+        int lastSelectedRowIndex = tTemplates.getSelectedRow();
+        selectedLanguage = null;
+        panelLanguage = null;
 
         cbLanguage.removeActionListener (this);
         bNew.removeActionListener (this);
@@ -219,14 +229,18 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         if (defaultSelectedLang == null && model.getLanguages().size() > 0) {
             defaultSelectedLang = model.getLanguages().get(0);
         }
+        forceRowIndex = -1;
         if (defaultSelectedLang != null) {
             cbLanguage.setSelectedItem(defaultSelectedLang);
+            if (defaultSelectedLang.equals(lastPanelLanguage)) {
+                forceRowIndex = lastSelectedRowIndex;
+            }
         }
     }
     
     void applyChanges () {
+        saveCurrentTemplate();
         if (model != null) {
-            saveCurrentTemplate ();
             model.saveChanges ();
         }
     }
@@ -239,6 +253,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     }
     
     boolean isChanged () {
+        saveCurrentTemplate();
         if (model == null) return false;
         return model.isChanged ();
     }
@@ -273,15 +288,22 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     c3.setPreferredWidth(250);
                     c3.setResizable(true);
 
+                    epExpandedText.getDocument().removeDocumentListener(CodeTemplatesPanel.this);
+                    epDescription.getDocument().removeDocumentListener(CodeTemplatesPanel.this);
                     epDescription.setEditorKit(CloneableEditorSupport.getEditorKit("text/html")); //NOI18N
                     epExpandedText.setEditorKit(CloneableEditorSupport.getEditorKit(model.getMimeType (panelLanguage)));
-                    if (tableModel.getRowCount () > 0) {
-                        unsavedTemplateIndex = -1;
-                        tTemplates.getSelectionModel ().setSelectionInterval (0, 0);
-                        unsavedTemplateIndex = 0;
-                    } else {
-                        unsavedTemplateIndex = -1;
+                    // Possibly force to select forceRowIndex (if the table has enough rows)
+                    int rowCount = tableModel.getRowCount();
+                    int selectRowIndex = (forceRowIndex != -1 && forceRowIndex < rowCount)
+                            ? forceRowIndex
+                            : 0;
+                    forceRowIndex = -1;
+                    if (selectRowIndex < rowCount) {
+                        tTemplates.getSelectionModel().setSelectionInterval(selectRowIndex, selectRowIndex);
                     }
+                    // Need to re-add the document listeners since pane.setEditorKit() changes the document
+                    epExpandedText.getDocument().addDocumentListener(CodeTemplatesPanel.this);
+                    epDescription.getDocument().addDocumentListener(CodeTemplatesPanel.this);
                 }
             });
         } else if (e.getSource () == bNew) {
@@ -316,7 +338,6 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                         }
                     }
                     if (i == rows) {
-                        unsavedTemplateIndex = -1;
                         int rowIdx = tableModel.addCodeTemplate(newAbbrev);
                         tTemplates.getSelectionModel().setSelectionInterval(rowIdx, rowIdx);
                     }
@@ -339,14 +360,12 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             int index = tTemplates.getSelectedRow ();
             tableModel.removeCodeTemplate(index);
             unsavedTemplateIndex = -1;
-            
-            if (index < tTemplates.getModel ().getRowCount ()) {
-                tTemplates.getSelectionModel ().setSelectionInterval(index, index);
-            } else if (tTemplates.getModel ().getRowCount () > 0) {
-                tTemplates.getSelectionModel ().setSelectionInterval (
-                    tTemplates.getModel ().getRowCount () - 1,
-                    tTemplates.getModel ().getRowCount () - 1
-                );
+
+            int rowCount = tableModel.getRowCount();
+            if (index < rowCount) {
+                tTemplates.getSelectionModel().setSelectionInterval(index, index);
+            } else if (rowCount > 0) {
+                tTemplates.getSelectionModel().setSelectionInterval(rowCount - 1, rowCount - 1);
             } else {
                 bRemove.setEnabled (false);
             }
@@ -369,6 +388,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     }
     
     public void valueChanged (ListSelectionEvent e) {
+        saveCurrentTemplate ();
         // new line in code templates table has been selected
         int index = tTemplates.getSelectedRow ();
         if (index < 0) {
@@ -378,7 +398,6 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             unsavedTemplateIndex = -1;
             return;
         }
-        saveCurrentTemplate ();
 
         // Show details of the newly selected code tenplate
         CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
@@ -387,8 +406,9 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         // translations). See #130095 for details.
         setDocumentText(epDescription.getDocument(), tableModel.getDescription(index));
         setDocumentText(epExpandedText.getDocument(), tableModel.getText(index));
+        // Mark unmodified explicitly - setDocumentText() marked as modified
+        unsavedTemplateIndex = -1;
         bRemove.setEnabled(true);
-        unsavedTemplateIndex = index;
     }
     
     private static void setDocumentText(Document doc, String text) {
@@ -412,6 +432,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         try {
             tableModel.setDescription(unsavedTemplateIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epDescription.getDocument(), 0, epDescription.getDocument().getLength())));
             tableModel.setText(unsavedTemplateIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epExpandedText.getDocument(), 0, epExpandedText.getDocument().getLength())));
+            unsavedTemplateIndex = -1;
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -430,7 +451,24 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
 
     public void keyReleased(KeyEvent e) {
     }
-    
+
+    private void textModified() {
+        if (unsavedTemplateIndex < 0) {
+            unsavedTemplateIndex = tTemplates.getSelectedRow();
+        }
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        textModified();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        textModified();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+    }
+
     // UI form .................................................................
     
     /** This method is called from within the constructor to
@@ -581,4 +619,5 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     private javax.swing.JTable tTemplates;
     private javax.swing.JTabbedPane tabPane;
     // End of variables declaration//GEN-END:variables
+
 }
