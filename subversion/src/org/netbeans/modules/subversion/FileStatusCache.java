@@ -177,11 +177,6 @@ public class FileStatusCache {
         long ts = System.currentTimeMillis();
         try {
             File[] roots = context.getRootFiles();
-
-            // check to roots if they already apply to the given status
-            if(containsFilesIntern(roots, includeStatus, false, addExcluded)) {
-                return true;
-            }
             // check all files underneath the roots
             return containsFiles(roots, includeStatus, addExcluded);
         } finally {
@@ -201,7 +196,8 @@ public class FileStatusCache {
     public boolean containsFiles(Set<File> rootFiles, int includeStatus, boolean addExcluded) {
         long ts = System.currentTimeMillis();
         try {
-            return containsFiles(rootFiles.toArray(new File[rootFiles.size()]), includeStatus, addExcluded);
+            File[] roots = rootFiles.toArray(new File[rootFiles.size()]);
+            return containsFiles(roots, includeStatus, addExcluded);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.fine(" containsFiles(Set<File>, int) took " + (System.currentTimeMillis() - ts));
@@ -210,6 +206,11 @@ public class FileStatusCache {
     }
 
     private boolean containsFiles(File[] roots, int includeStatus, boolean addExcluded) {
+        // check to roots if they already apply to the given status
+        if (containsFilesIntern(roots, includeStatus, false, addExcluded)) {
+            return true;
+        }
+
         for (File root : roots) {
             if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded)) {
                 return true;
