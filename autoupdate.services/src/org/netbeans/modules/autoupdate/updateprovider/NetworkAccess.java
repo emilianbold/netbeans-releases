@@ -101,7 +101,12 @@ public class NetworkAccess {
                     } catch(InterruptedException ix) {
                         listener.notifyException (ix);
                     } catch (ExecutionException ex) {
-                        listener.notifyException (ex);
+                        Throwable t = ex.getCause();
+                        if(t!=null && t instanceof Exception) {
+                            listener.notifyException ((Exception) t);
+                        } else {
+                            listener.notifyException (ex);
+                        }
                     } catch (CancellationException ex) {
                         listener.accessCanceled ();
                     } catch(TimeoutException tx) {
