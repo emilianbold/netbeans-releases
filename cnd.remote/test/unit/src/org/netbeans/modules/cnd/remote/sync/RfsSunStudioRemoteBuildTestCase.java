@@ -53,6 +53,9 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  */
 public class RfsSunStudioRemoteBuildTestCase extends RfsRemoteBuildTestBase {
 
+    static {
+        System.setProperty("cnd.rfs.ss.hack", "true");
+    }
     public RfsSunStudioRemoteBuildTestCase(String testName) {
         super(testName);
     }
