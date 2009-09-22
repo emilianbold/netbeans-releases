@@ -239,7 +239,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
         
     public FileObject getRootFolder() {
-        return ((SourceGroup) rootComboBox.getSelectedItem()).getRootFolder();        
+        final Object selectedItem  = rootComboBox.getSelectedItem();
+        return (selectedItem instanceof SourceGroup) ? ((SourceGroup)selectedItem).getRootFolder() : null;
     }
     
     public String getPackageFileName() {
