@@ -93,14 +93,22 @@ TestSupport.prototype = {
         this.debug('Initializing scripts...');
         var patterns = baseURL.split('||');
         baseURL = patterns[0];
-        if(patterns.length == 3) {
-          var servletNames = patterns[1].split(',');
-          var servletUrl = patterns[2].split(',');
-          for(var i in servletNames) {
-              var name = servletNames[i];
-              if('ServletAdaptor' == name)
-                  baseURL = this.concatPath(baseURL, servletUrl[i].replace('*', ''));
-          }
+        // handle the Netbeans 6.5 way of retrieving applicationPath
+        if (patterns.length == 3) {
+            var servletNames = patterns[1].split(',');
+            var servletUrl = patterns[2].split(',');
+            var resourceUri = 'resources/';
+            for(var i in servletNames) {
+                var name = servletNames[i];
+                if ('ServletAdaptor' == name) {
+                    resourceUri = servletUrl[i].replace('*', '');
+                    break;
+                }
+            }
+            baseURL = this.concatPath(baseURL, resourceUri);
+        } else if (patterns.length == 2) {
+            var applicationPath = patterns[1];
+            baseURL = this.concatPath(baseURL, applicationPath);
         }
         this.wadlURL = this.concatPath(baseURL, "application.wadl");
         this.initFromWadl();

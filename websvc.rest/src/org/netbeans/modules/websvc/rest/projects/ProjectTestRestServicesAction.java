@@ -133,10 +133,24 @@ public class ProjectTestRestServicesAction extends AbstractAction implements Pre
     private Properties setupTestRestBeans(Project project) {
         Properties p = new Properties();
         p.setProperty(RestSupport.PROP_BASE_URL_TOKEN, RestSupport.BASE_URL_TOKEN);
+        RestSupport restSupport = (RestSupport)project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            try {
+                String applicationPath = restSupport.getApplicationPath();
+                if (applicationPath != null) {
+                    if (!applicationPath.startsWith("/")) {
+                        applicationPath = "/"+applicationPath;
+                    }
+                    p.setProperty(RestSupport.PROP_APPLICATION_PATH, applicationPath);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         RestSupport rs = project.getLookup().lookup(RestSupport.class);
         AntProjectHelper helper = rs.getAntProjectHelper();
-        EditableProperties projectProps = helper.getProperties(helper.PROJECT_PROPERTIES_PATH);
+        EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String path = projectProps.getProperty(RestSupport.PROP_RESTBEANS_TEST_DIR);
         if (path == null) {
             path = RestSupport.RESTBEANS_TEST_DIR;
@@ -146,7 +160,7 @@ public class ProjectTestRestServicesAction extends AbstractAction implements Pre
             FileObject testFO = rs.generateTestClient(testdir);
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return p;
