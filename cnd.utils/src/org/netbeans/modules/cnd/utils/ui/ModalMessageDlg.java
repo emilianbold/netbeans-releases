@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
@@ -152,7 +153,9 @@ public class ModalMessageDlg extends javax.swing.JPanel {
                 }
             }
         });
-        dialog.setVisible(true);
+        if (!CndUtils.isStandalone()) { // this means we run in tests
+            dialog.setVisible(true);
+        }
         return !cancelled.get();
     }    
 }

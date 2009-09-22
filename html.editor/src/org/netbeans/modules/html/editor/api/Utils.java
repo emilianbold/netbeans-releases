@@ -161,8 +161,8 @@ public class Utils {
     //-------------- private methods ---------------
 
     private static LanguagePath findTopMostHtml(Document doc) {
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        for(LanguagePath path : (Set<LanguagePath>)th.languagePaths()) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        for(LanguagePath path : th.languagePaths()) {
             if(path.innerLanguage() == HTMLTokenId.language()) { //is this always correct???
                 return path;
             }
@@ -176,8 +176,8 @@ public class Utils {
      */
     private static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, LanguagePath languagePath) {
         //find html token sequence, in joined version if embedded
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        List<TokenSequence> tslist = th.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tslist = th.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
         if(tslist.isEmpty()) {
             return  null; //no such sequence
         }
@@ -187,25 +187,23 @@ public class Utils {
             return null; //likely empty input (document)
         }
 
-        List<TokenSequence> embedded = th.embeddedTokenSequences(first.offset(), false);
-        TokenSequence sequence = null;
-        for (TokenSequence ts : embedded) {
+        List<TokenSequence<?>> embedded = th.embeddedTokenSequences(first.offset(), false);
+        TokenSequence<?> sequence = null;
+        for (TokenSequence<?> ts : embedded) {
             if (ts.language() == HTMLTokenId.language()) {
                 if (sequence == null) {
                     //html is top level
-                    sequence = ts;
-                    break;
-                } else {
+                    sequence = ts; 
+                    break; 
+                } else { 
                     //the sequence is my master language
                     //get joined html sequence from it
-                    sequence = sequence.embeddedJoined(HTMLTokenId.language());
-                    assert sequence != null;
-                    break;
+                    return sequence.embeddedJoined(HTMLTokenId.language());
                 }
             }
             sequence = ts;
         }
-        return sequence;
+        return null;
     }
 
 

@@ -47,6 +47,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -154,6 +155,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         CsmDeclaration def = null;
         if (defs.isEmpty()) {
             CsmObject owner = findOwner(parent);
+            if(owner == null) {
+                owner = getClassByQualifiedName();
+            }
             if (owner instanceof CsmClass) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
@@ -170,6 +174,19 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             def = findByName(defs.iterator(), getName());
         }
         return (CsmFunction) def;
+    }
+
+    private CsmClass getClassByQualifiedName() {
+        String className = getQualifiedName().toString().replaceAll("(.*)::.*", "$1"); // NOI18N
+        CsmObject obj = CsmClassifierResolver.getDefault().findClassifierUsedInFile(className, getContainingFile(), false);
+        if (CsmKindUtilities.isClassifier(obj)) {
+            CsmClassifier cls = (CsmClassifier) obj;
+            cls = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, getContainingFile());
+            if (CsmKindUtilities.isClass(cls)) {
+                return (CsmClass) cls;
+            }
+        }
+        return null;
     }
 
     private static CsmFunction findByName(Iterator declarations, CharSequence name) {

@@ -47,7 +47,6 @@ import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
-import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;

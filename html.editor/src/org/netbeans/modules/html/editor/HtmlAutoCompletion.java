@@ -46,8 +46,11 @@ import javax.swing.text.Caret;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
+import org.openide.util.Exceptions;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -57,6 +60,30 @@ import org.netbeans.editor.BaseDocument;
  * KeyTyped, DeletePreviousChar.
  */
 public class HtmlAutoCompletion {
+
+    private static DocumentInsertIgnore insertIgnore;
+
+    /** Hook for before char inserted actions
+     *
+     * @return false if the char should be inserted, true otherwise
+     */
+    public static boolean beforeCharInserted(BaseDocument doc,
+            int dotPos,
+            Caret caret,
+            char ch) throws BadLocationException {
+        try {
+            if (insertIgnore != null) {
+                if (insertIgnore.getOffset() == dotPos && insertIgnore.getChar() == ch) {
+                    return true;
+                }
+            }
+        } finally {
+            insertIgnore = null;
+        }
+
+        return false;
+
+    }
 
     /**
      * A hook method called after a character was inserted into the
@@ -82,6 +109,45 @@ public class HtmlAutoCompletion {
         } else if (ch == '{') {
             //user has pressed quotation mark
             handleEL(doc, dotPos, caret);
+        } else if (ch == '/') {
+            handleEmptyTagCloseSymbol(doc, dotPos, caret);
+        }
+    }
+
+    private static void handleEmptyTagCloseSymbol(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
+        final BadLocationException[] ex = new BadLocationException[1];
+        doc.runAtomic(new Runnable() {
+
+            public void run() {
+                TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+                if (ts == null) {
+                    return; //no html ts at the caret position
+                }
+                int diff = ts.move(dotPos);
+                if (!ts.moveNext()) {
+                    return; //no token
+                }
+
+                Token token = ts.token();
+                if (token.id() == HTMLTokenId.ERROR) {
+                    if (ts.movePrevious() && (ts.token().id() == HTMLTokenId.TAG_OPEN ||
+                            ts.token().id() == HTMLTokenId.WS ||
+                            ts.token().id() == HTMLTokenId.VALUE)) {
+                        try {
+                            // slash typed just after open tag name => autocomplete the > symbol
+                            doc.insertString(dotPos + 1, ">", null);
+
+                            //ignore next &gt; char if typed
+                            insertIgnore = new DocumentInsertIgnore(dotPos + 2, '>');
+                        } catch (BadLocationException ble) {
+                            ex[0] = ble;
+                        }
+                    }
+                }
+            }
+        });
+        if (ex[0] != null) {
+            throw ex[0];
         }
     }
 
@@ -108,7 +174,7 @@ public class HtmlAutoCompletion {
                 if ("\"\"".equals(doc.getText(dotPos, 2))) {
                     doc.remove(dotPos, 1);
                     caret.setDot(dotPos + 1);
-                } else if(diff == 0 && token.text().charAt(0) == '"') {
+                } else if (diff == 0 && token.text().charAt(0) == '"') {
                     //user typed quation just after equal sign after tag attribute name => complete the second quote
                     doc.insertString(dotPos, "\"", null);
                     caret.setDot(dotPos + 1);
@@ -148,38 +214,61 @@ public class HtmlAutoCompletion {
     }
 
     //autocomplete ${ "}" and moves the caret inside the brackets
-    private static void handleEL(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
-        doc.readLock();
-        try {
-            TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
-            if (ts == null) {
-                return; //no html ts at the caret position
-            }
-            int diff = ts.move(dotPos);
-            if(diff == 0) {
-                return ; // ${ - the token diff must be > 0
-            }
+    private static void handleEL(final BaseDocument doc, final int dotPos, final Caret caret) {
+        doc.runAtomic(new Runnable() {
 
-            if (!ts.moveNext()) {
-                return; //no token
-            }
-
-            Token token = ts.token();
-            int dotPosAfterTypedChar = dotPos + 1;
-            if(token.id() == HTMLTokenId.TEXT || token.id() == HTMLTokenId.VALUE) {
-                char charBefore = token.text().charAt(diff - 1);
-                if(charBefore == '$' || charBefore == '#') {
-                    doc.insertString(dotPosAfterTypedChar, "}", null);
-                    caret.setDot(dotPosAfterTypedChar);
-                    //open completion
-                    Completion.get().showCompletion();
+            public void run() {
+                TokenHierarchy<?> th = TokenHierarchy.get(doc);
+                TokenSequence<XhtmlElTokenId> ts = th.tokenSequence(XhtmlElTokenId.language());
+                if (ts == null) {
+                    return;
+                }
+                int diff = ts.move(dotPos);
+                if (diff == 0) {
+                    return; // ${ - the token diff must be > 0
                 }
 
-            }
+                if (!ts.moveNext()) {
+                    return; //no token
+                }
 
-        } finally {
-            doc.readUnlock();
+                Token token = ts.token();
+                int dotPosAfterTypedChar = dotPos + 1;
+                if (token.id() == XhtmlElTokenId.EL) {
+                    char charBefore = token.text().charAt(diff - 1);
+                    if (charBefore == '$' || charBefore == '#') {
+                        try {
+                            doc.insertString(dotPosAfterTypedChar, "}", null);
+                            caret.setDot(dotPosAfterTypedChar);
+                            //open completion
+                            Completion.get().showCompletion();
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                }
+            }
+        });
+
+    }
+
+    private static class DocumentInsertIgnore {
+
+        private int offset;
+        private char ch;
+
+        public DocumentInsertIgnore(int offset, char ch) {
+            this.offset = offset;
+            this.ch = ch;
         }
 
+        public char getChar() {
+            return ch;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
     }
 }

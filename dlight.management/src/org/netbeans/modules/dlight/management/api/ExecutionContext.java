@@ -323,6 +323,16 @@ final class ExecutionContext {
        return null;
     }
 
+    DLightTool getToolByID(String toolId){
+        Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
+        for (DLightTool tool : tools) {
+            if (activeToolNames == null || activeToolNames.contains(toolId) &&  tool.getID().equals(toolId)){
+                return tool;
+            }
+        }
+       return null;
+    }
+
     List<DLightTool> getTools() {
         List<DLightTool> result = new ArrayList<DLightTool>();
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
