@@ -215,7 +215,13 @@ public class SyntaxParserResult {
 
     public DTD getDTD() {
         if (getPublicID() == null) {
-            return getFallbackDTD();
+            //return context DTD in case that the context creator wants to explicitly
+            //define the fallback DTD
+            if(context.getDTD() != null) {
+                return context.getDTD();
+            } else {
+                return getFallbackDTD();
+            }
         } else {
             DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(getPublicID(), null);
             return dtd != null ? dtd : getFallbackDTD();

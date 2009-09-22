@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.core.Util;
 import org.openide.filesystems.FileObject;
@@ -65,9 +66,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.modules.web.taglib.TLDDataObject;
+import org.netbeans.modules.web.taglib.TaglibCatalog;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagType;
 import org.netbeans.modules.web.taglib.model.TldAttributeType;
@@ -179,6 +182,13 @@ public class TagHandlerIterator implements TemplateWizard.AsynchronousInstantiat
                         DialogDisplayer.getDefault().notify(desc);
                     }
                     if (taglib!=null) {
+                        WebModule wm = WebModule.getWebModule(dir);
+                        if (wm != null) {
+                            Profile j2eeVersion = wm.getJ2eeProfile();
+                            if (Profile.J2EE_13.equals(j2eeVersion) || Profile.J2EE_14.equals(j2eeVersion)) {
+                                taglib.setDefaultNamespace(TaglibCatalog.J2EE_NS);  //NOI18N
+                            }
+                        }
                         TagType tag = new TagType();
                         tag.setName(tldPanel.getTagName());
                         tag.setTagClass(tldPanel.getClassName());
