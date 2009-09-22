@@ -738,7 +738,9 @@ public class SemiAttribute extends DefaultVisitor {
                     for (IndexedClass m : index.getClasses(null, fName, QuerySupport.Kind.PREFIX)) {
                         String idxName = m.getName();
                         el = global.enterWrite(idxName, Kind.CLASS, m);
-                        retval.add(el);
+                        if (el != null) {
+                            retval.add(el);
+                        }
                     }
                 }
             }

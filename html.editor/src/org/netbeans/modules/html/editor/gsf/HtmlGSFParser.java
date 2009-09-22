@@ -111,7 +111,7 @@ public class HtmlGSFParser extends Parser {
 
         //override fallback dtd if set to document property
         Document sourceDocument = snapshot.getSource().getDocument(false);
-        DTD fallbackDTD = (DTD)sourceDocument.getProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME);
+        DTD fallbackDTD = sourceDocument != null ? (DTD)sourceDocument.getProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME) : null;
         
         SyntaxParserContext context = SyntaxParserContext.createContext(snapshot.getText()).setDTD(fallbackDTD);
         //disable html structure checks for embedded html code

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.html.editor.api;
 
-import org.netbeans.modules.html.editor.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -53,7 +52,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -67,9 +65,6 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
@@ -81,7 +76,6 @@ import org.netbeans.modules.csl.core.SelectCodeElementAction;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
 import org.openide.util.Exceptions;
 
@@ -223,23 +217,36 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     public static class HtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         private JTextComponent currentTarget;
+        private String insertedText;
+        private int insertedTextPos;
 
         @Override
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 currentTarget = target;
-                BaseDocument doc = (BaseDocument) target.getDocument();
-                final Indent indent = Indent.get(doc);
-                indent.lock();
-                try {
-                    doc.runAtomic(new Runnable() {
-                        public void run() {
-                            HtmlDefaultKeyTypedAction.super.actionPerformed(evt, target);
+                HtmlDefaultKeyTypedAction.super.actionPerformed(evt, target);
+
+                //issue #172746 fix
+                //we need to perform indentation in the afterCharInserted()
+                //method context which must not run under document atomic lock
+                if(insertedText != null) {
+                    //insert has been performed, now we can safely invoke bracket
+                    //completion out of document's atomic lock
+                    Document doc = target.getDocument();
+                    int dotPos = insertedTextPos;
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                    if(bracketCompletion != null) {
+                        try {
+                            bracketCompletion.afterCharInserted(doc, dotPos, target, insertedText.charAt(0));
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            insertedText = null;
+                            insertedTextPos = -1;
                         }
-                    });
-                } finally {
-                    indent.unlock();
+                    }
                 }
+
                 currentTarget = null;
             } else {
                 //backw comp.
@@ -251,6 +258,9 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
+                
+            insertedText = str;
+            insertedTextPos = dotPos;
 
             if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
@@ -263,8 +273,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
                     if (!handled) {
                         super.insertString(doc, dotPos, caret, str, overwrite);
-                        handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
-                                str.charAt(0));
                     }
 
                     return;
@@ -306,8 +314,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                                     doc.insertString(p0, str, null);
                                 }
 
-                                bracketCompletion.afterCharInserted(doc, caret.getDot() - 1,
-                                        target, insertedChar);
                             }
                         } catch (BadLocationException e) {
                             e.printStackTrace();
@@ -319,34 +325,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             }
 
             super.replaceSelection(target, dotPos, caret, str, overwrite);
-        }
-
-        private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, final char lastChar) throws BadLocationException {
-            if (lastChar == '>') {
-                TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(doc);
-                for (final LanguagePath languagePath : tokenHierarchy.languagePaths()) {
-                    if (languagePath.innerLanguage() == HTMLTokenId.language()) {
-                        final Indent indent = Indent.get(doc);
-                        indent.lock();
-                        try {
-                            doc.runAtomic(new Runnable() {
-
-                                public void run() {
-                                    try {
-                                        int startOffset = Utilities.getRowStart(doc, dotPos);
-                                        int endOffset = Utilities.getRowEnd(doc, dotPos);
-                                        indent.reindent(startOffset, endOffset);
-                                    } catch (BadLocationException ex) {
-                                        //ignore
-                                    }
-                                }
-                            });
-                        } finally {
-                            indent.unlock();
-                        }
-                    }
-                }
-            }
         }
 
     }

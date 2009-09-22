@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,53 +39,38 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.persistence.wizard.unit;
+package org.netbeans.modules.php.editor;
 
-import java.awt.Component;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Martin Adamek
+ * @author Radek Matous
  */
-public class JdbcListCellRenderer extends JLabel implements ListCellRenderer {
-    
-    public JdbcListCellRenderer() {
-        setOpaque(false);
-        setHorizontalAlignment(LEFT);
-        setVerticalAlignment(CENTER);
+public class PHPCodeCompletion144653Test extends PHPTestBase {
+
+    public PHPCodeCompletion144653Test(String testName) {
+        super(testName);
     }
-    
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        // values might be DatabaseConnections or Strings (for custom connections)
-        String text = null;
-        if(value == null || String.valueOf(value).length() == 0) {
-            text = NbBundle.getMessage(JdbcListCellRenderer.class, "LBL_NoAvailableConnection");
-        } else {
-            text = String.valueOf(value);
-        }
-            
-        if (value instanceof DatabaseConnection) {
-            DatabaseConnection connection = (DatabaseConnection) value;
-            text = connection.getName();
-        }
-        
-        if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-        } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-        }
-        
-        setFont(list.getFont());
-        setText(text);
-        
-        return this;
+
+    public void testPhpContextWithPrefix() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests144653/tests144653.php", "Mine::$^", false);
     }
-    
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests144653"))
+            })
+        );
+    }
 }

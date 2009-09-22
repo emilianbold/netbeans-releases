@@ -146,7 +146,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("php_user_filter", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("class", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SEMICOLON);
         PHP_KEYWORDS.put("function", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("new", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("static", KeywordCompletionType.ENDS_WITH_SPACE);
@@ -222,6 +222,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         String prefix = completionContext.getPrefix();
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
+        if (doc == null) {
+            return CodeCompletionResult.NONE;
+        }
 
         // TODO: separate the code that uses informatiom from lexer
         // and avoid running the index/ast analysis under read lock
@@ -672,7 +675,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             if (types != null) {
                 Set<QualifiedName> processedTypeNames = new HashSet<QualifiedName>();
+                ClassDeclaration enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 for (TypeScope typeScope : types) {
+                    if (enclosingClass != null) {
+                        String clsName = CodeUtils.extractClassName(enclosingClass);
+                        if (clsName != null && clsName.equalsIgnoreCase(typeScope.getName())) {
+                            attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
+                        }
+                    }
                     String typeName = typeScope.getName();
                     if (PHPDocTypeTag.ORDINAL_TYPES.contains(typeName.toUpperCase())) {
                         continue;
