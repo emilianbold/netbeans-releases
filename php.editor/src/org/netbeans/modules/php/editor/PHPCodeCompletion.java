@@ -675,7 +675,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             if (types != null) {
                 Set<QualifiedName> processedTypeNames = new HashSet<QualifiedName>();
+                ClassDeclaration enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 for (TypeScope typeScope : types) {
+                    if (enclosingClass != null) {
+                        String clsName = CodeUtils.extractClassName(enclosingClass);
+                        if (clsName != null && clsName.equalsIgnoreCase(typeScope.getName())) {
+                            attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
+                        }
+                    }
                     String typeName = typeScope.getName();
                     if (PHPDocTypeTag.ORDINAL_TYPES.contains(typeName.toUpperCase())) {
                         continue;
