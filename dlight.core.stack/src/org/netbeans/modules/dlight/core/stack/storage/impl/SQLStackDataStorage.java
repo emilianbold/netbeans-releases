@@ -309,8 +309,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     "GROUP BY Func.func_id, Func.func_name, Func.func_full_name " + // NOI18N
                     "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             if (timeFilter != null) {
-                select.setLong(1, timeToBucketId(timeFilter.getInterval().getStartMilliSeconds()));
-                select.setLong(2, timeToBucketId(timeFilter.getInterval().getEndMilliSeconds()));
+                select.setLong(1, timeToBucketId(timeFilter.getInterval().getStart()));//.getStartMilliSeconds()));
+                select.setLong(2, timeToBucketId(timeFilter.getInterval().getEnd()));//.getEndMilliSeconds()));
             }
             select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
@@ -653,9 +653,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     private ThreadDump _getThreadDump(ThreadDumpQuery query) {
-        long start = query.getThreadState().getTimeStamp();
-        long middle = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000/2;
-        long end = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000;
+        long start = query.getThreadState().getTimeStamp()* 1000 * 1000;
+        long middle = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod()/2; ///1000/1000;
+        long end = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod(); ///1000/1000;
         // 1. try to find needed thread in needed state in sampling interval
         TimeFilter time = new TimeFilter(start, end, TimeFilter.Mode.ALL);
         ThreadFilter threads = new ThreadFilter(query.getShowThreads());
@@ -687,7 +687,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
             // 3. try to find needed thread in needed state in case equals time stamps
             if (found == null && foundAny > 0) {
-                time = new TimeFilter(foundAny - 1, foundAny + 1, TimeFilter.Mode.ALL);
+                time = new TimeFilter(foundAny - 1000 * 1000, foundAny + 1, TimeFilter.Mode.ALL);
                 threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int)query.getThreadID())));
                 res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
                 for(ThreadSnapshot dump : res2) {
@@ -717,7 +717,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             HashMap<Integer, ThreadSnapshot> map = new HashMap<Integer, ThreadSnapshot>();
             map.put(found.getThreadInfo().getThreadId(), found);
             for(ThreadSnapshot dump : res) {
-                if (dump != found) {
+                if (dump.getThreadInfo().getThreadId() != found.getThreadInfo().getThreadId()) {
                     int id = dump.getThreadInfo().getThreadId();
                     ThreadSnapshot prev = map.get(id);
                     if (prev == null) {
@@ -730,7 +730,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 }
             }
             Set<Integer> toAdd = new HashSet<Integer>(query.getShowThreads());
-            ThreadDumpImpl result = new ThreadDumpImpl(foundTimeSamp);
+            ThreadDumpImpl result = new ThreadDumpImpl(foundTimeSamp/1000/1000);
             for(ThreadSnapshot dump : map.values()) {
                 toAdd.remove(dump.getThreadInfo().getThreadId());
                 result.addStack(dump);

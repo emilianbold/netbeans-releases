@@ -50,6 +50,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
+    id="OtherOptions", // NOI18N
     location="CPlusPlus", // NOI18N
     displayName="#TAB_CndOtherOptionsTab", // NOI18N
     position=1000
