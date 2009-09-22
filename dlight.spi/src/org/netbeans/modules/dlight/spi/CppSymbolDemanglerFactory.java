@@ -39,9 +39,10 @@
 
 package org.netbeans.modules.dlight.spi;
 
+import java.util.Map;
+
 /**
- *
- * @author mt154047
+ * If you would like to provide demangler utility for the functions please implement this SPI
  */
 public interface CppSymbolDemanglerFactory {
 
@@ -49,7 +50,7 @@ public interface CppSymbolDemanglerFactory {
      *
      * @return
      */
-    public CppSymbolDemangler getForCurrentSession();
+    CppSymbolDemangler getForCurrentSession(Map<String, String>  serviceInfo);
 
     /**
      * 

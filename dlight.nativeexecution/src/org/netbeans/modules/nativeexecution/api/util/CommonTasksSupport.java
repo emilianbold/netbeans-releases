@@ -47,15 +47,16 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.CancellationException;
+import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
-import org.openide.windows.InputOutput;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Utilities;
 
 /**
  * An utility class that simplifies usage of Native Execution Support Module
@@ -140,23 +141,45 @@ public final class CommonTasksSupport {
      *         of the file removing task. The result of this Future indicates
      *         whether the file was removed (0) or not.
      */
-    public static Future<Integer> rmFile(
-            ExecutionEnvironment execEnv,
+    public static Future<Integer> rmFile(ExecutionEnvironment execEnv,
             String fname, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("rm").setArguments("-f", fname); // NOI18N
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "rm", "-f", fname), // NOI18N
+                "rm -f " + fname); // NOI18N
+    }
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
+    private static class CommandRunner implements Callable<Integer> {
 
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
+        private final static Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
+        private final ExecutionEnvironment execEnv;
+        private final String cmd;
+        private final String[] args;
+        private final Writer error;
+
+        public CommandRunner(ExecutionEnvironment execEnv, Writer error, String cmd, String... args) {
+            this.execEnv = execEnv;
+            this.cmd = cmd;
+            this.args = args;
+            this.error = error;
         }
 
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Remove file " + fname); // NOI18N
-        return execService.run();
+        public Integer call() throws Exception {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable(cmd).setArguments(args);
+            Process p = npb.call();
+
+            int exitStatus = p.waitFor();
+
+            if (exitStatus != 0) {
+                if (error != null) {
+                    ProcessUtils.writeError(error, p);
+                } else {
+                    ProcessUtils.logError(Level.FINE, log, p);
+                }
+            }
+
+            return exitStatus;
+        }
     }
 
     /**
@@ -173,20 +196,9 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> chmod(final ExecutionEnvironment execEnv,
             final String file, final int mode, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("chmod").setArguments(String.format("0%03o", mode), file); // NOI18N
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Changing permissions for " + file); // NOI18N
-        return execService.run();
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "chmod", String.format("0%03o", mode), file), // NOI18N
+                "chmod " + String.format("0%03o ", mode) + file); // NOI18N
     }
 
     /**
@@ -209,21 +221,9 @@ public final class CommonTasksSupport {
         String[] args = recursively
                 ? new String[]{"-rf", dirname} : new String[]{"-f", dirname}; // NOI18N
 
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable(cmd).setArguments(args);
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Remove directory " + dirname); // NOI18N
-
-        return execService.run();
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, cmd, args),
+                cmd + ' ' + Arrays.toString(args));
     }
 
     /**
@@ -239,20 +239,9 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> mkDir(final ExecutionEnvironment execEnv,
             final String dirname, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("/bin/mkdir").setArguments("-p", dirname); // NOI18N
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Creating directory " + dirname); // NOI18N
-        return execService.run();
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "mkdir", "-p", dirname), // NOI18N
+                "mkdir -p " + dirname); // NOI18N
     }
 
     /**
@@ -267,41 +256,30 @@ public final class CommonTasksSupport {
      *         of the signal task. <tt>0</tt> means success, any other value
      *         means failure.
      */
-    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, int pid, String signal, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-
-        boolean isWindows = false;
-        HostInfo hostInfo = null;
-        if (execEnv.isLocal()) {
-            try {
-                hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                isWindows = hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
-            } catch (IOException ex) {
-                // should not happen, it's localhost!
-            } catch (CancellationException ex) {
-                // should not happen, it's localhost!
-            }
-        }
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final String signal, final Writer error) {
+        final boolean isWindows = execEnv.isLocal() && Utilities.isWindows();
+        final String descr = "Sending signal " + signal + " to " + pid; // NOI18N
 
         if (isWindows) {
-            npb.setExecutable(hostInfo.getShell()).setArguments(
-                    "-c", "kill", "-s", signal, String.valueOf(pid)); // NOI18N
+            return NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+                public Integer call() throws Exception {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                    String winShell = hostInfo.getShell();
+                    if (winShell != null) {
+                        CommandRunner runner = new CommandRunner(execEnv, error, winShell, "-c", "kill", "-s", signal, String.valueOf(pid)); // NOI18N
+                        return runner.call();
+                    } else {
+                        // Will not kill in case no cygwin ??
+                        return -1;
+                    }
+                }
+            }, descr);
         } else {
-            npb.setExecutable("/bin/kill").setArguments( // NOI18N
-                    "-s", signal, String.valueOf(pid)); // NOI18N
+            return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "kill", "-s", signal, String.valueOf(pid)), // NOI18N
+                descr);
         }
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Sending signal to " + pid); // NOI18N
-        return execService.run();
     }
 
     private static int transferFileContent(File srcFile, OutputStream outStream) {

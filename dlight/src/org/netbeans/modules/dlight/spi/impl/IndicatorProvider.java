@@ -27,10 +27,11 @@ public final class IndicatorProvider {
 
     /**
      * Creates new DataCollector instance on the base of DataCollectorConfiguration
+     * @param toolID tool id to create Indicator for
      * @param configuraiton
      * @return new instance of data collector is returned each time this method is invoked;
      */
-    public Indicator<?> createIndicator(final String toolName,
+    public Indicator<?> createIndicator(final String toolID,
             final IndicatorConfiguration configuraiton) {
         
         Collection<? extends IndicatorFactory> result =
@@ -45,7 +46,7 @@ public final class IndicatorProvider {
                 @SuppressWarnings("unchecked")
                 // Impossible to do it in checked manner. Have to rely on factory ID check.
                 Indicator<?> indicator = indicatorFactory.create(configuraiton);
-                IndicatorAccessor.getDefault().setToolName(indicator, toolName);
+                IndicatorAccessor.getDefault().setToolID(indicator, toolID);
                 IndicatorAccessor.getDefault().initMouseListener(indicator);
                 return indicator;
             }

@@ -173,7 +173,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
         return PREFERRED_ID;
     }
 
-    public void addVisualizer(String toolName, Visualizer v) {
+    public void addVisualizer(String toolID, String toolName, Visualizer v) {
         setContent(toolName, v.getComponent());
     }
 
@@ -219,7 +219,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
             return;
         }
         remove(view.getComponent());
-        setName(NbBundle.getMessage(CallStackTopComponent.class, "CallStackDetailes")); //NOI18N
+        setName(NbBundle.getMessage(CallStackTopComponent.class, "CallStackDetails")); //NOI18N
         repaint();
     }
 }

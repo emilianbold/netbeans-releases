@@ -868,8 +868,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 final ThreadState state = (ThreadState) item.getClientProperty("state"); // NOI18N
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        ThreadStackVisualizer v = detailsCallback.showStack(state.getTimeStamp(), query);
-                        v.selectRootNode();
+                        //ThreadStackVisualizer v =
+                                detailsCallback.showStack(state.getTimeStamp(), query);
+                        //v.selectRootNode();
                     }
                 });
             }
@@ -1153,8 +1154,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                                 public void run() {
                                     ThreadDumpQuery  query = new ThreadDumpQuery(threadData.getThreadID(), state,  showThreadsID, prefferedState,
                                                                                  isMSAMode(), isFullMode(), manager.getStartTime());
-                                    ThreadStackVisualizer v = detailsCallback.showStack(state.getTimeStamp(), query);
-                                    v.selectRootNode();
+                                    //ThreadStackVisualizer v =
+                                            detailsCallback.showStack(state.getTimeStamp(), query);
+                                    //v.selectRootNode();
                                 }
                             });
                         }
@@ -1362,7 +1364,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     /** A callback interface - implemented by provider of additional details of a set of threads */
     public interface ThreadsDetailsCallback {
-        public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query);
+        public void showStack(long startTime, ThreadDumpQuery query);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

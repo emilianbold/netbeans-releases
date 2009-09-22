@@ -47,8 +47,6 @@ import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.AbstractButton;
@@ -79,7 +77,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
     private GeneralOptionsModel     model;
     private HtmlBrowser.FactoryEditor editor;
     private AdvancedProxyPanel advancedPanel;
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+//    private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private boolean valid = true;
 
     
@@ -481,9 +479,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
 
         if (oldValid != valid) {
-            support.firePropertyChange(
-                    new PropertyChangeEvent(this,
-                    OptionsPanelController.PROP_VALID, oldValid, valid));
+            firePropertyChange(OptionsPanelController.PROP_VALID, oldValid, valid);
         }
     }
 
@@ -664,16 +660,6 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return changed;
     }
 
-    @Override
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        support.addPropertyChangeListener(l);
-    }
-
-    @Override
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        support.removePropertyChangeListener(l);
-    }
-    
     public void actionPerformed (ActionEvent e) {
         changed = true;
         tfProxyHost.setEnabled (rbHTTPProxy.isSelected ());

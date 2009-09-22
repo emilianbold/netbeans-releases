@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,5 +122,12 @@ public final class ProcessUtils {
         }
 
         return result.toString();
+    }
+
+    public static void writeError(Writer error, Process p) throws IOException {
+        List<String> err = readProcessError(p);
+        for (String line : err) {
+            error.write(line);
+        }
     }
 }

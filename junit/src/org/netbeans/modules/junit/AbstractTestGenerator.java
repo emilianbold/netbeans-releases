@@ -70,6 +70,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -84,6 +85,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment;
@@ -490,7 +492,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         List<ExpressionTree> throwsList =
                 (superConstructor != null)
-                    ? generateThrowsList(superConstructor, workingCopy, maker)
+                    ? generateThrowsList(superConstructor, workingCopy, maker, false)
                     : Collections.<ExpressionTree>emptyList();
 
         BlockTree body = maker.Block(
@@ -900,7 +902,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             }
         }
 
-        Boolean useNoArgConstrutor = null;
         while (srcMethodsIt.hasNext()) {
             assert tstMethodNamesIt.hasNext();
 
@@ -911,15 +912,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 continue;       //corresponding test method already exists
             }
 
-            if (useNoArgConstrutor == null) {
-                useNoArgConstrutor = Boolean.valueOf(
-                              hasAccessibleNoArgConstructor(srcClass));
-            }
             MethodTree newTestMethod = generateTestMethod(
                             srcClass,
                             srcMethod,
                             testMethodName,
-                            useNoArgConstrutor.booleanValue(),
                             instanceClassName,
                             workingCopy);
 
@@ -983,7 +979,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         Iterator<ExecutableElement> srcMethodsIt = srcMethods.iterator();
         Iterator<String> tstMethodNamesIt = testMethodNames.iterator();
 
-        boolean useNoArgConstrutor = hasAccessibleNoArgConstructor(srcClass);
         List<MethodTree> testMethods = new ArrayList<MethodTree>(srcMethods.size());
         while (srcMethodsIt.hasNext()) {
             assert tstMethodNamesIt.hasNext();
@@ -995,7 +990,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     generateTestMethod(srcClass,
                                        srcMethod,
                                        testMethodName,
-                                       useNoArgConstrutor,
                                        instanceClsName,
                                        workingCopy));
         }
@@ -1022,7 +1016,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     protected MethodTree generateTestMethod(TypeElement srcClass,
                                           ExecutableElement srcMethod,
                                           String testMethodName,
-                                          boolean useNoArgConstructor,
                                           CharSequence instanceClsName,
                                           WorkingCopy workingCopy) {
         final TreeMaker maker = workingCopy.getTreeMaker();
@@ -1031,10 +1024,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 testMethodName,
                 generateTestMethodBody(srcClass,
                                        srcMethod,
-                                       useNoArgConstructor,
                                        instanceClsName,
                                        workingCopy),
-                generateThrowsList(srcMethod, workingCopy, maker),
+                generateThrowsList(srcMethod, workingCopy, maker, isClassEjb31Bean(workingCopy, srcClass)),
                 workingCopy);
 
         if (setup.isGenerateMethodJavadoc()) {
@@ -1070,8 +1062,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     private static List<ExpressionTree> generateThrowsList(
                                                     ExecutableElement execElem,
                                                     CompilationInfo compInfo,
-                                                    TreeMaker maker) {
-        if (throwsNonRuntimeExceptions(compInfo, execElem)) {
+                                                    TreeMaker maker,
+                                                    boolean forceThrowsClause) {
+        if (forceThrowsClause || throwsNonRuntimeExceptions(compInfo, execElem)) {
             return Collections.<ExpressionTree>singletonList(
                                         maker.Identifier("Exception")); //NOI18N
         } else {
@@ -1292,7 +1285,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      */
     protected BlockTree generateTestMethodBody(TypeElement srcClass,
                                                ExecutableElement srcMethod,
-                                               boolean useNoArgConstructor,
                                                CharSequence instanceClsName,
                                                WorkingCopy workingCopy) {
         TreeMaker maker = workingCopy.getTreeMaker();
@@ -1311,15 +1303,20 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             statements.addAll(paramVariables);
 
             if (!isStatic) {
+
+                boolean useNoArgConstructor = hasAccessibleNoArgConstructor(srcClass);
+                boolean ejb = isClassEjb31Bean(workingCopy, srcClass);
+
                 VariableTree instanceVarInit = maker.Variable(
                         maker.Modifiers(Collections.<Modifier>emptySet()),
                         INSTANCE_VAR_NAME,
                         maker.QualIdent(srcClass),
-                        useNoArgConstructor
-                             ? generateNoArgConstructorCall(maker,
-                                                            srcClass,
-                                                            instanceClsName)
-                             : maker.Literal(null));
+                        ejb ? generateEJBLookupCode(maker, srcClass, srcClass.getSimpleName()) :
+                            useNoArgConstructor
+                                 ? generateNoArgConstructorCall(maker,
+                                                                srcClass,
+                                                                instanceClsName)
+                                 : maker.Literal(null));
                 statements.add(instanceVarInit);
             }
 
@@ -1960,5 +1957,45 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         }
         return modifierSet;
     }
-    
+
+    private static boolean isClassEjb31Bean(WorkingCopy wc, TypeElement srcClass) {
+        ClassPath cp = wc.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+        if (cp == null || cp.findResource("javax/ejb/embeddable/EJBContainer.class") == null) {
+            // if EJBContainer class is not available on classpath then it is not EJB 3.1
+            return false;
+        }
+        List<? extends AnnotationMirror> annotations = wc.getElements().getAllAnnotationMirrors(srcClass);
+        for (AnnotationMirror am : annotations) {
+            String annotation = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
+            if (annotation.equals("javax.ejb.Singleton") || // NOI18N
+                annotation.equals("javax.ejb.Stateless") || // NOI18N
+                annotation.equals("javax.ejb.Stateful")) { // NOI18N
+                // class is an EJB
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ExpressionTree generateEJBLookupCode(TreeMaker maker,TypeElement cls, CharSequence instanceClsName) {
+        // TODO: there are probably better ways how to generate code below:
+        IdentifierTree container = maker.Identifier("("+instanceClsName+")javax.ejb.embeddable.EJBContainer"); // NOI18N
+        MethodInvocationTree invocation = maker.MethodInvocation(
+                Collections.<ExpressionTree>emptyList(),
+                maker.MemberSelect(container, "createEJBContainer"), // NOI18N
+                Collections.<ExpressionTree>emptyList()
+        );
+        invocation = maker.MethodInvocation(
+                Collections.<ExpressionTree>emptyList(),
+                maker.MemberSelect(invocation, "getContext"), // NOI18N
+                Collections.<ExpressionTree>emptyList()
+        );
+        invocation = maker.MethodInvocation(
+                Collections.<ExpressionTree>emptyList(),
+                maker.MemberSelect(invocation, "lookup"), // NOI18N
+                Collections.<ExpressionTree>singletonList(maker.Literal("java:global/classes/"+instanceClsName)) // NOI18N
+        );
+        return invocation;
+    }
+
 }

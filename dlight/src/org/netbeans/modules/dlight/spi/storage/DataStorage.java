@@ -57,6 +57,12 @@ import java.util.List;
 public interface DataStorage {
 
     /**
+     *  Attaches ServiceInfoDataStorage
+     * @param serviceInfoStorage ServiceInfoDataStorage to be attached
+     */
+    void attachTo(ServiceInfoDataStorage serviceInfoStorage);
+
+    /**
      * Checks if storage contains data described by <param>data</param>
      * @param data data to check in storage. In case <param>data</param>
      * describes some virtual table and its {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata#getSourceTables()} method

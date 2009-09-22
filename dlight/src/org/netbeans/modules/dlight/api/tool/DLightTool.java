@@ -263,7 +263,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 //Add All indicators
                 List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
                 for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
-                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(toolName, indConfiguration);
+                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(id, indConfiguration);
                     if (indicator == null) {
                         log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " + //NOI18N
                                 "IndicatorFactory is registered in Global Lookup with the same ID"); //NOI18N

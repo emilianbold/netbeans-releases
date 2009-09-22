@@ -64,7 +64,6 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
