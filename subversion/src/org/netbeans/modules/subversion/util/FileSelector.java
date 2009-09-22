@@ -58,7 +58,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
