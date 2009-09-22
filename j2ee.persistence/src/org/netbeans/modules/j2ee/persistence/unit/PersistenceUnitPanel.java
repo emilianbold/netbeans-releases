@@ -880,7 +880,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 21, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(11, 33, 11, 11);
         add(entityClassesPanel, gridBagConstraints);
 
         cachingStrategyLabel.setText(bundle1.getString("LBL_CachingStrategy")); // NOI18N
