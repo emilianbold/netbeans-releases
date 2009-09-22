@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor;
+package org.netbeans.modules.css.editor.indent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
