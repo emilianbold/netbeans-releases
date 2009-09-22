@@ -487,6 +487,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
                 }
 
+                // search for helpers
+                if (location == DeclarationLocation.NONE) {
+                    location = new HelpersFinder(parserResult, (SymbolNode) closest, root, path).findHelperLocation();
+                }
+
                 if (location == DeclarationLocation.NONE) {
                     location = findInstance(parserResult, root, name, index);
                 }
