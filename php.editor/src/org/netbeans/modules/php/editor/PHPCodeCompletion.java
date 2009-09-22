@@ -146,7 +146,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("php_user_filter", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("class", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SEMICOLON);
         PHP_KEYWORDS.put("function", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("new", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("static", KeywordCompletionType.ENDS_WITH_SPACE);
