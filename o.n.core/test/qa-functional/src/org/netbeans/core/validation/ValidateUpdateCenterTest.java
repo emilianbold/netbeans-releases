@@ -128,6 +128,7 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.jemmy");
         permittedDisabledAutoloads.add("org.netbeans.modules.nbjunit");
         permittedDisabledAutoloads.add("org.netbeans.insane");
+        permittedDisabledAutoloads.add("org.netbeans.modules.swing.validation");
         permittedDisabledAutoloads.add("org.netbeans.modules.visualweb.gravy");
         // just has to be present, not enabled
         permittedDisabledAutoloads.add("org.netbeans.modules.apisupport.harness");
