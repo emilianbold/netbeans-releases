@@ -70,16 +70,25 @@ Exceptions.printStackTrace(ex);
  */
 public final class DLightToolkitManagement {
 
-    private static DLightToolkitManagement instance = null;
-    private static DLightToolkitManager toolkitManager;
+    private static final DLightToolkitManagement instance;
+    private static final DLightToolkitManager toolkitManager;
 
     static {
         DLightSessionHandlerAccessor.setDefault(new DLightSessionHandlerAccessorImpl());
+        Collection<? extends DLightToolkitManager> allManagers = Lookup.getDefault().lookupAll(DLightToolkitManager.class);
+
+        // Pick the first one
+        if (!allManagers.isEmpty()) {
+            toolkitManager = allManagers.iterator().next();
+        } else {
+            toolkitManager = null;
+        }
+
+        instance = new DLightToolkitManagement();
     }
 
     private DLightToolkitManagement() {
-        Collection<? extends DLightToolkitManager> result = Lookup.getDefault().lookupAll(DLightToolkitManager.class);
-        toolkitManager = Lookup.getDefault().lookup(DLightToolkitManager.class);
+        assert (toolkitManager != null);
     }
 
     /**
@@ -87,9 +96,6 @@ public final class DLightToolkitManagement {
      * @return instance
      */
     public static final DLightToolkitManagement getInstance() {
-        if (instance == null) {
-            instance = new DLightToolkitManagement();
-        }
         return instance;
     }
 
@@ -201,7 +207,7 @@ public final class DLightToolkitManagement {
      * Sesion handler, it can be retrived using {@link DLightToolkitManagement#createSession(org.netbeans.modules.dlight.api.execution.DLightTarget, java.lang.String) }
      * method and used to start and stop D-Light Session.
      */
-    public final class DLightSessionHandler {
+    public static final class DLightSessionHandler {
 
         private DLightSessionInternalReference ref;
 

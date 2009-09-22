@@ -93,6 +93,7 @@ public final class NativeProcessExecutionService {
 
             Process process = null;
             InputStream is = null;
+            BufferedReader br = null;
 
             try {
 
@@ -109,7 +110,7 @@ public final class NativeProcessExecutionService {
                 is = process.getInputStream();
 
                 if (is != null) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    br = new BufferedReader(new InputStreamReader(is));
                     String line;
 
                     try {
@@ -132,6 +133,10 @@ public final class NativeProcessExecutionService {
                     }
                 } catch (Throwable th) {
                     log.log(Level.FINE, descr, th.getMessage());
+                }
+
+                if (br != null) {
+                    br.close();
                 }
 
                 if (process != null) {
