@@ -177,7 +177,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     private CsmClass getClassByQualifiedName() {
-        String className = getQualifiedName().toString().replaceAll("(.*)::.*", "$1");
+        String className = getQualifiedName().toString().replaceAll("(.*)::.*", "$1"); // NOI18N
         CsmObject obj = CsmClassifierResolver.getDefault().findClassifierUsedInFile(className, getContainingFile(), false);
         if (CsmKindUtilities.isClassifier(obj)) {
             CsmClassifier cls = (CsmClassifier) obj;
