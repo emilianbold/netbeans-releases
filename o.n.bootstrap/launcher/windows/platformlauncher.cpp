@@ -90,7 +90,8 @@ const char *PlatformLauncher::IDE_MAIN_CLASS = "org/netbeans/Main";
 PlatformLauncher::PlatformLauncher()
     : separateProcess(false)
     , suppressConsole(false)
-    , heapDumpPathOptFound(false) {
+    , heapDumpPathOptFound(false)
+    , exiting(false) {
 }
 
 PlatformLauncher::PlatformLauncher(const PlatformLauncher& orig) {
@@ -352,9 +353,17 @@ bool PlatformLauncher::checkForNewUpdater(const char *basePath) {
         destPath += "\\modules\\ext\\updater.jar";
         createPath(destPath.c_str());
 
-        if (!MoveFileEx(srcPath.c_str(), destPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
-            logErr(true, false, "Failed to move \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
-            return false;
+        int i = 0;
+        while (true) {
+            if (MoveFileEx(srcPath.c_str(), destPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+                break;
+            }
+            if (exiting || ++i > 10) {
+                logErr(true, false, "Failed to move \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
+                return false;
+            }
+            logErr(true, false, "Failed to move \"%s\" to \"%s\", trying to wait", srcPath.c_str(), destPath.c_str());
+            Sleep(100);
         }
         logMsg("New updater successfully moved from \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
 
@@ -653,6 +662,7 @@ bool PlatformLauncher::restartRequested() {
 
 void PlatformLauncher::onExit() {
     logMsg("onExit()");
+    exiting = true;
     if (separateProcess) {
         logMsg("JVM in separate process, no need to restart");
         return;
