@@ -59,17 +59,9 @@ public class TestInstallerAndUninstallerRuby extends Installer {
         // Agreement
         Utils.stepLicense();
         // Location
-        Utils.stepSetDir(
-            data,
-            "Install the NetBeans IDE",
-            data.GetNetBeansInstallPath( )
-          );
+        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
         // GF
-        Utils.stepSetDir(
-            data,
-            "Install GlassFish",
-            data.GetApplicationServerInstallPath( )
-          );
+        Utils.stepSetDir(data, "Install GlassFish", Utils.GF2_DIR_NAME);
         // Summary
         Utils.stepInstall(data);
         //Installation

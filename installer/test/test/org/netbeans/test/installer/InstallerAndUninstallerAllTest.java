@@ -77,11 +77,8 @@ ant -Djavac.classpath=.:../../jemmy/external/jemmy-2.3.0.0.jar -Dtest-sys-prop.t
 
 
 ant test
+-Djavac.classpath=.:../../jemmy/external/jemmy-2.3.0.0.jar:../../nbbuild/build/public-package-jars/org-netbeans-libs-junit4.jar:../../nbbuild\netbeans\platform11\modules\ext/junit-4.5.jar
 -Dtest-sys-prop.test.installer.url.prefix=http://smetiste.czech.sun.com/builds/netbeans/trunk/latest_daily
 -Dtest-sys-prop.test.installer.bundle.name.prefix=netbeans-trunk-nightly
--Dtest-sys-prop.test.use.build.number=true
--Dtest-sys-prop.test.installer.bundle.name.suffix=javase
--Dtest-sys-prop.test.installer.custom.path=STRING
-
-ant test -Djavac.classpath=.:../../jemmy/external/jemmy-2.3.0.0.jar:../../nbbuild/build/public-package-jars/org-netbeans-libs-junit4.jar:../../nbbuild\netbeans\platform11\modules\ext/junit-4.5.jar -Dtest-sys-prop.test.installer.url.prefix=http://smetiste.czech.sun.com/builds/netbeans/trunk/latest_daily -Dtest-sys-prop.test.installer.bundle.name.prefix=netbeans-trunk-nightly -Dtest-sys-prop.test.use.build.number=true -Dtest-sys-prop.test.installer.bundle.name.suffix=all
+-Dtest-sys-prop.test.use.build.number=true -Dtest-sys-prop.test.installer.bundle.name.suffix=javase
 */
