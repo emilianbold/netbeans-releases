@@ -83,7 +83,7 @@ public abstract class HtmlExtension {
     
     public static Collection<HtmlExtension> getRegisteredExtensions(String mimeType) {
         Collection<HtmlExtension> exts = EXTENSIONS.get(mimeType);
-        return exts != null ? exts : Collections.EMPTY_LIST;
+        return exts != null ? exts : Collections.<HtmlExtension>emptyList();
     }
 
     //highlighting

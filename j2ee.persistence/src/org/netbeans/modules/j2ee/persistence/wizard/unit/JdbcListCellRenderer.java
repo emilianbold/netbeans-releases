@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 public class JdbcListCellRenderer extends JLabel implements ListCellRenderer {
     
     public JdbcListCellRenderer() {
-        setOpaque(true);
+        setOpaque(false);
         setHorizontalAlignment(LEFT);
         setVerticalAlignment(CENTER);
     }

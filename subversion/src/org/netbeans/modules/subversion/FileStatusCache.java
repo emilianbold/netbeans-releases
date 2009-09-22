@@ -56,10 +56,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-import org.openide.util.WeakSet;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
@@ -134,9 +132,11 @@ public class FileStatusCache {
     private Subversion                  svn;
 
     private RequestProcessor rp = new RequestProcessor("Subversion - file status refresh", 1); // NOI18N    
-    private final Set<File> filesToRefresh = new HashSet<File>();
+    private final LinkedHashSet<File> filesToRefresh = new LinkedHashSet<File>();
     private RequestProcessor.Task refreshTask;
     private final FileLabelCache labelsCache;
+
+    private long refreshedFilesCount;
 
     FileStatusCache() {
         this.svn = Subversion.getInstance();
@@ -151,13 +151,35 @@ public class FileStatusCache {
     
         refreshTask = rp.create( new Runnable() {
             public void run() {
-                File[] fileArray;            
-                synchronized(filesToRefresh) {
-                    fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
-                    filesToRefresh.clear();
-                }    
-                for (File file : fileArray) {
-                    refresh(file, REPOSITORY_STATUS_UNKNOWN);
+                long startTime = 0;
+                long files = 0;
+                boolean logEnabled = LOG.isLoggable(Level.FINE);
+                if (logEnabled) {
+                    // logging
+                    startTime = System.currentTimeMillis();
+                }
+                File fileToRefresh;
+                do {
+                    fileToRefresh = null;
+                    synchronized(filesToRefresh) {
+                        Iterator<File> it = filesToRefresh.iterator();
+                        if (it.hasNext()) {
+                            fileToRefresh = it.next();
+                            it.remove();
+                        }
+                    }
+                    if (fileToRefresh != null) {
+                        refresh(fileToRefresh, REPOSITORY_STATUS_UNKNOWN);
+                        if (logEnabled) {
+                            // logging
+                            ++files;
+                            ++refreshedFilesCount;
+                        }
+                    }
+                } while (fileToRefresh != null);
+                if (logEnabled) {
+                    LOG.log(Level.FINE, "refreshTask lasted {0} ms for {1} files, {2} files refreshed so far", new Object[] { //NOI18N
+                        new Long(System.currentTimeMillis() - startTime), new Long(files), new Long(refreshedFilesCount)});
                 }
             }
         });
@@ -177,11 +199,6 @@ public class FileStatusCache {
         long ts = System.currentTimeMillis();
         try {
             File[] roots = context.getRootFiles();
-
-            // check to roots if they already apply to the given status
-            if(containsFilesIntern(roots, includeStatus, false, addExcluded)) {
-                return true;
-            }
             // check all files underneath the roots
             return containsFiles(roots, includeStatus, addExcluded);
         } finally {
@@ -201,7 +218,8 @@ public class FileStatusCache {
     public boolean containsFiles(Set<File> rootFiles, int includeStatus, boolean addExcluded) {
         long ts = System.currentTimeMillis();
         try {
-            return containsFiles(rootFiles.toArray(new File[rootFiles.size()]), includeStatus, addExcluded);
+            File[] roots = rootFiles.toArray(new File[rootFiles.size()]);
+            return containsFiles(roots, includeStatus, addExcluded);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.fine(" containsFiles(Set<File>, int) took " + (System.currentTimeMillis() - ts));
@@ -210,6 +228,11 @@ public class FileStatusCache {
     }
 
     private boolean containsFiles(File[] roots, int includeStatus, boolean addExcluded) {
+        // check to roots if they already apply to the given status
+        if (containsFilesIntern(roots, includeStatus, false, addExcluded)) {
+            return true;
+        }
+
         for (File root : roots) {
             if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded)) {
                 return true;
@@ -249,7 +272,7 @@ public class FileStatusCache {
      * @return
      */
     public File [] listFiles(File dir) {
-        Set<File> files = getScannedFiles(dir, null).keySet();
+        Set<File> files = getScannedFiles(dir).keySet();
         return files.toArray(new File[files.size()]);
     }
 
@@ -360,7 +383,7 @@ public class FileStatusCache {
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
         }
-        Map files = getScannedFiles(dir, null);
+        Map files = getScannedFiles(dir);
         if (files == NOT_MANAGED_MAP) return FILE_INFORMATION_NOTMANAGED;
         FileInformation fi = (FileInformation) files.get(file);
         if (fi != null) {
@@ -418,7 +441,7 @@ public class FileStatusCache {
         if (files == null || files.length == 0) {
             return;
         }
-        rp.post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 synchronized (filesToRefresh) {
                     for (File file : files) {
@@ -483,7 +506,7 @@ public class FileStatusCache {
             if (dir == null) {
                 return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
             }
-            Map<File, FileInformation> files = getScannedFiles(dir, file);
+            Map<File, FileInformation> files = getScannedFiles(dir);
             if (files == NOT_MANAGED_MAP && repositoryStatus == REPOSITORY_STATUS_UNKNOWN) return FILE_INFORMATION_NOTMANAGED;
             current = files.get(file);
 
@@ -555,8 +578,16 @@ public class FileStatusCache {
                 }
             }
             fireFileStatusChanged(file, current, fi);    
-        } else if(forceChangeEvent) {
-            fireFileStatusChanged(file, current, fi);    
+        } else {
+            // scan also children if there's no information about them yet (not yet explored folder)
+            if (fi.isDirectory() && !"false".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "true")) //NOI18N
+                    && (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NOTMANAGED | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0 // do not scan notmanaged or ignored folders
+                    && turbo.readEntry(file, FILE_STATUS_MAP) == null) {    // scan only those which have not yet been scanned, no information is available for them
+                refreshAsync(file.listFiles());
+            }
+            if(forceChangeEvent) {
+                fireFileStatusChanged(file, current, fi);
+            }
         }                       
         return fi;
     }    
@@ -572,7 +603,7 @@ public class FileStatusCache {
                     if(rev.getNumber() != revision.getNumber()) {
                         FileInformation info = createFileInformation(file, new FakeRevisionStatus(entry, revision), REPOSITORY_STATUS_UNKNOWN);
                         File dir = file.getParentFile();
-                        Map<File, FileInformation> files = getScannedFiles(dir, null);
+                        Map<File, FileInformation> files = getScannedFiles(dir);
                         Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
                         newFiles.put(file, info);
                         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
@@ -689,8 +720,7 @@ public class FileStatusCache {
     }
     
     // --- Private methods ---------------------------------------------------
-    private final Set<File> plannedForRecursiveScan = new WeakSet(50);
-    private Map<File, FileInformation> getScannedFiles(File dir, File interestingFile) {
+    private Map<File, FileInformation> getScannedFiles(File dir) {
         Map<File, FileInformation> files;
 
         // there are 2nd level nested admin dirs (.svn/tmp, .svn/prop-base, ...)
@@ -712,17 +742,6 @@ public class FileStatusCache {
         // scan and populate cache with results
 
         dir = FileUtil.normalizeFile(dir);
-        // recursive scan for unexplored folders
-        boolean recursiveScanEnabled = interestingFile != null && interestingFile.isDirectory() && !"false".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "true")); //NOI18N - leave option to disable the recursive scan
-        if (recursiveScanEnabled) {
-            // do not scan dir's children twice. It can happen that the same folder gets to this point more than once due to getScannedFile recursive nature
-            // 1. if dir is unknown
-            // 2. scanFolder(dir) > createMissingEntry(dir's child) > getStatus(dir) > getScannedFiles(dir) again and before turno.writeEntry(dir) is called
-            File f = new File(dir.getAbsolutePath()); // do not add directly dir so the set doesn't get too big (references to dir are kept outside of this method - e.g. in turbo)
-            synchronized (plannedForRecursiveScan) {
-                recursiveScanEnabled = !plannedForRecursiveScan.contains(f) && plannedForRecursiveScan.add(f); // this will return false if dir is already there
-            }
-        }
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
         assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
@@ -731,16 +750,6 @@ public class FileStatusCache {
             FileInformation info = files.get(file);
             if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
-            }
-        }
-        if(recursiveScanEnabled) {
-            FileInformation info = files.get(interestingFile);
-
-            // recursive scan for unexplored folders: run refresh on children if necessary
-            if (info != null
-                    && (info.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NOTMANAGED | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0 // do not scan notmanaged or ignored files
-                    && turbo.readEntry(interestingFile, FILE_STATUS_MAP) == null) {    // scan only those which have not yet been scanned, no information is available for them
-                    refreshAsync(interestingFile.listFiles());
             }
         }
         return files;

@@ -420,7 +420,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                     // this name should be excluded from next rounds of cycle 1
                     if (local == null) {
-                        local = new Properties(exclude);
+                        local = new Properties();
+                        local.putAll(exclude);
                     }
 
                     local.setProperty(basename, basename);

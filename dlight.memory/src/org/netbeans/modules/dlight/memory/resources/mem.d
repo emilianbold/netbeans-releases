@@ -4,7 +4,7 @@
 #pragma D option switchrate=100hz
 #pragma D option dynvarsize=16m
 #pragma D option cleanrate=100hz
-#define ts() (timestamp-starttime) / 1000 / 1000
+#define ts() (timestamp-starttime)
 this uint64 starttime;
 BEGIN {
   starttime=timestamp;

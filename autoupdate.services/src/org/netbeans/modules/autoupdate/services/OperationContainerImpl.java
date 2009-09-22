@@ -245,7 +245,7 @@ public final class OperationContainerImpl<Support> {
                         }
                     }
                     if ((! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) ||
-                            (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0)) {
+                            (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && !eagerEl.getUpdateUnit().getAvailableUpdates().isEmpty() && type == OperationType.UPDATE && operations.size() > 0)) {
                         // adds affectedEager into list of elements for the operation
                         OperationInfo<Support> i = null;
                         try {
@@ -264,6 +264,7 @@ public final class OperationContainerImpl<Support> {
                             sb.append("\nreqs: " + reqs + " (total : " + reqs.size() + ")");
                             sb.append("\nall: " + all + " (total : " + all.size() + ")");                            
                             sb.append("\noperation: " + operations + " (total: " + operations.size()+ ")\n");
+                            sb.append("\neager available updates: " +  eagerEl.getUpdateUnit().getAvailableUpdates() + "\n");
                             sb.append("\nUpdateElements in operations:");
                             for (OperationInfo<?> op : operations) {
                                 sb.append("\n  " + op.getUpdateElement());

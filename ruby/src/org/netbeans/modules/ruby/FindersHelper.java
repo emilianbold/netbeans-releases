@@ -232,7 +232,7 @@ final class FindersHelper {
     /**
      * Look up the right return type for the given finder call.
      */
-    static RubyType pickFinderType(final CallNode call, final String method, final RubyType model) {
+    static RubyType pickFinderType(final Node call, final String method, final RubyType model) {
 
         boolean multiple = false;
         boolean foundMatching = false;
