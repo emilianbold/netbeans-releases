@@ -246,8 +246,10 @@ public class LayerIndex extends Task {
                         String[] bundlevalue = bundleKey.split("#", 2);
                         loadDisplayName(bundlevalue[0], bundlevalue[1]);
                     } else {
-                        // Common in Editors/**/Actions/*.instance and Loaders/*/*/Factories/org-netbeans-modules-csl-core-GsfDataLoader.instance:
-                        // log("No bundlevalue for displayName on " + prefix + " in " + cnb, Project.MSG_WARN);
+                        String literal = attributes.getValue("stringvalue");
+                        if (literal != null) {
+                            loadDisplayName(literal);
+                        }
                     }
                 } else if (qName.equals("attr") && attributes.getValue("name").equals("position")) {
                     String intvalue = attributes.getValue("intvalue");
@@ -281,6 +283,9 @@ public class LayerIndex extends Task {
                      */
                     return;
                 }
+                loadDisplayName(label);
+            }
+            private void loadDisplayName(String label) {
                 SortedMap<String,String> cnb2label = labels.get(prefix);
                 if (cnb2label == null) {
                     cnb2label = new TreeMap<String,String>();

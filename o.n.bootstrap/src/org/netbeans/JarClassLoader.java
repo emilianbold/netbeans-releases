@@ -53,6 +53,7 @@ import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLStreamHandler;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
@@ -759,7 +760,6 @@ public class JarClassLoader extends ProxyClassLoader {
                 from = 0;
             }
             String jar = url.substring(from, bang).replace('/', File.separatorChar);
-            String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
             if (_src == null) {
                 try {
@@ -770,6 +770,8 @@ public class JarClassLoader extends ProxyClassLoader {
                     throw (IOException) new IOException(e.toString()).initCause(e);
                 }
             }
+            // XXX new URI("substring").getPath() might be better?
+            String _name = URLDecoder.decode(url.substring(bang + 2), "UTF-8");
             return new ResURLConnection (u, _src, _name);
         }
 

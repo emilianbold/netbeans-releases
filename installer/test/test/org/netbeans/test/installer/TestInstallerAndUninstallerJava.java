@@ -60,11 +60,23 @@ public class TestInstallerAndUninstallerJava extends Installer{
         // Agreement
         Utils.stepLicense();
         // Location
-        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
+        Utils.stepSetDir(
+            data,
+            "Install the NetBeans IDE",
+            data.GetNetBeansInstallPath( )
+          );
         // GF
-        Utils.stepSetDir(data, "Install GlassFish", Utils.GF2_DIR_NAME);
+        Utils.stepSetDir(
+            data,
+            "Install GlassFish",
+            data.GetApplicationServerInstallPath( )
+          );
         // Apache
-        Utils.stepSetDir(data, "Install Apache Tomcat", Utils.TOMCAT_DIR_NAME);
+        Utils.stepSetDir(
+            data,
+            "Install Apache Tomcat",
+            data.GetTomcatInstallPath( )
+          );
         // Summary
         Utils.stepInstall(data);
         //Installation

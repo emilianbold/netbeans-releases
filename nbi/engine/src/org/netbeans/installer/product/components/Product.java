@@ -205,6 +205,7 @@ public final class Product extends RegistryNode implements StatusInterface {
         final File macosDir = new File(contentsDir, "MacOS");
         final File resourcesDir = new File(contentsDir, "Resources");
         final File infoplist = new File(contentsDir, "Info.plist");
+        final File ds_store = new File(getInstallationLocation().getParentFile(), ".DS_Store");
         
         // if we're running on macos x and the configuraion logic tells us that the
         // product should be automatically wrapped, we first create the required
@@ -243,6 +244,10 @@ public final class Product extends RegistryNode implements StatusInterface {
                         getVersion().toMinor(),
                         executableName,
                         iconName)));
+                
+                //Fix #172000: NetBeans folder stay at Applications after uninstallation		
+                //installedFiles.add(ds_store);
+
             } catch (IOException e) {
                 throw new InstallationException(
                         ResourceUtils.getString(Product.class,

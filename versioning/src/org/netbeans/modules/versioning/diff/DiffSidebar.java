@@ -111,6 +111,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private final BaseDocument    document;
     
     private boolean                 sidebarVisible;
+    private boolean                 sidebarTemporarilyDisabled; // flag disallowing the sidebar to ask for file's content
     private boolean                 sidebarInComponentHierarchy;
     private Difference []           currentDiff;
     private DiffMarkProvider        markProvider;
@@ -147,6 +148,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         File file = fileObject != null ? FileUtil.toFile(fileObject) : null;
         ownerVersioningSystem = file != null ? VersioningManager.getInstance().getOwner(file) : null;
         originalContentSerial++;
+        sidebarTemporarilyDisabled = false;
         refreshDiff();
     }
     
@@ -578,9 +580,16 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
     
     @Override
-    public void paintComponent(Graphics g) {
+    public void paintComponent(final Graphics g) {
         super.paintComponent(g);
+        document.render(new Runnable() {
+            public void run() {
+                paintComponentUnderLock(g);
+            }
+        });
+    }
 
+    private void paintComponentUnderLock (Graphics g) {
         Rectangle clip = g.getClipBounds();
         if (clip.y >= 16) {
             // compensate for scrolling: marks on bottom/top edges are not drawn completely while scrolling
@@ -602,11 +611,11 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         g.setColor(backgroundColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
-        Difference [] paintDiff = currentDiff;        
+        Difference [] paintDiff = currentDiff;
         if (paintDiff == null || paintDiff.length == 0) {
             return;
         }
-        
+
         try{
             int startPos = textUI.getPosFromY(clip.y);
             int startViewIndex = rootView.getViewIndex(startPos,Position.Bias.Forward);
@@ -631,7 +640,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     yCoords[2] = y + editorUI.getLineAscent() / 2;
                     g.fillPolygon(new int [] { 0, BAR_WIDTH, 0 }, yCoords, 3);
                 }
-                
+
                 for (int i = startViewIndex; i < rootViewCount; i++){
                     view = rootView.getView(i);
                     line = rootElem.getElementIndex(view.getStartOffset());
@@ -780,7 +789,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private void computeDiff() {
-            if (!sidebarVisible) {
+            if (!sidebarVisible || sidebarTemporarilyDisabled) {
                 currentDiff = null;
                 return;
             }
@@ -817,7 +826,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             if (originalContentBuffer == null) {
                 // no content for the file, setting sidebar visibility to false eliminates repeated asking for the content
                 // file can be deleted, or new?
-                setSidebarVisible(false);
+                sidebarTemporarilyDisabled = true;
                 LOG.log(Level.FINE, "Disabling diffsidebar for {0}, no content available", fileObject.getPath()); //NOI18N
             }
         }

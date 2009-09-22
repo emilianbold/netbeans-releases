@@ -40,10 +40,9 @@ package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
-import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -57,7 +56,6 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.util.Range;
 import org.openide.util.Lookup;
 
 /**
@@ -83,9 +81,13 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     }
 
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        List<DataFilter> filtersCopy = null;
+        synchronized(lock) {
+            filtersCopy = new ArrayList<DataFilter>(filters);
+        }
         if (functionDescription.getOffsetColumn() == null) {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-            List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, Integer.MAX_VALUE));
+            List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, filtersCopy, Integer.MAX_VALUE));
             for (FunctionCallTreeTableNode node : nodes) {
                 FunctionCallWithMetric call = node.getDeligator();
                 result.add(call);
@@ -93,22 +95,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
             return result;
         }
-       List<DataFilter> changedFilters = new ArrayList<DataFilter>();
-        synchronized(lock){
-            for (DataFilter f : filters){
-                if (f instanceof TimeIntervalDataFilter){
-                    //long startTs = f.
-                    Range<Long> interval  = ((TimeIntervalDataFilter)f).getInterval();
- //                   Range<Long> newInterval = new Range<Long>(interval.getStart() + startTimeStamp, interval.getEnd() + startTimeStamp);
-                    TimeIntervalDataFilter newFilter  = TimeIntervalDataFilterFactory.create(interval);
-                    changedFilters.add(newFilter);
-                }else{
-                    changedFilters.add(f);
-                }
-            }
-        }
-        //in case we have TimeIntervalDataFilter here should change time
-        return storage.getFunctionsList(metadata, metricsColumn, functionDescription, changedFilters);
+        return storage.getFunctionsList(metadata, metricsColumn, functionDescription, filtersCopy);
     }
 
     public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {

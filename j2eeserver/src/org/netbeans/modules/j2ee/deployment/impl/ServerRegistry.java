@@ -111,7 +111,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     private synchronized void init() {
-        LOGGER.log(Level.FINE, "Entering registry initialization"); // NOI18N
+        LOGGER.log(Level.FINEST, "Entering registry initialization"); // NOI18N
 
         if (servers != null && instances != null) {
             return;
@@ -187,7 +187,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Plugin " + name + " installation failed"); //NOI18N
+            //LOGGER.log(Level.WARNING, "Plugin installation failed {0}", fo.toString()); //NOI18N
             LOGGER.log(Level.INFO, null, e);
         }
     }
@@ -414,6 +414,8 @@ public final class ServerRegistry implements java.io.Serializable {
         if (instancesMap().containsKey(url)) {
             throw new InstanceCreationException("already exists");
         }
+
+        LOGGER.log(Level.FINE, "Registering instance {0}", url);
 
         Map<String, String> properties = cleanInitialProperties(initialProperties);
 

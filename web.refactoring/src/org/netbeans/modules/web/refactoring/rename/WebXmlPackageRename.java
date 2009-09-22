@@ -32,9 +32,11 @@ import java.util.List;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Handles package rename.
@@ -65,8 +67,18 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
                 continue;
             }
             String oldFqn = JavaIdentifiers.getQualifiedName(each);
-            String newFqn = RefactoringUtil.constructNewName(each, rename);
-            result.add(new RenameItem(newFqn, oldFqn));
+            String fqn = JavaIdentifiers.getQualifiedName(each);
+            // #153294 - additional check before refactoring starts
+            if ( JavaIdentifiers.isValidPackageName( fqn )){
+                String newFqn = RefactoringUtil.constructNewName(each, rename);
+                result.add(new RenameItem(newFqn, oldFqn));
+            }
+            else {
+                result.add(new RenameItem( null, null , new Problem(true, 
+                        NbBundle.getMessage(WebXmlPackageRename.class, 
+                                "TXT_ErrInvalidPackageName" , fqn))));
+            }
+            
         }
         return result;
     }
