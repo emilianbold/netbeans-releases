@@ -222,6 +222,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         String prefix = completionContext.getPrefix();
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
+        if (doc == null) {
+            return CodeCompletionResult.NONE;
+        }
 
         // TODO: separate the code that uses informatiom from lexer
         // and avoid running the index/ast analysis under read lock
