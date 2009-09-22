@@ -326,7 +326,7 @@ public abstract class Group {
         h.progress(NbBundle.getMessage(Group.class, "Group.progress_closing", toClose.size()), 120);
         op.close(toClose.toArray(new Project[toClose.size()]));
         h.progress(NbBundle.getMessage(Group.class, "Group.progress_opening", toOpen.size()), 140);
-        op.open(toOpen.toArray(new Project[toOpen.size()]), false);
+        op.open(toOpen.toArray(new Project[toOpen.size()]), false, true);
         if (g != null) {
             op.setMainProject(g.getMainProject());
         }
