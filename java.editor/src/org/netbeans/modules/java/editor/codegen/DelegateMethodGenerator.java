@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -79,6 +80,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.DelegatePanel;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
@@ -172,29 +174,39 @@ public class DelegateMethodGenerator implements CodeGenerator {
     private static Logger log = Logger.getLogger(DelegateMethodGenerator.class.getName());
     public static ElementNode.Description getAvailableMethods(final JTextComponent component, final ElementHandle<? extends Element> elementHandle) {
         if (elementHandle.getKind().isField()) {
-            JavaSource js = JavaSource.forDocument(component.getDocument());
+            final JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
-                try {
-                    final int caretOffset = component.getCaretPosition();
-                    final ElementNode.Description[] description = new ElementNode.Description[1];
-                    js.runUserActionTask(new Task<CompilationController>() {
+                final int caretOffset = component.getCaretPosition();
+                final ElementNode.Description[] description = new ElementNode.Description[1];
+                final AtomicBoolean cancel = new AtomicBoolean();
+                RunOffAWT.runOffAWT(new Runnable() {
 
-                        public void run(CompilationController controller) throws IOException {
-                            if (controller.getPhase().compareTo(JavaSource.Phase.RESOLVED) < 0) {
-                                JavaSource.Phase phase = controller.toPhase(JavaSource.Phase.RESOLVED);
-                                if (phase.compareTo(JavaSource.Phase.RESOLVED) < 0) {
-                                    if (log.isLoggable(Level.SEVERE))
-                                        log.log(Level.SEVERE, "Cannot reach required phase. Leaving without action.");
+                    public void run() {
+                        try {
+                        js.runUserActionTask(new Task<CompilationController>() {
+
+                            public void run(CompilationController controller) throws IOException {
+                                if (controller.getPhase().compareTo(JavaSource.Phase.RESOLVED) < 0) {
+                                    JavaSource.Phase phase = controller.toPhase(JavaSource.Phase.RESOLVED);
+                                    if (phase.compareTo(JavaSource.Phase.RESOLVED) < 0) {
+                                        if (log.isLoggable(Level.SEVERE)) {
+                                            log.log(Level.SEVERE, "Cannot reach required phase. Leaving without action.");
+                                        }
+                                        return;
+                                    }
+                                }
+                                if (cancel.get()) {
                                     return;
                                 }
+                                description[0] = getAvailableMethods(controller, caretOffset, elementHandle);
                             }
-                            description[0] = getAvailableMethods(controller, caretOffset, elementHandle);
+                        }, true);
+                        } catch (IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
                         }
-                    }, true);
-                    return description[0];
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                    }
+                }, NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_Get_Available_Methods"), cancel);
+                return description[0];
             }
         }
         return null;
