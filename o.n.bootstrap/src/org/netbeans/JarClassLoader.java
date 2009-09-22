@@ -52,8 +52,9 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLStreamHandler;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
@@ -443,7 +444,11 @@ public class JarClassLoader extends ProxyClassLoader {
             byte[] buf = archive.getData(this, name);
             if (buf == null) return null;
             LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {name, file.getPath()});
-            return new URL(resPrefix + name);
+            try {
+                return new URL(resPrefix + new URI(null, name, null).getRawPath());
+            } catch (URISyntaxException x) {
+                throw (IOException) new IOException(name + " in " + resPrefix + ": " + x.toString()).initCause(x);
+            }
         }
         
         protected byte[] readClass(String path) throws IOException {
@@ -770,8 +775,12 @@ public class JarClassLoader extends ProxyClassLoader {
                     throw (IOException) new IOException(e.toString()).initCause(e);
                 }
             }
-            // XXX new URI("substring").getPath() might be better?
-            String _name = URLDecoder.decode(url.substring(bang + 2), "UTF-8");
+            String _name = url.substring(bang + 2);
+            try {
+                _name = new URI(_name).getPath();
+            } catch (URISyntaxException x) {
+                throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
+            }
             return new ResURLConnection (u, _src, _name);
         }
 
