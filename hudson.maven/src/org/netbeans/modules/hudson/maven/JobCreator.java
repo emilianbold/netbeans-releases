@@ -74,7 +74,12 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
                 if (scm == null) {
                     return Helper.noSCMError();
                 }
-                return ConfigurationStatus.valid();
+                ConfigurationStatus scmStatus = scm.problems();
+                if (scmStatus != null) {
+                    return scmStatus;
+                } else {
+                    return ConfigurationStatus.valid();
+                }
             }
 
             public void addChangeListener(ChangeListener listener) {}

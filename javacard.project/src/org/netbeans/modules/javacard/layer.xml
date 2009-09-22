@@ -582,15 +582,6 @@ made subject to such option by the copyright holder.
 
     </folder>
 
-    <!-- Services window now contains "Java Card" node -->
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org.netbeans.modules.javacard.nodes-ServicesNode.instance">
-                <attr name="position" intvalue="152"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="org-netbeans-modules-javacard">
         <folder name="servers">
             <!-- subdirs here with card name, each containing SunJavaCardServer instances
