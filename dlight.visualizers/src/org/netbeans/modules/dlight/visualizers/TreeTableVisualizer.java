@@ -600,6 +600,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             }
 
             DefaultMutableTreeNode tNode = (DefaultMutableTreeNode) node;
+            @SuppressWarnings("unchecked")
             List<T> result = Arrays.asList((T) tNode.getUserObject());
             loadTree(tNode, result);
         }

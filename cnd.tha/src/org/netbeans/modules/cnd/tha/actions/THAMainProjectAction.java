@@ -210,10 +210,12 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
                 }
                 THAMainProjectAction.this.currentProject = project;
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
-                MakeConfiguration mc = mcd.getActiveConfiguration();
-                mc.addPropertyChangeListener(THAMainProjectAction.this);
-                Configurations c = mcd.getConfs();
-                c.addPropertyChangeListener(THAMainProjectAction.this);
+                if (mcd != null){
+                    MakeConfiguration mc = mcd.getActiveConfiguration();
+                    mc.addPropertyChangeListener(THAMainProjectAction.this);
+                    Configurations c = mcd.getConfs();
+                    c.addPropertyChangeListener(THAMainProjectAction.this);
+                }
 
             } else {
                 THAMainProjectAction.this.currentProject = null;

@@ -129,7 +129,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();
-        toolConfiguration.addDataCollectorConfiguration(dcc);
+        toolConfiguration.addDataCollectorConfiguration(dtcc);
         // it's an indicator data provider as well!
         toolConfiguration.addIndicatorDataProviderConfiguration(dtcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(
@@ -241,16 +241,23 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 metricColumn);
 
         String sql =
-                "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(size) as leak " + // NOI18N
-                "FROM mem, node AS node, func, ( " + // NOI18N
-                "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
-                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
-                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
-                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
-                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
-                " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
+                "SELECT func.func_id AS func_id, func.func_name AS func_name, node.offset AS offset, SUM(leak.size) AS leak " + // NOI18N
+                "FROM (SELECT MAX(timestamp) AS timestamp, address, SUM(kind * size) AS size FROM mem GROUP BY address HAVING SUM(kind * size) > 0) AS leak " + // NOI18N
+                "LEFT JOIN mem ON leak.timestamp = mem.timestamp AND leak.address = mem.address " + // NOI18N
+                "LEFT JOIN node ON mem.stackid = node.node_id " + // NOI18N
+                "LEFT JOIN func ON node.func_id = func.func_id " + // NOI18N
+                "GROUP BY func_id, func_name, offset " + // NOI18N
+                "ORDER BY leak DESC"; // NOI18N
+//                "SELECT func.func_id as func_id, func.func_name as func_name, node.offset as offset, SUM(size) as leak " + // NOI18N
+//                "FROM mem, node AS node, func, ( " + // NOI18N
+//                "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
+//                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
+//                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
+//                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
+//                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
+//                " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
 
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id"); // NOI18N
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "func_id"); // NOI18N
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N

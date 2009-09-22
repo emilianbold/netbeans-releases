@@ -40,10 +40,7 @@
  */
 package org.netbeans.modules.autoupdate.services;
 
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.netbeans.modules.autoupdate.updateprovider.*;
-import org.netbeans.api.autoupdate.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -52,10 +49,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import junit.framework.Test;
-import org.netbeans.junit.MockServices;
+import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.TestUtils;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
+import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.filesystems.FileObject;
@@ -66,10 +70,9 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Rechtacek
  */
+@RandomlyFails // MyProvider occasionally not found in lookup
 public class FeatureUncompleteTest extends NbTestCase {
 
-    private static File catalogFile;
-    private static URL catalogURL;
     protected boolean modulesOnly = true;
     List<UpdateUnit> keepItNotToGC;
 
@@ -92,6 +95,9 @@ public class FeatureUncompleteTest extends NbTestCase {
         FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MyProvider.instance");
         fo.setAttribute("instanceCreate", new MyProvider());
         assert Lookup.getDefault ().lookup (MyProvider.class) != null;
+        /* XXX for some reason this does not work:
+        MockLookup.setInstances(new MyProvider());
+         */
         UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
     }
 
@@ -106,7 +112,7 @@ public class FeatureUncompleteTest extends NbTestCase {
                 "disabled state:\n" + modules, feature.getInstalled().isEnabled());
     }
 
-    public static class MyProvider implements UpdateProvider {
+    private static class MyProvider implements UpdateProvider {
 
         public String getName () {
             return FeatureNotUpToDateTest.class.getName ();

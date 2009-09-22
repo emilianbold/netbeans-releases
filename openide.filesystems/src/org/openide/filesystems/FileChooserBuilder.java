@@ -46,6 +46,8 @@ import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.KeyboardFocusManager;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -113,6 +115,8 @@ public class FileChooserBuilder {
     private boolean filesOnly;
     private static final boolean DONT_STORE_DIRECTORIES =
             Boolean.getBoolean("forget.recent.dirs");
+    private SelectionApprover approver;
+    private final List<FileFilter> filters = new ArrayList<FileFilter>(3);
     /**
      * Create a new FileChooserBuilder using the name of the passed class
      * as the metadata for looking up a starting directory from previous
@@ -248,7 +252,8 @@ public class FileChooserBuilder {
      * @return A file chooser
      */
     public JFileChooser createFileChooser() {
-        JFileChooser result = new SavedDirFileChooser(dirKey, failoverDir, force);
+        JFileChooser result = new SavedDirFileChooser(dirKey, failoverDir,
+                force, approver);
         prepareFileChooser(result);
         return result;
     }
@@ -362,12 +367,69 @@ public class FileChooserBuilder {
         if (aDescription != null) {
             chooser.getAccessibleContext().setAccessibleDescription(aDescription);
         }
+        if (!filters.isEmpty()) {
+            for (FileFilter f : filters) {
+                chooser.addChoosableFileFilter(f);
+            }
+        }
+    }
+
+    /**
+     * Equivalent to calling <code>JFileChooser.addChoosableFileFilter(filter)</code>.
+     * Adds another file filter that can be displayed in the file filters combo
+     * box in the file chooser.
+     *
+     * @param filter The file filter to add
+     * @return this
+     * @since 7.26.0
+     */
+    public FileChooserBuilder addFileFilter (FileFilter filter) {
+        filters.add (filter);
+        return this;
+    }
+
+    /**
+     * Set a selection approver which can display an &quot;Overwrite file?&quot;
+     * or similar dialog if necessary, when the user presses the accept button
+     * in the file chooser dialog.
+     *
+     * @param approver A SelectionApprover which will determine if the selection
+     * is valid
+     * @return this
+     * @since 7.26.0
+     */
+    public FileChooserBuilder setSelectionApprover (SelectionApprover approver) {
+        this.approver = approver;
+        return this;
+    }
+
+    /**
+     * Object which can approve the selection (enabling the OK button or
+     * equivalent) in a JFileChooser.  Equivalent to overriding
+     * <code>JFileChooser.approveSelection()</code>
+     * @since 7.26.0
+     */
+    public interface SelectionApprover {
+        /**
+         * Approve the selection, enabling the dialog to be closed.  Called by
+         * the JFileChooser's <code>approveSelection()</code> method.  Use this
+         * interface if you want to, for example, show a dialog asking
+         * &quot;Overwrite File X?&quot; or similar.
+         *
+         * @param selection The selected file(s) at the time the user presses
+         * the Open, Save or OK button
+         * @return true if the selection is accepted, false if it is not and
+         * the dialog should not be closed
+         */
+        public boolean approve (File[] selection);
     }
 
     private static final class SavedDirFileChooser extends JFileChooser {
         private final String dirKey;
-        SavedDirFileChooser(String dirKey, File failoverDir, boolean force) {
+        private final SelectionApprover approver;
+        SavedDirFileChooser(String dirKey, File failoverDir, boolean force, SelectionApprover approver) {
             this.dirKey = dirKey;
+            this.approver = approver;
             if (force && failoverDir != null && failoverDir.exists() && failoverDir.isDirectory()) {
                 setCurrentDirectory(failoverDir);
             } else {
@@ -383,6 +445,18 @@ public class FileChooserBuilder {
                 } else if (failoverDir != null) {
                     setCurrentDirectory(failoverDir);
                 }
+            }
+        }
+
+        @Override
+        public void approveSelection() {
+            if (approver != null) {
+                boolean approved = approver.approve(getSelectedFiles());
+                if (approved) {
+                    super.approveSelection();
+                }
+            } else {
+                super.approveSelection();
             }
         }
 

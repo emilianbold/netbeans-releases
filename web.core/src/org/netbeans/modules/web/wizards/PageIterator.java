@@ -68,6 +68,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.modules.web.taglib.TLDDataObject;
+import org.netbeans.modules.web.taglib.TaglibCatalog;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagFileType;
 
@@ -194,6 +195,7 @@ public class PageIterator implements TemplateWizard.Iterator {
         TargetChooserPanel panel = (TargetChooserPanel) folderPanel;
         
         Map<String, Object> wizardProps = new HashMap<String, Object>();
+        String defaultNamespace = null;
 
         if (FileType.JSP.equals(fileType) || FileType.JSF.equals(fileType)) {
             if (panel.isSegment()) {
@@ -228,6 +230,10 @@ public class PageIterator implements TemplateWizard.Iterator {
                 Profile j2eeVersion = wm.getJ2eeProfile();
                 if (Profile.J2EE_13.equals(j2eeVersion)) {
                     template = templateParent.getFileObject("TagLibrary_1_2", "tld"); //NOI18N
+                    defaultNamespace = TaglibCatalog.J2EE_NS;
+                } else if (Profile.J2EE_14.equals(j2eeVersion)) {
+                    template = templateParent.getFileObject("TagLibrary_2_0", "tld"); //NOI18N
+                    defaultNamespace = TaglibCatalog.J2EE_NS;
                 }
             }
         }
@@ -237,6 +243,9 @@ public class PageIterator implements TemplateWizard.Iterator {
             if (FileType.TAGLIBRARY.equals(fileType)) { //TLD file 
                 TLDDataObject tldDO = (TLDDataObject) dobj;
                 Taglib taglib = tldDO.getTaglib();
+                if (defaultNamespace != null) {
+                    taglib.setDefaultNamespace(defaultNamespace);
+                }
                 taglib.setUri(panel.getUri());
                 taglib.setShortName(panel.getPrefix());
                 tldDO.write(taglib);

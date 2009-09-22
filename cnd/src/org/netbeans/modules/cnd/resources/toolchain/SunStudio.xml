@@ -99,7 +99,7 @@ made subject to such option by the copyright holder.
         <recognizer pattern=".*(SUNWspro|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
-        <system_macros flags="c" parser="Sun"/>
+        <system_macros flags="-xdumpmacros=defs,sys -E" parser="Sun"/>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
         <development_mode>
@@ -237,7 +237,7 @@ made subject to such option by the copyright holder.
     <debugger>
         <tool name="dbx"/>
         <alternative_path>
-            <path toolchain_name="*"/>
+            <path toolchain_family="SunStudio"/>
             <path directory="$PATH"/>
         </alternative_path>
         <version flags="-V" />

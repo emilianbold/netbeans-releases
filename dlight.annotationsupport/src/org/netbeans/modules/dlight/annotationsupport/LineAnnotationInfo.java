@@ -50,6 +50,7 @@ import org.netbeans.editor.Utilities;
  * @author thp
  */
 public class LineAnnotationInfo {
+
     private static String SPACES = "                               ";  // NOI18N
     private FileAnnotationInfo fileAnnotationInfo;
     private int line;
@@ -80,13 +81,13 @@ public class LineAnnotationInfo {
         }
         return line;
     }
-    
+
     /**
      * @return the offset
      */
     public long getOffset() {
         if (offset < 0) {
-            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(line-1);
+            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(line - 1);
             offset = el.getStartOffset();
         }
         return offset;
@@ -94,8 +95,12 @@ public class LineAnnotationInfo {
 
     public long getLineOffset() {
         if (lineOffset <= 0) {
-            Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(getLine()-1);
-            lineOffset = el.getStartOffset();
+            try {
+                Element el = fileAnnotationInfo.getEditorPane().getDocument().getDefaultRootElement().getElement(getLine() - 1);
+                lineOffset = el.getStartOffset();
+            } catch (IndexOutOfBoundsException ioobe) {
+                // getElement throws IndexOutOfBoundsException if line doesn't exists!
+            }
 
         }
         return lineOffset;
@@ -104,10 +109,8 @@ public class LineAnnotationInfo {
     public Position getPosition() {
         if (position == null) {
             try {
-                position = fileAnnotationInfo.getEditorPane().getDocument().createPosition((int)getLineOffset());
-            }
-            catch (BadLocationException ble) {
-
+                position = fileAnnotationInfo.getEditorPane().getDocument().createPosition((int) getLineOffset());
+            } catch (BadLocationException ble) {
             }
         }
         return position;
@@ -200,7 +203,7 @@ public class LineAnnotationInfo {
     public int getY1() {
         return y1;
     }
-    
+
     /**
      * @return the y2
      */
@@ -215,6 +218,4 @@ public class LineAnnotationInfo {
         this.y1 = y1;
         this.y2 = y2;
     }
-
-
 }

@@ -76,7 +76,6 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
     
     public RemoteFileSystemTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
-        setupUserDir();
         this.execEnv = execEnv;
         fs = RemoteFileSystemManager.getInstance().get(execEnv);
         assertNotNull("Null remote file system", fs);
@@ -276,13 +275,5 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
     
     public static Test suite() {
         return new RemoteDevelopmentTest(RemoteFileSystemTestCase.class);
-    }
-
-    private void setupUserDir() {
-        File dataDir = getDataDir();
-        File dataDirParent = dataDir.getParentFile();
-        File userDir = new File(dataDirParent, "userdir");
-        userDir.mkdirs();
-        System.setProperty("netbeans.user", userDir.getAbsolutePath());
     }
 }

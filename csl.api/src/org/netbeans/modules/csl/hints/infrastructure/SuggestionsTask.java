@@ -136,12 +136,13 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
 
                     provider.computeSuggestions(manager, ruleContext, hints, pos);
 
-                    for (Hint hint : hints) {
+                    for (int i = 0; i < hints.size(); i++) {
+                        Hint hint = hints.get(i);
                         if (isCancelled()) {
                             return;
                         }
 
-                        ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
+                        ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
                         descriptions.add(desc);
                     }
 

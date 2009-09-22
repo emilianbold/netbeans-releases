@@ -39,29 +39,36 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
+import java.awt.EventQueue;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import javax.naming.event.EventDirContext;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
+import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -71,25 +78,32 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class ThreadStackVisualizer extends JPanel implements Visualizer<VisualizerConfiguration> {
+public final class ThreadStackVisualizer extends JPanel implements Visualizer<ThreadStackVisualizerConfiguration>, SessionStateListener, DataFilterListener {
 
+    private final ThreadStackVisualizerConfiguration configuration;
     private ThreadDump descriptor;
-    private long startTime;
+    private long dumpTime;
     private final MultipleCallStackPanel stackPanel;
     private JPanel emptyPanel;
     private final CardLayout cardLayout = new CardLayout();
+    private DLightSession session;
+    private List<DataFilter> filters;
+    private final Object lock = new String("ThreadStackVisualizer.filters.lock");//NOI18N
+    private final Object uiLock = new String("ThreadStackVisualizer.filters.ui.lock");//NOI18N
+    private boolean needUpdate = false;
 
-    ThreadStackVisualizer(StackDataProvider sourceFileInfo, ThreadDump descriptor, long startTime) {
-        this.descriptor = descriptor;
-        this.startTime = startTime;
+    ThreadStackVisualizer(ThreadStackVisualizerConfiguration configuraiton, StackDataProvider sourceFileInfo) {
+        this.descriptor = configuraiton.getThreadDump();
+        this.dumpTime = configuraiton.getDumpTime();
+        this.configuration = configuraiton;
         stackPanel = MultipleCallStackPanel.createInstance(sourceFileInfo);
         setLayout(cardLayout);
         emptyPanel = new JPanel();
         add(emptyPanel, "empty");//NOI18N
         add(stackPanel, "stack");//NOI18N
-        if (descriptor == null || descriptor.getThreadStates().isEmpty()){
+        if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
             setEmptyContent();
-        }else{
+        } else {
             setNonEmptyContent();
         }
     }
@@ -99,8 +113,8 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         emptyPanel.removeAll();
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
         long time = 0;
-        if (descriptor != null){
-            time =  ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - startTime;
+        if (descriptor != null) {
+            time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - dumpTime;
         }
         String timeString = TimeLineUtils.getMillisValue(time);
         String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerNoStackAt", timeString); //NOI18N
@@ -110,38 +124,44 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     private void setNonEmptyContent() {
-        stackPanel.clean();
-        //and now add all you need
-        final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - startTime;
-        String timeString = TimeLineUtils.getMillisValue(time);
-        String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
-        stackPanel.setRootVisible(rootName);
-        for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
-            MSAState msa = stack.getState();
-            ThreadStateResources res = ThreadStateResources.forState(msa);
-            if (res != null) {
-                Future<List<FunctionCall>> task = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
+        synchronized (lock) {
+            stackPanel.clean();
+            //and now add all you need
+            final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - dumpTime;
+            String timeString = TimeLineUtils.getMillisValue(time);
+            String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
+            stackPanel.setRootVisible(rootName);
+            //collect all and then update UI
+            for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
+                final MSAState msa = stack.getState();
+                final ThreadStateResources res = ThreadStateResources.forState(msa);
+                if (res != null) {
+                    DLightExecutorService.submit(new Runnable() {
 
-                    public List<FunctionCall> call() throws Exception {
-                        return stack.getStack();
+                        public void run() {
+                            //synchronized (lock) {
+                                final List<FunctionCall> functionCalls = stack.getStack();
+                                UIThread.invoke(new Runnable() {
+
+                                    public void run() {
+                                        stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                        }
+                                });
+                            //}
+                        }
+                    }, "Ask for a stack");//NOI18N
                     }
-                }, "Ask for a stack");//NOI18N
-                try {
-                    //NOI18N
-                    stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), task.get()); // NOI18N
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
 
+            }
+            cardLayout.show(this, "stack");//NOI18N
+            selectRootNode();
         }
-        cardLayout.show(this, "stack");//NOI18N
+
     }
 
     void selectRootNode() {
         RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 try {
                     stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
@@ -159,21 +179,8 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
     }
 
-    public VisualizerConfiguration getVisualizerConfiguration() {
-        return new VisualizerConfiguration() {
-
-            public DataModelScheme getSupportedDataScheme() {
-                return null;
-            }
-
-            public DataTableMetadata getMetadata() {
-                return null;
-            }
-
-            public String getID() {
-                return "CallStack";// NOI18N
-            }
-        };
+    public ThreadStackVisualizerConfiguration getVisualizerConfiguration() {
+        return configuration;
     }
 
     public JComponent getComponent() {
@@ -185,5 +192,82 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     public void refresh() {
+        synchronized (lock) {
+            if (!needUpdate) {
+                return;
+            }
+            Collection<ThreadDumpFilter> dumpFilters = getDataFilter(ThreadDumpFilter.class);
+            if (dumpFilters != null && !dumpFilters.isEmpty()) {
+
+                //get first
+                ThreadDumpFilter dumpFilter = dumpFilters.iterator().next();
+                this.dumpTime = dumpFilter.getDumpTime();
+                this.descriptor = dumpFilter.getThreadDump();
+
+            }
+            needUpdate = false;
+            if (!EventQueue.isDispatchThread()) {
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
+                            setEmptyContent();
+                        } else {
+                            setNonEmptyContent();
+                        }
+                    }
+                });
+            } else {
+                if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
+                    setEmptyContent();
+                } else {
+                    setNonEmptyContent();
+                }
+            }
+        }
+    }
+
+    private <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
+        synchronized (lock) {
+            Collection<T> result = new ArrayList<T>();
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
+                    result.add(clazz.cast(f));
+                } else {
+                    try {
+                        Class<? extends T> r = f.getClass().asSubclass(clazz);
+                        result.add(clazz.cast(f));
+                    } catch (ClassCastException e) {
+                    }
+
+                }
+            }
+            return result;
+        }
+    }
+
+    public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
+        if (this.session == null | this.session != session) {
+            if (this.session != session && this.session != null) {
+                this.session.removeSessionStateListener(this);
+                this.session.removeDataFilterListener(this);
+            }
+            this.session = session;
+            this.session.addDataFilterListener(this);
+
+        }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        if (isAdjusting) {
+            return;
+        }
+        synchronized (lock) {
+            //check new and old one's
+            this.filters = newSet;
+            needUpdate = !getDataFilter(ThreadDumpFilter.class).isEmpty();
+        }
+
+
     }
 }

@@ -82,8 +82,9 @@ Current java platform setup is:
     <macrodef name="coverage-report">
         <attribute name="test.type" />
         <sequential>
+            <property name="coverage.report.format" value="html" />
             <delete dir="${testcoverage.@{test.type}.report.dir}" failonerror="false"/>
-            <cobertura-report datafile="${cobertura.@{test.type}.datafile}" srcdir="${src.dir}" destdir="${testcoverage.@{test.type}.report.dir}"/>
+            <cobertura-report format="${coverage.report.format}" datafile="${cobertura.@{test.type}.datafile}" srcdir="${src.dir}" destdir="${testcoverage.@{test.type}.report.dir}"/>
         </sequential>
     </macrodef>
 

@@ -361,9 +361,11 @@ public final class EventSupport {
                 final JTextComponent focused = EditorRegistry.focusedComponent();
                 if (focused != null) {
                     final Document doc = editor.getDocument();
-                    final Source source = doc == null ? null : Source.create(doc);
-                    if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
+                    final String mimeType = DocumentUtilities.getMimeType (doc);
+                    if (doc != null && mimeType != null) {
+                        final Source source = Source.create (doc);
+                        if (source != null)
+                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
                     }
                 }
             }

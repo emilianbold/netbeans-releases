@@ -371,11 +371,13 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if (RequestProcessor.getDefault().isRequestProcessorThread()) {
             loadRepositories();
 
-            if ((defaultRepoComputationPending)
-                    && (repositories.length == 1)
-                    && preselectSingleRepo) {
-                defaultRepo = repositories[0];
-                defaultRepoComputationPending = false;
+            if (defaultRepoComputationPending) {
+                if (repositories.length == 0) {
+                    defaultRepoComputationPending = false;
+                } else if ((repositories.length == 1) && preselectSingleRepo) {
+                    defaultRepo = repositories[0];
+                    defaultRepoComputationPending = false;
+                }
             }
 
             /* schedule display of list of repositories */
@@ -391,9 +393,13 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                 }
                 if (defaultRepo != null) {
                     /* schedule selection of default repository (if any) */
+                    updateProgress(Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO);
                     EventQueue.invokeLater(this);
+                    updateProgress(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO);
                 }
             }
+
+            notifyProgressDone();
         } else {
             doGuiJob();
         }
@@ -427,6 +433,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     }
 
     private void displayRepositories() {
+        updateProgress(Progress.WILL_DISPLAY_REPOS);
+
         boolean computationPending = defaultRepoComputationPending;
         Repository knownDefaultRepo = computationPending ? null : defaultRepo;
 
@@ -440,6 +448,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         } finally {
             repositoriesDisplayed = true;
             defaultRepoSelected = !computationPending;
+            updateProgress(Progress.DISPLAYED_REPOS);
         }
     }
 
@@ -449,6 +458,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
          * We are going to preselect the default repository.
          */
         LOG.finest("going to select the default repository");           //NOI18N
+        updateProgress(Progress.WILL_SELECT_DEFAULT_REPO);
         try {
             if ((comboBox.getSelectedItem() instanceof Repository)
                     && !comboBox.isPopupVisible()) {
@@ -460,6 +470,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             }
         } finally {
             defaultRepoSelected = true;
+            updateProgress(Progress.SELECTED_DEFAULT_REPO);
         }
     }
 
@@ -523,7 +534,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private void setRepositories(Repository[] repos,
                                  Repository knownDefaultRepository) {
         assert EventQueue.isDispatchThread();
-        updateProgress(Progress.WILL_DISPLAY_REPOS);
 
         int reposCount = (repos != null) ? repos.length : 0;
         Object[] comboData;
@@ -548,8 +558,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             assert (comboBox.getSelectedItem() == SELECT_REPOSITORY);
             comboBox.addItemListener(this);
         }
-
-        updateProgress(Progress.DISPLAYED_REPOS);
     }
 
     private void refreshComboBoxData(Repository[] repos) {
@@ -641,14 +649,31 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         DISPLAYED_REPOS,
         WILL_DETERMINE_DEFAULT_REPO,
         DETERMINED_DEFAULT_REPO,
+        WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO,
+        SCHEDULED_SELECTION_OF_DEFAULT_REPO,
         WILL_SELECT_DEFAULT_REPO,
         SELECTED_DEFAULT_REPO,
         WILL_DISPLAY_REPOS_AND_SELECT_DEFAULT,
-        DISPLAYED_REPOS_AND_SELECTED_DEFAULT
+        DISPLAYED_REPOS_AND_SELECTED_DEFAULT,
+        THREAD_PROGRESS_DONE;
     }
 
     private final ThreadLocal<Progress> progress = new ThreadLocal<Progress>();
     private volatile ChangeListener progressListener;
+
+    private void notifyProgressDone() {
+        if (progressListener != null) {
+            assert !EventQueue.isDispatchThread();
+
+            Runnable doneNotifier = new Runnable() {
+                public void run() {
+                    updateProgress(Progress.THREAD_PROGRESS_DONE);
+                }
+            };
+            doneNotifier.run();
+            EventQueue.invokeLater(doneNotifier);
+        }
+    }
 
     private void updateProgress(Progress progress) {
         this.progress.set(progress);
