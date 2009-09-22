@@ -523,7 +523,7 @@ public final class DtraceDataCollector
         npb.setCommandLine(taskCommand);
 
         dtraceTask = NativeProcessExecutionService.newService(
-                npb, getOutputProcessor(), null, "DTrace output processor").start();
+                npb, getOutputProcessor(), null, "DTrace output processor").start(); // NOI18N
 
         log.fine("DtraceDataCollector (" + dtraceTask.toString() + // NOI18N
                 ") for " + taskCommand + " STARTED"); // NOI18N
