@@ -119,8 +119,8 @@ public class HtmlCompletionQuery extends UserTask {
         lowerCase = usesLowerCase(parserResult, astOffset);
         isXHtml = parserResult.getHtmlVersion().isXhtml();
 
-        TokenHierarchy hi = snapshot.getTokenHierarchy();
-        TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+        TokenHierarchy<?> hi = snapshot.getTokenHierarchy();
+        TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
         assert ts != null; //should be ensured by the parsing.api that we always get html token sequence from the snapshot
 
         int diff = ts.move(astOffset);
@@ -144,7 +144,7 @@ public class HtmlCompletionQuery extends UserTask {
         int anchor = -1;
 
         //get text before cursor
-        Token item = ts.token();
+        Token<HTMLTokenId> item = ts.token();
         int itemOffset = item.offset(hi);
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
@@ -433,7 +433,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private List<CompletionItem> translateCharRefs(int offset, List refs) {
-        List result = new ArrayList(refs.size());
+        List<CompletionItem> result = new ArrayList<CompletionItem>(refs.size());
         String name;
         for (Iterator i = refs.iterator(); i.hasNext();) {
             DTD.CharRef chr = (DTD.CharRef) i.next();
@@ -544,9 +544,9 @@ public class HtmlCompletionQuery extends UserTask {
 
     List<HtmlCompletionItem> translateValues(int offset, List values, String quotationChar) {
         if (values == null) {
-            return new ArrayList(0);
+            return Collections.emptyList();
         }
-        List result = new ArrayList(values.size());
+        List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(values.size());
         if (quotationChar != null) {
             offset++; //shift the offset after the quotation
         }

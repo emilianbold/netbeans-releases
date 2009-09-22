@@ -153,9 +153,9 @@ public class HtmlCompletionQueryTest extends TestBase {
     }
 
     public void testCompleteTags() throws BadLocationException, ParseException {
-        assertCompletedText("<|", "div", "<div>|");
-        assertCompletedText("<di|", "div", "<div>|");
-        assertCompletedText("<div|", "div", "<div>|");
+        assertCompletedText("<|", "div", "<div|");
+        assertCompletedText("<di|", "div", "<div|");
+        assertCompletedText("<div|", "div", "<div|");
 
         assertCompletedText("<div></|", "div", "<div></div>|");
         assertCompletedText("<div></d|", "div", "<div></div>|");
@@ -163,9 +163,9 @@ public class HtmlCompletionQueryTest extends TestBase {
     }
     
     public void testCompleteTagsBeforeText() throws BadLocationException, ParseException {
-        assertCompletedText("<| ", "div", "<div>| ");
-        assertCompletedText("<di| ", "div", "<div>| ");
-        assertCompletedText("<div| ", "div", "<div>| ");
+        assertCompletedText("<| ", "div", "<div| ");
+        assertCompletedText("<di| ", "div", "<div| ");
+        assertCompletedText("<div| ", "div", "<div| ");
 
         assertCompletedText("<div></| ", "div", "<div></div>| ");
         assertCompletedText("<div></d| ", "div", "<div></div>| ");

@@ -64,6 +64,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class HtmlParserResult extends ParserResult {
 
+    /** 
+     * Used as a key of a swing document to find a default fallback dtd.
+     */
+    public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
+
     private SyntaxParserResult result;
     private List<Error> errors;
     private boolean isValid = true;
