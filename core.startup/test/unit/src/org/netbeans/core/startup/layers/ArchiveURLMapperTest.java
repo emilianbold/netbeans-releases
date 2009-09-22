@@ -49,6 +49,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
+import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.netbeans.junit.NbTestCase;
@@ -145,6 +146,21 @@ public class ArchiveURLMapperTest extends NbTestCase {
         assertNotNull(nestedRoot);
         FileObject textFO = nestedRoot.getFileObject("text");
         assertEquals("content", textFO.asText());
+    }
+
+    public void test166708() throws Exception {
+        File jar = new File(getWorkDir(), "test.jar");
+        JarOutputStream jos = new JarOutputStream(new FileOutputStream(jar));
+        jos.putNextEntry(new ZipEntry("has spaces"));
+        jos.close();
+        URL source = new URL("jar:" + jar.toURI().toURL() + "!/has%20spaces");
+        source.toURI();
+        FileObject file = URLMapper.findFileObject(source);
+        assertNotNull(file);
+        assertEquals(source, URLMapper.findURL(file, URLMapper.INTERNAL));
+        assertEquals(0, source.openConnection().getContentLength());
+        ProxyURLStreamHandlerFactory.register();
+        assertEquals(0, new URL("jar:" + jar.toURI().toURL() + "!/has%20spaces").openConnection().getContentLength());
     }
 
 }
