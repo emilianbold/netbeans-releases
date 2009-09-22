@@ -918,9 +918,9 @@ final class ModuleList implements Stamps.Updater {
                 } else {
                     // Just verify that no one else touched it since we last did.
                     if (/*nue.lastApprovedChange != nue.file.lastModified().getTime()*/nue.dirty) {
-                        // Oops, something is wrong.
-                        // XXX should this only warn instead?
-                        throw new IOException("Will not clobber external changes in " + nue.file); // NOI18N
+                        // Oops, something is wrong. #156764 - log at lower level.
+                        LOG.log(Level.INFO, null, new IOException("Will not clobber external changes in " + nue.file));
+                        return;
                     }
                 }
                 LOG.fine("ModuleList: (re)writing " + nue.file);
@@ -1793,7 +1793,7 @@ final class ModuleList implements Stamps.Updater {
                     } catch (FileNotFoundException fnfe) {
                         //LOG.fine("Cannot find: " + fnfe.getMessage());
                         ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), enabledB);
-                        if (!Boolean.FALSE.equals(enabledB)) {
+                        if (f != null && !Boolean.FALSE.equals(enabledB)) {
                             try {
                                 f.delete();
                             } catch (IOException ioe) {
