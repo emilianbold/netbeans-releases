@@ -123,19 +123,22 @@ final class ProcessList {
             Exceptions.printStackTrace(ioe);
             ptype = PTYPE.NONE;
         } catch (CancellationException caex) {
-            Exceptions.printStackTrace(caex);
             ptype = PTYPE.NONE;
         }
         executable = exec;
     }
 
     private void request(final ProcessListReader plr, final boolean full) {
-        if (executable == null || executable.length() > 0) {
+        if (ptype != PTYPE.NONE) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        if (executable == null) {
+                        if (ptype == PTYPE.UNINITIALIZED) {
                             init();
+                        }
+                        if (ptype == PTYPE.NONE) {
+                            plr.processListCallback(Collections.<String>emptyList());
+                            return;
                         }
                         List<String> args = new ArrayList<String>(argsSimple);
                         if (full) {
