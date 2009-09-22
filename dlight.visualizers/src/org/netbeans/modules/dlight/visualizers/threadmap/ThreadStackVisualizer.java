@@ -89,6 +89,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     private DLightSession session;
     private List<DataFilter> filters;
     private final Object lock = new String("ThreadStackVisualizer.filters.lock");//NOI18N
+    private final Object uiLock = new String("ThreadStackVisualizer.filters.ui.lock");//NOI18N
+    private boolean needUpdate = false;
 
     ThreadStackVisualizer(ThreadStackVisualizerConfiguration configuraiton, StackDataProvider sourceFileInfo) {
         this.descriptor = configuraiton.getThreadDump();
@@ -122,33 +124,39 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     private void setNonEmptyContent() {
-        stackPanel.clean();
-        //and now add all you need
-        final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - dumpTime;
-        String timeString = TimeLineUtils.getMillisValue(time);
-        String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
-        stackPanel.setRootVisible(rootName);
-        for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
-            final MSAState msa = stack.getState();
-            final ThreadStateResources res = ThreadStateResources.forState(msa);
-            if (res != null) {
-                DLightExecutorService.submit(new Runnable() {
+        synchronized (lock) {
+            stackPanel.clean();
+            //and now add all you need
+            final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - dumpTime;
+            String timeString = TimeLineUtils.getMillisValue(time);
+            String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
+            stackPanel.setRootVisible(rootName);
+            //collect all and then update UI
+            for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
+                final MSAState msa = stack.getState();
+                final ThreadStateResources res = ThreadStateResources.forState(msa);
+                if (res != null) {
+                    DLightExecutorService.submit(new Runnable() {
 
-                    public void run() {
-                        final List<FunctionCall> functionCalls = stack.getStack();
-                        UIThread.invoke(new Runnable() {
+                        public void run() {
+                            //synchronized (lock) {
+                                final List<FunctionCall> functionCalls = stack.getStack();
+                                UIThread.invoke(new Runnable() {
 
-                            public void run() {
-                                stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
-                            }
-                        });
+                                    public void run() {
+                                        stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                        }
+                                });
+                            //}
+                        }
+                    }, "Ask for a stack");//NOI18N
                     }
-                }, "Ask for a stack");//NOI18N              
-            }
 
+            }
+            cardLayout.show(this, "stack");//NOI18N
+            selectRootNode();
         }
-        cardLayout.show(this, "stack");//NOI18N
-        selectRootNode();
+
     }
 
     void selectRootNode() {
@@ -184,31 +192,37 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     public void refresh() {
-        //check filters
-        Collection<ThreadDumpFilter> dumpFilters = getDataFilter(ThreadDumpFilter.class);
-        if (dumpFilters != null && !dumpFilters.isEmpty()) {
+        synchronized (lock) {
+            if (!needUpdate) {
+                return;
+            }
+            Collection<ThreadDumpFilter> dumpFilters = getDataFilter(ThreadDumpFilter.class);
+            if (dumpFilters != null && !dumpFilters.isEmpty()) {
 
-            //get first
-            ThreadDumpFilter dumpFilter = dumpFilters.iterator().next();
-            this.dumpTime = dumpFilter.getDumpTime();
-            this.descriptor = dumpFilter.getThreadDump();
-        }
-        if (!EventQueue.isDispatchThread()) {
-            UIThread.invoke(new Runnable() {
+                //get first
+                ThreadDumpFilter dumpFilter = dumpFilters.iterator().next();
+                this.dumpTime = dumpFilter.getDumpTime();
+                this.descriptor = dumpFilter.getThreadDump();
 
-                public void run() {
-                    if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
-                        setEmptyContent();
-                    } else {
-                        setNonEmptyContent();
+            }
+            needUpdate = false;
+            if (!EventQueue.isDispatchThread()) {
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
+                            setEmptyContent();
+                        } else {
+                            setNonEmptyContent();
+                        }
                     }
-                }
-            });
-        } else {
-            if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
-                setEmptyContent();
+                });
             } else {
-                setNonEmptyContent();
+                if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
+                    setEmptyContent();
+                } else {
+                    setNonEmptyContent();
+                }
             }
         }
     }
@@ -249,10 +263,11 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             return;
         }
         synchronized (lock) {
+            //check new and old one's
             this.filters = newSet;
+            needUpdate = !getDataFilter(ThreadDumpFilter.class).isEmpty();
         }
-        if (!getDataFilter(ThreadDumpFilter.class).isEmpty()) {
-            refresh();
-        }
+
+
     }
 }

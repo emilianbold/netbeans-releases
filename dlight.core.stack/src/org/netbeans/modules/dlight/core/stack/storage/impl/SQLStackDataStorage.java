@@ -749,7 +749,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return null;
     }
 
-    public List<FunctionCall> getCallStack(final long stackId) {
+    public  synchronized  List<FunctionCall> getCallStack(final long stackId) {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         try {
             long nodeID = stackId;

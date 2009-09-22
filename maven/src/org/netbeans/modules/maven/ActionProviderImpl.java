@@ -535,7 +535,6 @@ public class ActionProviderImpl implements ActionProvider {
             menu.add(loading);
             /*using lazy construction strategy*/
             RequestProcessor.getDefault().post(new Runnable() {
-
                 public void run() {
                     final ProjectProfileHandler profileHandler = project.getLookup().lookup(ProjectProfileHandler.class);
                     List<String> retrieveAllProfiles = profileHandler.getAllProfiles();
@@ -547,23 +546,16 @@ public class ActionProviderImpl implements ActionProvider {
                     for (final String profile : retrieveAllProfiles) {
                         final boolean activeByDefault = activeProfiles.contains(profile);
                         final JCheckBoxMenuItem item = new JCheckBoxMenuItem(profile, mergedActiveProfiles.contains(profile));
-
-
                         menu.add(item);
-
                         item.setAction(new AbstractAction(profile) {
-
                             public void actionPerformed(ActionEvent e) {
                                 if (item.isSelected()) {
                                     profileHandler.enableProfile( profile, false);
-
                                 } else {
                                     profileHandler.disableProfile( profile, false);
-
                                 }
                                 NbMavenProject.fireMavenProjectReload(project);
                             }
-
                             @Override
                             public boolean isEnabled() {
                                 return !activeByDefault;
@@ -571,7 +563,6 @@ public class ActionProviderImpl implements ActionProvider {
                         });
                     }
                     SwingUtilities.invokeLater(new Runnable() {
-
                         public void run() {
                             boolean selected = menu.isSelected();
                             menu.remove(loading);
@@ -581,8 +572,6 @@ public class ActionProviderImpl implements ActionProvider {
                             menu.setSelected(selected);
                         }
                     });
-                    
-                    
                 }
             }, 100);
             return menu;

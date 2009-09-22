@@ -343,7 +343,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             CharSequence path2 = getAlternativeFileKey(path);
             f = (path2 == null) ? null : myFiles.get(path2);
             if (f != null) {
-                if (true || TraceFlags.TRACE_CANONICAL_FIND_FILE) {
+                if (TraceFlags.TRACE_CANONICAL_FIND_FILE) {
                     CndUtils.assertTrueInConsole(false, "alternative for " + path + " is " + path2); // NOI18N
                 }
             }
