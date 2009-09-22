@@ -9,7 +9,7 @@ inline int64_t fops_report_interval = 200;
 uint64_t fops_start_timestamp;
 
 /* Time since script start, in milliseconds */
-inline int64_t fops_timestamp = (timestamp - fops_start_timestamp) / 1000000;
+inline int64_t fops_timestamp = (timestamp - fops_start_timestamp);
 
 /* Timestamp to use as aggregation key */
 int64_t fops_key_timestamp;

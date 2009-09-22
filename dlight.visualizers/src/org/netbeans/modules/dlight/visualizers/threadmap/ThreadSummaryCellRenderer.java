@@ -240,19 +240,6 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         return super.getToolTipText();
     }
 
-    private boolean isSelected(long ts){
-        Collection<TimeIntervalDataFilter> aTimeFilters = timeFilters;
-        if (aTimeFilters == null || aTimeFilters.isEmpty()) {
-            return true;
-        }
-        for(TimeIntervalDataFilter filter : aTimeFilters) {
-            if (filter.getInterval().cotains(ts - dataStart*1000*1000)){
-                return true;
-            }
-        }
-        return false;
-    }
-
     private int countSum(EnumMap<MSAState, AtomicInteger> aMap) {
         int count = 0;
         for(StateDuration duration : threadSummary.getSummary()){

@@ -1,7 +1,7 @@
 #!/usr/sbin/dtrace -ZCs
 
 #pragma D option quiet
-#define ts() (timestamp-starttime) / 1000 / 1000
+#define ts() (timestamp-starttime)
 this uint64 starttime;
 BEGIN {
   starttime=timestamp;
