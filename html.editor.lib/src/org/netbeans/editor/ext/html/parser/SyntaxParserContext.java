@@ -104,13 +104,12 @@ public class SyntaxParserContext implements Cloneable {
         return sourceText;
     }
 
-    //package private
-    SyntaxParserContext setDTD(DTD dtd) {
+    public SyntaxParserContext setDTD(DTD dtd) {
         this.dtd = dtd;
         return this;
     }
 
-    DTD getDTD() {
+    public DTD getDTD() {
         return dtd;
     }
 
