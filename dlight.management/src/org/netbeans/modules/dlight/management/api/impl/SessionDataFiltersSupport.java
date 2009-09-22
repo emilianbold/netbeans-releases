@@ -68,27 +68,31 @@ public class SessionDataFiltersSupport {
         }
     }
 
-    public List<DataFilter> getFilters(){
+    public List<DataFilter> getFilters() {
         return filters;
     }
 
     public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
+        DataFilter[] filters_array;
         synchronized (lock) {
-            Collection<T> result = new ArrayList<T>();
-            for (DataFilter f : filters) {
-                if (f.getClass() == clazz) {
-                    result.add(clazz.cast(f));
-                } else {
-                    try {
-                        Class<? extends T> r = f.getClass().asSubclass(clazz);
-                        result.add(clazz.cast(f));
-                    } catch (ClassCastException e) {
-                    }
-
-                }
-            }
-            return result;
+            filters_array = filters.toArray(new DataFilter[0]);
         }
+
+        Collection<T> result = new ArrayList<T>();
+        for (DataFilter f : filters_array) {
+            if (f.getClass() == clazz) {
+                result.add(clazz.cast(f));
+            } else {
+                try {
+                    Class<? extends T> r = f.getClass().asSubclass(clazz);
+                    result.add(clazz.cast(f));
+                } catch (ClassCastException e) {
+                }
+
+            }
+        }
+        return result;
+
     }
 
     public void cleanAll() {
@@ -119,6 +123,9 @@ public class SessionDataFiltersSupport {
 
     public void addDataFilterListener(DataFilterListener listener) {
         synchronized (lock) {
+            if (listeners.contains(listener)) {
+                return;
+            }
             listeners.add(listener);
 
             // And immediately notify it...
