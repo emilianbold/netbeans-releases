@@ -72,7 +72,7 @@ public class ELLexer implements Lexer<ELTokenId> {
     private final TokenFactory<ELTokenId> tokenFactory;
     
     public Object state() {
-        return lexerState;
+        return new ELState( lexerState, myConditionalOperatorCount);
     }
     
     /** Internal state of the lexical analyzer before entering subanalyzer of
@@ -81,6 +81,11 @@ public class ELLexer implements Lexer<ELTokenId> {
      * charref subanalyzer.
      */
     private int lexerState = INIT;
+    
+    /*
+     * Contains counter of possible start of conditional operator "a ? b :c".   
+     */
+    private int myConditionalOperatorCount;
     
     
     /* Internal states used internally by analyzer. There
@@ -135,12 +140,13 @@ public class ELLexer implements Lexer<ELTokenId> {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
         if (info.state() == null) {
-            this.lexerState = INIT;
+            lexerState = INIT;
+            myConditionalOperatorCount = 0;
         } else {
-            this.lexerState = ((Integer) info.state()).intValue();
+            lexerState = ((ELState) info.state()).getState();
+            myConditionalOperatorCount = ((ELState) info.state()).getConditionalCount();
         }
     }
-    
     
     /** This is core function of analyzer and it returns one of following numbers:
      * a) token number of next token from scanned text
@@ -212,6 +218,7 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case '%':
                             return token(ELTokenId.MOD);
                         case ':':
+                            myConditionalOperatorCount--;
                             return token(ELTokenId.COLON);
                         case '!':
                             lexerState = ISA_EXCLAMATION;
@@ -223,6 +230,7 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case ',':
                             return token(ELTokenId.COMMA);
                         case '?':
+                            myConditionalOperatorCount++;
                             return token(ELTokenId.QUESTION);
                         case '\n':
                             return token(ELTokenId.EOL);
@@ -447,7 +455,12 @@ public class ELLexer implements Lexer<ELTokenId> {
                         Token<ELTokenId> tid = matchKeyword(input);
                         if (tid == null){
                             if (actChar == ':'){
-                                tid = token(ELTokenId.TAG_LIB_PREFIX);
+                                if ( myConditionalOperatorCount >0 ){
+                                    tid = token(ELTokenId.IDENTIFIER);
+                                }
+                                else {
+                                    tid = token(ELTokenId.TAG_LIB_PREFIX);
+                                }
                             } else{
                                 tid = token(ELTokenId.IDENTIFIER);
                             }
