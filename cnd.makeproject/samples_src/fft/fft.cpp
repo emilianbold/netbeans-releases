@@ -33,7 +33,9 @@
 #include "fft.h"
 #include "bmp.h"
 
+#ifndef log2
 extern "C" double log2(double x);
+#endif
 
 FastFourierTransform::FastFourierTransform() {
 }
