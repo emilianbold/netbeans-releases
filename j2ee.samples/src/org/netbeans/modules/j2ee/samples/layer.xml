@@ -7,13 +7,6 @@
                 <folder name="Enterprise">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
                     <attr name="position" intvalue="300"/>
-                    <!--file name="CustomerCMP" url="CustomerCMP.zip">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.DatabaseUsingSampleWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/CustomerCMP.html"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file-->
                         
                     <file name="LotteryAnnotation" url="LotteryAnnotation.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
