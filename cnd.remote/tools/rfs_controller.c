@@ -45,12 +45,12 @@ static void new_connection_start_function(void* data) {
 
         file_data *fd = find_file_data(request);
         
+        trace("Request: %s (size=%d)\n", request, size);
         if (fd->state == file_state_pending) {
 
             /* TODO: this is a very primitive sync!  */
             pthread_mutex_lock(&mutex);
 
-            trace("Request: %s (size=%d)\n", request, size);
             fprintf(stdout, "%s\n", request);
             fflush(stdout);
 
@@ -71,7 +71,7 @@ static void new_connection_start_function(void* data) {
                 response[0] = response_failure;
             }
             response[1] = 0;
-            trace("Filled reply: %s\n", response);
+            trace("Already known; filled reply: %s\n", response);
         }
         
         if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {

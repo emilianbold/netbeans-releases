@@ -86,7 +86,13 @@ class RfsSyncWorker extends ZipSyncWorker {
                     return super.getFileInputStream(file);
                 } else {
                     // Fooling SunStudio dmake, which (in some circumstances) does not open file with zero length
-                    return new DummyInputStream("\n"); // NOI18N
+                    long size;
+                    if (Boolean.getBoolean("cnd.rfs.ss.hack")) {
+                        size = file.length();
+                    } else {
+                        size = 0;
+                    }
+                    return new DummyInputStream(' ', size); // NOI18N
                 }
             }
 
@@ -134,15 +140,20 @@ class RfsSyncWorker extends ZipSyncWorker {
     }
 
     private static class DummyInputStream extends InputStream {
-        private final String text;
-        private int curr;
-        public DummyInputStream(String text) {
-            this.text = text;
+        private final char filler;
+        private final long size;
+        private long curr;
+
+        public DummyInputStream(char filler, long size) {
+            this.filler = filler;
+            this.size = size;
             this.curr = 0;
         }
+
         public int read() throws IOException {
-            if (curr < text.length()) {
-                return text.charAt(curr++);
+            if (curr < size) {
+                curr++;
+                return filler;
             } else {
                 return -1;
             }
