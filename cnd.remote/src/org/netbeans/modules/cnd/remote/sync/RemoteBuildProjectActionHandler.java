@@ -46,6 +46,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -169,17 +171,28 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         String preload = RfsSetupProvider.getPreload(execEnv);
         assert preload != null;
-        env.putenv("LD_PRELOAD", preload); // NOI18N
-        env.putenv("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
-        env.putenv("RFS_CONTROLLER_PORT", port); // NOI18N
+        // to be able to trace what we're doing, first put it all to a map
+        Map<String, String> env2add = new HashMap<String, String>();
+
+        env2add.put("LD_PRELOAD", preload); // NOI18N
+        env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
+        env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
         
         String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
         if (preloadLog != null) {
-            env.putenv("RFS_PRELOAD_LOG", preloadLog); // NOI18N
+            env2add.put("RFS_PRELOAD_LOG", preloadLog); // NOI18N
         }
         String controllerLog = System.getProperty("cnd.remote.fs.controller.log");
         if (controllerLog != null) {
-            env.putenv("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
+            env2add.put("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
+        }
+
+        RemoteUtil.LOGGER.fine("Setting environment:");
+        for (Map.Entry<String, String> entry : env2add.entrySet()) {
+            if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
+                RemoteUtil.LOGGER.fine(String.format("\t%s=%s", entry.getKey(), entry.getValue()));
+            }
+            env.putenv(entry.getKey(), entry.getValue());
         }
         
         delegate.addExecutionListener(new ExecutionListener() {

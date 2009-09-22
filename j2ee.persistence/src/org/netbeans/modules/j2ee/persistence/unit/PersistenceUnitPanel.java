@@ -178,11 +178,20 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
      * Sets which panel (container/application) is visible.
      */
     private void setVisiblePanel(){
-        String panelName = isContainerManaged ? "container" : "application";//NOI18N
-        ((CardLayout)providerPanel.getLayout()).show(providerPanel, panelName);
+        providerLabel.setVisible(isContainerManaged);
+        providerCombo.setVisible(isContainerManaged);
+        dsCombo.setVisible(isContainerManaged);
+        datasourceLabel.setVisible(isContainerManaged);
+        //
+        libraryLabel.setVisible(!isContainerManaged);
+        libraryComboBox.setVisible(!isContainerManaged);
+        jdbcComboBox.setVisible(!isContainerManaged);
+        jdbcLabel.setVisible(!isContainerManaged);
         //
         validationStrategyPanel.setVisible(jpa20);
+        validationStrategyLabel.setVisible(jpa20);
         cachingStrategyPanel.setVisible(jpa20);
+        cachingStrategyLabel.setVisible(jpa20);
     }
     private void initCache(){
         org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
@@ -615,31 +624,27 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup2 = new javax.swing.ButtonGroup();
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup3 = new javax.swing.ButtonGroup();
-        namePanel = new javax.swing.JPanel();
         nameLabel = new javax.swing.JLabel();
-        nameTextField = new javax.swing.JTextField();
-        providerPanel = new javax.swing.JPanel();
-        providerDataSourcePanel = new javax.swing.JPanel();
+        libraryLabel = new javax.swing.JLabel();
+        jdbcLabel = new javax.swing.JLabel();
         datasourceLabel = new javax.swing.JLabel();
         jtaCheckBox = new javax.swing.JCheckBox();
         dsCombo = new javax.swing.JComboBox();
         providerCombo = new javax.swing.JComboBox();
-        jLabel3 = new javax.swing.JLabel();
-        providerJdbcPanel = new javax.swing.JPanel();
-        libraryLabel = new javax.swing.JLabel();
-        jdbcLabel = new javax.swing.JLabel();
+        providerLabel = new javax.swing.JLabel();
         libraryComboBox = new javax.swing.JComboBox();
         jdbcComboBox = new javax.swing.JComboBox();
-        tableGenerationPanel = new javax.swing.JPanel();
+        nameTextField = new javax.swing.JTextField();
         tableGenerationLabel = new javax.swing.JLabel();
+        tableGenerationPanel = new javax.swing.JPanel();
         ddCreate = new javax.swing.JRadioButton();
         ddDropCreate = new javax.swing.JRadioButton();
         ddUnknown = new javax.swing.JRadioButton();
-        includeAllPanel = new javax.swing.JPanel();
         includeAllEntities = new javax.swing.JCheckBox();
         entityClassesPanel = new javax.swing.JPanel();
         entityScrollPane = new javax.swing.JScrollPane();
@@ -647,187 +652,156 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         addClassButton = new javax.swing.JButton();
         removeClassButton = new javax.swing.JButton();
         includeEntitiesLabel = new javax.swing.JLabel();
-        cachingStrategyPanel = new javax.swing.JPanel();
         cachingStrategyLabel = new javax.swing.JLabel();
+        cachingStrategyPanel = new javax.swing.JPanel();
         ddAll = new javax.swing.JRadioButton();
         ddNone = new javax.swing.JRadioButton();
         ddEnableSelective = new javax.swing.JRadioButton();
         ddDisableSelective = new javax.swing.JRadioButton();
         ddDefault = new javax.swing.JRadioButton();
-        validationStrategyPanel = new javax.swing.JPanel();
         validationStrategyLabel = new javax.swing.JLabel();
+        validationStrategyPanel = new javax.swing.JPanel();
         ddAuto = new javax.swing.JRadioButton();
         ddCallBack = new javax.swing.JRadioButton();
         ddNoValidation = new javax.swing.JRadioButton();
 
-        namePanel.setOpaque(false);
+        setPreferredSize(new java.awt.Dimension(654, 471));
+        setLayout(new java.awt.GridBagLayout());
 
         nameLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_UnitName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(nameLabel, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout namePanelLayout = new org.jdesktop.layout.GroupLayout(namePanel);
-        namePanel.setLayout(namePanelLayout);
-        namePanelLayout.setHorizontalGroup(
-            namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(namePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(nameLabel)
-                .add(32, 32, 32)
-                .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 440, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(203, Short.MAX_VALUE))
-        );
-        namePanelLayout.setVerticalGroup(
-            namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, namePanelLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(nameLabel)
-                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
+        libraryLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_PersistenceLibrary")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(libraryLabel, gridBagConstraints);
 
-        providerPanel.setOpaque(false);
-        providerPanel.setLayout(new java.awt.CardLayout());
-
-        providerDataSourcePanel.setOpaque(false);
+        jdbcLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_JdbcConnection")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(jdbcLabel, gridBagConstraints);
 
         datasourceLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_DatasourceName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(datasourceLabel, gridBagConstraints);
 
         jtaCheckBox.setSelected(true);
         jtaCheckBox.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_JTA")); // NOI18N
         jtaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(jtaCheckBox, gridBagConstraints);
 
         dsCombo.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(dsCombo, gridBagConstraints);
 
         providerCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(providerCombo, gridBagConstraints);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/unit/Bundle"); // NOI18N
-        jLabel3.setText(bundle.getString("LBL_Provider")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout providerDataSourcePanelLayout = new org.jdesktop.layout.GroupLayout(providerDataSourcePanel);
-        providerDataSourcePanel.setLayout(providerDataSourcePanelLayout);
-        providerDataSourcePanelLayout.setHorizontalGroup(
-            providerDataSourcePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(providerDataSourcePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(providerDataSourcePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(providerDataSourcePanelLayout.createSequentialGroup()
-                        .add(providerDataSourcePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel3)
-                            .add(datasourceLabel))
-                        .add(43, 43, 43)
-                        .add(providerDataSourcePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(providerCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(dsCombo, 0, 436, Short.MAX_VALUE)))
-                    .add(jtaCheckBox))
-                .add(79, 79, 79))
-        );
-        providerDataSourcePanelLayout.setVerticalGroup(
-            providerDataSourcePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(providerDataSourcePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(providerDataSourcePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(providerCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(providerDataSourcePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(datasourceLabel)
-                    .add(dsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jtaCheckBox)
-                .add(48, 48, 48))
-        );
-
-        providerPanel.add(providerDataSourcePanel, "container");
-
-        providerJdbcPanel.setOpaque(false);
-
-        libraryLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_PersistenceLibrary")); // NOI18N
-
-        jdbcLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_JdbcConnection")); // NOI18N
+        providerLabel.setText(bundle.getString("LBL_Provider")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(providerLabel, gridBagConstraints);
 
         libraryComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 libraryComboBoxActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(libraryComboBox, gridBagConstraints);
 
         jdbcComboBox.setRenderer(new JdbcListCellRenderer());
-
-        org.jdesktop.layout.GroupLayout providerJdbcPanelLayout = new org.jdesktop.layout.GroupLayout(providerJdbcPanel);
-        providerJdbcPanel.setLayout(providerJdbcPanelLayout);
-        providerJdbcPanelLayout.setHorizontalGroup(
-            providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(providerJdbcPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(libraryLabel)
-                    .add(jdbcLabel))
-                .add(47, 47, 47)
-                .add(providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(jdbcComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(libraryComboBox, 0, 442, Short.MAX_VALUE))
-                .addContainerGap(212, Short.MAX_VALUE))
-        );
-        providerJdbcPanelLayout.setVerticalGroup(
-            providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(providerJdbcPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(libraryLabel)
-                    .add(libraryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jdbcLabel)
-                    .add(jdbcComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(26, Short.MAX_VALUE))
-        );
-
-        providerPanel.add(providerJdbcPanel, "application");
-
-        tableGenerationPanel.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(jdbcComboBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(nameTextField, gridBagConstraints);
 
         java.util.ResourceBundle bundle1 = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/unit/Bundle"); // NOI18N
         tableGenerationLabel.setText(bundle1.getString("LBL_TableGeneration")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(tableGenerationLabel, gridBagConstraints);
+
+        tableGenerationPanel.setOpaque(false);
+        tableGenerationPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         buttonGroup2.add(ddCreate);
         ddCreate.setText(bundle1.getString("LBL_Create")); // NOI18N
         ddCreate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        tableGenerationPanel.add(ddCreate);
 
         buttonGroup2.add(ddDropCreate);
         ddDropCreate.setText(bundle1.getString("LBL_DropCreate")); // NOI18N
         ddDropCreate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        tableGenerationPanel.add(ddDropCreate);
 
         buttonGroup2.add(ddUnknown);
         ddUnknown.setText(bundle1.getString("LBL_None")); // NOI18N
         ddUnknown.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        tableGenerationPanel.add(ddUnknown);
 
-        org.jdesktop.layout.GroupLayout tableGenerationPanelLayout = new org.jdesktop.layout.GroupLayout(tableGenerationPanel);
-        tableGenerationPanel.setLayout(tableGenerationPanelLayout);
-        tableGenerationPanelLayout.setHorizontalGroup(
-            tableGenerationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tableGenerationPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(tableGenerationLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddCreate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddDropCreate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddUnknown)
-                .addContainerGap(381, Short.MAX_VALUE))
-        );
-        tableGenerationPanelLayout.setVerticalGroup(
-            tableGenerationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tableGenerationPanelLayout.createSequentialGroup()
-                .add(tableGenerationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ddCreate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(ddDropCreate)
-                    .add(ddUnknown)
-                    .add(tableGenerationLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        includeAllPanel.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(tableGenerationPanel, gridBagConstraints);
 
         includeAllEntities.setText(bundle1.getString("LBL_IncludeAllEntities")); // NOI18N
         includeAllEntities.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -836,207 +810,157 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 includeAllEntitiesActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(includeAllEntities, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout includeAllPanelLayout = new org.jdesktop.layout.GroupLayout(includeAllPanel);
-        includeAllPanel.setLayout(includeAllPanelLayout);
-        includeAllPanelLayout.setHorizontalGroup(
-            includeAllPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(includeAllPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(includeAllEntities)
-                .addContainerGap(544, Short.MAX_VALUE))
-        );
-        includeAllPanelLayout.setVerticalGroup(
-            includeAllPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(includeAllPanelLayout.createSequentialGroup()
-                .add(includeAllEntities)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
+        entityClassesPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         entityClassesPanel.setOpaque(false);
+        entityClassesPanel.setLayout(new java.awt.GridBagLayout());
+
+        entityScrollPane.setMinimumSize(new java.awt.Dimension(50, 25));
 
         entityScrollPane.setViewportView(entityList);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
+        entityClassesPanel.add(entityScrollPane, gridBagConstraints);
+
         addClassButton.setText(bundle1.getString("LBL_AddClasses")); // NOI18N
+        addClassButton.setMargin(new java.awt.Insets(0, 10, 0, 10));
+        addClassButton.setMaximumSize(new java.awt.Dimension(287, 29));
         addClassButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addClassButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        entityClassesPanel.add(addClassButton, gridBagConstraints);
 
         removeClassButton.setText(bundle1.getString("LBL_RemoveClass")); // NOI18N
+        removeClassButton.setMargin(new java.awt.Insets(0, 10, 0, 10));
+        removeClassButton.setMaximumSize(new java.awt.Dimension(284, 29));
         removeClassButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeClassButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        entityClassesPanel.add(removeClassButton, gridBagConstraints);
 
         includeEntitiesLabel.setText(bundle1.getString("LBL_IncludeEntityClasses")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        entityClassesPanel.add(includeEntitiesLabel, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout entityClassesPanelLayout = new org.jdesktop.layout.GroupLayout(entityClassesPanel);
-        entityClassesPanel.setLayout(entityClassesPanelLayout);
-        entityClassesPanelLayout.setHorizontalGroup(
-            entityClassesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(entityClassesPanelLayout.createSequentialGroup()
-                .add(entityClassesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(entityClassesPanelLayout.createSequentialGroup()
-                        .add(entityScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 449, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(entityClassesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(removeClassButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
-                            .add(addClassButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE))
-                        .add(20, 20, 20))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, includeEntitiesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        entityClassesPanelLayout.setVerticalGroup(
-            entityClassesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(entityClassesPanelLayout.createSequentialGroup()
-                .add(includeEntitiesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(entityClassesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(entityClassesPanelLayout.createSequentialGroup()
-                        .add(addClassButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeClassButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, Short.MAX_VALUE)
-                        .add(44, 44, 44))
-                    .add(entityScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 96, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        cachingStrategyPanel.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 33, 11, 11);
+        add(entityClassesPanel, gridBagConstraints);
 
         cachingStrategyLabel.setText(bundle1.getString("LBL_CachingStrategy")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(cachingStrategyLabel, gridBagConstraints);
+
+        cachingStrategyPanel.setOpaque(false);
+        cachingStrategyPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         buttonGroup1.add(ddAll);
         ddAll.setText(bundle1.getString("LBL_All")); // NOI18N
         ddAll.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cachingStrategyPanel.add(ddAll);
 
         buttonGroup1.add(ddNone);
         ddNone.setText(bundle1.getString("LBL_None")); // NOI18N
         ddNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cachingStrategyPanel.add(ddNone);
 
         buttonGroup1.add(ddEnableSelective);
         ddEnableSelective.setText(bundle1.getString("LBL_EnableSelective")); // NOI18N
         ddEnableSelective.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cachingStrategyPanel.add(ddEnableSelective);
 
         buttonGroup1.add(ddDisableSelective);
         ddDisableSelective.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_DisableSelective")); // NOI18N
+        ddDisableSelective.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cachingStrategyPanel.add(ddDisableSelective);
 
         buttonGroup1.add(ddDefault);
         ddDefault.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_Default")); // NOI18N
+        ddDefault.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cachingStrategyPanel.add(ddDefault);
 
-        org.jdesktop.layout.GroupLayout cachingStrategyPanelLayout = new org.jdesktop.layout.GroupLayout(cachingStrategyPanel);
-        cachingStrategyPanel.setLayout(cachingStrategyPanelLayout);
-        cachingStrategyPanelLayout.setHorizontalGroup(
-            cachingStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(cachingStrategyPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(cachingStrategyLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddAll)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddNone)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddEnableSelective)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddDisableSelective)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddDefault)
-                .addContainerGap(278, Short.MAX_VALUE))
-        );
-        cachingStrategyPanelLayout.setVerticalGroup(
-            cachingStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(cachingStrategyPanelLayout.createSequentialGroup()
-                .add(cachingStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ddAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(ddNone)
-                    .add(ddEnableSelective)
-                    .add(cachingStrategyLabel)
-                    .add(ddDisableSelective)
-                    .add(ddDefault))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        validationStrategyPanel.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(cachingStrategyPanel, gridBagConstraints);
 
         validationStrategyLabel.setText(bundle1.getString("LBL_ValidationStrategy")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(validationStrategyLabel, gridBagConstraints);
+
+        validationStrategyPanel.setOpaque(false);
+        validationStrategyPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         buttonGroup3.add(ddAuto);
         ddAuto.setSelected(true);
         ddAuto.setText(bundle1.getString("LBL_Auto")); // NOI18N
         ddAuto.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        validationStrategyPanel.add(ddAuto);
 
         buttonGroup3.add(ddCallBack);
         ddCallBack.setText(bundle1.getString("LBL_CallBack")); // NOI18N
         ddCallBack.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        validationStrategyPanel.add(ddCallBack);
 
         buttonGroup3.add(ddNoValidation);
         ddNoValidation.setText(bundle1.getString("LBL_None")); // NOI18N
         ddNoValidation.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        validationStrategyPanel.add(ddNoValidation);
 
-        org.jdesktop.layout.GroupLayout validationStrategyPanelLayout = new org.jdesktop.layout.GroupLayout(validationStrategyPanel);
-        validationStrategyPanel.setLayout(validationStrategyPanelLayout);
-        validationStrategyPanelLayout.setHorizontalGroup(
-            validationStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(validationStrategyPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(validationStrategyLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddAuto)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddCallBack)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ddNoValidation)
-                .addContainerGap(493, Short.MAX_VALUE))
-        );
-        validationStrategyPanelLayout.setVerticalGroup(
-            validationStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(validationStrategyPanelLayout.createSequentialGroup()
-                .add(validationStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ddAuto, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(ddCallBack)
-                    .add(ddNoValidation)
-                    .add(validationStrategyLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, providerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, includeAllPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tableGenerationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(entityClassesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, cachingStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, validationStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(providerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tableGenerationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(validationStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cachingStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(includeAllPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(entityClassesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        add(validationStrategyPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     
@@ -1097,21 +1021,16 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private javax.swing.JList entityList;
     private javax.swing.JScrollPane entityScrollPane;
     private javax.swing.JCheckBox includeAllEntities;
-    private javax.swing.JPanel includeAllPanel;
     private javax.swing.JLabel includeEntitiesLabel;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JComboBox jdbcComboBox;
     private javax.swing.JLabel jdbcLabel;
     private javax.swing.JCheckBox jtaCheckBox;
     private javax.swing.JComboBox libraryComboBox;
     private javax.swing.JLabel libraryLabel;
     private javax.swing.JLabel nameLabel;
-    private javax.swing.JPanel namePanel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JComboBox providerCombo;
-    private javax.swing.JPanel providerDataSourcePanel;
-    private javax.swing.JPanel providerJdbcPanel;
-    private javax.swing.JPanel providerPanel;
+    private javax.swing.JLabel providerLabel;
     private javax.swing.JButton removeClassButton;
     private javax.swing.JLabel tableGenerationLabel;
     private javax.swing.JPanel tableGenerationPanel;

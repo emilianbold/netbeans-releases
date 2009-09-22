@@ -115,9 +115,9 @@ Microsystems, Inc. All Rights Reserved.
             <ant target="unzip-cluster"/>                           
         </for-each>
 
-        <exec executable="sh" failonerror="no" outputproperty="size">
+        <exec executable="sh" failonerror="no">
             <arg value="-c"/>
-            <arg value="cd ${basedir}/netBeans/${module.name}/build/netbeans/javafx* ; rm -rf META-INF"/>
+            <arg value="cd ${basedir}/netBeans/${module.name}/build/netbeans ; rm -rf META-INF"/>
         </exec>        
 
     </target>
