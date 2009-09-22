@@ -74,9 +74,12 @@ public class AddTestInstanceAction extends AbstractAction implements Runnable {
     }
 
     public void run() {
-        // XXX probably needs to be adjusted for Mac OS X or other JDK distributions?
-        // (could use JavaPlatformManager.default.defaultPlatform.findTool("javaws") if could depend on java.platform)
-        File bindir = new File(new File(System.getProperty("java.home")).getParentFile(), "bin");
+        // XXX could use JavaPlatformManager.default.defaultPlatform.findTool("javaws") if could depend on java.platform
+        File javaHome = new File(System.getProperty("java.home"));
+        File bindir = new File(javaHome.getParentFile(), "bin");
+        if (!bindir.isDirectory()) { // #171884
+            bindir = new File(javaHome, "bin");
+        }
         File javaws = new File(bindir, "javaws.exe");
         if (!javaws.isFile()) {
             javaws = new File(bindir, "javaws");

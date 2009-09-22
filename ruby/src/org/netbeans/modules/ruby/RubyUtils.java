@@ -46,6 +46,8 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -835,4 +837,67 @@ public class RubyUtils {
         return true;
     }
 
+    // copied from org.netbeans.modules.parsing.impl.indexing.Util#getFileObject
+    static FileObject getFileObject(Document doc) {
+        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof FileObject) {
+            return (FileObject) sdp;
+        }
+        if (sdp instanceof DataObject) {
+            return ((DataObject) sdp).getPrimaryFile();
+        }
+        return null;
+    }
+
+    /**
+     * Performs a simplistic check for determining whether the given file represents
+     * a rails controller.
+     * 
+     * @param fo
+     * @return
+     */
+    static boolean isRailsController(FileObject fo) {
+        boolean endsWithController = fo.getName().endsWith("_controller");
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            // fallback 
+            return endsWithController;
+        }
+        FileObject controllerDir = owner.getProjectDirectory().getFileObject("app/controllers"); //NOI18N
+        if (controllerDir == null) {
+            return endsWithController;
+        }
+        return FileUtil.isParentOf(controllerDir, fo) && endsWithController;
+    }
+
+    /**
+     * @return true if the given file appears to belong to a Rails project.
+     */
+    static boolean isRailsProject(FileObject fo) {
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return false;
+        }
+        // just a simple check, can't depend on ruby.railsprojects here.
+        FileObject app = owner.getProjectDirectory().getFileObject("app");
+        FileObject config = owner.getProjectDirectory().getFileObject("config");
+        FileObject db = owner.getProjectDirectory().getFileObject("db");
+        return app != null && config != null && db != null;
+        
+        
+    }
+
+    /**
+     * Gets the "app" dir of the project the given file belongs to.
+     * @param fo
+     * @return
+     */
+    static FileObject getAppDir(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+
+        return project.getProjectDirectory().getFileObject("app/"); //NOI18N
+    }
 }

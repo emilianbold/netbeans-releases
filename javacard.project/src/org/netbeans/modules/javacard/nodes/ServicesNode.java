@@ -54,24 +54,21 @@ import org.openide.nodes.*;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-import java.awt.*;
 import java.util.List;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.cookies.InstanceCookie;
 
 /**
  *
  * @author Tim Boudreau
  */
+@ServicesTabNodeRegistration(name="javacard", displayName="#SERVICES_NODE_NAME",
+    iconResource="org/netbeans/modules/javacard/resources/root.png", position=152)
 public final class ServicesNode extends AbstractNode {
     public ServicesNode() {
         super (Children.create(new JCChildren(), true));
         setIconBaseWithExtension("org/netbeans/modules/javacard/resources/root.png"); //NOI18N
         setDisplayName (NbBundle.getMessage(ServicesNode.class, "SERVICES_NODE_NAME"));
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
     }
 
     private static class JCChildren extends JavacardPlatformChildren {

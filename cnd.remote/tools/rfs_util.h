@@ -45,7 +45,7 @@ enum {
 };
 
 #if TRACE
-FILE *trace_file = stderr;
+FILE *trace_file;
 void trace_startup(const char* env_var) {
     char *file_name = getenv(env_var);
     if (file_name) {        
@@ -58,6 +58,8 @@ void trace_startup(const char* env_var) {
             fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
             trace_file = stderr;
         }
+    } else {
+        trace_file = stderr;
     }
 }
 void trace_shutdown() {

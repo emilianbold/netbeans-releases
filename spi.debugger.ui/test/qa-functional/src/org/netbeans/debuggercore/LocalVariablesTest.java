@@ -449,15 +449,15 @@ public class LocalVariablesTest extends DebuggerTestCase {
             checkOutlineTableLine(outlineOp, count++, "Before call to 'println()'", null, null);
             checkOutlineTableLine(outlineOp, count++, "Arguments", null, null);
 
-            //if (version.equals("jdk16")) {
+            
                 checkOutlineTableLine(outlineOp, count++, "Return values history", null, null);
                 checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
                 checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
                 checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
-                checkOutlineTableLine(outlineOp, count++, "return format()", "String", null);
- 
+            if (version.equals("jdk16")) {
+                checkOutlineTableLine(outlineOp, count++, "return format()", "String", null); 
                 //checkOutlineTableLine(outlineOp, count++, "return println()", "String", null);
-            //}
+            }
             
             
         } catch (Throwable th) {

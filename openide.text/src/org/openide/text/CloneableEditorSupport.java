@@ -1851,6 +1851,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             setAlreadyModified(true);
             
             if (!notifyModified()) {
+                ERR.log(Level.INFO,"callNotifyModified notifyModified returns false this:" + getClass().getName());
                 setAlreadyModified(false);
                 revertingUndoOrReloading = true;
                 revertPreviousOrUpcomingUndo();
@@ -1908,11 +1909,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                        });
                 }
             }
-
+            
             locked = false;
+            ERR.log(Level.INFO, "Could not lock document", ex);
         } catch (IOException e) { // locking failed
             //#169695: Added exception log to investigate
-            ERR.log( Level.INFO, "Could not lock document", e);
+            ERR.log(Level.INFO, "Could not lock document", e);
             //#169695: END
             String message = null;
 
@@ -1931,6 +1933,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         if (!locked) {
             Toolkit.getDefaultToolkit().beep();
+            ERR.log(Level.INFO, "notifyModified returns false");
             return false;
         }
 

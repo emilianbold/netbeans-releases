@@ -42,9 +42,12 @@
 package org.netbeans.lib.editor.view;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -164,6 +167,23 @@ public class GapDocumentView extends GapBoxView {
     public GapDocumentView(Element elem) {
         super(elem, View.Y_AXIS);
         clearDamageRangeBounds();
+    }
+
+    public float getPreferredSpan(int axis) {
+        float span = super.getPreferredSpan(axis);
+        if (axis == View.Y_AXIS) {
+            // Add an extra span to avoid typing at the bottom of the screen
+            // by adding virtual height
+            Container c = getContainer();
+            if (c != null) {
+                JViewport viewport = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, c);
+                if (viewport != null) {
+                    int viewportHeight = viewport.getExtentSize().height;
+                    span += viewportHeight / 3;
+                }
+            }
+        }
+        return span;
     }
 
     GapBoxViewChildren createChildren() {

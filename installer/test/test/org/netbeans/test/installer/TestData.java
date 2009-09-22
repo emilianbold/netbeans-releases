@@ -60,6 +60,10 @@ public class TestData implements Serializable {
 
     private String sTestPackage = null;
 
+    private String m_sNetBeansInstallPath;
+    private String m_sApplicationServerInstallPath;
+    private String m_sTomcatInstallPath;
+
     public TestData(Logger logger) {
         assert logger != null;
         this.logger = logger;
@@ -162,11 +166,13 @@ public class TestData implements Serializable {
         }
     }
     
-    public File getUninstallerFile() {
+    public File getUninstallerFile( )
+    {
         return uninstallerFile;
     }
 
-    public void setUninstallerFile(File uninstallerFile) {
+    public void setUninstallerFile( File uninstallerFile )
+    {
         if (canRead(uninstallerFile)) {
             this.uninstallerFile = uninstallerFile;
         }
@@ -289,5 +295,58 @@ public class TestData implements Serializable {
   public String GetTestPackage( )
   {
     return sTestPackage;
+  }
+
+  public void CreateInstallPaths( )
+  {
+    // NetBeans
+    String sInstallBase = System.getProperty( "test.installer.custom.path" );
+    if( null == sInstallBase )
+    {
+      m_sNetBeansInstallPath = null;
+      m_sApplicationServerInstallPath = null;
+      m_sTomcatInstallPath = null;
+    }
+    else
+    {
+      m_sNetBeansInstallPath = sInstallBase + File.separator + Utils.NB_DIR_NAME;
+      m_sApplicationServerInstallPath = sInstallBase + File.separator + Utils.GF2_DIR_NAME;
+      m_sTomcatInstallPath = sInstallBase + File.separator + Utils.TOMCAT_DIR_NAME;
+    }
+  }
+
+  public String GetNetBeansInstallPath( )
+  {
+    return m_sNetBeansInstallPath;
+  }
+
+  public String GetApplicationServerInstallPath( )
+  {
+    return m_sApplicationServerInstallPath;
+  }
+
+  public String GetTomcatInstallPath( )
+  {
+    return m_sTomcatInstallPath;
+  }
+
+  public void SetDefaultPath( String s )
+  {
+    if( null == m_sNetBeansInstallPath )
+    {
+      m_sNetBeansInstallPath = s;
+      return;
+    }
+    if( null == m_sApplicationServerInstallPath )
+    {
+      m_sApplicationServerInstallPath = s;
+      return;
+    }
+    if( null == m_sTomcatInstallPath )
+    {
+      m_sTomcatInstallPath = s;
+      return;
+    }
+    return;
   }
 }

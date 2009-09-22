@@ -60,6 +60,7 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
     private static final long serialVersionUID = 1L;
     private static final String WEB_FRAGMENT_XML = "web-fragment.xml";
     private static final String META_INF = "META-INF";
+    private FileObject targetFolder;
 
     public WebFragmentXmlVisualPanel1() {
         initComponents();
@@ -69,28 +70,21 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
         // initialize visual components
         fileNameText.setText(WEB_FRAGMENT_XML);
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject srcRoot = Utils.getSourceRoot(project);
         try {
-            if (wm != null) {
-                FileObject metaDir = Utils.createDirs(wm.getDocumentBase(), new String[] {META_INF});
-                locationText.setText(FileUtil.getFileDisplayName(metaDir));
+            if (srcRoot != null) {
+                targetFolder = srcRoot;
+                locationText.setText(FileUtil.getFileDisplayName(targetFolder)+File.separator+META_INF);
             }
-            else {
-                FileObject srcFolder = Utils.getSourceRoot(project);
-                assert srcFolder != null;
-                FileObject metaDir = Utils.createDirs(project.getProjectDirectory(), new String[] {srcFolder.getName(), META_INF}); // NOI18N
-                locationText.setText(FileUtil.getFileDisplayName(metaDir));
-            }
-        }
-        catch (IOException e) {
-            Logger.global.log(Level.WARNING, "Creation of META-INF failed", e);
-            locationText.setText(FileUtil.getFileDisplayName(wm != null ? wm.getWebInf() : project.getProjectDirectory()));
+        } catch(NullPointerException npe) {
+            locationText.setText("");
+            Logger.global.log(Level.WARNING, NbBundle.getMessage(WebFragmentXmlVisualPanel1.class, "NO_SOURCES_FOUND"), npe);
         }
         refreshLocation();
     }
 
     FileObject getSelectedLocation() {
-        return FileUtil.toFileObject(new File(locationText.getText()));
+        return targetFolder;
     }
 
     File getCreatedFile() {
@@ -103,9 +97,9 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
     }
 
     private void refreshLocation() {
-        FileObject fileObject = getSelectedLocation();
-        if (fileObject != null) {
-            createdFileText.setText(FileUtil.getFileDisplayName(fileObject) + File.separator + WEB_FRAGMENT_XML);
+        String location = locationText.getText();
+        if (location != null && !"".equals(location)) {
+            createdFileText.setText(location + File.separator + WEB_FRAGMENT_XML);
         }
         firePropertyChange("", null, null);
     }

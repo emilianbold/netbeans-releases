@@ -177,7 +177,6 @@ public class LocalHistoryFileView implements VersioningListener {
             this.toSelect = toSelect;
         }
         public void run() {                        
-            Node oldExploredContext = getExplorerManager().getExploredContext();
             Node root = LocalHistoryRootNode.createRootNode(files);
             
             Node[] oldSelection = getExplorerManager().getSelectedNodes();            
@@ -196,12 +195,10 @@ public class LocalHistoryFileView implements VersioningListener {
                     if(newSelection.length > 0) {
                         setNodes(root, newSelection);
                     } else {
-                        if(oldExploredContext != null) {
-                            Node[] newExploredContext = getEqualNodes(root, new Node[] { oldExploredContext });                           
-                            if(newExploredContext.length > 0) {
-                                selectFirstNeighborNode(root, newExploredContext[0], oldSelection[0]);                                    
-                            }                                
-                        }                       
+                        Node[] newExploredContext = getEqualNodes(root, new Node[] { oldSelection[0].getParentNode() });
+                        if(newExploredContext.length > 0) {
+                            selectFirstNeighborNode(root, newExploredContext[0], oldSelection[0]);
+                        }
                     }
                 } else {
                     selectFirstNode(root);
@@ -219,7 +216,10 @@ public class LocalHistoryFileView implements VersioningListener {
                 Node node = findEqualInChildren(root, on);
                 if(node != null) {
                     ret.add(node);                                
-                }                    
+                }
+                if(root.getName().equals(on.getName())) {
+                    ret.add(root);
+                }
             }            
             return ret.toArray(new Node[ret.size()]);                            
         }                   
@@ -252,14 +252,14 @@ public class LocalHistoryFileView implements VersioningListener {
             Node[] children = context.getChildren().getNodes();
             if(children.length > 0 && children[0] instanceof Comparable) {
                 Node[] newSelection = new Node[] { children[0] } ;
-                for(int i = 1; i < children.length; i++) {                                            
+                for(int i = 1; i < children.length; i++) {
                     Comparable c = (Comparable) children[i];
                     if( c.compareTo(oldSelection) < 0 ) {
                        newSelection[0] = children[i]; 
                     }                                            
-                }    
+                }
                 setNodes(root, newSelection);
-                tablePanel.getExplorerManager().setExploredContext(context);                                
+                tablePanel.getExplorerManager().setExploredContext(context);
             }        
         }   
         

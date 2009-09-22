@@ -123,7 +123,7 @@ public class StartTask extends BasicTask<OperationState> {
                 RequestProcessor.getDefault().post(new Runnable() {
 
                     public void run() {
-                        GetPropertyCommand gpc = new GetPropertyCommand("*.enable-comet-support");
+                        GetPropertyCommand gpc = new GetPropertyCommand("*.comet-support-enabled");
                         Future<OperationState> result = support.execute(gpc);
                                 //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
                         try {
@@ -204,6 +204,18 @@ public class StartTask extends BasicTask<OperationState> {
             if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
                 db.start();
             }
+            // this may be an autheticated server... so we will say it is started.
+            // other operations will fail if the process on the port is not a
+            // GF v3 server.
+            if (CommonServerSupport.isRunning(host,port)) {
+                OperationState result = OperationState.COMPLETED;
+                if (GlassfishModule.PROFILE_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
+                    result = OperationState.FAILED;
+                }
+                return fireOperationStateChanged(result,
+                        "MSG_START_SERVER_OCCUPIED_PORT", instanceName); //NOI18N
+            }
+
             serverProcess = createProcess();
         } catch (NumberFormatException nfe) {
             Logger.getLogger("glassfish").log(Level.INFO, ip.get(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
@@ -247,7 +259,7 @@ public class StartTask extends BasicTask<OperationState> {
                 Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live."); // NOI18N
                 OperationState state = OperationState.COMPLETED;
                 String messageKey = "MSG_SERVER_STARTED"; // NOI18N
-                if (!support.isReady(true)) {
+                if (!support.isReady(true,30,TimeUnit.SECONDS)) {
                     state = OperationState.FAILED;
                     messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                 }

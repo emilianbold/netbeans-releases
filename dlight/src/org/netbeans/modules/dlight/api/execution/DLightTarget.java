@@ -64,7 +64,6 @@ public abstract class DLightTarget {
     private final Info info;
     private final DLightTargetExecutionService<? extends DLightTarget> executionService;
 
-
     static {
         DLightTargetAccessor.setDefault(new DLightTargetAccessorImpl());
     }
@@ -122,7 +121,7 @@ public abstract class DLightTarget {
         synchronized (this) {
             ll = listeners.toArray(new DLightTargetListener[0]);
         }
-        
+
         final CountDownLatch doneFlag = new CountDownLatch(ll.length);
 
         // Will do notification in parallel, but wait until all listeners
@@ -147,7 +146,7 @@ public abstract class DLightTarget {
 
     }
 
-    protected final String putToInfo(String name, String value){
+    protected final String putToInfo(String name, String value) {
         return info.put(name, value);
     }
 
@@ -222,7 +221,7 @@ public abstract class DLightTarget {
          * @param executionEnvProvider  execution enviroment provider
          * @return return I/O tab or <code>null</code> which will be used for the inout/output
          */
-        public InputOutput  start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
+        public InputOutput start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
 
         /**
          * Terminate target
@@ -264,23 +263,20 @@ public abstract class DLightTarget {
         }
     }
 
-    public final class Info{
+    public static final class Info {
+
         private Map<String, String> map;
 
-        Info(){
+        Info() {
             map = new ConcurrentHashMap<String, String>();
         }
 
-        public Map<String, String> getInfo(){
+        public Map<String, String> getInfo() {
             return map;
         }
 
-        String put(String name, String value){
+        String put(String name, String value) {
             return map.put(name, value);
         }
-
-
-
-
     }
 }
