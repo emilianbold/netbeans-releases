@@ -267,7 +267,7 @@ public class OutputLogger {
         });
     }
 
-    public Action getOpenOuptutAction() {
+    public Action getOpenOutputAction() {
         if(action == null) {
             action = new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
