@@ -35,6 +35,7 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,12 +102,13 @@ public class NetworkAccess {
                         listener.notifyException (ix);
                     } catch (ExecutionException ex) {
                         listener.notifyException (ex);
+                    } catch (CancellationException ex) {
+                        listener.accessCanceled ();
                     } catch(TimeoutException tx) {
                         IOException io = new IOException(NbBundle.getMessage(NetworkAccess.class, "NetworkAccess_Timeout", url));
                         io.initCause(tx);
                         listener.notifyException (io);
                     }
-
                 }
             });
         }
@@ -115,6 +117,11 @@ public class NetworkAccess {
             assert rpTask != null : "RequestProcessor.Task must be initialized.";
             rpTask.waitFinished ();
         }
+        public boolean isFinished () {
+            assert rpTask != null : "RequestProcessor.Task must be initialized.";
+            return rpTask.isFinished ();
+        }
+
         
         private SizedConnection createCallableNetwork (final URL url, final int timeout) {
             return new SizedConnection () {
