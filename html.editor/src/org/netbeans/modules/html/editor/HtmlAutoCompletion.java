@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.html.editor;
 
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.css.formatting.api.LexUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.api.Utils;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -64,6 +68,9 @@ public class HtmlAutoCompletion {
     private static DocumentInsertIgnore insertIgnore;
 
     /** Hook for before char inserted actions
+     *
+     * <b>Runs under document atomic lock!!!</b>
+     * <b>Always runs in AWT.</b>
      *
      * @return false if the char should be inserted, true otherwise
      */
@@ -91,6 +98,10 @@ public class HtmlAutoCompletion {
      * completion ()[]'"{} and other conditions and optionally performs
      * changes to the doc and or caret (complets braces, moves caret,
      * etc.)
+     *
+     * <b>Does NOT run under document atomic lock.</b>
+     * <b>Always runs in AWT.</b>
+     *
      * @param doc the document where the change occurred
      * @param dotPos position of the character insertion
      * @param caret caret
@@ -111,7 +122,84 @@ public class HtmlAutoCompletion {
             handleEL(doc, dotPos, caret);
         } else if (ch == '/') {
             handleEmptyTagCloseSymbol(doc, dotPos, caret);
+        } else if (ch == '>') {
+            handleTagClosingSymbol(doc, dotPos, ch);
         }
+    }
+
+    private static void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, final char lastChar)
+            throws BadLocationException {
+
+        //we must not access the indent lock under the document lock!
+        final boolean isHtmlContext[] = new boolean[1];
+        doc.render(new Runnable() {
+
+            public void run() {
+                TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(doc);
+                for (final LanguagePath languagePath : tokenHierarchy.languagePaths()) {
+                    if (languagePath.innerLanguage() == HTMLTokenId.language()) {
+                        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
+                        if (ts == null) {
+                            return;
+                        }
+                        ts.move(dotPos);
+                        boolean found = false;
+                        while (ts.movePrevious()) {
+                            if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                                found = true;
+                                break;
+                            }
+                            if (ts.token().id() != HTMLTokenId.ARGUMENT &&
+                                    ts.token().id() != HTMLTokenId.OPERATOR &&
+                                    ts.token().id() != HTMLTokenId.VALUE &&
+                                    ts.token().id() != HTMLTokenId.VALUE_CSS &&
+                                    ts.token().id() != HTMLTokenId.VALUE_JAVASCRIPT &&
+                                    ts.token().id() != HTMLTokenId.WS &&
+                                    ts.token().id() != HTMLTokenId.TAG_CLOSE &&
+                                    ts.token().id() != HTMLTokenId.TAG_OPEN) {
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            return;
+                        }
+                        try {
+                            int lineStart = Utilities.getRowFirstNonWhite((BaseDocument) doc, ts.offset());
+                            if (lineStart != ts.offset()) {
+                                return;
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+
+                        isHtmlContext[0] = true;
+                        break;
+                    }
+                }
+            }
+        });
+
+        if (isHtmlContext[0]) {
+            final Indent indent = Indent.get(doc);
+            indent.lock();
+            try {
+                doc.runAtomic(new Runnable() {
+
+                    public void run() {
+                        try {
+                            int startOffset = Utilities.getRowStart(doc, dotPos);
+                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+                            indent.reindent(startOffset, endOffset);
+                        } catch (BadLocationException ex) {
+                            //ignore
+                        }
+                    }
+                });
+            } finally {
+                indent.unlock();
+            }
+        }
+
     }
 
     private static void handleEmptyTagCloseSymbol(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
@@ -119,16 +207,16 @@ public class HtmlAutoCompletion {
         doc.runAtomic(new Runnable() {
 
             public void run() {
-                TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+                TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
                 if (ts == null) {
                     return; //no html ts at the caret position
                 }
-                int diff = ts.move(dotPos);
+                ts.move(dotPos);
                 if (!ts.moveNext()) {
                     return; //no token
                 }
 
-                Token token = ts.token();
+                Token<HTMLTokenId> token = ts.token();
                 if (token.id() == HTMLTokenId.ERROR) {
                     if (ts.movePrevious() && (ts.token().id() == HTMLTokenId.TAG_OPEN ||
                             ts.token().id() == HTMLTokenId.WS ||
@@ -151,65 +239,72 @@ public class HtmlAutoCompletion {
         }
     }
 
-    private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
+    private static void handleQuotationMark(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
         //test whether the user typed an ending quotation in the attribute value
-        doc.readLock();
-        try {
-            TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
-            if (ts == null) {
-                return; //no html ts at the caret position
-            }
-            int diff = ts.move(dotPos);
-            if (!ts.moveNext()) {
-                return; //no token
-            }
+        doc.runAtomic(new Runnable() {
 
-            Token token = ts.token();
-            if (token.id() == HTMLTokenId.VALUE) {
-                //test if the user inserted the qutation in an attribute value and before
-                //an already existing end quotation
-                //the text looks following in such a situation:
-                //
-                //  atrname="abcd|"", where offset of the | == dotPos
-                if ("\"\"".equals(doc.getText(dotPos, 2))) {
-                    doc.remove(dotPos, 1);
-                    caret.setDot(dotPos + 1);
-                } else if (diff == 0 && token.text().charAt(0) == '"') {
-                    //user typed quation just after equal sign after tag attribute name => complete the second quote
-                    doc.insertString(dotPos, "\"", null);
-                    caret.setDot(dotPos + 1);
+            public void run() {
+                TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
+                if (ts == null) {
+                    return; //no html ts at the caret position
+                }
+                int diff = ts.move(dotPos);
+                if (!ts.moveNext()) {
+                    return; //no token
+                }
+
+                Token<HTMLTokenId> token = ts.token();
+                if (token.id() == HTMLTokenId.VALUE) {
+                    //test if the user inserted the qutation in an attribute value and before
+                    //an already existing end quotation
+                    //the text looks following in such a situation:
+                    //
+                    //  atrname="abcd|"", where offset of the | == dotPos
+                    try {
+                        if ("\"\"".equals(doc.getText(dotPos, 2))) {
+                            doc.remove(dotPos, 1);
+                            caret.setDot(dotPos + 1);
+                        } else if (diff == 0 && token.text().charAt(0) == '"') {
+                            //user typed quation just after equal sign after tag attribute name => complete the second quote
+                            doc.insertString(dotPos, "\"", null);
+                            caret.setDot(dotPos + 1);
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
-        } finally {
-            doc.readUnlock();
-        }
-
+        });
     }
 
-    private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
-        doc.readLock();
-        try {
-            TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
-            if (ts == null) {
-                return; //no html ts at the caret position
-            }
-            ts.move(dotPos);
-            if (!ts.moveNext()) {
-                return; //no token
-            }
+    private static void completeQuotes(final BaseDocument doc, final int dotPos, final Caret caret) {
+        doc.runAtomic(new Runnable() {
 
-            Token token = ts.token();
+            public void run() {
+                TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
+                if (ts == null) {
+                    return; //no html ts at the caret position
+                }
+                ts.move(dotPos);
+                if (!ts.moveNext()) {
+                    return; //no token
+                }
 
-            int dotPosAfterTypedChar = dotPos + 1;
-            if (token != null &&
-                    token.id() == HTMLTokenId.OPERATOR) {
-                doc.insertString(dotPosAfterTypedChar, "\"\"", null);
-                caret.setDot(dotPosAfterTypedChar + 1);
+                Token<HTMLTokenId> token = ts.token();
+
+                int dotPosAfterTypedChar = dotPos + 1;
+                if (token != null && token.id() == HTMLTokenId.OPERATOR) {
+                    try {
+                        doc.insertString(dotPosAfterTypedChar, "\"\"", null);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    caret.setDot(dotPosAfterTypedChar + 1);
+                }
+
             }
+        });
 
-        } finally {
-            doc.readUnlock();
-        }
 
     }
 

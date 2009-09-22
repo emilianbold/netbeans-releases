@@ -77,41 +77,6 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
     @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         HtmlAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
-        if ('>' != ch) {
-            return false;
-        }
-        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
-        if (ts == null) {
-            return false;
-        }
-        ts.move(caretOffset);
-        boolean found = false;
-        while (ts.movePrevious()) {
-            if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-                found = true;
-                break;
-            }
-            if (ts.token().id() != HTMLTokenId.ARGUMENT &&
-                ts.token().id() != HTMLTokenId.OPERATOR &&
-                ts.token().id() != HTMLTokenId.VALUE &&
-                ts.token().id() != HTMLTokenId.VALUE_CSS &&
-                ts.token().id() != HTMLTokenId.VALUE_JAVASCRIPT &&
-                ts.token().id() != HTMLTokenId.WS &&
-                ts.token().id() != HTMLTokenId.TAG_CLOSE &&
-                ts.token().id() != HTMLTokenId.TAG_OPEN) {
-                break;
-            }
-        }
-        if (!found) {
-            return false;
-        }
-        int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, ts.offset());
-        if (lineStart != ts.offset()) {
-            return false;
-        }
-        final Indent indent = Indent.get(doc);
-        indent.reindent(lineStart, caretOffset); //caled under Indent lock && atomic lock
-
         return false;
     }
 
