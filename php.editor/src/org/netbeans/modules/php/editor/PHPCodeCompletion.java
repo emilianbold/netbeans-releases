@@ -1014,14 +1014,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         @Override
         public void visit(ForEachStatement forEachStatement) {
-
-            if (forEachStatement.getKey() instanceof Variable) {
-                Variable var = (Variable) forEachStatement.getKey();
-                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+            Expression key = forEachStatement.getKey();
+            while(key instanceof Reference) {
+                key = ((Reference)key).getExpression();
             }
 
-            if (forEachStatement.getValue() instanceof Variable) {
-                Variable var = (Variable) forEachStatement.getValue();
+            if (key instanceof Variable) {
+                Variable var = (Variable) key;
+                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+            }
+            Expression value = forEachStatement.getValue();
+            while(value instanceof Reference) {
+                value = ((Reference)value).getExpression();
+            }
+
+            if (value instanceof Variable) {
+                Variable var = (Variable) value;
                 getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
             }
             super.visit(forEachStatement);
