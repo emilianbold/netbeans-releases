@@ -100,10 +100,16 @@ public class ClassPathTest extends NbTestCase {
         f2.mkdirs();
         File f3 = new File(f2, "Main.java");
         f3.createNewFile();
+        File f4 = new File(f2, ".dotname");
+        f4.createNewFile();
+        File f5 = new File(f2, ".dotname.dotext");
+        f5.createNewFile();
 
         FileObject cpRoot = FileUtil.toFileObject(f);
         FileObject cpItem = FileUtil.toFileObject(f2);
         FileObject clazz = FileUtil.toFileObject(f3);
+        FileObject dotname = FileUtil.toFileObject(f4);
+        FileObject dotnameDotext = FileUtil.toFileObject(f5);
         ClassPath cp = ClassPathSupport.createClassPath(new FileObject[]{cpRoot});
         String pkg = cp.getResourceName(cpItem);
         assertEquals("org/netbeans/test", pkg);
@@ -134,6 +140,12 @@ public class ClassPathTest extends NbTestCase {
         
         pkg = cp.getResourceName(clazz, '@', false);
         assertEquals("org@netbeans@test@Main", pkg);
+
+        //bug #152427
+        pkg = cp.getResourceName(dotname, '/', false);
+        assertEquals("org/netbeans/test/.dotname", pkg);
+        pkg = cp.getResourceName(dotnameDotext, '/', false);
+        assertEquals("org/netbeans/test/.dotname", pkg);
     }
     
     /**

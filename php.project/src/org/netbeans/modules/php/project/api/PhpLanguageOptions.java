@@ -39,14 +39,18 @@
 
 package org.netbeans.modules.php.project.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.php.project.PhpLanguageOptionsAccessor;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Helper class to get PHP language properties like ASP tags supported etc.
  * @author Tomas Mysik
- * @since 2.3
+ * @since 2.18
  */
 public final class PhpLanguageOptions {
     /**
@@ -58,7 +62,67 @@ public final class PhpLanguageOptions {
      */
     public static final boolean ASP_TAGS_ENABLED = false;
 
+    /**
+     * Property which is fired when {@link Properties#areShortTagsEnabled()} changes.
+     */
+    public static final String PROP_SHORT_TAGS = PhpLanguageOptions.class.getName() + ".shortTags";
+    /**
+     * Property which is fired when {@link Properties#areAspTagsEnabled()} changes.
+     */
+    public static final String PROP_ASP_TAGS = PhpLanguageOptions.class.getName() + ".aspTags";
+    /**
+     * Property which is fired when {@link Properties#getPhpVersion()} changes.
+     */
+    public static final String PROP_PHP_VERSION = PhpLanguageOptions.class.getName() + ".phpVersion";
+
+    /**
+     * PHP version, currently used only for hints.
+     * @see Properties#getPhpVersion()
+     * @see #getProperties(FileObject)
+     */
+    public static enum PhpVersion {
+        PHP_5(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_5")),
+        PHP_53(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_53"));
+
+        private final String displayName;
+
+        PhpVersion(String displayName) {
+            assert displayName != null;
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+    };
+
+    static final PhpLanguageOptions INSTANCE = new PhpLanguageOptions();
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    static {
+        PhpLanguageOptionsAccessor.setDefault(new PhpLanguageOptionsAccessor() {
+
+            @Override
+            public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+                INSTANCE.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        });
+    }
+
     private PhpLanguageOptions() {
+    }
+
+    /**
+     * Get the default instance of {@link PhpLanguageOptions} class.
+     * @return the default instance of {@link PhpLanguageOptions} class.
+     */
+    public static PhpLanguageOptions getDefault() {
+        return INSTANCE;
     }
 
     /**
@@ -68,19 +132,44 @@ public final class PhpLanguageOptions {
      * @return {@link Properties properties}.
      * @see #SHORT_TAGS_ENABLED
      * @see #ASP_TAGS_ENABLED
+     * @see PhpVersion
      */
-    public static Properties getProperties(FileObject file) {
+    public Properties getProperties(FileObject file) {
         boolean shortTagsEnabled = SHORT_TAGS_ENABLED;
         boolean aspTagsEnabled = ASP_TAGS_ENABLED;
+        PhpVersion phpVersion = PhpVersion.PHP_5;
 
         if (file != null) {
             PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(file);
             if (phpProject != null) {
                 shortTagsEnabled = ProjectPropertiesSupport.areShortTagsEnabled(phpProject);
                 aspTagsEnabled = ProjectPropertiesSupport.areAspTagsEnabled(phpProject);
+                phpVersion = ProjectPropertiesSupport.getPhpVersion(phpProject);
             }
         }
-        return new Properties(shortTagsEnabled, aspTagsEnabled);
+        return new Properties(shortTagsEnabled, aspTagsEnabled, phpVersion);
+    }
+
+    /**
+     * Add listener that is notified when any "important" PHP language property changes.
+     * @param listener a listener to add
+     * @see #removePropertyChangeListener(PropertyChangeListener)
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove listener.
+     * @param listener a listener to remove
+     * @see #addPropertyChangeListener(PropertyChangeListener)
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
     /**
@@ -89,10 +178,12 @@ public final class PhpLanguageOptions {
     public static final class Properties {
         private final boolean shortTagsEnabled;
         private final boolean aspTagsEnabled;
+        private final PhpVersion phpVersion;
 
-        Properties(boolean shorTagsEnabled, boolean aspTagsEnabled) {
+        Properties(boolean shorTagsEnabled, boolean aspTagsEnabled, PhpVersion phpVersion) {
             this.shortTagsEnabled = shorTagsEnabled;
             this.aspTagsEnabled = aspTagsEnabled;
+            this.phpVersion = phpVersion;
         }
 
         /**
@@ -115,6 +206,16 @@ public final class PhpLanguageOptions {
             return aspTagsEnabled;
         }
 
+        /**
+         * Get the {@link PhpVersion PHP version} of the project.
+         * If not specified, {@link PhpVersion#PHP_5 PHP version 5.1/5.2} is returned.
+         * @return the {@link PhpVersion PHP version} of the project
+         * @since 2.16
+         */
+        public PhpVersion getPhpVersion() {
+            return phpVersion;
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(100);
@@ -123,6 +224,8 @@ public final class PhpLanguageOptions {
             sb.append(shortTagsEnabled);
             sb.append(", aspTagsEnabled: ");
             sb.append(aspTagsEnabled);
+            sb.append(", PHP version: ");
+            sb.append(phpVersion);
             sb.append("]");
             return sb.toString();
         }

@@ -347,16 +347,13 @@ class WebActionProvider implements ActionProvider {
                                 p.setProperty("run.class", clazz); // NOI18N
                                 targetNames = new String[]{"run-main"};
                             } else {
-                                // run servlet
-                                // PENDING - what about servlets with main method? servlet should take precedence
-                                String executionUri = (String) javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
-                                if (executionUri != null) {
-                                    p.setProperty("client.urlPart", executionUri); //NOI18N
-                                } else {
+                                    // run servlet
+                                    // PENDING - what about servlets with main method? servlet should take precedence
                                     WebModule webModule = WebModule.getWebModule(javaFile);
                                     String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule, javaFile);
                                     if (urlPatterns != null && urlPatterns.length > 0) {
-                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns, null, true);
+                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,
+                                                (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI), false);
                                         DialogDescriptor desc = new DialogDescriptor(uriPanel,
                                                 NbBundle.getMessage(WebActionProvider.class, "TTL_setServletExecutionUri"));
                                         Object res = DialogDisplayer.getDefault().notify(desc);
@@ -377,7 +374,6 @@ class WebActionProvider implements ActionProvider {
                                         DialogDisplayer.getDefault().notify(desc);
                                         return null;
                                     }
-                                }
                             }
                         }
                     }
@@ -494,16 +490,13 @@ class WebActionProvider implements ActionProvider {
                                 p.setProperty("debug.class", clazz); // NOI18N
                                 targetNames = new String[]{"debug-single-main"};
                             } else {
-                                // run servlet
-                                // PENDING - what about servlets with main method? servlet should take precedence
-                                String executionUri = (String) javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
-                                if (executionUri != null) {
-                                    p.setProperty("client.urlPart", executionUri); //NOI18N
-                                } else {
+                                    // run servlet
+                                    // PENDING - what about servlets with main method? servlet should take precedence
                                     WebModule webModule = WebModule.getWebModule(javaFile);
                                     String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule, javaFile);
                                     if (urlPatterns != null && urlPatterns.length > 0) {
-                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns, null, true);
+                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,
+                                                (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI), false);
                                         DialogDescriptor desc = new DialogDescriptor(uriPanel,
                                                 NbBundle.getMessage(WebActionProvider.class, "TTL_setServletExecutionUri"));
                                         Object res = DialogDisplayer.getDefault().notify(desc);
@@ -534,7 +527,6 @@ class WebActionProvider implements ActionProvider {
                                             return null;
                                         }
                                     }
-                                }
                             }
                         }
                     }

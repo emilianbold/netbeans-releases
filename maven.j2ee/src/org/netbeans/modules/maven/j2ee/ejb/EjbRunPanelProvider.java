@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.j2ee.ejb;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
@@ -53,11 +54,8 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint 
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=302)
 public class EjbRunPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of EjbRunPanelProvider */
-    public EjbRunPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -66,8 +64,7 @@ public class EjbRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
             return ProjectCustomizer.Category.create(
                     ModelHandle.PANEL_RUN,
                     NbBundle.getMessage(EjbRunPanelProvider.class, "PNL_Run"),
-                    null,
-                    (ProjectCustomizer.Category[])null);
+                    null);
         }
         return null;
     }
@@ -76,11 +73,17 @@ public class EjbRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
         ModelHandle handle = context.lookup(ModelHandle.class);
         Project project = context.lookup(Project.class);
         final EjbRunCustomizerPanel panel =  new EjbRunCustomizerPanel(handle, project);
-        category.setOkButtonListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.applyChanges();
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    panel.applyChangesInAWT();
+                } else {
+                    panel.applyChanges();
+                }
             }
-        });
+        };
+        category.setOkButtonListener(listener);
+        category.setStoreListener(listener);
         return panel;
     }
     

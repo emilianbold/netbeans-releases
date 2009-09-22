@@ -53,6 +53,7 @@ import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Miscellaneous helper utils to detect Javadoc root folder, source root folder or
@@ -77,6 +78,7 @@ public class JavadocAndSourceRootDetection {
      * @return found Javadoc root or null if none found
      */
     public static FileObject findJavadocRoot(FileObject baseFolder) {
+        Parameters.notNull("baseFolder", baseFolder);
         if (!baseFolder.isFolder()) {
             throw new IllegalArgumentException("baseFolder must be folder - "+baseFolder); // NOI18N
         }
@@ -91,6 +93,7 @@ public class JavadocAndSourceRootDetection {
      * @return found package root of first Java file found or null if none found
      */
     public static FileObject findSourceRoot(FileObject fo) {
+        Parameters.notNull("fo", fo);
         if (!fo.isFolder()) {
             throw new IllegalArgumentException("fo must be folder - "+fo); // NOI18N
         }
@@ -160,9 +163,9 @@ public class JavadocAndSourceRootDetection {
         return null;
     }
 
-    private static final Pattern JAVA_FILE, PACKAGE_INFO;
+    static final Pattern JAVA_FILE, PACKAGE_INFO;
     static {
-        String whitespace = "(?:(?://[^\n]*\n)|(?:/\\*(?:[^*]|\\*[^/])*\\*/)|\\s)"; //NOI18N
+        String whitespace = "(?:(?://[^\n]*\n)|(?:/\\*.*?\\*/)|\\s)"; //NOI18N
         String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; //NOI18N
         String packageStatement = "package" + whitespace + "+(" + javaIdentifier + "(?:\\." + javaIdentifier + ")*)" + whitespace + "*;"; //NOI18N
         JAVA_FILE = Pattern.compile("(?ms)" + whitespace + "*" + packageStatement + ".*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N

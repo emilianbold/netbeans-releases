@@ -77,6 +77,8 @@ public abstract class KenaiImpl {
      */
     public abstract ProjectData getProject(String name) throws KenaiException;
 
+    public abstract Collection<UserData> getProjectMembers(String name) throws KenaiException;
+
     /**
      * Asks whether a person is authorized to perform an activity on a particular project.
      *
@@ -147,5 +149,7 @@ public abstract class KenaiImpl {
             String browse_url,
             String service
             ) throws KenaiException;
+
+    public abstract void joinProject(String projectName, String userName);
 
 }

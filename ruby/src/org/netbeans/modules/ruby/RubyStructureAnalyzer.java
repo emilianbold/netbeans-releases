@@ -48,7 +48,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,12 +71,10 @@ import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.ModuleNode;
 import org.jrubyparser.ast.Node;
-import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SClassNode;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.INameNode;
-import org.jruby.util.ByteList;
 import org.jrubyparser.SourcePosition;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -85,7 +82,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -155,7 +151,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
         for (AstElement e : elements) {
-            itemList.add(new RubyStructureItem(e, result));
+            if (!e.isHidden()) {
+                itemList.add(new RubyStructureItem(e, result));
+            }
         }
 
         return itemList;
@@ -294,25 +292,19 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                     boolean found = false;
 
-                    // commented out to fix #168745 - the field needs
-                    // to be added as a child to the class that contains it
-                    // even if there is an attribute_accessor for it.
-                    // (leaving this code here as i don't know what was the original
-                    // reason for excluding it - possibly something i can't think of now)
-                    /**
                     for (AstElement member : clz.getChildren()) {
                         if ((member.getKind() == ElementKind.ATTRIBUTE) &&
                                 member.getName().equals(fieldName)) {
                             found = true;
-
                             break;
                         }
                     }
-                    */
 
-                    if (!found) {
-                        clz.addChild(co);
+                    // hide from the navigator view if there was attr_accessor for this field
+                    if (found) {
+                        co.setHidden(true);
                     }
+                    clz.addChild(co);
                 }
 
                 names.clear();
@@ -757,7 +749,15 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 attributes.put((AstClassElement)parent, attrsInClass);
                             }
 
+                            // hide duplicates from navigator, e.g. in case when there are both
+                            // attr_reader and attr_writer for a field
+                            for (AstAttributeElement attr : attrsInClass) {
+                                if (attr.getName().equals(s.getName())) {
+                                    co.setHidden(true);
+                                }
+                            }
                             attrsInClass.add(co);
+
                         }
                         
                         if (parent != null) {
@@ -1168,8 +1168,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
             if ((nested != null) && (nested.size() > 0)) {
                 List<RubyStructureItem> children = new ArrayList<RubyStructureItem>(nested.size());
 
-                for (Element co : nested) {
-                    children.add(new RubyStructureItem((AstElement)co, result));
+                for (AstElement co : nested) {
+                    if (!co.isHidden()) {
+                        children.add(new RubyStructureItem(co, result));
+                    }
                 }
 
                 return children;
@@ -1269,6 +1271,14 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
 
         public ImageIcon getCustomIcon() {
+            if (kind == ElementKind.TEST) {
+                // see #138409 -- use the same icon for all kind of test/unit tests
+                Node astNode = node.getNode();
+                if (astNode instanceof INameNode && "test".equals(AstUtilities.getName(astNode))) {//NOI18N
+                    // there's no api for getting csl icons
+                    return ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/methodPublic.png", false);//NOI18N
+                }
+            }
             return null;
         }
 

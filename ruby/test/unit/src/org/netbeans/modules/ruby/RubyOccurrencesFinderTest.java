@@ -151,4 +151,16 @@ public class RubyOccurrencesFinderTest extends RubyTestBase {
         checkOccurrences("testfiles/global_vars.rb", "puts \"Second: #{$'^}\"", true);
     }
 
+    public void testInstVars() throws Exception {
+        checkOccurrences("testfiles/inst_vars.rb", "attr_accessor :tit^le", false);
+    }
+
+    public void testInstVars2() throws Exception {
+        checkOccurrences("testfiles/inst_vars.rb", "@ti^tle = init", false);
+    }
+
+    public void testInstVars3() throws Exception {
+        checkOccurrences("testfiles/inst_vars.rb", "puts self.t^itle", false);
+    }
+
 }

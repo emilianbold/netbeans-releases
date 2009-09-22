@@ -43,12 +43,13 @@ import java.util.Collections;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.openide.util.lookup.ServiceProvider;
 //import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Alexey Vladykin
  */
-//@ServiceProvider(service = DataStorageFactory.class)
+@ServiceProvider(service = DataStorageFactory.class)
 public class ThreadMapDataStorageFactory implements DataStorageFactory<ThreadMapDataStorage> {
 
     public Collection<DataStorageType> getStorageTypes() {

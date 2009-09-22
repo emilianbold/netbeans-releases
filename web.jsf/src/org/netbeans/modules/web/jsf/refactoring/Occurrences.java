@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -48,6 +49,9 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -56,6 +60,8 @@ import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -91,6 +97,14 @@ public class Occurrences {
             this.newValue = newValue;
             this.oldValue = oldValue;
             this.name = name;
+        }
+        
+        public OccurrenceItem(JSFConfigComponent component, String newValue, 
+                String oldValue, String name) 
+        {
+            this(null, component , newValue, oldValue , name );
+            this.config = component.getModel().getModelSource().getLookup().
+                lookup(FileObject.class);
         }
         
         public String getNewValue(){
@@ -173,6 +187,10 @@ public class Occurrences {
             super(config, bean, newValue, bean.getManagedBeanClass(), bean.getManagedBeanName());
         }
         
+        public ManagedBeanClassItem(ManagedBean bean, String newValue) {
+            super(bean, newValue, bean.getManagedBeanClass(), bean.getManagedBeanName());
+        }
+        
         protected String getXMLElementName(){
             return "managed-bean-class"; //NOI18N
         }
@@ -235,6 +253,10 @@ public class Occurrences {
     public static class ConverterClassItem extends OccurrenceItem {
         public ConverterClassItem(FileObject config, Converter converter, String newValue){
             super(config, converter, newValue, converter.getConverterClass(), converter.getConverterId());
+        }
+        
+        public ConverterClassItem(Converter converter, String newValue){
+            super(converter, newValue, converter.getConverterClass(), converter.getConverterId());
         }
         
         protected String getXMLElementName(){
@@ -301,6 +323,10 @@ public class Occurrences {
             super(config, converter, newValue, converter.getConverterForClass(), converter.getConverterId());
         }
         
+        public ConverterForClassItem(Converter converter, String newValue){
+            super(converter, newValue, converter.getConverterForClass(), converter.getConverterId());
+        }
+        
         protected String getXMLElementName(){
             return "converter-for-class"; //NOI18N
         }
@@ -360,15 +386,20 @@ public class Occurrences {
         }
     }
     
-    public static List <OccurrenceItem> getAllOccurrences(WebModule webModule, String oldName, String newName){
-        List result = new ArrayList();
+    public static List<OccurrenceItem> getAllOccurrences(WebModule webModule, 
+            final String oldName, final String newName)
+    {
+        final List<OccurrenceItem> result = new ArrayList<OccurrenceItem>();
         assert webModule != null;
         assert oldName != null;
         
         LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase() + ", " + oldName + ", " + newName + ")"); //NOI18N
         if (webModule != null){
             // find all jsf configuration files in the web module
-            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            /*
+             * Old access code to JSF model.  
+             * 
+             * FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
             
             if (configs != null){
                 for (FileObject config : configs) {
@@ -384,20 +415,67 @@ public class Occurrences {
                             result.add(new ManagedBeanClassItem(config, managedBean, newName));
                     }
                 }
+            }*/
+            /**
+             * @author ads
+             * Migrated code .
+             */
+            MetadataModel<JsfModel> model = JsfModelFactory.getModel( webModule );
+            if ( model == null ){
+                return result;
+            }
+            try {
+                model.runReadAction(new MetadataModelAction<JsfModel, Void>() {
+
+                    public Void run( JsfModel metadata ) throws Exception {
+                        /*
+                         *  Collect ONLY XML occurrences . Annotated elements
+                         *  are Java class elements. So they will be refactored
+                         *  as part of Java functionality.
+                         */
+                        List<Converter> converters = metadata.getElements(Converter.class);
+                        for ( Converter converter : converters) {
+                            if (oldName.equals(converter.getConverterClass())){
+                                result.add(new ConverterClassItem(converter, newName));
+                            }
+                            else if (oldName.equals(converter.getConverterForClass())){
+                                result.add(new ConverterForClassItem(converter, newName));
+                            }
+                        }
+                        List<ManagedBean> beans = metadata.getElements( ManagedBean.class);
+                        for (ManagedBean bean : beans) {
+                            if (oldName.equals(bean.getManagedBeanClass())){
+                                result.add(new ManagedBeanClassItem(bean, newName));
+                            }
+                        }
+                        return null;
+                    }
+                });
+            }
+            catch( MetadataModelException e ){
+                LOGGER.log( Level.WARNING , e.getMessage() , e );
+            }
+            catch( IOException e ){
+                LOGGER.log( Level.WARNING , e.getMessage() , e );
             }
         }
         return result;
     }
     
-    public static List <OccurrenceItem> getPackageOccurrences(WebModule webModule, String oldPackageName,
-            String newPackageName, boolean renameSubpackages){
-        List result = new ArrayList();
+    public static List <OccurrenceItem> getPackageOccurrences(WebModule webModule, 
+            final String oldPackageName,
+            final String newPackageName, final boolean renameSubpackages)
+    {
+        final List<OccurrenceItem> result = new ArrayList<OccurrenceItem>();
         assert webModule != null;
         assert oldPackageName != null;
         
         if (webModule != null){
             // find all jsf configuration files in the web module
-            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            /*
+             * Old access code to JSF model. 
+             * 
+             * FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
             
             if (configs != null){
                 for (FileObject config : configs) {
@@ -416,6 +494,60 @@ public class Occurrences {
                                     getNewFQCN(newPackageName, oldPackageName, managedBean.getManagedBeanClass())));
                     }
                 }
+            }*/
+            /**
+             * @author ads
+             */
+            MetadataModel<JsfModel> model = JsfModelFactory.getModel( webModule );
+            if ( model == null ){
+                return result;
+            }
+            try {
+                model.runReadAction(new MetadataModelAction<JsfModel, Void>() {
+
+                    public Void run( JsfModel metadata ) throws Exception {
+                        /*
+                         *  Collect ONLY XML occurrences . Annotated elements
+                         *  are Java class elements. So they will be refactored
+                         *  as part of Java functionality.
+                         */
+                        List<Converter> converters = metadata.getElements(Converter.class);
+                        for ( Converter converter : converters) {
+                            if (JSFRefactoringUtils.containsRenamingPackage(
+                                    converter.getConverterClass(), oldPackageName, 
+                                    renameSubpackages))
+                            {
+                                result.add(new ConverterClassItem(converter, 
+                                        getNewFQCN(newPackageName, oldPackageName, 
+                                                converter.getConverterClass())));
+                            }
+                            if (JSFRefactoringUtils.containsRenamingPackage(
+                                    converter.getConverterForClass(), oldPackageName, 
+                                    renameSubpackages))
+                            {
+                                result.add(new ConverterForClassItem(converter,
+                                        getNewFQCN(newPackageName, oldPackageName, 
+                                                converter.getConverterForClass())));
+                            }
+                        }
+                        List<ManagedBean> beans = metadata.getElements( ManagedBean.class);
+                        for (ManagedBean bean : beans) {
+                            if (JSFRefactoringUtils.containsRenamingPackage(
+                                    bean.getManagedBeanClass(), oldPackageName, 
+                                    renameSubpackages))
+                                result.add(new ManagedBeanClassItem(bean,
+                                        getNewFQCN(newPackageName, oldPackageName, 
+                                                bean.getManagedBeanClass())));
+                        }
+                        return null;
+                    }
+                });
+            }
+            catch( MetadataModelException e ){
+                LOGGER.log( Level.WARNING , e.getMessage() , e );
+            }
+            catch( IOException e ){
+                LOGGER.log( Level.WARNING , e.getMessage() , e );
             }
         }
         return result;

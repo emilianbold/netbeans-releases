@@ -75,19 +75,8 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFileHelper;
-    
-    private ProjectCustomizer.Category categories[];
-    private ProjectCustomizer.CategoryComponentProvider panelProvider;
-    
-    // Option indexes
-    private static final int OPTION_OK = 0;
-    private static final int OPTION_CANCEL = OPTION_OK + 1;
-    
-    // Option command names
-    private static final String COMMAND_OK = "OK";          // NOI18N
-    private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
 
-    public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-java-j2seproject/Customizer"; //NO18N
+    private static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-java-j2seproject/Customizer"; //NO18N
     
     private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>();
     

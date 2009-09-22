@@ -45,6 +45,10 @@ import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -288,14 +292,16 @@ public final class ProjectCustomizer {
 
     /**
      * Interface for creation of Customizer categories and their respective UI panels.
-     * Implementations are to be registered in System FileSystem via module layers. Used by the
-     * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer#createCustomizerDialog(String,Lookup,String,ActionListener,HelpCtx)}
-     * The panel/category created by the provider can get notified that the customizer got
-     * closed by setting an <code>ActionListener</code> to 
-     * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.Category#setOkButtonListener} .
+     * Used by {@link ProjectCustomizer#createCustomizerDialog(String,Lookup,String,ActionListener,HelpCtx)}.
+     * <p>The panel/category created by the provider can get notified that the customizer got
+     * closed by setting an <code>ActionListener</code> to
+     * {@link ProjectCustomizer.Category#setOkButtonListener}.
+     * <p>Implementations can be registered using {@link Registration}.
+     * Otherwise they can be manually registered in a tree structure in the system filesystem.
      * UI Component can be defined for category folder that is represented as node with subnodes in the category
-     * tree of project customizer. Name of the file that defines the instance class in layer for such category 
-     * must be named "Self". Such CompositeCategory won't have the createCategory() method called, but will have the category created by
+     * tree of project customizer. The file that defines the instance class in layer for such category
+     * must be named {@code Self}. Such a provider will not have the {@link #createCategory} method called
+     * (display name will be taken from the folder), but will have the children created by
      * the infrastructure based on the folder content.
      * For details and usage see issue #91276.
      * @since org.netbeans.modules.projectuiapi/1 1.22
@@ -321,6 +327,162 @@ public final class ProjectCustomizer {
          * for the project type you want to integrate your panel into.
          */
         JComponent createComponent (Category category, Lookup context );
+
+        /**
+         * Used to register customizer panels.
+         * There are three ways this annotation can be used:
+         * <ol>
+         * <li>Register a "leaf" panel with no children.
+         *     {@link #category} can be omitted for a top-level panel;
+         *     if specified, the panel is placed in the named subcategory.
+         *     {@link #categoryLabel} should not be specified.
+         *     The annotation must be placed on a class or factory method implementing {@link CompositeCategoryProvider}.
+         * <li>Register a category folder with no panel.
+         *     {@link #category} must be specified; the last path component is the
+         *     folder being defined, and any previous components are parent folders.
+         *     {@link #categoryLabel} must be specified.
+         *     The annotation must be placed on some package declaration (in {@code package-info.java}).
+         * <li>Register a category folder also with its own panel (i.e. {@code Self}).
+         *     {@link #category} and {@link #categoryLabel} must be specified as for #2,
+         *     but the annotation must be on a provider implementation as for #1.
+         * </ol>
+         * To represent hierarchies of panels, the {@link #category} of a #1 can
+         * match the {@link #category} of a #2 or #3, and the {@link #category} of a #2 or #3
+         * preceding the last {@code /} can match the {@link #category} of another #2 or #3.
+         * <p>Multiple registrations may be made in one place using {@link Registrations}.
+         * @since org.netbeans.modules.projectuiapi/1 1.38
+         */
+        @Target({ElementType.TYPE, ElementType.METHOD, ElementType.PACKAGE})
+        @Retention(RetentionPolicy.SOURCE)
+        @interface Registration {
+            /**
+             * Project type to associate with, such as {@code org-netbeans-modules-java-j2seproject}.
+             * The {@code folderPath} passed to {@link ProjectCustomizer#createCustomizerDialog(String,Lookup,String,ActionListener,HelpCtx)}
+             * should be {@code Projects/<projectType>/Customizer}.
+             */
+            String projectType();
+            /**
+             * Category folder (perhaps multiple components separated by {@code /})
+             * in which to place this panel or which is the name of this panel folder.
+             */
+            String category() default "";
+            /**
+             * Display name when defining a category folder.
+             * Can use {@code pkg.of.Bundle#key_name} syntax.
+             */
+            String categoryLabel() default "";
+            /**
+             * Position of this panel or subfolder within its folder.
+             */
+            int position() default Integer.MAX_VALUE;
+        }
+        /**
+         * Used in case multiple registrations are needed in one place.
+         * @since org.netbeans.modules.projectuiapi/1 1.38
+         */
+        @Target({ElementType.TYPE, ElementType.METHOD, ElementType.PACKAGE})
+        @Retention(RetentionPolicy.SOURCE)
+        @interface Registrations {
+            Registration[] value();
+        }
+        /* XXX consider using @Registration in:
+o.n.m.apisupport.project                  Projects/o-n-m-apisupport-project/Customizer/Formatting.instance @1000
+o.n.m.groovy.grailsproject                Projects/o-n-m-groovy-grailsproject/Customizer/General.instance @100
+o.n.m.groovy.grailsproject                Projects/o-n-m-groovy-grailsproject/Customizer/Libraries.instance @150
+o.n.m.groovy.grailsproject                Projects/o-n-m-groovy-grailsproject/Customizer/Debugging.instance @200
+o.n.m.groovy.grailsproject                Projects/o-n-m-groovy-grailsproject/Customizer/Formatting.instance @1000
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/Sources.instance @100
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/Libraries.instance @200
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/BuildCategory/ @300 ("Build")
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/BuildCategory/Build.instance @100
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/BuildCategory/Jar.instance @200
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/BuildCategory/Javadoc.instance @300
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/Run.instance @400
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/WebServicesCategory.instance @500
+o.n.m.j2ee.clientproject                  Projects/o-n-m-j2ee-clientproject/Customizer/Formatting.instance @1000
+o.n.m.j2ee.earproject                     Projects/o-n-m-j2ee-earproject/Customizer/Sources.instance @100
+o.n.m.j2ee.earproject                     Projects/o-n-m-j2ee-earproject/Customizer/Libraries.instance @200
+o.n.m.j2ee.earproject                     Projects/o-n-m-j2ee-earproject/Customizer/BuildCategory/ @300 ("Build")
+o.n.m.j2ee.earproject                     Projects/o-n-m-j2ee-earproject/Customizer/BuildCategory/Ear.instance @100
+o.n.m.j2ee.earproject                     Projects/o-n-m-j2ee-earproject/Customizer/Run.instance @400
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/Sources.instance @100
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/Libraries.instance @200
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/BuildCategory/ @300 ("Build")
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/BuildCategory/Build.instance @100
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/BuildCategory/Jar.instance @200
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/BuildCategory/Javadoc.instance @300
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/Run.instance @400
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/WebServicesCategory.instance @500
+o.n.m.j2ee.ejbjarproject                  Projects/o-n-m-j2ee-ejbjarproject/Customizer/Formatting.instance @1000
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Dependencies.instance @200 ("Dependencies")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Applets.instance @300 ("Applets")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Build/ @400 ("Build")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Build/Compiling.instance @100 ("Compiling")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Build/Packaging.instance @200 ("Packaging")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Build/Security.instance @300
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Run.instance @500 ("Run")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-capproject/Customizer/Sources.instance ("Sources")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-clslibproject/Customizer/Sources.instance @100
+o.n.m.javacard.project                    Projects/o-n-m-javacard-clslibproject/Customizer/Dependencies.instance @200
+o.n.m.javacard.project                    Projects/o-n-m-javacard-clslibproject/Customizer/Build/ @300
+o.n.m.javacard.project                    Projects/o-n-m-javacard-clslibproject/Customizer/Build/Compiling.instance @100 ("Compiling")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-clslibproject/Customizer/Build/Packaging.instance @200
+o.n.m.javacard.project                    Projects/o-n-m-javacard-clslibproject/Customizer/Build/Security.instance @300 ("Security")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-clslibproject/Customizer/Run.instance @400
+o.n.m.javacard.project                    Projects/o-n-m-javacard-eapproject/Customizer/Dependencies.instance @200
+o.n.m.javacard.project                    Projects/o-n-m-javacard-eapproject/Customizer/Applets.instance @300
+o.n.m.javacard.project                    Projects/o-n-m-javacard-eapproject/Customizer/Build/ @400 ("Build")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-eapproject/Customizer/Build/Compiling.instance @100 ("Compiling")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-eapproject/Customizer/Build/Security.instance @200 ("Security")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-eapproject/Customizer/Run.instance @500 ("Run")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-eapproject/Customizer/Sources.instance
+o.n.m.javacard.project                    Projects/o-n-m-javacard-extlibproject/Customizer/Sources.instance @100 ("Sources")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-extlibproject/Customizer/Dependencies.instance @200 ("Dependencies")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-extlibproject/Customizer/Build/ @300
+o.n.m.javacard.project                    Projects/o-n-m-javacard-extlibproject/Customizer/Build/Compiling.instance @100 ("Compiling")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-extlibproject/Customizer/Build/Security.instance @300 ("Security")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-extlibproject/Customizer/Run.instance @400 ("Run")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-webproject/Customizer/Dependencies.instance @200
+o.n.m.javacard.project                    Projects/o-n-m-javacard-webproject/Customizer/Web.instance @300
+o.n.m.javacard.project                    Projects/o-n-m-javacard-webproject/Customizer/Build/ @400
+o.n.m.javacard.project                    Projects/o-n-m-javacard-webproject/Customizer/Build/Compiling.instance @100 ("Compiling")
+o.n.m.javacard.project                    Projects/o-n-m-javacard-webproject/Customizer/Build/Security.instance @300
+o.n.m.javacard.project                    Projects/o-n-m-javacard-webproject/Customizer/Run.instance @500
+o.n.m.javacard.project                    Projects/o-n-m-javacard-webproject/Customizer/Sources.instance
+o.n.m.php.project                         Projects/o-n-m-php-project/Customizer/Sources.instance @100
+o.n.m.php.project                         Projects/o-n-m-php-project/Customizer/RunConfig.instance @200
+o.n.m.php.project                         Projects/o-n-m-php-project/Customizer/PhpIncludePath.instance @300
+o.n.m.php.project                         Projects/o-n-m-php-project/Customizer/IgnorePath.instance @310
+o.n.m.php.project                         Projects/o-n-m-php-project/Customizer/PhpUnit.instance @320
+o.n.m.php.project                         Projects/o-n-m-php-project/Customizer/Formatting.instance @1000
+o.n.m.python.project                      Projects/o-n-m-python-project/Customizer/Sources.instance @100
+o.n.m.python.project                      Projects/o-n-m-python-project/Customizer/PythonPath.instance @200
+o.n.m.python.project                      Projects/o-n-m-python-project/Customizer/Run.instance @300
+o.n.m.python.project                      Projects/o-n-m-python-project/Customizer/Formatting.instance @1000
+o.n.m.ruby.javaint                        Projects/o-n-m-ruby-merbproject/Customizer/Java.instance @200
+o.n.m.ruby.railsprojects                  Projects/o-n-m-ruby-railsprojects/Customizer/Rails.instance @100
+o.n.m.ruby.javaint                        Projects/o-n-m-ruby-railsprojects/Customizer/Java.instance @200
+o.n.m.ruby.railsprojects                  Projects/o-n-m-ruby-railsprojects/Customizer/Formatting.instance @1000
+o.n.m.ruby.project                        Projects/o-n-m-ruby-rubyproject/Customizer/Sources.instance @100
+o.n.m.ruby.project                        Projects/o-n-m-ruby-rubyproject/Customizer/Run.instance @200
+o.n.m.ruby.javaint                        Projects/o-n-m-ruby-rubyproject/Customizer/Java.instance @300
+o.n.m.ruby.project                        Projects/o-n-m-ruby-rubyproject/Customizer/Formatting.instance @1000
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/Sources.instance @100
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/Libraries.instance @200
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/BuildCategory/ @300
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/BuildCategory/Build.instance @100
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/BuildCategory/Jar.instance @200
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/BuildCategory/Javadoc.instance @300
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/Run.instance @400
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/Application/ @500
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/Application/Self.instance
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/Formatting/ @1000
+o.n.m.scala.project                       Projects/o-n-m-scala-project/Customizer/Formatting/Self.instance @1
+o.n.m.uml.project                         Projects/o-n-m-uml-project/Customizer/Modeling.instance @100
+o.n.m.uml.project                         Projects/o-n-m-uml-project/Customizer/Imports.instance @200
+o.n.m.uml.codegen                         Projects/o-n-m-uml-project/Customizer/Templates.instance @300
+o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/Formatting.instance @1000
+         */
     }
     
     /** Describes category of properties to be customized by given component
@@ -491,6 +653,9 @@ public final class ProjectCustomizer {
 
     /*private*/ static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider, Lookup.Provider {
 
+        /** @see CompositeCategoryProvider */
+        private static final String SELF = "Self"; // NOI18N
+
         private final Lookup context;
         private final Map<ProjectCustomizer.Category,CompositeCategoryProvider> category2provider;
         private final DataFolder folder;
@@ -537,8 +702,8 @@ public final class ProjectCustomizer {
                     CompositeCategoryProvider sProvider = null;
                     DataObject subDobs[] = ((DataFolder) dob).getChildren();
                     for (DataObject subDob : subDobs) {
-                        if (subDob.getName().equals("Self")) { // NOI18N
-                            InstanceCookie cookie = subDob.getCookie(InstanceCookie.class);
+                        if (subDob.getName().equals(SELF)) {
+                            InstanceCookie cookie = subDob.getLookup().lookup(InstanceCookie.class);
                             if (cookie != null && CompositeCategoryProvider.class.isAssignableFrom(cookie.instanceClass())) {
                                 sProvider = (CompositeCategoryProvider) cookie.instanceCreate();
                             }
@@ -554,8 +719,8 @@ public final class ProjectCustomizer {
                     toRet.add(cat);
                     category2provider.put(cat, prov);
                 }
-                if (!dob.getName().equals("Self")) { // NOI18N
-                    InstanceCookie cook = dob.getCookie(InstanceCookie.class);
+                if (!dob.getName().equals(SELF)) {
+                    InstanceCookie cook = dob.getLookup().lookup(InstanceCookie.class);
                     if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
                         CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
                         if (provider != null) {

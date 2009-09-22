@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import javax.swing.AbstractAction;
@@ -101,14 +102,16 @@ public class ProblemComponent extends javax.swing.JPanel {
     }
     
     public void setLightBackground() {
-        setBackground(Color.WHITE);
-        problemDescription.setBackground(Color.WHITE);
-        icon.setBackground(Color.WHITE);
+        Color bgColor = SystemColor.text;
+        setBackground(bgColor);
+        problemDescription.setBackground(bgColor);
+        icon.setBackground(bgColor);
         //showDetails.setBackground(Color.WHITE);
     }
     
     public void setDarkBackground() {
-        Color bgColor =  new Color(240, 240, 240);
+        //Color bgColor =  new Color(240, 240, 240);
+        Color bgColor = SystemColor.textInactiveText;
         setBackground(bgColor);
         problemDescription.setBackground(bgColor);
         icon.setBackground(bgColor);

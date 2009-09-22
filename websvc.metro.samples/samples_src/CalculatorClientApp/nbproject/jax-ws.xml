@@ -4,7 +4,7 @@
   <clients>
     <client name="CalculatorWSService">
       <wsdl-url>http://localhost:8080/CalculatorApp/CalculatorWSService?wsdl</wsdl-url>
-      <local-wsdl-file>localhost_8080/CalculatorApp/CalculatorWSService.wsdl</local-wsdl-file>
+      <local-wsdl-file>CalculatorWSService.wsdl</local-wsdl-file>
       <package-name forceReplace="true">org.me.calculator.client</package-name>
       <catalog-file>catalog.xml</catalog-file>
       <wsimport-options>

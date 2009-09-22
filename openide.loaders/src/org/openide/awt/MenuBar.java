@@ -136,11 +136,6 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
     public MenuBar(DataFolder folder) {
         this();
-        boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
-        if (!GTK) { //Let GTK supply some border, or mnemonic underlines
-            //will be flush and look ugly
-            setBorder (BorderFactory.createEmptyBorder());
-        }
         DataFolder theFolder = folder;
         if (theFolder == null) {
             FileObject root = FileUtil.getConfigRoot();
@@ -154,11 +149,31 @@ public class MenuBar extends JMenuBar implements Externalizable {
             theFolder = DataFolder.findFolder(fo);
         }
         startLoading(theFolder);
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    updateUI();
+                }
+            });
+        }
 
         if(folder != null) {
             getAccessibleContext().setAccessibleDescription(folder.getName());
         }
     }
+
+    @Override
+    public void updateUI() {
+        if (EventQueue.isDispatchThread()) {
+            super.updateUI();
+            boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
+            if (!GTK) { //Let GTK supply some border, or mnemonic underlines
+                //will be flush and look ugly
+                setBorder(BorderFactory.createEmptyBorder());
+            }
+        }
+    }
+
     
     public @Override void addImpl (Component c, Object constraint, int idx) {
         //Issue 17559, Apple's screen menu bar implementation blindly casts

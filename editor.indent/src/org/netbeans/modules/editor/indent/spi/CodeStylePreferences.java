@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.editor.indent.spi;
@@ -61,6 +61,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -229,7 +230,7 @@ public final class CodeStylePreferences {
                         csp = new CodeStylePreferences(
                                 findProjectPreferences(file),
                                 mimeType,
-                                doc == null ? null : new WeakReference<Document>(doc),
+                                doc == null ? null : new CleaningWeakReference(doc),
                                 file == null ? "no file" : file.getPath()); //NOI18N
                         if (csps == null) {
                             csps = new HashMap<String, CodeStylePreferences>();
@@ -243,7 +244,22 @@ public final class CodeStylePreferences {
             }
         });
     }
-    
+
+    private static final class CleaningWeakReference extends WeakReference<Document> implements Runnable {
+
+        public CleaningWeakReference(Document referent) {
+            super(referent, Utilities.activeReferenceQueue());
+        }
+
+        public void run() {
+            synchronized (cache) {
+                //expunge stale entries from the cache:
+                cache.size();
+            }
+        }
+        
+    }
+
     private CodeStylePreferences(Preferences projectRoot, String mimeType, Reference<Document> refDoc, String filePath) {
         this.projectRoot = projectRoot;
         this.mimeType = mimeType;

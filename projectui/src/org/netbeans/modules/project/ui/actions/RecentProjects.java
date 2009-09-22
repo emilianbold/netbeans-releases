@@ -47,32 +47,22 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.filesystems.FileChangeAdapter;
@@ -86,7 +76,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
      */
     private static final String PROJECT_URL_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.Project_URL"; // NOI18N
     private final ProjectDirListener prjDirListener = new ProjectDirListener(); 
-    
+
     private UpdatingMenu subMenu;
     
     private boolean recreate;
@@ -136,20 +126,20 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         }
     }
         
-    private void fillSubMenu(JMenu menu) {
+    private void fillSubMenu(final JMenu menu) {
         menu.removeAll();
-        
+
         List<UnloadedProjectInformation> projects = OpenProjectList.getDefault().getRecentProjectsInformation();
         if ( projects.isEmpty() ) {
             menu.setEnabled( false );
             return;
         }
-        
+
         menu.setEnabled( true );
-        ActionListener jmiActionListener = new MenuItemActionListener(); 
+        ActionListener jmiActionListener = new MenuItemActionListener();
                         
         // Fill menu with items
-        
+
         for (UnloadedProjectInformation p : projects) {
                 URL prjDirURL = p.getURL();
                 FileObject prjDir = URLMapper.findFileObject(prjDirURL);
@@ -159,10 +149,11 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 prjDir.removeFileChangeListener(prjDirListener);            
                 prjDir.addFileChangeListener(prjDirListener);
                 JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon());
-                menu.add( jmi );            
+                menu.add(jmi);
                 jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
                 jmi.addActionListener( jmiActionListener );
         }
+
     }
 
     // Implementation of change listener ---------------------------------------

@@ -50,6 +50,7 @@ import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
@@ -141,7 +142,9 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     }
 
     private KenaiRepository getKenaiRepository() {
-        return new KenaiRepository(REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
+        return new KenaiRepository(null, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
     }
+
+
     
 }

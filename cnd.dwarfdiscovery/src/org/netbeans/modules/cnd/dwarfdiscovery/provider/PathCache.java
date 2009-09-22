@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
  */
 public class PathCache {
     private static final APTStringManager instance = 
-            APTStringManager.instance("DWARF_PATH_CACHE",APTStringManager.CacheKind.Single); // NOI18N
+            APTStringManager.instance("DWARF_PATH_CACHE",APTStringManager.CacheKind.Sliced); // NOI18N
 
     private PathCache() {
     }

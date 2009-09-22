@@ -52,9 +52,26 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
-    IncludeElementImpl(Scope inScope, FileObject fo, IncludeInfo info) {
-        super(inScope, "include", Union2.<String, FileObject>createSecond(fo),
-                new OffsetRange(0, 0), info.getPhpKind(), PhpModifiers.EMPTY);
+    private String fileName;
+    private OffsetRange referenceSpanRange;
+    IncludeElementImpl(Scope inScope, IncludeInfo info) {
+        super(inScope, "include", Union2.<String, FileObject>createSecond(inScope.getFileObject()),new OffsetRange(0, 0), info.getPhpKind(), PhpModifiers.EMPTY);
+        this.fileName = info.getFileName();
+        this.referenceSpanRange = info.getRange();
     }
 
+    public OffsetRange getReferenceSpanRange() {
+        return referenceSpanRange;
+    }
+
+    @Override
+    public FileObject getFileObject() {
+        FileObject fileObject = super.getFileObject();
+        return VariousUtils.resolveInclude(fileObject, fileName);
+    }
+
+    @Override
+    public String getNormalizedName() {
+        return getName()+String.valueOf(getOffset());
+    }
 }

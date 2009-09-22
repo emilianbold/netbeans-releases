@@ -1011,8 +1011,17 @@ public class CasualDiff {
                 copyTo(localPointer, endetHier);
                 localPointer = finalBounds[1];
             }
+            copyTo(localPointer, bounds[1]);
+        } else {
+            if (newT.finalizer != null) {
+                int catchEnd = oldT.catchers.isEmpty() ? bounds[1] : endPos(oldT.catchers.reverse().head);
+                copyTo(localPointer, localPointer = catchEnd);
+                printer.printFinallyBlock(newT.finalizer);
+                copyTo(localPointer, bounds[1]);
+            } else {
+                copyTo(localPointer, bounds[1]);
+            }
         }
-        copyTo(localPointer, bounds[1]);
 
         return bounds[1];
     }
@@ -1231,7 +1240,9 @@ public class CasualDiff {
             // solved just for the change, not insert and delete
             for (com.sun.tools.javac.util.List<JCExpression> l1 = oldT.dims, l2 = newT.dims;
                 l1.nonEmpty(); l1 = l1.tail, l2 = l2.tail) {
-                localPointer = diffTree(l1.head, l2.head, new int[] { localPointer, getBounds(l1.head)[1] });
+                int[] span = getBounds(l1.head);
+                copyTo(localPointer, span[0]);
+                localPointer = diffTree(l1.head, l2.head, span);
             }
         }
         if (oldT.elems != null) {

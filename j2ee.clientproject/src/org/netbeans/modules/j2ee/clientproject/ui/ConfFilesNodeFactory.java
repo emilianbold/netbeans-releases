@@ -57,7 +57,7 @@ import org.openide.nodes.Node;
  *
  * @author gpatil
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-clientproject", position=200)
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-clientproject", position=300)
 public class ConfFilesNodeFactory implements NodeFactory {
 
     public ConfFilesNodeFactory() {

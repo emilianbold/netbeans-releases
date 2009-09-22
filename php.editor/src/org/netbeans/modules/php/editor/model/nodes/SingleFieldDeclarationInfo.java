@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 
@@ -83,5 +84,10 @@ public class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDeclarati
 
     public PhpModifiers getAccessModifiers() {
         return new PhpModifiers(fd.getModifier());
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.createUnqualifiedName(getName());
     }
 }

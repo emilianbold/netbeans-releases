@@ -36,18 +36,22 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.wag.manager.nodes;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.wag.manager.actions.AddSearchAction;
+import org.netbeans.modules.wag.manager.actions.LoginAction;
 import org.netbeans.modules.wag.manager.actions.ViewZemblyApiBrowserAction;
-import org.netbeans.modules.wag.manager.model.WagSearchResults;
+import org.netbeans.modules.wag.manager.util.WagPreferences;
+import org.netbeans.modules.wag.manager.zembly.ZemblySession;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -56,33 +60,32 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author peterliu
  */
-@ServicesTabNodeRegistration(
-    position=215,
-    name="wagRootNode",
-    displayName="org.netbeans.modules.wag.manager.nodes.Bundle#Web_API_Gateway",
-    shortDescription="org.netbeans.modules.wag.manager.nodes.Bundle#Web_API_Gateway_Desc",
-    iconResource="org/netbeans/modules/wag/manager/resources/wag.png"
-)
-public class WagRootNode extends AbstractNode {
-    
+@ServicesTabNodeRegistration(position = 215,
+name = "wagRootNode",
+displayName = "org.netbeans.modules.wag.manager.nodes.Bundle#Web_API_Gateway",
+shortDescription = "org.netbeans.modules.wag.manager.nodes.Bundle#Web_API_Gateway_Desc",
+iconResource = "org/netbeans/modules/wag/manager/resources/wag.png")
+public class WagRootNode extends AbstractNode implements PropertyChangeListener {
+
+    private ZemblySession session;
+
     public WagRootNode() {
         this(new WagRootNodeChildren(), new InstanceContent());
     }
 
     WagRootNode(WagRootNodeChildren children, InstanceContent content) {
         super(children, new AbstractLookup(content));
+        session = ZemblySession.getInstance();
+        session.addPropertyChangeListener(WeakListeners.propertyChange(this, session));
+        setDisplayName();
+        tryLogin();
     }
-    
+
     @Override
     public String getName() {
         return "wagRootNode";
     }
-    
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(WagRootNode.class, "Web_API_Gateway");
-    }
-    
+
     @Override
     public String getShortDescription() {
         return NbBundle.getMessage(WagRootNode.class, "Web_API_Gateway_Desc");
@@ -90,23 +93,56 @@ public class WagRootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(ViewZemblyApiBrowserAction.class)
-
-        };
+        return new Action[]{
+                    SystemAction.get(LoginAction.class),
+                    SystemAction.get(ViewZemblyApiBrowserAction.class)
+                };
     }
-    
     static final java.awt.Image ICON =
-            ImageUtilities.loadImage( "org/netbeans/modules/wag/manager/resources/wag.png" ); //NOI18N
-    
+            ImageUtilities.loadImage("org/netbeans/modules/wag/manager/resources/wag.png"); //NOI18N
+
     @Override
-    public Image getIcon(int type){
+    public Image getIcon(int type) {
         return ICON;
     }
-    
+
     @Override
-    public Image getOpenedIcon(int type){
+    public Image getOpenedIcon(int type) {
         return ICON;
     }
-   
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        setDisplayName();
+    }
+
+    private void setDisplayName() {
+        if (session.isLoggedIn()) {
+            setDisplayName(NbBundle.getMessage(WagRootNode.class, "Web_API_Gateway_Username",
+                    session.getUserInfo().getUsername()));
+        } else {
+            setDisplayName(NbBundle.getMessage(WagRootNode.class, "Web_API_Gateway"));
+        }
+    }
+
+    private void tryLogin() {
+        WagPreferences preferences = WagPreferences.getInstance();
+
+        if (preferences.getOnlineStatus()) {
+            final String username = preferences.getUsername();
+            final char[] password = preferences.getPassword();
+
+            if (username != null) {
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        try {
+                            ZemblySession.getInstance().login(username, password);
+                        } catch (Exception ex) {
+                            // ignore since we are just trying
+                        }
+                    }
+                });
+            }
+        }
+    }
 }

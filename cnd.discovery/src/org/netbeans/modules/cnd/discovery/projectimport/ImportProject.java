@@ -479,11 +479,11 @@ public class ImportProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#" + configureFile + " " + configureArguments); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                ShellRunAction.performAction(node, listener, null, makeProject);
+                ShellRunAction.performAction(node, listener, null, makeProject, null);
             } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                CMakeAction.performAction(node, listener, null, makeProject);
+                CMakeAction.performAction(node, listener, null, makeProject, null);
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                QMakeAction.performAction(node, listener, null, makeProject);
+                QMakeAction.performAction(node, listener, null, makeProject, null);
             }
         } catch (DataObjectNotFoundException e) {
             isFinished = true;
@@ -554,7 +554,7 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#make "+arguments); // NOI18N
         }
-        MakeAction.execute(node, arguments, listener, null, makeProject, null); // NOI18N
+        MakeAction.execute(node, arguments, listener, null, makeProject, null, null); // NOI18N
     }
 
     private void postMake(Node node) {
@@ -589,10 +589,16 @@ public class ImportProject implements PropertyChangeListener {
         if (buildCommand != null){
             arguments = getArguments(buildCommand);
         }
-        if (TRACE) {
-            logger.log(Level.INFO, "#make "+arguments+" > " + makeLog.getAbsolutePath()); // NOI18N
+        ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+        if (ses != null) {
+            try {
+                ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
-        MakeAction.execute(node, arguments, listener, outputListener, makeProject, ImportUtils.parseEnvironment(configureArguments)); // NOI18N
+        MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars, null); // NOI18N
     }
 
     private String getArguments(String command){

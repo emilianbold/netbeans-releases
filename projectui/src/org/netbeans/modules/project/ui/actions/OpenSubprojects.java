@@ -85,13 +85,13 @@ public class OpenSubprojects extends NodeAction {
         // Find out whether all nodes have project in lookup 
         boolean someSubprojects = false; // And have some subprojects;
         for( int i = 0; i < activatedNodes.length; i++ ) {
-            Project p = (Project)activatedNodes[i].getLookup().lookup( Project.class );
+            Project p = activatedNodes[i].getLookup().lookup(Project.class);
             if ( p == null ) {
                 return false;
             }
             else {
                 
-                SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
+                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
                 
                 if ( spp != null //#97534 be satisfied with presence of the provider in lookup - && !spp.getSubprojects().isEmpty() 
                    ) {
@@ -106,7 +106,7 @@ public class OpenSubprojects extends NodeAction {
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
     
         for( int i = 0; i < activatedNodes.length; i++ ) {
-            Project p = (Project)activatedNodes[i].getLookup().lookup( Project.class );
+            Project p = activatedNodes[i].getLookup().lookup(Project.class);
             if ( p != null ) {
                 OpenProjectList.getDefault().open(new Project[] {p}, true, true);
             }

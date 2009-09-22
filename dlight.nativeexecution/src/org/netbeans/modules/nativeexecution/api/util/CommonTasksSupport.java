@@ -47,27 +47,22 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Utilities;
-import org.openide.windows.InputOutput;
 
 /**
  * An utility class that simplifies usage of Native Execution Support Module
  * for common tasks like files copying.
  */
 public final class CommonTasksSupport {
-
-    private static final boolean USE_SFTP = getBoolean("cnd.sftp", true);
 
     private CommonTasksSupport() {
     }
@@ -82,10 +77,36 @@ public final class CommonTasksSupport {
     }
 
     /**
+     * Starts <tt>srcFileName</tt> file download from the host,
+     * specified by the <tt>srcExecEnv</tt> saving it in the
+     * <tt>dstFileName</tt> file. <p>
+     * In the case of some error, message with a reason is written to the supplied
+     * <tt>error</tt> (is not <tt>NULL</tt>).
+     *
+     * @param srcFileName full path to the source file with file name
+     * @param srcExecEnv execution environment that describes the host to copy file from
+     * @param dstFileName destination filename on the local host
+     * @param error if not <tt>NULL</tt> and some error occurs during download,
+     *        an error message will be written to this <tt>Writer</tt>.
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
+     *         of the download task. The result of this Future is the exit
+     *         code of the copying routine. 0 indicates that the file was
+     *         successfully downlodaded. Result other than 0 indicates an error.
+     */
+    public static Future<Integer> downloadFile(
+            final String srcFileName,
+            final ExecutionEnvironment srcExecEnv,
+            final String dstFileName,
+            final Writer error) {
+
+        return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFileName, error);
+    }
+
+    /**
      * Starts <tt>srcFileName</tt> file upload from the localhost to the host,
      * specified by the <tt>dstExecEnv</tt> saving it in the
      * <tt>dstFileName</tt> file with the given file mode creation mask. <p>
-     * In case of some error, message with a reason is written to the supplied
+     * In the case of some error, message with a reason is written to the supplied
      * <tt>error</tt> (is not <tt>NULL</tt>).
      *
      * @param srcFileName full path to the source file with file name
@@ -106,79 +127,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error) {
 
-        if  (USE_SFTP) {
-            return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error);
-        }
-
-        Callable<Integer> uploadTask = new Callable<Integer>() {
-
-            public Integer call() throws Exception {
-                Integer result = new Integer(-1);
-
-                final File localFile = new File(srcFileName);
-
-                if (!localFile.exists()) {
-                    if (error != null) {
-                        try {
-                            error.append("File " + srcFileName + " not found!"); // NOI18N
-                        } catch (IOException ex) {
-                        }
-                    }
-                    return result;
-                }
-
-                if (!localFile.canRead()) {
-                    if (error != null) {
-                        try {
-                            error.append("File " + srcFileName + " is not readable!"); // NOI18N
-                        } catch (IOException ex) {
-                        }
-                    }
-                    return result;
-                }
-
-                String trgFileName;
-
-                if (dstExecEnv.isLocal() && Utilities.isWindows()) {
-                    trgFileName = WindowsSupport.getInstance().convertToShellPath(dstFileName);
-                } else {
-                    trgFileName = dstFileName;
-                }
-
-                try {
-                    NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("cat >\"%s\"", trgFileName)); // NOI18N
-                    NativeProcess np = npb.call();
-
-                    OutputStream os = np.getOutputStream();
-
-                    result = transferFileContent(localFile, os);
-
-                    if (error != null) {
-                        error.append(ProcessUtils.readProcessErrorLine(np));
-                    }
-                    result += np.waitFor();
-                } catch (IOException ex) {
-                    if (error != null) {
-                        error.append(ex.getMessage() == null ? ex.toString() : ex.getMessage()); // NOI18N
-                    }
-                }
-
-                if (result == 0) {
-                    NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("chmod 0%03o \"%s\"", mask, trgFileName)); // NOI18N
-                    NativeProcess np = npb.call();
-                    result += np.waitFor();
-                }
-
-                return result;
-            }
-        };
-
-        Future<Integer> result = NativeTaskExecutorService.submit(uploadTask, "Upload file " + srcFileName + // NOI18N
-                " to " + dstExecEnv.toString() + ":" + dstFileName); // NOI18N
-
-        return result;
+        return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error);
     }
 
     /**
@@ -192,23 +141,45 @@ public final class CommonTasksSupport {
      *         of the file removing task. The result of this Future indicates
      *         whether the file was removed (0) or not.
      */
-    public static Future<Integer> rmFile(
-            ExecutionEnvironment execEnv,
+    public static Future<Integer> rmFile(ExecutionEnvironment execEnv,
             String fname, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("rm").setArguments("-f", fname); // NOI18N
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "rm", "-f", fname), // NOI18N
+                "rm -f " + fname); // NOI18N
+    }
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
+    private static class CommandRunner implements Callable<Integer> {
 
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
+        private final static Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
+        private final ExecutionEnvironment execEnv;
+        private final String cmd;
+        private final String[] args;
+        private final Writer error;
+
+        public CommandRunner(ExecutionEnvironment execEnv, Writer error, String cmd, String... args) {
+            this.execEnv = execEnv;
+            this.cmd = cmd;
+            this.args = args;
+            this.error = error;
         }
 
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Remove file " + fname); // NOI18N
-        return execService.run();
+        public Integer call() throws Exception {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable(cmd).setArguments(args);
+            Process p = npb.call();
+
+            int exitStatus = p.waitFor();
+
+            if (exitStatus != 0) {
+                if (error != null) {
+                    ProcessUtils.writeError(error, p);
+                } else {
+                    ProcessUtils.logError(Level.FINE, log, p);
+                }
+            }
+
+            return exitStatus;
+        }
     }
 
     /**
@@ -225,20 +196,9 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> chmod(final ExecutionEnvironment execEnv,
             final String file, final int mode, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("chmod").setArguments(String.format("0%03o", mode), file); // NOI18N
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Changing permissions for " + file); // NOI18N
-        return execService.run();
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "chmod", String.format("0%03o", mode), file), // NOI18N
+                "chmod " + String.format("0%03o ", mode) + file); // NOI18N
     }
 
     /**
@@ -261,21 +221,9 @@ public final class CommonTasksSupport {
         String[] args = recursively
                 ? new String[]{"-rf", dirname} : new String[]{"-f", dirname}; // NOI18N
 
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable(cmd).setArguments(args);
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Remove directory " + dirname); // NOI18N
-
-        return execService.run();
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, cmd, args),
+                cmd + ' ' + Arrays.toString(args));
     }
 
     /**
@@ -291,20 +239,9 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> mkDir(final ExecutionEnvironment execEnv,
             final String dirname, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("/bin/mkdir").setArguments("-p", dirname); // NOI18N
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Creating directory " + dirname); // NOI18N
-        return execService.run();
+        return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "mkdir", "-p", dirname), // NOI18N
+                "mkdir -p " + dirname); // NOI18N
     }
 
     /**
@@ -319,41 +256,30 @@ public final class CommonTasksSupport {
      *         of the signal task. <tt>0</tt> means success, any other value
      *         means failure.
      */
-    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, int pid, String signal, final Writer error) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-
-        boolean isWindows = false;
-        HostInfo hostInfo = null;
-        if (execEnv.isLocal()) {
-            try {
-                hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                isWindows = hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
-            } catch (IOException ex) {
-                // should not happen, it's localhost!
-            } catch (CancellationException ex) {
-                // should not happen, it's localhost!
-            }
-        }
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final String signal, final Writer error) {
+        final boolean isWindows = execEnv.isLocal() && Utilities.isWindows();
+        final String descr = "Sending signal " + signal + " to " + pid; // NOI18N
 
         if (isWindows) {
-            npb.setExecutable(hostInfo.getShell()).setArguments(
-                    "-c", "kill", "-s", signal, String.valueOf(pid)); // NOI18N
+            return NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+                public Integer call() throws Exception {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                    String winShell = hostInfo.getShell();
+                    if (winShell != null) {
+                        CommandRunner runner = new CommandRunner(execEnv, error, winShell, "-c", "kill", "-s", signal, String.valueOf(pid)); // NOI18N
+                        return runner.call();
+                    } else {
+                        // Will not kill in case no cygwin ??
+                        return -1;
+                    }
+                }
+            }, descr);
         } else {
-            npb.setExecutable("/bin/kill").setArguments( // NOI18N
-                    "-s", signal, String.valueOf(pid)); // NOI18N
+            return NativeTaskExecutorService.submit(
+                new CommandRunner(execEnv, error, "kill", "-s", signal, String.valueOf(pid)), // NOI18N
+                descr);
         }
-
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-
-        if (error != null) {
-            descriptor = descriptor.errProcessorFactory(
-                    new InputRedirectorFactory(error));
-        }
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Sending signal to " + pid); // NOI18N
-        return execService.run();
     }
 
     private static int transferFileContent(File srcFile, OutputStream outStream) {

@@ -98,31 +98,41 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
                         .add(testingOptionsTitle)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
-                    .add(rspec)
-                    .add(testUnit)
-                    .add(autotest)
-                    .add(autospec))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rspec)
+                            .add(testUnit))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(autotest)
+                            .add(autospec))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(testingOptionsTitle)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(testingOptionsTitle))
-                    .add(layout.createSequentialGroup()
-                        .add(18, 18, 18)
+                        .add(6, 6, 6)
                         .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(testUnit)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rspec)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(autotest)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(autospec))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(testUnit)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(rspec))
+                    .add(layout.createSequentialGroup()
+                        .add(autotest)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(autospec)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        testUnit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_TestUnit")); // NOI18N
+        rspec.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_RSpec")); // NOI18N
+        autotest.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_AutoTest")); // NOI18N
+        autospec.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "AD_Options_AutoSpec")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void testUnitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testUnitActionPerformed

@@ -56,6 +56,9 @@ import javax.swing.*;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Performs the CVS 'tag' command on selected nodes.
@@ -85,7 +88,8 @@ public class TagAction extends AbstractSystemAction {
     }
     
     public void performCvsAction(Node[] nodes) {
-        File [] roots = getContext(nodes).getFiles();
+        File[] roots = getContext(nodes).getFiles();
+        File[][] flatFiles = Utils.splitFlatOthers(getContext(nodes).getFiles());
                 
         TagCommand cmd = new TagCommand();
         copy (cmd, commandTemplate);
@@ -116,8 +120,12 @@ public class TagAction extends AbstractSystemAction {
 
         settings.updateCommand(cmd);
         copy(commandTemplate, cmd);
+        
+        if (flatFiles[0].length > 0) {
+            cmd.setRecursive(false);
+        } 
         cmd.setFiles(roots);
-
+        
         ExecutorGroup group = new ExecutorGroup(getRunningName(nodes));
         group.addExecutors(TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
         group.execute();

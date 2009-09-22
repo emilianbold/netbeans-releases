@@ -46,7 +46,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
-import org.jdesktop.layout.GroupLayout;
 
 public class WebProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
 

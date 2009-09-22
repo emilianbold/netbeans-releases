@@ -262,4 +262,7 @@ public class MessageAuthenticationProfile extends ProfileBase
         }
     }
     
+    public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
+        return true;
+    }
 }

@@ -1,0 +1,149 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.bugtracking.dummies;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+
+/**
+ *
+ * @author Marian Petras
+ */
+public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
+
+    private final class FileToRepoAssociation {
+        private final File file;
+        private final Repository repository;
+        private FileToRepoAssociation(File file, Repository repository) {
+            assert ((file != null) && (repository != null));
+            this.file = file;
+            this.repository = repository;
+        }
+    }
+
+    private List<FileToRepoAssociation> fileToRepoAssociations;
+
+    public void setAssociation(File file, Repository repository) {
+        if ((file == null) && (repository == null)) {
+            throw new IllegalArgumentException("file and repository are <null>");
+        }
+        if (file == null) {
+            throw new IllegalArgumentException("file is <null>");
+        }
+        if (repository == null) {
+            throw new IllegalArgumentException("repository is <null>");
+        }
+
+        boolean alreadyPresent = false;
+        if (fileToRepoAssociations == null) {
+            fileToRepoAssociations = new ArrayList<FileToRepoAssociation>(7);
+        } else {
+            Iterator<FileToRepoAssociation> it = fileToRepoAssociations.iterator();
+            while (it.hasNext()) {
+                FileToRepoAssociation association = it.next();
+                if (association.file.equals(file)) {
+                    if (association.repository == repository) {
+                        alreadyPresent = true;
+                    } else {
+                        it.remove();
+                    }
+                    break;
+                }
+            }
+        }
+        if (!alreadyPresent) {
+            fileToRepoAssociations.add(new FileToRepoAssociation(file, repository));
+        }
+    }
+
+    public void reset() {
+        if (fileToRepoAssociations != null) {
+            fileToRepoAssociations.clear();     //decompose for easier GC
+            fileToRepoAssociations = null;
+        }
+    }
+
+    @Override
+    synchronized protected Repository getRepository(Node node) {
+        return (node instanceof DummyNode)
+               ? ((DummyNode) node).getAssociatedRepository()
+               : null;
+    }
+
+    @Override
+    protected Repository getRepository(DataObject dataObj) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Repository getRepository(Project project, boolean askIfUnknown) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
+        if (file == null) {
+            throw new IllegalArgumentException("file is <null>");
+        }
+
+        if (fileToRepoAssociations == null) {
+            return null;
+        }
+        for (FileToRepoAssociation association : fileToRepoAssociations) {
+            if (association.file == file) {
+                return association.repository;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected Repository getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+}

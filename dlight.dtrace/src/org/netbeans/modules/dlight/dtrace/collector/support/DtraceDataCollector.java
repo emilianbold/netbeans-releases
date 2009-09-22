@@ -38,13 +38,13 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
+import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.acl.NotOwnerException;
@@ -62,11 +62,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -92,6 +87,7 @@ import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -100,7 +96,6 @@ import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
  * Collector which collects data using DTrace scripts.
@@ -141,8 +136,7 @@ public final class DtraceDataCollector
     private DtraceParser parser;
     private final List<DataRow> indicatorDataBuffer = new ArrayList<DataRow>();
     private int indicatorFiringFactor;
-    private ProcessLineCallback callback = new ProcessLineCallBackImpl();
-
+    private LineProcessor outputProcessor = new DefaultOutputProcessor();
     private boolean isSlave;
     private final boolean multiScriptMode;
     private DtraceDataCollector parentCollector;
@@ -163,7 +157,7 @@ public final class DtraceDataCollector
             this.tableMetaData = null;
             this.slaveCollectors = new HashMap<String, DtraceDataCollector>();
             this.requiredPrivilegesSet = new HashSet<String>();
-            setProcessLineCallback(new MergedProcessLineCallbackImpl());
+            setOutputProcessor(new MergedProcessLineCallbackImpl());
             addSlaveConfiguration(configuration);
         } else {
             this.dataTablesMetadata = cfgInfo.getDatatableMetadata(configuration);
@@ -183,12 +177,12 @@ public final class DtraceDataCollector
             }
 
             // super(cmd_dtrace, null,
-    //            configuration.getParser() == null
-    //        ? (configuration.getDatatableMetadata() != null &&
-    //        configuration.getDatatableMetadata().size() > 0
-    //        ? new DtraceParser(configuration.getDatatableMetadata().get(0))
-    //        : (DtraceParser) null)
-    //        : configuration.getParser(), configuration.getDatatableMetadata());
+            //            configuration.getParser() == null
+            //        ? (configuration.getDatatableMetadata() != null &&
+            //        configuration.getDatatableMetadata().size() > 0
+            //        ? new DtraceParser(configuration.getDatatableMetadata().get(0))
+            //        : (DtraceParser) null)
+            //        : configuration.getParser(), configuration.getDatatableMetadata());
 
 
             this.localScriptUrl = cfgInfo.getScriptUrl(configuration);
@@ -210,6 +204,12 @@ public final class DtraceDataCollector
         if (!multiScriptMode) {
             throw new IllegalStateException("addSlaveConfiguration called in single-script mode"); // NOI18N
         }
+        for (DtraceDataCollector dc : slaveCollectors.values()) {
+            if (dc.configuration == configuration) {
+                // do not add duplicate configurations
+                return;
+            }
+        }
         DTDCConfigurationAccessor accessor = DTDCConfigurationAccessor.getDefault();
         DtraceDataCollector slaveCollector = new DtraceDataCollector(false, configuration);
         slaveCollector.setSlave(true);
@@ -226,8 +226,8 @@ public final class DtraceDataCollector
         return "DTrace";//NOI18N
     }
 
-    void setProcessLineCallback(ProcessLineCallback callback) {
-        this.callback = callback;
+    void setOutputProcessor(LineProcessor callback) {
+        this.outputProcessor = callback;
     }
 
     void setSlave(boolean isSlave) {
@@ -242,8 +242,8 @@ public final class DtraceDataCollector
         localScriptUrl = path;
     }
 
-    ProcessLineCallback getProcessLineCallback() {
-        return callback;
+    LineProcessor getOutputProcessor() {
+        return outputProcessor;
     }
 
     protected DataStorage getStorage() {
@@ -286,7 +286,7 @@ public final class DtraceDataCollector
         this.storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
         StackDataStorage stackStorage = (StackDataStorage) storages.get(dstf.getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
         if (this.parser instanceof DtraceDataAndStackParser) {
-            ((DtraceDataAndStackParser)this.parser).setStackDataStorage(stackStorage);
+            ((DtraceDataAndStackParser) this.parser).setStackDataStorage(stackStorage);
         }
 
         if (isSlave) {
@@ -479,7 +479,7 @@ public final class DtraceDataCollector
         return validate(target, this, true);
     }
 
-    ValidationStatus validate(final DLightTarget target, Validateable validatebleSource, boolean notify) {
+    ValidationStatus validate(final DLightTarget target, Validateable<DLightTarget> validatebleSource, boolean notify) {
         if (validationStatus.isValid()) {
             return validationStatus;
         }
@@ -510,10 +510,11 @@ public final class DtraceDataCollector
 
         if (target instanceof AttachableTarget) {
             AttachableTarget at = (AttachableTarget) target;
-            taskCommand += " " + at.getPID(); // NOI18N
+            taskCommand += " " + Integer.toString(at.getPID()); // NOI18N
         }
 
         final String extraParams = getCollectorTaskExtraParams();
+
         if (extraParams != null) {
             taskCommand += " " + extraParams; // NOI18N
         }
@@ -521,15 +522,8 @@ public final class DtraceDataCollector
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
         npb.setCommandLine(taskCommand);
 
-        ExecutionDescriptor descr = new ExecutionDescriptor();
-        descr = descr.outProcessorFactory(new DtraceInputProcessorFactory());
-        descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
-        descr = descr.inputOutput(InputOutput.NULL);
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descr, "DTraceDataCollector " + taskCommand); // NOI18N
-
-        dtraceTask = execService.run();
+        dtraceTask = NativeProcessExecutionService.newService(
+                npb, getOutputProcessor(), null, "DTrace output processor").start(); // NOI18N
 
         log.fine("DtraceDataCollector (" + dtraceTask.toString() + // NOI18N
                 ") for " + taskCommand + " STARTED"); // NOI18N
@@ -545,7 +539,7 @@ public final class DtraceDataCollector
         validationListeners.remove(listener);
     }
 
-    void notifyStatusChanged(Validateable validatable,
+    void notifyStatusChanged(Validateable<DLightTarget> validatable,
             ValidationStatus oldStatus, ValidationStatus newStatus) {
         if (oldStatus.equals(newStatus)) {
             return;
@@ -590,58 +584,50 @@ public final class DtraceDataCollector
         }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
-    private final class ProcessLineCallBackImpl implements ProcessLineCallback {
+    private final class DefaultOutputProcessor implements LineProcessor {
 
-        private long maxTimestamp;
-
+        @Override
         public void processLine(String line) {
             DataRow dataRow = parser.process(line);
+            addDataRow(dataRow);
+        }
+
+        private void addDataRow(DataRow dataRow) {
             if (dataRow != null) {
                 if (storage != null && tableMetaData != null) {
-                    storage.addData(
-                            tableMetaData.getName(), Arrays.asList(dataRow));
+                    storage.addData(tableMetaData.getName(), Arrays.asList(dataRow));
                 }
-                long curTimestamp = getTimestamp(dataRow);
-                if (curTimestamp == -1 || maxTimestamp < curTimestamp) {
-                    synchronized (indicatorDataBuffer) {
-                        if (curTimestamp != -1) {
-                            maxTimestamp = curTimestamp;
-                        }
-                        indicatorDataBuffer.add(dataRow);
-                        if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
-                            if (isSlave) {
-                                if (parentCollector != null) {
-                                    parentCollector.notifyIndicators(indicatorDataBuffer);
-                                }
-                            } else {
-                                notifyIndicators(indicatorDataBuffer);
+                synchronized (indicatorDataBuffer) {
+                    indicatorDataBuffer.add(dataRow);
+                    if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
+                        if (isSlave) {
+                            if (parentCollector != null) {
+                                parentCollector.notifyIndicators(indicatorDataBuffer);
                             }
-                            indicatorDataBuffer.clear();
+                        } else {
+                            notifyIndicators(indicatorDataBuffer);
                         }
+                        indicatorDataBuffer.clear();
                     }
                 }
             }
         }
 
-        private long getTimestamp(DataRow row) {
-            Object timestamp = row.getData("timestamp"); // NOI18N
-            if (timestamp instanceof Number) {
-                return ((Number) timestamp).longValue();
-            } else if (timestamp instanceof String) {
-                try {
-                    return Long.parseLong((String) timestamp);
-                } catch (NumberFormatException ex) {
-                }
-            }
-            return -1;
+        public void reset() {
+        }
+
+        public void close() {
+            DataRow dataRow = parser.processClose();
+            addDataRow(dataRow);
         }
     }
 
-    private class MergedProcessLineCallbackImpl implements ProcessLineCallback {
+    private class MergedProcessLineCallbackImpl implements LineProcessor {
 
+        @Override
         public void processLine(String line) {
             DtraceDataCollector target = lastSlaveCollector;
             for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
@@ -653,39 +639,54 @@ public final class DtraceDataCollector
                 }
             }
             if (target != null) {
-                target.getProcessLineCallback().processLine(line);
+                target.getOutputProcessor().processLine(line);
             }
             lastSlaveCollector = target;
         }
-    }
 
-    private class DtraceInputProcessorFactory implements InputProcessorFactory {
+        public void reset() {
+        }
 
-        public InputProcessor newInputProcessor(InputProcessor p) {
-            return InputProcessors.bridge(new LineProcessor() {
-
-                @Override
-                public void processLine(String line) {
-                    callback.processLine(line);
-                }
-
-                public void reset() {
-                }
-
-                public void close() {
-                }
-            });
+        public void close() {
+            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
+                entry.getValue().getOutputProcessor().close();
+            }
         }
     }
 
-    private static class StdErrRedirectorFactory
-            implements InputProcessorFactory {
-
-        public InputProcessor newInputProcessor(InputProcessor p) {
-            return InputProcessors.copying(new OutputStreamWriter(System.err));
-        }
-    }
-
+//    private class DtraceInputProcessorFactory implements InputProcessorFactory {
+//
+//        public InputProcessor newInputProcessor(InputProcessor p) {
+//            return InputProcessors.bridge(new LineProcessor() {
+//
+//                @Override
+//                public void processLine(String line) {
+//                    callback.processLine(line);
+//                }
+//
+//                public void reset() {
+//                }
+//
+//                public void close() {
+//                    callback.processClose();
+//                }
+//            });
+//        }
+//    }
+//
+//    private static class StdErrRedirectorFactory
+//            implements InputProcessorFactory {
+//
+//        public InputProcessor newInputProcessor(InputProcessor p) {
+//            return InputProcessors.copying(new OutputStreamWriter(System.err) {
+//
+//                @Override
+//                public void close() throws IOException {
+//                    //Do not close System.err
+//                }
+//            });
+//        }
+//    }
     private File mergeScripts() {
         try {
             File output = File.createTempFile("dlight", ".d"); // NOI18N

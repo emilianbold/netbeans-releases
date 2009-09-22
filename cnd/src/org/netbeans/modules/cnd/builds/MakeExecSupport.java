@@ -71,11 +71,13 @@ public class MakeExecSupport extends ExecutionSupport {
     public final static String PROP_MAKE_COMMAND = "makeCommand"; // NOI18N
     public final static String PROP_MAKE_OPTIONS = "makeOptions"; // NOI18N
     public final static String PROP_MAKE_TARGETS = "makeTargets"; // NOI18N
+    private static final String PROP_ENVIRONMENT = "environment"; // NOI18N
     // The list of our properties
     private PropertySupport buildDirectoryProperty = null;
     private PropertySupport makeCommandProperty = null;
     private PropertySupport makeOptionsProperty = null;
     private PropertySupport makeTargetsProperty = null;
+    private PropertySupport makeEnvironmentProperty = null;;
     /** Store a File of the Build directory */
     private File buildDir;
     private static ResourceBundle bundle = NbBundle.getBundle(MakeExecSupport.class);
@@ -100,6 +102,7 @@ public class MakeExecSupport extends ExecutionSupport {
             makeCommandProperty = createMakeCommandProperty();
             makeOptionsProperty = createMakeOptionsProperty();
             makeTargetsProperty = createMakeTargetsProperty();
+            makeEnvironmentProperty = createEnvironmentProperty(PROP_ENVIRONMENT, getString("PROP_MAKE_ENVIRONMENT"), getString("HINT_MAKE_ENVIRONMENT")); // NOI18N
         }
     }
 
@@ -120,6 +123,7 @@ public class MakeExecSupport extends ExecutionSupport {
         set.put(makeCommandProperty);
         set.put(makeOptionsProperty);
         set.put(makeTargetsProperty);
+        set.put(makeEnvironmentProperty);
 
     }
 

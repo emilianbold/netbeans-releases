@@ -1,4 +1,4 @@
-class MyController
+class MyController < ApplicationController
   def update
     # This line should produce a warning
     @product = Product.find_all(params[:id])

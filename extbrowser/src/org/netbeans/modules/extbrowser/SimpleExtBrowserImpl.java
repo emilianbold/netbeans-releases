@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.beans.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

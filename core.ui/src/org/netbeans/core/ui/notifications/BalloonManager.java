@@ -484,11 +484,11 @@ class BalloonManager {
     static class DismissButton extends JButton {
 
         public DismissButton() {
-            Image img = ImageUtilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_enabled.png" );
+            Image img = ImageUtilities.loadImage( "org/netbeans/core/ui/resources/dismiss_enabled.png" );
             setIcon( new ImageIcon( img ) );
-            img = ImageUtilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_rollover.png" );
+            img = ImageUtilities.loadImage( "org/netbeans/core/ui/resources/dismiss_rollover.png" );
             setRolloverIcon(new ImageIcon( img ));
-            img = ImageUtilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_pressed.png" );
+            img = ImageUtilities.loadImage( "org/netbeans/core/ui/resources/dismiss_pressed.png" );
             setPressedIcon(new ImageIcon( img ));
 
             setBorder( BorderFactory.createEmptyBorder() );

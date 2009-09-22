@@ -39,17 +39,25 @@
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,7 +65,7 @@ import org.openide.util.Lookup;
  */
 public final class MultipleCallStackPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider{
     private final ExplorerManager manager = new ExplorerManager();
-    private final MultipleCallStackRootNode rootNode = new MultipleCallStackRootNode();
+    private final MultipleCallStackRootNode rootNode;
     private final BeanTreeView treeView;
     private Lookup lookup;
     private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
@@ -67,12 +75,38 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider){
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
-        manager.setRootContext(rootNode);//NOI18N
         lookup = ExplorerUtils.createLookup(manager, new ActionMap());
         treeView = new BeanTreeView();
         treeView.setRootVisible(false);
         add(treeView);
-    
+        Action expandAll = new AbstractAction(NbBundle.getMessage(MultipleCallStackPanel.class, "ExpandAll")) {//NOI18N
+
+            public void actionPerformed(ActionEvent e) {
+                MultipleCallStackPanel.this.treeView.expandAll();
+            }
+        };
+        rootNode = new MultipleCallStackRootNode(expandAll);
+        manager.setRootContext(rootNode);//NOI18N
+
+        final JPopupMenu popup = new JPopupMenu();
+        popup.add(expandAll);
+        addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)){
+                    popup.show(MultipleCallStackPanel.this, e.getX(), e.getY());
+                }
+            }
+
+
+
+        });
+        ActionMap map = new ActionMap();
+        map.put("org.openide.actions.PopupAction", expandAll);//NOI18N
+        setActionMap(map);
+        treeView.setPopupAllowed(true);
+        treeView.setActionMap(map);
     }
 
     public static final  MultipleCallStackPanel createInstance(){

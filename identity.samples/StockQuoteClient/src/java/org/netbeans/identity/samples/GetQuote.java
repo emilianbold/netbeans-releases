@@ -42,7 +42,6 @@
 package org.netbeans.identity.samples;
 
 import java.io.*;
-import javax.jws.HandlerChain;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -57,7 +56,6 @@ public class GetQuote extends HttpServlet {
   
     @WebServiceRef(wsdlLocation =
         "http://localhost:8080/StockQuoteService/StockService?wsdl")
-    @HandlerChain( file="handlers.xml", name="" )
     private org.netbeans.identity.samples.StockService service;
     
     /**

@@ -768,8 +768,14 @@ public final class PlatformUiSupport {
         }
     }
 
+    /**
+     * Retturns a {@link JavaPlatform} for given {@link PlatformKey}
+     * or null when the platformKey is either null or not bound to a platform.
+     * @param platformKey
+     * @return java platform
+     */
     private static JavaPlatform getPlatform(PlatformKey platformKey) {
-        return platformKey.platform;
+        return platformKey == null ? null : platformKey.platform;
     }
 
     private static JavaPlatform findPlatform(String displayName) {

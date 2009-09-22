@@ -97,15 +97,11 @@ import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.NestedElementValue;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
-import org.netbeans.modules.java.source.util.LowMemoryEvent;
-import org.netbeans.modules.java.source.util.LowMemoryListener;
-import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,7 +115,7 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
-public class BinaryAnalyser implements LowMemoryListener {
+public class BinaryAnalyser {
 
     public enum Result {
         FINISHED,
@@ -135,13 +131,13 @@ public class BinaryAnalyser implements LowMemoryListener {
     private final Index index;
     private final Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
-    private final AtomicBoolean lowMemory;
+    private final LMListener lmListener;
     private Continuation cont;
 
     public BinaryAnalyser (Index index) {
        assert index != null;
        this.index = index;
-       this.lowMemory = new AtomicBoolean (false);
+       this.lmListener = new LMListener();
     }
     
         /** Analyses a classpath root.
@@ -151,73 +147,68 @@ public class BinaryAnalyser implements LowMemoryListener {
     public final Result start (final URL root, final AtomicBoolean cancel, final AtomicBoolean closed) throws IOException, IllegalArgumentException  {
         assert root != null;        
         assert cont == null;
-        LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
-        try {
-            String mainP = root.getProtocol();
-            if ("jar".equals(mainP)) {          //NOI18N
-                URL innerURL = FileUtil.getArchiveFile(root);
-                if ("file".equals(innerURL.getProtocol())) {  //NOI18N
-                    //Fast way
-                    File archive = new File (URI.create(innerURL.toExternalForm()));
-                    if (archive.exists() && archive.canRead()) {
-                        if (!isUpToDate(null,archive.lastModified())) {
-                            index.clear();
-                            try {
-                                final ZipFile zipFile = new ZipFile(archive);
-                                prebuildArgs(zipFile, root);
-                                final Enumeration<? extends ZipEntry> e = zipFile.entries();        
-                                cont = new ZipContinuation (zipFile, e, cancel, closed);
-                                return cont.execute();
-                            } catch (ZipException e) {
-                                LOGGER.warning("Broken zip file: " + archive.getAbsolutePath());
-                            }
-                        }
-                    }
-                }
-                else {
-                    FileObject rootFo =  URLMapper.findFileObject(root);
-                    if (rootFo != null) {
-                        if (!isUpToDate(null,rootFo.lastModified().getTime())) {
-                            index.clear();
-                            Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                            cont = new FileObjectContinuation (todo,cancel,closed);
-                            return cont.execute();
-                        }
-                    }
-                }
-            }
-            else if ("file".equals(mainP)) {    //NOI18N
+        String mainP = root.getProtocol();
+        if ("jar".equals(mainP)) {          //NOI18N
+            URL innerURL = FileUtil.getArchiveFile(root);
+            if ("file".equals(innerURL.getProtocol())) {  //NOI18N
                 //Fast way
-                File rootFile = new File (URI.create(root.toExternalForm()));
-                if (rootFile.isDirectory()) {
-                    String path = rootFile.getAbsolutePath ();
-                    if (path.charAt(path.length()-1) != File.separatorChar) {
-                        path = path + File.separatorChar;
-                    }
-                    LinkedList<File> todo = new LinkedList<File> ();
-                    if (rootFile.isDirectory() && rootFile.canRead()) {
-                        File[] children = rootFile.listFiles();  
-                        if (children != null) {
-                            todo.addAll(Arrays.asList(children));
+                File archive = new File (URI.create(innerURL.toExternalForm()));
+                if (archive.exists() && archive.canRead()) {
+                    if (!isUpToDate(null,archive.lastModified())) {
+                        index.clear();
+                        try {
+                            final ZipFile zipFile = new ZipFile(archive);
+                            prebuildArgs(zipFile, root);
+                            final Enumeration<? extends ZipEntry> e = zipFile.entries();
+                            cont = new ZipContinuation (zipFile, e, cancel, closed);
+                            return cont.execute();
+                        } catch (ZipException e) {
+                            LOGGER.warning("Broken zip file: " + archive.getAbsolutePath());
                         }
-                    }                    
-                    cont = new FolderContinuation (todo, path, cancel,closed);
-                    return cont.execute();
+                    }
                 }
             }
             else {
                 FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
-                    index.clear();
-                    Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                    cont = new FileObjectContinuation (todo,cancel,closed);
-                    return cont.execute();
+                    if (!isUpToDate(null,rootFo.lastModified().getTime())) {
+                        index.clear();
+                        Enumeration<? extends FileObject> todo = rootFo.getData(true);
+                        cont = new FileObjectContinuation (todo,cancel,closed);
+                        return cont.execute();
+                    }
                 }
             }
-            return Result.FINISHED;
-        } finally {
-            LowMemoryNotifier.getDefault().removeLowMemoryListener(BinaryAnalyser.this);
-        }                
+        }
+        else if ("file".equals(mainP)) {    //NOI18N
+            //Fast way
+            File rootFile = new File (URI.create(root.toExternalForm()));
+            if (rootFile.isDirectory()) {
+                String path = rootFile.getAbsolutePath ();
+                if (path.charAt(path.length()-1) != File.separatorChar) {
+                    path = path + File.separatorChar;
+                }
+                LinkedList<File> todo = new LinkedList<File> ();
+                if (rootFile.isDirectory() && rootFile.canRead()) {
+                    File[] children = rootFile.listFiles();
+                    if (children != null) {
+                        todo.addAll(Arrays.asList(children));
+                    }
+                }
+                cont = new FolderContinuation (todo, path, cancel,closed);
+                return cont.execute();
+            }
+        }
+        else {
+            FileObject rootFo =  URLMapper.findFileObject(root);
+            if (rootFo != null) {
+                index.clear();
+                Enumeration<? extends FileObject> todo = rootFo.getData(true);
+                cont = new FileObjectContinuation (todo,cancel,closed);
+                return cont.execute();
+            }
+        }
+        return Result.FINISHED;                        
     }
     
     public Result resume () throws IOException {
@@ -241,16 +232,7 @@ public class BinaryAnalyser implements LowMemoryListener {
         }
         return time;
     }
-    
-    public void clear () throws IOException {
-        if (cont != null) {
-            cont.finish();
-            cont = null;
-        }
-        index.clear();
-    }
-    
-    
+                
         /** Analyses a folder 
      *  @param folder to analyze
      *  @param rootURL the url of root, it would be nicer to pass an URL type,
@@ -296,7 +278,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                         LOGGER.warning("Cannot read file: " + file.getAbsolutePath());      //NOI18N
                         LOGGER.log(Level.FINE, null, ex);
                     }
-                    if (this.lowMemory.getAndSet(false)) {
+                    if (this.lmListener.isLowMemory()) {
                         this.store();
                     }
                 }
@@ -330,7 +312,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 finally {
                     in.close();
                 }
-                if (this.lowMemory.getAndSet(false)) {
+                if (this.lmListener.isLowMemory()) {
                     this.store();
                 }
             }
@@ -358,7 +340,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 finally {
                     in.close();
                 }
-                if (this.lowMemory.getAndSet(false)) {
+                if (this.lmListener.isLowMemory()) {
                     this.store();
                 }
             }
@@ -375,16 +357,9 @@ public class BinaryAnalyser implements LowMemoryListener {
     
     //Cleans up usages of deleted class
     private final void delete (final String className) throws IOException {
-        assert className != null;
-        if (!this.index.isValid(false)) {
-            return;
-        }
+        assert className != null;        
         this.toDelete.add(Pair.<String,String>of(className,null));
-    }
-    
-    public void lowMemory (final LowMemoryEvent event) {
-        this.lowMemory.set(true);
-    }
+    }    
 
     // Implementation of StreamAnalyser ----------------------------------------           
     

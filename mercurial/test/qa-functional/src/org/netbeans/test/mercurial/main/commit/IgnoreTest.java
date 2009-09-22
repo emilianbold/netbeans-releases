@@ -16,11 +16,13 @@ import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
@@ -63,8 +65,13 @@ public class IgnoreTest extends JellyTestCase {
     }
         
     public void testIgnoreUnignoreFile() throws Exception {
+
+
+            NbDialogOperator ndo = null;
+            
         try {
             MessageHandler mh = new MessageHandler("Ignoring");
+
             log.addHandler(mh);
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 NewProjectWizardOperator.invoke().close();
@@ -74,24 +81,37 @@ public class IgnoreTest extends JellyTestCase {
             ProjectSupport.waitScanFinished();
             new EventTool().waitNoEvent(1000);
             new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME).performPopupActionNoBlock("Versioning|Initialize Mercurial Project");
-            
+
+            ndo = new NbDialogOperator("Repository root path");
+            JButtonOperator buttOperator = new JButtonOperator(ndo,"OK");
+            buttOperator.push();
+
+
+            new EventTool().waitNoEvent(5000);
+
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+
+
 
             TestKit.createNewElement(PROJECT_NAME, "javaappignunign", "NewClassIgnUnign");
 
-            Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClassIgnUnign");
+           
+
+            Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
+          
             node.performPopupAction("Mercurial|Toggle Ignore");
-            String outputTabName=TestKit.getProjectAbsolutePath(PROJECT_NAME);
+//            String outputTabName=TestKit.getProjectAbsolutePath(PROJECT_NAME);
 
             TestKit.waitText(mh);
-
-            new EventTool().waitNoEvent(1000);
+           
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
+            
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
-            new EventTool().waitNoEvent(1000);
+       
+
             String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong color of node - file color should be ignored!!!", TestKit.IGNORED_COLOR, color);
@@ -113,7 +133,7 @@ public class IgnoreTest extends JellyTestCase {
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
-            new EventTool().waitNoEvent(1000);
+            new EventTool().waitNoEvent(5000);
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong color of node - file color should be new!!!", TestKit.NEW_COLOR, color);

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -49,6 +50,7 @@ import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
+import org.netbeans.modules.hudson.ui.actions.AddTestInstanceAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -76,9 +78,12 @@ public class HudsonRootNode extends AbstractNode {
     }
     
     public @Override Action[] getActions(boolean context) {
-        return new Action[] {
-            new AddInstanceAction(),
-        };
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new AddInstanceAction());
+        if (HudsonManagerImpl.getDefault().getInstances().isEmpty()) {
+            actions.add(new AddTestInstanceAction());
+        }
+        return actions.toArray(new Action[actions.size()]);
     }
     
     private static class RootNodeChildren extends ChildFactory<HudsonInstanceImpl> implements HudsonChangeListener {

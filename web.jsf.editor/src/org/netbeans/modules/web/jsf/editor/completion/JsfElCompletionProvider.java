@@ -133,7 +133,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         complItems.addAll(items);
                         break;
                     case JsfElExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeys(
+                        List<CompletionItem> bitems = elExpr.getPropertyKeysCompletionItems(
                                 elExpr.getBundleName(), anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;
@@ -145,6 +145,9 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         ref_items = elExpr.getMethodCompletionItems(
                                 elExpr.getObjectClass(), anchor);
                         complItems.addAll(ref_items);
+                        break;
+                    case JsfElExpression.EL_COMPOSITE_COMPONENT:
+                        complItems.addAll(elExpr.getCompositeComponentItems(anchor));
                         break;
                 }
 //                for (int i = 0; i < complItems.size(); i++)

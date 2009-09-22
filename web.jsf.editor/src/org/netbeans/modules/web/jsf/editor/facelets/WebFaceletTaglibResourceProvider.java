@@ -75,6 +75,7 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
     public Collection<URL> getResources(ServletContext ignored) {
         try {
             MetadataModel<WebAppMetadata> model = wm.getMetadataModel();
+            assert model != null : "WebModule "+wm.getClass()+" does not implement getMetadataModel properly";
             String faceletsLibrariesList = model.runReadAction(new MetadataModelAction<WebAppMetadata, String>() {
                 public String run(WebAppMetadata metadata) throws Exception {
                     //TODO can be init param specified by some annotation or the dd must be present?

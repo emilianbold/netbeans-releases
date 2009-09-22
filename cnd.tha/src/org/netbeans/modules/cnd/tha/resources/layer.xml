@@ -4,6 +4,7 @@
     <folder name="DLight">
         <folder name="Configurations">
             <folder name="THA">
+                <attr name="displayedName" stringvalue="Thread Profiling"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightTHAToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightTHAToolConfigurationProvider.instance"/>
@@ -30,7 +31,7 @@
             </file>
         </folder>
         <folder name="Profile">
-            <file name="org-netbeans-modules-cnd-tha-actions-THAToolbarDropdownAction.instance"/>
+            <file name="org-netbeans-modules-cnd-tha-actions-THAMainProjectAction.instance"/>
         </folder>
     </folder>
     <folder name="Windows2">
@@ -47,8 +48,8 @@
     </folder>
     <folder name="Toolbars">
         <folder name="Build">
-            <file name="org-netbeans-modules-cnd-tha-actions-THAToolbarDropdownAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-cnd-tha-actions-THAToolbarDropdownAction.instance"/>
+            <file name="org-netbeans-modules-cnd-tha-actions-THAMainProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-cnd-tha-actions-THAMainProjectAction.instance"/>
                 <attr name="position" intvalue="500"/>
             </file>
         </folder>

@@ -138,7 +138,13 @@ public class SQLStatement {
         ORDER_BY(580),
         // UPDATE
         UPDATE(600),
-        SET(610);
+        SET(610),
+        // CREATE
+        CREATE(700),
+        CREATE_PROCEDURE(710),
+        CREATE_FUNCTION(720),
+        BEGIN(730),
+        END(740);
 
         private final int order;
 

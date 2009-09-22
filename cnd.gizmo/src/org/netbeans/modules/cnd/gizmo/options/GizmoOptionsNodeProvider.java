@@ -48,6 +48,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodePro
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -106,9 +109,15 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
         set = new Sheet.Set();
         set.setName("Indicators"); // NOI18N
         set.setDisplayName(getString("IndicatorsName"));//NOI18B
-        for (String name : gizmoOptions.getNames()){
-            set.put(new BooleanNodeProp(gizmoOptions.getConfigurationByName(name),
-                    true, name, name, gizmoOptions.getDescriptionByName(name)));
+        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        for (String id : gizmoOptions.getNames()){
+            DLightTool tool = gizmoConfiguration.getToolByID(id);
+            String name = id;
+            if (tool != null) {
+                name = tool.getName();
+            }
+            set.put(new BooleanNodeProp(gizmoOptions.getConfigurationByName(id),
+                    true, id, name, gizmoOptions.getDescriptionByName(id)));
         }
 //        set.put(new BooleanNodeProp(gizmoOptions.getCpu(), true, GizmoOptionsImpl.CPU_PROP, getString("cpu_txt"), getString("cpu_help"))); // NOI18N
 //        set.put(new BooleanNodeProp(gizmoOptions.getMemory(), true, GizmoOptionsImpl.MEMORY_PROP, getString("memory_txt"), getString("memory_help"))); // NOI18N

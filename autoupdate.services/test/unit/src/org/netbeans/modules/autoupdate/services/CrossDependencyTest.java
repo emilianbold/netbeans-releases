@@ -143,11 +143,11 @@ public class CrossDependencyTest extends NbmAdvancedTestCase {
             @Override
             public void run () {
                 final Set <Dependency> broken1 = new HashSet <Dependency> ();
-                Set <UpdateElement> set1 = Utilities.findRequiredUpdateElements(ue1, col, broken1);
+                Set <UpdateElement> set1 = Utilities.findRequiredUpdateElements(ue1, col, broken1, true);
                 System.out.println("required (1): " + set1);
                 System.out.println("broken (1): " + broken1);
                 final Set <Dependency> broken2 = new HashSet <Dependency> ();
-                Set <UpdateElement> set2 = Utilities.findRequiredUpdateElements(ue2, col, broken2);
+                Set <UpdateElement> set2 = Utilities.findRequiredUpdateElements(ue2, col, broken2, true);
                 System.out.println("required (2): " + set2);
                 System.out.println("broken (2): " + broken2);
             }

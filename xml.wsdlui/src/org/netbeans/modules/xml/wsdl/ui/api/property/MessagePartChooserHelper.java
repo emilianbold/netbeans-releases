@@ -43,53 +43,47 @@ package org.netbeans.modules.xml.wsdl.ui.api.property;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.ui.ProjectConstants;
 import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode.Children;
 import org.openide.util.NbBundle;
 
-public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
+public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent> {
 
     private Node projectsFolderNode;
     private WSDLModel model;
-    
+
     public MessagePartChooserHelper(WSDLModel model) {
         this.model = model;
     }
-    
+
     @Override
     public void populateNodes(Node parentNode) {
         List<Class<? extends WSDLComponent>> filters = new ArrayList<Class<? extends WSDLComponent>>();
         filters.add(Message.class);
-        
+
         FileObject wsdlFile = model.getModelSource().getLookup().lookup(FileObject.class);
-        projectsFolderNode = new FolderNode(new Children.Array()); 
+        projectsFolderNode = new FolderNode(new Children.Array());
         projectsFolderNode.setDisplayName(NbBundle.getMessage(MessagePartChooserHelper.class, "LBL_MessageParts_DisplayName"));
-        if(wsdlFile != null) {
+        if (wsdlFile != null) {
             Project project = FileOwnerQuery.getOwner(wsdlFile);
             if (project != null) {
                 LogicalViewProvider viewProvider = project.getLookup().lookup(LogicalViewProvider.class);
@@ -108,19 +102,20 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
                 projectsFolderNode.getChildren().add(nodes.toArray(new Node[nodes.size()]));
             }
         }
-        
+
         if (projectsFolderNode != null) {
-            parentNode.getChildren().add(new Node[] {projectsFolderNode});
+            parentNode.getChildren().add(new Node[]{projectsFolderNode});
         }
     }
-    
 
     @Override
     public Node selectNode(WSDLComponent comp) {
-        if (comp == null) return null;
+        if (comp == null) {
+            return null;
+        }
         return selectNode(projectsFolderNode, comp);
     }
-    
+
     private Node selectNode(Node parentNode, WSDLComponent element) {
         org.openide.nodes.Children children = parentNode.getChildren();
         for (Node node : children.getNodes()) {
@@ -128,11 +123,11 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
             if (sc == null) {
                 sc = node.getLookup().lookup(WSDLComponent.class);
             }
-            
+
             if (sc == element) {
                 return node;
             }
-            
+
             Node node1 = selectNode(node, element);
             if (node1 != null) {
                 return node1;
@@ -140,34 +135,35 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
         }
         return null;
     }
-    
+
     class WSDLProjectFolderNode extends FilterNode {
+
         public WSDLProjectFolderNode(Node original, Project project, List<Class<? extends WSDLComponent>> filters) {
-            super(original, new WSDLProjectFolderChildren(project, filters));
+            super(original, new WSDLProjectFolderChildren(original, project, filters));
         }
     }
-    
+
     class WSDLProjectFolderChildren extends Children.Keys<FileObject> {
 
         private final FileObject projectDir;
-        private final Project project;
+        private final Node original;
         private final List<Class<? extends WSDLComponent>> filters;
         private Set<FileObject> emptySet = Collections.emptySet();
 
-        public WSDLProjectFolderChildren (Project project, List<Class<? extends WSDLComponent>> filters) {
-            this.project = project;
+        public WSDLProjectFolderChildren(Node original, Project project, List<Class<? extends WSDLComponent>> filters) {
+            this.original = original;
             this.filters = filters;
             this.projectDir = project.getProjectDirectory();
         }
 
         @Override
         public Node[] createNodes(FileObject fo) {
-            ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false); 
+            ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
             WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(modelSource);
             NodesFactory factory = NodesFactory.getInstance();
-            return new Node[] {new FileNode(
-                    factory.createFilteredDefinitionNode(wsdlModel.getDefinitions(), filters), 
-                    FileUtil.getRelativePath(projectDir, fo), 2)};
+            return new Node[]{new FileNode(
+                        factory.createFilteredDefinitionNode(wsdlModel.getDefinitions(), filters),
+                        FileUtil.getRelativePath(projectDir, fo), 2)};
 
         }
 
@@ -184,10 +180,12 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
 
         private void resetKeys() {
             ArrayList<FileObject> keys = new ArrayList<FileObject>();
-            List<SourceGroup> sourceRoots = Utility.getSourceRoots(project);
-            for (SourceGroup srcGrp : sourceRoots) {
-                FileObject rootFolder = srcGrp.getRootFolder();
-                List<File> files = getFilesFromNonBuildFolders(rootFolder, new WSDLFileFilter());
+
+            Set<FileObject> validFolders = new HashSet<FileObject>();
+            populateValidFolders(original, validFolders);
+            
+            for (FileObject rootFolder : validFolders) {
+                List<File> files = recursiveListFiles(FileUtil.toFile(rootFolder), new WSDLFileFilter());
                 for (File file : files) {
                     FileObject fo = FileUtil.toFileObject(file);
                     keys.add(fo);
@@ -196,12 +194,9 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
 
             this.setKeys(keys);
         }
-
     }
-    
-    
     public static final String WSDL_FILE_EXTENSION = "wsdl";
-    
+
     static class WSDLFileFilter implements FileFilter {
 
         public boolean accept(File pathname) {
@@ -209,17 +204,15 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
             String fileName = pathname.getName();
             String fileExtension = null;
             int dotIndex = fileName.lastIndexOf('.');
-            if(dotIndex != -1) {
-                fileExtension = fileName.substring(dotIndex +1);
+            if (dotIndex != -1) {
+                fileExtension = fileName.substring(dotIndex + 1);
             }
 
-            if(fileExtension != null 
-                    && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION))) {
+            if (fileExtension != null && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION))) {
                 result = true;
             }
 
             return result;
         }
     }
-
 }

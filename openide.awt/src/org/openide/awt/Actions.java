@@ -44,18 +44,11 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageProducer;
-import java.awt.image.RGBImageFilter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -65,7 +58,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -95,12 +87,6 @@ import org.openide.util.actions.SystemAction;
 * @author   Jaroslav Tulach
 */
 public class Actions extends Object {
-    private static Map<Action, Reference<JMenuItem>> menuActionCache;
-    private static Object menuActionLock = new Object();
-
-    /** Shared instance of filter for disabled icons */
-    private static RGBImageFilter DISABLED_BUTTON_FILTER;
-
     /**
      * Make sure an icon is not null, so that e.g. menu items for javax.swing.Action's
      * with no specified icon are correctly aligned. SystemAction already does this so
@@ -367,7 +353,7 @@ public class Actions extends Object {
     }
     // for use from layers
     static Action alwaysEnabled(Map map) {
-        return new AlwaysEnabledAction(map);
+        return AlwaysEnabledAction.create(map);
     }
 
     /** Creates new "callback" action. Such action has an assigned key
@@ -625,50 +611,6 @@ public class Actions extends Object {
         }
     }
 
-    private static Icon createDisabledIcon(Image img) {
-        return new LazyDisabledIcon( img );
-    }
-
-    private static RGBImageFilter disabledButtonFilter() {
-        if (DISABLED_BUTTON_FILTER == null) {
-            DISABLED_BUTTON_FILTER = new DisabledButtonFilter();
-        }
-
-        return DISABLED_BUTTON_FILTER;
-    }
-    
-    private static class LazyDisabledIcon implements Icon {
-        private Image img;
-        private Icon disabledIcon;
-        
-        public LazyDisabledIcon( Image img ) {
-            assert null != img;
-            this.img = img;
-        }
-        
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            getDisabledIcon().paintIcon(c, g, x, y);
-        }
-
-        public int getIconWidth() {
-            return getDisabledIcon().getIconWidth();
-        }
-
-        public int getIconHeight() {
-            return getDisabledIcon().getIconHeight();
-        }
-        
-        private Icon getDisabledIcon() {
-            if( null == disabledIcon ) {
-                ImageProducer prod = new FilteredImageSource(img.getSource(), disabledButtonFilter());
-
-                disabledIcon = new ImageIcon(Toolkit.getDefaultToolkit().createImage(prod), "");
-            }
-            return disabledIcon;
-        }
-    }
-            
-
     /** Interface for the creating Actions.SubMenu. It provides the methods for
     * all items in submenu: name shortcut and perform method. Also has methods
     * for notification of changes of the model.
@@ -850,82 +792,66 @@ public class Actions extends Object {
             if (action instanceof SystemAction) {
                 if (base instanceof String) {
                     String b = (String) base;
-                    Image img = null;
+                    ImageIcon imgIcon = null;
 
                     if (!useSmallIcon) {
-                        img = ImageUtilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
-
-                        if (img == null) {
-                            img = ImageUtilities.loadImage(b, true);
+                        imgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "24"), true); // NOI18N
+                        if (imgIcon == null) {
+                            imgIcon = ImageUtilities.loadImageIcon(b, true);
                         }
                     } else {
-                        img = ImageUtilities.loadImage(b, true);
+                        imgIcon = ImageUtilities.loadImageIcon(b, true);
                     }
 
-                    if (img != null) {
-                        i = new ImageIcon(img);
-                        button.setIcon((Icon) i);
-                        button.setDisabledIcon(createDisabledIcon(img));
+                    if (imgIcon != null) {
+                        i = imgIcon;
+                        button.setIcon(imgIcon);
+                        button.setDisabledIcon(ImageUtilities.createDisabledIcon(imgIcon));
                     } else {
                         SystemAction sa = (SystemAction) action;
                         i = sa.getIcon(useTextIcons());
                         button.setIcon((Icon) i);
-
-                        if (i instanceof ImageIcon) {
-                            button.setDisabledIcon(createDisabledIcon(((ImageIcon) i).getImage()));
-                        }
+                        button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
                     }
                 } else {
                     SystemAction sa = (SystemAction) action;
                     i = sa.getIcon(useTextIcons());
                     button.setIcon((Icon) i);
-
-                    if (i instanceof ImageIcon) {
-                        button.setDisabledIcon(createDisabledIcon(((ImageIcon) i).getImage()));
-                    }
+                    button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
                 }
             } else {
                 //Try to get icon from iconBase for non SystemAction action
                 if (base instanceof String) {
                     String b = (String) base;
-                    Image img = null;
+                    ImageIcon imgIcon = null;
 
                     if (!useSmallIcon) {
-                        img = ImageUtilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
-
-                        if (img == null) {
-                            img = ImageUtilities.loadImage(b, true);
+                        imgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "24"), true); // NOI18N
+                        if (imgIcon == null) {
+                            imgIcon = ImageUtilities.loadImageIcon(b, true);
                         }
                     } else {
-                        img = ImageUtilities.loadImage(b, true);
+                        imgIcon = ImageUtilities.loadImageIcon(b, true);
                     }
 
-                    if (img != null) {
-                        i = new ImageIcon(img);
+                    if (imgIcon != null) {
+                        i = imgIcon;
                         button.setIcon((Icon) i);
-                        button.setDisabledIcon(createDisabledIcon(img));
+                        button.setDisabledIcon(ImageUtilities.createDisabledIcon(imgIcon));
                     } else {
                         i = action.getValue(Action.SMALL_ICON);
-
                         if (i instanceof Icon) {
                             button.setIcon((Icon) i);
-
-                            if (i instanceof ImageIcon) {
-                                button.setDisabledIcon(createDisabledIcon(((ImageIcon) i).getImage()));
-                            }
+                            button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
                         } else {
                             button.setIcon(nonNullIcon(null));
                         }
                     }
                 } else {
                     i = action.getValue(Action.SMALL_ICON);
-
                     if (i instanceof Icon) {
                         button.setIcon((Icon) i);
-
-                        if (i instanceof ImageIcon) {
-                            button.setDisabledIcon(createDisabledIcon(((ImageIcon) i).getImage()));
-                        }
+                        button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
                     } else {
                         button.setIcon(nonNullIcon(null));
                     }
@@ -939,37 +865,32 @@ public class Actions extends Object {
                     b = insertBeforeSuffix(b, "24"); //NOI18N
                 }
 
-                Image img = null;
+                ImageIcon imgIcon = null;
 
                 if (i == null) {
                     // even for regular icon
-                    img = ImageUtilities.loadImage(b, true);
-
-                    if (img != null) {
-                        button.setIcon(new ImageIcon(img));
+                    imgIcon = ImageUtilities.loadImageIcon(b, true);
+                    if (imgIcon != null) {
+                        button.setIcon(imgIcon);
                     }
-
-                    i = img;
+                    i = imgIcon;
                 }
 
-                Image pImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
-
-                if (pImg != null) {
-                    button.setPressedIcon(new ImageIcon(pImg));
+                ImageIcon pImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
+                if (pImgIcon != null) {
+                    button.setPressedIcon(pImgIcon);
                 }
 
-                Image rImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
-
-                if (rImg != null) {
-                    button.setRolloverIcon(new ImageIcon(rImg));
+                ImageIcon rImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
+                if (rImgIcon != null) {
+                    button.setRolloverIcon(rImgIcon);
                 }
 
-                Image dImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
-
-                if (dImg != null) {
-                    button.setDisabledIcon(ImageUtilities.image2Icon(dImg));
-                } else if (img != null) {
-                    button.setDisabledIcon(createDisabledIcon(img));
+                ImageIcon dImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
+                if (dImgIcon != null) {
+                    button.setDisabledIcon(dImgIcon);
+                } else if (imgIcon != null) {
+                    button.setDisabledIcon(ImageUtilities.createDisabledIcon(imgIcon));
                 }
             }
         }
@@ -1150,19 +1071,12 @@ public class Actions extends Object {
                 SystemAction sa = (SystemAction) action;
                 i = sa.getIcon(useTextIcons());
                 button.setIcon((Icon) i);
-
-                if (i instanceof ImageIcon) {
-                    button.setDisabledIcon(createDisabledIcon(((ImageIcon) i).getImage()));
-                }
+                button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
             } else {
                 i = action.getValue(Action.SMALL_ICON);
-
                 if (i instanceof Icon) {
                     button.setIcon((Icon) i);
-
-                    if (i instanceof ImageIcon) {
-                        button.setDisabledIcon(createDisabledIcon(((ImageIcon) i).getImage()));
-                    }
+                    button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
                 } else {
                     //button.setIcon(nonNullIcon(null));
                 }
@@ -1172,36 +1086,32 @@ public class Actions extends Object {
 
             if (base instanceof String) {
                 String b = (String) base;
-                Image img = null;
+                ImageIcon imgIcon = null;
 
                 if (i == null) {
                     // even for regular icon
-                    img = ImageUtilities.loadImage(b, true);
-
-                    if (img != null) {
-                        button.setIcon(new ImageIcon(img));
-                        button.setDisabledIcon(createDisabledIcon(img));
+                    imgIcon = ImageUtilities.loadImageIcon(b, true);
+                    if (imgIcon != null) {
+                        button.setIcon(imgIcon);
+                        button.setDisabledIcon(ImageUtilities.createDisabledIcon(imgIcon));
                     }
                 }
 
-                Image pImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
-
-                if (pImg != null) {
-                    button.setPressedIcon(new ImageIcon(pImg));
+                ImageIcon pImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
+                if (pImgIcon != null) {
+                    button.setPressedIcon(pImgIcon);
                 }
 
-                Image rImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
-
-                if (rImg != null) {
-                    button.setRolloverIcon(new ImageIcon(rImg));
+                ImageIcon rImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
+                if (rImgIcon != null) {
+                    button.setRolloverIcon(rImgIcon);
                 }
 
-                Image dImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
-
-                if (dImg != null) {
-                    button.setDisabledIcon(new ImageIcon(dImg));
-                } else if (img != null) {
-                    button.setDisabledIcon(createDisabledIcon(img));
+                ImageIcon dImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
+                if (dImgIcon != null) {
+                    button.setDisabledIcon(dImgIcon);
+                } else if (imgIcon != null) {
+                    button.setDisabledIcon(ImageUtilities.createDisabledIcon(imgIcon));
                 }
             }
         }
@@ -1626,25 +1536,5 @@ public class Actions extends Object {
          *    default connect implementation is called
          */
         boolean connect(JMenuItem item, Action action, boolean popup);
-    }
-
-    private static class DisabledButtonFilter extends RGBImageFilter {
-        DisabledButtonFilter() {
-            canFilterIndexColorModel = true;
-        }
-
-        public int filterRGB(int x, int y, int rgb) {
-            // Reduce the color bandwidth in quarter (>> 2) and Shift 0x88.
-            return (rgb & 0xff000000) + 0x888888 + ((((rgb >> 16) & 0xff) >> 2) << 16) +
-            ((((rgb >> 8) & 0xff) >> 2) << 8) + (((rgb) & 0xff) >> 2);
-        }
-
-        // override the superclass behaviour to not pollute
-        // the heap with useless properties strings. Saves tens of KBs
-        @Override
-        public void setProperties(Hashtable props) {
-            props = (Hashtable) props.clone();
-            consumer.setProperties(props);
-        }
     }
 }

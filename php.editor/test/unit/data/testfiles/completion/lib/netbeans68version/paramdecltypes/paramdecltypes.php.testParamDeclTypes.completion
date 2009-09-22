@@ -1,0 +1,76 @@
+Code completion result for source line:
+function paramsfnc($a,$b,$c,$d) {|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CLASS      clsA                                       paramdecltypes.php
+CLASS      ifaceA                                     paramdecltypes.php
+METHOD     paramsfnc($a, $b, $c, $d)                  paramdecltypes.php
+VARIABLE   ? $a                                       paramdecltypes.php
+VARIABLE   ? $b                                       paramdecltypes.php
+VARIABLE   ? $c                                       paramdecltypes.php
+VARIABLE   ? $d                                       paramdecltypes.php
+------------------------------------
+VARIABLE   $GLOBALS                                   PHP Platform
+VARIABLE   $HTTP_RAW_POST_DATA                        PHP Platform
+VARIABLE   $_COOKIE                                   PHP Platform
+VARIABLE   $_ENV                                      PHP Platform
+VARIABLE   $_FILES                                    PHP Platform
+VARIABLE   $_GET                                      PHP Platform
+VARIABLE   $_POST                                     PHP Platform
+VARIABLE   $_REQUEST                                  PHP Platform
+VARIABLE   $_SERVER                                   PHP Platform
+VARIABLE   $_SESSION                                  PHP Platform
+VARIABLE   $argc                                      PHP Platform
+VARIABLE   $argv                                      PHP Platform
+VARIABLE   $http_response_header                      PHP Platform
+VARIABLE   $php_errormsg                              PHP Platform
+KEYWORD    __CLASS__                                  null
+KEYWORD    __FILE__                                   null
+KEYWORD    __FUNCTION__                               null
+KEYWORD    __LINE__                                   null
+KEYWORD    __METHOD__                                 null
+KEYWORD    abstract                                   null
+KEYWORD    array                                      null
+KEYWORD    case                                       null
+KEYWORD    catch                                      null
+KEYWORD    class                                      null
+KEYWORD    clone                                      null
+KEYWORD    const                                      null
+KEYWORD    continue                                   null
+KEYWORD    die                                        null
+KEYWORD    echo                                       null
+KEYWORD    empty                                      null
+KEYWORD    endif                                      null
+KEYWORD    eval                                       null
+KEYWORD    exit                                       null
+KEYWORD    extends                                    null
+KEYWORD    final                                      null
+KEYWORD    for                                        null
+KEYWORD    foreach                                    null
+KEYWORD    function                                   null
+KEYWORD    global                                     null
+KEYWORD    if                                         null
+KEYWORD    implements                                 null
+KEYWORD    include                                    null
+KEYWORD    include_once                               null
+KEYWORD    instanceof                                 null
+KEYWORD    interface                                  null
+KEYWORD    isset                                      null
+KEYWORD    list                                       null
+KEYWORD    namespace                                  null
+KEYWORD    new                                        null
+KEYWORD    php_user_filter                            null
+KEYWORD    print                                      null
+KEYWORD    private                                    null
+KEYWORD    protected                                  null
+KEYWORD    public                                     null
+KEYWORD    require                                    null
+KEYWORD    require_once                               null
+KEYWORD    return                                     null
+KEYWORD    static                                     null
+KEYWORD    switch                                     null
+KEYWORD    throw                                      null
+KEYWORD    try                                        null
+KEYWORD    unset                                      null
+KEYWORD    use                                        null
+KEYWORD    var                                        null
+KEYWORD    while                                      null

@@ -46,6 +46,8 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -128,168 +130,6 @@ public class RubyUtils {
         return sb.toString();
     }
     
-    private static final String S = "s";
-    private static final String ES = "es";
-
-    /** Pluralize, Rails style. This needs to roll in more magic from
-     * Inflector.pluralize
-     * 
-     * @see activesupport/lib/active_support/inflections.rb
-     * @param word The word to be pluralized
-     * @return The pluralized word
-     */
-    public static String pluralize(String word) {
-        // Apply inflector rules - see inflections.rb in activesupport
-        char c = word.charAt(word.length()-1);
-        switch (c) {
-        case 't':
-        case 'T':
-            if (endsWithIgnoreCase(word, "equipment")) { // Uncountable
-                return word;
-            }
-            break;
-        case 'p':
-        case 'P':
-            if (endsWithIgnoreCase(word, "sheep")) { // Uncountable
-                return word;
-            }
-            break;
-        case 'd':
-        case 'D':
-            if (endsWithIgnoreCase(word, "child")) { // Irregular
-                return word + "ren";
-            }
-            break;
-        case 'n':
-        case 'N':
-            if (endsWithIgnoreCase(word, "information")) { // Uncountable
-                return word;
-            } else if (endsWithIgnoreCase(word, "man")) { // Irregular
-                return word.substring(0, word.length()-2) + "en";
-            } else if (endsWithIgnoreCase(word, "person")) { // Irregular
-                return word.substring(0, word.length()-5) + "eople";
-            }
-            break;
-        case 's':
-        case 'S':
-            if (endsWithIgnoreCase(word, "species") || endsWithIgnoreCase(word, "series")) { // Uncountable
-                return word;
-            } else if (endsWithIgnoreCase(word,"axis") || endsWithIgnoreCase(word, "testis")) {
-                  // "(ax|test)is$", "\\1es",
-                return word.substring(0, word.length()-2) + ES;
-            } else if (endsWithIgnoreCase(word, "ss")) {
-                // Part of "(x|ch|ss|sh)$", "\\1es",
-                return word + ES;
-            } else if (endsWithIgnoreCase(word,"alias") || endsWithIgnoreCase(word,"status")) {
-                // "(alias|status)$", "\\1es",
-                return word + ES;
-            } else if (endsWithIgnoreCase(word, "us")) {
-                //"(octop|vir)(us)$", "\\1i",
-                return word.substring(0, word.length()-2) + "i";
-            } else if (endsWithIgnoreCase(word, "bus")) {
-                // "(bu)s$", "\\1ses",
-                return word.substring(0, word.length()-1) + "ses";
-            } else if (endsWithIgnoreCase(word, "sis")) {
-                // "sis$", "ses",
-                return word.substring(0, word.length()-2) + ES;
-            }
-            
-            // Ends with just s -- fall back to just the word itself
-            //   inflect.plural(/s$/i, 's')
-            return word;
-        case 'o':
-        case 'O':
-            if (endsWithIgnoreCase(word, "buffalo") || endsWithIgnoreCase(word, "tomato")) {
-                // "(buffal|tomat)o$", "\\1oes",
-                return word + ES;
-            }
-            break;
-        case 'm':
-        case 'M':
-            if (endsWithIgnoreCase(word, "tum") || endsWithIgnoreCase(word, "ium")) {
-                // "([ti])um$", "\\1a",
-                return word.substring(0, word.length()-2) + "a";
-            }
-            break;
-        case 'f':
-        case 'F':
-            if (endsWithIgnoreCase(word, "lf") || endsWithIgnoreCase(word, "rf")) {
-                // First half of inflect.plural(/(?:([^f])fe|([lr])f)$/i, '\1\2ves')
-                return word.substring(0, word.length()-1) + "ves";
-            }
-            break;
-        case 'e':
-        case 'E':
-            if (endsWithIgnoreCase(word, "rice")) { // Uncountable
-                return word;
-            } else if (endsWithIgnoreCase(word, "move")) { // Irregular
-                return word + S;
-            } else if (endsWithIgnoreCase(word, "mouse") ||
-                    endsWithIgnoreCase(word, "louse")) {
-                //  inflect.plural(/([m|l])ouse$/i, '\1ice')
-                return word.substring(0, word.length()-4) + "ice";
-            } else if (endsWithIgnoreCase(word, "fe") && !endsWithIgnoreCase(word, "ffe")) {
-                // Second half of inflect.plural(/(?:([^f])fe|([lr])f)$/i, '\1\2ves')
-                return word.substring(0, word.length()-2) + "ves";
-            } else if (endsWithIgnoreCase(word, "hive")) {
-                // inflect.plural(/(hive)$/i, '\1s')
-                return word+S;
-            }
-            break;
-        case 'y':
-        case 'Y':
-            if (endsWithIgnoreCase(word, "money")) { // Uncountable
-                return word;
-            }
-            //  inflect.plural(/([^aeiouy]|qu)y$/i, '\1ies')
-            if (word.matches(".*([^aeiouy]|qu)y$")) {
-                return word.substring(0, word.length()-1) + "ies";
-            }
-            break;
-        case 'x':
-        case 'X':
-            if (endsWithIgnoreCase(word, "sex")) { // Irregular
-                return word + ES;
-            } else if (endsWithIgnoreCase(word, "matrix") || endsWithIgnoreCase(word, "vertex") ||
-                    endsWithIgnoreCase(word, "index")) {
-                // inflect.plural(/(matr|vert|ind)ix|ex$/i, '\1ices')
-                return word.substring(0, word.length()-2) + "ices";
-            } else if (word.equalsIgnoreCase("ox")) {
-                // inflect.plural(/^(ox)$/i, '\1en')
-                return "oxen";
-            }
-            
-            // "(x|ch|ss|sh)$", "\\1es",
-            return word + ES;
-        case 'h':
-        case 'H':
-            if (endsWithIgnoreCase(word, "fish")) { // Uncountable
-                return word;
-            } else if (endsWithIgnoreCase(word, "ch") || endsWithIgnoreCase(word, "sh")) {
-                //  Half of  inflect.plural(/(x|ch|ss|sh)$/i, '\1es')
-                return word + ES;
-            }
-            break;
-        case 'z':
-        case 'Z':
-            if (endsWithIgnoreCase(word, "quiz")) {
-                // inflect.plural(/(quiz)$/i, '\1zes')
-                return word + "zes";
-            }
-        }
-
-        // Fallback
-        return word+S;
-    }
-    
-    private static boolean endsWithIgnoreCase(String word, String ending) {
-        if (ending.length() > word.length()) {
-            return false;
-        }
-
-        return word.regionMatches(true, word.length()-ending.length(), ending, 0, ending.length());
-    }
-    
     /**
      * Similar to Rails' Inflector tableize method: converts a name
      * to a corresponding table name:
@@ -298,7 +138,7 @@ public class RubyUtils {
      * @return
      */
     public static String tableize(String word) {
-        return RubyUtils.pluralize(RubyUtils.camelToUnderlinedName(word));
+        return Inflector.getDefault().pluralize(RubyUtils.camelToUnderlinedName(word));
     }
     
     /** Is this name a valid operator name? */
@@ -766,8 +606,14 @@ public class RubyUtils {
     // This does not include the various RHTML extensions: .rhtml, .erb, .html.erb, ... See isRhtmlFile
     public static final String[] RUBY_VIEW_EXTS = { 
         "rhtml", "erb", "dryml", "mab", "rjs", // NOI18N
-        "haml", "rxml", "dryml", "html.erb" }; // NOI18N
+        "haml", "rxml", "dryml", "html.erb"}; // NOI18N
 
+    /*
+     * Possible extensions for action mailer views.
+     */
+    private static final String[] ACTIONMAILER_VIEW_EXTS = {
+        "text.rhtml", "html.erb", "html.rhtml", "text.html.rhtml", "text.html.erb" //NOI18N
+    };
     /**
      * Move from something like app/controllers/credit_card_controller.rb#debit()
      * to app/views/credit_card/debit.rhtml
@@ -776,9 +622,8 @@ public class RubyUtils {
      * @param isHelper If false, it's a controller, else it's a helper
      * 
      */
-    public static FileObject getRailsViewFor(FileObject file, String methodName, boolean isHelper, boolean strict) {
-        String fileSuffix = isHelper ? "_helper" : "_controller"; // NOI18N
-        String parentAppDir = isHelper ? "helpers" : "controllers"; // NOI18N
+    public static FileObject getRailsViewFor(FileObject file, String methodName, 
+            String fileSuffix, String parentAppDir, boolean strict) {
         
         FileObject viewFile = null;
 
@@ -814,7 +659,10 @@ public class RubyUtils {
             }
 
             if (methodName != null) {
-                for (String ext : RUBY_VIEW_EXTS) {
+                List<String> viewExts = new ArrayList<String>();
+                viewExts.addAll(Arrays.asList(RUBY_VIEW_EXTS));
+                viewExts.addAll(Arrays.asList(ACTIONMAILER_VIEW_EXTS));
+                for (String ext : viewExts) {
                     viewFile = viewsFolder.getFileObject(methodName, ext);
                     if (viewFile != null) {
                         break;
@@ -826,7 +674,7 @@ public class RubyUtils {
                 }
             }
 
-            if (viewFile == null) {
+            if (viewFile == null && fileSuffix.length() > 0) {
                 // The caret was likely not inside any of the methods, or in a method that
                 // isn't directly tied to a view
                 // Just pick one of the views. Try index first.
@@ -860,47 +708,59 @@ public class RubyUtils {
         return viewFile;
     }
     
+    /**
+     * Gets the Rails controller or ActionMailer model class for the given view.
+     * 
+     * @param file the view to get the controller/model for.
+     * @return the controller/model or <code>null</code>.
+     *
+     */
     public static FileObject getRailsControllerFor(FileObject file) {
+
+        if (file.getParent() == null) {
+            return null;
+        }
         // TODO - instead of relying on Path manipulation here, should I just
         // use the RubyIndex to locate the class and method?
-        FileObject controllerFile = null;
+        FileObject result = null;
+        
+        file = file.getParent();
 
-        try {
-            file = file.getParent();
 
-            String fileName = file.getName();
-            String path = "";
+        String fileName = file.getName();
+        String path = "";
 
-            if (!fileName.startsWith("_")) { // NOI18N
-                                             // For partials like "_foo", just use the surrounding view
-                path = fileName;
-            }
+        if (!fileName.startsWith("_")) { // NOI18N
+            // For partials like "_foo", just use the surrounding view
+            path = fileName;
+        }
 
-            // Find app dir, and build up a relative path to the view file in the process
-            FileObject app = file.getParent();
+        // Find app dir, and build up a relative path to the view file in the process
+        FileObject app = file.getParent();
 
-            while (app != null) {
-                if (app.getName().equals("views") && // NOI18N
-                        ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
-                    app = app.getParent();
-
-                    break;
-                }
-
-                path = app.getNameExt() + "/" + path; // NOI18N
+        while (app != null) {
+            if (app.getName().equals("views") && // NOI18N
+                    ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
                 app = app.getParent();
+
+                break;
             }
 
-            if (app == null) {
-                return null;
-            }
+            path = app.getNameExt() + "/" + path; // NOI18N
+            app = app.getParent();
+        }
 
-            controllerFile = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
-        } catch (Exception e) {
+        if (app == null) {
             return null;
         }
 
-        return controllerFile;
+        result = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
+        if (result == null) {
+            // possibly a view for an action mailer model
+            result = app.getFileObject("models/" + path + ".rb"); // NOI18N
+        }
+
+        return result;
     }
 
     static String join(final String[] arr, final String separator) {
@@ -977,4 +837,67 @@ public class RubyUtils {
         return true;
     }
 
+    // copied from org.netbeans.modules.parsing.impl.indexing.Util#getFileObject
+    static FileObject getFileObject(Document doc) {
+        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof FileObject) {
+            return (FileObject) sdp;
+        }
+        if (sdp instanceof DataObject) {
+            return ((DataObject) sdp).getPrimaryFile();
+        }
+        return null;
+    }
+
+    /**
+     * Performs a simplistic check for determining whether the given file represents
+     * a rails controller.
+     * 
+     * @param fo
+     * @return
+     */
+    static boolean isRailsController(FileObject fo) {
+        boolean endsWithController = fo.getName().endsWith("_controller");
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            // fallback 
+            return endsWithController;
+        }
+        FileObject controllerDir = owner.getProjectDirectory().getFileObject("app/controllers"); //NOI18N
+        if (controllerDir == null) {
+            return endsWithController;
+        }
+        return FileUtil.isParentOf(controllerDir, fo) && endsWithController;
+    }
+
+    /**
+     * @return true if the given file appears to belong to a Rails project.
+     */
+    static boolean isRailsProject(FileObject fo) {
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return false;
+        }
+        // just a simple check, can't depend on ruby.railsprojects here.
+        FileObject app = owner.getProjectDirectory().getFileObject("app");
+        FileObject config = owner.getProjectDirectory().getFileObject("config");
+        FileObject db = owner.getProjectDirectory().getFileObject("db");
+        return app != null && config != null && db != null;
+        
+        
+    }
+
+    /**
+     * Gets the "app" dir of the project the given file belongs to.
+     * @param fo
+     * @return
+     */
+    static FileObject getAppDir(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+
+        return project.getProjectDirectory().getFileObject("app/"); //NOI18N
+    }
 }

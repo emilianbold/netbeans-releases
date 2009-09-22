@@ -53,10 +53,8 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.model.RubyVariable;
-import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID;
-import static org.netbeans.spi.debugger.ui.Constants.WATCH_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_VALUE_COLUMN_ID;
 
@@ -162,16 +160,12 @@ public final class WatchesModel extends VariablesModel {
                 return super.getValueAt(var, LOCALS_VALUE_COLUMN_ID);
             } else if(WATCH_TYPE_COLUMN_ID.equals(columnID)) {
                 return super.getValueAt(var, LOCALS_TYPE_COLUMN_ID);
-            } else if(WATCH_TO_STRING_COLUMN_ID.equals(columnID)) {
-                return super.getValueAt(var, LOCALS_TO_STRING_COLUMN_ID);
             }
         } else {
             if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
                 return super.getValueAt(node, LOCALS_VALUE_COLUMN_ID);
             } else if(WATCH_TYPE_COLUMN_ID.equals(columnID)) {
                 return super.getValueAt(node, LOCALS_TYPE_COLUMN_ID);
-            } else if(WATCH_TO_STRING_COLUMN_ID.equals(columnID)) {
-                return super.getValueAt(node, LOCALS_TO_STRING_COLUMN_ID);
             }
         }
         throw new UnknownTypeException(node);

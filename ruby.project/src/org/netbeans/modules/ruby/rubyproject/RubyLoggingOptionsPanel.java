@@ -113,6 +113,9 @@ public final class RubyLoggingOptionsPanel extends JPanel {
                 .add(debuggerLogging)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        standardLogging.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyLoggingOptionsPanel.class, "AD_Options_StandardLogging")); // NOI18N
+        debuggerLogging.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyLoggingOptionsPanel.class, "AD_Options_DebuggerLogging")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void standardLoggingItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_standardLoggingItemStateChanged

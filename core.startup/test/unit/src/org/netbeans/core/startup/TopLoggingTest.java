@@ -48,6 +48,7 @@ import java.io.PrintStream;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -136,6 +137,49 @@ public class TopLoggingTest extends NbTestCase {
         }
 
     }
+
+    public void testComposesMessagesAsynchronously() throws Exception {
+        LogRecord r = new LogRecord(Level.INFO, "First visible message: {0}");
+        ForbiddenToString f = new ForbiddenToString();
+        f.forbidden = Thread.currentThread();
+        try {
+            r.setParameters(new Object[] { f });
+            Logger.getLogger(TopLoggingTest.class.getName()).log(r);
+
+            Pattern p = Pattern.compile("INFO.*First visible message");
+            f.forbidden = null;
+            Matcher m = p.matcher(getStream().toString());
+
+            if (!m.find()) {
+                fail("msg shall be logged: " + getStream().toString());
+            }
+
+            String disk = readLog(true);
+            Matcher d = p.matcher(disk);
+
+            if (!d.find()) {
+                fail("msg shall be logged to file: " + disk);
+            }
+        } finally {
+            f.forbidden = null;
+        }
+    }
+
+    private static class ForbiddenToString {
+        private Thread forbidden;
+
+
+        @Override
+        public String toString() {
+            if (forbidden == Thread.currentThread()) {
+                fail("To string shall not be called immediatelly");
+            }
+            return super.toString();
+        }
+
+    }
+
+
     public void testLoggingAnnotateException() throws Exception {
         Exception e = new Exception("One");
         Exceptions.attachMessage(e, "Two");

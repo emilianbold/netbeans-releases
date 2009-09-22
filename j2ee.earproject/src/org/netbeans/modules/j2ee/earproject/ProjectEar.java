@@ -300,8 +300,17 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
 
     public String getModuleVersion () {
-        Application app = getApplication();
-        return (app == null) ? Application.VERSION_5 /* fallback */ : app.getVersion().toString();
+        Profile p = Profile.fromPropertiesString(project.evaluator().getProperty(EarProjectProperties.J2EE_PLATFORM));
+        if (p == null) {
+            p = Profile.JAVA_EE_6_FULL;
+        }
+        if (Profile.JAVA_EE_5.equals(p)) {
+            return Application.VERSION_5;
+        } else if (Profile.J2EE_14.equals(p)) {
+            return Application.VERSION_1_4;
+        } else {
+            return Application.VERSION_6;
+        }
     }
     
     public void propertyChange(PropertyChangeEvent evt) {

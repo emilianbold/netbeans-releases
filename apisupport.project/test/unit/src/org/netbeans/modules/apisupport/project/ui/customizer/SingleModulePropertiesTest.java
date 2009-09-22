@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -77,9 +78,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.tax.io.StringUtil;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.util.Mutex.ExceptionAction;
-import org.openide.util.Utilities;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
@@ -142,7 +143,7 @@ public class SingleModulePropertiesTest extends TestBase {
         }
         
         // silently change bundle
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         is = new FileInputStream(props.getBundleInfo().getPaths()[0]);
         try {
             ep.load(is);
@@ -199,8 +200,7 @@ public class SingleModulePropertiesTest extends TestBase {
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
             public Boolean run() throws IOException {
                 ProjectXMLManager pxm = new ProjectXMLManager(p);
-                String[] newPP = new String[] { "org.example.module1" };
-                pxm.replacePublicPackages(newPP);
+                pxm.replacePublicPackages(Collections.singleton("org.example.module1"));
                 return true;
             }
         });
@@ -210,7 +210,7 @@ public class SingleModulePropertiesTest extends TestBase {
         SingleModuleProperties props = loadProperties(p);
         PublicPackagesTableModel pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 2, pptm.getRowCount());
-        assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().length);
+        assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().size());
     }
 
     @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
@@ -328,15 +328,14 @@ public class SingleModulePropertiesTest extends TestBase {
         SingleModuleProperties props = loadProperties(p);
         PublicPackagesTableModel pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 1, pptm.getRowCount());
-        assertEquals("number of selected public packages", 0, pptm.getSelectedPackages().length);
+        assertEquals("number of selected public packages", 0, pptm.getSelectedPackages().size());
         assertEquals("no public packages in the ModuleEntry", 0, props.getModuleList().getEntry("org.example.module1a").getPublicPackages().length);
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
             public Boolean run() throws IOException {
                 ProjectXMLManager pxm = new ProjectXMLManager(p);
-                String[] newPP = new String[] { "org.example.module1a" };
-                pxm.replacePublicPackages(newPP);
+                pxm.replacePublicPackages(Collections.singleton("org.example.module1a"));
                 return true;
             }
         });
@@ -347,7 +346,7 @@ public class SingleModulePropertiesTest extends TestBase {
         
         pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 1, pptm.getRowCount());
-        assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().length);
+        assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().size());
         assertEquals("one public packages in the ModuleEntry", 1, props.getModuleList().getEntry("org.example.module1a").getPublicPackages().length);
     }
     
@@ -385,7 +384,6 @@ public class SingleModulePropertiesTest extends TestBase {
         assertTrue("There are two available friends for component2.", props.getAvailableFriends().length > 50);
     }
 
-    @RandomlyFails
     public void testSimulateLocalizedBundlePackageRefactoring() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
@@ -400,13 +398,13 @@ public class SingleModulePropertiesTest extends TestBase {
         FileLock lock = pkg.lock();
         pkg.rename(lock, "module1Renamed", null);
         lock.releaseLock();
+        System.gc();    // no more random
         FileObject manifestFO = pDir.getFileObject("manifest.mf");
-        
+
         // change manifest
         EditableManifest mf = Util.loadManifest(manifestFO);
         mf.setAttribute(ManifestManager.OPENIDE_MODULE_LOCALIZING_BUNDLE, "org/example/module1Renamed/resources/Bundle.properties", null);
         Util.storeManifest(manifestFO, mf);
-        
         simulatePropertiesOpening(props, p);
         
         // make sure that properties are not damaged

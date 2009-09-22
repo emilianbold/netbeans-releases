@@ -103,6 +103,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ListenableWebModuleImplementation2">
+            <api name="WebModuleAPI"/>
+            <summary>Adding ability to listen on WebModuleImplementation2 changes</summary>
+            <version major="1" minor="16"/>
+            <date day="21" month="9" year="2009"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding ability to listen on changes of document base or
+                    WEB-INF folder. WebModuleImplementation2 was introduced in this
+                    release so I'm taking advantage of it and adding requested methods.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebModuleImplementation2"/>
+            <issue number="154944"/>
+        </change>
         <change id="Adding_requresWebXml">
             <api name="WebModuleAPI"/>
             <summary>Adding method requiresWebXml</summary>

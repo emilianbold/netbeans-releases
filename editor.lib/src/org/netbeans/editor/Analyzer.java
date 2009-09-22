@@ -51,7 +51,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 /**

@@ -71,6 +71,26 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.spi.autoupdate" name="UpdateItem"/>
             <issue number="162673"/>
         </change>
+        
+        <change id="new-operation-container">
+            <api name="general"/>
+            <summary>New operation type introduced together with method for create appropriate container</summary>
+            <version major="1" minor="11"/>
+            <date day="19" month="8" year="2009"/>
+            <author login="dlipin"/>
+            <compatibility semantic="compatible"/>
+            <description>
+                <p>
+                    New operation type - <code>OperationSupport.OperationType.INTERNAL_UPDATE</code> is introduced.
+                    This operation can be used to find out elements which have updates and
+                    which the particular element has the dependency on.
+                </p>
+            </description>
+            <class package="org.netbeans.api.autoupdate" name="OperationSupport"/>
+            <class package="org.netbeans.api.autoupdate" name="OperationContainer"/>
+            <issue number="141714"/>
+        </change>
+
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->

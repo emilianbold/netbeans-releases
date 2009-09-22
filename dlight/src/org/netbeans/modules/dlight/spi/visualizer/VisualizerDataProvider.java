@@ -39,11 +39,12 @@
 
 package org.netbeans.modules.dlight.spi.visualizer;
 
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 
 /**
  * This class is used as data provider for Visualizer
  */
-public interface VisualizerDataProvider {
+public interface VisualizerDataProvider extends DataFilterListener {
     void attachTo(ServiceInfoDataStorage serviceInfoDataStorage);
 }

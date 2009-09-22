@@ -80,7 +80,7 @@ public class ClassNotFoundRule extends PHPRule {
             String className = ((Identifier) expression).getName();
             
             if (!"self".equalsIgnoreCase(className) //NOI18N
-                && context.index.getClasses(null, className, QuerySupport.Kind.EXACT).isEmpty()){
+                && context.getIndex().getClasses(null, className, QuerySupport.Kind.EXACT).isEmpty()){
                 
                 addHint(expression);
             }

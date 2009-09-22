@@ -63,9 +63,9 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -124,7 +124,8 @@ public class FastImportAction extends BaseAction {
     }
 
     private void importItem(final ParserResult info, final Point where, final Rectangle caretRectangle, final Font font, final int position, final String ident) {
-        Model model = ModelFactory.getModel(info);
+        PHPParseResult result = (PHPParseResult) info;
+        final Model model = result.getModel();
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(position);
         Occurence occurence = occurencesSupport.getOccurence();
         if (occurence != null) {

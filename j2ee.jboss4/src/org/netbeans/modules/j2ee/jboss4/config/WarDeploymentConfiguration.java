@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDestinationRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.schema2beans.Common;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -519,7 +520,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
      * Generate JbossWeb graph.
      */
     private JbossWeb generateJbossWeb() {
-        JbossWeb jbossWeb = new JbossWeb();
+        JbossWeb jbossWeb = new JbossWeb(null, Common.NO_DEFAULT_VALUES);
         jbossWeb.setContextRoot(""); // NOI18N
         return jbossWeb;
     }

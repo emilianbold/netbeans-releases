@@ -76,6 +76,8 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
 
+    private static final String UPDATE_GEM_NAME = "rubygems-update"; // NOI18N
+
     private static String lastSelectedPlatformID;
 
     public static void manage(final JComboBox platforms) {
@@ -221,6 +223,7 @@ public class RubyPlatformCustomizer extends JPanel {
         if (gemsInstalled) {
             gemHomeValue.setText(plaf.getGemManager().getGemHome());
             gemPathList.setModel(createGemPathsModel(plaf));
+            refreshGemToolVersion();
             gemToolValue.setText(plaf.getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
             color = UIManager.getColor("Label.foreground");
         } else {
@@ -714,6 +717,19 @@ public class RubyPlatformCustomizer extends JPanel {
                 : (platform.hasFastDebuggerInstalled() ? "RubyPlatformCustomizer.rubyDebugEngine.text" // NOI18N
                                                        : "RubyPlatformCustomizer.classicDebuggerEngine.text"); // NOI18N
         engineType.setText(getMessage(key));
+    }
+
+    private boolean refreshGemToolVersion(){
+        boolean wasUpdated = false;
+        RubyPlatform  plaf = getSelectedPlatform();
+        String old = plaf.getInfo().getGemVersion(); //original one
+        plaf.getGemManager().resetLocal();
+        String updated  = plaf.getGemManager().getLatestVersion(UPDATE_GEM_NAME); //NOI18N
+        if(updated != null && !updated.equals(old)){
+            plaf.getInfo().setGemVersion(updated);
+            wasUpdated = true;
+        }
+        return wasUpdated;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

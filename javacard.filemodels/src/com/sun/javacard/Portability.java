@@ -229,9 +229,9 @@ public final class Portability {
             Object[] args = new Object[]{src, Boolean.FALSE, Boolean.FALSE, null, null};
             return (Document) m.invoke(null, args);
         } catch (Exception ex) {
-            Logger.getLogger(Portability.class.getName()).log(Level.SEVERE,
-                    null, ex);
-            return parseDefault(in);
+            IOException ioe = new IOException();
+            ioe.initCause(ex);
+            throw ioe;
         } finally {
             in.close();
         }

@@ -46,6 +46,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -54,26 +57,27 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.CodeMarker;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
  * @author Radek Matous
  */
 public class OccurrencesFinderImpl extends OccurrencesFinder {
-    private int offset;
     private Map<OffsetRange, ColoringAttributes> range2Attribs;
-
+    private int caretPosition;
     public void setCaretPosition(int position) {
-        this.offset = position;
-        this.range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
+        range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
+        this.caretPosition = position;
     }
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
@@ -88,7 +92,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         Preferences node = MarkOccurencesSettings.getCurrentNode();
 
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
-            for (OffsetRange r : compute((ParserResult) result, GsfUtilities.getLastKnownCaretOffset(result.getSnapshot(), event))) {
+            for (OffsetRange r : compute((ParserResult) result, caretPosition)) {
                 range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
             }
         }
@@ -100,27 +104,49 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 return o1.compareTo(o2);
             }
         });
-        Model model = ModelFactory.getModel(parameter);
-        OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
-        Occurence caretOccurence = occurencesSupport.getOccurence();        
-        if (caretOccurence != null) {
-            ModelElement decl = caretOccurence.getDeclaration();
-            if (decl != null && !decl.getPhpKind().equals(PhpKind.INCLUDE)) {
-                Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
-                for (Occurence occurence : allOccurences) {
-                    result.add(occurence.getOccurenceRange());
+        final TokenHierarchy<?> tokenHierarchy = parameter.getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, offset) : null;
+        OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset) : OffsetRange.NONE;
+        if (!referenceSpan.equals(OffsetRange.NONE)) {
+            Model model = ((PHPParseResult) parameter).getModel();
+            OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
+            Occurence caretOccurence = occurencesSupport.getOccurence();
+            if (caretOccurence != null) {
+                ModelElement decl = caretOccurence.getDeclaration();
+                if (decl != null && !decl.getPhpKind().equals(PhpKind.INCLUDE)) {
+                    Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
+                    for (Occurence occurence : allOccurences) {
+                        result.add(occurence.getOccurenceRange());
+                    }
                 }
-            }
-        } else  {
-            CodeMarker codeMarker = occurencesSupport.getCodeMarker();
-            if (codeMarker != null) {
-                Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
-                for (CodeMarker marker : allMarkers) {
-                    result.add(marker.getOffsetRange());
+            } 
+        } else {
+            OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
+            if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
+                Model model = ((PHPParseResult) parameter).getModel();
+                OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
+                CodeMarker codeMarker = occurencesSupport.getCodeMarker();
+                if (codeMarker != null) {
+                    Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
+                    for (CodeMarker marker : allMarkers) {
+                        result.add(marker.getOffsetRange());
+                    }
                 }
             }
         }
         return result;
+    }
+
+    private static OffsetRange getReferenceSpanForCodeMarkers(TokenSequence<PHPTokenId> ts, final int caretOffset) {
+        ts.move(caretOffset);
+        if (ts.moveNext()) {
+            Token<PHPTokenId> token = ts.token();
+            PHPTokenId id = token.id();
+            if (id.equals(PHPTokenId.PHP_FUNCTION) || id.equals(PHPTokenId.PHP_RETURN)) {
+                return new OffsetRange(ts.offset(), ts.offset() + token.length());
+            }
+        }
+        return OffsetRange.NONE;
     }
 
     @Override

@@ -43,9 +43,9 @@ package org.netbeans.modules.php.project.classpath;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -64,7 +64,7 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
         projectIncludes.add(cp);
     }
     public ClassPath findClassPath(FileObject file, String type) {
-        if (CommandUtils.isPhpFile(file)) {
+        if (FileUtils.isPhpFile(file)) {
             FileType fileType = PhpSourcePath.getFileType(file);
             if (fileType.equals(FileType.INCLUDE)) {
                 /*for global include path*/

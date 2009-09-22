@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -98,7 +100,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
         private int creationCaretOffset;
         private int completionExpressionStartOffset;
         private JTextComponent component;
-        private Collection<PaletteCompletionItem> items;
+        private Collection<PaletteCompletionItem> items = new ArrayList<PaletteCompletionItem>();
 
         CCQuery(int caretOffset) {
             this.creationCaretOffset = caretOffset;
@@ -106,7 +108,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
 
         protected void query(CompletionResultSet resultSet, Document doc, int offset) {
             try {
-                items = new ArrayList<PaletteCompletionItem>();
+                items.clear();
 
                 TokenSequence htmlTs = getTokenSequence(doc, offset);
 
@@ -127,7 +129,9 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                 //end tag autocompletion workaround - we do not want to see the palette items when user finished
                 //an open tag and the end tag autocompletion pops up
                 if(diff == 0 && htmlTs.movePrevious()) {
-                    if(htmlTs.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                    TokenId id = htmlTs.token().id();
+                    if(id == HTMLTokenId.TAG_CLOSE_SYMBOL ||
+                       id == HTMLTokenId.TAG_OPEN_SYMBOL) {
                         return ;
                     }
                 }

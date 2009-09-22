@@ -51,6 +51,7 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
@@ -60,6 +61,10 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.util.Exceptions;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 /**
  * Loop parallelization advice.
@@ -149,5 +154,25 @@ public class LoopParallelizationAdvice implements Advice {
         }
         return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Loop for parallelization has been found", // NOI18N
                 html, 800); // NOI18N
+    }
+
+    public void addNotification(OutputWriter writer) {
+        try {
+            writer.println("\"" + loop.getContainingFile().getName() + "\", line " + loop.getStartPosition().getLine() + ": There is loop in function " + function.getName() + " that could be effectively parallelized.", // NOI18N
+                    new OutputListener() {
+
+                        public void outputLineSelected(OutputEvent ev) {
+                        }
+
+                        public void outputLineAction(OutputEvent ev) {
+                            CsmUtilities.openSource(loop);
+                        }
+
+                        public void outputLineCleared(OutputEvent ev) {
+                        }
+                    });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }
