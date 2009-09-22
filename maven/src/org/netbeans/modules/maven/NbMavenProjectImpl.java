@@ -82,7 +82,6 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.build.model.ModelLineage;
 import org.apache.maven.reactor.MissingModuleException;
 import org.apache.maven.workspace.MavenWorkspaceStore;
 import org.netbeans.modules.maven.api.Constants;
@@ -162,7 +161,6 @@ public final class NbMavenProjectImpl implements Project {
     private Updater updater1;
     private Updater updater2;
     private MavenProject project;
-    private ModelLineage projectLineage;
     private ProblemReporterImpl problemReporter;
     private final Info projectInfo;
     private final MavenSharabilityQueryImpl sharability;
@@ -332,42 +330,14 @@ public final class NbMavenProjectImpl implements Project {
      */
     public synchronized MavenProject getOriginalMavenProject() {
         if (project == null) {
-            PrjTuple tuple = loadOriginalMavenProject();
-            project = tuple.project;
-            projectLineage = tuple.projectLineage;
+            project = loadOriginalMavenProject();
         }
         return project;
     }
 
-    /**
-     * gettter for maven's own project lineage, useful for stuff like profile lookup.
-     * has the same lifecycle as the MavenProject instance. if null, then for some reason, project loading
-     * succeeded and the lineage loading failed.
-     * @return
-     */
-    public synchronized ModelLineage getOriginalMavenProjectLineage() {
-        if (project == null) {
-            PrjTuple tuple = loadOriginalMavenProject();
-            project = tuple.project;
-            projectLineage = tuple.projectLineage;
-            //the method loads both project and the lineage..
-        }
-        return projectLineage;
-    }
-
-    private class PrjTuple {
-        final MavenProject project;
-        final ModelLineage projectLineage;
-        PrjTuple (MavenProject p, ModelLineage ml) {
-            project = p;
-            projectLineage = ml;
-        }
-    }
-
-    private PrjTuple loadOriginalMavenProject() {
+    private MavenProject loadOriginalMavenProject() {
         long startLoading = System.currentTimeMillis();
         MavenProject newproject = null;
-        ModelLineage newLineage = null;
         try {
 //                ProgressTransferListener.setAggregateHandle(hndl);
 //                hndl.start();
@@ -500,30 +470,25 @@ public final class NbMavenProjectImpl implements Project {
         } finally {
 //                hndl.finish();
 //                ProgressTransferListener.clearAggregateHandle();
-            File lineageFile = projectFile;
+
             if (newproject == null) {
                 File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
-                lineageFile = projectFile;
                 try {
                     newproject = getEmbedder().readProject(fallback);
-                } catch (Exception x) {//NOPMD oh well..
-                }
+                } catch (Exception x) {
+                    // oh well..
+                    //NOPMD
+                    }
             }
-            try {
-                //TODO shall we really use the online embedder?
-                newLineage = EmbedderFactory.createModelLineage(lineageFile, EmbedderFactory.getOnlineEmbedder(), false);
-            } catch (Exception ex) {
-                Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
-            } finally {
-                long endLoading = System.currentTimeMillis();
-                Logger logger = Logger.getLogger(NbMavenProjectImpl.class.getName());
-                logger.fine("Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
-                if (logger.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
-                    logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
-                }
+            long endLoading = System.currentTimeMillis();
+            Logger logger = Logger.getLogger(NbMavenProjectImpl.class.getName());
+            logger.fine("Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
+            if (logger.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
+                logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
+            }
 
-                return new PrjTuple(newproject, newLineage);
-            }
+            return newproject;
+
         }
     }
 
@@ -542,10 +507,9 @@ public final class NbMavenProjectImpl implements Project {
         }
         clearProjectWorkspaceCache();
         problemReporter.clearReports(); //#167741 -this will trigger node refresh?
-        PrjTuple prj = loadOriginalMavenProject();
+        MavenProject prj = loadOriginalMavenProject();
         synchronized (this) {
-            project = prj.project;
-            projectLineage = prj.projectLineage;
+            project = prj;
         }
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
