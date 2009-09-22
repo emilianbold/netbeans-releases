@@ -79,6 +79,9 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     protected static void instantiateSample(String name, File destdir) throws IOException {
+        if(destdir.exists()) {
+            assertTrue("Can not remove directory " + destdir.getAbsolutePath(), removeDirectoryContent(destdir));
+        }
         FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
         DataObject templateDO = DataObject.find(templateFO);
@@ -128,6 +131,8 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     protected FileObject prepareSampleProject(String sampleName, String projectDirShortName) throws IOException {
+        // reusing directories makes debugging much more difficult, so we add host name
+        projectDirShortName += "_" + getTestHostName();
         File projectDir = new File(getWorkDir(), projectDirShortName);
         instantiateSample(sampleName, projectDir);
         FileObject projectDirFO = FileUtil.toFileObject(projectDir);

@@ -247,6 +247,7 @@ final class QuietEditorPane extends JEditorPane {
         }
     }
 
+/* Commented out since virtual height is implemented in the editor (in GapDocumentView)
     @Override
     public Dimension getPreferredSize() {
         //Avoid always typing at the bottom of the screen by
@@ -263,6 +264,7 @@ final class QuietEditorPane extends JEditorPane {
         }
         return result;
     }
+*/
 
     /**
      * Delegating TransferHandler.

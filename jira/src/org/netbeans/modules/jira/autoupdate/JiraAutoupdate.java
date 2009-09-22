@@ -160,10 +160,9 @@ public class JiraAutoupdate {
         JiraVersion version = new JiraVersion(v[0]);
         boolean ret = isSupportedVersion(version);
         if(!ret) {
-            Jira.LOG.log(Level.WARNING,
-                         "Supported JIRA versions are <= {0}. JIRA repository [{1}] has version {2}. " +
-                         "Please check the UC for a newer plugin version.", // NOI18N
-                         new Object[] {SUPPORTED_JIRA_VERSION, repository.getUrl(), version});
+            Jira.LOG.log(Level.INFO,
+                         "JIRA repository [{0}] has version {1}. ", // NOI18N
+                         new Object[] {repository.getUrl(), version});
         }
         return ret;
     }

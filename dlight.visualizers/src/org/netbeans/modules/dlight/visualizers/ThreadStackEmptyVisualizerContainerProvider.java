@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector.support;
+
+package org.netbeans.modules.dlight.visualizers;
+
+import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
+ * @author mt154047
  */
-interface ProcessLineCallback {
+@ServiceProvider(service=EmptyVisualizerContainerProvider.class)
+public final class ThreadStackEmptyVisualizerContainerProvider implements EmptyVisualizerContainerProvider{
 
-    void processLine(String line);
+    public VisualizerContainer getEmptyVisualizerContainer() {
+        return null;
+    }
 
-    void processClose();
+    public VisualizerContainer getEmptyVisualizerContainer(String vcID) {
+        if (ThreadStackVisualizerConfiguration.ID.equals(vcID)){
+            return CallStackTopComponent.findInstance();
+        }
+        return null;
+    }
+
 }

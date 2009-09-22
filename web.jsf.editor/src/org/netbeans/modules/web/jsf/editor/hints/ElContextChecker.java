@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.editor.hints;
 import java.util.Collections;
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -127,8 +128,8 @@ class JsfElBeanContextChecker implements JsfElContextChecker{
                     }
                     String suffix = removeQuotes(property);
 
-                    for (ExecutableElement method : ElementFilter.methodsIn(lastType.
-                            getEnclosedElements()))
+                    for (ExecutableElement method : ElementFilter.methodsIn(
+                            controller.getElements().getAllMembers(lastType)))
                     {
                         String propertyName = getExpressionSuffix(method, controller);
 

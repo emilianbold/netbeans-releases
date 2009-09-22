@@ -62,6 +62,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
@@ -81,11 +82,12 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -134,7 +136,7 @@ public final class DtraceDataCollector
     private DtraceParser parser;
     private final List<DataRow> indicatorDataBuffer = new ArrayList<DataRow>();
     private int indicatorFiringFactor;
-    private ProcessLineCallback callback = new ProcessLineCallBackImpl();
+    private LineProcessor outputProcessor = new DefaultOutputProcessor();
     private boolean isSlave;
     private final boolean multiScriptMode;
     private DtraceDataCollector parentCollector;
@@ -155,7 +157,7 @@ public final class DtraceDataCollector
             this.tableMetaData = null;
             this.slaveCollectors = new HashMap<String, DtraceDataCollector>();
             this.requiredPrivilegesSet = new HashSet<String>();
-            setProcessLineCallback(new MergedProcessLineCallbackImpl());
+            setOutputProcessor(new MergedProcessLineCallbackImpl());
             addSlaveConfiguration(configuration);
         } else {
             this.dataTablesMetadata = cfgInfo.getDatatableMetadata(configuration);
@@ -224,8 +226,8 @@ public final class DtraceDataCollector
         return "DTrace";//NOI18N
     }
 
-    void setProcessLineCallback(ProcessLineCallback callback) {
-        this.callback = callback;
+    void setOutputProcessor(LineProcessor callback) {
+        this.outputProcessor = callback;
     }
 
     void setSlave(boolean isSlave) {
@@ -240,8 +242,8 @@ public final class DtraceDataCollector
         localScriptUrl = path;
     }
 
-    ProcessLineCallback getProcessLineCallback() {
-        return callback;
+    LineProcessor getOutputProcessor() {
+        return outputProcessor;
     }
 
     protected DataStorage getStorage() {
@@ -508,7 +510,7 @@ public final class DtraceDataCollector
 
         if (target instanceof AttachableTarget) {
             AttachableTarget at = (AttachableTarget) target;
-            taskCommand += " " + at.getPID(); // NOI18N
+            taskCommand += " " + Integer.toString(at.getPID()); // NOI18N
         }
 
         final String extraParams = getCollectorTaskExtraParams();
@@ -517,9 +519,11 @@ public final class DtraceDataCollector
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        dtraceTask = DLightExecutorService.submit(
-                new DTraceTask(target.getExecEnv(), taskCommand, callback),
-                "DTrace output processor"); // NOI18N
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
+        npb.setCommandLine(taskCommand);
+
+        dtraceTask = NativeProcessExecutionService.newService(
+                npb, getOutputProcessor(), null, "DTrace output processor").start(); // NOI18N
 
         log.fine("DtraceDataCollector (" + dtraceTask.toString() + // NOI18N
                 ") for " + taskCommand + " STARTED"); // NOI18N
@@ -583,8 +587,9 @@ public final class DtraceDataCollector
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
-    private final class ProcessLineCallBackImpl implements ProcessLineCallback {
+    private final class DefaultOutputProcessor implements LineProcessor {
 
+        @Override
         public void processLine(String line) {
             DataRow dataRow = parser.process(line);
             addDataRow(dataRow);
@@ -611,14 +616,18 @@ public final class DtraceDataCollector
             }
         }
 
-        public void processClose() {
+        public void reset() {
+        }
+
+        public void close() {
             DataRow dataRow = parser.processClose();
             addDataRow(dataRow);
         }
     }
 
-    private class MergedProcessLineCallbackImpl implements ProcessLineCallback {
+    private class MergedProcessLineCallbackImpl implements LineProcessor {
 
+        @Override
         public void processLine(String line) {
             DtraceDataCollector target = lastSlaveCollector;
             for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
@@ -630,14 +639,17 @@ public final class DtraceDataCollector
                 }
             }
             if (target != null) {
-                target.getProcessLineCallback().processLine(line);
+                target.getOutputProcessor().processLine(line);
             }
             lastSlaveCollector = target;
         }
 
-        public void processClose() {
+        public void reset() {
+        }
+
+        public void close() {
             for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
-                entry.getValue().getProcessLineCallback().processClose();
+                entry.getValue().getOutputProcessor().close();
             }
         }
     }
@@ -675,7 +687,6 @@ public final class DtraceDataCollector
 //            });
 //        }
 //    }
-
     private File mergeScripts() {
         try {
             File output = File.createTempFile("dlight", ".d"); // NOI18N

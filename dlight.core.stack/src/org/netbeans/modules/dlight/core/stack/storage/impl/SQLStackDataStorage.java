@@ -85,6 +85,7 @@ import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.Util;
 import org.openide.util.Lookup;
@@ -98,6 +99,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;
     private final Map<String, PreparedStatement> stmtCache;
+    private CppSymbolDemangler demangler = null;
+    private ServiceInfoDataStorage serviceInfoDataStorage;
 
     public SQLStackDataStorage() {
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
@@ -108,13 +111,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         executor = new ExecutorThread();
         executor.setPriority(Thread.MIN_PRIORITY);
         executor.start();
+        this.stmtCache = new HashMap<String, PreparedStatement>();
+    }
+
+    public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
+        this.serviceInfoDataStorage = serviceInfoStorage;
         CppSymbolDemanglerFactory factory = Lookup.getDefault().lookup(CppSymbolDemanglerFactory.class);
         if (factory != null) {
-            demangler = factory.getForCurrentSession();
+            demangler = factory.getForCurrentSession(serviceInfoStorage.getInfo());
         } else {
             demangler = null;
         }
-        this.stmtCache = new HashMap<String, PreparedStatement>();
     }
 
     public DataStorageType getBackendDataStorageType() {
@@ -185,8 +192,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     private long funcIdSequence;
     private long nodeIdSequence;
     private final ExecutorThread executor;
-    private boolean isRunning = true;
-    private final CppSymbolDemangler demangler;
+    private boolean isRunning = true;    
 
     private synchronized PreparedStatement getPreparedStatement(String sql) throws SQLException {
         PreparedStatement stmt = stmtCache.get(sql);
@@ -220,17 +226,21 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    public long putStack(List<CharSequence> stack, long sampleDuration) {
+    public long putStack(List<CharSequence> stack) {
+        return putSample(stack, -1, -1);
+    }
+
+    public long putSample(List<CharSequence> stack, long timestamp, long duration) {
         long callerId = 0;
         Set<Long> funcs = new HashSet<Long>();
         for (int i = 0; i < stack.size(); ++i) {
             boolean isLeaf = i + 1 == stack.size();
             CharSequence funcName = stack.get(i);
             long funcId = generateFuncId(funcName);
-            updateMetrics(funcId, false, sampleDuration, !funcs.contains(funcId), isLeaf);
+            updateMetrics(funcId, false, timestamp, duration, !funcs.contains(funcId), isLeaf);
             funcs.add(funcId);
             long nodeId = generateNodeId(callerId, funcId, getOffset(funcName));
-            updateMetrics(nodeId, true, sampleDuration, true, isLeaf);
+            updateMetrics(nodeId, true, timestamp, duration, true, isLeaf);
             callerId = nodeId;
         }
         return callerId;
@@ -288,12 +298,20 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
+    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, List<DataFilter> filters, int limit) {
         try {
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
+            TimeIntervalDataFilter timeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, filters);
             PreparedStatement select = getPreparedStatement(
-                    "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
-                    "FROM Func ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
+                    "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, SUM(FuncMetricAggr.time_excl) AS time_excl " + //NOI18N
+                    "FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
+                    (timeFilter != null? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
+                    "GROUP BY Func.func_id, Func.func_name, Func.func_full_name " + // NOI18N
+                    "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
+            if (timeFilter != null) {
+                select.setLong(1, timeToBucketId(timeFilter.getInterval().getStartMilliSeconds()));
+                select.setLong(2, timeToBucketId(timeFilter.getInterval().getEndMilliSeconds()));
+            }
             select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
             while (rs.next()) {
@@ -309,6 +327,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
             return funcList;
         } catch (SQLException ex) {
+            ex.printStackTrace();
         }
         return Collections.emptyList();
     }
@@ -369,16 +388,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    private void updateMetrics(long id, boolean funcOrNode, long sampleDuration, boolean addIncl, boolean addExcl) {
-        if (0 < sampleDuration) {
+    private void updateMetrics(long id, boolean funcOrNode, long timestamp, long duration, boolean addIncl, boolean addExcl) {
+        if (0 < duration) {
             UpdateMetrics cmd = new UpdateMetrics();
             cmd.objId = id;
+            cmd.bucketId = timeToBucketId(timestamp);
             cmd.funcOrNode = funcOrNode;
             if (addIncl) {
-                cmd.cpuTimeInclusive = sampleDuration;
+                cmd.cpuTimeInclusive = duration;
             }
             if (addExcl) {
-                cmd.cpuTimeExclusive = sampleDuration;
+                cmd.cpuTimeExclusive = duration;
             }
             executor.submitCommand(cmd);
         }
@@ -609,38 +629,91 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return result;
     }
 
-    private ThreadDump _getThreadDump(ThreadDumpQuery query) {
-        ThreadDump res = getThreadDump1(query);
-        if (res != null) {
-            return res;
-        }
-        return getThreadDump2(query);
+    private MSAState getTrueState(ThreadSnapshot dump, ThreadDumpQuery query){
+        MSAState state = dump.getState();
+//        List<FunctionCall> stack = dump.getStack();
+//        String where = ""; // NOI18N
+//        if (stack.size() > 0) {
+//            where = stack.get(stack.size()-1).getDisplayedName();
+//        }
+//        if (where.indexOf("__lwp_park+")>=0) {
+//            if (query.isFullMode()) {
+//                state = MSAState.SleepingUserLock;
+//            } else {
+//                state = MSAState.Blocked;
+//            }
+//        } else if (where.indexOf("__nanosleep+")>=0) {
+//            if (query.isFullMode()) {
+//                state = MSAState.Sleeping;
+//            } else {
+//                state = MSAState.SleepingOther;
+//            }
+//        }
+        return state;
     }
 
-    private ThreadDump getThreadDump1(ThreadDumpQuery query) {
-        TimeFilter time = new TimeFilter(query.getThreadState().getTimeStamp(), query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000, TimeFilter.Mode.ALL);
+    private ThreadDump _getThreadDump(ThreadDumpQuery query) {
+        long start = query.getThreadState().getTimeStamp();
+        long middle = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000/2;
+        long end = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/1000/1000;
+        // 1. try to find needed thread in needed state in sampling interval
+        TimeFilter time = new TimeFilter(start, end, TimeFilter.Mode.ALL);
         ThreadFilter threads = new ThreadFilter(query.getShowThreads());
         List<ThreadSnapshot> res = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
         ThreadSnapshot found = null;
+        long foundTimeSamp = -1;
         for(ThreadSnapshot dump : res) {
-            //if (true) {
-            //    String where = "";
-            //    List<FunctionCall> stack = dump.getStack();
-            //    if (stack.size() > 0) {
-            //        where = stack.get(stack.size()-1).getDisplayedName();
-            //    }
-            //    System.err.println("Dump "+dump.getThreadInfo().getThreadId()+" "+dump.getTimestamp()+" "+dump.getState()+" "+where);
-            //}
             if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                query.getPreferredState() == dump.getState()) {
-                //if (true) {
-                //    System.err.println("FOUND!");
-                //}
+                query.getPreferredState() == getTrueState(dump, query)) {
                 found = dump;
+                foundTimeSamp = found.getTimestamp();
                 break;
             }
         }
+        if (found == null) {
+            // 2. try to find needed thread in needed state before middle of the sampling interval
+            time = new TimeFilter(0, middle, TimeFilter.Mode.LAST);
+            threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int)query.getThreadID())));
+            List<ThreadSnapshot> res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
+            long foundAny = -1;
+            for(ThreadSnapshot dump : res2) {
+                foundAny = dump.getTimestamp();
+                if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
+                    query.getPreferredState() == getTrueState(dump, query)) {
+                    found = dump;
+                    foundTimeSamp = middle;
+                    break;
+                }
+            }
+            // 3. try to find needed thread in needed state in case equals time stamps
+            if (found == null && foundAny > 0) {
+                time = new TimeFilter(foundAny - 1, foundAny + 1, TimeFilter.Mode.ALL);
+                threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int)query.getThreadID())));
+                res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
+                for(ThreadSnapshot dump : res2) {
+                    foundAny = dump.getTimestamp();
+                    if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
+                        query.getPreferredState() == getTrueState(dump, query)) {
+                        found = dump;
+                        foundTimeSamp = middle;
+                        break;
+                    }
+                }
+                if (found == null) {
+                    // 4. take any dump of the thread
+                    for(ThreadSnapshot dump : res2) {
+                        foundAny = dump.getTimestamp();
+                        if (query.getThreadID() == dump.getThreadInfo().getThreadId()) {
+                            found = dump;
+                            foundTimeSamp = middle;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         if (found != null) {
+            // 5. find closed other thread in the sampling interval
             HashMap<Integer, ThreadSnapshot> map = new HashMap<Integer, ThreadSnapshot>();
             map.put(found.getThreadInfo().getThreadId(), found);
             for(ThreadSnapshot dump : res) {
@@ -650,20 +723,21 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     if (prev == null) {
                         map.put(id, dump);
                     } else {
-                        if (Math.abs(prev.getTimestamp() - found.getTimestamp()) > Math.abs(dump.getTimestamp() - found.getTimestamp())) {
+                        if (Math.abs(prev.getTimestamp() - foundTimeSamp) > Math.abs(dump.getTimestamp() - foundTimeSamp)) {
                             map.put(id, dump);
                         }
                     }
                 }
             }
             Set<Integer> toAdd = new HashSet<Integer>(query.getShowThreads());
-            ThreadDumpImpl result = new ThreadDumpImpl(found.getTimestamp());
+            ThreadDumpImpl result = new ThreadDumpImpl(foundTimeSamp);
             for(ThreadSnapshot dump : map.values()) {
                 toAdd.remove(dump.getThreadInfo().getThreadId());
                 result.addStack(dump);
             }
+            // 6. complete other thread by last call stacks
             if (!toAdd.isEmpty()) {
-                time = new TimeFilter(0, query.getThreadState().getTimeStamp(), TimeFilter.Mode.LAST);
+                time = new TimeFilter(0, foundTimeSamp, TimeFilter.Mode.LAST);
                 threads = new ThreadFilter(toAdd);
                 res = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
                 for(ThreadSnapshot dump : res) {
@@ -673,84 +747,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             return result;
         }
         return null;
-    }
-
-
-    private ThreadDump getThreadDump2(ThreadDumpQuery query) {
-        ThreadDumpImpl result = null;
-
-        try {
-
-            PreparedStatement statement = getPreparedStatement(
-                    "SELECT mstate, MAX(time_stamp) FROM CallStack WHERE thread_id = ? and time_stamp <= ? GROUP BY mstate"); // NOI18N
-            statement.setLong(1, query.getThreadID());
-            statement.setLong(2, query.getThreadState().getTimeStamp()+query.getThreadState().getMSASamplePeriod()/1000/1000);
-
-            ResultSet threadAndTimestampResult = statement.executeQuery();
-            int bestState = -1;
-            long bestTimestamp = -1;
-            while (threadAndTimestampResult.next()) {
-                int state = threadAndTimestampResult.getInt(1);
-                long timestamp = threadAndTimestampResult.getLong(2);
-                if ((query.getPreferredState().matches(state) && !query.getPreferredState().matches(bestState)) ||
-                        (query.getPreferredState().matches(state) || !query.getPreferredState().matches(bestState)) && bestTimestamp < timestamp) {
-                    bestState = state;
-                    bestTimestamp = timestamp;
-                }
-            }
-            threadAndTimestampResult.close();
-
-            if (bestTimestamp < 0) {
-                // Means that no callstack found for this thread in this state
-                //System.out.println("No callstack found!!!");
-                return new ThreadDumpImpl(query.getThreadState().getTimeStamp());
-            }
-
-            //System.out.println("Nearest callstack found at " + ts);
-
-            result = new ThreadDumpImpl(bestTimestamp);
-
-            // Next, get all times for all threads for alligned stacks (time <= ts)
-            // select threadid, max(ts) from test where ts <= 6 group by threadid;
-
-            statement = getPreparedStatement(
-                    "SELECT thread_id, MAX(time_stamp) FROM CallStack WHERE " + // NOI18N
-                    "time_stamp <= ? GROUP BY thread_id"); // NOI18N
-            statement.setLong(1, bestTimestamp);
-            threadAndTimestampResult = statement.executeQuery();
-
-            HashMap<Integer, Long> idToTime = new HashMap<Integer, Long>();
-
-            while (threadAndTimestampResult.next()) {
-                int callStackThreadId = threadAndTimestampResult.getInt(1);
-                long callStackTimeStamp = threadAndTimestampResult.getLong(2);
-                if (query.getShowThreads().contains(callStackThreadId)) {
-                    idToTime.put(callStackThreadId, callStackTimeStamp);
-                }
-            }
-            threadAndTimestampResult.close();
-
-            //get leaf_id's
-            for (Map.Entry<Integer, Long> entry : idToTime.entrySet()) {
-                int thread_id = entry.getKey();
-                long t = entry.getValue();
-                statement = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
-                statement.setInt(1, thread_id);
-                statement.setLong(2, t);
-                ResultSet stackAndStateResult = statement.executeQuery();
-                if (stackAndStateResult.next()) {
-                    int stackID = stackAndStateResult.getInt(1);
-                    int mstate = stackAndStateResult.getInt(2);
-                    result.addStack(new SnapshotImpl(this, t, thread_id, stackID, MSAState.fromCode(mstate, query.isFullMode())));
-                }
-                stackAndStateResult.close();
-            }
-
-        } catch (SQLException ex) {
-            System.err.println("ex: " + ex.getSQLState());  // NOI18N
-        }
-
-        return result;
     }
 
     public List<FunctionCall> getCallStack(final long stackId) {
@@ -794,6 +790,15 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 ((FunctionImpl) calls.get(i).getFunction()).setName(demangled.get(i));
             }
         }
+    }
+
+    /**
+     *
+     * @param timestamp  in milliseconds
+     * @return bucket id
+     */
+    private static long timeToBucketId(long timestamp) {
+        return timestamp / 1000;  // bucket is 1 second
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -928,8 +933,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     private static class UpdateMetrics {
 
-        public long objId;
         public boolean funcOrNode; // false => func, true => node
+        public long objId;
+        public long bucketId;
         public long cpuTimeInclusive;
         public long cpuTimeExclusive;
 
@@ -1004,7 +1010,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                             }
                         }
 
-                        // second pass: execute inserts
+                        // second pass: insert new functions/nodes
                         cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
                             if (!isRunning) {
@@ -1015,27 +1021,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                 if (cmd instanceof AddFunction) {
                                     AddFunction addFunctionCmd = (AddFunction) cmd;
                                     //demagle here
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)"); //NOI18N
+                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name) VALUES (?, ?, ?)"); //NOI18N
                                     stmt.setLong(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
-//                                    if (demanglingService == null) {
                                     stmt.setString(3, addFunctionCmd.name.toString());
-//                                    } else {
-//                                        Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
-//                                        try {
-//                                            stmt.setString(3, demangled.get());
-//                                        } catch (ExecutionException ex) {
-//                                            stmt.setString(3, addFunctionCmd.name.toString());
-//                                        }
-//                                    }
-                                    UpdateMetrics metrics = funcMetrics.remove(addFunctionCmd.id);
-                                    if (metrics == null) {
-                                        stmt.setLong(4, 0);
-                                        stmt.setLong(5, 0);
-                                    } else {
-                                        stmt.setLong(4, metrics.cpuTimeInclusive);
-                                        stmt.setLong(5, metrics.cpuTimeExclusive);
-                                    }
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
                                     AddNode addNodeCmd = (AddNode) cmd;
@@ -1060,14 +1049,29 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                         }
                         cmds.clear();
 
-                        // third pass: execute updates
+                        // third pass: record metrics
                         for (UpdateMetrics cmd : funcMetrics.values()) {
                             try {
-                                PreparedStatement stmt = getPreparedStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?"); //NOI18N
-                                stmt.setLong(1, cmd.cpuTimeInclusive);
-                                stmt.setLong(2, cmd.cpuTimeExclusive);
-                                stmt.setLong(3, cmd.objId);
-                                stmt.executeUpdate();
+                                PreparedStatement stmt = getPreparedStatement("SELECT func_id, bucket_id, time_incl, time_excl FROM FuncMetricAggr WHERE func_id = ? AND bucket_id = ? FOR UPDATE"); //NOI18N
+                                stmt.setLong(1, cmd.objId);
+                                stmt.setLong(2, cmd.bucketId);
+                                ResultSet rs = stmt.executeQuery();
+                                try {
+                                    if (rs.next()) {
+                                        rs.updateLong(3, rs.getLong(3) + cmd.cpuTimeInclusive);
+                                        rs.updateLong(4, rs.getLong(4) + cmd.cpuTimeExclusive);
+                                        rs.updateRow();
+                                    } else {
+                                        rs.moveToInsertRow();
+                                        rs.updateLong(1, cmd.objId);
+                                        rs.updateLong(2, cmd.bucketId);
+                                        rs.updateLong(3, cmd.cpuTimeInclusive);
+                                        rs.updateLong(4, cmd.cpuTimeExclusive);
+                                        rs.insertRow();
+                                    }
+                                } finally {
+                                    rs.close();
+                                }
                             } catch (SQLException ex) {
                                 ex.printStackTrace();
                             }

@@ -162,4 +162,14 @@ made subject to such option by the copyright holder.
             </xml-rule>
         </resolver>
     </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-application6.0">
+            <xml-rule>
+                <element name="application" ns="http://java.sun.com/xml/ns/javaee">
+                    <attr name="version" text="6"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
 </MIME-resolver>

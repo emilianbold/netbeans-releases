@@ -71,8 +71,6 @@ public final class EarDataNode extends DataNode {
     /** Name of property for spec version */
     public static final String PROPERTY_DOCUMENT_TYPE = "documentType"; // NOI18N
     
-    private static final String OPEN_ACTION_NAME = new OpenAction().getName();
-    
     /** Listener on dataobject */
     private PropertyChangeListener ddListener;
 
@@ -96,7 +94,10 @@ public final class EarDataNode extends DataNode {
     public Action[] getActions(boolean context) {
         if (filteredActions == null) {
             Action[] origActions = super.getActions(context);
-            List/*<Action>*/ actions = new ArrayList/*<Action>*/();
+            List<Action> actions = new ArrayList<Action>();
+            // Fix for IZ#172674
+            Action openAction = org.openide.util.actions.SystemAction.get(
+                    OpenAction.class);
             for (int i = 0; i < origActions.length; i++) {
                 if (origActions[i] instanceof OpenAction) {
                     continue;
@@ -104,8 +105,9 @@ public final class EarDataNode extends DataNode {
                 /*
                  * Fix for IZ#172558 - Cannot open application.xml
                  */
-                if ( origActions[i] != null && OPEN_ACTION_NAME.equals(
-                        origActions[i].getValue(Action.NAME)))
+                if ( openAction != null && origActions[i] != null && openAction.
+                        getValue(Action.NAME).equals(origActions[i].getValue(
+                                Action.NAME)))
                 {
                     continue;
                 }
