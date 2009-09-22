@@ -52,6 +52,7 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
@@ -96,6 +97,15 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         }
     }
+
+    @Override
+    public void visitClosureExpression(ClosureExpression expression) {
+        if (expression.isParameterSpecified() && (leaf instanceof Variable)) {
+            visitParameters(expression.getParameters(), (Variable) leaf);
+        }
+        super.visitClosureExpression(expression);
+    }
+
 
     protected boolean isValidToken(Token<? extends GroovyTokenId> token) {
         // cursor must be positioned on identifier, otherwise occurences doesn't make sense

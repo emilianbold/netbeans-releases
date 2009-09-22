@@ -87,6 +87,8 @@ public class JSFUtils {
     protected static final String FACELETS_SKIPCOMMNETS = "javax.faces.FACELETS_SKIP_COMMENTS";
     protected static final String FACELETS_DEVELOPMENT = "facelets.DEVELOPMENT";
     protected static final String FACELETS_DEFAULT_SUFFIX = "javax.faces.DEFAULT_SUFFIX";
+    public static final String FACES_PROJECT_STAGE = "javax.faces.PROJECT_STAGE";
+
     
     /** This method finds out, whether the input file is a folder that contains
      * a jsf implementation, which < = max version. It looks for lib folder and in this lib looks 

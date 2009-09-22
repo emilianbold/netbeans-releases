@@ -332,7 +332,12 @@ public final class OpenProjectList {
         final void preferredProject(Project lazyP) {
             synchronized (toOpenProjects) {
                 for (Project p : toOpenProjects) {
-                    if (p.getProjectDirectory().equals(lazyP.getProjectDirectory())) {
+                    FileObject dir = p.getProjectDirectory();
+                    assert dir != null : "Project has real directory " + p;
+                    if (dir == null) {
+                        continue;
+                    }
+                    if (dir.equals(lazyP.getProjectDirectory())) {
                         toOpenProjects.remove(p);
                         toOpenProjects.addFirst(p);
                         return;

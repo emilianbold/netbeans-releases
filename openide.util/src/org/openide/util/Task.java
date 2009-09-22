@@ -198,9 +198,7 @@ public class Task extends Object implements Runnable {
     */
     protected final void notifyRunning() {
         synchronized (this) {
-            if (RequestProcessor.logger().isLoggable(Level.FINE)) {
-                RequestProcessor.logger().fine("notifyRunning: " + this); // NOI18N
-            }
+            RequestProcessor.logger().log(Level.FINE, "notifyRunning: {0}", this); // NOI18N
             this.finished = false;
             notifyAll();
         }
@@ -214,9 +212,7 @@ public class Task extends Object implements Runnable {
 
         synchronized (this) {
             finished = true;
-            if (RequestProcessor.logger().isLoggable(Level.FINE)) {
-                RequestProcessor.logger().fine("notifyFinished: " + this); // NOI18N
-            }
+            RequestProcessor.logger().log(Level.FINE, "notifyFinished: {0}", this); // NOI18N
             notifyAll();
 
             // fire the listeners

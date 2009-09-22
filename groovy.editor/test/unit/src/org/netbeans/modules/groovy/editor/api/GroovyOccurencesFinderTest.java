@@ -186,6 +186,22 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         doTest("    int membervar1 =^ 2");
     }
 
+    public void testMethodParameter1() throws Exception {
+        doTest("        x^y = 5");
+    }
+
+    public void testMethodParameter2() throws Exception {
+        doTest("    def test (Object ^xy = 0 ) {");
+    }
+
+    public void testClosureParameter1() throws Exception {
+        doTest("        [1,2,3].each { va^lue ->");
+    }
+
+    public void testClosureParameter2() throws Exception {
+        doTest("            println val^ue+\" \"+(value*value)");
+    }
+
     private void doTest(String caretLine) throws Exception {
         checkOccurrences("testfiles/GroovyScopeTestcase.groovy", caretLine, true);
     }

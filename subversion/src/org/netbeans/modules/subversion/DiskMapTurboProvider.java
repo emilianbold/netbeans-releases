@@ -340,6 +340,10 @@ class DiskMapTurboProvider implements TurboProvider {
         }
         try {
             FileUtils.renameFile(storeNew, store);
+        } catch (FileNotFoundException ex) {
+            Subversion.LOG.log(Level.INFO, 
+                    "File could not be renamed, check if you are running only a single instance of netbeans for this userdir", //NOI18N
+                    ex);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
         }

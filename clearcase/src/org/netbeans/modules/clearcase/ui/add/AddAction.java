@@ -172,7 +172,7 @@ public class AddAction extends AbstractAction {
                 String message = panel.taMessage.getText();
                 boolean checkInAddedFiles = panel.cbSuppressCheckout.isSelected();
                 ClearcaseModuleConfig.setCheckInAddedFiles(checkInAddedFiles);
-                Utils.insert(ClearcaseModuleConfig.getPreferences(), RECENT_ADD_MESSAGES, message, 20);
+                Utils.insert(ClearcaseModuleConfig.getPreferences(), RECENT_ADD_MESSAGES, message.trim(), 20);
 
                 Map<ClearcaseFileNode, CheckinOptions> filesToAdd = addTable.getAddFiles();
 

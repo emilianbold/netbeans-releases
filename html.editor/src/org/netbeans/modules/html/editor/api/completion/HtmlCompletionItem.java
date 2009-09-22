@@ -339,7 +339,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return "<" + getItemText() + ">";
+            return "<" + getItemText();
         }
 
         @Override

@@ -382,15 +382,19 @@ public class ELExpression {
     public String getPropertyBeingTypedName() {
         String elExp = getExpression();
         int dotPos = elExp.lastIndexOf('.');            // NOI18N
-        int bracketIndex = elExp.lastIndexOf('[');          // NOI18N
+        int lBracketIndex = elExp.lastIndexOf('[');          // NOI18N
+        int rBracketIndex = elExp.lastIndexOf(']');          // NOI18N
 
         /*
          * Fix for IZ#172413 - Unexpected error in EL with dot inside array notation
          */
-        if ( bracketIndex >0 ){
-            return elExp.substring( bracketIndex+ 1);
+        if ( rBracketIndex <lBracketIndex   ){
+            return elExp.substring( lBracketIndex+ 1);
         }
-        else if ( dotPos >-1 ){
+        else if ( lBracketIndex > -1 && dotPos < rBracketIndex ){ 
+            return elExp.substring(lBracketIndex + 1);
+        }
+        else if (dotPos >-1 ){
             return elExp.substring( dotPos + 1);
         }
         return null;
@@ -424,9 +428,10 @@ public class ELExpression {
     }
     
     public String getInsert( String propertyName , char startChar ) {
-        int bracketIndex = getExpression().lastIndexOf("[");    // NOI18N
+        int lBracketIndex = getExpression().lastIndexOf('[');
+        int rBracketIndex = getExpression().lastIndexOf(']');
         
-        if ( bracketIndex >-1 ){
+        if ( rBracketIndex < lBracketIndex  ){
             String quote = null;
             if ( startChar == '"' || startChar =='\''){
                 quote = ""+startChar;
@@ -498,7 +503,7 @@ public class ELExpression {
         this.contextOffset = offset;
     }
     
-    private Part[] getParts() {
+    protected Part[] getParts() {
         List<Part> result = new LinkedList<Part>();
         if ( getExpression().indexOf('[') == -1 ){
             String[] parts = getExpression().split( "\\." );     // NOI18N
@@ -559,6 +564,14 @@ public class ELExpression {
                 }
             }
             i++;
+        }
+        /*
+         *  In the end there can be case when dot was 
+         *  last character ( from "." , "[", "]" list ).
+         *  So we need to add current ( modified ) expression as part 
+         */
+        if ( previousDot ){
+            addPart(result, expression, getExpression().length() - expression.length());
         }
         return result.toArray(new Part[result.size()] );
     }
@@ -879,7 +892,7 @@ public class ELExpression {
                 String suffix = removeQuotes(getPropertyBeingTypedName());
 
                 for (ExecutableElement method : ElementFilter.methodsIn(
-                        bean.getEnclosedElements())) 
+                        controller.getElements().getAllMembers(bean))) 
                 {
                     String propertyName = getExpressionSuffix(method, controller );
 

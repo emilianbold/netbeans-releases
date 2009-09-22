@@ -57,6 +57,8 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
 import org.w3c.dom.Document;
@@ -77,10 +79,6 @@ public class HudsonMercurialSCM implements HudsonSCM {
         if (source == null) {
             return null;
         }
-        if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
-            LOG.log(Level.FINE, "{0} is a local file location", source);
-            return null;
-        }
         return new Configuration() {
             public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
@@ -90,6 +88,13 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 configXmlSCM.appendChild(doc.createElement("modules")).appendChild(doc.createTextNode("")); // NOI18N
                 configXmlSCM.appendChild(doc.createElement("clean")).appendChild(doc.createTextNode("true")); // NOI18N
                 Helper.addTrigger(doc);
+            }
+            public ConfigurationStatus problems() {
+                if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
+                    return ConfigurationStatus.withWarning(NbBundle.getMessage(HudsonMercurialSCM.class, "warning.local_repo", source));
+                } else {
+                    return null;
+                }
             }
         };
     }
@@ -104,15 +109,15 @@ public class HudsonMercurialSCM implements HudsonSCM {
         if (!"hg".equals(Helper.xpath("kind", changeSet))) { // NOI18N
             return null;
         }
-        final URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"), job); // NOI18N
+        URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"), job); // NOI18N
         if (repo == null) {
             LOG.log(Level.FINE, "No known repo location for {0}", job);
-            return null;
         }
-        if (!"http".equals(repo.getScheme()) && !"https".equals(repo.getScheme())) { // NOI18N
+        if (repo != null && !"http".equals(repo.getScheme()) && !"https".equals(repo.getScheme())) { // NOI18N
             LOG.log(Level.FINE, "Need hgweb to show changes from {0}", repo);
-            return null;
+            repo = null;
         }
+        final URI _repo = repo;
         class HgItem implements HudsonJobChangeItem {
             final Element itemXML;
             HgItem(Element xml) {
@@ -143,7 +148,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
                         return editType;
                     }
                     public OutputListener hyperlink() {
-                        return new MercurialHyperlink(repo, node, this);
+                        return _repo != null ? new MercurialHyperlink(_repo, node, this) : null;
                     }
                 }
                 List<HgFile> files = new ArrayList<HgFile>();
