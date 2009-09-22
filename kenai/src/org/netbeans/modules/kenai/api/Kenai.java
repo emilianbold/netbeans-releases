@@ -582,9 +582,10 @@ public final class Kenai {
     }
 
     private void xmppDisconnect() {
-        if (xmppConnection != null) {
-            xmppConnection.disconnect();
+        if (xmppConnection == null) {
+            return;
         }
+        xmppConnection.disconnect();
         KenaiUser.clear();
         XMPPConnection temp = xmppConnection;
         xmppConnection = null;
