@@ -197,7 +197,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         repaint();
     }
 
-    public void addVisualizer(String toolName, Visualizer view) {
+    public void addVisualizer(String toolID,String toolName, Visualizer view) {
         setContent(toolName, view.getComponent());
         view.refresh();
 

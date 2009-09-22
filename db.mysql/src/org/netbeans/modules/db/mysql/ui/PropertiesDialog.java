@@ -159,18 +159,40 @@ public class PropertiesDialog  {
     }
 
     private void updateServer() {
-        server.setHost(basePanel.getHost());
-        server.setPort(basePanel.getPort());
-        server.setUser(basePanel.getUser());
-        server.setPassword(basePanel.getPassword());
-        server.setSavePassword(basePanel.getSavePassword());
-        
-        server.setAdminPath(adminPanel.getAdminPath());
-        server.setAdminArgs(adminPanel.getAdminArgs());
-        server.setStartPath(adminPanel.getStartPath());
-        server.setStartArgs(adminPanel.getStartArgs());
-        server.setStopPath(adminPanel.getStopPath());
-        server.setStopArgs(adminPanel.getStopArgs());
+        if (! basePanel.getHost().equals(server.getHost())) {
+            server.setHost(basePanel.getHost());
+        }
+        if (! basePanel.getPort().equals(server.getPort())) {
+            server.setPort(basePanel.getPort());
+        }
+        if (! basePanel.getUser().equals(server.getUser())) {
+            server.setUser(basePanel.getUser());
+        }
+        if (! basePanel.getPassword().equals(server.getPassword())) {
+            server.setPassword(basePanel.getPassword());
+        }
+        if (basePanel.getSavePassword() != server.isSavePassword()) {
+            server.setSavePassword(basePanel.getSavePassword());
+        }
+
+        if (! adminPanel.getAdminPath().equals(server.getAdminPath())) {
+            server.setAdminPath(adminPanel.getAdminPath());
+        }
+        if (! adminPanel.getAdminArgs().equals(server.getAdminArgs())) {
+            server.setAdminArgs(adminPanel.getAdminArgs());
+        }
+        if (! adminPanel.getStartPath().equals(server.getStartPath())) {
+            server.setStartPath(adminPanel.getStartPath());
+        }
+        if (! adminPanel.getStartArgs().equals(server.getStartArgs())) {
+            server.setStartArgs(adminPanel.getStartArgs());
+        }
+        if (! adminPanel.getStopPath().equals(server.getStopPath())) {
+            server.setStopPath(adminPanel.getStopPath());
+        }
+        if (! adminPanel.getStopArgs().equals(server.getStopArgs())) {
+            server.setStopArgs(adminPanel.getStopArgs());
+        }
 
         ServerNodeProvider provider = ServerNodeProvider.getDefault();
         if ( ! provider.isRegistered() ) {

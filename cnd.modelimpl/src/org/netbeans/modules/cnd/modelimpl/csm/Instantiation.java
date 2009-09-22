@@ -129,18 +129,36 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return false;
         }
         CsmObject csmobj = (CsmObject) obj;
-        if (CsmKindUtilities.isInstantiation(csmobj)) {
-            return getFullName().equals(((Instantiation)csmobj).getFullName());
-        } else if (CsmKindUtilities.isTemplate(csmobj) ||
-                   CsmKindUtilities.isTemplateInstantiation(csmobj)) {
-            return this.getUniqueName().equals(((CsmDeclaration)csmobj).getUniqueName());
+        if (!CsmKindUtilities.isInstantiation(csmobj)) {
+            return false;
         }
-        return false;
+        CsmInstantiation inst = (CsmInstantiation) csmobj;
+        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping1 = this.getMapping();
+        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping2 = inst.getMapping();
+        if(mapping1.size() != mapping2.size()) {
+            return false;
+        }
+        for (CsmTemplateParameter csmTemplateParameter : mapping1.keySet()) {
+            if(!this.getMapping().get(csmTemplateParameter).equals(mapping2.get(csmTemplateParameter))) {
+                return false;
+            }
+        }
+        return this.getTemplateDeclaration().equals(inst.getTemplateDeclaration());
+
+//        if (CsmKindUtilities.isInstantiation(csmobj)) {
+//            return getFullName().equals(((Instantiation)csmobj).getFullName());
+//        } else if (CsmKindUtilities.isTemplate(csmobj) ||
+//                   CsmKindUtilities.isTemplateInstantiation(csmobj)) {
+//            return this.getUniqueName().equals(((CsmDeclaration)csmobj).getUniqueName());
+//        }
     }
 
     @Override
     public int hashCode() {
-        return getFullName().hashCode();
+        int hash = 3;
+        hash = 31 * hash + (this.declaration != null ? this.declaration.hashCode() : 0);
+        hash = 31 * hash + (this.mapping != null ? this.mapping.hashCode() : 0);
+        return hash;
     }
 
     private CsmObject getTemplateParameterDefultValue(CsmTemplate declaration, CsmTemplateParameter param, int index) {

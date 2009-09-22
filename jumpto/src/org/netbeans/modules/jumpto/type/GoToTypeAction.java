@@ -244,6 +244,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
     
     public void closeDialog() {
+        // Closing event can be sent several times.
+        if (dialog == null ) { // #172568
+            return; // OK - the dialog has already been closed.
+        }
         dialog.setVisible( false );
         cleanup();
     }

@@ -147,13 +147,7 @@ public class CsmStatementResolver {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (stmt != null) {
             for (CsmStatement curSt : stmt.getStatements()) {
-                // We should stop in case of macro, so we check sameOffsets for statements.
-                // But there could be function_try_block, that we should not skip, in spite of
-                // equality of offsets.
-                if ((!CsmOffsetUtilities.sameOffsets(stmt, curSt) ||
-                        (CsmKindUtilities.isCompoundStatement(stmt) &&
-                        CsmKindUtilities.isTryCatchStatement(curSt))) &&
-                        findInnerObject(curSt, offset, context)) {
+                if (findInnerObject(curSt, offset, context)) {
                     return true;
                 }
             }

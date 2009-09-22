@@ -48,7 +48,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,12 +71,10 @@ import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.ModuleNode;
 import org.jrubyparser.ast.Node;
-import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SClassNode;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.INameNode;
-import org.jruby.util.ByteList;
 import org.jrubyparser.SourcePosition;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -85,7 +82,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -1275,6 +1271,14 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
 
         public ImageIcon getCustomIcon() {
+            if (kind == ElementKind.TEST) {
+                // see #138409 -- use the same icon for all kind of test/unit tests
+                Node astNode = node.getNode();
+                if (astNode instanceof INameNode && "test".equals(AstUtilities.getName(astNode))) {//NOI18N
+                    // there's no api for getting csl icons
+                    return ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/methodPublic.png", false);//NOI18N
+                }
+            }
             return null;
         }
 

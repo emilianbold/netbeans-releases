@@ -350,6 +350,11 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     public void visitClosureExpression(ClosureExpression node) {
         if (isInside(node, line, column)) {
             super.visitClosureExpression(node);
+            if (node.isParameterSpecified()) {
+                for (Parameter parameter : node.getParameters()) {
+                    isInside(parameter, line, column);
+                }
+            }
         }
     }
 

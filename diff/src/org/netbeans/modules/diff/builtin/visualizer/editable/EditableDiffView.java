@@ -70,6 +70,7 @@ import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -676,7 +677,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
             jEditorPane2.getScrollPane().getVerticalScrollBar().setValue(ddiff.getTopRight() - offset);
         } catch (IndexOutOfBoundsException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
 
         // scroll the left pane accordingly
@@ -1032,13 +1033,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 return NO_DIFFERENCES;
             }
 
-            Reader first = null;
-            Reader second = null;
-            try {
-                first = new StringReader(jEditorPane1.getEditorPane().getDocument().getText(0, jEditorPane1.getEditorPane().getDocument().getLength()));
-                second = new StringReader(jEditorPane2.getEditorPane().getDocument().getText(0, jEditorPane2.getEditorPane().getDocument().getLength()));
-            } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+            Reader first = getReader(jEditorPane1.getEditorPane().getDocument());
+            Reader second = getReader(jEditorPane2.getEditorPane().getDocument());
+            if (first == null || second == null) {
+                return NO_DIFFERENCES;
             }
 
             DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
@@ -1050,6 +1048,25 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
             return diffs;
         }
+    }
+
+    /**
+     * Runs under a read lock
+     * @param doc
+     * @return
+     */
+    private Reader getReader (final Document doc) {
+        final Reader[] reader = new Reader[1];
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    reader[0] = new StringReader(doc.getText(0, doc.getLength()));
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+                }
+            }
+        });
+        return reader[0];
     }
     
     private void repairTextUI (DecoratedEditorPane pane) {

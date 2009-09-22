@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 
 public class ThreadMapDataStorage implements ProxyDataStorage {
@@ -88,6 +89,9 @@ public class ThreadMapDataStorage implements ProxyDataStorage {
                 break;
             }
         }
+    }
+
+    public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
     }
 
     /**
