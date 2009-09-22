@@ -119,10 +119,14 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     public Collection<? extends TypeScope> getDefaultTypes() {
-        return (defaultType != null && defaultType.length() > 0) ?
-            CachingSupport.getTypes(defaultType.split("\\|")[0], this) :
-            Collections.<TypeScopeImpl>emptyList();
-
+        Collection<TypeScope> typeScopes = new HashSet<TypeScope>();
+        if (defaultType != null && defaultType.length() > 0) {
+            String[] allTypeNames = defaultType.split("\\|");
+            for (String typeName : allTypeNames) {
+                typeScopes.addAll(CachingSupport.getTypes(typeName, this));
+            }
+        }            
+        return typeScopes;
     }
     @Override
     public String getNormalizedName() {
