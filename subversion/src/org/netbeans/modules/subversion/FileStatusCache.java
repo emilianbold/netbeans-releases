@@ -178,7 +178,7 @@ public class FileStatusCache {
                     }
                 } while (fileToRefresh != null);
                 if (logEnabled) {
-                    LOG.log(Level.INFO, "refreshTask lasted {0} ms for {1} files, {2} files refreshed so far", new Object[] { //NOI18N
+                    LOG.log(Level.FINE, "refreshTask lasted {0} ms for {1} files, {2} files refreshed so far", new Object[] { //NOI18N
                         new Long(System.currentTimeMillis() - startTime), new Long(files), new Long(refreshedFilesCount)});
                 }
             }
