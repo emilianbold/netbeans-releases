@@ -838,6 +838,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         entityClassesPanel.add(entityScrollPane, gridBagConstraints);
 
         addClassButton.setText(bundle1.getString("LBL_AddClasses")); // NOI18N
+        addClassButton.setMargin(new java.awt.Insets(0, 10, 0, 10));
         addClassButton.setMaximumSize(new java.awt.Dimension(287, 29));
         addClassButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -851,6 +852,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         entityClassesPanel.add(addClassButton, gridBagConstraints);
 
         removeClassButton.setText(bundle1.getString("LBL_RemoveClass")); // NOI18N
+        removeClassButton.setMargin(new java.awt.Insets(0, 10, 0, 10));
         removeClassButton.setMaximumSize(new java.awt.Dimension(284, 29));
         removeClassButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
