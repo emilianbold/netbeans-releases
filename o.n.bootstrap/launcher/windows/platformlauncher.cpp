@@ -90,7 +90,8 @@ const char *PlatformLauncher::IDE_MAIN_CLASS = "org/netbeans/Main";
 PlatformLauncher::PlatformLauncher()
     : separateProcess(false)
     , suppressConsole(false)
-    , heapDumpPathOptFound(false) {
+    , heapDumpPathOptFound(false)
+    , exiting(false) {
 }
 
 PlatformLauncher::PlatformLauncher(const PlatformLauncher& orig) {
@@ -155,6 +156,7 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
 }
 
 bool PlatformLauncher::run(bool updater, DWORD *retCode) {
+    logMsg(updater ? "Starting updater..." : "Starting application...");
     constructClassPath(updater);
     const char *mainClass;
     if (updater) {
@@ -166,12 +168,21 @@ bool PlatformLauncher::run(bool updater, DWORD *retCode) {
         nextAction = ARG_NAME_LA_START_AU;
     }
 
-    string option = OPT_CLASS_PATH;
+    string option = OPT_NB_CLUSTERS;
+    option += auClusters.empty() ? clusters : auClusters;
+    javaOptions.push_back(option);
+
+    option = OPT_CLASS_PATH;
     option += classPath;
     javaOptions.push_back(option);
 
     jvmLauncher.setSuppressConsole(suppressConsole);
     bool rc = jvmLauncher.start(mainClass, progArgs, javaOptions, separateProcess, retCode);
+    if (!separateProcess) {
+        exit(0);
+    }
+
+    javaOptions.pop_back();
     javaOptions.pop_back();
     return rc;
 }
@@ -286,7 +297,6 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
 }
 
 bool PlatformLauncher::processAutoUpdateCL() {
-    auClusters = "";
     logMsg("processAutoUpdateCL()...");
     if (userDir.empty()) {
         logMsg("\tuserdir empty, quiting");
@@ -343,9 +353,17 @@ bool PlatformLauncher::checkForNewUpdater(const char *basePath) {
         destPath += "\\modules\\ext\\updater.jar";
         createPath(destPath.c_str());
 
-        if (!MoveFileEx(srcPath.c_str(), destPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
-            logErr(true, false, "Failed to move \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
-            return false;
+        int i = 0;
+        while (true) {
+            if (MoveFileEx(srcPath.c_str(), destPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+                break;
+            }
+            if (exiting || ++i > 10) {
+                logErr(true, false, "Failed to move \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
+                return false;
+            }
+            logErr(true, false, "Failed to move \"%s\" to \"%s\", trying to wait", srcPath.c_str(), destPath.c_str());
+            Sleep(100);
         }
         logMsg("New updater successfully moved from \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
 
@@ -373,7 +391,7 @@ bool PlatformLauncher::shouldAutoUpdate(bool firstStart, const char *basePath) {
     WIN32_FIND_DATA fd;
     HANDLE hFindNbms = FindFirstFile(path.c_str(), &fd);
     if (hFindNbms != INVALID_HANDLE_VALUE) {
-        logMsg("Some updates found.");
+        logMsg("Some updates found at %s", path.c_str());
         FindClose(hFindNbms);
     }
 
@@ -453,10 +471,6 @@ void PlatformLauncher::prepareOptions() {
 
     option = OPT_NB_PLATFORM_HOME;
     option += platformDir;
-    javaOptions.push_back(option);
-
-    option = OPT_NB_CLUSTERS;
-    option += auClusters.empty() ? clusters : auClusters;
     javaOptions.push_back(option);
 
     option = OPT_NB_USERDIR;
@@ -648,6 +662,7 @@ bool PlatformLauncher::restartRequested() {
 
 void PlatformLauncher::onExit() {
     logMsg("onExit()");
+    exiting = true;
     if (separateProcess) {
         logMsg("JVM in separate process, no need to restart");
         return;
