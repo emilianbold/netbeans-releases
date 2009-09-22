@@ -380,7 +380,13 @@ public class ThreadsCache implements Executor {
             contains = allThreads.contains(tref);
         }
         if (!contains) {
-            logger.info("Must SYNCHRONIZE ThreadsCache, did not found "+tref);
+            String tname;
+            try {
+                tname = tref.toString();
+            } catch (Exception ex) {
+                tname = ex.getLocalizedMessage();
+            }
+            logger.info("Must SYNCHRONIZE ThreadsCache, did not found "+tname);
             sync();
         }
     }

@@ -193,13 +193,17 @@ public class CommitAction extends ContextAction {
      * Returns a SvnFileNode for each given file
      *
      * @param fileList
+     * @param supp running progress support
      * @return
      */
-    private static SvnFileNode[] getFileNodes(List<File> fileList) {
+    private static SvnFileNode[] getFileNodes(List<File> fileList, SvnProgressSupport supp) {
         SvnFileNode[] nodes;
         ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
 
         for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
+            if (supp.isCanceled()) {
+                break;
+            }
             File file = it.next();
             SvnFileNode node = new SvnFileNode(file);
             // initialize node properties
@@ -207,7 +211,7 @@ public class CommitAction extends ContextAction {
             node.getCopy();
             nodesList.add(node);
         }
-        nodes = nodesList.toArray(new SvnFileNode[fileList.size()]);
+        nodes = nodesList.toArray(new SvnFileNode[nodesList.size()]);
         return nodes;
     }
 
@@ -309,6 +313,9 @@ public class CommitAction extends ContextAction {
                 if (isDeepRefresh()) {
                     // make a deep refresh to get the not yet notified external changes
                     for (File f : contextFiles) {
+                        if (isCanceled()) {
+                            return;
+                        }
                         cache.refreshRecursively(f);
                     }
                 }
@@ -322,6 +329,9 @@ public class CommitAction extends ContextAction {
                         File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
                         for (int i = 0; i < files.length; i++) {
                             for (int r = 0; r < contextFiles.length; r++) {
+                                if (isCanceled()) {
+                                    return;
+                                }
                                 if (SvnUtils.isParentOrEqual(contextFiles[r], files[i])) {
                                     if (!fileList.contains(files[i])) {
                                         fileList.add(files[i]);
@@ -330,6 +340,9 @@ public class CommitAction extends ContextAction {
                             }
                         }
                     } else {
+                        if (isCanceled()) {
+                            return;
+                        }
                         File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
                         for (int i = 0; i < files.length; i++) {
                             if (!fileList.contains(files[i])) {
@@ -343,7 +356,7 @@ public class CommitAction extends ContextAction {
                     return;
                 }
                 fileList.addAll(getUnversionedParents(fileList, false));
-                final SvnFileNode[] nodes = getFileNodes(fileList);
+                final SvnFileNode[] nodes = getFileNodes(fileList, this);
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         data.setNodes(nodes);

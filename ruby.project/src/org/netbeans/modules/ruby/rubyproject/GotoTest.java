@@ -105,6 +105,7 @@ public class GotoTest implements TestLocator {
             "app/views/" + FILE + "\\." + EXT, "spec/views/" + FILE + "_spec\\." + EXT, // NOI18N
             "app/helpers/" + FILE + "\\." + EXT, "spec/helpers/" + FILE + "_spec\\." + EXT, // NOI18N
             "lib/" + FILE + "\\." + EXT, "spec/" + FILE + "_spec\\." + EXT, // NOI18N
+            "lib/" + FILE + "\\." + EXT, "spec/lib/" + FILE + "_spec\\." + EXT, // NOI18N
             "/" + FILE + "\\." + EXT, "/" + FILE + "_spec\\." + EXT, // NOI18N
         };
     private final String[] RAILS_PATTERNS =
@@ -112,6 +113,8 @@ public class GotoTest implements TestLocator {
             "app/controllers/" + FILE + "\\." + EXT, "test/functional/" + FILE + "_test\\." + EXT, // NOI18N
             "app/models/" + FILE + "\\." + EXT, "test/unit/" + FILE + "_test\\." + EXT, // NOI18N
             "lib/" + FILE + "\\." + EXT, "test/unit/test_" + FILE + "\\." + EXT, // NOI18N
+            "lib/" + FILE + "\\." + EXT, "test/lib/test_" + FILE + "\\." + EXT, // NOI18N
+            "lib/" + FILE + "\\." + EXT, "test/lib/" + FILE + "_test\\." + EXT, // NOI18N
         };
     private final String[] RUBYTEST_PATTERNS =
         {

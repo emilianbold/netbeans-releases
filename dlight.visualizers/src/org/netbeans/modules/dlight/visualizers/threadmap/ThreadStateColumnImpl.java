@@ -80,12 +80,15 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     static long timeStampToMilliSeconds(long timeStamp) {
-        //return TimeUnit.NANOSECONDS.toMillis(timeStamp);
         return timeStamp;
     }
 
     static int timeInervalToMilliSeconds(long samplingInterval) {
         return (int) (samplingInterval / 1000 / 1000);
+    }
+
+    static long timeInervalToNanoSeconds(long samplingInterval) {
+        return samplingInterval * 1000 * 1000;
     }
 
     static MSAState point2MSA(ThreadsPanel panel, ThreadState state, Point point){

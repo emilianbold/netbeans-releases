@@ -381,11 +381,9 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         if (aTimeFilters == null || aTimeFilters.isEmpty()) {
             return Collections.<Range<Long>>emptyList();
         }
-        Range<Long> range = new Range<Long>((viewStart - dataStart)*1000*1000, (viewEnd - dataStart)*1000*1000);
-        //System.err.println("Interval ["+range.getStart()/1000/1000+","+range.getEnd()/1000/1000+"]");
+        Range<Long> range = new Range<Long>(ThreadStateColumnImpl.timeInervalToNanoSeconds(viewStart - dataStart), ThreadStateColumnImpl.timeInervalToNanoSeconds(viewEnd - dataStart));
         ArrayList<Range<Long>> ranges = new ArrayList<Range<Long>>(timeFilters.size());
         for(TimeIntervalDataFilter filter : aTimeFilters) {
-            //System.err.println("Selection ["+filter.getInterval().getStart()/1000/1000+","+filter.getInterval().getEnd()/1000/1000+"]");
             ranges.add(filter.getInterval());
         }
         return range.subtract(ranges);
@@ -445,8 +443,8 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             int i = 0;
             for (Range<Long> range : getGray()) {
                 g.setColor(UIUtils.getDarker(getBackground(), BorderDarkerFactor));
-                int x1 = (int) ((float) (range.getStart() / 1000 / 1000 - firstValue) * factor);
-                int x2 = (int) ((float) (range.getEnd() / 1000 / 1000 - firstValue) * factor);
+                int x1 = (int) ((float) (ThreadStateColumnImpl.timeInervalToMilliSeconds(range.getStart()) - firstValue) * factor);
+                int x2 = (int) ((float) (ThreadStateColumnImpl.timeInervalToMilliSeconds(range.getEnd()) - firstValue) * factor);
                 Composite composite = ((Graphics2D) g).getComposite();
                 ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, AlphaCompositeConstant));
                 g.fillRect(x1, 0, x2, getHeight() - 1);

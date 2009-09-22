@@ -61,13 +61,13 @@ public class ThreadSummaryColumnImpl implements ThreadSummaryColumn {
         int all = 0;
         int running = 0;
         for(StateDuration duration : state) {
-            all += duration.getDuration()/1000/1000;
+            all += ThreadStateColumnImpl.timeInervalToMilliSeconds(duration.getDuration());
             switch(duration.getState()) {
                 case Running:
                 case RunningOther:
                 case RunningSystemCall:
                 case RunningUser:
-                    running += duration.getDuration()/1000/1000;
+                    running += ThreadStateColumnImpl.timeInervalToMilliSeconds(duration.getDuration());
             }
         }
         if (all != 0) {
