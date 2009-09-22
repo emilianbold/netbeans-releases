@@ -78,7 +78,7 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
             }
         } catch(NullPointerException npe) {
             locationText.setText("");
-            Logger.global.log(Level.WARNING, "No sources found", npe);
+            Logger.global.log(Level.WARNING, NbBundle.getMessage(WebFragmentXmlVisualPanel1.class, "NO_SOURCES_FOUND"), npe);
         }
         refreshLocation();
     }
