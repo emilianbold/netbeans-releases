@@ -60,6 +60,7 @@ import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -137,7 +138,7 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         JFileChooser chooser = new JFileChooser ();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setDialogTitle("Select Preview (X)HTML File");
+        chooser.setDialogTitle(NbBundle.getMessage(CssWebPreviewPanel.class, "WebPreviewChooserTitle"));
         chooser.setFileSelectionMode (JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter(filter);
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
@@ -170,8 +171,8 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
                 return;
             }
             browser.setContent(getContentFromReader(new BufferedReader(new InputStreamReader(is))));
-            filenameLabel.setText("Generated Preview");
-            filenameLabel.setToolTipText("Generated Sample Preview");
+            filenameLabel.setText(NbBundle.getMessage(CssWebPreviewPanel.class, "FileNameLabelText"));
+            filenameLabel.setToolTipText(NbBundle.getMessage(CssWebPreviewPanel.class, "FileNameLabelTooltip"));
         }
     }
 
@@ -221,7 +222,7 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
         }
 
         public String getDescription() {
-            return "(X)HTML Files";
+            return NbBundle.getMessage(CssWebPreviewPanel.class, "WebPreviewFileFilterDesc");
         }
 
     }
