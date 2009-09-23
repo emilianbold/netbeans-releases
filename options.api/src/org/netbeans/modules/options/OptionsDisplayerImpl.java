@@ -126,7 +126,7 @@ public class OptionsDisplayerImpl {
     static void selectCategory(String path) {
         DialogDescriptor descriptor = null;
         synchronized (lookupListener) {
-            descriptor = (DialogDescriptor) descriptorRef.get();
+            descriptor = descriptorRef.get();
         }
         if (descriptor != null) {
             OptionsPanel optionsPanel = (OptionsPanel) descriptor.getMessage();
@@ -148,7 +148,7 @@ public class OptionsDisplayerImpl {
         
         DialogDescriptor descriptor = null;
         synchronized(lookupListener) {
-            descriptor = (DialogDescriptor)descriptorRef.get ();
+            descriptor = descriptorRef.get ();
         }
 
         OptionsPanel optionsPanel = null;
@@ -270,16 +270,17 @@ public class OptionsDisplayerImpl {
     }
     
     private static Component loc (Component c, String key) {
-        if (c instanceof AbstractButton)
+        if (c instanceof AbstractButton) {
             Mnemonics.setLocalizedText (
                 (AbstractButton) c, 
                 loc (key)
             );
-        else
+        } else {
             Mnemonics.setLocalizedText (
                 (JLabel) c, 
                 loc (key)
             );
+        }
         return c;
     }
     
@@ -319,7 +320,9 @@ public class OptionsDisplayerImpl {
         
         @SuppressWarnings("unchecked")
         public void actionPerformed (ActionEvent e) {
-            if (!isOpen()) return; //WORKARROUND for some bug in NbPresenter
+            if (!isOpen()) { //WORKARROUND for some bug in NbPresenter
+                return;
+            }
                 // listener is called twice ...
             if (e.getSource () == bOK) {
                 log.fine("Options Dialog - Ok pressed."); //NOI18N
@@ -395,7 +398,9 @@ public class OptionsDisplayerImpl {
         }
         
         public void windowClosing (WindowEvent e) {
-            if (dialog == null) return;
+            if (dialog == null) {
+                return;
+            }
             log.fine("Options Dialog - windowClosing "); //NOI18N
             optionsPanel.cancel ();
             bOK.setEnabled(true);

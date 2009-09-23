@@ -73,7 +73,7 @@ public class NaturalFunctionCallComparator implements FunctionCallComparator {
       res = l1 == l2 ? 0 : l1 < l2 ? 1 : -1;
     }
 
-    return res == 0 ? o1.getFunction().getQuilifiedName().compareTo(o2.getFunction().getQuilifiedName()) : res;
+    return res == 0 ? o1.getFunction().getSignature().compareTo(o2.getFunction().getSignature()) : res;
 
   }
 }

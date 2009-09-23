@@ -1895,7 +1895,7 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             CompilerSet cs = (CompilerSet) value;
-            if (cs.isDefault()) {
+            if (cs != null && cs.isDefault()) {
                 comp.setFont(comp.getFont().deriveFont(Font.BOLD));
             }
             return comp;

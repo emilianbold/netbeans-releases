@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,8 +63,8 @@ import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -262,7 +261,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             File f = ServerUtilities.getJarName(installRoot, entry + ServerUtilities.GFV3_VERSION_MATCHER);
             if ((f != null) && (f.exists())) {
                 try {
-                    libraryList.add(f.toURI().toURL());
+                    libraryList.add(FileUtil.getArchiveRoot(f.toURI().toURL()));
                 } catch (MalformedURLException ex) {
                 }
             }

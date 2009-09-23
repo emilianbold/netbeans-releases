@@ -51,11 +51,14 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
 
 /**
  * Service that provides tips for Parallel Adviser.
@@ -66,6 +69,8 @@ import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 public class UnnecessaryThreadsTipsProvider implements ParallelAdviserTipsProvider {
 
     private final static List<UnnecessaryThreadsAdvice> tips = new ArrayList<UnnecessaryThreadsAdvice>();
+
+    private final static List<WeakReference<ParallelAdviserTipsProviderListener>> listeners = new ArrayList<WeakReference<ParallelAdviserTipsProviderListener>>();
 
     public static void addTip(UnnecessaryThreadsAdvice tip) {
         for (UnnecessaryThreadsAdvice advice : tips) {
@@ -85,4 +90,22 @@ public class UnnecessaryThreadsTipsProvider implements ParallelAdviserTipsProvid
         return new ArrayList<Advice>(tips);
     }
 
+    public void addListener(ParallelAdviserTipsProviderListener listener) {
+        listeners.add(new WeakReference<ParallelAdviserTipsProviderListener>(listener));
+    }
+
+    public void removeListener(ParallelAdviserTipsProviderListener listener) {
+        for (Iterator<WeakReference<ParallelAdviserTipsProviderListener>> it = listeners.iterator(); it.hasNext();) {
+            WeakReference<ParallelAdviserTipsProviderListener> ref = it.next();
+            if (ref.get() == listener) {
+                it.remove();
+            }
+        }
+    }
+
+    private static void notifyListeners() {
+        for (WeakReference<ParallelAdviserTipsProviderListener> ref : listeners) {
+            ref.get().tipsChanged();
+        }
+    }
 }
