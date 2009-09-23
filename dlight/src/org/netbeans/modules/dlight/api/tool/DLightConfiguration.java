@@ -114,7 +114,7 @@ public final class DLightConfiguration {
         this.rootFolder = configurationRoot;
         this.configurationOptions = getConfigurationOptions();
         this.displayedName = configurationRoot.getAttribute("displayedName") == null ? configurationRoot.getName() : (String)configurationRoot.getAttribute("displayedName");//NOI18N
-        this.isHidden = configurationRoot.getAttribute("hidden") != null && (Boolean)configurationRoot.getAttribute("hidden") ;
+        this.isHidden = configurationRoot.getAttribute("hidden") != null && (Boolean)configurationRoot.getAttribute("hidden"); // NOI18N
 
     }
 
