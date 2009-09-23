@@ -282,6 +282,7 @@ public class HgCommand {
     private static final String HG_BACKOUT_MERGE_NEEDED_ERR = "(use \"backout --merge\" if you want to auto-merge)";
     private static final String HG_ABORT_BACKOUT_MERGE_CSET_ERR = "abort: cannot back out a merge changeset without --parent"; // NOI18N"
     private static final String HG_COMMIT_AFTER_MERGE_ERR = "abort: cannot partially commit a merge (do not specify files or patterns)"; // NOI18N"
+    private static final String HG_ADDING = "adding";                   //NOI18N
 
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -1931,7 +1932,8 @@ public class HgCommand {
                 fileAdded = true;
             }
             List<String> list = exec(command);
-            if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0))) {
+            if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0))
+                     && !isAddingLine(list.get(0))) {
                 handleError(command, list, list.get(0), logger);
             }
         }
@@ -3209,6 +3211,10 @@ public class HgCommand {
 
     private static boolean isErrorNoResponse(String msg) {
         return msg.indexOf(HG_NO_RESPONSE_ERR) > -1;                               // NOI18N
+    }
+    
+    private static boolean isAddingLine (String msg) {
+        return msg.toLowerCase().indexOf(HG_ADDING) > -1;
     }
 
     public static void createConflictFile(String path) {
