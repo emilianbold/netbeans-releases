@@ -51,6 +51,7 @@ import java.io.*;
 import java.util.*;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -65,13 +66,13 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
 
     private List<ChangeListener>  listeners = new ArrayList<ChangeListener>();
     private FileStatusCache       cache;
-
+    private static Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.SubversionVisibilityQuery");
     public SubversionVisibilityQuery() {
     }
 
     public boolean isVisible(FileObject fileObject) {
         long t = System.currentTimeMillis();
-        Subversion.LOG.log(Level.FINE, "isVisible {0}", new Object[] { fileObject });
+        LOG.log(Level.FINE, "isVisible {0}", new Object[] { fileObject });
         boolean ret = true;
         try {
             if (fileObject.isData()) return true;
@@ -79,8 +80,8 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
             ret = isVisible(file);
             return ret;
         } finally {
-            if(Subversion.LOG.isLoggable(Level.FINE)) {
-                Subversion.LOG.log(Level.FINE, "isVisible returns {0} in {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
+            if(LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, " isVisible returns {0} in {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
             }
         }
     }
@@ -105,7 +106,7 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
                 return true;
             }
         } catch (Exception e) {
-            Subversion.LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;
         }        
     }
