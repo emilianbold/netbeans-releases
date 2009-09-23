@@ -105,12 +105,10 @@ public class FileBufferDoc extends AbstractFileBuffer {
             docListener = new DocumentListener() {
                 public void insertUpdate(DocumentEvent e) {
                     changedSegment.addSegment(e.getOffset(), e.getLength());
-                    assert changedSegment.endUnchangedEnd == doc.getLength();
                     fireDocumentChanged();
                 }
                 public void removeUpdate(DocumentEvent e) {
                     changedSegment.removeSegment(e.getOffset(), e.getLength());
-                    assert changedSegment.endUnchangedEnd == doc.getLength();
                     fireDocumentChanged();
                 }
                 public void changedUpdate(DocumentEvent e) {
