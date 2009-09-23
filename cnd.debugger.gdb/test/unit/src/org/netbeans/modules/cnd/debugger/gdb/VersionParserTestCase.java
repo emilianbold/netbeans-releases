@@ -39,26 +39,39 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbUnitTest extends TestSuite {
+public class VersionParserTestCase extends TestCase {
 
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(PathComparisonTestCase.class);
-        addTestSuite(StringProcessingTestCase.class);
-        addTestSuite(ValuePresenterTestCase.class);
-        addTestSuite(VersionParserTestCase.class);
-        addTestSuite(VariablesTestCase.class);
+    @Test
+    public void testVersionParsingSolaris() {
+        assertEquals("Version mismatch,", 6.6,
+                GdbUtils.parseVersionString("GNU gdb 6.6\nCopyright ..."));
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    @Test
+    // IZ 172250
+    public void testVersionParsingFedora() {
+        assertEquals("Version mismatch,", 6.8,
+                GdbUtils.parseVersionString("GNU gdb (GDB Fedora (6.8-27.el5)\nCopyright ..."));
     }
+
+    @Test
+    public void testVersionParsingMac() {
+        assertEquals("Version mismatch,", 6.3,
+                GdbUtils.parseVersionString("GNU gdb 6.3.50-20050815 (Apple ..."));
+    }
+
+    @Test
+    public void testVersionParsingWin() {
+        assertEquals("Version mismatch,", 6.8,
+                GdbUtils.parseVersionString("GNU gdb 6.8.0.20080328-cvs (cygwin ..."));
+    }
+
 }
