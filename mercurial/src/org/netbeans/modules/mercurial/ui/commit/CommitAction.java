@@ -41,7 +41,6 @@
 package org.netbeans.modules.mercurial.ui.commit;
 
 import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
@@ -58,7 +57,6 @@ import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.DialogDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
