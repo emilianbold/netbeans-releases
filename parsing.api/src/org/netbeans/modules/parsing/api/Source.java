@@ -354,15 +354,7 @@ public final class Source {
                 final Document d = doc;
                 d.render (new Runnable () {
                     public void run () {
-                        try {
-                            int length = d.getLength ();
-                            if (length < 0)
-                                text[0] = ""; //NOI18N
-                            else
-                                text[0] = d.getText (0, length);
-                        } catch (BadLocationException ble) {
-                            LOG.log (Level.WARNING, null, ble);
-                        }
+                        text[0] = DocumentUtilities.getText (d);
                     }
                 });
             }
