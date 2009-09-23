@@ -575,11 +575,18 @@ public class GeneratorUtils {
      */ 
     private static boolean overridesPackagePrivateOutsidePackage(ExecutableElement ee, TypeElement impl) {
         String elemPackageName = ee.getEnclosingElement().getEnclosingElement().getSimpleName().toString();
-        String currentPackageName = impl.getEnclosingElement().getSimpleName().toString();
+        String currentPackageName = getPackageName(impl);
         if(!ee.getModifiers().contains(Modifier.PRIVATE) && !ee.getModifiers().contains(Modifier.PUBLIC) && !ee.getModifiers().contains(Modifier.PROTECTED) && !currentPackageName.equals(elemPackageName))
             return true;
         else
             return false;
+    }
+
+    private static String getPackageName(Element e) {
+        while (e.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+            e = e.getEnclosingElement();
+        }
+        return ((PackageElement) e.getEnclosingElement()).getQualifiedName().toString();
     }
     
     public static StringBuilder getCapitalizedName(CharSequence cs) {

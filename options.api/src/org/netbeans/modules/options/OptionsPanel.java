@@ -164,29 +164,34 @@ public class OptionsPanel extends JPanel {
     }
     
     private void setCurrentCategory (final CategoryModel.Category category, String subpath) {
-        CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
-        if (oldCategory != null) {
-            (buttons.get(oldCategory.getID())).setNormal ();
-        }
-        if (category != null) {
-            (buttons.get(category.getID())).setSelected ();
-        }
-        
-        CategoryModel.getInstance().setCurrent(category);
-        JComponent component = category.getComponent();                
-        category.update(controllerListener, false);
-        final Dimension size = component.getSize();
-        if( component.getParent() == null || !pOptions.equals(component.getParent()) ) {
-            pOptions.add(component, category.getCategoryName());
-        }
-        cLayout.show(pOptions, category.getCategoryName());
-        checkSize (size);
-        /*if (CategoryModel.getInstance().getCurrent() != null) {
-            ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
-        } */       
-        firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
-        if(subpath != null) {
-            category.setCurrentSubcategory(subpath);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
+            if (oldCategory != null) {
+                (buttons.get(oldCategory.getID())).setNormal ();
+            }
+            if (category != null) {
+                (buttons.get(category.getID())).setSelected ();
+            }
+
+            CategoryModel.getInstance().setCurrent(category);
+            JComponent component = category.getComponent();
+            category.update(controllerListener, false);
+            final Dimension size = component.getSize();
+            if( component.getParent() == null || !pOptions.equals(component.getParent()) ) {
+                pOptions.add(component, category.getCategoryName());
+            }
+            cLayout.show(pOptions, category.getCategoryName());
+            checkSize (size);
+            /*if (CategoryModel.getInstance().getCurrent() != null) {
+                ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
+            } */
+            firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
+            if(subpath != null) {
+                category.setCurrentSubcategory(subpath);
+            }
+        } finally {
+            setCursor(null);
         }
     }
         
@@ -279,7 +284,7 @@ public class OptionsPanel extends JPanel {
         // remove old buttons
         Iterator<CategoryButton> it = buttons.values().iterator ();
         while (it.hasNext ()) {
-            removeButton ((CategoryButton) it.next ());
+            removeButton(it.next());
         }
         pCategories2.removeAll ();
         buttons = new LinkedHashMap<String, CategoryButton>();
@@ -299,7 +304,7 @@ public class OptionsPanel extends JPanel {
         }        
         it = buttons.values().iterator ();
         while (it.hasNext ()) {
-            ((CategoryButton) it.next ()).setPreferredSize(maxSize);
+            it.next().setPreferredSize(maxSize);
         }
         
         addFakeButton ();
@@ -384,7 +389,9 @@ public class OptionsPanel extends JPanel {
             pOptions.setPreferredSize(newSize);
             Window w = (Window) SwingUtilities.getAncestorOfClass(Window.class, this);
             invalidate();
-            if (w != null) w.pack();
+            if (w != null) {
+                w.pack();
+            }
             retval = true;            
         }        
         return retval;

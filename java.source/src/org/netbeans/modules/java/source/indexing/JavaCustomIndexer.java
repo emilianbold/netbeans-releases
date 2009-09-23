@@ -211,7 +211,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             javaContext.checkSums.store();
                             javaContext.sa.store();
                             javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles);
+                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
                             return null;
                         }
                     });
@@ -294,7 +294,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             javaContext.checkSums.store();
                             javaContext.sa.store();
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet());
+                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
                             javaContext.uq.typesEvent(null, removedTypes, null);
                             return null;
                         }
@@ -426,6 +426,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             File parent = file.getParentFile();
             FilenameFilter filter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
+                    if (!name.endsWith(FileObjects.SIG)) {
+                        return false;
+                    }
                     for (int i=0; i< patterns.length; i++) {
                         if (name.startsWith(patterns[i])) {
                             return true;
