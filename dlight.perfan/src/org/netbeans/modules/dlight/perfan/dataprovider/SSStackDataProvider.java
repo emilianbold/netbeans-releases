@@ -313,7 +313,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int) functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), (int) functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }

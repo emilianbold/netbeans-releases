@@ -36,29 +36,61 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.debugger.gdb;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+package org.netbeans.modules.dlight.core.stack.utils;
 
 /**
  *
- * @author Egor Ushakov
+ * @author Alexander Simon
  */
-public class GdbUnitTest extends TestSuite {
+public final class FunctionNameUtils {
 
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(PathComparisonTestCase.class);
-        addTestSuite(StringProcessingTestCase.class);
-        addTestSuite(ValuePresenterTestCase.class);
-        addTestSuite(VersionParserTestCase.class);
-        addTestSuite(VariablesTestCase.class);
+    private FunctionNameUtils() {
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    /**
+     * returns function quilified name
+     * @param functionSignature is [type][*|&][space][q-name-namspace::][q-name-class::]name[(prameter-list)]+offset
+     * @return [q-name-namspace::][q-name-class::]name
+     */
+    public static String getFunctionQName(String functionSignature) {
+        int start = 0;
+        int templateLevel = 0;
+        boolean isOperator = false;
+        for (int i = 0; i < functionSignature.length(); i++) {
+            char c = functionSignature.charAt(i);
+            switch (c) {
+                case '<':
+                    templateLevel++;
+                    break;
+                case '>':
+                    templateLevel++;
+                    break;
+                case 'o':
+                    if (functionSignature.substring(i).startsWith("operator") && // NOI18N
+                            functionSignature.length() > i + 8 &&
+                            !Character.isLetter(functionSignature.charAt(i + 8))) {
+                        isOperator = true;
+                    }
+                    break;
+                case '+':
+                    if (functionSignature.length() > i+1 &&
+                        functionSignature.charAt(i + 1) == '0') {
+                        return functionSignature.substring(start, i);
+                   }
+                   break;
+                case ' ':
+                case '*':
+                case '&':
+                    if (templateLevel == 0) {
+                        if (!isOperator) {
+                            start = i + 1;
+                        }
+                    }
+                    break;
+                case '(':
+                    return functionSignature.substring(start, i);
+            }
+        }
+        return functionSignature.substring(start);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.stack.impl;
 
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
+package org.netbeans.modules.cnd.debugger.gdb;
 
-public class FunctionImpl implements Function {
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
-  private final String longName;
-  private final long objRef;
+/**
+ *
+ * @author Egor Ushakov
+ */
+public class VersionParserTestCase extends TestCase {
 
-  public FunctionImpl(String name, long objRef) {
-    this.longName = name;
-    this.objRef = objRef;
-  }
-
-  public String getName() {
-    return longName;
-  }
-
-  public String getSignature() {
-    return longName;
-  }
-
-  public long getRef() {
-    return objRef;
-  }
-
-  @Override
-  public String toString() {
-    return "Function: " + longName + " [" + objRef + "]"; // NOI18N
-  }
-
-    public String getQuilifiedName() {
-        return FunctionNameUtils.getFunctionQName(longName);
+    @Test
+    public void testVersionParsingSolaris() {
+        assertEquals("Version mismatch,", 6.6,
+                GdbUtils.parseVersionString("GNU gdb 6.6\nCopyright ..."));
     }
+
+    @Test
+    // IZ 172250
+    public void testVersionParsingFedora() {
+        assertEquals("Version mismatch,", 6.8,
+                GdbUtils.parseVersionString("GNU gdb (GDB Fedora (6.8-27.el5)\nCopyright ..."));
+    }
+
+    @Test
+    public void testVersionParsingMac() {
+        assertEquals("Version mismatch,", 6.3,
+                GdbUtils.parseVersionString("GNU gdb 6.3.50-20050815 (Apple ..."));
+    }
+
+    @Test
+    public void testVersionParsingWin() {
+        assertEquals("Version mismatch,", 6.8,
+                GdbUtils.parseVersionString("GNU gdb 6.8.0.20080328-cvs (cygwin ..."));
+    }
+
 }
