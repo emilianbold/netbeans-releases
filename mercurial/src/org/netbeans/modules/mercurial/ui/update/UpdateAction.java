@@ -72,6 +72,7 @@ public class UpdateAction extends ContextAction {
 
     public UpdateAction(String name, VCSContext context) {
         this.context = context;
+
         putValue(Action.NAME, name);
     }
     
@@ -80,9 +81,16 @@ public class UpdateAction extends ContextAction {
     }
     
     public static void update(final VCSContext ctx){
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
-        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
+
+//        final File root = HgUtils.getRootFile(ctx);
+//        if (root == null) return;
+//        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
+
+
+        final File roots[] = HgUtils.getActionRoots(ctx);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        File[] files = HgUtils.filterForRepository(ctx, root, false);
         String rev = null;
 
         final Update update = new Update(root, files);
@@ -161,6 +169,6 @@ public class UpdateAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     }     
 }

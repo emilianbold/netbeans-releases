@@ -96,7 +96,10 @@ public class PushAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
-        final File root = HgUtils.getRootFile(context);
+        final File roots[] = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+
         if (root == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
@@ -116,7 +119,7 @@ public class PushAction extends ContextAction {
     }
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }

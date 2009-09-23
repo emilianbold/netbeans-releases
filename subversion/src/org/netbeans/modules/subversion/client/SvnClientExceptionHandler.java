@@ -81,6 +81,7 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -532,7 +533,7 @@ public class SvnClientExceptionHandler {
     private String getFingerprint(X509Certificate cert, String alg) {
         try {
             byte[] encoded = cert.getEncoded();            
-            return SvnUtils.getHash(alg, encoded);
+            return Utils.getHash(alg, encoded);
         } catch (CertificateEncodingException ex) {
             Subversion.LOG.log(Level.INFO, ex.getMessage(), ex); // should not happen
         } catch (NoSuchAlgorithmException ex) {
