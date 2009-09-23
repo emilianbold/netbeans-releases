@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,60 +38,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.cnd.ui.options;
-
+package org.netbeans.modules.el.lexer;
 
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
-@OptionsPanelController.SubRegistration(
-    id="OtherOptions", // NOI18N
-    location="CPlusPlus", // NOI18N
-    displayName="#TAB_CndOtherOptionsTab", // NOI18N
-    position=1000
-)
-public final class CndOtherOptionsPanelController extends OptionsPanelController {
-
-    private CndOtherOptionsPanel panel = new CndOtherOptionsPanel();
-
-    public void update() {
-        panel.update();
-}
-
-    public void applyChanges() {
-        panel.applyChanges();
+/**
+ * @author ads
+ *
+ */
+class ELState {
+    
+    ELState( int state , int conditionalCount){
+        myState = state;
+        myConditionalCount = conditionalCount;
     }
     
-    public void cancel() {
-        panel.cancel();
+    int getState(){
+        return myState;
     }
     
-    public boolean isValid() {
-        return true; //panel.dataValid();
+    int getConditionalCount(){
+        return myConditionalCount;
     }
     
-    public boolean isChanged() {
-        return panel.isChanged();
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog"); // NOI18N
-    }
-    
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
-    }
+    private int myState;
+    private int myConditionalCount;
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        panel.addPropertyChangeListener(l);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        panel.removePropertyChangeListener(l);
-    }
 }
