@@ -107,6 +107,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 
     public Hk2InstanceNode(final GlassfishInstance instance, boolean isFullNode) {
         this(instance, new InstanceContent(), isFullNode);
+        instance.getCommonSupport().refresh();
     }
     
     private Hk2InstanceNode(final GlassfishInstance instance, final InstanceContent ic, boolean isFullNode) {
