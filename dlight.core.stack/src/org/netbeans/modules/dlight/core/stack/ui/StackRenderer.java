@@ -63,7 +63,6 @@ public final class StackRenderer implements Renderer<DataRow> {
 
     private final Object lock = new String("StackRenderer.lock");//NOI18N
     private final List<Column> stackColumns;
-    private MultipleCallStackPanel resultPanel = null;
 
     public StackRenderer(List<Column> stackColumns) {
         this.stackColumns = Collections.unmodifiableList(
@@ -73,14 +72,13 @@ public final class StackRenderer implements Renderer<DataRow> {
     public JComponent render(final DataRow data) {
         synchronized (lock) {
             final StackDataProvider stackProvider = findStackDataProvider();
-            if (resultPanel == null) {
-                resultPanel = MultipleCallStackPanel.createInstance(stackProvider);
-            }
+            final MultipleCallStackPanel resultPanel = MultipleCallStackPanel.createInstance(stackProvider);
             if (stackProvider != null) {
                 DLightExecutorService.submit(new Runnable() {
 
                     public void run() {
-                        final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>(stackColumns.size());
+                        final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>();
+                        stacks.setSize(stackColumns.size());
                         final Column[] columns_array = stackColumns.toArray(new Column[0]);
                         for (int i = 0, size = columns_array.length; i < size; i++) {
                             Column column = columns_array[i];
@@ -105,8 +103,9 @@ public final class StackRenderer implements Renderer<DataRow> {
                     }
                 }, "Fill-in panel for a stack in StackRenderer");//NOI18N
             }
+            return resultPanel;
         }
-        return resultPanel;
+     
     }
     private boolean stackDataProviderSearched;
     private StackDataProvider stackDataProvider;

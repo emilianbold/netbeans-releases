@@ -138,7 +138,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
                     //synchronized (lock) {                    
                     final ThreadSnapshot[] snapshots = descriptor.getThreadStates().toArray(new ThreadSnapshot[0]);
-                    final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>(snapshots.length);
+                    final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>();
+                    stacks.setSize(snapshots.length);
                     for (int i = 0, size = snapshots.length; i < size; i++) {
                         ThreadSnapshot snapshot = snapshots[i];
                         final MSAState msa = snapshot.getState();
