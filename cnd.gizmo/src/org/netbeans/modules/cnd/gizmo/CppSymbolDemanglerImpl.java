@@ -89,7 +89,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
 
         ///Here we are
-        if (serviceInfo == null) {
+        if (serviceInfo == null || serviceInfo.get(GizmoServiceInfo.CPP_COMPILER) == null || serviceInfo.get(GizmoServiceInfo.CPP_COMPILER_BIN_PATH) == null) {
             Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
             if (project == null) {
                 Project[] projects = org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
