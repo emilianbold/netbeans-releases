@@ -133,15 +133,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 File file = FileUtil.toFile(fo);
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(file.getAbsolutePath());
                 if (fileAnnotationInfo != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (!fileAnnotationInfo.isAnnotated()) {
-                                fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
-                                fileAnnotationInfo.setAnnotated(true);
-                            }
-                            AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
-                        }
-                    });
+                    if (!fileAnnotationInfo.isAnnotated()) {
+                        fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
+                        fileAnnotationInfo.setAnnotated(true);
+                    }
+                    SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
                 }
             }
         }
@@ -189,18 +185,28 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 final String filePath = file.getAbsolutePath();
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                 if (fileAnnotationInfo != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            JEditorPane jEditorPane = activatedEditorPane(node);
-                            if (!fileAnnotationInfo.isAnnotated()) {
-                                fileAnnotationInfo.setEditorPane(jEditorPane);
-                                fileAnnotationInfo.setAnnotated(true);
-                            }
-                            AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
-                        }
-                    });
+                    JEditorPane jEditorPane = activatedEditorPane(node);
+                    if (!fileAnnotationInfo.isAnnotated()) {
+                        fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
+                        fileAnnotationInfo.setAnnotated(true);
+                    }
+                    SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
                 }
             }
+        }
+    }
+
+    class Annotate implements Runnable {
+        JTextComponent jEditorPane;
+        FileAnnotationInfo fileAnnotationInfo;
+
+        public Annotate(JTextComponent jEditorPane, FileAnnotationInfo fileAnnotationInfo) {
+            this.jEditorPane = jEditorPane;
+            this.fileAnnotationInfo = fileAnnotationInfo;
+        }
+
+        public void run() {
+            AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
         }
     }
 
@@ -209,7 +215,6 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             annotateCurrentSourceFiles();
         }
     }
-
 
     class ProfilerPropertyChangeListener implements PropertyChangeListener {
 
