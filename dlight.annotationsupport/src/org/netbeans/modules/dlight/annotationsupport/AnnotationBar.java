@@ -177,8 +177,11 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      */
     @Override
     public Dimension getPreferredSize() {
+        if (!annotated || fileAnnotationInfo == null) {
+            return new Dimension(0, 0);
+        }
         Dimension dim = textComponent.getSize();
-        int width = annotated ? getBarWidth() : 0;
+        int width = getBarWidth();
         dim.width = width;
         dim.height *= 2;  // XXX
         return dim;
@@ -280,6 +283,9 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      */
     @Override
     public void paintComponent(Graphics g) {
+        if (!annotated || fileAnnotationInfo == null) {
+            return;
+        }
         super.paintComponent(g);
 
         Rectangle clip = g.getClipBounds();
