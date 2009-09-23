@@ -426,6 +426,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             File parent = file.getParentFile();
             FilenameFilter filter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
+                    if (!name.endsWith(FileObjects.SIG)) {
+                        return false;
+                    }
                     for (int i=0; i< patterns.length; i++) {
                         if (name.startsWith(patterns[i])) {
                             return true;
