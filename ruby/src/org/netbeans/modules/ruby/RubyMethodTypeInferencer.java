@@ -194,7 +194,7 @@ final class RubyMethodTypeInferencer {
                     // it's an item, and for find(1,2,3) it's an array etc.
                     // There are other find signatures which define other
                     // semantics
-                    return FindersHelper.pickFinderType((CallNode) callNodeToInfer, name, receiverType);
+                    return FindersHelper.pickFinderType(callNodeToInfer, name, receiverType);
                 }
             }
         }

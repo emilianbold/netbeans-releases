@@ -123,14 +123,14 @@ public class ThreadMapVisualizer extends JPanel implements
 
                     public void run() {
                         final ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
-                        session.cleanAllDataFilter(ThreadDumpFilter.class);
-                        session.addDataFilter(new ThreadDumpFilter(query.getStartTime(), threadDump), false);
                         UIThread.invoke(new Runnable() {
 
                             public void run() {
                                 DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump));
                             }
                         });
+                        session.cleanAllDataFilter(ThreadDumpFilter.class);
+                        session.addDataFilter(new ThreadDumpFilter(query.getStartTime(), threadDump), false);
                         
                     }
                 }, "Thread Dump  request from Thread Map Visualizer");//NOI18N
@@ -326,7 +326,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         this.session = session;
-        if (session != null) {
+        if (session != null && newState != SessionState.CLOSED) {
             session.addDataFilterListener(this);
         }
         switch (newState) {

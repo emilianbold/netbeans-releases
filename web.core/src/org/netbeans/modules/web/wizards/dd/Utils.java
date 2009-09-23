@@ -85,9 +85,9 @@ public class Utils {
                 return grp[i].getRootFolder();
             }
         }
-        if (grp.length != 0) {
-            return grp[0].getRootFolder();
-        }
+//        if (grp.length != 0) {
+//            return grp[0].getRootFolder();
+//        }
 
         return null;
     }

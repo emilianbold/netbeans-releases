@@ -216,4 +216,29 @@ public abstract class WebRestSupport extends RestSupport {
             webApp.write(ddFO);
         }
     }
+
+    @Override
+    public String getApplicationPath() throws IOException {
+        WebApp webApp = findWebApp();
+        if (webApp == null) {
+            return super.getApplicationPath();
+        } else {
+            ServletMapping sm = getRestServletMapping(webApp);
+            if (sm == null) {
+                // TODO needs to take applicationPath from @ApplicationPath
+                return super.getApplicationPath();
+            } else {
+                String urlPattern = sm.getUrlPattern();
+                if (urlPattern.endsWith("*")) {
+                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                }
+                if (urlPattern.endsWith("/")) {
+                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                }
+                return urlPattern;
+            }
+        }
+    }
+
+    
 }

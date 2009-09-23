@@ -157,7 +157,7 @@ made subject to such option by the copyright holder.
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
-      <!-- Tag Library 2.0--> 
+      <!-- Tag Library 2.1-->
       <file name="TagLibrary.tld" url="templates/BlankTagLibrary.template">
           <attr name="position" intvalue="1000"/>
                 <attr name="template" boolvalue="true"/>
@@ -165,6 +165,10 @@ made subject to such option by the copyright holder.
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagLibraryIterator"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
+      </file>
+      <!--  Tag Library 2.0 -->
+      <file name="TagLibrary_2_0.tld" url="templates/BlankTagLibrary_2_0.template">
+        <attr name="position" intvalue="0"/>
       </file>
       <!--  Tag Library 1.2 --> 
       <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template">

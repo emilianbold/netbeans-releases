@@ -97,12 +97,19 @@ public final class ProcessUtils {
         if (stream == null) {
             return Collections.<String>emptyList();
         }
+
         final List<String> result = new LinkedList<String>();
         final BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        String line;
 
-        while ((line = br.readLine()) != null) {
-            result.add(line);
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                result.add(line);
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
         }
 
         return result;
@@ -115,10 +122,17 @@ public final class ProcessUtils {
 
         final StringBuilder result = new StringBuilder();
         final BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        String line;
 
-        while ((line = br.readLine()) != null) {
-            result.append(line);
+        try {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                result.append(line);
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
         }
 
         return result.toString();

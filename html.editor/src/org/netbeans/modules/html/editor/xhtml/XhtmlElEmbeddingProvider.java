@@ -62,7 +62,7 @@ public class XhtmlElEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        TokenHierarchy th = snapshot.getTokenHierarchy();
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<XhtmlElTokenId> sequence = th.tokenSequence(XhtmlElTokenId.language());
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();

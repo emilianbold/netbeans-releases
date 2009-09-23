@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
@@ -49,9 +48,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import javax.naming.event.EventDirContext;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -89,6 +86,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     private DLightSession session;
     private List<DataFilter> filters;
     private final Object lock = new String("ThreadStackVisualizer.filters.lock");//NOI18N
+    private final Object uiLock = new String("ThreadStackVisualizer.filters.ui.lock");//NOI18N
+    private boolean needUpdate = false;
 
     ThreadStackVisualizer(ThreadStackVisualizerConfiguration configuraiton, StackDataProvider sourceFileInfo) {
         this.descriptor = configuraiton.getThreadDump();
@@ -122,44 +121,76 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     private void setNonEmptyContent() {
-        stackPanel.clean();
-        //and now add all you need
-        final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - dumpTime;
-        String timeString = TimeLineUtils.getMillisValue(time);
-        String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
-        stackPanel.setRootVisible(rootName);
-        for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
-            final MSAState msa = stack.getState();
-            final ThreadStateResources res = ThreadStateResources.forState(msa);
-            if (res != null) {
-                DLightExecutorService.submit(new Runnable() {
+        synchronized (lock) {
+            stackPanel.clean();
+            //and now add all you need
+            final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - dumpTime;
+            String timeString = TimeLineUtils.getMillisValue(time);
+            String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
+            stackPanel.setRootVisible(rootName);
+            //collect all and then update UI
+            final CountDownLatch doneFlag = new CountDownLatch(descriptor.getThreadStates().size());
+//            for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
+//                final MSAState msa = stack.getState();
+//                final ThreadStateResources res = ThreadStateResources.forState(msa);
+//                if (res != null) {
+            DLightExecutorService.submit(new Runnable() {
 
-                    public void run() {
-                        final List<FunctionCall> functionCalls = stack.getStack();
-                        UIThread.invoke(new Runnable() {
+                public void run() {
 
-                            public void run() {
-                                stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
-                            }
-                        });
+                    //synchronized (lock) {
+                    final List<List<FunctionCall>> stacks = new ArrayList<List<FunctionCall>>();
+                    final ThreadSnapshot[] snapshots = descriptor.getThreadStates().toArray(new ThreadSnapshot[0]);
+                    for (int i = 0, size = snapshots.length; i < size; i++) {
+                        ThreadSnapshot snapshot = snapshots[i];
+                        final MSAState msa = snapshot.getState();
+                        final ThreadStateResources res = ThreadStateResources.forState(msa);
+                        if (res != null) {
+                            stacks.add(snapshot.getStack());
+
+                        }
                     }
-                }, "Ask for a stack");//NOI18N              
-            }
+                    UIThread.invoke(new Runnable() {
 
+                        public void run() {                            
+                            for (int i = 0, size = snapshots.length; i < size; i++) {
+                                ThreadSnapshot snapshot = snapshots[i];
+                                final MSAState msa = snapshot.getState();
+                                final ThreadStateResources res = ThreadStateResources.forState(msa);
+                                if (res != null) {
+                                    final List<FunctionCall> functionCalls = stacks.get(i);
+                                    stackPanel.add(res.name + " " + snapshot.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+
+
+                                }
+                            }
+                            cardLayout.show(ThreadStackVisualizer.this, "stack");//NOI18N
+                            selectRootNode();                            
+
+                        }
+                    });
+                }
+            }, "Fill in panel for a stack");//NOI18N
+//                }
+//
+//            }
+//            cardLayout.show(this, "stack");//NOI18N
+//            selectRootNode();
         }
-        cardLayout.show(this, "stack");//NOI18N
-        selectRootNode();
+
     }
 
     void selectRootNode() {
+
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                try {
-                    stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
-                } catch (PropertyVetoException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+          //      try {
+                    stackPanel.expandAll();
+//                    stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
+//                } catch (PropertyVetoException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
             }
         }, 500);
     }
@@ -184,31 +215,37 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     public void refresh() {
-        //check filters
-        Collection<ThreadDumpFilter> dumpFilters = getDataFilter(ThreadDumpFilter.class);
-        if (dumpFilters != null && !dumpFilters.isEmpty()) {
+        synchronized (lock) {
+            if (!needUpdate) {
+                return;
+            }
+            Collection<ThreadDumpFilter> dumpFilters = getDataFilter(ThreadDumpFilter.class);
+            if (dumpFilters != null && !dumpFilters.isEmpty()) {
 
-            //get first
-            ThreadDumpFilter dumpFilter = dumpFilters.iterator().next();
-            this.dumpTime = dumpFilter.getDumpTime();
-            this.descriptor = dumpFilter.getThreadDump();
-        }
-        if (!EventQueue.isDispatchThread()) {
-            UIThread.invoke(new Runnable() {
+                //get first
+                ThreadDumpFilter dumpFilter = dumpFilters.iterator().next();
+                this.dumpTime = dumpFilter.getDumpTime();
+                this.descriptor = dumpFilter.getThreadDump();
 
-                public void run() {
-                    if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
-                        setEmptyContent();
-                    } else {
-                        setNonEmptyContent();
+            }
+            needUpdate = false;
+            if (!EventQueue.isDispatchThread()) {
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
+                            setEmptyContent();
+                        } else {
+                            setNonEmptyContent();
+                        }
                     }
-                }
-            });
-        } else {
-            if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
-                setEmptyContent();
+                });
             } else {
-                setNonEmptyContent();
+                if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
+                    setEmptyContent();
+                } else {
+                    setNonEmptyContent();
+                }                
             }
         }
     }
@@ -249,10 +286,11 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             return;
         }
         synchronized (lock) {
+            //check new and old one's
             this.filters = newSet;
+            needUpdate = !getDataFilter(ThreadDumpFilter.class).isEmpty();
         }
-        if (!getDataFilter(ThreadDumpFilter.class).isEmpty()) {
-            refresh();
-        }
+
+
     }
 }

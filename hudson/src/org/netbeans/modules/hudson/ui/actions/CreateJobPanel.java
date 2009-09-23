@@ -191,8 +191,13 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         SortedSet<Project> projects = new TreeSet<Project>(new Comparator<Project>() {
             Collator COLL = Collator.getInstance();
             public int compare(Project o1, Project o2) {
-                return COLL.compare(ProjectUtils.getInformation(o1).getDisplayName(),
+                int r = COLL.compare(ProjectUtils.getInformation(o1).getDisplayName(),
                                     ProjectUtils.getInformation(o2).getDisplayName());
+                if (r != 0) {
+                    return r;
+                } else {
+                    return o1 == o2 ? 0 : o1.hashCode() - o2.hashCode();
+                }
             }
         });
         projects.addAll(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));

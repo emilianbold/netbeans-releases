@@ -48,6 +48,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
+    id="ToolsTab", // NOI18N
     location="CPlusPlus", // NOI18N
     displayName="#TAB_ToolsTab", // NOI18N
     position=100

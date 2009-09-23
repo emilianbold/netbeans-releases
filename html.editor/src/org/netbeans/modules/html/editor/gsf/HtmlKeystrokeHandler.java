@@ -69,50 +69,14 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
-    //not used. HTMLKit coveres this functionality
     @Override
     public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        return false;
+        return HtmlAutoCompletion.beforeCharInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
     }
 
     @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         HtmlAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
-        if ('>' != ch) {
-            return false;
-        }
-        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
-        if (ts == null) {
-            return false;
-        }
-        ts.move(caretOffset);
-        boolean found = false;
-        while (ts.movePrevious()) {
-            if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-                found = true;
-                break;
-            }
-            if (ts.token().id() != HTMLTokenId.ARGUMENT &&
-                ts.token().id() != HTMLTokenId.OPERATOR &&
-                ts.token().id() != HTMLTokenId.VALUE &&
-                ts.token().id() != HTMLTokenId.VALUE_CSS &&
-                ts.token().id() != HTMLTokenId.VALUE_JAVASCRIPT &&
-                ts.token().id() != HTMLTokenId.WS &&
-                ts.token().id() != HTMLTokenId.TAG_CLOSE &&
-                ts.token().id() != HTMLTokenId.TAG_OPEN) {
-                break;
-            }
-        }
-        if (!found) {
-            return false;
-        }
-        int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, ts.offset());
-        if (lineStart != ts.offset()) {
-            return false;
-        }
-        final Indent indent = Indent.get(doc);
-        indent.reindent(lineStart, caretOffset); //caled under Indent lock && atomic lock
-
         return false;
     }
 
@@ -183,14 +147,14 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //I need to do it this lexical way since we do not
         //add the text nodes into the ast due to performance reasons
         Document doc = info.getSnapshot().getSource().getDocument(true);
-        TokenHierarchy hierarchy = TokenHierarchy.get(doc);
-        TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+        TokenHierarchy<Document> hierarchy = TokenHierarchy.get(doc);
+        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc);
         if(ts == null) {
             return Collections.emptyList();
         }
         ts.move(caretOffset);
         if(ts.moveNext() || ts.movePrevious()) {
-            Token token = ts.token();
+            Token<HTMLTokenId> token = ts.token();
 
             if(token.id() == HTMLTokenId.TEXT) {
                 CharSequence text = token.text();
@@ -199,10 +163,10 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
                     int to = from + token.text().length();
 
                     //properly compute end offset of joined tokens
-                    List<Token> tokenParts = token.joinedParts();
+                    List<? extends Token<HTMLTokenId>> tokenParts = token.joinedParts();
                     if(tokenParts != null) {
                         //get last part token
-                        Token last = tokenParts.get(tokenParts.size() - 1);
+                        Token<HTMLTokenId> last = tokenParts.get(tokenParts.size() - 1);
                         to = last.offset(hierarchy) + last.length();
                     }
 

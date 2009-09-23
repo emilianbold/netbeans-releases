@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.mercurial;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.List;
 import java.net.URL;
 import java.util.HashSet;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -79,6 +82,7 @@ public class OutputLogger {
             return new NullLogger();
         }
     }
+    private AbstractAction action;
     
     private OutputLogger(String repositoryRoot) {
         repositoryRootString = repositoryRoot;
@@ -261,6 +265,18 @@ public class OutputLogger {
                 }
             }
         });
+    }
+
+    public Action getOpenOuptutAction() {
+        if(action == null) {
+            action = new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    writable = true;
+                    getLog().select();
+                }
+            };
+        }
+        return action;
     }
      
     private static class NullLogger extends OutputLogger {
