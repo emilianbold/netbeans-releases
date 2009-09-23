@@ -108,6 +108,7 @@ private:
     bool restartRequested();
 
 private:
+    bool exiting;
     bool separateProcess;
     bool suppressConsole;
     bool heapDumpPathOptFound;

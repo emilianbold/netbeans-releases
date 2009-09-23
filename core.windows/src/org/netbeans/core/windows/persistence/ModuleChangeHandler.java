@@ -436,9 +436,11 @@ class ModuleChangeHandler implements FileChangeListener {
         final TCRefConfig tcRefConfig = wmParser.addTCRef(modeName, tcRefName, tcRefNameList);
         try {
             //xml file system warmup to avoid blocking of EDT when deserializing the component
-            DataObject dob = PersistenceManager.getDefault().findTopComponentDataObject(tcRefConfig.tc_id);
-            if( null != dob ) {
-                dob.getCookie(InstanceCookie.class);
+            if( null != tcRefConfig ) {
+                DataObject dob = PersistenceManager.getDefault().findTopComponentDataObject(tcRefConfig.tc_id);
+                if( null != dob ) {
+                    dob.getCookie(InstanceCookie.class);
+                }
             }
         } catch( IOException ioE ) {
             //ignore, the exception will be reported later on anyway
