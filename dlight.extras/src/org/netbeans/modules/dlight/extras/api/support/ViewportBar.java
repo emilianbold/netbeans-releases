@@ -44,15 +44,15 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
@@ -87,6 +87,8 @@ import org.openide.util.ImageUtilities;
     private static final Color FILTER_HANDLE_COLOR = new Color(0xE7, 0x6F, 0x00);
     private static final int FILTER_HANDLE_WIDTH = FILTER_HANDLE.getWidth(null);
     private static final int FILTER_HANDLE_HEIGHT = FILTER_HANDLE.getHeight(null);
+
+    private static final Color GRADIENT_DARK_COLOR = new Color(0xB4, 0xB4, 0xB4);
 
     private final ViewportModel viewportModel;
     private final DataFilterManager filterManager;
@@ -327,34 +329,53 @@ import org.openide.util.ImageUtilities;
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        int w = getWidth();
+        int h = getHeight();
 
         g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.fillRect(0, 0, w, h);
 
-        FontMetrics fm = g.getFontMetrics();
-        Range<Long> limits = getViewportModelState().getLimits();
-        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
-                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
-                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
-                getWidth() - 2 * margin, fm);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        for (AxisMark mark : timeMarks) {
-            g.setColor(Color.BLACK);
-            g.drawLine(margin + mark.getPosition(), 0, margin + mark.getPosition(), 5);
-            if (mark.getText() != null) {
-                int length = fm.stringWidth(mark.getText());
-                g.drawString(mark.getText(), margin + mark.getPosition() - length / 2, 3 * fm.getAscent() / 2);
-            }
-        }
+        GradientPaint gradient = new GradientPaint(0, 0, GRADIENT_DARK_COLOR, 0, h, getBackground());
+        Paint oldPaint = g2.getPaint();
+        g2.setPaint(gradient);
+        g2.fillRect(margin, 0, w - 2 * margin, h);
+        g2.setPaint(oldPaint);
+
+        g2.setColor(VIEWPORT_HANDLE_COLOR);
+        g2.drawLine(margin, 0, margin, h);
+        g2.drawLine(w - margin, 0, w - margin, h);
+
+        int v1 = viewportStartMark.getPosition();
+        int v2 = viewportEndMark.getPosition();
+        g.setColor(getBackground());
+        g.fillRect(v1, 0, v2 - v1, h);
+
+//        FontMetrics fm = g.getFontMetrics();
+//        Range<Long> limits = getViewportModelState().getLimits();
+//        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
+//                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
+//                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
+//                getWidth() - 2 * margin, fm);
+//
+//        for (AxisMark mark : timeMarks) {
+//            g.setColor(Color.BLACK);
+//            g.drawLine(margin + mark.getPosition(), 0, margin + mark.getPosition(), 5);
+//            if (mark.getText() != null) {
+//                int length = fm.stringWidth(mark.getText());
+//                g.drawString(mark.getText(), margin + mark.getPosition() - length / 2, 3 * fm.getAscent() / 2);
+//            }
+//        }
 
         viewportStartMark.paint(g);
         viewportEndMark.paint(g);
 
-        int x1 = selectionStartMark.getPosition();
-        int x2 = selectionEndMark.getPosition();
+        int s1 = selectionStartMark.getPosition();
+        int s2 = selectionEndMark.getPosition();
         g.setColor(FILTER_HANDLE_COLOR);
-        g.fillRect(x1, getHeight() - 5, x2 - x1, 5);
+        g.fillRect(s1, getHeight() - 5, s2 - s1, 5);
         selectionStartMark.paint(g);
         selectionEndMark.paint(g);
     }
