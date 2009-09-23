@@ -40,8 +40,13 @@
 package org.netbeans.modules.java.source.parsing;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Partial reparse helper visitor.
@@ -49,14 +54,20 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
  * @author Tomas Zezula
  */
 class FindAnonymousVisitor extends TreeScanner<Void,Void> {
+
+    private static enum Mode {COLLECT, CHECK};
+
     int firstInner = -1;
     int noInner;
     boolean hasLocalClass;
-
+    final Set<Tree> docOwners = new HashSet<Tree>();
+    private Mode mode = Mode.COLLECT;            
+    
     public final void reset () {
         this.firstInner = -1;
         this.noInner = 0;
         this.hasLocalClass = false;
+        this.mode = Mode.CHECK;
     }
 
     @Override
@@ -68,7 +79,26 @@ class FindAnonymousVisitor extends TreeScanner<Void,Void> {
             hasLocalClass = true;
         }
         noInner++;
+        handleDoc(node);
         return super.visitClass(node, p);
-    }                
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        handleDoc(node);
+        return super.visitMethod(node, p);
+    }
+
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        handleDoc(node);
+        return super.visitVariable(node, p);
+    }
+
+    private void handleDoc (final Tree tree) {
+        if (mode == Mode.COLLECT) {
+            docOwners.add(tree);
+        }
+    }
 
 }
