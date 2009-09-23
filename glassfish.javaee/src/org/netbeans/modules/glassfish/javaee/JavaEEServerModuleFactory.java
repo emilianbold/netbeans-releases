@@ -44,9 +44,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +64,8 @@ import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -262,7 +262,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             File f = ServerUtilities.getJarName(installRoot, entry + ServerUtilities.GFV3_VERSION_MATCHER);
             if ((f != null) && (f.exists())) {
                 try {
-                    libraryList.add(f.toURI().toURL());
+                    libraryList.add(FileUtil.getArchiveRoot(f.toURI().toURL()));
                 } catch (MalformedURLException ex) {
                 }
             }
@@ -272,7 +272,22 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         if (f != null && f.exists()) {
             name = V3_RESTLIB;
         }
-        return addLibrary(name, libraryList, null);
+        // javadoc
+        List<URL> javadocList = new ArrayList<URL>();
+        try {
+            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-doc.zip", null, false); //NOI18N
+            if (javadocFile != null && javadocFile.exists()) {
+                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
+            }
+            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-api-doc.zip", null, false); //NOI18N
+            if (javadocFile != null && javadocFile.exists()) {
+                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
+            }
+
+        } catch (MalformedURLException ex) {
+        }
+        
+        return addLibrary(name, libraryList, javadocList);
     }
 
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N

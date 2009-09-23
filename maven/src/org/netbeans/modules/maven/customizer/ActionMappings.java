@@ -258,9 +258,9 @@ public class ActionMappings extends javax.swing.JPanel {
                         // in this case clean up the auxiliary config
                             handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, null, true);
                         }
+                        handle.markAsModified(handle.getProfileModel());
+                        return;
                     }
-                    handle.markAsModified(handle.getProfileModel());
-                    return;
                 }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_USE_EXTERNAL)) {

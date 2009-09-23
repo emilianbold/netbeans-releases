@@ -193,6 +193,7 @@ public class LocalDownloadSupport {
             } else {
                 fileList.removeFile (nbm);
             }
+        }
             if (!alreadyInstalled.isEmpty ()) {
                 String msg = null;
                 if (alreadyInstalled.size () == 1) {
@@ -203,8 +204,7 @@ public class LocalDownloadSupport {
                 DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (
                         msg,
                         NotifyDescriptor.INFORMATION_MESSAGE));
-            }
-        }
+            }        
     }
 
     synchronized private void initCodeName2Unit () {

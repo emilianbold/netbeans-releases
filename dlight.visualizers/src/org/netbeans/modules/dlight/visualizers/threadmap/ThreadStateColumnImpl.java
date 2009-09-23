@@ -297,7 +297,9 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         return !list.get(list.size()-1).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
 
-
+    void updateName(String newName) {
+        info.setThreadName(newName);
+    }
 
     void add(ThreadState state) {
         list.add(state);

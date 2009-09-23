@@ -105,7 +105,7 @@ public class MonitorsUpdateService {
     private final boolean isMemoryMonitor;
     private final boolean isDataRaceMonitor;
     private final boolean isDeadlockMonitor;
-    private final Object updaterLock = new String(MonitorsUpdateService.class.getName() + " UpdaterLock"); // NOI18N
+    private final Object updaterLock = MonitorsUpdateService.class.getName() + "Lock"; // NOI18N
     private Updater updater = null;
     private BlockingQueue<Object> requestsQueue = new LinkedBlockingQueue<Object>(1);
 
