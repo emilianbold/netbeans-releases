@@ -199,7 +199,8 @@ public class ELExpression {
                         last = ts;
                         ts = ts.embedded();
                     } else {
-                        //no token, cannot embed
+                        //no token, cannot
+                        break;
                     }
                 }
             }
