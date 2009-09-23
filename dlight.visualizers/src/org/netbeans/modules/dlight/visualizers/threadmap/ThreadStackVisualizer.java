@@ -138,15 +138,15 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
                 public void run() {
 
-                    //synchronized (lock) {
-                    final List<List<FunctionCall>> stacks = new ArrayList<List<FunctionCall>>();
+                    //synchronized (lock) {                    
                     final ThreadSnapshot[] snapshots = descriptor.getThreadStates().toArray(new ThreadSnapshot[0]);
+                    final List<List<FunctionCall>> stacks = new ArrayList<List<FunctionCall>>(snapshots.length);
                     for (int i = 0, size = snapshots.length; i < size; i++) {
                         ThreadSnapshot snapshot = snapshots[i];
                         final MSAState msa = snapshot.getState();
                         final ThreadStateResources res = ThreadStateResources.forState(msa);
                         if (res != null) {
-                            stacks.add(snapshot.getStack());
+                            stacks.set(i, snapshot.getStack());
 
                         }
                     }
@@ -159,9 +159,9 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                                 final ThreadStateResources res = ThreadStateResources.forState(msa);
                                 if (res != null) {
                                     final List<FunctionCall> functionCalls = stacks.get(i);
-                                    stackPanel.add(res.name + " " + snapshot.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
-
-
+                                    if (functionCalls != null){
+                                        stackPanel.add(res.name + " " + snapshot.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                    }
                                 }
                             }
                             cardLayout.show(ThreadStackVisualizer.this, "stack");//NOI18N
