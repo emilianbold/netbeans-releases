@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -68,6 +69,7 @@ import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -109,7 +111,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, ""); // NOI18N
         int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
         updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, "Bogus display name"); // NOI18N GlassfishInstance.GLASSFISH_PRELUDE_SERVER_NAME);
-        updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
+        int adminPort = updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
         
         updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true"); // NOI18N
         updateString(ip,GlassfishModule.START_DERBY_FLAG, isRemote ? "false" : "true"); // NOI18N
@@ -132,7 +134,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
         
-        if(isRunning(hostName, httpPort)) {
+        if(isRunning(hostName, adminPort)) {
             refresh();
         }
     }
@@ -218,6 +220,16 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return httpPort;
     }
     
+    public int getAdminPortNumber() {
+        int adminPort = -1;
+        try {
+            adminPort = Integer.parseInt(properties.get(ADMINPORT_ATTR));
+        } catch(NumberFormatException ex) {
+            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);  // NOI18N
+        }
+        return adminPort;
+    }
+
     public String getHostName() {
         return properties.get(HOSTNAME_ATTR);
     }
@@ -476,7 +488,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     public boolean isReallyRunning() {
-        return isRunning(getHostName(), getHttpPortNumber()) && isReady(false,30,TimeUnit.SECONDS);
+        return isRunning(getHostName(), getAdminPortNumber()) && isReady(false,30,TimeUnit.SECONDS);
     }
 
     public boolean isReady(boolean retry, int timeout, TimeUnit units) {
@@ -503,6 +515,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                         // to trust that it is the 'right one'
                         // TODO -- better edge case detection/protection
                         isReady = null != targetDomainRoot;
+                        if (isReady) {
+                            // make sure the http port info is corrected
+                            updateHttpPort();
+                        }
                     }
                     break;
                 } else if(!command.retry()) {
@@ -640,5 +656,28 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 DialogDisplayer.getDefault().notifyLater(nd);
             }
         }
+    }
+
+    private void updateHttpPort() {
+        GetPropertyCommand gpc = new GetPropertyCommand("*.http-listener-1.port"); // NOI18N
+        Future<OperationState> result2 = execute(gpc);
+        try {
+            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                Map<String, String> retVal = gpc.getData();
+                for (Entry<String, String> entry : retVal.entrySet()) {
+                    String val = entry.getValue();
+                    if (null != val && val.trim().length() > 0) {
+                        setEnvironmentProperty(GlassfishModule.HTTPPORT_ATTR, val, true);
+                    }
+                }
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        } catch (TimeoutException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        }
+
     }
 }

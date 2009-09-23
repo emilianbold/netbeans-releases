@@ -77,6 +77,7 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
 
     public void updateKeys(){
         Vector<Node> keys = new Vector<Node>();
+        serverInstance.getCommonSupport().refresh();
         if(serverInstance.getServerState() == ServerState.RUNNING) {
             keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
                     new Hk2ApplicationsChildren(serverInstance.getLookup()),
