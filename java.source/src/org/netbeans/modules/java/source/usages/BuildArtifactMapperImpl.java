@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
@@ -104,6 +105,7 @@ public class BuildArtifactMapperImpl {
     private static final Logger LOG = Logger.getLogger(BuildArtifactMapperImpl.class.getName());
     
     private static final String TAG_FILE_NAME = ".netbeans_automatic_build"; //NOI18N
+    private static final String TAG_UPDATE_RESOURCES = ".netbeans_update_resources"; //NOI18N
     private static final String SIG = "." + FileObjects.SIG; //NOI18N
 //    private static final Map<URL, File> source2Target = new HashMap<URL, File>();
     private static final Map<URL, Set<ArtifactsUpdated>> source2Listener = new HashMap<URL, Set<ArtifactsUpdated>>();
@@ -218,7 +220,7 @@ public class BuildArtifactMapperImpl {
     }
     
     @SuppressWarnings("deprecation")
-    public static Boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
+    public static Boolean ensureBuilt(URL sourceRoot, boolean copyResources, boolean keepResourceUpToDate) throws IOException {
         File targetFolder = getTarget(sourceRoot);
         
         if (targetFolder == null) {
@@ -249,7 +251,7 @@ public class BuildArtifactMapperImpl {
             return true;
         }
         
-        delete(targetFolder, cleanCompletely);
+        delete(targetFolder, false/*#161085: cleanCompletely*/);
         
         if (!targetFolder.exists() && !targetFolder.mkdirs()) {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
@@ -265,9 +267,19 @@ public class BuildArtifactMapperImpl {
             }
 
             copyRecursively(index, targetFolder);
+
+            if (copyResources) {
+                Set<String> javaMimeTypes = COSSynchronizingIndexer.gatherJavaMimeTypes();
+                String[]    javaMimeTypesArr = javaMimeTypes.toArray(new String[0]);
+
+                copyRecursively(sr, targetFolder, javaMimeTypes, javaMimeTypesArr);
+            }
         }
         
         new FileOutputStream(tagFile).close();
+
+        if (keepResourceUpToDate)
+            new FileOutputStream(new File(targetFolder, TAG_UPDATE_RESOURCES)).close();
         
         return true;
     }
@@ -300,28 +312,48 @@ public class BuildArtifactMapperImpl {
         return null;
     }
 
-    public static void classCacheUpdated(URL sourceRoot, File cacheRoot, Iterable<File> deleted, Iterable<File> updated) {
-        File targetFolder = deleted.iterator().hasNext() || updated.iterator().hasNext() ? getTarget(sourceRoot) : null;
+    public static File getTargetFolder(URL sourceRoot) {
+        File targetFolder = getTarget(sourceRoot);
+
+        if (targetFolder == null) {
+            return null;
+        }
+
+        if (!new File(targetFolder, TAG_FILE_NAME).exists()) {
+            return null;
+        }
         
+        return targetFolder;
+    }
+
+    public static boolean isUpdateResources(File targetFolder) {
+        return targetFolder != null && new File(targetFolder, TAG_UPDATE_RESOURCES).exists();
+    }
+
+    public static void classCacheUpdated(URL sourceRoot, File cacheRoot, Iterable<File> deleted, Iterable<File> updated, boolean resource) {
+        if (!deleted.iterator().hasNext() && !updated.iterator().hasNext()) {
+            return ;
+        }
+
+        File targetFolder = getTargetFolder(sourceRoot);
+
         if (targetFolder == null) {
             return ;
         }
-        
-        if (!new File(targetFolder, TAG_FILE_NAME).exists()) {
+
+        if (resource && !isUpdateResources(targetFolder)) {
             return ;
         }
         
         List<File> updatedFiles = new LinkedList<File>();
 
-        assert targetFolder != null;
-        
         for (File deletedFile : deleted) {
             File toDelete = resolveFile(targetFolder, relativizeFile(cacheRoot, deletedFile));
             
             toDelete.delete();
             updatedFiles.add(toDelete);
         }
-        
+
         for (File updatedFile : updated) {
             File target = resolveFile(targetFolder, relativizeFile(cacheRoot, updatedFile));
 
@@ -388,6 +420,42 @@ public class BuildArtifactMapperImpl {
         }
     }
     
+    private static void copyFile(FileObject updatedFile, File target) throws IOException {
+        final File parent = target.getParentFile();
+        if (parent != null && !parent.exists()) {
+            if (!parent.mkdirs()) {
+                throw new IOException("Cannot create folder: " + parent.getAbsolutePath());
+            }
+        }
+
+        InputStream ins = null;
+        OutputStream out = null;
+
+        try {
+            ins = updatedFile.getInputStream();
+            out = new FileOutputStream(target);
+
+            FileUtil.copy(ins, out);
+            //target.setLastModified(MINIMAL_TIMESTAMP); see 156153
+        } finally {
+            if (ins != null) {
+                try {
+                    ins.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
     private static void copyRecursively(File source, File target) throws IOException {
         if (source.isDirectory()) {
             if (!target.exists()) {
@@ -411,6 +479,39 @@ public class BuildArtifactMapperImpl {
                 if (name.endsWith(SIG))
                     name = name.substring(0, name.length() - FileObjects.SIG.length()) + FileObjects.CLASS;
                 copyRecursively(f, new File(target, name));
+            }
+        } else {
+            if (target.isDirectory()) {
+                throw new IOException("Cannot create file: " + target.getAbsolutePath() + ", already exists as a folder.");
+            }
+
+            copyFile(source, target);
+        }
+    }
+
+    private static void copyRecursively(FileObject source, File target, Set<String> javaMimeTypes, String[] javaMimeTypesArr) throws IOException {
+        if (source.isFolder()) {
+            if (!target.exists()) {
+                if (!target.mkdirs()) {
+                    throw new IOException("Cannot create folder: " + target.getAbsolutePath());
+                }
+            } else {
+                if (!target.isDirectory()) {
+                    throw new IOException("Cannot create folder: " + target.getAbsolutePath() + ", already exists as a file.");
+                }
+            }
+
+            FileObject[] listed = source.getChildren();
+
+            if (listed == null) {
+                return ;
+            }
+
+            for (FileObject f : listed) {
+                if (f.isData() && javaMimeTypes.contains(FileUtil.getMIMEType(f, javaMimeTypesArr)))
+                    continue;
+
+                copyRecursively(f, new File(target, f.getNameExt()), javaMimeTypes, javaMimeTypesArr);
             }
         } else {
             if (target.isDirectory()) {
