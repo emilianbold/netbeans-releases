@@ -332,7 +332,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                         // try again
                         return false;
                     } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
-                        handleCancel ();
+                        model.getCancelButton(wd).doClick();
                     }
                 }
             } else {
