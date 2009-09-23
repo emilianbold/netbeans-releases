@@ -236,8 +236,10 @@ final class Erprint {
     }
 
     void selectObjects(CollectedObjectsFilter collectedObjectsFilter) throws IOException {
-        if (stopped || collectedObjectsFilter == null) {
-            return;
+        synchronized (this) {
+            if (stopped || collectedObjectsFilter == null) {
+                return;
+            }
         }
 
         Pattern objs_pattern = Pattern.compile(".* <(.*)>.*"); // NOI18N
@@ -282,14 +284,14 @@ final class Erprint {
         return DataraceImpl.fromErprint(races);
     }
 
-    boolean setFilter(String filterString) throws IOException{
+    boolean setFilter(String filterString) throws IOException {
         String[] result = exec(ErprintCommand.filter(filterString == null ? "\"\"" : filterString));//NOI18N
-        if (result != null && result.length > 0 && result[0].startsWith("Error") ) {//NOI18N
+        if (result != null && result.length > 0 && result[0].startsWith("Error")) {//NOI18N
             return false;
         }
         return true;
     }
-    
+
     List<DeadlockImpl> getDeadlocks() throws IOException {
         String[] deadlocks = exec(ErprintCommand.ddetail_all());
         return DeadlockImpl.fromErprint(deadlocks);
@@ -336,7 +338,7 @@ final class Erprint {
                 stat = outProcessor.getOutput();
             }
 
-            return new FunctionStatistic(stat);
+            return new FunctionStatistic(stat == null ? new String[0] : stat);
         }
     }
 
@@ -362,8 +364,8 @@ final class Erprint {
 
             if (log.isLoggable(Level.FINEST)) {
                 log.finest("Command '" + command.getCmd() + "' done in " + // NOI18N
-                    (System.currentTimeMillis() - startTime) / 1000 +
-                    " secs. Response is " + output.length + " lines."); // NOI18N
+                        (System.currentTimeMillis() - startTime) / 1000 +
+                        " secs. Response is " + output.length + " lines."); // NOI18N
             }
 
             return output;
