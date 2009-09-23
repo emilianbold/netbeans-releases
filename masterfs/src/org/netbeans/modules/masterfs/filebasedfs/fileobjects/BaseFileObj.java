@@ -437,6 +437,7 @@ public abstract class BaseFileObj extends FileObject {
                     retVal = (retVal == null) ? factory.getFileObject(new FileInfo(file), FileObjectFactory.Caller.GetParent) : retVal;
                 }
             }
+            assert retVal != null : "getParent should not return null for " + FileUtil.getFileDisplayName(this);
         }
         return retVal;
     }

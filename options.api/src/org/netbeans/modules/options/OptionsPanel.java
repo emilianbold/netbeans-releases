@@ -279,7 +279,7 @@ public class OptionsPanel extends JPanel {
         // remove old buttons
         Iterator<CategoryButton> it = buttons.values().iterator ();
         while (it.hasNext ()) {
-            removeButton ((CategoryButton) it.next ());
+            removeButton(it.next());
         }
         pCategories2.removeAll ();
         buttons = new LinkedHashMap<String, CategoryButton>();
@@ -299,7 +299,7 @@ public class OptionsPanel extends JPanel {
         }        
         it = buttons.values().iterator ();
         while (it.hasNext ()) {
-            ((CategoryButton) it.next ()).setPreferredSize(maxSize);
+            it.next().setPreferredSize(maxSize);
         }
         
         addFakeButton ();
@@ -384,7 +384,9 @@ public class OptionsPanel extends JPanel {
             pOptions.setPreferredSize(newSize);
             Window w = (Window) SwingUtilities.getAncestorOfClass(Window.class, this);
             invalidate();
-            if (w != null) w.pack();
+            if (w != null) {
+                w.pack();
+            }
             retval = true;            
         }        
         return retval;

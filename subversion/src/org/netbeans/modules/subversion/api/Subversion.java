@@ -509,13 +509,7 @@ public class Subversion {
                             retval = true;
                         }
                     } catch (SVNClientException ex) {
-                        String msg = ex.getMessage().toLowerCase();
-                        if(SvnClientExceptionHandler.isAuthentication(msg)
-                                || SvnClientExceptionHandler.isNoCertificate(msg)) {
-                            retval = true;
-                        } else {
-                            org.netbeans.modules.subversion.Subversion.LOG.log(Level.FINE, "Invalid url: " + url, ex);
-                        }
+                        org.netbeans.modules.subversion.Subversion.LOG.log(Level.FINE, "Invalid url: " + url, ex);
                     }
                 }
             }

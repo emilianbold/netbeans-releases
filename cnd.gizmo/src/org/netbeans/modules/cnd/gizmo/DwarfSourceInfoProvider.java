@@ -78,8 +78,8 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
     
-    public SourceFileInfo fileName(String functionSignature, int lineNumber, long offset, Map<String, String> serviceInfo) {
-        SourceFileInfo info = _fileName(functionSignature, lineNumber, offset, serviceInfo);
+    public SourceFileInfo fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+        SourceFileInfo info = _fileName(functionQName, lineNumber, offset, serviceInfo);
         if (info != null) {
             PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
             if (provider != null) {
@@ -98,18 +98,17 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return info;
     }
 
-    private SourceFileInfo _fileName(String functionSignature, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    private SourceFileInfo _fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
             return null;
         }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
-            String functionName = CodeModelSourceFileInfoProvider.getFunctionSignature(functionSignature);
             Map<String, AbstractFunctionToLine> sourceInfoMap = getSourceInfo(executable);
             if (TRACE) {
-                System.err.println("Search for:"+functionName+"+"+offset); // NOI18N
+                System.err.println("Search for:"+functionQName+"+"+offset); // NOI18N
             }
-            AbstractFunctionToLine fl = sourceInfoMap.get(functionName);
+            AbstractFunctionToLine fl = sourceInfoMap.get(functionQName);
             if (fl != null) {
                 if (TRACE) {
                     System.err.println("Found:"+fl); // NOI18N
