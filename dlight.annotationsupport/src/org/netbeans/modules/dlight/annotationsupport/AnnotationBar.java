@@ -204,6 +204,9 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      * actual content to be displayed.
      */
     public void annotate(FileAnnotationInfo fileAnnotationInfo) {
+        if (fileAnnotationInfo == null) {
+            return;
+        }
         this.fileAnnotationInfo = fileAnnotationInfo;
         setToolTipText(fileAnnotationInfo.getTooltip());
         annotated = true;
