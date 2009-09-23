@@ -49,46 +49,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
+package org.netbeans.modules.cnd.paralleladviser.spi;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
-import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
+import java.util.EventListener;
 
 /**
- * Service that provides tips for Parallel Adviser.
+ * Listener that is notified when the tips providere changes its state.
  *
  * @author Nick Krasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
-public class GeneralTipsProvider implements ParallelAdviserTipsProvider {
+public interface ParallelAdviserTipsProviderListener extends EventListener {
 
-    public Collection<Advice> getTips() {
-
-        List<Advice> tips = new ArrayList<Advice>();
-
-        tips.add(new ParallelAdviserFeatureAdvice());
-        tips.add(new ParallelProgrammingAdvice());
-        tips.add(new OpenMPAdvice());
-
-        String os = System.getProperty("os.name"); // NOI18N
-        if(os.contains("SunOS")) { // NOI18N
-            tips.add(new SunStudioCompilersAdvice());
-//            tips.add(new SunStudioCompilersInstallationAdvice());
-        } else if(os.contains("Linux")) { // NOI18N
-            tips.add(new SunStudioCompilersAdvice());
-            tips.add(new SunStudioCompilersInstallationAdvice());
-        } else {
-            tips.add(new SunStudioCompilersAdvice());
-        }
-        return tips;
-    }
-
-    public void addListener(ParallelAdviserTipsProviderListener listener) {
-    }
-
-    public void removeListener(ParallelAdviserTipsProviderListener listener) {
-    }
+    void tipsChanged();
 }

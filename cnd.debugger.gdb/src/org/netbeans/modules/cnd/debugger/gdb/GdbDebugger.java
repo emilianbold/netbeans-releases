@@ -533,7 +533,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 startupTimer = null;
             }
 
-            gdbVersion = parseGdbVersionString(message.substring(8));
+            gdbVersion = parseVersionString(message);
             versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
             if (message.contains("cygwin")) { // NOI18N
                 cygwin = true;
@@ -541,6 +541,28 @@ public class GdbDebugger implements PropertyChangeListener {
         } else {
             throw new GdbErrorException("gdb version check failed, exiting"); //NOI18N
         }
+    }
+
+    private double parseVersionString(String msg) {
+        double ver = 0.0;
+        try {
+            ver = GdbUtils.parseVersionString(msg);
+        } catch (Exception ex) {
+            log.warning("GdbDebugger: Failed to parse version string (" + msg + ") [" + ex.getClass().getName() + "]");
+            if (msg.contains("6.5")) { // NOI18N
+                ver = 6.5;
+            } else if (msg.contains("6.6")) { // NOI18N
+                ver = 6.6;
+            } else if (msg.contains("6.7")) { // NOI18N
+                ver = 6.7;
+            } else if (msg.contains("6.8")) { // NOI18N
+                ver = 6.8;
+            } else {
+                log.warning("GdbDebugger: Failed to guess version string");
+            }
+            log.warning("GdbDebugger: guessed version: " + ver);
+        }
+        return ver;
     }
 
     private final void checkGdbVersion() {
@@ -2614,34 +2636,6 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void killSession() {
         lookupProvider.lookupFirst(null, Session.class).kill();
-    }
-
-    private static double parseGdbVersionString(String msg) {
-        double ver = 0.0;
-        int first = msg.indexOf('.');
-        int last = first + 1;
-
-        try {
-            while (last < msg.length() && Character.isDigit(msg.charAt(last))) {
-                last++;
-            }
-            ver = Double.parseDouble(msg.substring(0, last));
-        } catch (Exception ex) {
-            log.warning("GdbDebugger: Failed to parse version string (" + msg + ") [" + ex.getClass().getName() + "]");
-            if (msg.contains("6.5")) { // NOI18N
-                ver = 6.5;
-            } else if (msg.contains("6.6")) { // NOI18N
-                ver = 6.6;
-            } else if (msg.contains("6.7")) { // NOI18N
-                ver = 6.7;
-            } else if (msg.contains("6.8")) { // NOI18N
-                ver = 6.8;
-            } else {
-                log.warning("GdbDebugger: Failed to guess version string");
-            }
-            log.warning("GdbDebugger: guessed version: " + ver);
-        }
-        return ver;
     }
 
     private static class ShareInfo {

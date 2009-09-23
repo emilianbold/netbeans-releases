@@ -114,41 +114,45 @@ public abstract class AbstractHgTest extends NbTestCase {
 //    }    
     
     
-    protected void commit(File... files) throws HgException, IOException {       
-        
+    protected void commit(File... files) throws HgException, IOException {
+        commitIntoRepository(getWorkDir(), files);
+    }
+
+    protected void commitIntoRepository (File repository, File... files) throws HgException, IOException {
+
         List<File> filesToAdd = new ArrayList<File>();
         FileInformation status;
         for (File file : files) {
 
-            status = HgCommand.getSingleStatus(getWorkDir(), file.getParentFile().getAbsolutePath(), file.getName());
-            if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {                   
+            status = HgCommand.getSingleStatus(repository, file.getParentFile().getAbsolutePath(), file.getName());
+            if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 filesToAdd.add(file);
 
                 File parent = file.getParentFile();
-                while (!getWorkDir().equals(parent)) {
-                    status = HgCommand.getSingleStatus(getWorkDir(), parent.getParentFile().getAbsolutePath(), parent.getName());
+                while (!repository.equals(parent)) {
+                    status = HgCommand.getSingleStatus(repository, parent.getParentFile().getAbsolutePath(), parent.getName());
                     if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                         filesToAdd.add(0, parent);
                         parent = parent.getParentFile();
                     } else {
                         break;
                     }
-                }                                    
-            }    
-        }            
-            
-        HgCommand.doAdd(getWorkDir(), filesToAdd, null);
+                }
+            }
+        }
+
+        HgCommand.doAdd(repository, filesToAdd, null);
         List<File> filesToCommit = new ArrayList<File>();
         for (File file : files) {
             if(file.isFile()) {
                 filesToCommit.add(file);
             }
         }
-        
-        HgCommand.doCommit(getWorkDir(), filesToCommit, "commit", null);
+
+        HgCommand.doCommit(repository, filesToCommit, "commit", null);
         for (File file : filesToCommit) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_UPTODATE);
-        }        
+        }
     }
 
     protected File clone(File file) throws HgException, IOException {
