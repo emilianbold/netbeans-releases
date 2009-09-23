@@ -87,21 +87,6 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
         }
     }
     
-    static class RequestScopeObject extends ELImplicitObject{
-        public RequestScopeObject(){
-            super("requestScope");                                      // NOI18N
-        }
-        
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.web.core.syntax.spi.ELImplicitObject#isApplicable(org.netbeans.modules.web.core.syntax.completion.api.ELExpression)
-         */
-        @Override
-        public boolean isApplicable( ELExpression expression ) {
-            FileObject fileObject = expression.getFileObject();
-            return !fileObject.getMIMEType().equals("text/xhtml");      // NOI18N
-        }
-    }
-    
     private Collection<ELImplicitObject> getELImplicitObjects() {
         Collection<ELImplicitObject> implicitELObjects;
         implicitELObjects = new ArrayList<ELImplicitObject>(11);
@@ -111,7 +96,7 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
         implicitELObjects.add(new ELImplicitObject("applicationScope")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("param")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("paramValues")); // NOI18N
-        implicitELObjects.add(new RequestScopeObject());
+        implicitELObjects.add(new ELImplicitObject("requestScope"));
         implicitELObjects.add(new ELImplicitObject("header")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("headerValues")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("initParam")); // NOI18N
