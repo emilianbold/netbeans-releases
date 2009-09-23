@@ -114,6 +114,7 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -154,7 +155,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String COMBO_ACCESS_NAME = messages.getString("ThreadsPanel_ComboAccessName"); // NOI18N
     private static final String COMBO_ACCESS_DESCR = messages.getString("ThreadsPanel_ComboAccessDescr"); // NOI18N
     private static final String VIEW_MODE_SIMPLE = messages.getString("ThreadsPanel_SimpleViewMode");//NOI18N
-    private static final String VIEW_MODE_SIMPLE_FULL_MSA = messages.getString("ThreadsPanel_FullMSASimpleViewMode");//NOI18N
     private static final String VIEW_MODE_MSA = messages.getString("ThreadsPanel_SimpleMSAViewMode");//NOI18N
     private static final String VIEW_MODE_MSA_FULL = messages.getString("ThreadsPanel_FulleMSAViewMode");//NOI18N
     private static final String VIEW_MODE_COMBO_ACCESS_NAME = messages.getString("ThreadsPanel_ViewModeComboAccessName"); // NOI18N
@@ -214,7 +214,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private int sortedOrder = 0;
     private TimeLine timeLine;
     private String selectedViewMode = VIEW_MODE_SIMPLE;
-    private final List<String> fullMSAModeValues = Arrays.asList(VIEW_MODE_MSA_FULL, VIEW_MODE_SIMPLE_FULL_MSA);
+    private final List<String> fullMSAModeValues = Arrays.asList(VIEW_MODE_MSA_FULL);
     private final List<String> msaModeValues = Arrays.asList(VIEW_MODE_MSA, VIEW_MODE_MSA_FULL);
     private boolean isShowLegend = true;
 
@@ -270,15 +270,13 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         threadsSelectionCombo.getAccessibleContext().setAccessibleName(COMBO_ACCESS_NAME);
         threadsSelectionCombo.getAccessibleContext().setAccessibleDescription(COMBO_ACCESS_DESCR);
 
-        JLabel showLabel = new JLabel(SHOW_LABEL_TEXT);
+        JLabel showLabel = new JLabel();
+        Mnemonics.setLocalizedText(showLabel, SHOW_LABEL_TEXT);
+
         showLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         showLabel.setLabelFor(threadsSelectionCombo);
 
-        int mnemCharIndex = 0;
-        showLabel.setDisplayedMnemonic(showLabel.getText().charAt(mnemCharIndex));
-        showLabel.setDisplayedMnemonicIndex(mnemCharIndex);
-
-        viewModeComboModel = new DefaultComboBoxModel(new Object[]{VIEW_MODE_SIMPLE, VIEW_MODE_MSA, VIEW_MODE_SIMPLE_FULL_MSA, VIEW_MODE_MSA_FULL});
+        viewModeComboModel = new DefaultComboBoxModel(new Object[]{VIEW_MODE_SIMPLE, VIEW_MODE_MSA, VIEW_MODE_MSA_FULL});
         viewModeSelectionCombo = new JComboBox(viewModeComboModel) {
 
             @Override
@@ -289,13 +287,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         viewModeSelectionCombo.getAccessibleContext().setAccessibleName(VIEW_MODE_COMBO_ACCESS_NAME);
         viewModeSelectionCombo.getAccessibleContext().setAccessibleDescription(VIEW_MODE_COMBO_ACCESS_DESCR);
 
-        JLabel viewModeLabel = new JLabel(VIEW_MODE_LABEL_TEXT);
+        JLabel viewModeLabel = new JLabel();
+        Mnemonics.setLocalizedText(viewModeLabel, VIEW_MODE_LABEL_TEXT);
         viewModeLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         viewModeLabel.setLabelFor(viewModeSelectionCombo);
 
-        mnemCharIndex = 0;
-        viewModeLabel.setDisplayedMnemonic(viewModeLabel.getText().charAt(mnemCharIndex));
-        viewModeLabel.setDisplayedMnemonicIndex(mnemCharIndex);
         buttonsToolBar = new JToolBar(JToolBar.HORIZONTAL) {
 
             @Override
@@ -415,30 +411,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         legendPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         initLegend(isFullMode());
 
-        //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BorderLayout());
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         bottomPanel.add(legendPanel, BorderLayout.EAST);
 
-//        JPanel MSAPanel = new JPanel();
-//        MSAPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-//        MSAPanel.setLayout(new BorderLayout());
-//        modeMSA = new JCheckBox(MODE_MSA_TEXT);
-//        modeMSA.setSelected(true);
-//        modeMSA.setToolTipText(MODE_MSA_TOOLTIP);
-//        modeMSA.setBorder(BorderFactory.createEmptyBorder(6, 3, 3, 3));
-//        fullMSA = new JCheckBox(FULL_MSA_TEXT);
-//        fullMSA.setSelected(false);
-//        fullMSA.setToolTipText(FULL_MSA_TOOLTIP);
-//        fullMSA.setBorder(BorderFactory.createEmptyBorder(6, 3, 6, 3));
-//        MSAPanel.add(modeMSA, BorderLayout.NORTH);
-//        MSAPanel.add(fullMSA, BorderLayout.SOUTH);
-//        bottomPanel.add(MSAPanel, BorderLayout.WEST);
-//        modeMSA.addActionListener(this);
-//        fullMSA.addActionListener(this);
-
-        //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
         JPanel dataPanel = new JPanel();
         dataPanel.setLayout(new BorderLayout());
         dataPanel.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
@@ -528,11 +505,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         showOnlySelectedThreads.addActionListener(this);
         showLegend.addActionListener(this);
         viewModeSelectionCombo.addActionListener(this);
-        viewModeSelectionCombo.setSelectedIndex(NbPreferences.forModule(getClass()).getInt("ViewMode", 0)); // NOI18N
-
-        //if (detailsCallback != null) {
-        //    showThreadsDetails.addActionListener(this);
-        //}
+        viewModeSelectionCombo.setSelectedIndex(Math.min(NbPreferences.forModule(getClass()).getInt("ViewMode", 0), viewModeComboModel.getSize()-1)); // NOI18N
 
         table.getColumnModel().addColumnModelListener(this);
         table.addComponentListener(new ComponentAdapter() {
