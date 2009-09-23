@@ -70,7 +70,7 @@ public class FindNameTest extends NbTestCase {
     }
 
     public void testFftImageTransformer() {
-        baseTest(0x381, "void FastFourierTransform::Transform", "fftimagetransformer", false);
+        baseTest(0x381, "FastFourierTransform::Transform", "fftimagetransformer", false);
     }
 
     public void testPkgConfig() {

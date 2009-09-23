@@ -234,6 +234,21 @@ public abstract class CommonStackDataStorageTests {
         assertTimeEquals(20, dCallees.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
     }
 
+    @Test
+    public void testLongNames() {
+        StringBuilder longName = new StringBuilder();
+        for (int i = 0; i < 10; ++i) {
+            for (int j = 0; j < 256; ++j) {
+                longName.append("x");
+            }
+            db.putSample(Arrays.<CharSequence>asList(longName), i, 10);
+        }
+        flush(db);
+
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
+        assertEquals(10, hotSpots.size());
+    }
+
     private static void assertTimeEquals(long nanos, Object obj) {
         assertTrue(obj instanceof Time);
         assertEquals(nanos, ((Time)obj).getNanos());

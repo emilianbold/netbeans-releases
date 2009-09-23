@@ -1,7 +1,7 @@
 CREATE TABLE Func (
     func_id INT NOT NULL,
-    func_name VARCHAR NOT NULL,
-    func_full_name VARCHAR NOT NULL,
+    func_name VARCHAR(16384) NOT NULL,
+    func_full_name VARCHAR(16384) NOT NULL,
 --    time_incl BIGINT NOT NULL DEFAULT 0,
 --    time_excl BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (func_id)
