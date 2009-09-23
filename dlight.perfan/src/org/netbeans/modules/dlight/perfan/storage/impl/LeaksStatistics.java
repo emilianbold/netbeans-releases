@@ -95,7 +95,7 @@ public final class LeaksStatistics {
     //return null;
     }
 
-    public final class LeakInfo {
+    public final static class LeakInfo {
 
         private int bytesLeaked;
         private int leakNumber;
@@ -113,6 +113,10 @@ public final class LeaksStatistics {
 
         public int getBytesLeaked() {
             return bytesLeaked;
+        }
+
+        public int getInstancesCount() {
+            return instancesCount;
         }
     }
 

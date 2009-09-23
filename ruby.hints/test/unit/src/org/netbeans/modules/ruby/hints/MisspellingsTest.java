@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,71 +34,35 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.parsing;
+package org.netbeans.modules.ruby.hints;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreeScanner;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.openide.filesystems.FileObject;
 
 /**
- * Partial reparse helper visitor.
- * Finds anonymous and local classes in given method tree.
- * @author Tomas Zezula
+ *
+ * @author Erno Mononen
  */
-class FindAnonymousVisitor extends TreeScanner<Void,Void> {
-
-    private static enum Mode {COLLECT, CHECK};
-
-    int firstInner = -1;
-    int noInner;
-    boolean hasLocalClass;
-    final Set<Tree> docOwners = new HashSet<Tree>();
-    private Mode mode = Mode.COLLECT;            
+public class MisspellingsTest extends HintTestBase {
     
-    public final void reset () {
-        this.firstInner = -1;
-        this.noInner = 0;
-        this.hasLocalClass = false;
-        this.mode = Mode.CHECK;
+    public MisspellingsTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public Void visitClass(ClassTree node, Void p) {
-        if (firstInner == -1) {
-            firstInner = ((JCClassDecl)node).index;
-        }
-        if (node.getSimpleName().length() != 0) {
-            hasLocalClass = true;
-        }
-        noInner++;
-        handleDoc(node);
-        return super.visitClass(node, p);
+    private RubyAstRule createRule() {
+        return new Misspellings();
     }
 
-    @Override
-    public Void visitMethod(MethodTree node, Void p) {
-        handleDoc(node);
-        return super.visitMethod(node, p);
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
     }
-
-    @Override
-    public Void visitVariable(VariableTree node, Void p) {
-        handleDoc(node);
-        return super.visitVariable(node, p);
+    
+    public void testHints() throws Exception {
+        checkHints(this, createRule(), "testfiles/misspellings.rb", null);
     }
-
-    private void handleDoc (final Tree tree) {
-        if (mode == Mode.COLLECT) {
-            docOwners.add(tree);
-        }
-    }
-
+    
 }

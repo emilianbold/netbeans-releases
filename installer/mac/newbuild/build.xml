@@ -113,12 +113,12 @@ Microsystems, Inc. All Rights Reserved.
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
+            <exec executable="sh" failonerror="no">
+                <arg value="-c"/>
+                <arg value="cd ${basedir}/netBeans/${module.name}/build/netbeans ; rm -rf META-INF"/>
+            </exec>        
         </for-each>
 
-        <exec executable="sh" failonerror="no">
-            <arg value="-c"/>
-            <arg value="cd ${basedir}/netBeans/${module.name}/build/netbeans ; rm -rf META-INF"/>
-        </exec>        
 
     </target>
     
