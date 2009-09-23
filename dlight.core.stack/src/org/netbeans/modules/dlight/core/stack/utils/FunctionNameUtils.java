@@ -36,46 +36,61 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
-
-import java.util.Collection;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+package org.netbeans.modules.dlight.core.stack.utils;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface ThreadMapDataProvider extends DataProvider {
+public final class FunctionNameUtils {
+
+    private FunctionNameUtils() {
+    }
 
     /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
+     * returns function quilified name
+     * @param functionSignature is [type][*|&][space][q-name-namspace::][q-name-class::]name[(prameter-list)]+offset
+     * @return [q-name-namspace::][q-name-class::]name
      */
-    ThreadMapData queryData(ThreadMapDataQuery query);
-
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query);
-
-    /**
-     * Returns stack thread dump on the base of the query passed
-     * @param query query to be used to get ThreadDump
-     * @return returns thread dump on the base of the query requested
-     */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
-
-    /**
-     * Returns stack thread snapshots on the base of the query passed
-     * @param query
-     * @return returns stack thread snapshots on the base of the query passed
-     */
-    Collection<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query);
+    public static String getFunctionQName(String functionSignature) {
+        int start = 0;
+        int templateLevel = 0;
+        boolean isOperator = false;
+        for (int i = 0; i < functionSignature.length(); i++) {
+            char c = functionSignature.charAt(i);
+            switch (c) {
+                case '<':
+                    templateLevel++;
+                    break;
+                case '>':
+                    templateLevel++;
+                    break;
+                case 'o':
+                    if (functionSignature.substring(i).startsWith("operator") && // NOI18N
+                            functionSignature.length() > i + 8 &&
+                            !Character.isLetter(functionSignature.charAt(i + 8))) {
+                        isOperator = true;
+                    }
+                    break;
+                case '+':
+                    if (functionSignature.length() > i+1 &&
+                        functionSignature.charAt(i + 1) == '0') {
+                        return functionSignature.substring(start, i);
+                   }
+                   break;
+                case ' ':
+                case '*':
+                case '&':
+                    if (templateLevel == 0) {
+                        if (!isOperator) {
+                            start = i + 1;
+                        }
+                    }
+                    break;
+                case '(':
+                    return functionSignature.substring(start, i);
+            }
+        }
+        return functionSignature.substring(start);
+    }
 }
