@@ -41,14 +41,19 @@
 
 package org.netbeans.api.options;
 
+import java.awt.Cursor;
 import java.util.Arrays;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import org.netbeans.modules.options.CategoryModel;
 import org.netbeans.modules.options.OptionsDisplayerImpl;
 import org.netbeans.spi.options.OptionsPanelController.ContainerRegistration;
 import org.netbeans.spi.options.OptionsPanelController.SubRegistration;
 import org.netbeans.spi.options.OptionsPanelController.TopLevelRegistration;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  * Permits Options Dialog to open the options dialog with some category pre-selected.
@@ -80,6 +85,7 @@ public final class OptionsDisplayer {
      * options dialog won't be opened.
      */
     public boolean open() {
+        showWaitCursor();
         return open(CategoryModel.getInstance().getCurrentCategoryID());
     }
     
@@ -104,7 +110,12 @@ public final class OptionsDisplayer {
      */
     public boolean open(final String path) {
         log.fine("Open Options Dialog: " + path); //NOI18N
-        return openImpl(path);
+        showWaitCursor();
+        try {
+            return openImpl(path);
+        } finally {
+            hideWaitCursor();
+        }
     }
 
     private boolean openImpl(final String path) {
@@ -133,5 +144,19 @@ public final class OptionsDisplayer {
             }
         });
         return retval;
+    }
+
+    private static void showWaitCursor() {
+        JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+        mainWindow.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        mainWindow.getGlassPane().setVisible(true);
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OptionsDisplayerImpl.class, "CTL_Loading_Options"));
+    }
+
+    private static void hideWaitCursor() {
+        StatusDisplayer.getDefault().setStatusText("");  //NOI18N
+        JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+        mainWindow.getGlassPane().setVisible(false);
+        mainWindow.getGlassPane().setCursor(null);
     }
 }
