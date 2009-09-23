@@ -504,10 +504,15 @@ public class ELExpression {
         this.contextOffset = offset;
     }
     
-    protected Part[] getParts() {
+    protected Part[] getParts(){
+        return getParts(getExpression());
+    }
+    
+    protected Part[] getParts( final String expr ) {
         List<Part> result = new LinkedList<Part>();
-        if ( getExpression().indexOf('[') == -1 ){
-            String[] parts = getExpression().split( "\\." );     // NOI18N
+        String expression = expr;
+        if  ( expr.indexOf('[') == -1 ){
+            String[] parts = expression.split( "\\." );     // NOI18N
             int offset = 0;
             for (int i=0; i<parts.length; i++ ) {
                 result.add( new Part( offset, parts[i] ));
@@ -517,7 +522,6 @@ public class ELExpression {
         }
         boolean previousDot = false;
         boolean previousLeftBracket = false;
-        String expression = getExpression();
         int i=0;
         int offset = 0;
         while( expression.length() > 0 && i < expression.length()){
@@ -608,6 +612,10 @@ public class ELExpression {
         public InspectPropertiesTask() {
             super(getObjectClass());
         }
+        
+        public InspectPropertiesTask( String beanName ) {
+            super( beanName);
+        }
 
         public void execute() {
             runTask(this);
@@ -615,13 +623,20 @@ public class ELExpression {
 
         public TypeElement getTypePreceedingCaret( CompilationController controller ) throws Exception {
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
-            return getTypePreceedingCaret(controller, new FailHandler() {
+            return getTypePreceedingCaret(controller, getExpression(), new FailHandler() {
 
                 public void typeNotFound( int index, String propertyName ) {
                     myOffset = index;
                     myProperty = propertyName;
                 }
             });
+        }
+        
+        public TypeMirror getTypePreceedingCaret( CompilationController controller ,
+                String expression ) throws Exception 
+        {
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            return getTypeMirrorPreceedingCaret(controller, expression , null , true );
         }
 
         public String getProperty() {
@@ -675,32 +690,58 @@ public class ELExpression {
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
         protected TypeElement getTypePreceedingCaret(CompilationInfo controller) {
-            return getTypePreceedingCaret(controller, null );
+            return getTypePreceedingCaret(controller, getExpression(), null );
         }
-
+        
         /**
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
         protected TypeElement getTypePreceedingCaret(CompilationInfo controller,
-                FailHandler handler )
+                String expression) 
+        {
+            return getTypePreceedingCaret(controller, expression , null );
+        }
+        
+        /**
+         * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
+         */
+        protected TypeElement getTypePreceedingCaret(CompilationInfo controller,
+                String expression , FailHandler handler )
+        {
+            return getTypePreceedingCaret( controller , expression , handler , false);
+        }
+        
+        protected TypeElement getTypePreceedingCaret(CompilationInfo controller,
+                String expression , FailHandler handler , boolean fullexpression)
+        {
+            TypeMirror mirror = getTypeMirrorPreceedingCaret(controller, expression, handler, 
+                    fullexpression);
+            if ( mirror == null ){
+                return null;
+            }
+            return (TypeElement) controller.getTypes().asElement( mirror);
+        }
+
+        protected TypeMirror getTypeMirrorPreceedingCaret(CompilationInfo controller,
+                String expression , FailHandler handler , boolean fullexpression)
         {
             if (beanType == null) {
                 if ( handler != null ){
-                    handler.typeNotFound(0, beanType);
+                    handler.typeNotFound(0, extractBeanName());
                 }
                 return null;
             }
-            TypeElement lastKnownType = controller.getElements().
-                getTypeElement(beanType);
+            TypeMirror lastKnownType = controller.getElements().getTypeElement(
+                    beanType).asType();
             TypeMirror lastReturnType = null;
 
-            Part parts[] = getParts();
+            Part parts[] = getParts( expression );
             // part[0] - the bean
             // part[parts.length - 1] - the property being typed (if not empty)
 
             int limit = parts.length - 1;
 
-            if (getPropertyBeingTypedName().length() == 0) {
+            if (fullexpression || getPropertyBeingTypedName().length() == 0) {
                 limit += 1;
             }
 
@@ -709,7 +750,7 @@ public class ELExpression {
             for ( ; i < limit; i++) {
                 if (lastKnownType == null && lastReturnType == null) {
                     logger.fine("EL CC: Could not resolve type for property " //NOI18N
-                            + parts[i] + " in " + getExpression()); //NOI18N
+                            + parts[i] + " in " + expression); //NOI18N
                     if ( handler != null ){
                         handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
                     }
@@ -719,7 +760,9 @@ public class ELExpression {
                 if (lastKnownType != null) {
                     String accessorName = getAccessorName(parts[i].getPart());
                     List<ExecutableElement> allMethods = ElementFilter
-                            .methodsIn(lastKnownType.getEnclosedElements());
+                            .methodsIn(controller.getElements().getAllMembers(
+                                    (TypeElement)controller.getTypes().asElement(
+                                            lastKnownType)));
                     
                     lastKnownType = null;
 
@@ -731,8 +774,7 @@ public class ELExpression {
                             lastReturnType = returnType;
 
                             if (returnType.getKind() == TypeKind.DECLARED) { // should always be true
-                                lastKnownType = (TypeElement) controller
-                                        .getTypes().asElement(returnType);
+                                lastKnownType = returnType;
                                 break;
                             }
                             else if (returnType.getKind() == TypeKind.ARRAY) {
@@ -754,8 +796,7 @@ public class ELExpression {
                         TypeMirror typeMirror = ((ArrayType)lastReturnType).
                             getComponentType();
                         if ( typeMirror.getKind() == TypeKind.DECLARED){
-                            lastKnownType = (TypeElement) controller.getTypes().
-                                asElement(typeMirror);
+                            lastKnownType = typeMirror;
                         }
                         else if ( typeMirror.getKind() == TypeKind.ARRAY){
                             lastReturnType = typeMirror;
@@ -773,14 +814,14 @@ public class ELExpression {
                             if ( typeArguments.size() != 0 ){
                                 TypeMirror typeMirror = typeArguments.get(0);
                                 if ( typeMirror.getKind() == TypeKind.DECLARED){
-                                    lastKnownType = (TypeElement) controller.getTypes().
-                                        asElement( typeMirror );
+                                    lastKnownType = typeMirror ;
                                 }
                             }
                         }
                         if ( lastKnownType == null ){
                             lastKnownType = controller.getElements().
-                                getTypeElement(Object.class.getCanonicalName());
+                                getTypeElement(Object.class.getCanonicalName()).
+                                asType();
                         }
                     }
                     else if (controller.getTypes().isAssignable(
@@ -795,15 +836,15 @@ public class ELExpression {
                             if (typeArguments.size() == 2) {
                                 TypeMirror typeMirror = typeArguments.get(1);
                                 if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                    lastKnownType = (TypeElement) controller
-                                            .getTypes().asElement(typeMirror);
+                                    lastKnownType = typeMirror;
                                 }
                             }
                         }
                         if (lastKnownType == null) {
                             lastKnownType = controller.getElements()
                                     .getTypeElement(
-                                            Object.class.getCanonicalName());
+                                            Object.class.getCanonicalName()).
+                                            asType();
                         }
                     }
                     lastReturnType = null;
