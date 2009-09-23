@@ -141,7 +141,6 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
                 Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
                 topmost =  file;
-                break;
             } else {
                 Mercurial.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...

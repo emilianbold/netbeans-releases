@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -53,7 +54,6 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -82,6 +82,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 /**
  * Singleton providing access to Kenai Dashboard window.
@@ -132,7 +133,22 @@ public final class DashboardImpl extends Dashboard {
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     private DashboardImpl() {
-        dashboardComponent = new JScrollPane();
+        dashboardComponent = new JScrollPane() {
+            @Override
+            public void requestFocus() {
+                Component view = getViewport().getView();
+                if (view != null) {
+                    view.requestFocus();
+                } else {
+                    super.requestFocus();
+                }
+            }
+            @Override
+            public boolean requestFocusInWindow() {
+                Component view = getViewport().getView();
+                return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
+            }
+        };
         dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
@@ -450,6 +466,12 @@ public final class DashboardImpl extends Dashboard {
                         dashboardComponent.invalidate();
                         dashboardComponent.revalidate();
                         dashboardComponent.repaint();
+                        // hack: ensure the dashboard component has focus (when
+                        // added to already visible and activated TopComponent)
+                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardComponent);
+                        if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
+                            treeList.requestFocus();
+                        }
                     }
                 }
             }

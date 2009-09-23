@@ -305,7 +305,6 @@ public class Mercurial {
         if(root != null) {
             if(file.isFile()) file = file.getParentFile();
             List<File> folders = new ArrayList<File>();
-            folders.add(root);
             for (; file != null && !file.getAbsolutePath().equals(root.getAbsolutePath()) ; file = file.getParentFile()) {
                 File knownRoot = rootsToFile.get(file);
                 if(knownRoot != null) {
@@ -320,6 +319,7 @@ public class Mercurial {
                     return file;
                 }
             }
+            folders.add(root);
             rootsToFile.put(folders, root);
             rootsToFile.put(oFile, root);
             return root;
