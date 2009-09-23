@@ -118,7 +118,9 @@ public class FileStatusCacheTest extends AbstractHgTest {
         files = getCache().listFiles(new File[] {workdir}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 4);
 
-        assertsEquals(1, handler.occurances);
+        if (handler.occurances != 1) {
+            fail("Expected occurrences 1, was " + handler.occurances);
+        }
     }
 
     private void assertModified (File[] files, int count) {
