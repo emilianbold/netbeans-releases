@@ -39,14 +39,14 @@
 package org.netbeans.modules.web.jsf.editor.hints;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.editor.EditorUtilities;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
@@ -57,7 +57,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
@@ -96,7 +95,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
         Map<String, FaceletsLibrary> libs = Collections.EMPTY_MAP;
         if (jsfSupport != null) {
-             libs = jsfSupport.getFaceletsLibraries();
+            libs = jsfSupport.getFaceletsLibraries();
         }
 
         //Find the namespaces declarations itself
@@ -154,9 +153,10 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
+        Collection<PositionRange> ranges = new ArrayList<PositionRange>();
         for (FaceletsLibrary lib : declaredLibraries) {
             AstNode rootNode = result.root(lib.getNamespace());
-            if(rootNode == null) {
+            if (rootNode == null) {
                 continue; //no parse result for this namespace, the namespace is not declared
             }
             final int[] usages = new int[1];
@@ -173,51 +173,84 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 if (declAttr != null) {
                     int from = declAttr.nameOffset();
                     int to = declAttr.valueOffset() + declAttr.value().length();
-                    List<HintFix> fixes = Collections.<HintFix>singletonList(new UnusedLibraryHintFix(context.doc, from, to));
-
-                    Hint hint = new Hint(DEFAULT_WARNING_RULE,
-                            NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION"), //NOI18N
-                            context.parserResult.getSnapshot().getSource().getFileObject(),
-                            new OffsetRange(from, to),
-                            fixes, DEFAULT_ERROR_HINT_PRIORITY);
-                    hints.add(hint);
+                    try {
+                        ranges.add(new PositionRange(context.doc, from, to));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
+
             }
+        }
+
+        //generate remove all unused declarations
+        for (PositionRange range : ranges) {
+            int from = range.getFrom();
+            int to = range.getTo();
+
+            List<HintFix> fixes = Arrays.asList(new HintFix[]{
+                new RemoveUnusedLibraryDeclarationHintFix(context.doc, range), //the only occurance
+                new RemoveUnusedLibrariesDeclarationHintFix(context.doc, ranges) //remove all
+            });
+            Hint hint = new Hint(DEFAULT_WARNING_RULE,
+                    NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION"), //NOI18N
+                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                    new OffsetRange(from, to),
+                    fixes, DEFAULT_ERROR_HINT_PRIORITY);
+
+            hints.add(hint);
         }
 
     }
 
-    private static class UnusedLibraryHintFix implements HintFix {
+    private static class RemoveUnusedLibraryDeclarationHintFix extends RemoveUnusedLibrariesDeclarationHintFix {
 
-        protected int from;
-        protected int to;
+        public RemoveUnusedLibraryDeclarationHintFix(BaseDocument document, PositionRange range) {
+            super(document, Collections.<PositionRange>singletonList(range));
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(HintsProvider.class, "MSG_HINTFIX_REMOVE_UNUSED_LIBRARY_DECLARATION");
+        }
+
+    }
+
+    private static class RemoveUnusedLibrariesDeclarationHintFix implements HintFix {
+
+        protected Collection<PositionRange> ranges = new ArrayList<PositionRange>();
         protected BaseDocument document;
 
-        public UnusedLibraryHintFix(BaseDocument document, int from, int to) {
-            this.from = from;
-            this.to = to;
+        public RemoveUnusedLibrariesDeclarationHintFix(BaseDocument document, Collection<PositionRange> ranges) {
             this.document = document;
+            this.ranges = ranges;
         }
 
         public String getDescription() {
-            return NbBundle.getMessage(HintsProvider.class, "MSG_HINTFIX_UNUSED_LIBRARY_DECLARATION");
+            return NbBundle.getMessage(HintsProvider.class, "MSG_HINTFIX_REMOVE_ALL_UNUSED_LIBRARIES_DECLARATION");
         }
 
         public void implement() throws Exception {
             document.runAtomic(new Runnable() {
+
                 public void run() {
                     try {
-                        //check if the line before the area is white
-                        int lineBeginning = Utilities.getRowStart(document, from);
-                        int firstNonWhite = Utilities.getFirstNonWhiteBwd(document, from);
-                        if(lineBeginning > firstNonWhite) {
-                            //delete the white content before the area inclusing the newline
-                            from = lineBeginning - 1; // (-1 => includes the line end)
+                        for (PositionRange range : ranges) {
+                            int from = range.getFrom();
+                            int to = range.getTo();
+                            //check if the line before the area is white
+                            int lineBeginning = Utilities.getRowStart(document, from);
+                            int firstNonWhite = Utilities.getFirstNonWhiteBwd(document, from);
+                            if (lineBeginning > firstNonWhite) {
+                                //delete the white content before the area inclusing the newline
+                                from = lineBeginning - 1; // (-1 => includes the line end)
+                            }
+                            document.remove(from, to - from);
                         }
-                        document.remove(from, to - from);
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+
                 }
             });
         }
@@ -229,8 +262,23 @@ public class LibraryDeclarationChecker extends HintsProvider {
         public boolean isInteractive() {
             return false;
         }
-
     }
 
+    private static final class PositionRange {
 
+        private Position from, to;
+
+        public PositionRange(BaseDocument doc, int from, int to) throws BadLocationException {
+            this.from = doc.createPosition(from);
+            this.to = doc.createPosition(to);
+        }
+
+        public int getFrom() {
+            return from.getOffset();
+        }
+
+        public int getTo() {
+            return to.getOffset();
+        }
+    }
 }
