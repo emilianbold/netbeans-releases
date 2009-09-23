@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.management.api.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Level;

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -290,40 +291,95 @@ public class Mercurial {
         return VersioningSupport.getOwner(file) instanceof MercurialVCS && !HgUtils.isPartOfMercurialMetadata(file);
     }
 
-    private final Map<File, File> foldersToRoot = new HashMap<File, File>();
+    private final RootsToFile rootsToFile = new RootsToFile();
     public File getRepositoryRoot(File file) {
-        File root = mvcs.getTopmostManagedAncestor(file);
+        File oFile = file;
+
+        rootsToFile.logStatistics();
+        File root = rootsToFile.get(file, true);
+        if(root != null) {
+            return root;
+        }
+
+        root = mvcs.getTopmostManagedAncestor(file);
         if(root != null) {
             if(file.isFile()) file = file.getParentFile();
             List<File> folders = new ArrayList<File>();
-            folders.add(root);
             for (; file != null && !file.getAbsolutePath().equals(root.getAbsolutePath()) ; file = file.getParentFile()) {
-                File knownRoot;
-                synchronized(foldersToRoot) {
-                    knownRoot = foldersToRoot.get(file);
-                }
+                File knownRoot = rootsToFile.get(file);
                 if(knownRoot != null) {
-                    addFoldersToRoot(folders, knownRoot);
+                    rootsToFile.put(folders, knownRoot);
+                    rootsToFile.put(oFile, knownRoot);
                     return knownRoot;
                 }
                 folders.add(file);
                 if(HgUtils.hgExistsFor(file)) {
-                    addFoldersToRoot(folders, file);
+                    rootsToFile.put(folders, file);
+                    rootsToFile.put(oFile, file);
                     return file;
                 }
             }
-            addFoldersToRoot(folders, root);
+            folders.add(root);
+            rootsToFile.put(folders, root);
+            rootsToFile.put(oFile, root);
             return root;
         }
         return null;
     }
 
-    private void addFoldersToRoot(Collection<File> folders, File root) {
-        synchronized(foldersToRoot) {
-            if(foldersToRoot.size() > 1500) foldersToRoot.clear(); // XXX simple
-            for (File folder : folders) {
-                foldersToRoot.put(folder, root);
+    private static class RootsToFile {
+        private static Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial.RootsToFile"); // NOI18N
+        private LinkedList<File> order = new LinkedList<File>();
+        private Map<File, File> files = new HashMap<File, File>();
+        private long cachedAccesCount = 0;
+        private long accesCount = 0;
+        private int statisticsFrequency = 0;
+
+        public RootsToFile() {
+            String s = System.getProperty("mercurial.root.stat.frequency", "0"); // NOI18N
+            statisticsFrequency = Integer.parseInt(s);
+        }
+        synchronized void put(Collection<File> files, File root) {
+            for (File file : files) {
+                put(file, root);
             }
+        }
+        synchronized void put(File file, File root) {
+            if(order.size() > 1500) {
+                for (int i = 0; i < 150; i++) {
+                    files.remove(order.getFirst());
+                    order.removeFirst();
+                }
+            }
+            order.addLast(file);
+            files.put(file, root);
+        }
+        synchronized File get(File file) {
+            return get(file, false);
+        }
+        synchronized File get(File file, boolean statistics) {
+            File root = files.get(file);
+            if(statistics && LOG.isLoggable(Level.FINEST)) {
+               cachedAccesCount += root != null ? 1 : 0;
+               accesCount++;
+            }
+            return root;
+        }
+        synchronized int size() {
+            return order.size();
+        }
+        synchronized void logStatistics() {
+            if(!LOG.isLoggable(Level.FINEST) ||
+               (statisticsFrequency > 0 && (accesCount % statisticsFrequency != 0)))
+            {
+                return;
+            }
+
+            LOG.finest("HG Repository roots cache statistics:\n" +                                    // NOI18N
+                     "  cached roots size       = " + order.size() + "\n" +                         // NOI18N
+                     "  access count            = " + accesCount + "\n" +                           // NOI18N
+                     "  cached access count     = " + cachedAccesCount + "\n" +                     // NOI18N
+                     "  not cached access count = " + (accesCount - cachedAccesCount) + "\n");      // NOI18N
         }
     }
 

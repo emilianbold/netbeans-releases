@@ -53,7 +53,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -69,7 +68,7 @@ public class SourceGroupTreeElement implements TreeElement {
     private static String PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; // NOI18N
 
     SourceGroupTreeElement(SourceGroup sg) {
-        this.sg = new WeakReference(sg);
+        this.sg = new WeakReference<SourceGroup>(sg);
         dir = sg.getRootFolder();
  
         icon = sg.getIcon(false);

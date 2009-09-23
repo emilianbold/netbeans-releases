@@ -167,10 +167,12 @@ public class JavaI18nSupport extends I18nSupport {
             return i18nString;
         }
         
-        i18nString.setComment(""); // NOI18N
         String text = decodeUnicodeSeq(hcString.getText());
-        i18nString.setKey(text.replace(' ', '_').toUpperCase());
+        String key = text.toUpperCase(); // don't replace ' ' with '_' ! #168798
+
+        i18nString.setKey(key);
         i18nString.setValue(text);
+        i18nString.setComment(""); // NOI18N
 
         // If generation of field is set and replace format doesn't include identifier argument replace it with the default with identifier.
         if (isGenerateField() && i18nString.getReplaceFormat().indexOf("{identifier}") == -1) { // NOI18N

@@ -54,6 +54,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
@@ -104,7 +105,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(1, is.length);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
+        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         Issue i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -114,7 +115,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         q.refresh(p, false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
+        il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -142,7 +143,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         q.refresh();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(Issue.ISSUE_STATUS_ALL).size());
+        assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
         assertEquals(1, q.getIssues().length);
         Issue i = q.getIssues()[0];
         assertEquals(summary1, i.getSummary());
@@ -152,7 +153,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         q.refresh(p, false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(Issue.ISSUE_STATUS_ALL).size());
+        assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
         assertEquals(1, q.getIssues().length);
         i = q.getIssues()[0];
         assertEquals(summary1, i.getSummary());
@@ -165,7 +166,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         issues = q.getIssues();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(2, nl.getIssues(Issue.ISSUE_STATUS_ALL).size());
+        assertEquals(2, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
         assertEquals(2, issues.length);
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
@@ -201,22 +202,28 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
     // XXX shoud be on the spi
     public void testLastRefresh() {
-        BugzillaQuery q = new BugzillaQuery(QueryTestUtil.getRepository());
+        String parameters = "query_format=advanced&" +
+          "short_desc_type=allwordssubstr&" +
+          "short_desc=whatever112233445566778899&" +
+          "product=TestProduct";
+        String qname = "q" + System.currentTimeMillis();
+        BugzillaQuery q = new BugzillaQuery(qname, QueryTestUtil.getRepository(), parameters, true, true, false);
         long lastRefresh = q.getLastRefresh();
         assertEquals(0, lastRefresh);
-
         long ts = System.currentTimeMillis();
 
         ts = System.currentTimeMillis();
-        q.refresh("query_format=advanced&" +
-                  "short_desc_type=allwordssubstr&" +
-                  "short_desc=whatever112233445566778899&" +
-                  "product=TestProduct", false);
+        q.refresh(parameters, false);
         assertTrue(q.getLastRefresh() >= ts);
 
         ts = System.currentTimeMillis();
         q.refresh();
-        assertTrue(q.getLastRefresh() >= ts);
+        lastRefresh = q.getLastRefresh();
+        assertTrue(lastRefresh >= ts);
+
+        // emulate restart
+        q = new BugzillaQuery(qname, QueryTestUtil.getRepository(), parameters, true, true, false);
+        assertEquals((int)(lastRefresh/1000), (int)(q.getLastRefresh()/1000));
 
     }
 
@@ -250,7 +257,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
+        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         Issue i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -304,7 +311,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
+        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         Issue i = il.get(0);
         assertEquals(summary, i.getSummary());

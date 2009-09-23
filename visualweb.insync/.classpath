@@ -19,10 +19,10 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/xml.xdm"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/web.jsf"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/webmodule.api"/>
-	<classpathentry kind="var" path="TRUNK_NB/platform10/core/org-openide-filesystems.jar"/>
-	<classpathentry kind="var" path="TRUNK_NB/platform10/lib/org-openide-modules.jar"/>
-	<classpathentry kind="var" path="TRUNK_NB/platform10/lib/org-openide-util.jar"/>
-	<classpathentry kind="var" path="TRUNK_NB/platform10/modules/org-openide-loaders.jar"/>
-	<classpathentry kind="var" path="TRUNK_NB/platform10/modules/org-openide-nodes.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform11/core/org-openide-filesystems.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform11/lib/org-openide-modules.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform11/lib/org-openide-util.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform11/modules/org-openide-loaders.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform11/modules/org-openide-nodes.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

@@ -85,7 +85,10 @@ public class PHPPaletteActions extends PaletteActions {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
-            
+            if (drop == null) {
+                Logger.global.log(Level.INFO, item.getClass() + " doesn't provide " + ActiveEditorDrop.class);//NOI18N
+                return;
+            }
             try {
                 drop.handleTransfer(target);
             }

@@ -187,6 +187,8 @@ static char * my_realpath(const char *file_name, char *resolved_name, int resolv
     return resolved_name;
 }*/
 
+static int __thread inside_open = 0;
+
 /**
  * Called upon opening a file; returns "boolean" success
  * @return true means "ok" (either file is in already sync,
@@ -194,6 +196,10 @@ static char * my_realpath(const char *file_name, char *resolved_name, int resolv
  * false means that the file is ourm, but can't be synched
  */
 static int on_open(const char *path, int flags) {
+    if (inside_open != 1) {
+        trace("%s inside_open == %d   returning\n", path, inside_open);
+        return true; // recursive call to open
+    }
     static int __thread inside = 0;
     if (inside) {
         trace("%s recursive - returning\n", path);
@@ -352,88 +358,41 @@ int pthread_create(void *newthread,
     return res;
 }*/
 
+#define real_open(function_name, path, flags) \
+    inside_open++; \
+    trace("%s %s %d\n", #function_name, path, flags); \
+    va_list ap; \
+    mode_t mode; \
+    va_start(ap, flags); \
+    mode = va_arg(ap, mode_t); \
+    va_end(ap); \
+    static int (*prev)(const char *, int, mode_t); \
+    if (!prev) { \
+        prev = (int (*)(const char *, int, mode_t)) get_real_addr(function_name); \
+    } \
+    int result = -1; \
+    if (on_open(path, flags)) { \
+        result = prev(path, flags, mode); \
+    } \
+    trace("%s %s -> %d\n", #function_name, path, result); \
+    inside_open--; \
+    return result;
+
+
 int open(const char *path, int flags, ...) {
-    trace("open %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(open);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(open, path, flags)
 }
 
 int open64(const char *path, int flags, ...) {
-    trace("open64 %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(open64);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(open64, path, flags)
 }
 
 int _open(const char *path, int flags, ...) {
-    trace("_open %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(_open);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(_open, path, flags)
 }
 
 int _open64(const char *path, int flags, ...) {
-    trace("_open64 %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(_open64);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(_open64, path, flags)
 }
 
 /* int lstat64(const char *_RESTRICT_KYWD path, struct stat64 *_RESTRICT_KYWD buf)

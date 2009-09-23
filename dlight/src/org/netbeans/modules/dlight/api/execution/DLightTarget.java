@@ -47,6 +47,7 @@ import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.windows.InputOutput;
 
 /**
  * D-Light Target.Target to be d-lighted, it can be anything: starting from shell script to
@@ -61,8 +62,7 @@ public abstract class DLightTarget {
     //@GuardedBy("this")
     private final List<DLightTargetListener> listeners;
     private final Info info;
-    private final DLightTargetExecutionService<DLightTarget> executionService;
-
+    private final DLightTargetExecutionService<? extends DLightTarget> executionService;
 
     static {
         DLightTargetAccessor.setDefault(new DLightTargetAccessorImpl());
@@ -73,13 +73,13 @@ public abstract class DLightTarget {
      * can start and terminated target should be passed
      * @param executionService service to start and terminate target
      */
-    protected DLightTarget(DLightTarget.DLightTargetExecutionService executionService) {
+    protected DLightTarget(DLightTarget.DLightTargetExecutionService<? extends DLightTarget> executionService) {
         this.executionService = executionService;
         this.listeners = new ArrayList<DLightTargetListener>();
         this.info = new Info();
     }
 
-    private final DLightTargetExecutionService<DLightTarget> getExecutionService() {
+    private final DLightTargetExecutionService<? extends DLightTarget> getExecutionService() {
         return executionService;
     }
 
@@ -121,7 +121,7 @@ public abstract class DLightTarget {
         synchronized (this) {
             ll = listeners.toArray(new DLightTargetListener[0]);
         }
-        
+
         final CountDownLatch doneFlag = new CountDownLatch(ll.length);
 
         // Will do notification in parallel, but wait until all listeners
@@ -146,7 +146,7 @@ public abstract class DLightTarget {
 
     }
 
-    protected final String putToInfo(String name, String value){
+    protected final String putToInfo(String name, String value) {
         return info.put(name, value);
     }
 
@@ -217,10 +217,11 @@ public abstract class DLightTarget {
 
         /**
          * Start target
-         * @param target targe to start
+         * @param target target to start
          * @param executionEnvProvider  execution enviroment provider
+         * @return return I/O tab or <code>null</code> which will be used for the inout/output
          */
-        public void start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
+        public InputOutput start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
 
         /**
          * Terminate target
@@ -252,7 +253,7 @@ public abstract class DLightTarget {
     private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
 
         @Override
-        public DLightTargetExecutionService<DLightTarget> getDLightTargetExecution(DLightTarget target) {
+        public DLightTargetExecutionService<? extends DLightTarget> getDLightTargetExecution(DLightTarget target) {
             return target.getExecutionService();
         }
 
@@ -262,23 +263,20 @@ public abstract class DLightTarget {
         }
     }
 
-    public final class Info{
+    public static final class Info {
+
         private Map<String, String> map;
 
-        Info(){
+        Info() {
             map = new ConcurrentHashMap<String, String>();
         }
 
-        public Map<String, String> getInfo(){
+        public Map<String, String> getInfo() {
             return map;
         }
 
-        String put(String name, String value){
+        String put(String name, String value) {
             return map.put(name, value);
         }
-
-
-
-
     }
 }

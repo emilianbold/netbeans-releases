@@ -133,6 +133,7 @@ public class StripAction extends ContextAction {
                         }else{
                             if (HgCommand.hasHistory(root)) {
                                 FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                                // XXX containsFileOfStatus would be better
                                 if (cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0) {
                                     ConflictResolvedAction.resolved(ctx);
                                 }

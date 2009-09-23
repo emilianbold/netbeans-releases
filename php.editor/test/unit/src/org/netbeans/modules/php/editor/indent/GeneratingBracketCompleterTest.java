@@ -50,7 +50,7 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.TestBase;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -223,7 +223,7 @@ public class GeneratingBracketCompleterTest extends TestBase {
         assertNotNull(doc);
 
         doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
-        doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
+        doc.putProperty("mimeType", FileUtils.PHP_MIME_TYPE);
 //        doc.putProperty(Document.StreamDescriptionProperty, DataObject.find(info.getFileObject()));
         
         JTextArea ta = new JTextArea(doc);

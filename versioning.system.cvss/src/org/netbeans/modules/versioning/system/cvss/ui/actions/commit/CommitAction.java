@@ -136,7 +136,12 @@ public class CommitAction extends AbstractSystemAction {
         saveExclusions(settings);
 
         cmd.setMessage(settings.getCommitMessage());
-        org.netbeans.modules.versioning.util.Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, cmd.getMessage(), 20);
+        String message = cmd.getMessage();
+        org.netbeans.modules.versioning.util.Utils.insert(
+                CvsModuleConfig.getDefault().getPreferences(),
+                RECENT_COMMIT_MESSAGES,
+                message != null ? message.trim() : "",
+                20);
         if (runningName == null) {
             runningName = NbBundle.getMessage(CommitAction.class, "BK0002");  // NOI18N
         }

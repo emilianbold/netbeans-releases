@@ -48,6 +48,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.NbBundle;
@@ -92,7 +93,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
         Issue[] issues;
         switch(status) {
 
-            case Issue.ISSUE_STATUS_ALL:
+            case IssueCache.ISSUE_STATUS_ALL:
 
                 issues = query.getIssues(status);
                 return new QueryResultHandleImpl(
@@ -100,10 +101,10 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                         totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
                         Filter.getAllFilter(query));
 
-            case Issue.ISSUE_STATUS_NOT_SEEN:
+            case IssueCache.ISSUE_STATUS_NOT_SEEN:
 
                 int notIssues = 0;
-                issues = query.getIssues(Issue.ISSUE_STATUS_NOT_SEEN);
+                issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
                 if(issues == null || issues.length == 0) {
                     return null;
                 }
@@ -114,10 +115,10 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 
                 return new QueryResultHandleImpl(query, label.toString(), Filter.getNotSeenFilter());
 
-            case Issue.ISSUE_STATUS_NEW:
+            case IssueCache.ISSUE_STATUS_NEW:
 
                 int newIssues = 0;
-                issues = query.getIssues(Issue.ISSUE_STATUS_NEW);
+                issues = query.getIssues(IssueCache.ISSUE_STATUS_NEW);
                 if(issues == null || issues.length == 0) {
                     return null;
                 }

@@ -50,16 +50,14 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Milos Kleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=257)
 public class WebFrameworksPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of WebRunPanelProvider */
-    public WebFrameworksPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -68,8 +66,7 @@ public class WebFrameworksPanelProvider implements ProjectCustomizer.CompositeCa
             return ProjectCustomizer.Category.create(
                     "FRAMEWORKS", //NOI18N
                     NbBundle.getMessage(WebFrameworksPanelProvider.class, "PNL_Frameworks"),
-                    null,
-                    (ProjectCustomizer.Category[])null);
+                    null);
         }
         return null;
     }
@@ -78,10 +75,10 @@ public class WebFrameworksPanelProvider implements ProjectCustomizer.CompositeCa
         ModelHandle handle = context.lookup(ModelHandle.class);
         final Project prj = context.lookup(Project.class);
         final WebFrameworksPanel panel = new WebFrameworksPanel(category, handle, prj);
-        category.setOkButtonListener(new ActionListener() {
+        category.setStoreListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                    RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
                             panel.applyChanges();
                         }

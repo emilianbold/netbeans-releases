@@ -49,9 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
@@ -65,11 +63,11 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
  * Indicator data provider that reads CPU usage information from
@@ -229,8 +227,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable(hostInfo.getShell());
-        ExecutionDescriptor descr = new ExecutionDescriptor();
-        descr = descr.inputOutput(InputOutput.NULL);
+
         int pid = ((AttachableTarget) target).getPID();
         Engine engine;
         switch (hostInfo.getOSFamily()) {
@@ -245,9 +242,8 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
                 return;
         }
         npb = npb.setArguments("-c", engine.getCommand(pid)); // NOI18N
-        descr = descr.outProcessorFactory(engine);
-        ExecutionService service = ExecutionService.newService(npb, descr, "procreader"); // NOI18N
-        procReaderTask = service.run();
+
+        procReaderTask = NativeProcessExecutionService.newService(npb, engine, null, "procreader").start(); // NOI18N
     }
 
     /*
@@ -262,13 +258,13 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
         }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     /**
      * ProcDataProvider backend.
      */
-    /*package*/ static interface Engine extends InputProcessorFactory {
+    /*package*/ static interface Engine extends LineProcessor {
 
         String getCommand(int pid);
     }

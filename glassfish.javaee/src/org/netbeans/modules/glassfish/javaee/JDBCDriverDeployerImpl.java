@@ -88,7 +88,7 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
 
     public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {
         List urls = JDBCDriverDeployHelper.getMissingDrivers(getDriverLocations(), datasources);
-        final MonitorProgressObject startProgress = new MonitorProgressObject(dm,null, false);
+        final MonitorProgressObject startProgress = new MonitorProgressObject(dm,null);
         ProgressObject retVal = JDBCDriverDeployHelper.getProgressObject(driverLoc, urls);
         if (urls.size() > 0) {
             retVal.addProgressListener(new ProgressListener() {

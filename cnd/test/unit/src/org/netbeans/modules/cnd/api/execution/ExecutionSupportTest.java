@@ -64,6 +64,39 @@ public class ExecutionSupportTest extends NbTestCase {
         super.tearDown();
     }
 
+    public void testExecutionSupport1() throws Exception {
+        String source = "CXX=CC CFLAGS=\"-g -xinstrument=datarace\" CXXFLAGS=\"-g -xinstrument=datarace\"";
+        List<String> res = ImportUtils.parseEnvironment(source);
+        assert res.size() == 3;
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i == 0) {
+                assert "CXX=CC".equals(p);
+            } else if (i == 1) {
+                assert "CFLAGS=-g -xinstrument=datarace".equals(p);
+            } else if (i == 2) {
+                assert "CXXFLAGS=-g -xinstrument=datarace".equals(p);
+            }
+        }
+        res = ImportUtils.quoteList(res);
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i == 0) {
+                assert "CXX=CC".equals(p);
+            } else if (i == 1) {
+                assert "CFLAGS=\"-g -xinstrument=datarace\"".equals(p);
+            } else if (i == 2) {
+                assert "CXXFLAGS=\"-g -xinstrument=datarace\"".equals(p);
+            }
+        }
+    }
+
     public void testExecutionSupport() throws Exception {
         String source = "configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\"";
         List<String> res = ImportUtils.parseEnvironment(source);
@@ -113,4 +146,5 @@ public class ExecutionSupportTest extends NbTestCase {
 //            }
 //        }
     }
+
 }

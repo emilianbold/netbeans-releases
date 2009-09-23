@@ -74,6 +74,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class InteceptorTest extends NbTestCase {
+    public static final String PROVIDED_EXTENSIONS_IS_VERSIONED = "ProvidedExtensions.VCSManaged";
+    public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
    
     private File dataRootDir;
     private FileStatusCache cache;
@@ -106,7 +108,7 @@ public class InteceptorTest extends NbTestCase {
         repo2Dir = new File(dataRootDir, "repo2");
         repo2Url = new SVNUrl(TestUtilities.formatFileURL(repo2Dir));
 
-        System.setProperty("netbeans.user", System.getProperty("data.root.dir") + "/cache");
+        System.setProperty("netbeans.user", System.getProperty("data.root.dir") + "/userdir");
         cache = Subversion.getInstance().getStatusCache();
         cache.cleanUp();
         
@@ -136,15 +138,15 @@ public class InteceptorTest extends NbTestCase {
 
         suite.addTest(getAttributeSuite());
 
-        suite.addTest(createSuite());
-
-        suite.addTest(deleteSuite());
-
-        suite.addTest(renameViaDataObjectSuite());
-        suite.addTest(renameViaFileObjectSuite());
-
-        suite.addTest(moveViaDataObjectSuite());
-        suite.addTest(moveViaFileObjectSuite());
+//        suite.addTest(createSuite());
+//
+//        suite.addTest(deleteSuite());
+//
+//        suite.addTest(renameViaDataObjectSuite());
+//        suite.addTest(renameViaFileObjectSuite());
+//
+//        suite.addTest(moveViaDataObjectSuite());
+//        suite.addTest(moveViaFileObjectSuite());
 
         return suite;
     }
@@ -153,6 +155,7 @@ public class InteceptorTest extends NbTestCase {
         TestSuite suite = new TestSuite();
         suite.addTest(new InteceptorTest("getWrongAttribute"));
         suite.addTest(new InteceptorTest("getRemoteLocationAttribute"));
+        suite.addTest(new InteceptorTest("getIsVersionedAttribute"));
         return(suite);
     }
 
@@ -268,9 +271,41 @@ public class InteceptorTest extends NbTestCase {
         file.createNewFile();
         FileObject fo = FileUtil.toFileObject(file);
 
-        String str = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
+        String str = (String) fo.getAttribute(PROVIDED_EXTENSIONS_REMOTE_LOCATION);
         assertNotNull(str);
         assertEquals(repoUrl.toString(), str);
+    }
+
+    public void getIsVersionedAttribute() throws Exception {
+        // unversioned file
+        File file = new File(dataRootDir, "unversionedfile");
+        file.createNewFile();
+        FileObject fo = FileUtil.toFileObject(file);
+
+        Boolean versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        assertFalse(versioned);
+
+        // metadata folder
+        file = new File(wc, ".svn");
+        fo = FileUtil.toFileObject(file);
+
+        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        assertTrue(versioned);
+
+        // metadata file
+        file = new File(new File(wc, ".svn"), "entries");
+        fo = FileUtil.toFileObject(file);
+
+        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        assertTrue(versioned);
+
+        // versioned file
+        file = new File(wc, "attrfile");
+        file.createNewFile();
+        fo = FileUtil.toFileObject(file);
+
+        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        assertTrue(versioned);
     }
 
     public void deleteNotVersionedFile() throws Exception {

@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -57,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.glassfish.javaee.ResourceRegistrationHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -101,10 +101,10 @@ public class FastDeploy extends IncrementalDeployment {
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
-        final MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
-        final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
-        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
-        MonitorProgressObject restartObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        final MonitorProgressObject deployProgress = new MonitorProgressObject(dm, moduleId);
+        final MonitorProgressObject updateCRProgress = new MonitorProgressObject(dm, moduleId);
+        deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
+        MonitorProgressObject restartProgress = new MonitorProgressObject(dm, moduleId);
 
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
@@ -118,21 +118,22 @@ public class FastDeploy extends IncrementalDeployment {
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
+        ResourceRegistrationHelper.deployResources(dir,dm); 
         if (restart) {
-            restartObject.addProgressListener(new ProgressListener() {
+            restartProgress.addProgressListener(new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
-                        commonSupport.deploy(progressObject, dir, moduleName);
+                        commonSupport.deploy(deployProgress, dir, moduleName);
                     } else {
-                        progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
+                        deployProgress.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
                 }
             });
-            commonSupport.restartServer(restartObject);
-            return updateCRObject;
+            commonSupport.restartServer(restartProgress);
+            return updateCRProgress;
         } else {
-            commonSupport.deploy(progressObject, dir, moduleName);
-            return updateCRObject;
+            commonSupport.deploy(deployProgress, dir, moduleName);
+            return updateCRProgress;
         }
     }
     
@@ -144,11 +145,11 @@ public class FastDeploy extends IncrementalDeployment {
      */
     public ProgressObject incrementalDeploy(final TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
         final MonitorProgressObject progressObject = new MonitorProgressObject(dm,
-                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY, targetModuleID.getChildTargetModuleID().length > 0);
+                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY);
         MonitorProgressObject restartObject = new MonitorProgressObject(dm, (Hk2TargetModuleID) targetModuleID,
-                CommandType.REDEPLOY, false);
+                CommandType.REDEPLOY);
         final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm,
-                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY, targetModuleID.getChildTargetModuleID().length > 0);
+                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY);
         progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,(Hk2TargetModuleID) targetModuleID, dm.getServerInstance(), ! (null == targetModuleID.getWebURL())));
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
@@ -170,6 +171,12 @@ public class FastDeploy extends IncrementalDeployment {
                 appChangeDescriptor.ejbsChanged() ||
                 appChangeDescriptor.manifestChanged() ||
                 appChangeDescriptor.serverDescriptorChanged();
+        
+        // this will not be a 100% catch.. but should help..
+        File[] changedFiles = appChangeDescriptor.getChangedFiles();
+        if (null != changedFiles && changedFiles.length > 0 && null != changedFiles[0])
+            ResourceRegistrationHelper.deployResources(changedFiles[0],dm);
+
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 

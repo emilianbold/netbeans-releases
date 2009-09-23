@@ -123,7 +123,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
     }
 
     @Override
-    public void invalidate() {
+    public synchronized void invalidate() {
         super.invalidate();
         pid = null;
     }
@@ -158,6 +158,8 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         cmd.append(script).append("\"; echo ExitStatus:$?\n"); // NOI18N
 
         ChannelShell channel = null;
+        PrintWriter w = null;
+
         try {
             channel = (ChannelShell) session.openChannel("shell"); // NOI18N
             channel.setPty(true);
@@ -168,7 +170,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
 
             channel.connect();
 
-            PrintWriter w = new PrintWriter(out);
+            w = new PrintWriter(out);
             w.write(cmd.toString());
             w.flush();
 
@@ -211,6 +213,10 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+
+            if (w != null) {
+                w.close();
             }
         }
     }

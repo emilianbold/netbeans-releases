@@ -117,7 +117,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubytest.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTestTemplateIterator"/>
                 <!-- Pending attribute, not yet supported - see #91580 -->
-                <attr name="templateNamePrefix" stringvalue=""/>
+                <attr name="templateNamePrefix" stringvalue="new_class_"/>
                 <attr name="isTest" boolvalue="true"/>
             </file>
             <file name="javascript.shadow">

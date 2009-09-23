@@ -48,9 +48,9 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
-import org.netbeans.modules.dlight.perfan.dataprovider.MemoryMetric;
-import org.netbeans.modules.dlight.perfan.dataprovider.THAMetric;
-import org.netbeans.modules.dlight.perfan.dataprovider.TimeMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.MemoryMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.THAMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.TimeMetric;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
 import org.openide.util.NbBundle;
@@ -74,6 +74,7 @@ public final class SunStudioDCConfiguration
     private static final String DATARACE_TABLE_NAME = "SunStudioDataRacesDetailedData"; // NOI18N
     private static final String DEADLOCKS_TABLE_NAME = "SunStudioDeadlocksDetailedData"; // NOI18N
     public static final Column c_name = new Column("name", String.class, loc("SSDataCollector.ColumnName.name"), null); // NOI18N
+    public static final Column c_address = new Column("address", String.class, loc("SSDataCollector.ColumnName.address"), null); // NOI18N
     public static final Column c_eUser =
             new Column(TimeMetric.UserFuncTimeExclusive.getMetricID(),
             TimeMetric.UserFuncTimeExclusive.getMetricValueClass(),

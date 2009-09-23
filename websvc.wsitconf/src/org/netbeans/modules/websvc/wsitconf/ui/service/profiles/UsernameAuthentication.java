@@ -238,7 +238,7 @@ public class UsernameAuthentication extends ProfileBaseForm {
     protected void enableDisable() {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysChBox.setEnabled(secConvEnabled);
-        hashPasswdChBox.setEnabled(ConfigVersion.CONFIG_1_3.equals(cfgVersion) &&
+        hashPasswdChBox.setEnabled((!ConfigVersion.CONFIG_1_0.equals(cfgVersion)) &&
                                    supportTokenCombo.getSelectedItem().equals(ComboConstants.USERNAME));
     }
     

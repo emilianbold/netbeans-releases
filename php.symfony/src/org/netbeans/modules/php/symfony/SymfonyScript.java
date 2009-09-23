@@ -72,7 +72,7 @@ import org.openide.windows.InputOutput;
 public class SymfonyScript extends PhpProgram {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
 
-    private static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
 
     public static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
     public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N

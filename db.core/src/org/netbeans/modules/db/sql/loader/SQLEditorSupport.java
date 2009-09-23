@@ -317,12 +317,15 @@ public class SQLEditorSupport extends DataEditorSupport
                     NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplaceFileTitle"),
                     NotifyDescriptor.YES_NO_OPTION);
             DialogDisplayer.getDefault().notify(confirm);
-            if (confirm.getValue().equals(NotifyDescriptor.YES_OPTION)) {
-                super.saveAs(folder, fileName);
+            if (!confirm.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                return;
             }
-        } else {
-            super.saveAs(folder, fileName);
         }
+        if (isConsole()) {
+            // #166370 - if console, need to save document before copying
+            saveDocument();
+        }
+        super.saveAs(folder, fileName);
     }
 
     /**

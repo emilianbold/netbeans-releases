@@ -398,9 +398,6 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.openide.util</code-name-base>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.form.j2ee</friend>

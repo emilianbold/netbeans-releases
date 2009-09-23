@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.j2ee.web;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
@@ -53,11 +54,8 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=301)
 public class WebRunPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of WebRunPanelProvider */
-    public WebRunPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -66,8 +64,7 @@ public class WebRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
             return ProjectCustomizer.Category.create(
                     ModelHandle.PANEL_RUN,
                     NbBundle.getMessage(WebRunPanelProvider.class, "PNL_Run"),
-                    null,
-                    (ProjectCustomizer.Category[])null);
+                    null);
         }
         return null;
     }
@@ -76,11 +73,19 @@ public class WebRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
         ModelHandle handle = context.lookup(ModelHandle.class);
         final Project prj = context.lookup(Project.class);
         final WebRunCustomizerPanel panel = new WebRunCustomizerPanel(handle, prj);
-        category.setOkButtonListener(new ActionListener() {
+        ActionListener listener = new ActionListener() {
+            private String contextPath;
             public void actionPerformed(ActionEvent arg0) {
-                panel.applyChanges();
+                if (SwingUtilities.isEventDispatchThread()) {
+                    contextPath = panel.applyChangesInAWT();
+                } else {
+                    assert contextPath != null;
+                    panel.applyChanges(contextPath);
+                }
             }
-        });
+        };
+        category.setOkButtonListener(listener);
+        category.setStoreListener(listener);
         return panel;
     }
     

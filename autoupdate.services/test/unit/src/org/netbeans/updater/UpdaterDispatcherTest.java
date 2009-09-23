@@ -76,7 +76,7 @@ public class UpdaterDispatcherTest extends NbTestCase {
         UpdaterDispatcher.touchLastModified (cluster);
         assertTrue (stamp.toString () + " exists after touch.", stamp.exists ());
         long firstTouch = stamp.lastModified ();
-        assertTrue ("Was touched", firstTouch < System.currentTimeMillis ());
+        assertTrue ("Was touched", firstTouch <= System.currentTimeMillis ());
         stamp = new File (cluster, UpdaterDispatcher.LAST_MODIFIED);
         Thread.sleep (5000);
         UpdaterDispatcher.touchLastModified (cluster);

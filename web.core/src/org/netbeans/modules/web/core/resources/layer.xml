@@ -157,7 +157,7 @@ made subject to such option by the copyright holder.
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
-      <!-- Tag Library 2.0--> 
+      <!-- Tag Library 2.1-->
       <file name="TagLibrary.tld" url="templates/BlankTagLibrary.template">
           <attr name="position" intvalue="1000"/>
                 <attr name="template" boolvalue="true"/>
@@ -165,6 +165,10 @@ made subject to such option by the copyright holder.
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagLibraryIterator"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
+      </file>
+      <!--  Tag Library 2.0 -->
+      <file name="TagLibrary_2_0.tld" url="templates/BlankTagLibrary_2_0.template">
+        <attr name="position" intvalue="0"/>
       </file>
       <!--  Tag Library 1.2 --> 
       <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template">
@@ -226,7 +230,7 @@ made subject to such option by the copyright holder.
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/webFragmentXml.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebFragmentXmlWizardIterator"/>
-        <attr name="templateCategory" stringvalue="servlet-types"/>
+        <attr name="templateCategory" stringvalue="servlet-types-j2se-only"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"/>
       </file>
     </folder>
@@ -238,11 +242,9 @@ made subject to such option by the copyright holder.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.EditQueryStringAction"/>
       </file>
     </folder>
-    <!--<folder name="System">
-      <file name="View Servlet.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
-      </file>
-    </folder>-->
+    <folder name="Edit">
+        <file name="org-netbeans-modules-web-core-jsploader-EditServletAction.instance"/>
+    </folder>
       <folder name="Tools">
             <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>

@@ -52,6 +52,7 @@ import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
@@ -86,6 +87,9 @@ public class HudsonSubversionSCM implements HudsonSCM {
                     // HUDSON-3390 would be a more attractive alternative:
                     configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("false")); // NOI18N
                     Helper.addTrigger(doc);
+                }
+                public ConfigurationStatus problems() {
+                    return null;
                 }
             };
         } catch (IOException ex) {

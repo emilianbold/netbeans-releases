@@ -63,7 +63,6 @@ public final class ExperimentStatistics {
     private final Double t_usrLock;
     private final Double t_usrLock_p;
 
-
     ExperimentStatistics(String[] toParse) {
         Double _startTime = null;
         Double _endTime = null;
@@ -97,8 +96,6 @@ public final class ExperimentStatistics {
                     _duration = parseDouble(s.substring(scidx + 1));
                 }
             } catch (NoSuchElementException ex) {
-                DLightLogger.instance.log(Level.INFO, "Failed to parse statistics line", ex); // NOI18N
-            } catch (NumberFormatException ex) {
                 DLightLogger.instance.log(Level.INFO, "Failed to parse statistics line", ex); // NOI18N
             }
         }
@@ -143,10 +140,15 @@ public final class ExperimentStatistics {
      * Some whitespace around is also allowed.
      *
      * @param val  string to parse
-     * @return parsed double value
-     * @throws NumberFormatException
+     * @return parsed double value or null is cannot parse
      */
-    private static double parseDouble(String val) {
-        return Double.parseDouble(val.replace(',', '.'));
+    private static Double parseDouble(String val) {
+        Double result = null;
+        try {
+            result = Double.parseDouble(val.replace(',', '.'));
+        } catch (NumberFormatException ex) {
+            DLightLogger.instance.log(Level.FINE, "Failed to parse double value: ", val); // NOI18N
+        }
+        return result;
     }
 }

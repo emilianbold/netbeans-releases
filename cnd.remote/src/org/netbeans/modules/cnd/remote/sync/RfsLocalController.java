@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
@@ -27,7 +27,6 @@ class RfsLocalController implements Runnable {
     private final PrintWriter err;
     private final File privProjectStorageDir;
     private final TimestampAndSharabilityFilter filter;
-    private static final Logger logger = Logger.getLogger("cnd.remote.logger"); //NOI18N
     private final Set<String> processedFiles = new HashSet<String>();
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File localDir, String remoteDir, InputStream requestStream, OutputStream responseStream, PrintWriter err, File privProjectStorageDir) {
@@ -60,12 +59,12 @@ class RfsLocalController implements Runnable {
             try {
                 String request = requestReader.readLine();
                 String remoteFile = request;
-                logger.finest("LC: REQ " + request);
+                RemoteUtil.LOGGER.finest("LC: REQ " + request);
                 if (request == null) {
                     break;
                 }
                 if (processedFiles.contains(remoteFile)) {
-                    logger.info("RC asks for file " + remoteFile + " again?!");
+                    RemoteUtil.LOGGER.info("RC asks for file " + remoteFile + " again?!");
                     respond_ok();
                     continue;
                 } else {
@@ -75,7 +74,7 @@ class RfsLocalController implements Runnable {
                     File localFile = new File(localDir, remoteFile.substring(remoteDir.length()));
                     if (localFile.exists() && !localFile.isDirectory()) {
                         if (filter.accept(localFile)) {
-                            logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
+                            RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
                             long fileTime = System.currentTimeMillis();
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 511, err);
                             try {
@@ -100,7 +99,7 @@ class RfsLocalController implements Runnable {
                                 responseStream.flush();
                             }
                         } else {
-                            logger.finest("LC: file " + localFile + " not accepted");
+                            RemoteUtil.LOGGER.finest("LC: file " + localFile + " not accepted");
                             respond_ok();
                         }
                     } else {

@@ -57,7 +57,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.jira.Jira;
@@ -94,7 +94,7 @@ public class JiraQuery extends Query {
         this.saved = saved;
         this.name = name;
         this.jiraFilter = jiraFilter;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(name));
+        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
         if(initControler) createControler(repository, this, jiraFilter);
     }
 
@@ -207,7 +207,7 @@ public class JiraQuery extends Query {
         }
     }
 
-    protected String getStoredQueryName() {
+    public String getStoredQueryName() {
         return getDisplayName();
     }
 

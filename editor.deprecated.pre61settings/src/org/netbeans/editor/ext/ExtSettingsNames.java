@@ -42,7 +42,7 @@
 package org.netbeans.editor.ext;
 
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 
 /**
 * Names of the extended editor settings.

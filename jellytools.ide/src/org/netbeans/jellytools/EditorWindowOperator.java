@@ -45,15 +45,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.openide.util.Exceptions;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -257,8 +254,7 @@ public class EditorWindowOperator {
      */
     public static void selectDocument(int index) {
         btDown().push();
-        JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
-        tableOper.selectCell(index, 0);
+        new PopupSwitcherOperator().selectItem(index);
     }
 
     /** Pushes down arrow control button in top right corner intended to 
@@ -267,29 +263,7 @@ public class EditorWindowOperator {
      */
     public static void selectDocument(String name) {
         btDown().push();
-
-
-        JComponentOperator jComp = new JComponentOperator(MainWindowOperator.getDefault());
-
-        JListOperator listOper = new JListOperator(MainWindowOperator.getDefault());
-
-        int index = listOper.findItemIndex(name);
-        if(index > -1) {
-            listOper.selectItem(index);
-        } else {
-            throw new JemmyException("Cannot select document \""+name+"\".");
-        }
-
-        /*
-        JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
-        int row = tableOper.findCellRow(name);
-        if(row > -1) {
-            tableOper.selectCell(row, 0);
-        } else {
-            throw new JemmyException("Cannot select document \""+name+"\".");
-        }
-         *
-         */
+        new PopupSwitcherOperator().selectItem(name);
     }
     
     /** Performs verification by accessing all sub-components */    

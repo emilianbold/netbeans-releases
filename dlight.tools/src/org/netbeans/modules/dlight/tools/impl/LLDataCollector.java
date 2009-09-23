@@ -51,14 +51,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -78,12 +77,12 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
  * @author Alexey Vladykin
@@ -93,21 +92,25 @@ public class LLDataCollector
         implements DataCollector<LLDataCollectorConfiguration>,
         ExecutionEnvVariablesProvider {
 
-    private EnumSet<LLDataCollectorConfiguration.CollectedData> collectedData;
+    private final Object lock = LLDataCollector.class.getName();
+    private final EnumSet<LLDataCollectorConfiguration.CollectedData> collectedData;
+    private final Set<ValidationListener> validationListeners;
+    private final String name;
     private DLightTarget target;
     private ValidationStatus validationStatus;
-    private List<ValidationListener> validationListeners;
-    private final String name;
+    private Future<Integer> monitorTask = null;
 
     public LLDataCollector(LLDataCollectorConfiguration configuration) {
         collectedData = EnumSet.of(LLDataCollectorConfigurationAccessor.getDefault().getCollectedData(configuration));
         name = LLDataCollectorConfigurationAccessor.getDefault().getName();
         validationStatus = ValidationStatus.initialStatus();
-        validationListeners = new ArrayList<ValidationListener>();
+        validationListeners = Collections.synchronizedSet(new HashSet<ValidationListener>());
     }
 
     public void addConfiguration(LLDataCollectorConfiguration configuration) {
-        collectedData.add(LLDataCollectorConfigurationAccessor.getDefault().getCollectedData(configuration));
+        synchronized (lock) {
+            collectedData.add(LLDataCollectorConfigurationAccessor.getDefault().getCollectedData(configuration));
+        }
     }
 
     public String getName() {
@@ -116,14 +119,16 @@ public class LLDataCollector
 
     public List<DataTableMetadata> getDataTablesMetadata() {
         List<DataTableMetadata> tables = new ArrayList<DataTableMetadata>();
-        if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.CPU)) {
-            tables.add(LLDataCollectorConfiguration.CPU_TABLE);
-        }
-        if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.MEM)) {
-            tables.add(LLDataCollectorConfiguration.MEM_TABLE);
-        }
-        if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.SYNC)) {
-            tables.add(LLDataCollectorConfiguration.SYNC_TABLE);
+        synchronized (lock) {
+            if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.CPU)) {
+                tables.add(LLDataCollectorConfiguration.CPU_TABLE);
+            }
+            if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.MEM)) {
+                tables.add(LLDataCollectorConfiguration.MEM_TABLE);
+            }
+            if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.SYNC)) {
+                tables.add(LLDataCollectorConfiguration.SYNC_TABLE);
+            }
         }
         return tables;
     }
@@ -133,7 +138,6 @@ public class LLDataCollector
     }
 
     public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
-        this.target = target;
         ExecutionEnvironment env = target.getExecEnv();
         if (!env.isLocal()) {
             for (Map.Entry<String, File> entry : locateProfAgents(env).entrySet()) {
@@ -143,6 +147,10 @@ public class LLDataCollector
                 upload(env, entry.getValue(), getRemoteDir(env, entry.getValue(), entry.getKey()), 0755);
                 break; // one monitor is enough
             }
+        }
+
+        synchronized (lock) {
+            this.target = target;
         }
     }
 
@@ -223,48 +231,83 @@ public class LLDataCollector
             case RUNNING:
                 startMonitor();
                 break;
+            case DONE:
+            case FAILED:
+            case STOPPED:
+            case TERMINATED:
+                stopMonitor();
+                break;
         }
     }
 
     private void startMonitor() {
-        AttachableTarget at = (AttachableTarget) target;
-        ExecutionEnvironment env = target.getExecEnv();
+        final AttachableTarget at;
+        final ExecutionEnvironment env;
+        final EnumSet<LLDataCollectorConfiguration.CollectedData> cdata;
+
+        synchronized (lock) {
+            at = (AttachableTarget) target;
+            env = target.getExecEnv();
+            cdata = collectedData.clone();
+        }
+
         NativeProcessBuilder npb = null;
+
         for (Map.Entry<String, File> entry : locateProfMonitors(env).entrySet()) {
             npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable(getRemoteDir(env, entry.getValue(), entry.getKey()) + "/" + entry.getValue().getName()); // NOI18N
             break;
         }
+
         if (npb == null) {
             DLightLogger.instance.severe("Failed to find prof_monitor"); // NOI18N
             return;
         }
+
         StringBuilder flags = new StringBuilder("-"); // NOI18N
-        if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.CPU)) {
+
+        if (cdata.contains(LLDataCollectorConfiguration.CollectedData.CPU)) {
             flags.append('c'); // NOI18N
         }
-        if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.MEM)) {
+
+        if (cdata.contains(LLDataCollectorConfiguration.CollectedData.MEM)) {
             flags.append('m'); // NOI18N
         }
-        if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.SYNC)) {
+
+        if (cdata.contains(LLDataCollectorConfiguration.CollectedData.SYNC)) {
             flags.append('s'); // NOI18N
         }
+
         npb = npb.setArguments(flags.toString(), String.valueOf(at.getPID()));
 
-        ExecutionDescriptor descr = new ExecutionDescriptor();
-        descr = descr.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+        Future<Integer> newMonitorTask = NativeProcessExecutionService.newService(npb, new MonitorOutputProcessor(), null, "monitor").start(); // NOI18N
 
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.bridge(new MonitorOutputProcessor());
+        synchronized (lock) {
+            if (monitorTask != null) {
+                stopMonitor();
             }
-        });
-        descr = descr.inputOutput(InputOutput.NULL);
 
-        ExecutionService service = ExecutionService.newService(npb, descr, "monitor"); // NOI18N
-        service.run();
+            monitorTask = newMonitorTask;
+        }
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    private void stopMonitor() {
+        final Future<Integer> monitorTaskToStop;
+
+        synchronized (lock) {
+            monitorTaskToStop = monitorTask;
+            monitorTask = null;
+        }
+
+        try {
+            if (monitorTaskToStop != null && !monitorTaskToStop.isDone()) {
+                monitorTaskToStop.cancel(true);
+            }
+        } catch (Throwable th) {
+        }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     private class MonitorOutputProcessor implements LineProcessor {
@@ -302,25 +345,31 @@ public class LLDataCollector
 
 // validation stuff ////////////////////////////////////////////////////////////
     public ValidationStatus validate(final DLightTarget objectToValidate) {
-        if (validationStatus.isValid()) {
-            return validationStatus;
+        synchronized (lock) {
+            if (validationStatus.isValid()) {
+                return validationStatus;
+            }
+
+            ValidationStatus oldStatus = validationStatus;
+            ValidationStatus newStatus = doValidation(objectToValidate);
+
+            notifyStatusChanged(oldStatus, newStatus);
+
+            validationStatus = newStatus;
+            return newStatus;
         }
-
-        ValidationStatus oldStatus = validationStatus;
-        ValidationStatus newStatus = doValidation(objectToValidate);
-
-        notifyStatusChanged(oldStatus, newStatus);
-
-        validationStatus = newStatus;
-        return newStatus;
     }
 
     public void invalidate() {
-        validationStatus = ValidationStatus.initialStatus();
+        synchronized (lock) {
+            validationStatus = ValidationStatus.initialStatus();
+        }
     }
 
     public ValidationStatus getValidationStatus() {
-        return validationStatus;
+        synchronized (lock) {
+            return validationStatus;
+        }
     }
 
     private ValidationStatus doValidation(final DLightTarget target) {
@@ -367,16 +416,14 @@ public class LLDataCollector
 
     private void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
         if (!oldStatus.equals(newStatus)) {
-            for (ValidationListener vl : validationListeners) {
+            for (ValidationListener vl : validationListeners.toArray(new ValidationListener[0])) {
                 vl.validationStateChanged(this, oldStatus, newStatus);
             }
         }
     }
 
     public void addValidationListener(ValidationListener listener) {
-        if (!validationListeners.contains(listener)) {
-            validationListeners.add(listener);
-        }
+        validationListeners.add(listener);
     }
 
     public void removeValidationListener(ValidationListener listener) {

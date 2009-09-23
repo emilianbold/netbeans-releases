@@ -46,7 +46,10 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
 /**
@@ -54,8 +57,26 @@ import org.openide.util.Parameters;
  * @author Tomas Mysik
  */
 public final class FileUtils {
+    /**
+     * Constant for PHP MIME type.
+     * @since 1.15
+     * @see #isPhpFile(FileObject)
+     */
+    public static final String  PHP_MIME_TYPE = "text/x-php5"; // NOI18N
 
     private FileUtils() {
+    }
+
+    /**
+     * Returns <code>true</code> if the file is a PHP file.
+     * @param file file to check
+     * @return <code>true</code> if the file is a PHP file
+     * @since 1.15
+     * @see #PHP_MIME_TYPE
+     */
+    public static boolean isPhpFile(FileObject file) {
+        Parameters.notNull("file", file);
+        return PHP_MIME_TYPE.equals(FileUtil.getMIMEType(file, PHP_MIME_TYPE));
     }
 
     /**
@@ -86,5 +107,23 @@ public final class FileUtils {
             }
         }
         return found;
+    }
+
+    /**
+     * Get {@link FileObject} for the given {@link Lookup context}.
+     * @param context {@link Lookup context} where the {@link FileObject} is searched for
+     * @return {@link FileObject} for the given {@link Lookup context} or <code>null</code> if not found
+     * @since 1.16
+     */
+    public static FileObject getFileObject(Lookup context) {
+        FileObject fo = context.lookup(FileObject.class);
+        if (fo != null) {
+            return fo;
+        }
+        DataObject d = context.lookup(DataObject.class);
+        if (d != null) {
+            return d.getPrimaryFile();
+        }
+        return null;
     }
 }

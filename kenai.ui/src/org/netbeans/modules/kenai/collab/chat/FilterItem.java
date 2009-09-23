@@ -45,6 +45,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,7 +54,7 @@ import org.openide.util.ImageUtilities;
 public class FilterItem {
 
     private String name;
-    private static ImageIcon GROUP = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/kenai-small.png"));
+    private static ImageIcon GROUP = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chatroom_online.png")); // NOI18N
 
     public FilterItem() {
     }
@@ -70,15 +71,15 @@ public class FilterItem {
     public String toString() {
         try {
             if (name == null) {
-                return "All";
+                return NbBundle.getMessage(FilterItem.class, "FilterItem.All"); // NOI18N
             }
-            return "<html><b>"+
+            return "<html><b>"+ // NOI18N
                     Kenai.getDefault().getProject(name).getDisplayName() +
-                    "</b></html>";
+                    "</b></html>"; // NOI18N
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return "";
+        return ""; // NOI18N
     }
 
     public Icon getIcon() {

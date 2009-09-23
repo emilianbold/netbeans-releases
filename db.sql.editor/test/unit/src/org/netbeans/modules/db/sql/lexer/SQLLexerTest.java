@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.sql.lexer;
 
 import javax.swing.text.BadLocationException;
@@ -51,44 +50,65 @@ import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
 /**
  *
- * @author Andrei Badea
+ * @author Andrei Badea, Jiri Skrivanek
  */
 public class SQLLexerTest extends NbTestCase {
-
-    // XXX turn these into proper golden file tests.
 
     public SQLLexerTest(String testName) {
         super(testName);
     }
 
     public void testSimple() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.putProperty(Language.class, SQLTokenId.language());
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence seq = hi.tokenSequence();
-        System.out.println(dumpTokens(seq));
-        assertFalse(seq.moveNext());
-        doc.insertString(0, "select -/ from 'a' + 1, dto", null);
-        seq = hi.tokenSequence();
-        System.out.println(dumpTokens(seq));
+        TokenSequence<SQLTokenId> seq = getTokenSequence("select -/ from 'a' + 1, dto");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD,
+                SQLTokenId.WHITESPACE, SQLTokenId.STRING, SQLTokenId.WHITESPACE,
+                SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.INT_LITERAL,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.WHITESPACE);
     }
 
     public void testQuotedIdentifiers() throws Exception {
-        System.out.println(dumpTokens(getTokenSequence("select \"derby\", `mysql`, [mssql], `quo + ted`")));
+        TokenSequence<SQLTokenId> seq = getTokenSequence("select \"derby\", `mysql`, [mssql], `quo + ted`");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.WHITESPACE);
     }
 
     public void testComments() throws Exception {
-        System.out.println(dumpTokens(getTokenSequence("-- line comment\n# mysql comment\n/* block \ncomment*/")));
+        TokenSequence<SQLTokenId> seq = getTokenSequence("-- line comment\n# mysql comment\n/* block \ncomment*/");
+        assertTokens(seq, SQLTokenId.LINE_COMMENT, SQLTokenId.LINE_COMMENT,
+                SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE);
     }
 
     public void testNewLineInString() throws Exception {
         TokenSequence<SQLTokenId> seq = getTokenSequence("'new\nline'");
-        assertEquals(SQLTokenId.STRING, seq.token().id());
+        assertTokens(seq, SQLTokenId.STRING, SQLTokenId.WHITESPACE);
     }
 
     public void testIncompleteString() throws Exception {
         TokenSequence<SQLTokenId> seq = getTokenSequence("'incomplete");
-        assertEquals(SQLTokenId.INCOMPLETE_STRING, seq.token().id());
+        assertTokens(seq, SQLTokenId.INCOMPLETE_STRING);
+    }
+
+    public void testEscapeSingleQuote() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("'Frank\\'s Book'");
+        assertTrue(seq.moveNext());
+        assertEquals(SQLTokenId.STRING, seq.token().id());
+        assertEquals("'Frank\\'s Book'", seq.token().text().toString());
+
+        seq = getTokenSequence("'Frank\\s Book'");
+        assertTrue(seq.moveNext());
+        assertEquals(SQLTokenId.STRING, seq.token().id());
+        assertEquals("'Frank\\s Book'", seq.token().text().toString());
+
+        seq = getTokenSequence("'Frank\\");
+        assertTokens(seq, SQLTokenId.INCOMPLETE_STRING);
+
+        seq = getTokenSequence("'Frank\\'");
+        assertTokens(seq, SQLTokenId.INCOMPLETE_STRING);
     }
 
     private static TokenSequence<SQLTokenId> getTokenSequence(String sql) throws BadLocationException {
@@ -97,13 +117,14 @@ public class SQLLexerTest extends NbTestCase {
         doc.putProperty(Language.class, SQLTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<SQLTokenId> seq = hi.tokenSequence(SQLTokenId.language());
-        seq.moveNext();
+        seq.moveStart();
         return seq;
     }
 
     private static CharSequence dumpTokens(TokenSequence<?> seq) {
+        seq.moveStart();
         StringBuilder builder = new StringBuilder();
-        Token token = null;
+        Token<?> token = null;
         while (seq.moveNext()) {
             if (token != null) {
                 builder.append('\n');
@@ -121,5 +142,17 @@ public class SQLLexerTest extends NbTestCase {
             builder.append('\'');
         }
         return builder;
+    }
+
+    private static void assertTokens(TokenSequence<SQLTokenId> seq, SQLTokenId... ids) {
+        if (ids == null) {
+            ids = new SQLTokenId[0];
+        }
+        assertEquals("Wrong token count.", ids.length, seq.tokenCount());
+        seq.moveNext();
+        for (SQLTokenId id : ids) {
+            assertEquals("Wrong token ID at index " + seq.index(), id, seq.token().id());
+            seq.moveNext();
+        }
     }
 }

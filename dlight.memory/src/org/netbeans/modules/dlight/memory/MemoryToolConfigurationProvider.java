@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.awt.Color;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -53,21 +54,20 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
-import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
+import org.netbeans.modules.dlight.util.ValueFormatter;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionName;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
@@ -99,11 +99,11 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
 
     static {
-        final Column timestampColumn = new Column("timestamp", Long.class, loc("MemoryTool.ColumnName.timestamp"), null); // NOI18N
+        final Column timestampColumn = new Column("timestamp", Time.class, loc("MemoryTool.ColumnName.timestamp"), null); // NOI18N
         final Column kindColumn = new Column("kind", Integer.class, loc("MemoryTool.ColumnName.kind"), null); // NOI18N
         final Column sizeColumn = new Column("size", Integer.class, loc("MemoryTool.ColumnName.size"), null); // NOI18N
         final Column addressColumn = new Column("address", Long.class, loc("MemoryTool.ColumnName.address"), null); // NOI18N
-        final Column stackColumn = new Column("stackid", Integer.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
+        final Column stackColumn = new Column("stackid", Long.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
 
         totalColumn = new Column("total", Integer.class, loc("MemoryTool.ColumnName.total"), null); // NOI18N
 
@@ -129,7 +129,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();
-        toolConfiguration.addDataCollectorConfiguration(dcc);
+        toolConfiguration.addDataCollectorConfiguration(dtcc);
         // it's an indicator data provider as well!
         toolConfiguration.addIndicatorDataProviderConfiguration(dtcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(
@@ -197,17 +197,18 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         indicatorColumns.addAll(Arrays.asList(totalColumn));
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
-        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION,
-                loc("indicator.title"), BINARY_ORDER, // NOI18N
-                Arrays.asList(
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("graph.description"), GraphDescriptor.Kind.LINE)), // NOI18N
-                new DataRowToMemoryPlot(indicatorColumns));
-        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
-                new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatValue(0)))); // NOI18N
+        TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
+        indicatorConfiguration.setGraphScale(BINARY_ORDER);
+        indicatorConfiguration.addTimeSeriesDescriptors(
+                new TimeSeriesDescriptor(new Color(0x53, 0x82, 0xA1), loc("graph.description"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
+        indicatorConfiguration.setDataRowHandler(new DataRowToMemory(indicatorColumns));
+        indicatorConfiguration.addDetailDescriptors(
+                new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatValue(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
-        indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
-            public String render(int value) {
+        indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
+            public String format(int value) {
                 return formatValue(value);
             }
         });
@@ -240,16 +241,23 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 metricColumn);
 
         String sql =
-                "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(size) as leak " + // NOI18N
-                "FROM mem, node AS node, func, ( " + // NOI18N
-                "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
-                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
-                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
-                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
-                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
-                " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
+                "SELECT func.func_id AS func_id, func.func_name AS func_name, node.offset AS offset, SUM(leak.size) AS leak " + // NOI18N
+                "FROM (SELECT MAX(timestamp) AS timestamp, address, SUM(kind * size) AS size FROM mem GROUP BY address HAVING SUM(kind * size) > 0) AS leak " + // NOI18N
+                "LEFT JOIN mem ON leak.timestamp = mem.timestamp AND leak.address = mem.address " + // NOI18N
+                "LEFT JOIN node ON mem.stackid = node.node_id " + // NOI18N
+                "LEFT JOIN func ON node.func_id = func.func_id " + // NOI18N
+                "GROUP BY func_id, func_name, offset " + // NOI18N
+                "ORDER BY leak DESC"; // NOI18N
+//                "SELECT func.func_id as func_id, func.func_name as func_name, node.offset as offset, SUM(size) as leak " + // NOI18N
+//                "FROM mem, node AS node, func, ( " + // NOI18N
+//                "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
+//                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
+//                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
+//                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
+//                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
+//                " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
 
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id"); // NOI18N
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "func_id"); // NOI18N
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
@@ -270,23 +278,31 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 MemoryToolConfigurationProvider.class, key, params);
     }
 
-    private static final class DataRowToMemoryPlot implements DataRowToPlot {
+    private static final class DataRowToMemory implements DataRowToTimeSeries {
 
         private final List<Column> columns;
         private int mem;
+        private long memTimestamp;
         private int max;
 
-        public DataRowToMemoryPlot(List<Column> columns) {
+        public DataRowToMemory(List<Column> columns) {
             this.columns = new ArrayList<Column>(columns);
         }
 
         public void addDataRow(DataRow row) {
+            long timestamp = DataUtil.getTimestamp(row);
             for (String columnName : row.getColumnNames()) {
                 for (Column column : columns) {
                     if (column.getColumnName().equals(columnName)) {
-                        mem = DataUtil.toInt(row.getData(columnName));
-                        if (max < mem) {
-                            max = mem;
+                        int newMem = DataUtil.toInt(row.getData(columnName));
+                        if (memTimestamp < timestamp || timestamp == -1) {
+                            mem = newMem;
+                            if (max < mem) {
+                                max = mem;
+                            }
+                            if (timestamp != -1) {
+                                memTimestamp = timestamp;
+                            }
                         }
                     }
                 }

@@ -65,6 +65,10 @@ public class LifecycleTest extends NbTestCase {
         super(testName);
     }
 
+    protected @Override int timeOut() {
+        return 300000;
+    }
+
     private IOContainer container;
     private NbIO io;
     JFrame jf = null;

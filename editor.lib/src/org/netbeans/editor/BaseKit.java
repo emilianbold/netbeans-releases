@@ -74,6 +74,8 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
@@ -82,9 +84,10 @@ import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
@@ -113,6 +116,7 @@ public class BaseKit extends DefaultEditorKit {
      */
     static ThreadLocal<Boolean> IN_PASTE = new ThreadLocal<Boolean>();
 
+    // -J-Dorg.netbeans.editor.BaseKit.level=FINEST
     private static final Logger LOG = Logger.getLogger(BaseKit.class.getName());
     
     /** split the current line at cursor position */
@@ -352,6 +356,8 @@ public class BaseKit extends DefaultEditorKit {
     
     public static final int MAGIC_POSITION_MAX = Integer.MAX_VALUE - 1;
 
+    private final SearchableKit searchableKit;
+
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
 //            String settingName = (evt != null) ? evt.getSettingName() : null;
@@ -534,6 +540,10 @@ public class BaseKit extends DefaultEditorKit {
                 kits.put(this.getClass(), this); // register itself
             }
         }
+        // Directly implementing searchable editor kit would require module dependency changes
+        // of any modules using BaseKit reference so make a wrapper instead
+        org.netbeans.modules.editor.lib2.actions.EditorActionUtilities.registerSearchableKit(this,
+                searchableKit = new SearchableKit(this));
     }
 
     /** Clone this editor kit */
@@ -691,21 +701,34 @@ public class BaseKit extends DefaultEditorKit {
     /** Creates map with [name, action] pairs from the given
     * array of actions.
     */
-    public static Map<String, Action> actionsToMap(Action[] actions) {
-        Map<String, Action> map = new HashMap<String, Action>();
+    public static void addActionsToMap(Map<String, Action> map, Action[] actions, String logActionsType) {
+        boolean fineLoggable = LOG.isLoggable(Level.FINE);
+        if (fineLoggable) {
+            LOG.fine(logActionsType + " start --------------------\n");
+        }
         for (int i = 0; i < actions.length; i++) {
             Action a = actions[i];
             if (a == null) {
-                throw new IllegalStateException("actions[] contains null at index " + i +
-                        ((i > 0) ? ". Preceding action is " + actions[i - 1] : ""));
+                LOG.info("actions[] contains null at index " + i +
+                        ((i > 0) ? ". Preceding action is " + actions[i - 1] : "."));
+                continue;
             }
             String name = (String) a.getValue(Action.NAME);
             if (name == null) {
-                throw new IllegalStateException("Null Action.NAME property of action " + a);
+                LOG.info("Null Action.NAME property of action " + a);
+                continue;
             }
+
+            if (fineLoggable) {
+                String overriding = map.containsKey(name) ? " OVERRIDING\n" : "\n"; // NOI18N
+                LOG.fine("    " + name + ": " + a + overriding); // NOI18N
+            }
+
             map.put(name, a); // NOI18N
         }
-        return map;
+        if (fineLoggable) {
+            LOG.fine(logActionsType + " end ----------------------\n");
+        }
     }
 
     /** Converts map with [name, action] back
@@ -848,7 +871,7 @@ public class BaseKit extends DefaultEditorKit {
                    removeSelectionActionDef,
                    undoActionDef,
                    redoActionDef,
-                   new ActionFactory.ToggleLineNumbersAction(),
+                   //new ActionFactory.ToggleLineNumbersAction(),
                    new NextWordAction(nextWordAction),
                    new NextWordAction(selectionNextWordAction),
                    new PreviousWordAction(previousWordAction),
@@ -895,30 +918,42 @@ public class BaseKit extends DefaultEditorKit {
     * to get basic list and then customActions are added.
     */
     public @Override final Action[] getActions() {
-        return (Action []) getActionsAndMap()[0];
+        return (Action []) addActionsToMap()[0];
     }
 
     /* package */ Map<String, Action> getActionMap() {
-        return (Map<String, Action>) getActionsAndMap()[1];
+        return (Map<String, Action>) addActionsToMap()[1];
     }
 
-    private Object[] getActionsAndMap() {
+    private Object[] addActionsToMap() {
         synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
             MimePath mimePath = MimePath.parse(getContentType());
             Action[] actions = kitActions.get(mimePath);
             Map<String, Action> actionMap = kitActionMaps.get(mimePath);
             
             if (actions == null || actionMap == null) {
-                // create map of actions
-                actions = createActions();
-                actionMap = actionsToMap(actions);
+                // Initialize actions - use the following actions:
+                // 1. Declared "global" actions (declared in the xml layer under "Editors/Actions")
+                // 2. Declared "mime-type actions (declared in the xml layer under "Editors/content-type/Actions")
+                // 3. Result of createActions()
+                // 4. Custom actions (EditorPreferencesKeys.CUSTOM_ACTION_LIST)
+                // Higher levels override actions with same Action.NAME
+                actions = getDeclaredActions(); // non-null
+                actionMap = new HashMap<String, Action>(actions.length << 1);
+                addActionsToMap(actionMap, actions, "Declared actions"); // NOI18N
+
+                Action[] createActionsMethodResult = createActions();
+                if (createActionsMethodResult != null) {
+                    addActionsToMap(actionMap, createActionsMethodResult, "Actions from createActions()"); // NOI18N
+                }
                 
                 // add custom actions
                 Action[] customActions = getCustomActions();
                 if (customActions != null) {
-                    actionMap.putAll(actionsToMap(customActions));
-                    actions = actionMap.values().toArray(new Action[actionMap.values().size()]);
+                    addActionsToMap(actionMap, customActions, "Custom actions"); // NOI18N
                 }
+
+                actions = actionMap.values().toArray(new Action[actionMap.values().size()]);
 
                 kitActions.put(mimePath, actions);
                 kitActionMaps.put(mimePath, actionMap);
@@ -931,6 +966,16 @@ public class BaseKit extends DefaultEditorKit {
             
             return new Object [] { actions, actionMap };
         }
+    }
+
+    /**
+     * Get actions declared in the xml layer. They may be overriden by result
+     * of <code>createActions()</code> and finally by result of <code>getCustomActions()</code>.
+     *
+     * @return non-null list of declared actions.
+     */
+    protected Action[] getDeclaredActions() {
+        return new Action[0];
     }
     
     /** Update the actions right after their creation was finished.
@@ -1309,7 +1354,11 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    /** Compound action that encapsulates several actions */
+    /**
+     * Compound action that encapsulates several actions
+     * @deprecated this action is no longer used.
+     */
+    @Deprecated
     public static class CompoundAction extends LocalBaseAction {
 
         Action[] actions;
@@ -1339,11 +1388,14 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    /** Compound action that gets and executes its actions
-    * depending on the kit of the component.
-    * The other advantage is that it doesn't create additional
-    * instances of compound actions.
-    */
+    /**
+     * Compound action that gets and executes its actions
+     * depending on the kit of the component.
+     * The other advantage is that it doesn't create additional
+     * instances of compound actions.
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
+    @Deprecated
     public static class KitCompoundAction extends LocalBaseAction {
 
         private String[] actionNames;
@@ -1387,7 +1439,11 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    @EditorActionRegistration(name = insertContentAction)
+    /**
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
+//    @EditorActionRegistration(name = insertContentAction)
+    @Deprecated
     public static class InsertContentAction extends LocalBaseAction {
 
         static final long serialVersionUID =5647751370952797218L;
@@ -1501,7 +1557,11 @@ public class BaseKit extends DefaultEditorKit {
       }
     }
 
-    @EditorActionRegistration(name = readOnlyAction)
+    /**
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
+    @Deprecated
+//    @EditorActionRegistration(name = readOnlyAction)
     public static class ReadOnlyAction extends LocalBaseAction {
 
         static final long serialVersionUID =9204335480208463193L;
@@ -1517,7 +1577,11 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    @EditorActionRegistration(name = writableAction)
+    /**
+     * @deprecated this action is no longer used. It is reimplemented in editor.actions module.
+     */
+    @Deprecated
+//    @EditorActionRegistration(name = writableAction)
     public static class WritableAction extends LocalBaseAction {
 
         static final long serialVersionUID =-5982547952800937954L;
@@ -2725,7 +2789,41 @@ public class BaseKit extends DefaultEditorKit {
             for(JTextComponent c : arr) {
                 c.setKeymap(keymap);
             }
+
+            searchableKit.fireActionsChange();
         }
         
     } // End of KeymapTracker class
+
+    private static final class SearchableKit implements org.netbeans.modules.editor.lib2.actions.SearchableEditorKit {
+
+        private final BaseKit baseKit;
+
+        private final ListenerList<ChangeListener> actionsListenerList = new ListenerList<ChangeListener>();
+
+        SearchableKit(BaseKit baseKit) {
+            this.baseKit = baseKit;
+        }
+
+        public Action getAction(String actionName) {
+            return baseKit.getActionByName(actionName);
+        }
+
+        public void addActionsChangeListener(ChangeListener listener) {
+            actionsListenerList.add(listener);
+        }
+
+        public void removeActionsChangeListener(ChangeListener listener) {
+            actionsListenerList.remove(listener);
+        }
+
+        void fireActionsChange() {
+            ChangeEvent evt = new ChangeEvent(this);
+            for (ChangeListener listener : actionsListenerList.getListeners()) {
+                listener.stateChanged(evt);
+            }
+        }
+
+    }
+
 }

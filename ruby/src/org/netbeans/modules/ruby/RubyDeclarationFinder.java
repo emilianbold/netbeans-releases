@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -126,15 +127,43 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
 
+    private RubyIndex rubyIndex;
+
+    private static final String PARTIAL = "partial"; //NOI18N
+    private static final String CONTROLLER = "controller"; //NOI18N
+    private static final String ACTION =  "action";//NOI18N
+    private static final String TEMPLATE = "template";//NOI18N
+    private static final String[] RAILS_TARGET_RAW_NAMES = new String[] {PARTIAL, CONTROLLER, ACTION, TEMPLATE};
+
+    private static final List<String> RAILS_TARGETS = initRailsTargets();
+
+    private static List<String> initRailsTargets() {
+        List<String> result = new ArrayList<String>(RAILS_TARGET_RAW_NAMES.length * 4);
+        for (String target : RAILS_TARGET_RAW_NAMES) {
+            result.add(":" + target + " => ");
+            result.add(":" + target + "=> ");
+            result.add(":" + target + " =>");
+            result.add(":" + target + "=>");
+        }
+        return result;
+    }
     /** Creates a new instance of RubyDeclarationFinder */
     public RubyDeclarationFinder() {
+    }
+
+    private RubyIndex getIndex(ParserResult result) {
+        if (rubyIndex == null) {
+            rubyIndex = RubyIndex.get(result);
+        }
+        return rubyIndex;
     }
 
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
         
         BaseDocument doc = (BaseDocument)document;
-        if (RubyUtils.isRhtmlDocument(doc)) {
+        FileObject fo = RubyUtils.getFileObject(document);
+        if (RubyUtils.isRhtmlDocument(doc) || (fo != null && RubyUtils.isRailsProject(fo))) {
             RailsTarget target = findRailsTarget(doc, th, lexOffset);
             if (target != null) {
                 return target.range;
@@ -223,6 +252,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     return new OffsetRange(requireStart, requireStart + require.length());
                 }
             }
+            
+            int classNameStart = LexUtilities.getClassNameStringOffset(lexOffset, th);
+            if (classNameStart != -1) {
+                String className = LexUtilities.getStringAt(lexOffset, th);
+                if (className != null) {
+                    return new OffsetRange(classNameStart, classNameStart + className.length());
+                }
+            }
         }
 
         return OffsetRange.NONE;
@@ -243,8 +280,9 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return DeclarationLocation.NONE;
             }
 
-            if (RubyUtils.isRhtmlFile(RubyUtils.getFileObject(parserResult))) {
-                DeclarationLocation loc = findRailsFile(parserResult, doc, th, lexOffset, astOffset);
+            boolean view = RubyUtils.isRhtmlFile(RubyUtils.getFileObject(parserResult));
+            if (view || RubyUtils.isRailsProject(RubyUtils.getFileObject(parserResult))) {
+                DeclarationLocation loc = findRailsFile(parserResult, doc, th, lexOffset, astOffset, view);
 
                 if (loc != DeclarationLocation.NONE) {
                     return loc;
@@ -263,7 +301,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
             Node root = AstUtilities.getRoot(parserResult);
 
-            RubyIndex index = RubyIndex.get(parserResult);
+            RubyIndex index = getIndex(parserResult);
             if (root == null) {
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
@@ -444,8 +482,18 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 Arity arity = Arity.UNKNOWN;
                 DeclarationLocation location = findMethod(parserResult, root, name, arity);
 
+                // search for AR associations
                 if (location == DeclarationLocation.NONE) {
-                    location = findInstance(parserResult, root, name);
+                    location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
+                }
+
+                // search for helpers
+                if (location == DeclarationLocation.NONE) {
+                    location = new HelpersFinder(parserResult, (SymbolNode) closest, root, path).findHelperLocation();
+                }
+
+                if (location == DeclarationLocation.NONE) {
+                    location = findInstance(parserResult, root, name, index);
                 }
 
                 if (location == DeclarationLocation.NONE) {
@@ -515,7 +563,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             }
 
                             if (location == DeclarationLocation.NONE) {
-                                location = findInstance(parserResult, root, name);
+                                location = findInstance(parserResult, root, name, index);
                             }
 
                             if (location == DeclarationLocation.NONE) {
@@ -567,7 +615,16 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                         return fix(findLocal(parserResult, method, name), parserResult);
                     }
-                }
+                } 
+            } else if (closest instanceof StrNode) {
+                    // See if the hyperlink is for the string that is the value for :class_name =>
+                    int classNameStart = LexUtilities.getClassNameStringOffset(astOffset, th);
+                    if (classNameStart != -1) {
+                        String className = LexUtilities.getStringAt(tokenOffset, th);
+                        if (className != null) {
+                            return getLocation(index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false));
+                        }
+                    }
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
@@ -636,7 +693,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return classDeclarationLocation;
     }
 
-    private static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
+    static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
         DeclarationLocation loc = DeclarationLocation.NONE;
         for (IndexedElement element : elements) {
             FileObject fo = element.getFileObject();
@@ -650,6 +707,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     offset = AstUtilities.getRange(node).getStart();
                 }
                 loc = new DeclarationLocation(fo, offset, element);
+                loc.addAlternative(new RubyAltLocation(element, false));
             } else {
                 AlternativeLocation alternate = new RubyAltLocation(element, false);
                 loc.addAlternative(alternate);
@@ -658,31 +716,20 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return loc;
     }
 
-    private DeclarationLocation findRailsFile(ParserResult info, BaseDocument doc, TokenHierarchy<Document> th, int lexOffset, int astOffset) {
+    private DeclarationLocation findRailsFile(ParserResult info, BaseDocument doc, 
+            TokenHierarchy<Document> th, int lexOffset, int astOffset, boolean fromView) {
         RailsTarget target = findRailsTarget(doc, th, lexOffset);
         if (target != null) {
             String type = target.type;
-            if (type.indexOf("partial") != -1) { // NOI18N
-                
+            if (type.indexOf(PARTIAL) != -1 || type.indexOf(TEMPLATE) != -1) { // NOI18N
+
+                boolean template = type.indexOf(TEMPLATE) != -1;
                 FileObject dir;
                 String name;
                 int slashIndex = target.name.lastIndexOf('/');
                 if (slashIndex != -1) {
                     
-                    // Find app dir, and build up a relative path to the view file in the process
-                    FileObject app = RubyUtils.getFileObject(info);
-
-                    while (app != null) {
-                        if (app.getName().equals("views") && // NOI18N
-                                ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
-                            app = app.getParent();
-
-                            break;
-                        }
-
-                        app = app.getParent();
-                    }
-                    
+                    FileObject app = RubyUtils.getAppDir(RubyUtils.getFileObject(info));
                     if (app == null) {
                         return DeclarationLocation.NONE;
                     }
@@ -692,21 +739,26 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     if (dir == null) {
                         return DeclarationLocation.NONE;
                     }
-                    name = "_" + target.name.substring(slashIndex+1); // NOI18N
+                    name = target.name.substring(slashIndex+1); // NOI18N
                     
                 } else {
-                    dir = RubyUtils.getFileObject(info);
-                    name = "_" + target.name; // NOI18N
+                    dir = RubyUtils.getFileObject(info).getParent();
+                    name = target.name; // NOI18N
+                }
+
+                if (!template) {
+                    name = "_" + name;
                 }
                 
                 // Try to find the partial file
-                // TODO - any other filetypes I should check
-                String[] extensions = { ".rhtml", ".erb", ".html.erb" }; // NOI18N
-                FileObject partial = null;
-                for (String ext : extensions) {
-                    partial = dir.getFileObject(name + ext);
-                    if (partial != null) {
-                        break;
+                FileObject partial = dir.getFileObject(name);
+                // try extensions
+                if (partial == null) {
+                    for (String ext : RubyUtils.RUBY_VIEW_EXTS) {
+                        partial = dir.getFileObject(name + ext);
+                        if (partial != null) {
+                            break;
+                        }
                     }
                 }
                 if (partial == null) {
@@ -723,7 +775,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     return new DeclarationLocation(partial, 0);
                 }
                 
-            } else if (type.indexOf("controller") != -1 || type.indexOf("action") != -1) { // NOI18N
+            } else if (type.indexOf(CONTROLLER) != -1 || type.indexOf(ACTION) != -1) { // NOI18N
                 // Look for the controller file in the corresponding directory
                 FileObject file = RubyUtils.getFileObject(info);
                 file = file.getParent();
@@ -731,7 +783,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                 String action = null;
                 String fileName = file.getName();
-                boolean isController = type.indexOf("controller") != -1; // NOI18N
+                boolean isController = type.indexOf(CONTROLLER) != -1; // NOI18N
                 String path = ""; // NOI18N
                 if (isController) {
                     path = target.name;
@@ -757,6 +809,22 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 }
                 if (controllerAction[1] != null) {
                     action = controllerAction[1];
+                }
+
+                if (!fromView) {
+                    // uh, this is getting really messy - hard to add funtionality here
+                    // without breaking existing functionality. this an attempt to fix
+                    // IZ 172679 w/o affect navigation from views. the class is in
+                    // need of serious refactoring.
+                    String controllerName = null;
+                    if (controllerAction[0] != null) {
+                        controllerName = controllerAction[0];
+                    } else if (isController) {
+                        controllerName = target.name;
+                    } else {
+                        controllerName = RubyUtils.getFileObject(info).getName();
+                    }
+                    return findActionLocation(asControllerClass(controllerName), action, info);
                 }
 
                 // Find app dir, and build up a relative path to the view file in the process
@@ -793,7 +861,18 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         
         return DeclarationLocation.NONE;
     }
-    
+
+    private static String asControllerClass(String controllerName) {
+        String suffix = controllerName.endsWith("_controller") ? "" : "_controller";//NOI18N
+        return RubyUtils.underlinedNameToCamel(controllerName + suffix);
+    }
+
+    private DeclarationLocation findActionLocation(String controllerName, String actionName, ParserResult result) {
+        RubyIndex index = getIndex(result);
+        Set<IndexedMethod> methods = index.getMethods(actionName, controllerName, QuerySupport.Kind.EXACT);
+        return getLocation(methods);
+    }
+
     /** Locate the :action and :controller strings in the hash list that is under the
      * given offsets
      * @return A string[2] where string[0] is the controller or null, and string[1] is the
@@ -869,6 +948,16 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         String type;
     }
 
+    private boolean fastCheckIsRailsTarget(String s) {
+        for (String targetName : RAILS_TARGET_RAW_NAMES) {
+            if (s.indexOf(targetName) != -1) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
     private RailsTarget findRailsTarget(BaseDocument doc, TokenHierarchy<Document> th, int lexOffset) {
         try {
             doc.readLock();
@@ -877,14 +966,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             if (begin != -1) {
                 int end = Utilities.getRowEnd(doc, lexOffset);
                 String s = doc.getText(begin, end-begin); // TODO - limit to a narrower region around the caret?
-                if (!(s.indexOf(":partial") != -1 || s.indexOf(":controller") != -1 || s.indexOf(":action") != -1)) { // NOI18N
+                if (!fastCheckIsRailsTarget(s)) {
                     return null;
                 }
-                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
-                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
-                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
-                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
-                for (String target : targets) {
+                for (String target : RAILS_TARGETS) {
                     int index = s.indexOf(target);
                     if (index != -1) {
                         // Find string
@@ -1280,7 +1365,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 // but to attributes as well - in Rails' initializer.rb this is used
                 // in a number of places.
                 if (loc == DeclarationLocation.NONE) {
-                    loc = findInstance(info, root, "@" + method);
+                    loc = findInstance(info, root, "@" + method, index);
                 }
 
                 return loc;
@@ -1318,7 +1403,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         Node closest = root;
         int astOffset = 0;
         int lexOffset = 0;
-        RubyIndex index = RubyIndex.get(info);
+        RubyIndex index = getIndex(info);
 
         if (root == null) {
             return DeclarationLocation.NONE;
@@ -1333,7 +1418,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             // but to attributes as well - in Rails' initializer.rb this is used
             // in a number of places.
             if (loc == DeclarationLocation.NONE) {
-                loc = findInstance(info, root, "@" + method);
+                loc = findInstance(info, root, "@" + method, index);
             }
 
             return loc;
@@ -1784,7 +1869,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return DeclarationLocation.NONE;
     }
 
-    private DeclarationLocation findInstance(ParserResult info, Node node, String name) {
+    private DeclarationLocation findInstance(ParserResult info, Node node, String name, RubyIndex index) {
         if (node instanceof InstAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
                 return getLocation(info, node);
@@ -1803,7 +1888,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 if (name.equals(symbols[i].getName())) {
                     Node root = AstUtilities.getRoot(info);
                     DeclarationLocation location =
-                            findInstanceFromIndex(info, name, new AstPath(root, node), RubyIndex.get(info), true);
+                            findInstanceFromIndex(info, name, new AstPath(root, node), index, true);
                     if (location != DeclarationLocation.NONE) {
                         return location;
                     }
@@ -1818,7 +1903,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             if (child.isInvisible()) {
                 continue;
             }
-            DeclarationLocation location = findInstance(info, child, name);
+            DeclarationLocation location = findInstance(info, child, name, index);
 
             if (location != DeclarationLocation.NONE) {
                 return location;

@@ -67,7 +67,11 @@ final class RunFilePanel extends javax.swing.JPanel {
         if (args != null) {
             runArgsField.setText(args.getRunArgs());
             jvmArgsField.setText(args.getJvmArgs());
-            platformCombo.setSelectedItem(args.getPlatform());
+            rubyOptionsField.setText(args.getRubyOpts());
+            workDirField.setText(args.getWorkDir());
+            if (args.getPlatform() != null) {
+                platformCombo.setSelectedItem(args.getPlatform());
+            }
         }
         platformCombo.setEnabled(allowPlatformChange);
         platformLabel.setEnabled(allowPlatformChange);
@@ -75,7 +79,8 @@ final class RunFilePanel extends javax.swing.JPanel {
     }
 
     RunFileActionProvider.RunFileArgs getArgs() {
-        return new RunFileActionProvider.RunFileArgs(getPlatform(), getRunArgs(), getJvmArgs(), !displayDialog.isSelected());
+        return new RunFileActionProvider.RunFileArgs(getPlatform(), getRunArgs(),
+                getJvmArgs(), getRubyOpts(), getWorkDir(), !displayDialog.isSelected());
     }
     
     private void initJvmArgs() {
@@ -91,6 +96,14 @@ final class RunFilePanel extends javax.swing.JPanel {
 
     private String getRunArgs() {
         return runArgsField.getText();
+    }
+
+    private String getRubyOpts() {
+        return rubyOptionsField.getText();
+    }
+
+    private String getWorkDir() {
+        return workDirField.getText();
     }
 
     private RubyPlatform getPlatform() {
@@ -114,6 +127,10 @@ final class RunFilePanel extends javax.swing.JPanel {
         jvmArgsLabel = new javax.swing.JLabel();
         jvmArgsField = new javax.swing.JTextField();
         displayDialog = new javax.swing.JCheckBox();
+        rubyOptionsField = new javax.swing.JTextField();
+        rubyOptionsLabel = new javax.swing.JLabel();
+        workDirField = new javax.swing.JTextField();
+        workDirLabel = new javax.swing.JLabel();
 
         platformLabel.setLabelFor(platformCombo);
         org.openide.awt.Mnemonics.setLocalizedText(platformLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.platformLabel.text")); // NOI18N
@@ -153,6 +170,16 @@ final class RunFilePanel extends javax.swing.JPanel {
             }
         });
 
+        rubyOptionsField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.rubyOptionsField.text")); // NOI18N
+
+        rubyOptionsLabel.setLabelFor(rubyOptionsField);
+        org.openide.awt.Mnemonics.setLocalizedText(rubyOptionsLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.rubyOptionsLabel.text")); // NOI18N
+
+        workDirField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.workDirField.text")); // NOI18N
+
+        workDirLabel.setLabelFor(workDirField);
+        org.openide.awt.Mnemonics.setLocalizedText(workDirLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.workDirLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -162,19 +189,22 @@ final class RunFilePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rubyOptionsLabel)
+                            .add(workDirLabel)
                             .add(platformLabel)
-                            .add(runArgsLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(runArgsLabel)
+                            .add(jvmArgsLabel))
+                        .add(16, 16, 16)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
+                            .add(jvmArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(platformCombo, 0, 212, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(managePlatformsButton))
-                            .add(runArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(jvmArgsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jvmArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                            .add(workDirField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                            .add(rubyOptionsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
                     .add(displayDialog))
                 .addContainerGap())
         );
@@ -191,12 +221,20 @@ final class RunFilePanel extends javax.swing.JPanel {
                     .add(runArgsLabel)
                     .add(runArgsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(workDirLabel)
+                    .add(workDirField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rubyOptionsLabel)
+                    .add(rubyOptionsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jvmArgsLabel)
                     .add(jvmArgsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(displayDialog)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(18, 18, 18))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -224,8 +262,12 @@ final class RunFilePanel extends javax.swing.JPanel {
     private javax.swing.JButton managePlatformsButton;
     private javax.swing.JComboBox platformCombo;
     private javax.swing.JLabel platformLabel;
+    private javax.swing.JTextField rubyOptionsField;
+    private javax.swing.JLabel rubyOptionsLabel;
     private javax.swing.JTextField runArgsField;
     private javax.swing.JLabel runArgsLabel;
+    private javax.swing.JTextField workDirField;
+    private javax.swing.JLabel workDirLabel;
     // End of variables declaration//GEN-END:variables
 
 }

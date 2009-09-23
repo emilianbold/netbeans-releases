@@ -462,6 +462,9 @@ public class MakeConfiguration extends Configuration {
             // Error
             return;
         }
+        if (project == null) {
+            return; // IZ 172628 (basedir is a valid directory but doesn't contain a project!)
+        }
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
 

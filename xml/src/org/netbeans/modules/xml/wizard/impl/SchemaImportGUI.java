@@ -238,8 +238,13 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
                 DataFolder folder = templateWizard.getTargetFolder();
                 Project project = FileOwnerQuery.getOwner(folder.getPrimaryFile());
                 SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
-                Set refProjects= provider.getSubprojects();
-                Iterator it = refProjects.iterator();
+
+                Set refProjects = null;
+                Iterator it = null;
+                if (provider != null) {
+                    refProjects = provider.getSubprojects();
+                    it = refProjects.iterator();
+                }
 
                 Node[] rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
                 LogicalViewProvider viewProvider = (LogicalViewProvider) project.getLookup().lookup(LogicalViewProvider.class);

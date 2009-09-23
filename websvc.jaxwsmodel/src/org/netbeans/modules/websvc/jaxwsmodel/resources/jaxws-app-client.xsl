@@ -48,6 +48,14 @@ made subject to such option by the copyright holder.
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:param name="jaxwsversion">jaxws21lib</xsl:param>
     <xsl:template match="/">
+
+        <xsl:comment><![CDATA[
+        *** GENERATED FROM jax-ws.xml - DO NOT EDIT !                             ***
+        *** TO MODIFY wsimport options USE Web Service node -> Edit WS Attributes ***
+        *** TO CHANGE TARGETS GENERATED TO jaxws-build.xml COPY THOSE             ***
+        *** TARGETS TO ../build.xml AND MODIFY THAT FILE INSTEAD                  ***
+
+        ]]></xsl:comment>
         
         <project>        
             
@@ -127,6 +135,13 @@ made subject to such option by the copyright holder.
                             <include name="**/*.java"/>
                         </fileset>
                     </copy>
+                    <xsl:if test="jaxws:binding">
+                        <copy todir="${{classes.dir}}">
+                            <fileset dir="${{build.generated.dir}}/jax-wsCache/{$wsname}">
+                                <include name="**/*.xml"/>
+                            </fileset>
+                        </copy>
+                    </xsl:if>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
                     <delete dir="${{build.generated.dir}}/jax-wsCache/{$wsname}"/>

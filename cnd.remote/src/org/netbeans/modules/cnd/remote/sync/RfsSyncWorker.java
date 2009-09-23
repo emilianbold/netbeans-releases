@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.io.NullInputStream;
 
 /**
  *
@@ -74,19 +73,26 @@ class RfsSyncWorker extends ZipSyncWorker {
         }
     }
 
-    public RfsSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        super(localDir, executionEnvironment, out, err, privProjectStorageDir);        
+    public RfsSyncWorker( ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+        super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
     }
 
     @Override
-    protected Zipper createZipper(File zipFile) {
+    protected Zipper createZipper(File zipFile) throws FileNotFoundException {
         return new Zipper(zipFile) {
             @Override
             protected InputStream getFileInputStream(File file) throws FileNotFoundException {
                 if (allAtOnce) {
                     return super.getFileInputStream(file);
                 } else {
-                    return new NullInputStream();
+                    // Fooling SunStudio dmake, which (in some circumstances) does not open file with zero length
+                    long size;
+                    if (Boolean.getBoolean("cnd.rfs.ss.hack")) {
+                        size = file.length();
+                    } else {
+                        size = 0;
+                    }
+                    return new DummyInputStream(' ', size); // NOI18N
                 }
             }
 
@@ -105,7 +111,7 @@ class RfsSyncWorker extends ZipSyncWorker {
 
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
-        lastParameters = new Parameters(localDir, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
+        lastParameters = new Parameters(topLocalDir, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
         super.synchronizeImpl(remoteDir);
     }
 
@@ -131,5 +137,26 @@ class RfsSyncWorker extends ZipSyncWorker {
             // do nothing, since fake (empty) fies were sent!
         }
 
+    }
+
+    private static class DummyInputStream extends InputStream {
+        private final char filler;
+        private final long size;
+        private long curr;
+
+        public DummyInputStream(char filler, long size) {
+            this.filler = filler;
+            this.size = size;
+            this.curr = 0;
+        }
+
+        public int read() throws IOException {
+            if (curr < size) {
+                curr++;
+                return filler;
+            } else {
+                return -1;
+            }
+        }
     }
 }

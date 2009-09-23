@@ -100,6 +100,7 @@ public abstract class RestSupport {
     public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";//NOI18N
     public static final String PROP_RESTBEANS_TEST_URL = "restbeans.test.url";//NOI18N
     public static final String PROP_BASE_URL_TOKEN = "base.url.token";//NOI18N
+    public static final String PROP_APPLICATION_PATH = "rest.application.path";//NOI18N
     public static final String BASE_URL_TOKEN = "___BASE_URL___";//NOI18N
     public static final String RESTBEANS_TEST_DIR = "build/generated-sources/rest-test";//NOI18N
     public static final String COMMAND_TEST_RESTBEANS = "test-restbeans";//NOI18N
@@ -117,7 +118,7 @@ public abstract class RestSupport {
     public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";//NOI18N
     public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";//NOI18N
     public static final String REST_API_JAR = "jsr311-api.jar";//NOI18N
-    public static final String REST_RI_JAR = "jersey.jar";//NOI18N
+    public static final String REST_RI_JAR = "jersey";//NOI18N
     public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
     public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";//NOI18N
     public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18
@@ -669,6 +670,10 @@ public abstract class RestSupport {
 
     public boolean isServerGFV2() {
         return GFV2_SERVER_TYPE.equals(getServerType());
+    }
+
+    public String getApplicationPath() throws IOException {
+        return "/resources"; // default application path
     }
 }
 

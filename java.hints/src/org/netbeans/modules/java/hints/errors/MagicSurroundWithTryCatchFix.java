@@ -78,6 +78,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
@@ -175,7 +176,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                     }
 
                     if (!createNewTryCatch) {
-                    //only add catches for uncatched exceptions:
+                    //only add catches for uncaught exceptions:
                     new TransformerImpl(wc, thandles, streamAlike, statement).scan(catchTree, null);
                     }
                 } else {
@@ -190,6 +191,8 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                             && blockTree.getLeaf().getKind() != Kind.BLOCK)
                         blockTree = blockTree.getParentPath();
 
+                    GeneratorUtilities.get(wc).importComments(blockTree.getLeaf(), blockTree.getCompilationUnit());
+                    
                     new TransformerImpl(wc, thandles, streamAlike, statement).scan(blockTree, null);
                 }
             }
@@ -391,7 +394,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             return null;
         }
 
-        if (!GeneratorUtils.supportsOverride(info.getFileObject())) {
+        if (!GeneratorUtils.supportsOverride(info)) {
             return null;
         }
 

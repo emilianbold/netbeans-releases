@@ -81,6 +81,15 @@ public class LicenseImpl extends POMComponentImpl implements License {
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    public String getComments() {
+        return getChildElementText(getModel().getPOMQNames().COMMENTS.getQName());
+    }
+
+    public void setComments(String comments) {
+        setChildElementText(getModel().getPOMQNames().COMMENTS.getName(), comments,
+                getModel().getPOMQNames().COMMENTS.getQName());
+    }
+
     public static class List extends ListImpl<License> {
         public List(POMModel model, Element element) {
             super(model, element, model.getPOMQNames().LICENSE, License.class);

@@ -41,11 +41,17 @@
 
 package org.netbeans.modules.ruby.hints.infrastructure;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Represents a rule to be run on the source file, passing in some
@@ -54,7 +60,9 @@ import org.netbeans.modules.csl.api.Rule.AstRule;
  * @author Tor Norbye
  */
 public abstract class RubyAstRule implements AstRule {
-    
+
+    // caches index for the current file
+    private final Map<FileObject, RubyIndex> indexHolder = new HashMap<FileObject, RubyIndex>(1);
     /** 
      * Get the ElementKinds this rule should run on.
      * The integers should correspond to values in {@link org.jrubyparser.ast.NodeTypes}
@@ -66,4 +74,21 @@ public abstract class RubyAstRule implements AstRule {
      * warrnings to be shown in the editor.
      */
     public abstract void run(RubyRuleContext context, List<Hint> result);
+
+    /**
+     * Gets the index for the given info (cached for the current file).
+     * @param info
+     * @return
+     */
+    protected final RubyIndex getIndex(ParserResult info) {
+        assert indexHolder.size() <= 1;
+        FileObject fo = RubyUtils.getFileObject(info);
+        RubyIndex result = indexHolder.get(fo);
+        if (result == null) {
+            indexHolder.clear();
+            result = RubyIndex.get(info);
+            indexHolder.put(fo, result);
+        }
+        return result;
+    }
 }

@@ -44,6 +44,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 
 import org.netbeans.editor.Utilities;
@@ -58,7 +60,8 @@ import org.openide.windows.TopComponent;
 
 /**
  * Rails action for jumping to the action corresponding to a view, or the
- * view corresponding to an action.
+ * view corresponding to an action. Handles also views/actions for ActionMailer
+ * model classes.
  * 
  * @author Tor Norbye
  */
@@ -104,6 +107,10 @@ public class GotoActionView extends AbstractAction {
             String name = fo.getName();
             if (name.endsWith("_controller") || name.endsWith("_helper")) { // NOI18N
                 return true;
+            //enable for models too (needed for ActionMailer subclasses --
+             // would be more exact to use the index, but that could be slow)
+            } else if (isModel(fo)) {
+                return true;
             } else {
                 String ext = fo.getExt();
                 if (!(ext.equals("rb"))) {
@@ -113,13 +120,41 @@ public class GotoActionView extends AbstractAction {
                         }
                     }
                 }
-                return false;
             }
+            return false;
         } else if ("haml".equals(fo.getExt())) { // Not recognized as a Ruby file yet
             return true;
         } else {
             return false;
         }
+    }
+
+    private boolean isModel(FileObject fo) {
+        FileObject parent = fo.getParent();
+        if (parent == null) {
+            return false;
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        while (parent != null && !isProjectDir(project, parent) && !"app".equals(parent.getName())) { //NOI18N
+            FileObject grandParent = parent.getParent();
+            if (grandParent == null) {
+                break;
+            }
+            if ("models".equals(parent.getName()) && "app".equals(grandParent.getName())) { //NOI18N
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
+    }
+
+    // to avoid unnecessarily traversing all the way to the root dir
+    private static boolean isProjectDir(Project project, FileObject fo) {
+        // the file is not part of a project, so no shortcut for us
+        if (project == null) {
+            return false;
+        }
+        return project.getProjectDirectory().equals(fo);
     }
 
     public void actionPerformed(ActionEvent ev) {
@@ -136,9 +171,11 @@ public class GotoActionView extends AbstractAction {
 
             // See if it's a controller:
             if (fo.getName().endsWith("_controller")) { // NOI18N
-                gotoView(target, fo, false, "_controller"); // NOI18N
+                gotoView(target, fo, "_controller", "controllers"); // NOI18N
             } else if (fo.getName().endsWith("_helper")) { // NOI18N
-                gotoView(target, fo, true, "_helper"); // NOI18N
+                gotoView(target, fo, "_helper", "helpers"); // NOI18N
+            } else if (isModel(fo)) { // possibly an action mailer model class
+                gotoView(target, fo, "", "models"); // NOI18N
             } else {
                 if (RubyUtils.isRhtmlFile(fo)) {
                     gotoAction(target, fo);
@@ -166,9 +203,9 @@ public class GotoActionView extends AbstractAction {
      * Move from something like app/controllers/credit_card_controller.rb#debit()
      * to app/views/credit_card/debit.rhtml
      */
-    private void gotoView(JTextComponent target, FileObject file, boolean isHelper, String fileSuffix) {
+    private void gotoView(JTextComponent target, FileObject file,  String fileSuffix, String parentAppDir) {
         // This should be a view.
-        if (!file.getName().endsWith(fileSuffix)) {
+        if (!file.getName().endsWith(fileSuffix) && !isModel(file)) {
             Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "AppliesToActions"));
 
             return;
@@ -184,7 +221,7 @@ public class GotoActionView extends AbstractAction {
         // Get the name of the method corresponding to the offset
         String methodName = AstUtilities.getMethodName(controllerFile, offset);
 
-        FileObject viewFile = RubyUtils.getRailsViewFor(file, methodName, isHelper, false);
+        FileObject viewFile = RubyUtils.getRailsViewFor(file, methodName, fileSuffix, parentAppDir, false);
 
         if (viewFile == null) {
             notFound(target);
@@ -212,8 +249,8 @@ public class GotoActionView extends AbstractAction {
             return;
         }
 
-        String action = file.getName();
         FileObject controllerFile = RubyUtils.getRailsControllerFor(file);
+        String action = getActionName(file);
 
         if (controllerFile == null) {
             notFound(target);
@@ -225,5 +262,16 @@ public class GotoActionView extends AbstractAction {
         int offset = AstUtilities.findOffset(controllerFile, action);
 
         GsfUtilities.open(controllerFile, offset, "def " + action); // NOI18N
+    }
+
+    private String getActionName(FileObject view) {
+        String action = view.getName();
+        // handle cases like mailer_view.text.html.rhtml
+        int dot = action.indexOf(".");
+        if (dot != -1) {
+            action = action.substring(0, dot);
+        }
+        return action;
+
     }
 }

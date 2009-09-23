@@ -203,6 +203,12 @@ public abstract class BaseFileObj extends FileObject {
     public final boolean isRoot() {
         return false;
     }
+
+    public final java.util.Date lastModified() {
+        final File f = getFileName().getFile();
+        final long lastModified = f.lastModified();
+        return new Date(lastModified);
+    }
      
     @Override
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
@@ -346,10 +352,7 @@ public abstract class BaseFileObj extends FileObject {
         if (attrName.equals("FileSystem.rootPath")) {
             return "";//NOI18N
         } else if (attrName.equals("java.io.File")) {
-            File file = getFileName().getFile();
-            if (file != null && FileChangedManager.getInstance().exists(file)) {
-                return file;
-            }
+            return getFileName().getFile();
         } else if (attrName.equals("ExistsParentNoPublicAPI")) {
             return getExistingParent() != null;
         } else if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
@@ -377,6 +380,16 @@ public abstract class BaseFileObj extends FileObject {
 
     public final void removeFileChangeListener(final org.openide.filesystems.FileChangeListener fcl) {
         getEventSupport().remove(FileChangeListener.class, fcl);
+    }
+
+    @Override
+    public void addRecursiveListener(FileChangeListener fcl) {
+        addFileChangeListener(fcl);
+    }
+    
+    @Override
+    public void removeRecursiveListener(FileChangeListener fcl) {
+        removeFileChangeListener(fcl);
     }
 
     private Enumeration getListeners() {
@@ -616,10 +629,12 @@ public abstract class BaseFileObj extends FileObject {
                 }
             }
         } finally {
-            if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-            setValid(false);
+            if (mutexPrivileged != null) {
+                mutexPrivileged.exitWriteAccess();
+            }
         }
 
+        setValid(false);
         fireFileDeletedEvent(false);
 
     }

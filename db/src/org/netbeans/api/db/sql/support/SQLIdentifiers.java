@@ -28,10 +28,12 @@
 
 package org.netbeans.api.db.sql.support;
 
+import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
 /**
@@ -220,6 +222,22 @@ public final class SQLIdentifiers {
                 return true;
             } else if ( caseRule == LC_RULE && containsUpperCase(identifier)) {
                 return true;
+            }
+
+            // Quote SQL keywords (#121018)
+            // TODO - use simply this when API is fixed
+            //if (SQLKeywords.isSQL99Keyword(identifier)) {
+            //  return true;
+            //}
+            try {
+                ClassLoader systemLoader = Lookup.getDefault().lookup(ClassLoader.class);
+                Class<?> cl = Class.forName("org.netbeans.modules.db.api.sql.SQLKeywords", false, systemLoader);  //NOI18N
+                Method m = cl.getDeclaredMethod("isSQL99Keyword", String.class);  //NOI18N
+                if ((Boolean) m.invoke(null, identifier)) {
+                    return true;
+                }
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, "SQLKeywords class cannot be used.", ex);
             }
 
             return false;

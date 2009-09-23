@@ -44,7 +44,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
@@ -72,6 +73,7 @@ public class BugzillaAutoupdate {
     static final String BUGZILLA_MODULE_CODE_NAME = "org.netbeans.modules.bugzilla"; // NOI18N
 
     private static Map<String, Long> lastChecks = null;
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
 
     /**
      * Checks if the remote Bugzilla repository has a version higher then actually
@@ -115,7 +117,16 @@ public class BugzillaAutoupdate {
             if(u.getCodeName().equals(BUGZILLA_MODULE_CODE_NAME)) {
                 List<UpdateElement> elements = u.getAvailableUpdates();
                 if(elements != null) {
-                    return elements.size() > 0;
+                    for (UpdateElement updateElement : elements) {
+                        String desc = updateElement.getDescription();
+                        BugzillaVersion version = getVersion(desc);
+                        if(version != null && SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0) {
+                            return true;
+                        }
+                    }
+                    return elements.size() > 0; // looks like we weren't able to
+                                                // parse the version; on the other hand ->
+                                                // there is something so lets be optimistic
                 } else {
                     return false;
                 }
@@ -140,10 +151,9 @@ public class BugzillaAutoupdate {
         }
         boolean ret = isSupportedVersion(version);
         if(!ret) {
-            Bugzilla.LOG.log(Level.WARNING,
-                         "Supported Bugzilla versions are <= {0}. The bugzilla repository [{1}] has version {2}. " + // NOI18N
-                         "Please check the UC for a newer plugin.", // NOI18N
-                         new Object[] {SUPPORTED_BUGZILLA_VERSION, repository.getUrl(), version});
+            Bugzilla.LOG.log(Level.INFO,
+                         "Bugzilla repository [{0}] has version {1}. ", // NOI18N
+                         new Object[] {repository.getUrl(), version});
         }
         return ret;
     }
@@ -173,5 +183,13 @@ public class BugzillaAutoupdate {
             return -1;
         }
         return l;
+    }
+
+    BugzillaVersion getVersion(String desc) {
+        Matcher m = VERSION_PATTERN.matcher(desc);
+        if(m.matches()) {
+            return new BugzillaVersion(m.group(1)) ;
+        }
+        return null;
     }
 }

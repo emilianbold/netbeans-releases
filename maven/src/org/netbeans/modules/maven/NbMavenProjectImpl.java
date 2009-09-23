@@ -90,7 +90,6 @@ import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.JarPackagingRunChecker;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
@@ -101,7 +100,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -173,7 +171,7 @@ public final class NbMavenProjectImpl implements Project {
 //    private ConfigurationProviderEnabler configEnabler;
     private final M2AuxilaryConfigImpl auxiliary;
     private final MavenProjectPropsImpl auxprops;
-    private ProjectProfileHandler profileHandler;
+    private ProjectProfileHandlerImpl profileHandler;
     public static WatcherAccessor ACCESSOR = null;
     
 
@@ -345,6 +343,8 @@ public final class NbMavenProjectImpl implements Project {
             MavenExecutionRequest req = new DefaultMavenExecutionRequest();
 //                ProgressTransferListener ptl = new ProgressTransferListener();
 //                req.setTransferListener(ptl);
+            //#172526 have the modellineage cache reset at the same time the project cache resets
+            profileHandler.clearLineageCache();
             req.addActiveProfiles(getCurrentActiveProfiles());
             req.setPomFile(projectFile.getAbsolutePath());
             req.setNoSnapshotUpdates(true);
@@ -899,7 +899,6 @@ public final class NbMavenProjectImpl implements Project {
                     new RecommendedTemplatesImpl(this),
                     new MavenSourceLevelImpl(this),
                     problemReporter,
-                    new UserActionGoalProvider(this),
                     watcher,
                     new MavenFileEncodingQueryImpl(this),
                     new TemplateAttrProvider(this),

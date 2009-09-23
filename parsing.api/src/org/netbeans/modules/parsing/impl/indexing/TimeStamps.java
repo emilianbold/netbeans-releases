@@ -129,28 +129,37 @@ public final class TimeStamps {
         return unseen;
     }
 
-    public boolean checkAndStoreTimestamp(final FileObject f) {
+    public boolean checkAndStoreTimestamp(FileObject f, String relativePath) {
         if (rootFoCache == null) {
             rootFoCache = URLMapper.findFileObject(root);
         }
-        String relative = FileUtil.getRelativePath(rootFoCache, f);
-        String fileId = relative != null ? relative : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
+        String fileId = relativePath != null ? relativePath : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
         long fts = f.lastModified().getTime();
         String value = (String) props.setProperty(fileId, Long.toString(fts));
         if (value == null) {
             changed|=true;
-            LOG.log(Level.FINE, "{0}: lastTimeStamp=null, fileTimeStamp={1} is out of date", new Object [] { f.getPath(), fts }); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "{0}: lastTimeStamp=null, fileTimeStamp={1} is out of date", new Object [] { f.getPath(), fts }); //NOI18N
+            }
             return false;
         }
 
         if (unseen != null) {
             unseen.remove(fileId);
         }
-
-        long lts = Long.parseLong(value);
-        boolean isUpToDate = lts == fts;
+        long lts = 0L;
+        boolean isUpToDate;
+        try {
+            lts = Long.parseLong(value);
+            isUpToDate = lts == fts;
+        } catch (NumberFormatException nfe) {
+            LOG.warning("Invalid timestamp: " + value + " for file: " + FileUtil.getFileDisplayName(f));   //NOI18N
+            isUpToDate = false;
+        }
         if (!isUpToDate) {
-            LOG.log(Level.FINE, "{0}: lastTimeStamp={1}, fileTimeStamp={2} is out of date", new Object [] { f.getPath(), lts, fts }); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "{0}: lastTimeStamp={1}, fileTimeStamp={2} is out of date", new Object [] { f.getPath(), lts, fts }); //NOI18N
+            }
         }
 
         changed|=!isUpToDate;

@@ -59,9 +59,19 @@ made subject to such option by the copyright holder.
         <pattern value="//" range="2">
             <pattern value="standard header" range="80"/>
         </pattern>
-        <!-- Pattern #include in first 128 bytes. -->
+        <!-- preprocessor directives in the first 128 bytes. -->
         <pattern value="#include" range="128"/>
         <pattern value="#pragma" range="128"/>
+        <!-- preprocessor directives after copyrigh -->
+        <pattern  value="/*" range="2">
+            <pattern value="#include" range="4000"/>
+        </pattern>
+        <pattern  value="/*" range="2">
+            <pattern value="#pragma" range="4000"/>
+        </pattern>
+        <pattern  value="/*" range="2">
+            <pattern value="#if" range="4000"/>
+        </pattern>
         <resolver mime="text/x-h"/>
     </file>
 </MIME-resolver>

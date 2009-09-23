@@ -60,14 +60,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -76,6 +78,9 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -110,16 +115,16 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final String DEFAULT_REPO_FOLDER = "{0}~{1}"; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String SVN_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai");
-    private static final String HG_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai");
-    private static final String EXT_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External");
-    private static final String NO_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");;
+    private static final String SVN_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai"); // NOI18N
+    private static final String HG_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai"); // NOI18N
+    private static final String EXT_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
+    private static final String NO_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String BGZ_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai");
-    private static final String JIRA_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai");
-    private static final String EXT_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External");
-    private static final String NO_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");
+    private static final String BGZ_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai"); // NOI18N
+    private static final String JIRA_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai"); // NOI18N
+    private static final String EXT_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
+    private static final String NO_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None"); // NOI18N
 
     static final String SVN_DEFAULT_NAME = "subversion"; // NOI18N
     private static final String HG_DEFAULT_NAME = "mercurial"; // NOI18N
@@ -130,6 +135,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     // will be used for KenaiException messages
     private String criticalMessage = null;
+
+    private final SharedItemsListModel itemsToShareModel;
+
+    private final List<SharedItem> itemsToShare = new ArrayList<SharedItem>(1);
 
     /** Creates new form SourceAndIssuesWizardPanelGUI */
     public SourceAndIssuesWizardPanelGUI(SourceAndIssuesWizardPanel pnl) {
@@ -173,18 +182,24 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         repoUrlTextField.getDocument().addDocumentListener(firingDocListener);
         issuesUrlTextField.getDocument().addDocumentListener(firingDocListener);
 
-        setupServicesListModels();
+        List<SharedItem> initalItems = panel.getInitialItems();
+
+        setupServicesListModels(initalItems.size() == 0);
 
         // XXX set the defaults
         // XXX here will be some condition ???
         showRepoOnKenaiGUI();
         showIssuesOnKenaiGUI();
+        itSeparator.setVisible(false);
         createChatRoom.setVisible(false);
-        chatSeparator.setVisible(false);
-        if (!System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
+        if (!Kenai.getDefault().getName().equals(("testkenai.com"))) { // NOI18N
             createChatRoom.setSelected(false);
         }
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
+
+        itemsToShare.addAll(initalItems);
+        itemsToShareModel = new SharedItemsListModel();
+        foldersToShareList.setModel(itemsToShareModel);
     }
 
     @Override
@@ -193,7 +208,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 "SourceAndIssuesWizardPanelGUI.panelName"); // NOI18N
     }
 
-    private void setupServicesListModels() {
+    private void setupServicesListModels(final boolean isEmptyKenaiProject) {
 
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -204,18 +219,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     // OK, no services
                     // XXX or show message that "Cannot connect to Kenai.com server" ???
                 }
-                boolean someServicesFound = false;
                 List<KenaiService> repoList = new ArrayList<KenaiService>();
                 final DefaultComboBoxModel repoModel = new DefaultComboBoxModel();
                 List<KenaiService> issuesList = new ArrayList<KenaiService>();
                 final DefaultComboBoxModel issuesModel = new DefaultComboBoxModel();
                 if (services != null) {
-                    someServicesFound = true;
                     Iterator<KenaiService> serviceIter = services.iterator();
                     while (serviceIter.hasNext()) {
                         KenaiService service = serviceIter.next();
                         if (service.getType() == Type.SOURCE) {
-                            repoList.add(service);
+                            if (isEmptyKenaiProject || service.getName().equals(KenaiService.Names.SUBVERSION) || service.getName().equals(KenaiService.Names.MERCURIAL)) {
+                                repoList.add(service);
+                            }
                         }
                     }
                     serviceIter = services.iterator();
@@ -227,7 +242,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                         }
                     }
                 } else { // no services available
-                    someServicesFound = false;
                     repoModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
                             "SourceAndIssuesWizardPanelGUI.noRepoAvailable")); // NOI18N
                     issuesModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
@@ -246,7 +260,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                             repoModel.addElement(new KenaiServiceItem(service, EXT_REPO_ITEM));
                         }
                     }
-                    repoModel.addElement(new KenaiServiceItem(null, NO_REPO_ITEM));
+                    if (isEmptyKenaiProject) {
+                        repoModel.addElement(new KenaiServiceItem(null, NO_REPO_ITEM));
+                    }
                     setRepositories(repoList);
                 }
                 
@@ -315,19 +331,24 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private void updateRepoPath() {
         if (!localFolderPathEdited) {
-            String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
-            setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
-                    MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
+            File parent = NewKenaiProjectWizardIterator.getCommonParent(itemsToShare);
+            if (parent != null) {
+                setRepoLocal(parent.getAbsolutePath());
+            } else {
+                String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
+                setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
+                        MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
+            }
         }
     }
 
     // XXX should check whether user did some edit in the field also
     private void setDefaultRepoName() {
         if (KenaiService.Names.SUBVERSION.equals(getRepoType()) &&
-                (HG_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
+                (HG_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) { // NOI18N
             setRepoName(SVN_DEFAULT_NAME);
         } else if (KenaiService.Names.MERCURIAL.equals(getRepoType()) &&
-                (SVN_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
+                (SVN_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) { // NOI18N
             setRepoName(HG_DEFAULT_NAME);
         }
     }
@@ -346,12 +367,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         repoComboBox = new JComboBox();
         issueTrackingLabel = new JLabel();
         issuesComboBox = new JComboBox();
-        otherFeaturesLabel = new JLabel();
-        downloadsLabel = new JLabel();
-        forumsLabel = new JLabel();
-        mListsLabel = new JLabel();
-        wikiLabel = new JLabel();
-        featuresDescLabel = new JLabel();
         scSeparator = new JSeparator();
         itSeparator = new JSeparator();
         repoNameLabel = new JLabel();
@@ -371,6 +386,13 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         noIssueTrackingDescLabel = new JLabel();
         issuesSpacerPanel = new JPanel();
         repoSpacerPanel = new JPanel();
+        foldersToShareLabel = new JLabel();
+        jScrollPane1 = new JScrollPane();
+        foldersToShareList = new JList();
+        addProjectButton = new JButton();
+        addFolderButton = new JButton();
+        removeButton = new JButton();
+        autoCommit = new JCheckBox();
 
         setLayout(new GridBagLayout());
 
@@ -401,7 +423,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(issueTrackingLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 4, 0);
         add(issueTrackingLabel, gridBagConstraints);
@@ -415,7 +437,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -424,61 +446,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
         issuesComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesComboBox.AccessibleContext.accessibleName")); // NOI18N
         issuesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(otherFeaturesLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.otherFeaturesLabel.text"));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 15;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(otherFeaturesLabel, gridBagConstraints);
-
-        otherFeaturesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.otherFeaturesLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        downloadsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        Mnemonics.setLocalizedText(downloadsLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.downloadsLabel.text"));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(downloadsLabel, gridBagConstraints);
-
-        forumsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        Mnemonics.setLocalizedText(forumsLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.forumsLabel.text"));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 16;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(forumsLabel, gridBagConstraints);
-
-        mListsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        Mnemonics.setLocalizedText(mListsLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.mListsLabel.text"));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 17;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(mListsLabel, gridBagConstraints);
-
-        wikiLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        Mnemonics.setLocalizedText(wikiLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.wikiLabel.text"));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 18;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(wikiLabel, gridBagConstraints);
-        Mnemonics.setLocalizedText(featuresDescLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.featuresDescLabel.text"));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 19;
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new Insets(8, 8, 0, 0);
-        add(featuresDescLabel, gridBagConstraints);
-
-        featuresDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.featuresDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -490,7 +457,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         add(scSeparator, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -560,16 +527,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         localFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         localFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(4, 0, 4, 0);
         add(chatSeparator, gridBagConstraints);
 
         createChatRoom.setSelected(true);
         Mnemonics.setLocalizedText(createChatRoom, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.createChatRoom.text"));
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(createChatRoom, gridBagConstraints);
@@ -585,6 +554,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(localFolderBrowseButton, gridBagConstraints);
@@ -636,7 +606,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(issueTrackingUrlLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingUrlLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(issueTrackingUrlLabel, gridBagConstraints);
@@ -645,7 +615,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         issuesUrlTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesUrlTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -658,7 +628,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(noIssueTrackingDescLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noIssueTrackingDescLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
@@ -669,8 +639,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         noIssueTrackingDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noIssueTrackingDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 0.5;
         add(issuesSpacerPanel, gridBagConstraints);
 
         repoSpacerPanel.setMinimumSize(new Dimension(1, 1));
@@ -679,6 +650,76 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         add(repoSpacerPanel, gridBagConstraints);
+        Mnemonics.setLocalizedText(foldersToShareLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.foldersToShareLabel.text"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(foldersToShareLabel, gridBagConstraints);
+
+        jScrollPane1.setViewportView(foldersToShareList);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+        add(jScrollPane1, gridBagConstraints);
+        Mnemonics.setLocalizedText(addProjectButton, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.addProjectButton.text"));
+        addProjectButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                addProjectButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+        add(addProjectButton, gridBagConstraints);
+        Mnemonics.setLocalizedText(addFolderButton, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.addFolderButton.text"));
+        addFolderButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                addFolderButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+        add(addFolderButton, gridBagConstraints);
+        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.removeButton.text"));
+        removeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+        add(removeButton, gridBagConstraints);
+
+        autoCommit.setSelected(true);
+        Mnemonics.setLocalizedText(autoCommit, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.autoCommit.text"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(autoCommit, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleDescription")); // NOI18N
@@ -748,25 +789,69 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         localFolderPathEdited = true;
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
+    private void addProjectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addProjectButtonActionPerformed
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        choose(chooser);
+    }//GEN-LAST:event_addProjectButtonActionPerformed
+
+    private void removeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        int [] selection = foldersToShareList.getSelectedIndices();
+        for (int i = selection.length - 1; i >=0; i--) {
+            itemsToShare.remove(selection[i]);
+        }
+        foldersToShareList.clearSelection();
+        itemsToShareModel.fireContentsChanged();
+        updateRepoPath();
+    }//GEN-LAST:event_removeButtonActionPerformed
+
+    private void addFolderButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addFolderButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        choose(chooser);
+    }//GEN-LAST:event_addFolderButtonActionPerformed
+
+    private void choose(JFileChooser chooser) {
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(true);
+        int returnVal = chooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File [] selFiles = chooser.getSelectedFiles();
+            outter: for (File file : selFiles) {
+                for (SharedItem item : itemsToShare) {
+                    if (item.getRoot().equals(file)) {
+                        continue outter;
+                    }
+                }
+                if (VersioningSupport.getOwner(file) == null) {
+                    SharedItem item = new SharedItem(file);
+                    itemsToShare.add(item);
+                }
+            }
+            itemsToShareModel.fireContentsChanged();
+            updateRepoPath();
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton addFolderButton;
+    private JButton addProjectButton;
+    private JCheckBox autoCommit;
     private JSeparator chatSeparator;
     private JCheckBox createChatRoom;
-    private JLabel downloadsLabel;
-    private JLabel featuresDescLabel;
-    private JLabel forumsLabel;
+    private JLabel foldersToShareLabel;
+    private JList foldersToShareList;
     private JLabel issueTrackingLabel;
     private JLabel issueTrackingUrlLabel;
     private JComboBox issuesComboBox;
     private JPanel issuesSpacerPanel;
     private JTextField issuesUrlTextField;
     private JSeparator itSeparator;
+    private JScrollPane jScrollPane1;
     private JButton localFolderBrowseButton;
     private JTextField localFolderTextField;
     private JLabel localRepoFolderLabel;
-    private JLabel mListsLabel;
     private JLabel noIssueTrackingDescLabel;
     private JLabel noneRepoDescLabel;
-    private JLabel otherFeaturesLabel;
+    private JButton removeButton;
     private JComboBox repoComboBox;
     private JLabel repoNameLabel;
     private JLabel repoNamePreviewLabel;
@@ -777,7 +862,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private JSeparator scSeparator;
     private JLabel sourceCodeLabel;
     private JPanel spacerPanel;
-    private JLabel wikiLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -843,18 +927,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String localRepoPath = getRepoLocal();
         if ((KenaiService.Names.SUBVERSION.equals(getRepoType()) ||
                 KenaiService.Names.MERCURIAL.equals(getRepoType())) &&
-                ("".equals(localRepoPath) || localRepoPath == null)) {
-            return "Local repository folder path is required";
+                ("".equals(localRepoPath) || localRepoPath == null)) { // NOI18N
+            return NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.LocalRepoRequired"); // NOI18N
         }
         String extRepoUrl = getRepoUrl();
         if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(getRepoType()) &&
-                ("".equals(extRepoUrl) || extRepoUrl == null)) {
-            return "External repository URL is required";
+                ("".equals(extRepoUrl) || extRepoUrl == null)) { // NOI18N
+            return NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.ExternalRepoRequired"); // NOI18N
         }
         String extIssuesUrl = getIssuesUrl();
         if (KenaiService.Names.EXTERNAL_ISSUES.equals(getIssuesType()) &&
-                ("".equals(extIssuesUrl) || extIssuesUrl == null)) {
-            return "External issue tracking URL is required";
+                ("".equals(extIssuesUrl) || extIssuesUrl == null)) { // NOI18N
+            return NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.ExternalIssueRepoRequired"); // NOI18N
         }
         return null;
     }
@@ -869,32 +953,37 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String scmType = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_TYPE);
         // XXX
         String repoName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_NAME);
-        if (repoName == null || "".equals(repoName.trim())) {
+        if (repoName == null || "".equals(repoName.trim())) { // NOI18N
             setDefaultRepoName();            
         } else {
             setRepoName(repoName);
         }
         String repoUrl = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_URL);
-        if (repoUrl == null || "".equals(repoUrl.trim())) {
+        if (repoUrl == null || "".equals(repoUrl.trim())) { // NOI18N
             // external repo url will be empty by default
-            setRepoUrl("");
+            setRepoUrl(""); // NOI18N
         } else {
             setRepoUrl(repoUrl);
         }
         String repoLocal = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL);
-        if (repoLocal == null || "".equals(repoLocal.trim())) {
-            String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
-            setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
-                    MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
+        if (repoLocal == null || "".equals(repoLocal.trim())) { // NOI18N
+            File parent = NewKenaiProjectWizardIterator.getCommonParent(itemsToShare);
+            if (parent != null) {
+                setRepoLocal(parent.getAbsolutePath());
+            } else {
+                String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
+                setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
+                        MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
+            }
         } else {
             setRepoLocal(repoLocal);
         }
         String issuesType = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES);
         // XXX
         String issuesUrl = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL);
-        if (issuesUrl == null || "".equals(issuesUrl.trim())) {
+        if (issuesUrl == null || "".equals(issuesUrl.trim())) { // NOI18N
             // external issues tracking url will be empty by default
-            setRepoUrl("");
+            setRepoUrl(""); // NOI18N
         } else {
             setRepoUrl(issuesUrl);
         }
@@ -905,6 +994,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         } else {
             createChatRoom.setSelected(true);
         }
+
+        String c = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT);
+        setAutoCommit(c==null?true:Boolean.parseBoolean(c));
     }
 
     public void store(WizardDescriptor settings) {
@@ -912,9 +1004,20 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_NAME, getRepoName());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_URL, getRepoUrl());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL, getRepoLocal());
+        settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_PREVIEW, repoNamePreviewLabel.getText());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, getIssuesType());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL, getIssuesUrl());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT, createChatRoom.isSelected());
+        settings.putProperty(NewKenaiProjectWizardIterator.PROP_FOLDERS_TO_SHARE, itemsToShare);
+        settings.putProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT, Boolean.toString(isAutoCommit()));
+    }
+
+    private void setAutoCommit(boolean autoCommit) {
+        this.autoCommit.setSelected(autoCommit);
+    }
+
+    private boolean isAutoCommit() {
+        return autoCommit.isSelected();
     }
 
     private void setRepoType(String repo) {
@@ -1022,6 +1125,14 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         localRepoFolderLabel.setVisible(show);
         localFolderTextField.setVisible(show);
         localFolderBrowseButton.setVisible(show);
+
+        addFolderButton.setVisible(show);
+        addProjectButton.setVisible(show);
+        removeButton.setVisible(show);
+        autoCommit.setVisible(show);
+        foldersToShareLabel.setVisible(show);
+        jScrollPane1.setVisible(show);
+        chatSeparator.setVisible(show);
     }
 
     private void showExtRepoGUI() {
@@ -1118,4 +1229,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         noIssueTrackingDescLabel.setVisible(show);
     }
 
+    private class SharedItemsListModel extends AbstractListModel {
+
+        public Object getElementAt(int arg0) {
+            return itemsToShare.get(arg0);
+        }
+
+        public int getSize() {
+            return itemsToShare.size();
+        }
+
+        private void fireContentsChanged() {
+            fireContentsChanged(this, 0, Integer.MAX_VALUE);
+        }
+    }
 }

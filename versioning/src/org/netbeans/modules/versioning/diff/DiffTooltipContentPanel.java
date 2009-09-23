@@ -41,7 +41,6 @@
 package org.netbeans.modules.versioning.diff;
 
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.api.diff.Difference;
 import org.openide.text.CloneableEditorSupport;
 
@@ -81,7 +80,7 @@ class DiffTooltipContentPanel extends JComponent {
 
         originalTextPane.setDocument(doc);
         originalTextPane.setEditable(false);
-        Color color = (diff.getType() == Difference.DELETE) ? new Color(255, 225, 232) : new Color(233, 241, 255);
+        Color color = getBackgroundColor(diff.getType());
         originalTextPane.setBackground(color);
 
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(originalTextPane);
@@ -115,5 +114,10 @@ class DiffTooltipContentPanel extends JComponent {
 
         setLayout(new BorderLayout());
         add(jsp);
+    }
+
+    private Color getBackgroundColor (int key) {
+        org.netbeans.modules.diff.DiffModuleConfig config = org.netbeans.modules.diff.DiffModuleConfig.getDefault();
+        return key == Difference.DELETE ? config.getSidebarDeletedColor() : config.getSidebarChangedColor();
     }
 }

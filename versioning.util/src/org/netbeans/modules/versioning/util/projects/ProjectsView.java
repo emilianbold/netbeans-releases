@@ -77,6 +77,7 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
     private final AbstractNode rootNode;
     private final ExplorerManager em;
     private final ProjectOutlineView view;
+    private Node[] selectedNodes;
 
     /**
      *
@@ -114,7 +115,7 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
 
     public Set<Project> getSelectedProjects () {
         HashSet<Project> projects = new HashSet<Project>();
-        Node[] nodes = em.getSelectedNodes();
+        Node[] nodes = selectedNodes;
         // each selected project is returned
         for (Node node : nodes) {
             Project p = node.getLookup().lookup(Project.class);
@@ -134,6 +135,9 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
                     // only project nodes can be selected, not the root abstract node
                     throw new PropertyVetoException("", evt); // NOI18N
                 }
+            }
+            if (nodes.length > 0) {
+                this.selectedNodes = nodes;
             }
         }
     }

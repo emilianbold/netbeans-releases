@@ -1,6 +1,7 @@
 package org.netbeans.modules.mobility.editor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -59,11 +60,13 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
         private static final Pattern BLOCK_HEADER_PATTERN = Pattern.compile("^\\s*/((/#)|(\\*[\\$#]))\\S"); //NOI18N
         private Document document;
         private OffsetsBag headersBag;
+        private HashMap<String, AttributeSet> attributeCache;
         
         public HeadersHighlighting(Document document) {
-            this.document = document;
+            this.document = document;            
             this.document.addDocumentListener(WeakListeners.document(this, this.document));
             this.document.putProperty(PROP_HIGLIGHT_HEADER_LAYER, this);
+            attributeCache = new HashMap<String, AttributeSet>();
             headersBag = new OffsetsBag(document);
             headersBag.addHighlightsChangeListener(new HighlightsChangeListener() {
                 public void highlightChanged(HighlightsChangeEvent event) {
@@ -105,7 +108,7 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
                         try {
                             Element elm = root.getElement(i);
                             if (BLOCK_HEADER_PATTERN.matcher(doc.getText(elm.getStartOffset(), elm.getEndOffset() - elm.getStartOffset()).trim()).find()){
-                                bag.addHighlight( elm.getStartOffset(), elm.getEndOffset(), getAttributes("pp-command", false, false)); //NOI18N
+                                bag.addHighlight( elm.getStartOffset(), elm.getEndOffset(), getAttributes(attributeCache, "pp-command", false, false)); //NOI18N
                             }
                         } catch (BadLocationException ex) {                            
                         }
@@ -119,11 +122,13 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
     static class BlocksHighlighting extends AbstractHighlightsContainer implements Highlighting, DocumentListener{
         private Document document;
         private OffsetsBag blocksBag;
+        private HashMap<String, AttributeSet> attributeCache;
 
         public BlocksHighlighting(Document document) {
             this.document = document;
             this.document.addDocumentListener(WeakListeners.document(this, this.document));
             this.document.putProperty(PROP_HIGLIGHT_BLOCKS_LAYER, this);
+            attributeCache = new HashMap<String, AttributeSet>();
             blocksBag = new OffsetsBag(document, true);
             blocksBag.addHighlightsChangeListener(new HighlightsChangeListener() {
                 public void highlightChanged(HighlightsChangeEvent event) {
@@ -156,7 +161,7 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
                             bag.addHighlight(
                                     NbDocument.findLineRootElement(doc).getElement(b.getStartLine() - 1).getStartOffset(),
                                     NbDocument.findLineRootElement(doc).getElement(b.getEndLine() - 1).getEndOffset(),
-                                    b.isActive() ? getAttributes("pp-active-block", true, true) : getAttributes("pp-inactive-block", true, true)); //NOI18N
+                                    b.isActive() ? getAttributes(attributeCache,"pp-active-block", true, true) : getAttributes(attributeCache,"pp-inactive-block", true, true)); //NOI18N
                         }
                     }
                     blocksBag.setHighlights(bag);
@@ -176,12 +181,19 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
         }
    }
 
-    private static AttributeSet getAttributes(String token, boolean extendsEol, boolean extendsEmptyLine) {
+    private static AttributeSet getAttributes(HashMap<String, AttributeSet> attributeCache, String token, boolean extendsEol, boolean extendsEmptyLine) {
+        AttributeSet as = attributeCache.get(token + String.valueOf(extendsEol) + String.valueOf(extendsEmptyLine));
+        if (as != null){
+            return as;
+        }
+
         FontColorSettings settings = MimeLookup.getLookup("text/x-java-preprocessor").lookup(FontColorSettings.class); //NOI18N
-        return AttributesUtilities.createImmutable(
-                settings.getTokenFontColors(token), 
+        as = AttributesUtilities.createImmutable(
+                settings.getTokenFontColors(token),
                 AttributesUtilities.createImmutable(
                     HighlightsContainer.ATTR_EXTENDS_EOL, Boolean.valueOf(extendsEol),
                     HighlightsContainer.ATTR_EXTENDS_EMPTY_LINE, Boolean.valueOf(extendsEmptyLine)));
+        attributeCache.put(token + String.valueOf(extendsEol) + String.valueOf(extendsEmptyLine), as);
+        return as;
     }
 }

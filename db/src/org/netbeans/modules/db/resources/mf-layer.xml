@@ -609,7 +609,7 @@ made subject to such option by the copyright holder.
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="Databases">
-                <attr name="include" stringvalue="config/Databases/.*|Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings"/>
+                <attr name="include" stringvalue="config/Databases/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.db.explorer.Bundle#Databases.Options.Export.displayName"/>
             </file>
         </folder>

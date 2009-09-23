@@ -68,7 +68,8 @@ import org.netbeans.modules.versioning.util.Utils;
 public class ResolveConflictsExecutor extends HgProgressSupport {
     
     private static final String TMP_PREFIX = "merge"; // NOI18N
-    private static final String ORIG_SUFFIX = ".orig."; // NOI18N  
+    private static final String ORIG_SUFFIX = ".orig."; // NOI18N
+    private static final String LOCAL = "local";                        //NOI18N
     
     static final String CHANGE_LEFT = "<<<<<<< "; // NOI18N
     static final String CHANGE_RIGHT = ">>>>>>> "; // NOI18N
@@ -126,20 +127,22 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         f1.deleteOnExit();
         f2.deleteOnExit();
         f3.deleteOnExit();
-        
-        final Difference[] diffs = copyParts(true, file, f1, true);
+
+        Charset encoding = FileEncodingQuery.getEncoding(fo);
+        final Difference[] diffs = copyParts(true, file, f1, true, encoding);
         if (diffs.length == 0) {
             ConflictResolvedAction.resolved(file);  // remove conflict status
             return;
         }
 
-        copyParts(false, file, f2, false);
+        copyParts(false, file, f2, false, encoding);
         //GraphicalMergeVisualizer merge = new GraphicalMergeVisualizer();
         String originalLeftFileRevision = leftFileRevision;
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision = leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision = rightFileRevision.trim();
-        if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)){
+        if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)
+                || leftFileRevision.equals(LOCAL)){
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", leftFileRevision); // NOI18N
@@ -152,7 +155,6 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         
         final StreamSource s1;
         final StreamSource s2;
-        Charset encoding = FileEncodingQuery.getEncoding(fo);
         Utils.associateEncoding(file, f1);
         Utils.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
@@ -176,9 +178,9 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
      * Copy the file and conflict parts into another file.
      */
     private Difference[] copyParts(boolean generateDiffs, File source,
-                                   File dest, boolean leftPart) throws IOException {
-        BufferedReader r = new BufferedReader(new FileReader(source));
-        BufferedWriter w = new BufferedWriter(new FileWriter(dest));
+                                   File dest, boolean leftPart, Charset charset) throws IOException {
+        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(source), charset));
+        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList<Difference>();

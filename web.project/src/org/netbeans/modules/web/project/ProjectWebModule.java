@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
@@ -73,7 +72,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.netbeans.modules.j2ee.dd.api.webservices.*;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
@@ -81,15 +83,19 @@ import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFact
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.openide.loaders.FileEntry.Folder;
 
 /** A web module implementation on top of project.
  *
  * @author  Pavel Buzek
+ * @author ads
  */
 public final class ProjectWebModule extends J2eeModuleProvider 
-        implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements J2eeModuleImplementation2, ModuleChangeReporter, 
+        EjbChangeDescriptor, PropertyChangeListener,
+        Lookup.Provider 
+{
       
     public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
 //    public static final String FOLDER_CLASSES = "classes";//NOI18N
@@ -100,6 +106,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private UpdateHelper helper;
     private ClassPathProviderImpl cpProvider;
     private String fakeServerInstId = null; // used to get access to properties of other servers
+    private Lookup myLookup;
+    private InstanceContent myContent;
 
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
@@ -115,7 +123,21 @@ public final class ProjectWebModule extends J2eeModuleProvider
         this.project = project;
         this.helper = helper;
         this.cpProvider = cpProvider;
+        myContent = new InstanceContent();
+        myLookup = new AbstractLookup( myContent );
         project.evaluator ().addPropertyChangeListener (this);
+    }
+    
+    public Lookup getLookup(){
+        return myLookup;
+    }
+    
+    public void addCookie( Object cookie ){
+        myContent.add( cookie );
+    }
+    
+    public void removeCookie( Object cookie ){
+        myContent.remove( cookie);
     }
     
     public FileObject getDeploymentDescriptor() {
@@ -552,6 +574,16 @@ public final class ProjectWebModule extends J2eeModuleProvider
                     J2eeModule.PROP_RESOURCE_DIRECTORY, 
                     oldValue == null ? null : new File(oldValue),
                     newValue == null ? null : new File(newValue));
+        }  else if (WebProjectProperties.WEB_DOCBASE_DIR.equals(evt.getPropertyName())) {
+            getPropertyChangeSupport().firePropertyChange(
+                    WebModuleImplementation2.PROPERTY_DOCUMENT_BASE,
+                    (String)evt.getOldValue(),
+                    (String)evt.getNewValue());
+        }  else if (WebProjectProperties.WEBINF_DIR.equals(evt.getPropertyName())) {
+            getPropertyChangeSupport().firePropertyChange(
+                    WebModuleImplementation2.PROPERTY_WEB_INF,
+                    (String)evt.getOldValue(),
+                    (String)evt.getNewValue());
         }
     }
         
@@ -590,6 +622,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
        return getWebInf().getFileObject(WebServicesConstants.WEBSERVICES_DD, "xml"); // NOI18N
    }
     
+    @Override
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);

@@ -53,6 +53,7 @@ import org.openide.windows.TopComponent;
  */
 final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
 
+    private final Object lock = new String("THAIndicatorTopComponentRegsitry.lock");//NOI18N
     static String PROP_DLIGHT_TC_ACTIVATED = "gizmoIndTcActivated"; //NOI18N
     static String PROP_DLIGHT_TC_OPENED = "gizmoIndTcOpened";//NOI18N
     static String PROP_DLIGHT_TC_CLOSED = "gizmoIndTcClosed";//NOI18N
@@ -96,7 +97,9 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
     }
 
     Set<THAIndicatorsTopComponent> getOpened() {
-        return new HashSet<THAIndicatorsTopComponent>(opened);
+        synchronized(lock){
+            return new HashSet<THAIndicatorsTopComponent>(opened);
+        }
     }
 
     THAIndicatorsTopComponent getActivated() {
@@ -120,7 +123,9 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
         } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             if (evt.getNewValue() instanceof THAIndicatorsTopComponent) {
                 THAIndicatorsTopComponent tc = (THAIndicatorsTopComponent) evt.getNewValue();
-                opened.remove(tc);
+                synchronized(lock){
+                    opened.remove(tc);
+                }
                 if (getActive() == tc) {
                     setActive(null);
                 }
@@ -133,7 +138,9 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
             TopComponent tc = (TopComponent) evt.getNewValue();
 
             if (tc instanceof THAIndicatorsTopComponent) {
-                opened.add((THAIndicatorsTopComponent) tc);
+                synchronized(lock){
+                    opened.add((THAIndicatorsTopComponent) tc);
+                }
                 setActive((THAIndicatorsTopComponent) tc);
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_ACTIVATED, evt.getOldValue(), evt.getNewValue()));
             //firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_OPENED, evt.getOldValue(), evt.getNewValue()));
@@ -154,9 +161,12 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
     }
 
     private synchronized void setActive(THAIndicatorsTopComponent tc) {
-        active = new WeakReference<THAIndicatorsTopComponent>(tc);
-        if (tc != null && !opened.contains(tc)){
-            opened.add(tc);
+        
+        synchronized(lock){
+            active = new WeakReference<THAIndicatorsTopComponent>(tc);
+            if (tc != null && !opened.contains(tc)){
+                opened.add(tc);
+            }
         }
 //    Node[] _nodes = (tc == null ? new Node[0] : tc.getActivatedNodes());
 //    if (_nodes != null){
@@ -172,6 +182,8 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
     }
 
     private THAIndicatorsTopComponent getActive() {
-        return active.get();
+        synchronized(lock){
+            return active.get();
+        }
     }
 }

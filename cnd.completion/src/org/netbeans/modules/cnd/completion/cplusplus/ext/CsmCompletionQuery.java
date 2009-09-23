@@ -1729,6 +1729,14 @@ abstract public class CsmCompletionQuery {
                     }
                     String mtdName = mtdNameExp.getTokenText(0);
 
+                    CsmCompletionExpression param = item.getParameter(0);
+                    if(param.getExpID() == CsmCompletionExpression.METHOD) {
+                        boolean oldFindType = findType;
+                        setFindType(true);
+                        cont = resolveExp(param);
+                        setFindType(oldFindType);
+                    }
+
                     // this() invoked, offer constructors
 //                if( ("this".equals(mtdName)) && (item.getTokenCount()>0) ){ //NOI18N
 //                    CsmClassifier cls = sup.getClass(item.getTokenOffset(0));
@@ -1859,6 +1867,13 @@ abstract public class CsmCompletionQuery {
                                                 }
                                             }
                                         }
+                                    }
+                                }
+                                if (lastType != null && (!last || findType)) {
+                                    CsmClassifier cls = getClassifier(lastType, contextFile);
+                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
+                                    if (funCall != null) {
+                                        mtdList.add(funCall);
                                     }
                                 }
                             } else {
@@ -1998,7 +2013,7 @@ abstract public class CsmCompletionQuery {
             }
 
             if (last && !first && (result == null || result.getItems().isEmpty()) && lastType != null) {
-                CsmClassifier classifier = lastType.getClassifier();
+                CsmClassifier classifier = getClassifier(lastType, contextFile);
                 if(CsmKindUtilities.isInstantiation(classifier)) {
                     boolean instantiatedByTemplateParam = false;
                     CsmInstantiation inst = (CsmInstantiation)classifier;

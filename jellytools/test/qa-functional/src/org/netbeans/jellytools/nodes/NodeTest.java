@@ -115,7 +115,7 @@ public class NodeTest extends JellyTestCase {
         "testGetPath",
         "testGetParentPath",                
         "testGetChildren",
-        "testIsLeaf",         
+        "testIsLeaf",             
         "testIsPresent",
         "testVerifyPopup",
         "testWaitNotPresent",
@@ -318,15 +318,11 @@ public class NodeTest extends JellyTestCase {
     }
     
     /** Test of waitNotPresent() method. */
-    public void testWaitNotPresent() {
+    public void testWaitNotPresent() {        
         new CopyAction().performAPI(sampleClass1Node);    // NOI18N
         performPaste(sample1Node);
-        final Node duplNode = new Node(sample1Node, "SampleClass11"); // NOI18N
-        new Thread(new Runnable() {
-            public void run() {
-                JavaNodeUtils.performSafeDelete(duplNode);
-            }
-        }, "thread performing action through API").start(); // NOI18N
+        final Node duplNode = new Node(sample1Node, "SampleClass11"); // NOI18N        
+        JavaNodeUtils.performSafeDelete(duplNode);
         duplNode.waitNotPresent();
     }
     
@@ -334,12 +330,8 @@ public class NodeTest extends JellyTestCase {
     public void testWaitChildNotPresent() {
         new CopyAction().performAPI(sampleClass1Node);// NOI18N
         performPaste(sample1Node);
-        final Node duplNode = new Node(sample1Node, "SampleClass11");// NOI18N
-        new Thread(new Runnable() {
-            public void run() {
-                JavaNodeUtils.performSafeDelete(duplNode);
-            }
-        }, "thread performing action through API").start(); // NOI18N
+        final Node duplNode = new Node(sample1Node, "SampleClass11");// NOI18N        
+        JavaNodeUtils.performSafeDelete(duplNode);
         sample1Node.waitChildNotPresent("SampleClass11");// NOI18N
     }
 

@@ -49,9 +49,14 @@ final class SnapshotImpl implements ThreadSnapshot {
     private final ThreadInfo threadInfo;
     private final SQLStackDataStorage storage;
     private final int stackID;
+    private final long timestamp;
     private final MSAState state;
+    private boolean stackLoaded = false;
+    private List<FunctionCall> stack = null;
+    private final Object lock = new String("SnapshotImpl.stack.lock");//NOI18N
 
-    public SnapshotImpl(final SQLStackDataStorage storage, final int threadID, final int stackID, final MSAState state) {
+    public SnapshotImpl(final SQLStackDataStorage storage, final long timestamp, final int threadID, final int stackID, final MSAState state) {
+        this.timestamp = timestamp;
         this.storage = storage;
         this.stackID = stackID;
         this.state = state;
@@ -74,7 +79,14 @@ final class SnapshotImpl implements ThreadSnapshot {
     }
 
     public List<FunctionCall> getStack() {
-        return storage.getCallStack(stackID);
+        synchronized(lock){
+            if (stackLoaded){
+                return stack;
+            }
+            stack =  storage.getCallStack(stackID);
+            stackLoaded = true;
+            return stack;
+        }
     }
 
     public MSAState getState() {
@@ -83,5 +95,9 @@ final class SnapshotImpl implements ThreadSnapshot {
 
     public MemoryAccessType getMemoryAccessType() {
         return null;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }

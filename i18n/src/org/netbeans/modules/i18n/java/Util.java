@@ -57,4 +57,19 @@ final class Util {
     public static char getChar(String key) {
         return getString(key).charAt(0);
     }
+
+    /**
+     * Returns unescaped Java string. See clarifications
+     * {@link org.netbeans.modules.properties.PropertiesStructure#getItem(java.lang.String)
+     * here}.
+     * @param key a key string.
+     */
+    static String getUnescapedKey(String key) {
+        String unescapedKey =
+        // #168798
+                key.replace(" ", "\\ "); // NOI18N
+        // TODO probably additional unescaping is needed
+        return unescapedKey;
+    }
+
 }

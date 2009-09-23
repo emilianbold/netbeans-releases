@@ -39,37 +39,54 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.*;
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionListener;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDataQuery;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Alexander Simon
  */
 public class ThreadMapVisualizer extends JPanel implements
-        Visualizer<ThreadMapVisualizerConfiguration>, ActionListener, SessionStateListener {
+        Visualizer<ThreadMapVisualizerConfiguration>, ActionListener, SessionStateListener, DataFilterListener {
 
     private boolean isEmptyContent;
 
     private static final class QueryLock {
     }
+    private Future<Boolean> task;
     private final Object queryLock = new QueryLock();
     private final ThreadMapDataProvider provider;
     private final ThreadMapVisualizerConfiguration configuration;
@@ -85,6 +102,8 @@ public class ThreadMapVisualizer extends JPanel implements
     private long startTimeStamp;
     private TimerBasedVisualizerSupport timerSupport;
     private DLightSession session;
+    private Collection<TimeIntervalDataFilter> lastTimeFilters;
+    private String toolID;
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
 
@@ -99,14 +118,33 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
-            public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
-               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getThreadDump(query), startTime);
-                CallStackTopComponent tc = CallStackTopComponent.findInstance();
-                tc.addVisualizer(visualizer.getDisplayName(), visualizer);
-                tc.open();
-                tc.requestVisible();
-                tc.requestFocus(true);
-                return visualizer;
+            public void showStack(long startTime, final ThreadDumpQuery query) {
+                DLightExecutorService.submit(new Runnable() {
+
+                    public void run() {
+                        final ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
+                        UIThread.invoke(new Runnable() {
+
+                            public void run() {
+                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump));
+                            }
+                        });
+                        session.cleanAllDataFilter(ThreadDumpFilter.class);
+                        session.addDataFilter(new ThreadDumpFilter(query.getStartTime(), threadDump), false);
+                        
+                    }
+                }, "Thread Dump  request from Thread Map Visualizer");//NOI18N
+
+//                DataProvider d = session == null ? null : session.createDataProvider(DataModelSchemeProvider.getInstance().getScheme("model:stack"), CpuSamplingSupport.CPU_SAMPLE_TABLE); //NOI18N
+                //              final StackDataProvider stackDataProvider = d == null || !(d instanceof StackDataProvider) ? null : (StackDataProvider) d;
+//                ThreadStackVisualizer visualizer = new ThreadStackVisualizer(stackDataProvider, threadDump, query.getStartTime());
+//                CallStackTopComponent tc = CallStackTopComponent.findInstance();
+//                tc.addVisualizer(toolID, visualizer.getDisplayName(), visualizer);
+//                tc.open();
+//                tc.requestVisible();
+//                tc.requestFocus(true);
+                //return null;
+
             }
         });
 
@@ -120,12 +158,36 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsTimelinePanelContainer.setLayout(new BorderLayout());
         threadsTimelinePanelContainer.add(threadsPanel, BorderLayout.CENTER);
+        threadsTimelinePanelContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         threadsPanel.addThreadsMonitoringActionListener(this);
 
         setLayout(new BorderLayout());
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);
-        JPanel callStack = new JPanel();
-        add(callStack, BorderLayout.SOUTH);
+    }
+
+    public final void setToolID(String toolID) {
+        this.toolID = toolID;
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        //filter out with the time
+        if (session != null) {
+            Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
+            lastTimeFilters = timeFilters;
+            setTimeIntervalSelection(timeFilters);
+            final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(lastTimeFilters, true));
+            UIThread.invoke(new Runnable() {
+
+                public void run() {
+                    updateList(null, summaryData);
+                }
+            });
+        }
+
+    }
+
+    private final void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
+        threadsPanel.setTimeIntervalSelection(timeFilters);
     }
 
     public void init() {
@@ -169,25 +231,50 @@ public class ThreadMapVisualizer extends JPanel implements
         return ThreadMapTopComponent.findInstance();
     }
 
-    public void refresh() {
+    private void asyncFillModel(boolean cancelIfNotDone) {
         synchronized (queryLock) {
-            try {
-                final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(startTimeStamp, false));
-                final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
-                UIThread.invoke(new Runnable() {
-
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-                        updateList(mapData);
-                    }
-                });
-            } catch (Throwable t) {
-                t.printStackTrace();
+            if (task != null && !task.isDone()) {
+                if (cancelIfNotDone) {
+                    task.cancel(true);
+                } else {
+                    return;
+                }
             }
+
+            task = DLightExecutorService.submit(new Callable<Boolean>() {
+
+                public Boolean call() {
+                    syncFillModel();
+                    return Boolean.TRUE;
+                }
+            }, "ThreadMapVisualizer request for the ThreadMapData");//NOI18N
         }
+    }
+
+    private void syncFillModel() {
+        final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(startTimeStamp, true, false));
+        final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(lastTimeFilters, true));
+        final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                setContent(isEmptyConent);
+                if (isEmptyConent) {
+                    return;
+                }
+                updateList(mapData, summaryData);
+            }
+        });
+
+    }
+
+    public void refresh() {
+        if (EventQueue.isDispatchThread()) {
+            asyncFillModel(false);
+        } else {
+            syncFillModel();
+        }
+
     }
 
     private void setContent(boolean isEmpty) {
@@ -225,23 +312,30 @@ public class ThreadMapVisualizer extends JPanel implements
 
     }
 
-    protected void updateList(ThreadMapData mapData) {
+    protected void updateList(ThreadMapData mapData, ThreadMapSummaryData summaryData) {
         synchronized (uiLock) {
-            threadsPanel.threadsMonitoringEnabled();
-            dataManager.processData(MonitoredData.getMonitoredData(mapData));
-            startTimeStamp = dataManager.getEndTimeStump();
+            if (mapData != null) {
+                threadsPanel.threadsMonitoringEnabled();
+                dataManager.processData(MonitoredData.getMonitoredData(mapData), session);
+                startTimeStamp = dataManager.getEndTimeStump();
+            }
+            dataManager.processData(summaryData);
             setNonEmptyContent();
         }
     }
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         this.session = session;
-
+        if (session != null && newState != SessionState.CLOSED) {
+            session.addDataFilterListener(this);
+        }
         switch (newState) {
             case CLOSED:
             case PAUSED:
             case ANALYZE:
+                startTimeStamp = 0;
                 timerSupport.stop();
+                syncFillModel();
                 break;
             case RUNNING:
             case STARTING:

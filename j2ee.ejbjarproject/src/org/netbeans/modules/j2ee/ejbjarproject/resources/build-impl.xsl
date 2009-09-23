@@ -442,6 +442,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <classpath>
                                 <path path="${{run.test.classpath}}"/>
                                 <path path="${{j2ee.platform.classpath}}"/>
+                                <path path="${{j2ee.platform.embeddableejb.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
@@ -1185,6 +1186,7 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <mkdir dir="${{build.test.classes.dir}}"/>
+                <property name="j2ee.platform.embeddableejb.classpath" value=""/>
             </target>
             
             <target name="-pre-compile-test">
@@ -1203,7 +1205,7 @@ exists or setup the property manually. For example like this:
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
-                    <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}:${j2ee.platform.embeddableejb.classpath}</xsl:attribute>
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -1239,7 +1241,7 @@ exists or setup the property manually. For example like this:
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
-                    <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}:${j2ee.platform.embeddableejb.classpath}</xsl:attribute>
                     <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
                     <xsl:attribute name="excludes"/>
                 </xsl:element>

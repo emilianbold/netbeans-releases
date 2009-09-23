@@ -72,7 +72,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
@@ -146,7 +146,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     if(author != null && !author.equals("")) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
                             KenaiUser kenaiUser = SvnKenaiSupport.getInstance().forName(author);
-                            kenaiUsersMap.put(author, kenaiUser);
+                            if(kenaiUser != null) {
+                                kenaiUsersMap.put(author, kenaiUser);
+                            }
                         }
                     }
                 }

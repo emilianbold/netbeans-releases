@@ -50,7 +50,6 @@ import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.test.TestBase;
-import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,12 +62,6 @@ public class SyntaxTreeTest extends TestBase {
 
     public SyntaxTreeTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
     }
 
     public static Test xsuite(){
@@ -174,12 +167,12 @@ public class SyntaxTreeTest extends TestBase {
     public void testUnmatchedTagBecauseOfOptionalEndTag() throws Exception {
         //last </P> end tag is unmatched
         assertAST("<p><p></p></p>",
-                desc(SyntaxTree.UNMATCHED_TAG, 10,14, Description.WARNING));
+                desc(SyntaxTree.UNMATCHED_TAG, 10,14, Description.ERROR));
         //         0123456789012345678901234567890123456789
         //         0         1         2         3
 
         assertAST("<p><div></div></p>",
-                desc(SyntaxTree.UNMATCHED_TAG, 14, 18, Description.WARNING));
+                desc(SyntaxTree.UNMATCHED_TAG, 14, 18, Description.ERROR));
     }
 
     public void testOptionalEndTag() throws Exception {
@@ -202,7 +195,7 @@ public class SyntaxTreeTest extends TestBase {
         //STYLE is not allowed in BODY; Issue 164903
         AstNode.Description[] expectedErrors = new AstNode.Description[]{
             desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 46, Description.ERROR),
-            desc(SyntaxTree.UNMATCHED_TAG, 55, 63, Description.WARNING)
+            desc(SyntaxTree.UNMATCHED_TAG, 55, 63, Description.ERROR)
         };
         assertAST("<html><head><title></title></head><body><style type=''></style></body></html>", expectedErrors);
         //         0123456789012345678901234567890123456789012345678901234567890123456789
@@ -258,10 +251,10 @@ public class SyntaxTreeTest extends TestBase {
 
         assertAST(code,
                 desc(SyntaxTree.MISSING_REQUIRED_END_TAG, 45, 52, Description.ERROR),
-                desc(SyntaxTree.UNMATCHED_TAG, 66, 71, Description.WARNING),
-                desc(SyntaxTree.UNMATCHED_TAG, 71, 76, Description.WARNING),
-                desc(SyntaxTree.UNMATCHED_TAG, 76, 84, Description.WARNING),
-                desc(SyntaxTree.UNMATCHED_TAG, 84, 90, Description.WARNING)
+                desc(SyntaxTree.UNMATCHED_TAG, 66, 71, Description.ERROR),
+                desc(SyntaxTree.UNMATCHED_TAG, 71, 76, Description.ERROR),
+                desc(SyntaxTree.UNMATCHED_TAG, 76, 84, Description.ERROR),
+                desc(SyntaxTree.UNMATCHED_TAG, 84, 90, Description.ERROR)
                 );
 
     }
@@ -299,7 +292,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public void testEmptyTags() throws Exception{
         assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>",
-                desc(SyntaxTree.UNMATCHED_TAG, 29, 36, Description.WARNING));
+                desc(SyntaxTree.UNMATCHED_TAG, 29, 36, Description.ERROR));
     }
 
     public void testEmptyXhtmlTags() throws Exception{
@@ -351,7 +344,7 @@ public class SyntaxTreeTest extends TestBase {
         AstNode root = assertAST(code,
                 desc(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES, 58, 65, Description.WARNING), //style attr type required
                 desc(SyntaxTree.UNEXPECTED_TAG_KEY, 58, 65, Description.ERROR), //style should be here
-                desc(SyntaxTree.UNMATCHED_TAG, 65, 73, Description.WARNING), // </style> is unmatched
+                desc(SyntaxTree.UNMATCHED_TAG, 65, 73, Description.ERROR), // </style> is unmatched
                 desc(SyntaxTree.UNRESOLVED_TAG_KEY, 73, 77, Description.ERROR)); //<tr> doesn't contain required content
         
         AstNodeUtils.dumpTree(root);
@@ -425,10 +418,10 @@ public class SyntaxTreeTest extends TestBase {
         //tag area if there are no attributes or just the opening symbol and
         //tag name if there are some.
         assertAST("<title>",
-                desc(SyntaxTree.UNMATCHED_TAG, 0, 7, Description.WARNING));
+                desc(SyntaxTree.UNMATCHED_TAG, 0, 7, Description.ERROR));
         //         01234567
         assertAST("<title lang=''>",
-                desc(SyntaxTree.UNMATCHED_TAG, 0, 6, Description.WARNING));
+                desc(SyntaxTree.UNMATCHED_TAG, 0, 6, Description.ERROR));
     }
 
     public void testTagsMatching() throws Exception {
@@ -469,7 +462,7 @@ public class SyntaxTreeTest extends TestBase {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
         String code = doc.getText(0, doc.getLength());
-        AstNode root = SyntaxParser.parse(code).getASTRoot();
+        AstNode root = SyntaxParser.parse(SyntaxParserContext.createContext(code)).getASTRoot();
         StringBuffer output = new StringBuffer();
         AstNodeUtils.dumpTree(root, output);
         assertDescriptionMatches(source, output.toString(), false, ".pass", true);
@@ -566,7 +559,8 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     private AstNode parse(String code, String publicId) throws BadLocationException {
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserContext context = SyntaxParserContext.createContext(code);
+        SyntaxParserResult result = SyntaxParser.parse(context);
         DTD dtd;
         if(publicId == null) {
             dtd = result.getDTD();
@@ -576,13 +570,15 @@ public class SyntaxTreeTest extends TestBase {
             assertEquals(publicId, dtd.getIdentifier());
         }
         assertNotNull(dtd);
-        return SyntaxTree.makeTree(result.getElements(), dtd);
+        context.setDTD(dtd);
+        return SyntaxTree.makeTree(context);
     }
 
     private AstNode parseUnchecked(String code) throws BadLocationException {
-        SyntaxParserResult result = SyntaxParser.parse(code);
+        SyntaxParserContext context = SyntaxParserContext.createContext(code);
+        SyntaxParserResult result = SyntaxParser.parse(context);
         assertNotNull(result);
-        return SyntaxTree.makeTree(result.getElements(), null);
+        return SyntaxTree.makeTree(context);
     }
 
 }

@@ -90,7 +90,7 @@ public class ConflictResolvedAction extends ContextAction {
 
     public boolean isEnabled() {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();        
-        
+        // XXX containsFileOfStatus would be better (do not test exclusions from commit)
         if(cache.listFiles(context, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0)
             return true;
 

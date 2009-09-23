@@ -181,7 +181,7 @@ public class MonitorsUpdateService {
                 throw new IllegalStateException("Updater can be started only once!"); // NOI18N
             }
 
-            erprintSession = new ErprintSession(execEnv, sproHome, experimentDir, ssdc);
+            erprintSession = ErprintSession.createNew(execEnv, sproHome, experimentDir, ssdc);
 
             final Future notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
 

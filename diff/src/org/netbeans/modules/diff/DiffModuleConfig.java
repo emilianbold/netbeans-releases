@@ -74,6 +74,8 @@ public class DiffModuleConfig {
     private static final String PREF_MERGE_UNRESOLVED_COLOR = "merge.unresolvedColor"; // NOI18N
     private static final String PREF_MERGE_APPLIED_COLOR = "merge.appliedColor"; // NOI18N
     private static final String PREF_MERGE_NOTAPPLIED_COLOR = "merge.notappliedColor"; // NOI18N
+    private static final String PREF_SIDEBAR_DELETED_COLOR = "sidebar.deletedColor"; //NOI18N
+    private static final String PREF_SIDEBAR_CHANGED_COLOR = "sidebar.changedColor"; //NOI18N
     
     private static final DiffModuleConfig INSTANCE = new DiffModuleConfig();
     
@@ -83,6 +85,8 @@ public class DiffModuleConfig {
     private final Color defaultAppliedColor = new Color(180, 255, 180);
     private final Color defaultNotAppliedColor = new Color(160, 200, 255);
     private final Color defaultUnresolvedColor = new Color(255, 160, 180);
+    private final Color defaultSidebarDeletedColor = new Color(255, 225, 232);
+    private final Color defaultSidebarChangedColor = new Color(233, 241, 255);
 
     public static DiffModuleConfig getDefault() {
         return INSTANCE;
@@ -114,6 +118,14 @@ public class DiffModuleConfig {
     public Color getUnresolvedColor() {
         return getColor(PREF_MERGE_UNRESOLVED_COLOR, defaultUnresolvedColor);
     }
+
+    public Color getSidebarDeletedColor () {
+        return getColor(PREF_SIDEBAR_DELETED_COLOR, defaultSidebarDeletedColor);
+    }
+
+    public Color getSidebarChangedColor () {
+        return getColor(PREF_SIDEBAR_CHANGED_COLOR, defaultSidebarChangedColor);
+    }
     
     public void setChangedColor(Color changedColor) {
         putColor(PREF_CHANGED_COLOR, changedColor);
@@ -130,13 +142,21 @@ public class DiffModuleConfig {
     public void setNotAppliedColor(Color notAppliedColor) {
         putColor(PREF_MERGE_NOTAPPLIED_COLOR, notAppliedColor);
     }
-    
+
     public void setAppliedColor(Color appliedColor) {
         putColor(PREF_MERGE_APPLIED_COLOR, appliedColor);
     }
-    
+
     public void setUnresolvedColor(Color unresolvedColor) {
         putColor(PREF_MERGE_UNRESOLVED_COLOR, unresolvedColor);
+    }
+
+    public void setSidebarDeletedColor (Color deletedColor) {
+        putColor(PREF_SIDEBAR_DELETED_COLOR, deletedColor);
+    }
+
+    public void setSidebarChangedColor (Color changedColor) {
+        putColor(PREF_SIDEBAR_CHANGED_COLOR, changedColor);
     }
     
     private void putColor(String key, Color color) {

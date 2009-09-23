@@ -23,6 +23,7 @@
 package org.netbeans.test.installer;
 
 import java.awt.event.KeyEvent;
+import java.io.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -61,8 +62,8 @@ public class Utils {
     private static final Pattern PATTERN = Pattern.compile("(20[0-9]{10})");
     public static final String NB_DIR_NAME = "NetBeans";
     public static final String GF2_DIR_NAME = "GlassFish2";
-    public static final String GF3_DIR_NAME = "GlassFish3";
-    public static final String TOMACAT_DIR_NAME = "Tomcat";
+    //public static final String GF3_DIR_NAME = "GlassFish3";
+    public static final String TOMCAT_DIR_NAME = "Tomcat";
     public static final String NEXT_BUTTON_LABEL = "Next >";
     public static final String FINISH_BUTTON_LABEL = "Finish";
     public static final String INSTALL_BUTTON_LABEL = "Install";
@@ -70,15 +71,25 @@ public class Utils {
     public static final String MAIN_FRAME_TITLE = "Netbeans IDE";
     public static final String OK = "OK";
 
-    public static String getInstaller(TestData data) {
-        //      File sourceBandle = new File(data.getInstallerFileName());
-        File destBundle = new File(data.getTestWorkDir() + File.separator + "installer" + "." + data.getPlatformExt());
+    public static String getInstaller( TestData data )
+    {
+      //      File sourceBandle = new File(data.getInstallerFileName());
 
+      String sAddr = data.getInstallerURL( );
+      String sFileName = sAddr.substring( sAddr.lastIndexOf( "/" ) + 1 );
+      if( sFileName.equals( "" ) )
+        sFileName = "installer" + "." + data.getPlatformExt( );
+      data.SetExecutableName( sFileName );
+
+      File destBundle = new File( data.getTestWorkDir( ) + File.separator + sFileName );
+
+      if( !destBundle.exists( ) )
+      {
         InputStream in = null;
         FileOutputStream out = null;
 
         try {
-            URL sourceBandeleURL = new URL(data.getInstallerURL());
+            URL sourceBandeleURL = new URL(sAddr);
             Proxy proxy = null;
 
             proxy = data.getProxy();
@@ -87,7 +98,7 @@ public class Utils {
 //            in = new FileInputStream(sourceBandle);
             out = new FileOutputStream(destBundle);
 
-            byte[] buffer = new byte[10240];
+            byte[] buffer = new byte[ 1 << 20 ]; // Just 1Mb
             int bytesRead;
 
             while ((bytesRead = in.read(buffer)) != -1) {
@@ -114,8 +125,9 @@ public class Utils {
                 }
             }
         }
-        data.setInstallerFile(destBundle);
-        return OK;
+      }
+      data.setInstallerFile(destBundle);
+      return OK;
     }
 
     @SuppressWarnings("empty-statement")
@@ -189,14 +201,20 @@ public class Utils {
     }
 
     @SuppressWarnings("empty-statement")
-    public static String extractUninstallerJar(TestData data) {
-
-        data.setUninstallerFile(new File(data.getTestWorkDir() + File.separator + NB_DIR_NAME + File.separator + "uninstall." + data.getPlatformExt()));
+    public static String extractUninstallerJar(TestData data)
+    {
+        data.setUninstallerFile(
+            new File(
+                data.GetNetBeansInstallPath( )
+                + File.separator
+                + "uninstall." + data.getPlatformExt( )
+              )
+          );
         int errorLevel = 0;
 
         try {
             java.lang.String command = null;
-            command = data.getUninstallerFile().getCanonicalPath();
+            command = data.getUninstallerFile( ).getCanonicalPath();
 
             java.lang.ProcessBuilder builder;
             java.lang.Process process;
@@ -271,11 +289,13 @@ public class Utils {
         return OK;
     }
 
-    public static void phaseOnePOne(TestData data, String installerType) {
+    public static void phaseOnePOne( TestData data, String installerType )
+    {
         try {
             String wd = System.getenv("WORKSPACE");
             TestCase.assertNotNull(wd);
             data.setWorkDir(new File(wd));
+            data.CreateInstallPaths( );
         } catch (IOException ex) {
             TestCase.fail("Can not get WorkDir");
         }
@@ -295,7 +315,11 @@ public class Utils {
     }
 
     public static void phaseOnePTwo(TestData data) {
-        TestCase.assertEquals("Get installer", Utils.OK, Utils.getInstaller(data));
+        TestCase.assertEquals(
+            "Get installer",
+            Utils.OK,
+            Utils.getInstaller( data )
+          );
         TestCase.assertEquals("Extract bundle", Utils.OK, Utils.extractBundle(data));
         TestCase.assertEquals("Load class", Utils.OK, Utils.loadClasses(data));
         TestCase.assertEquals("Run main method", Utils.OK, Utils.runInstaller(data));
@@ -352,12 +376,33 @@ public class Utils {
         new JButtonOperator(installerMain, NEXT_BUTTON_LABEL).push();
     }
 
-    public static void stepSetDir(TestData data, String label, String dir) {
-        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
+    public static void stepSetDir(
+        TestData data,
+        String label,
+        String dir
+      )
+    {
+      JFrameOperator installerMain = new JFrameOperator( MAIN_FRAME_TITLE );
 
-        new JTextFieldOperator((JTextField) (new JLabelOperator(installerMain, label).getLabelFor())).setText(data.getWorkDirCanonicalPath() + File.separator + dir);
+      if( null == dir )
+      {
+        String sDefaultPath = new JTextFieldOperator( ( JTextField )( new JLabelOperator( installerMain, label ).getLabelFor( ) ) ).getText( );
+        // Set default path to data
+        data.SetDefaultPath( sDefaultPath );
+      }
+      else
+      {
+        try
+        {
+          new JTextFieldOperator( ( JTextField )( new JLabelOperator( installerMain, label ).getLabelFor( ) ) ).setText( ( new File( dir ) ).getCanonicalPath( ) );
+        }
+        catch( IOException ex )
+        {
+          ex.printStackTrace( );
+        }
+      }
 
-        new JButtonOperator(installerMain, NEXT_BUTTON_LABEL).push();
+      new JButtonOperator( installerMain, NEXT_BUTTON_LABEL ).push( );
     }
 
     public static void stepChooseComponet(String name) {
@@ -395,93 +440,86 @@ public class Utils {
         phaseOnePTwo(data);
     }
 
+    /*
+    public static void phaseFourFive(TestData data)
+    {
+        Utils.waitSecond(data, 5);
+
+        TestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+
+        TestCase.assertEquals("NetBeans dir created", OK, Utils.dirExist(NB_DIR_NAME));
+
+        TestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
+        TestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
+        TestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
+
+        Utils.stepUninstall(data);
+
+        Utils.stepFinish();
+
+        Utils.waitSecond(data, 5);
+
+        TestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+
+        TestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME).equals(OK));
+        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMCAT_DIR_NAME).equals(OK));
+        TestCase.assertFalse("GlassFish2 dir deleted", Utils.dirExist(GF2_DIR_NAME).equals(OK));
+        TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME).equals(OK));
+    }
+    */
+
     public static void phaseFour(TestData data) {
         //Installation
-        Utils.stepInstall(data);
+        //Utils.stepInstall(data);
 
         //finish
-        Utils.stepFinish();
+        //Utils.stepFinish();
 
         Utils.waitSecond(data, 5);
 
         TestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
 
-        TestCase.assertEquals("NetBeans dir created", OK, Utils.dirExist(NB_DIR_NAME, data));
-
-        TestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
-        TestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
-        TestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
-
-        Utils.stepUninstall(data);
-
-        Utils.stepFinish();
-
-        Utils.waitSecond(data, 5);
-
-        TestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
-
-        TestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("GlassFish2 dir deleted", Utils.dirExist(GF2_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
-    }
-
-    public static void phaseFourWOUninstall(TestData data) {
-        //Installation
-        Utils.stepInstall(data);
-
-        //finish
-        Utils.stepFinish();
-
-        Utils.waitSecond(data, 5);
-
-        TestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
-
-        TestCase.assertEquals("NetBeans dir created", OK, Utils.dirExist(NB_DIR_NAME, data));
+        TestCase.assertEquals(
+            "NetBeans dir created",
+            OK,
+            Utils.dirExist( data.GetNetBeansInstallPath( ) )
+          );
         
     }
     
-    public static void phaseFive(TestData data) {
-        TestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
-        TestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
-        TestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
+    public static void phaseFive( TestData data )
+    {
+      TestCase.assertEquals(
+          "Extract uninstaller jar",
+          OK,
+          Utils.extractUninstallerJar( data )
+        );
+      TestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
+      TestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
 
-        Utils.stepUninstall(data);
+      Utils.stepUninstall(data);
 
-        Utils.stepFinish();
+      Utils.stepFinish();
 
-        Utils.waitSecond(data, 5);
+      Utils.waitSecond(data, 5);
 
-        TestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+      TestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
 
-        TestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("GlassFish2 dir deleted", Utils.dirExist(GF2_DIR_NAME, data).equals(OK));
-        TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
+      TestCase.assertFalse(
+          "NetBeans dir deleted",
+          Utils.dirExist( data.GetNetBeansInstallPath( ) ).equals( OK )
+        );
+      TestCase.assertFalse(
+          "GlassFish2 dir deleted",
+          Utils.dirExist( data.GetApplicationServerInstallPath( ) ).equals( OK )
+        );
+      TestCase.assertFalse(
+          "Tomcat dir deleted",
+          Utils.dirExist( data.GetTomcatInstallPath( ) ).equals( OK )
+        );
+      //TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
     }
     
-    public static void phaseTwo(TestData data) {
-        //welcome
-        stepWelcome();
-
-        //license
-        stepLicense();
-
-        //Choose dir
-        stepSetDir(data, "Install the NetBeans IDE", NB_DIR_NAME);
-    }
-
-    public static void phaseThree(TestData data) {
-        //Choose GF2 dir
-        stepSetDir(data, "Install GlassFish", GF2_DIR_NAME);
-        
-        //Choose GF3 dir
-        stepSetDir(data, "Install GlassFish", GF3_DIR_NAME);
-
-        //Choose Tomcat dir
-        stepSetDir(data, "Install Apache Tomcat", TOMACAT_DIR_NAME);
-    }
-
     public static void waitSecond(TestData data, int sec) {
         wait(data, 1000 * sec);
     }
@@ -536,13 +574,20 @@ public class Utils {
         return null;
     }
 
-    public static String dirExist(String dirName, TestData data) {
-        File dir = new File(data.getTestWorkDir() + File.separator + dirName);
-        if (dir.exists() && dir.isDirectory()) {
-            return OK;
-        } else {
-            return "Directory " + dirName + "does not exist";
-        }
+    public static String dirExist( String dirName )
+    {
+      if( null == dirName )
+        return "Directory specified is null.";
+
+      File dir = new File( dirName );
+      if( dir.exists( ) && dir.isDirectory( ) )
+      {
+        return OK;
+      }
+      else
+      {
+        return "Directory " + dirName + "does not exist";
+      }
     }
 
     private static String toString(Exception ex) {
@@ -586,4 +631,82 @@ public class Utils {
                 build_number + bundleType + "-" +
                 data.getPlatformName() + "." + data.getPlatformExt();
     }
+
+  public static void RunCommitTests( TestData data )
+  {
+    int iExitCode = -1;
+    try
+    {
+    Runtime rt = Runtime.getRuntime( );
+    // Get module path
+    // c:\\work\\hg\\main\\php.editor
+    String sExec =
+        "D:\\Ant\\apache-ant-1.7.1\\bin\\ant.bat"
+        + " -f ../all-tests.xml -Dbasedir=."
+        + " -Dmodules.list=" + data.GetTestPackage( )
+        // + " -Dtest.config=commit"
+        + " -Dnetbeans.dest.dir=" + data.getWorkDirCanonicalPath( ) + File.separator + NB_DIR_NAME
+        ;
+    // Start tests
+    System.out.println( "++++" + sExec );
+    Process pTesting = rt.exec(
+        sExec,
+        null,
+        new File( "E:\\buffer\\btd\\qa-functional" )
+      );
+
+    BufferedReader br = new BufferedReader(
+        new InputStreamReader( pTesting.getInputStream( ) )
+      );
+    BufferedReader bre = new BufferedReader(
+        new InputStreamReader( pTesting.getErrorStream( ) )
+      );
+    while( true )
+    {
+      String s;
+      if( br.ready( ) )
+      {
+        s = br.readLine( );
+        System.out.println( "[out] " + s );
+      }
+      else
+      if( bre.ready( ) )
+      {
+        s = bre.readLine( );
+        System.out.println( "[err] " + s );
+      }
+      else
+      {
+        try
+        {
+          iExitCode = pTesting.exitValue( );
+          break;
+        }
+        catch( IllegalThreadStateException ex )
+        {
+          try
+          {
+            Thread.sleep( 50 );
+          }
+          catch( InterruptedException exx )
+          {
+            exx.printStackTrace( );
+          }
+        }
+      }
+      //pTesting.waitFor( );
+        // ToDo
+      // Check result
+        // ToDo
+    }
+    }
+    catch( IOException ex )
+    {
+      ex.printStackTrace( );
+    }
+
+    TestCase.assertEquals("Commit Test Result", 0, iExitCode );
+
+    return;
+  }
 }

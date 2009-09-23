@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
 import java.util.Collections;
 import javax.swing.text.Document;
@@ -51,8 +52,8 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -118,8 +119,8 @@ public class HtmlCompletionQuery extends UserTask {
         lowerCase = usesLowerCase(parserResult, astOffset);
         isXHtml = parserResult.getHtmlVersion().isXhtml();
 
-        TokenHierarchy hi = snapshot.getTokenHierarchy();
-        TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+        TokenHierarchy<?> hi = snapshot.getTokenHierarchy();
+        TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
         assert ts != null; //should be ensured by the parsing.api that we always get html token sequence from the snapshot
 
         int diff = ts.move(astOffset);
@@ -143,7 +144,7 @@ public class HtmlCompletionQuery extends UserTask {
         int anchor = -1;
 
         //get text before cursor
-        Token item = ts.token();
+        Token<HTMLTokenId> item = ts.token();
         int itemOffset = item.offset(hi);
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
@@ -254,12 +255,15 @@ public class HtmlCompletionQuery extends UserTask {
                 }
                 result = items;
             } else {
-                if (node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+                if (node.type() == AstNode.NodeType.UNKNOWN_TAG || node.type() == AstNode.NodeType.ROOT) {
                     //nothing to complete in an unknown tag
                     return null;
                 }
-                //should be open tag if not unknown
+                //should be open tag if not unknown or root in case of the text being broken
+                //that the parser cannot recognize the tag node
                 assert node.type() == AstNode.NodeType.OPEN_TAG : "Unexpecet node type " + node.type();
+
+                
 
                 DTD.Element tag = node.getDTDElement();
                 List possible = tag.getAttributeList(prefix); // All attribs of given tag
@@ -322,19 +326,24 @@ public class HtmlCompletionQuery extends UserTask {
                 }
 
                 DTD.Attribute arg = tag.getAttribute(argName);
-                if (arg == null /*|| arg.getType() != DTD.Attribute.TYPE_SET*/) {
-                    return null;
-                }
 
                 result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {
                     anchor = offset;
-                    result.addAll(translateValues(anchor, arg.getValueList("")));
-                    AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
-                    if (valuesCompletion != null) {
-                        result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                    if (arg != null) {
+                        result.addAll(translateValues(anchor, arg.getValueList("")));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        if (valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                        }
                     }
+
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, "", itemText, node, argName, false);
+                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                        result.addAll(e.completeAttributeValue(context));
+                    }
+
                 } else {
                     String quotationChar = null;
                     if (preText != null && preText.length() > 0) {
@@ -349,11 +358,19 @@ public class HtmlCompletionQuery extends UserTask {
 
                     anchor = documentItemOffset + (quotationChar != null ? 1 : 0);
 
-                    result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
-                    AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
-                    if (valuesCompletion != null) {
-                        result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                    if (arg != null) {
+                        result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        if (valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                        }
                     }
+
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node, argName, quotationChar != null);
+                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                        result.addAll(e.completeAttributeValue(context));
+                    }
+
                 }
             }
         } else if (id == HTMLTokenId.SCRIPT) {
@@ -416,7 +433,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private List<CompletionItem> translateCharRefs(int offset, List refs) {
-        List result = new ArrayList(refs.size());
+        List<CompletionItem> result = new ArrayList<CompletionItem>(refs.size());
         String name;
         for (Iterator i = refs.iterator(); i.hasNext();) {
             DTD.CharRef chr = (DTD.CharRef) i.next();
@@ -527,9 +544,9 @@ public class HtmlCompletionQuery extends UserTask {
 
     List<HtmlCompletionItem> translateValues(int offset, List values, String quotationChar) {
         if (values == null) {
-            return new ArrayList(0);
+            return Collections.emptyList();
         }
-        List result = new ArrayList(values.size());
+        List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(values.size());
         if (quotationChar != null) {
             offset++; //shift the offset after the quotation
         }

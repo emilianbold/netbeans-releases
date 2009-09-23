@@ -78,6 +78,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final String shell;
         private final File tmpDirFile;
         private final String tmpDir;
+        private final String path;
 
         public HostInfoImpl() {
             Properties env = WindowsSupport.getInstance().getEnv();
@@ -103,15 +104,27 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
             File _tmpDirFile = null;
             String _tmpDir = null;
+            String _path = "";
+
+            String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
+
+            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.getProperty("USERNAME")); // NOI18N
+            _tmpDir = _tmpDirFile.getAbsolutePath();
 
             try {
-                _tmpDirFile = new File(System.getProperty("java.io.tmpdir"), "dlight_" + env.getProperty("USERNAME")).getCanonicalFile(); // NOI18N
-                _tmpDir = (shell == null) ? _tmpDirFile.getCanonicalPath() : WindowsSupport.getInstance().convertToShellPath(_tmpDirFile.getCanonicalPath());
+                _tmpDirFile = _tmpDirFile.getCanonicalFile();
+                _tmpDir = _tmpDirFile.getCanonicalPath();
             } catch (IOException ex) {
+            }
+
+            if (shell != null) {
+                _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
+                _path = env.getProperty("PATH"); // NOI18N
             }
 
             tmpDirFile = _tmpDirFile;
             tmpDir = _tmpDir;
+            path = _path;
 
             os = new OS() {
 
@@ -167,6 +180,10 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
         public long getClockSkew() {
             return 0;
+        }
+
+        public String getPath() {
+            return path;
         }
     }
 }

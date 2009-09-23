@@ -102,8 +102,9 @@ public class PhpStructureScanner implements StructureScanner {
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
 
     public List<? extends StructureItem> scan(final ParserResult info) {
-        final List<StructureItem> items = new ArrayList<StructureItem>();
-        Model model = ModelFactory.getModel(info);
+        final List<StructureItem> items = new ArrayList<StructureItem>();        
+        PHPParseResult result = (PHPParseResult) info;
+        final Model model = result.getModel();
         FileScope fileScope = model.getFileScope();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope nameScope : declaredNamespaces) {
@@ -202,7 +203,8 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
-            Model model = ModelFactory.getModel(info);
+            PHPParseResult result = (PHPParseResult) info;
+            final Model model = result.getModel();
             FileScope fileScope = model.getFileScope();
             List<Scope> scopes = getEmbededScopes(fileScope, null);
             for (Scope scope : scopes) {
@@ -404,17 +406,17 @@ public class PhpStructureScanner implements StructureScanner {
                 }
             }
             formatter.appendText(")");   //NOI18N
-            Collection<? extends TypeScope> returnTypes = function.getReturnTypes();
+            Collection<? extends String> returnTypes = function.getReturnTypeNames();
             if (!returnTypes.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
                 StringBuilder sb = null;
-                for (TypeScope type : returnTypes) {
+                for (String type : returnTypes) {
                     if (sb == null) {
                         sb = new StringBuilder();
                     } else {
                         sb.append(", ");//NOI18N
                     }
-                    sb.append(type.getName());
+                    sb.append(type);
                 }
                 formatter.appendText(sb.toString());
                 formatter.appendHtml(CLOSE_FONT);
@@ -433,17 +435,17 @@ public class PhpStructureScanner implements StructureScanner {
             formatter.appendText(elementHandle.getName());
             if (elementHandle instanceof FieldElement) {
                 final FieldElement fieldElement = (FieldElement) elementHandle;
-                Collection<? extends TypeScope> types = fieldElement.getTypes(fieldElement.getOffset());
+                Collection<? extends String> types = fieldElement.getDefaultTypeNames();
                 StringBuilder sb = null;
                 if (!types.isEmpty()) {
                     formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                    for (TypeScope type : types) {
+                    for (String type : types) {
                         if (sb == null) {
                             sb = new StringBuilder();
                         } else {
                             sb.append(", ");//NOI18N
                         }
-                        sb.append(type.getName());
+                        sb.append(type);
 
                     }
                     formatter.appendText(sb.toString());
@@ -522,10 +524,10 @@ public class PhpStructureScanner implements StructureScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getName());
-            ClassScope superCls = ModelUtils.getFirst(getClassScope().getSuperClasses());
-            if (superCls != null) {
+            String superCalssName = ModelUtils.getFirst(getClassScope().getSuperClassNames());
+            if (superCalssName != null) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
-                formatter.appendText(superCls.getName());
+                formatter.appendText(superCalssName);
                 formatter.appendHtml(CLOSE_FONT);
             }
             Collection<? extends String> interfaes = getClassScope().getSuperInterfaceNames();

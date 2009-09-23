@@ -75,6 +75,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -107,8 +108,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             context.variableStack = varStack;
         }
         
-        context.path = getPath();
-        context.index = PHPIndex.get(context.parserResult);
+        context.path = getPath();        
         this.rules = rules;
     }
 
@@ -194,6 +194,19 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
         super.visit(node);
     }
+
+    @Override
+    public void visit(NamespaceDeclaration node) {
+        for (PHPRule rule : rules) {
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
+    
 
     @Override
     public void visit(GotoLabel node) {
@@ -346,7 +359,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.index.getAllMethods((PHPParseResult) context.parserResult,
+                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.getIndex().getAllMethods((PHPParseResult) context.parserResult,
                         className, fname, QuerySupport.Kind.EXACT, Modifier.PUBLIC));
                 
                 assumeParamsPassedByRefInitialized(functions, node.getMethod());
@@ -370,7 +383,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             String fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.index.getAllMethods((PHPParseResult) context.parserResult,
+                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.getIndex().getAllMethods((PHPParseResult) context.parserResult,
                         className, fname, QuerySupport.Kind.EXACT,
                         Modifier.PUBLIC | Modifier.STATIC));
                 
@@ -394,7 +407,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             String fname = CodeUtils.extractFunctionName(node);
             
             if (fname != null) {                
-                Collection<IndexedFunction> functions = context.index.getFunctions((PHPParseResult) context.parserResult, fname, QuerySupport.Kind.EXACT);
+                Collection<IndexedFunction> functions = context.getIndex().getFunctions((PHPParseResult) context.parserResult, fname, QuerySupport.Kind.EXACT);
                 assumeParamsPassedByRefInitialized(functions, node);
             }
         }
@@ -490,13 +503,22 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ForEachStatement node) {
-        if (node.getKey() instanceof Variable) {
-            Variable var = (Variable) node.getKey();
+        Expression key = node.getKey();
+        while (key instanceof Reference) {
+            key = ((Reference) key).getExpression();
+        }
+
+        if (key instanceof Variable) {
+            Variable var = (Variable) key;
             varStack.addVariableDefinition(var);
         }
-        
-        if (node.getValue() instanceof Variable) {
-            Variable var = (Variable) node.getValue();
+        Expression value = node.getValue();
+        while (value instanceof Reference) {
+            value = ((Reference) value).getExpression();
+        }
+
+        if (value instanceof Variable) {
+            Variable var = (Variable) value;
             varStack.addVariableDefinition(var);
         }
         

@@ -41,7 +41,6 @@
 package org.netbeans.modules.javacard.project;
 
 import java.awt.Image;
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -52,10 +51,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -72,29 +68,16 @@ import javax.swing.event.ChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.project.deps.ui.DependenciesNode;
-import org.netbeans.modules.javacard.project.libraries.LibrariesManager;
-import org.netbeans.modules.javacard.project.libraries.LibrariesManager.ErrFile;
-import org.netbeans.modules.javacard.project.ui.JarOrDirectoryFilter;
-import org.netbeans.modules.javacard.project.ui.WaitNode;
 import org.netbeans.spi.actions.Single;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.NewTemplateAction;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ProxyLookup;
@@ -367,178 +350,6 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
                 return true;
             }
         }
-    }
-
-    private static final class ErrNode extends AbstractNode {
-
-        ErrNode(String uri, JCProject project) {
-            super(Children.LEAF, Lookups.singleton(project));
-            setDisplayName(uri);
-            setName(uri);
-            setIconBaseWithExtension("org/netbeans/modules/javacard/resources/libraries.gif"); //NOI18N
-        }
-
-        @Override
-        public String getHtmlDisplayName() {
-            String unk = NbBundle.getMessage(ErrNode.class, "BAD_LIB_REF"); //NOI18N
-            return unk + "<font color='!nb.errorForeground'>" + getDisplayName(); //NOI18N
-        }
-
-        @Override
-        public Action[] getActions(boolean ignored) {
-            return new Action[]{new RemoveClasspathEntryAction(this, new File(getName()))};
-        }
-
-        @Override
-        public Image getIcon(int type) {
-            Image result = super.getIcon(type);
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/javacard/resources/brokenProjectBadge.png"); //NOI18N
-            return ImageUtilities.mergeImages(result, badge, 8, 8);
-        }
-    }
-
-    private static final class OpenProjectAction extends Single<File> {
-
-        OpenProjectAction() {
-            super(File.class, NbBundle.getMessage(OpenProjectAction.class,
-                    "ACTION_OPEN_PROJECT"), null); //NOI18N
-        }
-
-        @Override
-        protected void actionPerformed(File target) {
-            while (target != null && !target.exists()) {
-                target = target.getParentFile();
-            }
-            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(FileUtil.normalizeFile(target)));
-            if (p != null) {
-                OpenProjects.getDefault().open(new Project[]{p}, false);
-            }
-        }
-
-        @Override
-        protected boolean isEnabled(File target) {
-            while (target != null && !target.exists()) {
-                target = target.getParentFile();
-            }
-            if (target == null) {
-                return false;
-            }
-            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(FileUtil.normalizeFile(target)));
-            if (p == null) {
-                return false;
-            }
-            return !OpenProjects.getDefault().isProjectOpen(p);
-        }
-    }
-
-    private static final class RemoveClasspathEntryAction extends Single<JCProject> {
-
-        private final File file;
-        private Node n;
-
-        RemoveClasspathEntryAction(Node n, File file) {
-            super(JCProject.class, NbBundle.getMessage(RemoveClasspathEntryAction.class, "ACTION_REMOVE"), null); //NOI18N
-            this.file = file;
-            this.n = n;
-        }
-
-        @Override
-        protected void actionPerformed(JCProject target) {
-            String toRemove = file instanceof ErrFile ? ((ErrFile) file).val : file.getAbsolutePath();
-            target.getLookup().lookup(LibrariesManager.class).removeFileFromClasspath(toRemove);
-            try {
-                if (n instanceof ErrNode) {
-                    ((ErrNode) n).destroy();
-                } else if (n instanceof LibNode) {
-                    ((LibNode) n).destroy();
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-    }
-
-    private static final class LibNode extends AbstractNode implements FileChangeListener {
-
-        LibNode(File file, JCProject project) {
-            super(Children.LEAF, Lookups.fixed(file, project));
-            setIconBaseWithExtension("org/netbeans/modules/javacard/resources/libraries.gif"); //NOI18N
-            setDisplayName(file.getAbsolutePath());
-            setName(file.getAbsolutePath());
-            FileUtil.addFileChangeListener(this, file);
-        }
-
-        @Override
-        public Image getIcon(int type) {
-            //Try to get the owning project's icon
-            File f = getLookup().lookup(File.class);
-            while (!f.exists() && f.getParentFile() != null) {
-                f = f.getParentFile();
-            }
-            if (f != null) {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
-                if (fo != null) {
-                    Project p = FileOwnerQuery.getOwner(fo);
-                    if (p != null) {
-                        ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
-                        if (info != null) {
-                            Icon icon = info.getIcon();
-                            if (icon != null) {
-                                return ImageUtilities.icon2Image(icon);
-                            }
-                        }
-                    }
-                }
-            }
-            return super.getIcon(type);
-        }
-
-        @Override
-        public Action[] getActions(boolean ignored) {
-            return new Action[]{new OpenProjectAction(), null,
-                        new RemoveClasspathEntryAction(this, getLookup().lookup(File.class))};
-        }
-
-        @Override
-        public Image getOpenedIcon(int type) {
-            return getIcon(type);
-        }
-
-        @Override
-        public String getHtmlDisplayName() {
-            File f = getLookup().lookup(File.class);
-            if (f != null && !f.exists()) {
-                return "<font color='!nb.errorForeground'>" + getDisplayName(); //NOI18N
-                }
-            return null;
-        }
-
-        public void fileFolderCreated(FileEvent fe) {
-            fireDisplayNameChange(null, getDisplayName());
-            fireIconChange();
-        }
-
-        public void fileDataCreated(FileEvent fe) {
-            fireDisplayNameChange(null, getDisplayName());
-            fireIconChange();
-        }
-
-        public void fileChanged(FileEvent fe) {
-            //do nothing
-            }
-
-        public void fileDeleted(FileEvent fe) {
-            fireDisplayNameChange(null, getDisplayName());
-            fireIconChange();
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-            //do nothing
-            }
-
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            //do nothing
-            }
     }
 
     /** Yet another cool filter node just to add properties action

@@ -45,13 +45,17 @@ made subject to such option by the copyright holder.
   <clients>
     <client name="CalculatorWSService">
       <wsdl-url>http://localhost:8080/SecureCalculatorApp/CalculatorWSService?wsdl</wsdl-url>
-      <local-wsdl-file>localhost_8080/SecureCalculatorApp/CalculatorWSService.wsdl</local-wsdl-file>
+      <local-wsdl-file>CalculatorWSService.wsdl</local-wsdl-file>
       <package-name forceReplace="true">org.me.calculator.client</package-name>
       <catalog-file>catalog.xml</catalog-file>
       <wsimport-options>
         <wsimport-option>
           <wsimport-option-name>package</wsimport-option-name>
           <wsimport-option-value>org.me.calculator.client</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>verbose</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
         </wsimport-option>
         <wsimport-option>
           <wsimport-option-name>xnocompile</wsimport-option-name>

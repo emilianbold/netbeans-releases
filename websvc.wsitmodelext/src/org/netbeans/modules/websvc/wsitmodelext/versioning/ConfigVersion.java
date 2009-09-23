@@ -57,6 +57,14 @@ public enum ConfigVersion {
             }
             return false;
         }
+    },
+    CONFIG_2_0 {
+        public final boolean isSupported(WSStackVersion jaxWsVersion) {
+            if (jaxWsVersion.compareTo(WSStackVersion.valueOf(2, 2, 0, 0)) >= 0) {
+                return true;
+            }
+            return false;
+        }
     };
 
     @Override
@@ -65,7 +73,7 @@ public enum ConfigVersion {
     }
     
     public final static ConfigVersion getDefault() {
-        return CONFIG_1_3;
+        return CONFIG_2_0;
     }
 
     public abstract boolean isSupported(WSStackVersion jaxWsVersion);

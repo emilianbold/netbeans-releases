@@ -36,14 +36,14 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Vector;
+import javax.swing.Action;
 import javax.swing.Icon;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -53,24 +53,44 @@ import org.openide.util.ImageUtilities;
  *
  * @author mt154047
  */
-final class MultipleCallStackRootNode extends AbstractNode{
-    private final List<StackRootNode> children = new ArrayList<StackRootNode>();
-    private final Image  icon = ImageUtilities.icon2Image(new MyIcon());
+final class MultipleCallStackRootNode extends AbstractNode {
 
-    MultipleCallStackRootNode() {
+    private final Vector<StackRootNode> children = new Vector<StackRootNode>();
+    private final Image icon = ImageUtilities.icon2Image(new MyIcon());
+    private final Action prefferedAction;
+
+    MultipleCallStackRootNode(Action action) {
         super(Children.LEAF);
         setDisplayName("Root");//NOI18N
+        this.prefferedAction = action;
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{prefferedAction};
     }
 
 
 
-    void add(StackRootNode node){
-        children.add(node);
-        setChildren(Children.LEAF);
-        setChildren(new MultipleCallStackRootChildren(children));
+ 
+
+    synchronized void add(final StackRootNode node) {
+        if (!Children.MUTEX.isReadAccess()) {
+            Children.MUTEX.writeAccess(new Runnable() {
+
+                public void run() {
+                    children.add(node);
+                    setChildren(Children.LEAF);
+                    setChildren(new MultipleCallStackRootChildren(children));
+                }
+            });
+
+
+        }
     }
 
-    void removeAll(){
+    void removeAll() {
+
         children.clear();
         setChildren(Children.LEAF);
     }
@@ -84,20 +104,13 @@ final class MultipleCallStackRootNode extends AbstractNode{
 //    public Image getOpenedIcon(int type) {
 //        return getIcon(type);
 //    }
-
-
-
 //    @Override
 //    public String getHtmlDisplayName() {
 //        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
 //    }
-
-    
-
-    class MyIcon implements Icon{
+    class MyIcon implements Icon {
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
-            
         }
 
         public int getIconWidth() {
@@ -107,7 +120,5 @@ final class MultipleCallStackRootNode extends AbstractNode{
         public int getIconHeight() {
             return 10;
         }
-        
     }
-
 }

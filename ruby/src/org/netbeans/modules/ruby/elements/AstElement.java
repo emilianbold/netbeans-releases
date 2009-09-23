@@ -75,6 +75,10 @@ public abstract class AstElement extends RubyElement {
     private String in;
     protected Set<Modifier> modifiers;
     private RubyType type;
+    /**
+     * Specfies whether this element should be hidden from the navigator window.
+     */
+    private boolean hidden;
 
     public AstElement(ParserResult info, Node node) {
         super();
@@ -239,6 +243,20 @@ public abstract class AstElement extends RubyElement {
         }
 
         return OffsetRange.NONE;
+    }
+
+    /**
+     * @see #hidden
+     */
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    /**
+     * @see #hidden
+     */
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 
 }

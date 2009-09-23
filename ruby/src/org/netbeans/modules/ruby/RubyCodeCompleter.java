@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1280,8 +1281,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         // TODO: should only include fields etc. down to caret location??? Decide. (Depends on language semantics. Can I have forward referemces?
         if (call.isConstantExpected()) {
-            addConstants(root, constants);
+            //addConstants(root, constants);
             RubyConstantCompleter.complete(proposals, request, anchor, caseSensitive, call);
+            return completionResult;
         }
         
         // If we're in a call, add in some parserResult and help for the code completion call
