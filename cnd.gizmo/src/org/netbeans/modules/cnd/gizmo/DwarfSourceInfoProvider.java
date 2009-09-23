@@ -70,7 +70,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     private WeakHashMap<String, Map<String, AbstractFunctionToLine>> cache;
     private Map<String, String> onePath;
 
