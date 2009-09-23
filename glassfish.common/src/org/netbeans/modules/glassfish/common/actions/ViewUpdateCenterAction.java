@@ -58,6 +58,7 @@ import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
@@ -81,7 +82,7 @@ public class ViewUpdateCenterAction extends NodeAction {
         if (needToBeAdmin) {
             displayAdminWarning();
         }
-        GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
+        final GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
         if(commonSupport != null) {
             // updatetool already running?  if yes, is there a crossplatform way
             // to set focus to it?
@@ -125,6 +126,10 @@ public class ViewUpdateCenterAction extends NodeAction {
                             if(realLauncher != null) {
                                 new NbProcessDescriptor(realLauncher.getPath(), "").exec(null, null, realLauncher.getParentFile());
                             }
+
+                            String path = commonSupport.getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+                            File f = new File(path, "modules"); // NOI18N
+                            FileUtil.toFileObject(FileUtil.normalizeFile(f)).refresh();
                         } catch (java.io.IOException ioe) {
                             needToBeAdmin = true;
                             displayAdminWarning();
