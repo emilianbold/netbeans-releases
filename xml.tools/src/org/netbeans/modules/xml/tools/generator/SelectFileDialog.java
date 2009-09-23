@@ -177,6 +177,8 @@ public final class SelectFileDialog {
                 // fix for #165043 on Windows: a file path similar "c:wsdl.dtd" is forbidden
                 (typedText.indexOf(":") != -1) ||  
                 // fix for #165043 on Windows: a file path similar "c:/wsdl.dtd" is forbidden
+                (typedText.indexOf("/") != -1) ||
+                // fix for #165043 on Windows: a file path similar "c:\wsdl.dtd" is forbidden
                 (typedText.indexOf("\\") != -1)) {
                 selectDD.setValid(false);
             } else {
