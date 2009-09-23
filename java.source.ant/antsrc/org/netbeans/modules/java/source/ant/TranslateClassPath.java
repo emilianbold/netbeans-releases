@@ -148,7 +148,7 @@ public class TranslateClassPath extends Task {
                     }
 
                     Boolean bamiResult = clean ? BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL())
-                                               : BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), false);
+                                               : BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), false, false);
 
                     if (bamiResult == null) {
                         appendEntry = true;
