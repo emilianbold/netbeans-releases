@@ -40,9 +40,7 @@
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
-import java.util.List;
 import javax.swing.Action;
-import javax.swing.Icon;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.openide.nodes.AbstractNode;
@@ -53,38 +51,53 @@ import org.openide.util.ImageUtilities;
  *
  * @author mt154047
  */
-final class StackRootNode extends AbstractNode{
-    private final String stackName;
-    private final Image icon;
+ class PlainListFunctionCallNode extends  AbstractNode implements GoToSourceAction.GoToSourceActionReadnessListener {
 
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
-//        super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
-        super(stack == null || stack.size() == 0 ? Children.LEAF : new PlainListFunctionCallChildren(sourceFileInfoDataProvider, stack));
-        this.stackName = stackName;
-        this.icon = icon != null ? ImageUtilities.icon2Image(icon) : null;
-    }
-    
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
-        this(sourceFileInfoDataProvider, null, stackName, stack);
-    }
+    private final FunctionCall functionCall;
+    private GoToSourceAction action;
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[0];
+    PlainListFunctionCallNode(SourceFileInfoDataProvider sourceFileInfoDataProvider,  FunctionCall functionCall) {
+        super(Children.LEAF);
+        this.functionCall = functionCall;
+        action = new GoToSourceAction(sourceFileInfoDataProvider, functionCall, this);
     }
 
     @Override
     public String getDisplayName() {
-        return stackName;
+        return functionCall.getDisplayedName();
     }
 
     @Override
     public Image getIcon(int type) {
-      return icon == null ? super.getIcon(type) : icon;
+        return ImageUtilities.mergeImages(CallStackUISupport.functionIcon, CallStackUISupport.upBadge, 0, 0);
     }
 
     @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{action};
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return action;
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        if (!action.isEnabled()) {
+            String baseName = super.getHtmlDisplayName();
+            baseName = baseName != null ? baseName : getDisplayName();
+            return "<font color='!controlShadow'>" + baseName; // NOI18N
+            }
+        return super.getHtmlDisplayName();
+    }
+
+    public void ready() {
+        fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
     }
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.core.stack.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -60,8 +61,8 @@ import org.netbeans.modules.dlight.util.ui.Renderer;
  */
 public final class StackRenderer implements Renderer<DataRow> {
 
+    private final Object lock = new String("StackRenderer.lock");//NOI18N
     private final List<Column> stackColumns;
-    private MultipleCallStackPanel resultPanel = null;
 
     public StackRenderer(List<Column> stackColumns) {
         this.stackColumns = Collections.unmodifiableList(
@@ -69,40 +70,42 @@ public final class StackRenderer implements Renderer<DataRow> {
     }
 
     public JComponent render(final DataRow data) {
-        
-        final StackDataProvider stackProvider = findStackDataProvider();
-        if (stackProvider != null) {
-            DLightExecutorService.submit(new Runnable() {
-                public void run() {
-                    final List<List<FunctionCall>> stacks = new ArrayList<List<FunctionCall>>(stackColumns.size());
-                    final Column[] columns_array = stackColumns.toArray(new Column[0]);
-                    for (int i = 0, size = columns_array.length; i < size; i++) {
-                        Column column = columns_array[i];
-                        int stackId = DataUtil.toInt(data.getData(column.getColumnName()));
-                        if (0 < stackId) {
-                            stacks.set(i, stackProvider.getCallStack(stackId));
-                        }
-                    }
-                    UIThread.invoke(new Runnable() {
+        synchronized (lock) {
+            final StackDataProvider stackProvider = findStackDataProvider();
+            final MultipleCallStackPanel resultPanel = MultipleCallStackPanel.createInstance(stackProvider);
+            if (stackProvider != null) {
+                DLightExecutorService.submit(new Runnable() {
 
-                        public void run() {
-                            for (int i = 0, size = columns_array.length; i < size; i++) {
-                                Column column = columns_array[i];
-                                List<FunctionCall> stack = stacks.get(i);
-                                if (stack != null) {
-                                    if (resultPanel == null) {
-                                        resultPanel = MultipleCallStackPanel.createInstance(stackProvider);
-                                    }
-                                    resultPanel.add(column.getColumnUName(), true, stack);
-                                }
+                    public void run() {
+                        final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>();
+                        stacks.setSize(stackColumns.size());
+                        final Column[] columns_array = stackColumns.toArray(new Column[0]);
+                        for (int i = 0, size = columns_array.length; i < size; i++) {
+                            Column column = columns_array[i];
+                            int stackId = DataUtil.toInt(data.getData(column.getColumnName()));
+                            if (0 < stackId) {
+                                stacks.set(i, stackProvider.getCallStack(stackId));
                             }
-
                         }
-                    });
-                }
-            }, "Fill-in panel for a stack in StackRenderer");//NOI18N
+                        UIThread.invoke(new Runnable() {
+
+                            public void run() {
+                                for (int i = 0, size = columns_array.length; i < size; i++) {
+                                    Column column = columns_array[i];
+                                    List<FunctionCall> stack = stacks.get(i);
+                                    if (stack != null) {
+                                        resultPanel.add(column.getColumnUName(), true, stack);
+                                    }
+                                }
+
+                            }
+                        });
+                    }
+                }, "Fill-in panel for a stack in StackRenderer");//NOI18N
+            }
+            return resultPanel;
         }
-        return resultPanel;
+     
     }
     private boolean stackDataProviderSearched;
     private StackDataProvider stackDataProvider;

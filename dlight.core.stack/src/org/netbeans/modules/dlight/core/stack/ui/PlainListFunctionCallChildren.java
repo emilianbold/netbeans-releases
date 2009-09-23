@@ -39,52 +39,35 @@
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.awt.Image;
 import java.util.List;
-import javax.swing.Action;
-import javax.swing.Icon;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author mt154047
  */
-final class StackRootNode extends AbstractNode{
-    private final String stackName;
-    private final Image icon;
+public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
+    private final List<FunctionCall> functionCalls;
+    private final SourceFileInfoDataProvider sourceInfoProvider;
 
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
-//        super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
-        super(stack == null || stack.size() == 0 ? Children.LEAF : new PlainListFunctionCallChildren(sourceFileInfoDataProvider, stack));
-        this.stackName = stackName;
-        this.icon = icon != null ? ImageUtilities.icon2Image(icon) : null;
-    }
-    
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
-        this(sourceFileInfoDataProvider, null, stackName, stack);
+    PlainListFunctionCallChildren(SourceFileInfoDataProvider sourceInfoProvider, List<FunctionCall> functionCalls) {
+        this.functionCalls = functionCalls;
+        this.sourceInfoProvider = sourceInfoProvider;
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[0];
+    protected void addNotify() {
+        super.addNotify();
+        setKeys(functionCalls);
     }
 
-    @Override
-    public String getDisplayName() {
-        return stackName;
-    }
+
 
     @Override
-    public Image getIcon(int type) {
-      return icon == null ? super.getIcon(type) : icon;
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
+    protected Node[] createNodes(FunctionCall key) {
+        return new PlainListFunctionCallNode[]{new PlainListFunctionCallNode(sourceInfoProvider, key)};
     }
 }
