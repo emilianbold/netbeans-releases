@@ -47,16 +47,13 @@ import org.netbeans.modules.mercurial.*;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Adds/removes files to repository .hgignore.
@@ -118,82 +115,69 @@ public class IgnoreAction extends ContextAction {
     
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        final File repository = HgUtils.getRootFile(context);
-        if(repository == null || ctxFiles == null || ctxFiles.size() == 0) 
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
+        }
         return true; 
     }
 
     public void performAction(ActionEvent e) {
-        final File repository = HgUtils.getRootFile(context);
-        if(repository == null) return;        
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(ctxFiles == null || ctxFiles.size() == 0) return;        
-        final File[] files = ctxFiles.toArray(new File[context.getRootFiles().size()]);
+        final File[] repositories = HgUtils.getRepositoryRoots(context);
+        if(repositories == null || repositories.length == 0) return;
 
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        final Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(ctxFiles == null || ctxFiles.size() == 0) return;        
+
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repositories[0]);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
+                for (File repository : repositories) {
+                    final File[] files = HgUtils.filterForRepository(context, repository, true);
+                    performIgnore(repository, files); // NOI18N
+                }
+            }
+
+            private void performIgnore(final File repository, final File[] files) throws MissingResourceException {
                 OutputLogger logger = getLogger();
                 try {
                     mActionStatus = getActionStatus(files);
                     if (mActionStatus == UNDEFINED) {
-                        logger.outputInRed(
-                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE")); // NOI18N
-                        logger.outputInRed(
-                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE_SEP")); // NOI18N
-                        logger.output(
-                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_ONLY_LOCALLY_NEW")); // NOI18N
-                        logger.outputInRed(
-                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_DONE")); // NOI18N
-                        logger.output(""); // NOI18N
+                        logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE"));
+                        logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE_SEP"));
+                        logger.output(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_ONLY_LOCALLY_NEW"));
+                        logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_DONE"));
+                        logger.output("");
                         return;
                     }
-        
                     if (mActionStatus == IGNORING) {
                         HgUtils.addIgnored(repository, files);
-                        logger.outputInRed(
-                                NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_IGNORE_TITLE")); // NOI18N
-                        logger.outputInRed(
-                                NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_IGNORE_TITLE_SEP")); // NOI18N
-                        logger.output(
-                                NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_IGNORE_INIT_SEP", repository.getName())); // NOI18N                          
+                        logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE"));
+                        logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE_SEP"));
+                        logger.output(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_INIT_SEP", repository.getName()));
                     } else {
                         HgUtils.removeIgnored(repository, files);
-                        logger.outputInRed(
-                                NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_UNIGNORE_TITLE")); // NOI18N
-                        logger.outputInRed(
-                                NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_UNIGNORE_TITLE_SEP")); // NOI18N
-                        logger.output(
-                                NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_UNIGNORE_INIT_SEP", repository.getName())); // NOI18N
+                        logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_UNIGNORE_TITLE"));
+                        logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_UNIGNORE_TITLE_SEP"));
+                        logger.output(NbBundle.getMessage(IgnoreAction.class, "MSG_UNIGNORE_INIT_SEP", repository.getName()));
                     }
                 } catch (IOException ex) {
-                   Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}", // NOI18N
-                        new Object[] {repository.getAbsolutePath(), ex.toString()});
+                    Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}", new Object[]{repository.getAbsolutePath(), ex.toString()});
                 }
-                // refresh files manually
                 for (File file : files) {
                     Mercurial.getInstance().getFileStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    logger.output("\t" + file.getAbsolutePath()); // NOI18N
+                    logger.output("\t" + file.getAbsolutePath());
                 }
                 if (mActionStatus == IGNORING) {
-                    logger.outputInRed(
-                            NbBundle.getMessage(IgnoreAction.class,
-                            "MSG_IGNORE_DONE")); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_DONE"));
                 } else {
-                    logger.outputInRed(
-                            NbBundle.getMessage(IgnoreAction.class,
-                            "MSG_UNIGNORE_DONE")); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_UNIGNORE_DONE"));
                 }
-                logger.output(""); // NOI18N
+                logger.output("");
             }
         };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(IgnoreAction.class, "LBL_Ignore_Progress")); // NOI18N
+        support.start(rp, repositories[0], org.openide.util.NbBundle.getMessage(IgnoreAction.class, "LBL_Ignore_Progress"));
+
     }
+
+
 }

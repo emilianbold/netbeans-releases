@@ -962,7 +962,7 @@ itor tabs #66700).
             if(Mercurial.getInstance().isManaged(file)) {
                 File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
                 if(repoRoot != null) {
-                    ret.add(file);
+                    ret.add(repoRoot);
                 }
             }
         }
