@@ -59,7 +59,6 @@ import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
 import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData;
 import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
-import org.openide.util.RequestProcessor;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -327,7 +326,7 @@ public class ThreadsDataManager {
                     int i = dump.getThreadInfo().getThreadId();
                     if (i != 1) {
                         if (dump.getStack().size() > 1) {
-                            if (dump.getStack().get(1).getDisplayedName().indexOf("_thr_terminate")>=0) {
+                            if (dump.getStack().get(1).getDisplayedName().indexOf("_thr_terminate")>=0) { // NOI18N
                                 continue;
                             }
                         }
@@ -359,7 +358,7 @@ public class ThreadsDataManager {
                 if (i != 1) {
                     if (dump.getStack().size() > 1) {
                         System.err.println(dump.getStack().get(1).getDisplayedName());
-                        if (dump.getStack().get(1).getDisplayedName().indexOf("_thr_terminate")>=0) {
+                        if (dump.getStack().get(1).getDisplayedName().indexOf("_thr_terminate")>=0) { // NOI18N
                             continue;
                         }
                     }
