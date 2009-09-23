@@ -90,7 +90,7 @@ public abstract class AttributeValueSupport {
         putSupport(new AttrSupports.TaglibTagdir());
         // @page
         //putSupport(new AttrSupports.PackageListSupport(false, "page", "import")); // NOI18N
-        putSupport(new AttrSupports.ClassNameSupport(false, "page", "extends")); // NOI18N
+        //putSupport(new AttrSupports.ClassNameSupport(false, "page", "extends")); // NOI18N
         putSupport(new AttrSupports.PageLanguage());
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "session")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "autoFlush")); // NOI18N
