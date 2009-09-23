@@ -499,6 +499,13 @@ public final class EarProject implements Project, AntProjectListener {
             // DDProvider (used here) needs classpath set correctly when resolving Java Extents for annotations
             J2eeModuleProvider pwm = EarProject.this.getLookup().lookup(J2eeModuleProvider.class);
             pwm.getConfigSupport().ensureConfigurationReady();
+
+
+            // the only purpose of below code is to force deployment descriptor
+            // creation if necesary (that is if JEE 1.4 and dd file is missing)
+            if (Profile.J2EE_14.equals(getJ2eeProfile())) {
+                appModule.getMetadataModel();
+            }
             
             // UI Logging
             EarProjectUtil.logUI(NbBundle.getBundle(EarProject.class), "UI_EAR_PROJECT_OPENED", // NOI18N

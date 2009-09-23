@@ -52,6 +52,8 @@ import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 
@@ -72,7 +74,7 @@ public final class SetupDirNodeFactory implements NodeFactory {
         return new SetupDirNodeList(project);
     }
 
-    private static class SetupDirNodeList implements NodeList<String>, PropertyChangeListener {
+    private static class SetupDirNodeList extends FileChangeAdapter implements NodeList<String>, PropertyChangeListener {
         private static final String SETUP_DIR = "setupDir"; //NOI18N
 
         private final WebProject project;
@@ -80,13 +82,16 @@ public final class SetupDirNodeFactory implements NodeFactory {
 
         SetupDirNodeList(WebProject proj) {
             project = proj;
+            project.getProjectDirectory().addFileChangeListener(this);
             WebLogicalViewProvider logView = (WebLogicalViewProvider) project.getLookup().lookup(WebLogicalViewProvider.class);
             assert logView != null;
         }
         
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
-            result.add(SETUP_DIR);
+            if (project.getProjectDirectory().getFileObject("setup") != null) { // NOI18N
+                result.add(SETUP_DIR);
+            }
             return result;
         }
 
@@ -96,6 +101,16 @@ public final class SetupDirNodeFactory implements NodeFactory {
 
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            fireChange();
         }
 
         public Node node(String key) {
@@ -113,6 +128,10 @@ public final class SetupDirNodeFactory implements NodeFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
+            fireChange();
+        }
+
+        private void fireChange() {
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

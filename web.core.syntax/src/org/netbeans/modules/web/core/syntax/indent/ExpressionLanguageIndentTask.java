@@ -37,12 +37,10 @@ import org.openide.util.lookup.Lookups;
 
 public class ExpressionLanguageIndentTask implements IndentTask, Lookup.Provider {
 
-    private Context context;
     private ExpressionLanguageIndenter indenter;
     private Lookup lookup;
     
     ExpressionLanguageIndentTask(Context context) {
-        this.context = context;
         indenter = new ExpressionLanguageIndenter(context);
         lookup = Lookups.singleton(indenter.createFormattingContext());
     }
