@@ -44,10 +44,10 @@ import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
 import java.awt.EventQueue;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -66,8 +66,6 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -140,7 +138,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
                     //synchronized (lock) {                    
                     final ThreadSnapshot[] snapshots = descriptor.getThreadStates().toArray(new ThreadSnapshot[0]);
-                    final List<List<FunctionCall>> stacks = new ArrayList<List<FunctionCall>>(snapshots.length);
+                    final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>(snapshots.length);
                     for (int i = 0, size = snapshots.length; i < size; i++) {
                         ThreadSnapshot snapshot = snapshots[i];
                         final MSAState msa = snapshot.getState();
