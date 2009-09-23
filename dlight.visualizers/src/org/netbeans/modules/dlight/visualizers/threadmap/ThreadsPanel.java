@@ -1183,6 +1183,15 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     viewEnd = viewStart + widthInTime;
                 }
             } else {
+                long prevWidth = viewEnd - viewStart;
+                if (prevWidth != 0) {
+                    long anchor = (viewEnd + viewStart)/2;
+                    if (timeLine != null && viewStart < timeLine.getTime() + timeLine.getInterval()/2 &&
+                        timeLine.getTime() + timeLine.getInterval()/2 < viewEnd){
+                        anchor = timeLine.getTime() + timeLine.getInterval()/2;
+                    }
+                    viewStart = anchor - widthInTime * (anchor - viewStart) / prevWidth;
+                }
                 if (viewStart < manager.getStartTime()) {
                     viewStart = manager.getStartTime() - rightMarginInTime;
                 }
