@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -271,7 +272,22 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         if (f != null && f.exists()) {
             name = V3_RESTLIB;
         }
-        return addLibrary(name, libraryList, null);
+        // javadoc
+        List<URL> javadocList = new ArrayList<URL>();
+        try {
+            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-doc.zip", null, false); //NOI18N
+            if (javadocFile != null && javadocFile.exists()) {
+                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
+            }
+            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-api-doc.zip", null, false); //NOI18N
+            if (javadocFile != null && javadocFile.exists()) {
+                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
+            }
+
+        } catch (MalformedURLException ex) {
+        }
+        
+        return addLibrary(name, libraryList, javadocList);
     }
 
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N
