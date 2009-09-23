@@ -206,7 +206,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                     if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_eUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
                         continue;
                     }
-                    String functionName = functionCall.getFunction().getQuilifiedName();
+                    String functionName = functionCall.getFunction().getSignature();
                     functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
                     functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
                     CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
@@ -248,7 +248,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                     if (((Time) functionCall.getMetricValue(c_eUser.getColumnName())).getNanos() / 1000000000 < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
                         continue;
                     }
-                    String functionName = functionCall.getFunction().getQuilifiedName();
+                    String functionName = functionCall.getFunction().getSignature();
                     functionName = functionName.replaceAll(".*\\`", ""); // NOI18N
                     functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
                     functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N

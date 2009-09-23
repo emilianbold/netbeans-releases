@@ -80,6 +80,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
+import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -853,13 +854,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             this.name = name;
         }
 
-        public String getQuilifiedName() {
+        public String getSignature() {
             return quilifiedName;
         }
 
         @Override
         public String toString() {
             return name;
+        }
+
+        public String getQuilifiedName() {
+            return FunctionNameUtils.getFunctionQName(name);
         }
     }
 
