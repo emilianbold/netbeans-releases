@@ -97,9 +97,11 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
             description = description.replaceAll("\n+", " "); // NOI18N
             description = description.replaceAll("\t+", " "); // NOI18N
             Icon icon = searchInfo.kenaiProject.getProjectIcon(false);
-            Image im = ImageUtilities.icon2Image(icon);
-            im = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-            iconLabel.setIcon(ImageUtilities.image2Icon(im));
+            if (icon != null) {
+                Image im = ImageUtilities.icon2Image(icon);
+                im = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                iconLabel.setIcon(ImageUtilities.image2Icon(im));
+            }
             projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
             String tags = searchInfo.kenaiProject.getTags();
