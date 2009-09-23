@@ -173,7 +173,13 @@ public final class SelectFileDialog {
         private void verifyInput() {
             String typedText = textField.getText();
             // no relative paths allowed #24693
-            if (typedText.indexOf(File.separatorChar) != -1) {
+            if ((typedText.indexOf(File.separatorChar) != -1) ||
+                // fix for #165043 on Windows: a file path similar "c:wsdl.dtd" is forbidden
+                (typedText.indexOf(":") != -1) ||  
+                // fix for #165043 on Windows: a file path similar "c:/wsdl.dtd" is forbidden
+                (typedText.indexOf("/") != -1) ||
+                // fix for #165043 on Windows: a file path similar "c:\wsdl.dtd" is forbidden
+                (typedText.indexOf("\\") != -1)) {
                 selectDD.setValid(false);
             } else {
                 selectDD.setValid(check.checkName(typedText));
