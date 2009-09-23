@@ -192,7 +192,7 @@ public class StartTask extends BasicTask<OperationState> {
                
         Process serverProcess;
         try {
-            port = Integer.valueOf(ip.get(GlassfishModule.HTTPPORT_ATTR));
+            port = Integer.valueOf(ip.get(GlassfishModule.ADMINPORT_ATTR));
             if(port < 0 || port > 65535) {
                 return fireOperationStateChanged(OperationState.FAILED, 
                         "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
@@ -272,7 +272,7 @@ public class StartTask extends BasicTask<OperationState> {
                 RequestProcessor.getDefault().post(new Runnable () {
 
                     public void run() {
-                        while (!CommonServerSupport.isRunning(support.getHostName(), support.getHttpPortNumber())) {
+                        while (!CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber())) {
                             try {
                                 Thread.sleep(200);
                             } catch (InterruptedException ex) {
