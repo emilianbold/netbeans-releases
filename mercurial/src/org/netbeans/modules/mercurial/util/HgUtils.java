@@ -100,6 +100,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.versioning.util.FileSelector;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 /**
@@ -471,7 +473,11 @@ public class HgUtils {
         }
         
         Set<Pattern> patterns = getIgnorePatterns(topFile);
+        try {
         path = path.substring(topFile.getAbsolutePath().length() + 1);
+        } catch(StringIndexOutOfBoundsException e) {
+            throw e;
+        }
         if (File.separatorChar != '/') {
             path = path.replace(File.separatorChar, '/');
         }
@@ -915,6 +921,17 @@ itor tabs #66700).
     }
     
    /**
+     * Determines if the given context contains at least one root file from
+     * a mercurial repository
+     *
+     * @param VCSContext
+     * @return true if the given conetxt contains a root file from a hg repository
+     */
+    public static boolean isFromHgRepository(VCSContext context){
+        return getRootFile(context) != null;
+    }
+
+   /**
      * Returns path to repository root or null if not managed
      *
      * @param VCSContext
@@ -929,7 +946,100 @@ itor tabs #66700).
         File root = hg.getRepositoryRoot(files[0]);
         return root;
     }
-    
+
+   /**
+     * Returns repository roots for all root files from context
+     *
+     * @param VCSContext
+     * @return repository roots
+     */
+    public static File[] getRepositoryRoots(VCSContext context) {
+        Set<File> rootsSet = context.getRootFiles();
+        List<File> ret = new LinkedList<File>();
+
+        // filter managed roots
+        for (File file : rootsSet) {
+            if(Mercurial.getInstance().isManaged(file)) {
+                File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if(repoRoot != null) {
+                    ret.add(file);
+                }
+            }
+        }
+        return ret.toArray(new File[ret.size()]);
+    }
+
+    /**
+     *
+     * @param ctx
+     * @return
+     */
+    public static File[] getActionRoots(VCSContext ctx) {
+        Set<File> rootsSet = ctx.getRootFiles();
+        Map<File, List<File>> map = new HashMap<File, List<File>>();
+
+        // filter managed roots
+        for (File file : rootsSet) {
+            if(Mercurial.getInstance().isManaged(file)) {
+                File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if(repoRoot != null) {
+                    List<File> l = map.get(repoRoot);
+                    if(l == null) {
+                        l = new LinkedList<File>();
+                        map.put(repoRoot, l);
+                    }
+                    l.add(file);
+                }
+            }
+        }
+
+        Set<File> repoRoots = map.keySet();
+        if(map.size() > 1) {
+            // more than one managed root => need a dlg
+            FileSelector fs = new FileSelector(
+                    NbBundle.getMessage(HgUtils.class, "LBL_FileSelector_Title"),
+                    NbBundle.getMessage(HgUtils.class, "FileSelector.jLabel1.text"),
+                    new HelpCtx("org.netbeans.modules.mercurial.FileSelector"),
+                    HgModuleConfig.getDefault().getPreferences());
+            if(fs.show(repoRoots.toArray(new File[repoRoots.size()]))) {
+                File selection = fs.getSelectedFile();
+                List<File> l = map.get(selection);
+                return l.toArray(new File[l.size()]);
+            } else {
+                return null;
+            }
+        } else {
+            List<File> l = map.get(map.keySet().iterator().next());
+            return l.toArray(new File[l.size()]);
+        }
+    }
+
+    /**
+     * Returns only those root files from the given context which belong to repository
+     * @param ctx
+     * @param repository
+     * @param rootFiles
+     * @return
+     */
+    public static File[] filterForRepository(final VCSContext ctx, final File repository, boolean rootFiles) {
+        File[] files = null;
+        if(ctx != null) {
+            Set<File> s = rootFiles ? ctx.getRootFiles() : ctx.getFiles();
+            files = s.toArray(new File[s.size()]);
+        }
+        if (files != null) {
+            List<File> l = new LinkedList<File>();
+            for (File file : files) {
+                File r = Mercurial.getInstance().getRepositoryRoot(file);
+                if (r != null && r.equals(repository)) {
+                    l.add(file);
+                }
+            }
+            files = l.toArray(new File[l.size()]);
+        }
+        return files;
+    }
+
    /**
      * Returns File object for Project Directory
      *

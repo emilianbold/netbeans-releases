@@ -87,11 +87,14 @@ public class ImportDiffAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     } 
 
     private static void importDiff(VCSContext ctx) {
-        final File root = HgUtils.getRootFile(ctx);
+        final File roots[] = HgUtils.getActionRoots(ctx);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+
         final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ImportDiffAction.class, "ACSD_ImportBrowseFolder"), null);   // NO I18N
         fileChooser.setDialogTitle(NbBundle.getMessage(ImportDiffAction.class, "ImportBrowse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);

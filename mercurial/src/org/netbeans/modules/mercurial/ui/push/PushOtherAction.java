@@ -85,8 +85,9 @@ public class PushOtherAction extends ContextAction implements ChangeListener {
     }
 
     public void performAction(ActionEvent e) {
-        final File root = HgUtils.getRootFile(context);
-        if (root == null) return;
+        final File roots[] = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
         if (repository == null) {
             int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
@@ -152,7 +153,7 @@ public class PushOtherAction extends ContextAction implements ChangeListener {
     
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }

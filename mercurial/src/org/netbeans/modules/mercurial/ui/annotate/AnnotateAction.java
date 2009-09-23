@@ -87,8 +87,9 @@ public class AnnotateAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        File repository  = HgUtils.getRootFile(context);
-        if (repository == null) return false;
+        if(!HgUtils.isFromHgRepository(context)) {
+            return false;
+        }
 
         Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
         if (context.getRootFiles().size() > 0 && activatedEditorCookie(nodes) != null) {

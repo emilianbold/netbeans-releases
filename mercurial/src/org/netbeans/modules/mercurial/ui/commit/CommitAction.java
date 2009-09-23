@@ -41,6 +41,7 @@
 package org.netbeans.modules.mercurial.ui.commit;
 
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
@@ -57,6 +58,7 @@ import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.DialogDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
@@ -72,10 +74,12 @@ import javax.swing.event.TableModelListener;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
@@ -106,7 +110,7 @@ public class CommitAction extends ContextAction {
     @Override
     public boolean isEnabled () {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if (HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) {
+        if (!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
         }
         return true;
@@ -221,10 +225,18 @@ public class CommitAction extends ContextAction {
                         roots = split[c];
                         boolean recursive = c == 1;
                         if (recursive) {
+                            File[] repoArray = HgUtils.getRepositoryRoots(ctx);
+                            Set<File> repositories =new HashSet<File>(repoArray.length);
+                            for (File file : repoArray) {
+                                repositories.add(file);
+                            }
+
                             File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
-                            for (int i= 0; i < files.length; i++) {
+                            for (int i = 0; i < files.length; i++) {
                                 for(int r = 0; r < roots.length; r++) {
-                                    if( HgUtils.isParentOrEqual(roots[r], files[i]) ) {
+                                    if(repositories.contains(Mercurial.getInstance().getRepositoryRoot(files[i])) &&
+                                       HgUtils.isParentOrEqual(roots[r], files[i]))
+                                    {
                                         if(!fileList.contains(files[i])) {
                                             fileList.add(files[i]);
                                         }
@@ -349,10 +361,9 @@ public class CommitAction extends ContextAction {
     private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
             VCSContext ctx, HgProgressSupport support, OutputLogger logger, List<HgHook> hooks) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        final File repository = HgUtils.getRootFile(ctx);
-        List<File> addCandidates = new ArrayList<File>();
-        List<File> deleteCandidates = new ArrayList<File>();
-        List<File> commitCandidates = new ArrayList<File>();
+        Map<File, List<File>> addCandidates = new HashMap<File, List<File>>();
+        Map<File, List<File>> deleteCandidates = new HashMap<File, List<File>>();
+        Map<File, List<File>> commitCandidates = new HashMap<File, List<File>>();
         Iterator<HgFileNode> it = commitFiles.keySet().iterator();
 
         List<String> excPaths = new ArrayList<String>();
@@ -366,12 +377,13 @@ public class CommitAction extends ContextAction {
              CommitOptions option = commitFiles.get(node);
              if (option != CommitOptions.EXCLUDE) {
                  int  status = cache.getStatus(node.getFile()).getStatus();
+                 File repository = Mercurial.getInstance().getRepositoryRoot(node.getFile());
                  if ((status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                     addCandidates.add(node.getFile());
+                     putCandidate(addCandidates, repository, node.getFile());
                  } else  if ((status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) {
-                     deleteCandidates.add(node.getFile());
+                     putCandidate(deleteCandidates, repository, node.getFile());
                  }
-                 commitCandidates.add(node.getFile());
+                 putCandidate(commitCandidates, repository, node.getFile());
                  incPaths.add(node.getFile().getAbsolutePath());
              }else{
                  excPaths.add(node.getFile().getAbsolutePath());
@@ -392,6 +404,7 @@ public class CommitAction extends ContextAction {
             HgModuleConfig.getDefault().removeExclusionPaths(incPaths);
         }
 
+
         try {
             logger.outputInRed(
                     NbBundle.getMessage(CommitAction.class,
@@ -400,22 +413,17 @@ public class CommitAction extends ContextAction {
                     NbBundle.getMessage(CommitAction.class,
                     "MSG_COMMIT_TITLE_SEP")); // NOI18N
             logger.output(message); // NOI18N
-            if (addCandidates.size() > 0 ) {
-                HgCommand.doAdd(repository, addCandidates, logger);
-                for (File f : addCandidates) {
-                    logger.output("hg add " + f.getName()); //NOI18N
-                }
-            }
-            if (deleteCandidates.size() > 0 ) {
-                HgCommand.doRemove(repository, deleteCandidates, logger);
-                for (File f : deleteCandidates) {
-                    logger.output("hg delete " + f.getName()); //NOI18N
-                }
-            }
+
+            new Cmd.AddCmd(addCandidates, logger, null, "hg add {0} into {1}").handle();
+            new Cmd.RemoveCmd(deleteCandidates, logger, null, "hg delete {0} from {1}").handle();
 
             File[] hookFiles = null;
             if(hooks.size() > 0) {
-                hookFiles = commitCandidates.toArray(new File[commitCandidates.size()]);
+                List<File> candidates = new LinkedList<File>();
+                for (List<File> values : commitCandidates.values()) {
+                    candidates.addAll(values);
+                }
+                hookFiles = candidates.toArray(new File[candidates.size()]);
             }
             HgHookContext context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry[] {});
             for (HgHook hook : hooks) {
@@ -430,75 +438,81 @@ public class CommitAction extends ContextAction {
                 }
             }
             boolean commitAfterMerge = false;
-            try {
-                HgCommand.doCommit(repository, commitCandidates, message, logger);
-            } catch (HgException.HgTooLongArgListException e) {
-                Mercurial.LOG.log(Level.INFO, null, e);
-                List<File> reducedCommitCandidates;
-                String offeredFileNames = "";                           //NOI18N
-                if (ctx.getRootFiles().size() < 5) {
-                    reducedCommitCandidates = new LinkedList<File>(ctx.getRootFiles());
-                    for (File f : reducedCommitCandidates) {
-                        offeredFileNames += "\n" + f.getName();         //NOI18N
-                    }
-                } else {
-                    reducedCommitCandidates = Collections.EMPTY_LIST;
-                    offeredFileNames = "\n" + repository.getName();     //NOI18N
-                }
-                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_QUERY", offeredFileNames)); // NOI18N
-                descriptor.setTitle(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_TITLE")); // NOI18N
-                descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
-                descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-
-                Object res = DialogDisplayer.getDefault().notify(descriptor);
-                if (res == NotifyDescriptor.NO_OPTION) {
-                    return;
-                }
-                Mercurial.LOG.info("CommitAction: committing with a reduced set of files: " + commitCandidates.toString()); //NOI18N
-                HgCommand.doCommit(repository, reducedCommitCandidates, message, logger);
-            } catch (HgException ex) {
-                if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
-                    // committing after a merge, all modified files have to be committed, even excluded files
-                    // ask the user for confirmation
-                    if (support.isCanceled() || !commitAfterMerge(locallyModifiedExcluded, repository)) {
-                        return;
+            for (Entry<File, List<File>> entry : commitCandidates.entrySet()) {
+                File repository = entry.getKey();
+                List<File> candidates = entry.getValue();
+                try {
+                    HgCommand.doCommit(repository, candidates, message, logger);
+                } catch (HgException.HgTooLongArgListException e) {
+                    Mercurial.LOG.log(Level.INFO, null, e);
+                    List<File> reducedCommitCandidates;
+                    String offeredFileNames = "";                           //NOI18N
+                    if (ctx.getRootFiles().size() < 5) {
+                        reducedCommitCandidates = new LinkedList<File>(ctx.getRootFiles());
+                        for (File f : reducedCommitCandidates) {
+                            offeredFileNames += "\n" + f.getName();         //NOI18N
+                        }
                     } else {
-                        HgCommand.doCommit(repository, Collections.EMPTY_LIST, message, logger);
-                        commitAfterMerge = true;
+                        reducedCommitCandidates = Collections.EMPTY_LIST;
+                        offeredFileNames = "\n" + repository.getName();     //NOI18N
                     }
-                } else {
-                    throw ex;
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_QUERY", offeredFileNames)); // NOI18N
+                    descriptor.setTitle(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_TITLE")); // NOI18N
+                    descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                    descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+                    Object res = DialogDisplayer.getDefault().notify(descriptor);
+                    if (res == NotifyDescriptor.NO_OPTION) {
+                        continue;
+                    }
+                    Mercurial.LOG.info("CommitAction: committing with a reduced set of files: " + commitCandidates.toString()); //NOI18N
+                    HgCommand.doCommit(repository, reducedCommitCandidates, message, logger);
+                } catch (HgException ex) {
+                    if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
+                        // committing after a merge, all modified files have to be committed, even excluded files
+                        // ask the user for confirmation
+                        if (support.isCanceled()) {
+                            return;
+                        } else if(!commitAfterMerge(locallyModifiedExcluded, repository)) {
+                            continue;
+                        } else {
+                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, message, logger);
+                            commitAfterMerge = true;
+                        }
+                    } else {
+                        throw ex;
+                    }
                 }
-            }
 
-            HgRepositoryContextCache.getInstance().setHasHistory(ctx);
-            
-            HgLogMessage tip = HgCommand.doTip(repository, logger);
+                HgRepositoryContextCache.getInstance().setHasHistory(ctx);
 
-            context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry(tip));
-            for (HgHook hook : hooks) {
-                hook.afterCommit(context);
-            }
+                HgLogMessage tip = HgCommand.doTip(repository, logger);
 
-            if (commitAfterMerge) {
-                logger.output(
-                        NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMITED_FILES_AFTER_MERGE"));             //NOI18N
-            } else {
-                if (commitCandidates.size() == 1) {
+                context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry(tip));
+                for (HgHook hook : hooks) {
+                    hook.afterCommit(context);
+                }
+
+                if (commitAfterMerge) {
                     logger.output(
                             NbBundle.getMessage(CommitAction.class,
-                            "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); // NOI18N
+                            "MSG_COMMITED_FILES_AFTER_MERGE"));             //NOI18N
                 } else {
-                    logger.output(
-                            NbBundle.getMessage(CommitAction.class,
-                            "MSG_COMMIT_INIT_SEP", commitCandidates.size())); // NOI18N
+                    if (commitCandidates.size() == 1) {
+                        logger.output(
+                                NbBundle.getMessage(CommitAction.class,
+                                "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); // NOI18N
+                    } else {
+                        logger.output(
+                                NbBundle.getMessage(CommitAction.class,
+                                "MSG_COMMIT_INIT_SEP", commitCandidates.size())); // NOI18N
+                    }
+                    for (File f : candidates) {
+                        logger.output("\t" + f.getAbsolutePath()); // NOI18N
+                    }
                 }
-                for (File f : commitCandidates) {
-                    logger.output("\t" + f.getAbsolutePath()); // NOI18N
-                }
+                HgUtils.logHgLog(tip, logger);
             }
-            HgUtils.logHgLog(tip, logger);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -506,6 +520,24 @@ public class CommitAction extends ContextAction {
             cache.refreshCached(ctx);
             logger.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
             logger.output(""); // NOI18N
+        }
+    }
+
+    private static void putCandidate(Map<File, List<File>> m, File repository, File file) {
+        List<File> l = m.get(repository);
+        if(l == null) {
+            l = new ArrayList<File>();
+            m.put(repository, l);
+        }
+        l.add(file);
+    }
+
+    private static void handleCandidates(Map<File, List<File>> m, OutputLogger logger, String msgFormat) throws HgException {
+        for (Entry<File, List<File>> e : m.entrySet()) {
+            HgCommand.doAdd(e.getKey(), e.getValue(), logger);
+            for (File f : e.getValue()) {
+                logger.output(MessageFormat.format(msgFormat, f.getName(), e.getKey()));
+            }
         }
     }
 
@@ -522,6 +554,47 @@ public class CommitAction extends ContextAction {
             return res == NotifyDescriptor.YES_OPTION;
         }
         return true;
+    }
+
+    private static abstract class Cmd {
+        protected final Map<File, List<File>> m;
+        protected final OutputLogger logger;
+        protected final String logMsgFormat;
+        protected final String msg;
+        public Cmd(Map<File, List<File>> m, OutputLogger logger, String msg, String logMsgFormat) {
+            this.m = m;
+            this.logger = logger;
+            this.logMsgFormat = logMsgFormat;
+            this.msg = msg;
+        }
+        void handle() throws HgException {
+            if(m.size() == 0) return;
+            for (Entry<File, List<File>> e : m.entrySet()) {
+                doCmd(e.getKey(), e.getValue());
+                for (File f : e.getValue()) {
+                    logger.output(MessageFormat.format(logMsgFormat, f.getName(), e.getKey()));
+                }
+            }
+        }
+        abstract void doCmd(File repository, List<File> candidates) throws HgException;
+        static class AddCmd extends Cmd {
+            public AddCmd(Map<File, List<File>> m, OutputLogger logger, String msgFormat, String msg) {
+                super(m, logger, msgFormat, msg);
+            }
+            @Override
+            void doCmd(File repository, List<File> candidates) throws HgException {
+                HgCommand.doAdd(repository, candidates, logger);
+            }
+        }
+        static class RemoveCmd extends Cmd {
+            public RemoveCmd(Map<File, List<File>> m, OutputLogger logger, String msgFormat, String msg) {
+                super(m, logger, msgFormat, msg);
+            }
+            @Override
+            void doCmd(File repository, List<File> candidates) throws HgException {
+                HgCommand.doRemove(repository, candidates, logger);
+            }
+        }
     }
 }
 

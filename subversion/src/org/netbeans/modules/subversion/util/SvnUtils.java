@@ -55,8 +55,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
 import java.io.*;
 import java.io.File;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.text.ParseException;
@@ -76,9 +74,11 @@ import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
@@ -1251,7 +1251,11 @@ public class SvnUtils {
 
         if(roots.length > 1) {
             // more than one managed root => need a dlg
-            FileSelector fs = new FileSelector();
+            FileSelector fs = new FileSelector(
+                    NbBundle.getMessage(SvnUtils.class, "LBL_FileSelector_Title"),
+                    NbBundle.getMessage(SvnUtils.class, "FileSelector.jLabel1.text"),
+                    new HelpCtx("org.netbeans.modules.subversion.FileSelector"),
+                    SvnModuleConfig.getDefault().getPreferences());
             if(fs.show(roots)) {
                 return new File[ ]{ fs.getSelectedFile()};
             } else {
@@ -1285,30 +1289,6 @@ public class SvnUtils {
             primaryFile = file; // consider it a fallback
         }
         return primaryFile;
-    }
-
-    /**
-     * Returns hash value for the given byte array and algoritmus in a hex string form.
-     * @param alg Algoritmus to compute the hash value (see also Appendix A in the
-     * Java Cryptography Architecture API Specification &amp; Reference </a>
-     * for information about standard algorithm names.)
-     * @param bytes byte array
-     * @return hash value as a string
-     * @throws java.security.NoSuchAlgorithmException
-     */
-    public static String getHash(String alg, byte[] bytes) throws NoSuchAlgorithmException {
-        MessageDigest md5 = MessageDigest.getInstance(alg);
-        md5.update(bytes);
-        byte[] md5digest = md5.digest();
-        String ret = ""; // NOI18N
-        for (int i = 0; i < md5digest.length; i++) {
-            String hex = Integer.toHexString(md5digest[i] & 0x000000FF);
-            if (hex.length() == 1) {
-                hex = "0" + hex; // NOI18N
-            }
-            ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
-        }
-        return ret;
     }
 
     /**

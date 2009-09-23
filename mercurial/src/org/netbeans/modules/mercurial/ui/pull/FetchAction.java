@@ -87,8 +87,9 @@ public class FetchAction extends ContextAction {
     }
     
     public void performAction(ActionEvent e) {
-        final File root = HgUtils.getRootFile(context);
-        if (root == null) return;
+        final File roots[] = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
@@ -141,6 +142,6 @@ public class FetchAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     } 
 }
