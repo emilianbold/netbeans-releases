@@ -393,23 +393,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         //already contain files
         boolean processed = false;
         FileObject fo = fe.getFile();
-        URL root = null;
+        Pair<URL, FileObject> root = null;
         
         if (fo != null && fo.isValid() && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot(fo);
             if (root != null) {
-                boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root);
-                ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
+                boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
+                ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(root.second);
                 if (entry == null || entry.includes(fo)) {
-                    final Work wrk = new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourcForBinaryRoot);
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root, FileUtil.getRelativePath(URLMapper.findFileObject(root), fo), fe, wrk);
+                    final Work wrk = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(fo), false, false, true, sourcForBinaryRoot);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
                     processed = true;
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
-                    final Work wrk = new BinaryWork(root);
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root, null, fe, wrk);
+                    final Work wrk = new BinaryWork(root.first);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
                 }
             }
@@ -432,23 +432,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         boolean processed = false;
         FileObject fo = fe.getFile();
-        URL root = null;
+        Pair<URL, FileObject> root = null;
 
         if (fo != null && fo.isValid() && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
-                boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
-                ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
+                boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
+                ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second);
                 if (entry == null || entry.includes(fo)) {
-                    final Work wrk = new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourceForBinaryRoot);
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root, FileUtil.getRelativePath(URLMapper.findFileObject(root), fo), fe, wrk);
+                    final Work wrk = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(fo), false, false, true, sourceForBinaryRoot);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
                     processed = true;
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
-                    final Work wrk = new BinaryWork(root);
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root, null, fe, wrk);
+                    final Work wrk = new BinaryWork(root.first);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
                 }
             }
@@ -467,23 +467,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         boolean processed = false;
         final FileObject fo = fe.getFile();
-        URL root = null;
+        Pair<URL, FileObject> root = null;
 
         if (fo != null && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
                 if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-                    String relativePath = FileUtil.getRelativePath(URLMapper.findFileObject(root), fo);
+                    String relativePath = FileUtil.getRelativePath(root.second, fo);
                     assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
-                    final Work wrk = new DeleteWork(root, Collections.singleton(relativePath));
-                    eventQueue.record(FileEventLog.FileOp.DELETE, root, relativePath, fe, wrk);
+                    final Work wrk = new DeleteWork(root.first, Collections.singleton(relativePath));
+                    eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
                     processed = true;
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
-                    final Work wrk = new BinaryWork(root);
-                    eventQueue.record(FileEventLog.FileOp.DELETE, root, null, fe, wrk);
+                    final Work wrk = new BinaryWork(root.first);
+                    eventQueue.record(FileEventLog.FileOp.DELETE, root.first, null, fe, wrk);
                     processed = true;
                 }
             }
@@ -502,34 +502,34 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         
         FileObject newFile = fe.getFile();
         String oldNameExt = fe.getExt().length() == 0 ? fe.getName() : fe.getName() + "." + fe.getExt(); //NOI18N
-        URL root = null;
+        Pair<URL, FileObject> root = null;
         boolean processed = false;
 
         if (newFile != null && newFile.isValid() && !isCacheFile(newFile)) {
             root = getOwningSourceRoot(newFile);
             if (root != null) {
-                FileObject rootFo = URLMapper.findFileObject(root);
+                FileObject rootFo = root.second;
                 String ownerPath = FileUtil.getRelativePath(rootFo, newFile.getParent());
                 String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
                 if (newFile.isData()) {
-                    final Work work = new DeleteWork(root, Collections.singleton(oldFilePath));
-                    eventQueue.record(FileEventLog.FileOp.DELETE, root, oldFilePath, fe, work);
+                    final Work work = new DeleteWork(root.first, Collections.singleton(oldFilePath));
+                    eventQueue.record(FileEventLog.FileOp.DELETE, root.first, oldFilePath, fe, work);
                 } else {
                     Set<String> oldFilePaths = new HashSet<String>();
                     collectFilePaths(newFile, oldFilePath, oldFilePaths);
                     for (String path : oldFilePaths) {
-                        final Work work = new DeleteWork(root, oldFilePaths);
-                        eventQueue.record(FileEventLog.FileOp.DELETE, root, path, fe, work);
+                        final Work work = new DeleteWork(root.first, oldFilePaths);
+                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, path, fe, work);
                     }
                 }
                 
 
                 if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
-                    final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
+                    final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                     ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                     if (entry == null || entry.includes(newFile)) {                        
-                        final FileListWork flw = new FileListWork(scannedRoots2Dependencies,root, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot);
-                        eventQueue.record(FileEventLog.FileOp.CREATE, root, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
+                        final FileListWork flw = new FileListWork(scannedRoots2Dependencies,root.first, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot);
+                        eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
                     }
                 }
                 processed = true;
@@ -546,7 +546,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
                     }
 
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root, null, fe,new BinaryWork(root));
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe,new BinaryWork(root.first));
                     processed = true;
                 }
             }
@@ -633,50 +633,48 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         Map<URL, FileListWork> jobs = new HashMap<URL, FileListWork>();
         if (components.size() > 0) {
             for(JTextComponent jtc : components) {
-                Document d = jtc.getDocument();
-                FileObject f = Util.getFileObject(d);
-                if (f != null) {
-                    URL root = getOwningSourceRoot(f);
-                    if (root != null) {
-                        long version = DocumentUtilities.getDocumentVersion(d);
-                        Long lastIndexedVersion = (Long) d.getProperty(PROP_LAST_INDEXED_VERSION);
-                        Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
-                        boolean reindex = false;
-                        
-                        boolean openedInEditor = EditorRegistry.componentList().contains(jtc);
-                        if (openedInEditor) {
-                            if (lastIndexedVersion == null) {
-                                reindex = lastDirtyVersion != null;
-                            } else {
-                                reindex = lastIndexedVersion < version;
-                            }
-                        } else {
-                            // Editor closed. There were possibly discarded changes and
-                            // so we have to reindex the contents of the file.
-                            // This must not be done too agresively (eg reindex only when there really were
-                            // editor changes) otherwise it may cause unneccessary redeployments, etc (see #152222).
+                Document doc = jtc.getDocument();
+                Pair<URL, FileObject> root = getOwningSourceRoot(doc);
+                if (root != null) {
+                    long version = DocumentUtilities.getDocumentVersion(doc);
+                    Long lastIndexedVersion = (Long) doc.getProperty(PROP_LAST_INDEXED_VERSION);
+                    Long lastDirtyVersion = (Long) doc.getProperty(PROP_LAST_DIRTY_VERSION);
+                    boolean reindex = false;
+
+                    boolean openedInEditor = EditorRegistry.componentList().contains(jtc);
+                    if (openedInEditor) {
+                        if (lastIndexedVersion == null) {
                             reindex = lastDirtyVersion != null;
+                        } else {
+                            reindex = lastIndexedVersion < version;
+                        }
+                    } else {
+                        // Editor closed. There were possibly discarded changes and
+                        // so we have to reindex the contents of the file.
+                        // This must not be done too agresively (eg reindex only when there really were
+                        // editor changes) otherwise it may cause unneccessary redeployments, etc (see #152222).
+                        reindex = lastDirtyVersion != null;
+                    }
+
+                    FileObject docFile = Util.getFileObject(doc);
+                    LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
+                        docFile.getPath(), version, lastIndexedVersion, lastDirtyVersion, openedInEditor, reindex
+                    });
+
+                    if (reindex) {
+                        // we have already seen the document and it's been modified since the last time
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Document modified (reindexing): " + FileUtil.getFileDisplayName(docFile) + " Owner: " + root.first); //NOI18N
                         }
 
-                        LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
-                            f.getPath(), version, lastIndexedVersion, lastDirtyVersion, openedInEditor, reindex
-                        });
-
-                        if (reindex) {
-                            // we have already seen the document and it's been modified since the last time
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Document modified (reindexing): " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
-                            }
-
-                            FileListWork job = jobs.get(root);
-                            if (job == null) {
-                                job = new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(f), false, openedInEditor, true, sourcesForBinaryRoots.contains(root));
-                                jobs.put(root, job);
-                            } else {
-                                // XXX: strictly speaking we should set 'checkEditor' for each file separately
-                                // and not for each job; in reality we normally do not end up here
-                                job.addFile(f);
-                            }
+                        FileListWork job = jobs.get(root.first);
+                        if (job == null) {
+                            job = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(docFile), false, openedInEditor, true, sourcesForBinaryRoots.contains(root.first));
+                            jobs.put(root.first, job);
+                        } else {
+                            // XXX: strictly speaking we should set 'checkEditor' for each file separately
+                            // and not for each job; in reality we normally do not end up here
+                            job.addFile(docFile);
                         }
                     }
                 }
@@ -750,6 +748,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
     private static final String PROP_LAST_DIRTY_VERSION = RepositoryUpdater.class.getName() + "-last-dirty-document-version"; //NOI18N
     private static final String PROP_MODIFIED_UNDER_WRITE_LOCK = RepositoryUpdater.class.getName() + "-modified-under-write-lock"; //NOI18N
+    private static final String PROP_OWNING_SOURCE_ROOT_URL = RepositoryUpdater.class.getName() + "-owning-source-root-url"; //NOI18N
+    private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
 
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
@@ -811,63 +811,63 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         final Reference<Document> ref = activeDocumentRef;
         Document activeDocument = ref == null ? null : ref.get();
 
-        FileObject f = Util.getFileObject(document);
-        if (f != null) {
-            URL root = getOwningSourceRoot(f);
-            if (root != null) {
-                if (activeDocument == document) {
-                    long version = DocumentUtilities.getDocumentVersion(activeDocument);
-                    Long lastDirtyVersion = (Long) activeDocument.getProperty(PROP_LAST_DIRTY_VERSION);
-                    boolean markDirty = false;
+        Pair<URL, FileObject> root = getOwningSourceRoot(document);
+        if (root != null) {
+            if (activeDocument == document) {
+                long version = DocumentUtilities.getDocumentVersion(activeDocument);
+                Long lastDirtyVersion = (Long) activeDocument.getProperty(PROP_LAST_DIRTY_VERSION);
+                boolean markDirty = false;
 
-                    if (lastDirtyVersion != null && lastDirtyVersion < version) {
-                        // we have already seen the document and it's changed since the last time
-                        markDirty = true;
+                if (lastDirtyVersion != null && lastDirtyVersion < version) {
+                    // we have already seen the document and it's changed since the last time
+                    markDirty = true;
+                }
+
+                activeDocument.putProperty(PROP_LAST_DIRTY_VERSION, version);
+
+                if (markDirty) {
+                    FileObject docFile = Util.getFileObject(document);
+                    
+                    // An active document was modified, we've indexed that document berfore,
+                    // so mark it dirty
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Active document modified (marking dirty): " + FileUtil.getFileDisplayName(docFile) + " Owner: " + root.first); //NOI18N
                     }
 
-                    activeDocument.putProperty(PROP_LAST_DIRTY_VERSION, version);
+                    Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(root.second, docFile)));
+                    String mimeType = DocumentUtilities.getMimeType(document);
 
-                    if (markDirty) {
-                        // An active document was modified, we've indexed that document berfore,
-                        // so mark it dirty
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Active document modified (marking dirty): " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
-                        }
-
-                        Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(URLMapper.findFileObject(root), f)));
-                        String mimeType = DocumentUtilities.getMimeType(document);
-
-                        Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType);
-                        for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
-                            try {
-                                CustomIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
-                                factory.filesDirty(dirty, ctx);
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, null, ex);
-                            }
-                        }
-
-                        Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersFor(mimeType);
-                        for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
-                            try {
-                                EmbeddingIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
-                                factory.filesDirty(dirty, ctx);
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, null, ex);
-                            }
+                    Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType);
+                    for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
+                        try {
+                            CustomIndexerFactory factory = info.getIndexerFactory();
+                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.first), root.first,
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
+                            factory.filesDirty(dirty, ctx);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
                         }
                     }
-                } else {
-                    // an odd event, maybe we could just ignore it
-                    try {
-                        addIndexingJob(root, Collections.singleton(f.getURL()), false, true, false, true);
-                    } catch (FileStateInvalidException ex) {
-                        LOGGER.log(Level.WARNING, null, ex);
+
+                    Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersFor(mimeType);
+                    for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
+                        try {
+                            EmbeddingIndexerFactory factory = info.getIndexerFactory();
+                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.first), root.first,
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
+                            factory.filesDirty(dirty, ctx);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
+                        }
                     }
+                }
+            } else {
+                // an odd event, maybe we could just ignore it
+                try {
+                    FileObject f = Util.getFileObject(document);
+                    addIndexingJob(root.first, Collections.singleton(f.getURL()), false, true, false, true);
+                } catch (FileStateInvalidException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
             }
         }
@@ -913,35 +913,62 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return t;
     }
 
-    private URL getOwningSourceRoot(final FileObject fo) {
-        if (fo == null) {
-            return null;
-        }
-        
+    private Pair<URL, FileObject> getOwningSourceRoot(Object fileOrDoc) {
         synchronized (lastOwningSourceRootCacheLock) {
-            FileObject rootFo = lastOwningSourceRootRef == null ? null : lastOwningSourceRootRef.get();
-            if (lastOwningSourceRootUrl != null && rootFo != null && rootFo.isValid() && FileUtil.isParentOf(rootFo, fo)) {
-                return lastOwningSourceRootUrl;
+            FileObject file = null;
+            Document doc = null;
+
+            if (fileOrDoc instanceof Document) {
+                doc = (Document) fileOrDoc;
+                file = Util.getFileObject(doc);
+                URL cachedSourceRootUrl = (URL) doc.getProperty(PROP_OWNING_SOURCE_ROOT_URL);
+                FileObject cachedSourceRoot = (FileObject) doc.getProperty(PROP_OWNING_SOURCE_ROOT);
+                if (cachedSourceRootUrl != null && cachedSourceRoot != null && cachedSourceRoot.isValid() && FileUtil.isParentOf(cachedSourceRoot, file)) {
+                    return Pair.of(cachedSourceRootUrl, cachedSourceRoot);
+                }
+            } else if (fileOrDoc instanceof FileObject) {
+                file = (FileObject) fileOrDoc;
+            } else {
+                return null;
             }
 
-            List<URL> clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
-            for (URL root : clone) {
-                rootFo = URLCache.getInstance().findFileObject(root);
-                if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
-                    lastOwningSourceRootRef = new WeakReference<FileObject>(rootFo);
-                    lastOwningSourceRootUrl = root;
-                    return root;
+            assert file != null || doc != null : "Expecting file or document: " + fileOrDoc + ", file=" + file + ", doc=" + doc; //NOI18N
+
+            URL owningSourceRootUrl = null;
+            FileObject owningSourceRoot = null;
+            FileObject rootFo = lastOwningSourceRootRef == null ? null : lastOwningSourceRootRef.get();
+            if (lastOwningSourceRootUrl != null && rootFo != null && rootFo.isValid() && FileUtil.isParentOf(rootFo, file)) {
+                owningSourceRootUrl = lastOwningSourceRootUrl;
+                owningSourceRoot = rootFo;
+            } else {
+                List<URL> clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
+                for (URL root : clone) {
+                    rootFo = URLCache.getInstance().findFileObject(root);
+                    if (rootFo != null && FileUtil.isParentOf(rootFo,file)) {
+                        owningSourceRootUrl = root;
+                        owningSourceRoot = rootFo;
+                        lastOwningSourceRootUrl = owningSourceRootUrl;
+                        lastOwningSourceRootRef = new WeakReference<FileObject>(owningSourceRoot);
+                        break;
+                    }
                 }
             }
 
-            lastOwningSourceRootRef = null;
-            lastOwningSourceRootUrl = null;
-        }
+            if (owningSourceRootUrl != null) {
+                assert owningSourceRoot != null : "Expecting both owningSourceRootUrl=" + owningSourceRootUrl + " and owningSourceRoot=" + owningSourceRoot; //NOI18N
+                if (doc != null) {
+                    doc.putProperty(PROP_OWNING_SOURCE_ROOT_URL, owningSourceRootUrl);
+                    doc.putProperty(PROP_OWNING_SOURCE_ROOT, owningSourceRoot);
+                }
+                return Pair.of(owningSourceRootUrl, owningSourceRoot);
+            } else {
+                return null;
+            }
 
-        return null;
+        }
     }
 
-    private URL getOwningBinaryRoot(final FileObject fo) {
+    private Pair<URL, FileObject> getOwningBinaryRoot(final FileObject fo) {
         if (fo == null) {
             return null;
         }
@@ -963,10 +990,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
             String filePath = fileURL.getPath();
             if (filePath.equals(foPath)) {
-                return root;
+                return Pair.of(root, null);
             }
             if (!archive && foPath.startsWith(filePath)) {
-                return root;
+                return Pair.of(root, null);
             }
         }
 
