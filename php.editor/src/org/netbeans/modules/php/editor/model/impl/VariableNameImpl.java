@@ -276,15 +276,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
-        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
-        if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-            sb.append(varName.toLowerCase()).append(";");//NOI18N
-            sb.append(varName).append(";");//NOI18N
-            sb.append(";");//NOI18N
-            sb.append(getOffset()).append(";");//NOI18N
-            return sb.toString();
-        }
-        return null;
+        sb.append(varName.toLowerCase()).append(";");//NOI18N
+        sb.append(varName).append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        return sb.toString();
     }
 
     void createLazyFieldAssignment(FieldAccess fieldAccess, Assignment node, Scope scope) {
