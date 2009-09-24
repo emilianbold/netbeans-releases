@@ -60,7 +60,7 @@ public class VerifyJars {
      *  to cluster and jar names. */
     private static String JAR_NAME    = "ide11/modules/ext/jaxws20/jaxb-xjc.jar";
     private static String JAR_VERSION = "1.0";
-    private static String TOMCAT_PATH = "enterprise5/jakarta-tomcat";
+    private static String TOMCAT_PATH = "enterprise6/jakarta-tomcat";
 
     public VerifyJars () {
     }
