@@ -67,7 +67,10 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            if(mimeType.equals("text/x-css")) { //NOI18N
+            String sourceMimeType = snapshot.getSource().getMimeType();
+
+            //allow to run only on .css files
+            if(sourceMimeType.equals(Css.CSS_MIME_TYPE) && mimeType.equals(Css.CSS_MIME_TYPE)) { //NOI18N
                 return Collections.singletonList(new CssCaretAwareSourceTask());
             } else {
                 return Collections.EMPTY_LIST;
@@ -107,7 +110,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         if(event == null) {
             return ;
         }
-
+        
         List<? extends Error> errors = result.getDiagnostics();
         List<Error> onlyErrors = new ArrayList<Error>(errors.size());
         //filter out warnings
