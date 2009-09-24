@@ -340,6 +340,10 @@ public final class Models {
                 defaultExpansionModels.put(ml, defaultExpansionModel);
             }
             ml.treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
+        } else if (ml.treeExpansionModels.size() == 1) {
+            if (ml.treeExpansionModels.get(0) instanceof DefaultTreeExpansionModel) {
+                defaultExpansionModel = (DefaultTreeExpansionModel) ml.treeExpansionModels.get(0);
+            }
         }
         
         CompoundModel cm = new CompoundModel (
