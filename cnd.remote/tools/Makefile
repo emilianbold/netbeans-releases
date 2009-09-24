@@ -55,9 +55,9 @@ LDFLAGS-LIB-Linux := -ldl -shared
 LDFLAGS-LIB-SunOS := -G -ldl -lsocket
 LDFLAGS-LIB-Mac_OS_X := -G -ldl
 
-LDFLAGS-APP-Linux := -lrt -s -lnsl -lresolv
-LDFLAGS-APP-SunOS := -lrt -s -lnsl -lsocket -lresolv
-LDFLAGS-APP-Mac_OS_X := -lrt -s -lnsl -lsocket -lresolv
+LDFLAGS-APP-Linux := -lrt -lnsl -lresolv
+LDFLAGS-APP-SunOS := -lrt -lnsl -lsocket -lresolv
+LDFLAGS-APP-Mac_OS_X := -lrt -lnsl -lsocket -lresolv
 
 ifdef 64BITS
     FLAG64 := -m64
