@@ -51,7 +51,7 @@ def build_impl_xml = """\
 def platform_properties = """\
 disabled.clusters=\
     apisupport1,\
-    enterprise5,\
+    enterprise6,\
     groovy2,\
     gsf1,\
     harness,\
