@@ -77,9 +77,6 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Exception;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots.
