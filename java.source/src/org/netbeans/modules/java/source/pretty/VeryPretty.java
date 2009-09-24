@@ -112,6 +112,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     private final Map<Tree, ?> tree2Tag;
     private final Map<Object, int[]> tag2Span;
+    private final String origText;
     private int initialOffset = 0;
 
     public static CodeStyle getCodeStyle(CompilationInfo info) {
@@ -135,33 +136,33 @@ public final class VeryPretty extends JCTree.Visitor {
     }
     
     public VeryPretty(CompilationInfo cInfo) {
-        this(cInfo, getCodeStyle(cInfo), null, null);
+        this(cInfo, getCodeStyle(cInfo), null, null, null);
     }
 
     public VeryPretty(CompilationInfo cInfo, CodeStyle cs) {
-        this(cInfo, cs, null, null);
+        this(cInfo, cs, null, null, null);
     }
 
     public VeryPretty(Context context, CodeStyle cs) {
-        this(context, cs, null, null);
+        this(context, cs, null, null, null);
     }
 
-    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
-        this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(), cs, tree2Tag, tag2Span);
+    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
+        this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(), cs, tree2Tag, tag2Span, origText);
         this.cInfo = cInfo;
         this.origUnit = (JCCompilationUnit) cInfo.getCompilationUnit();
     }
 
-    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, int initialOffset) {
-        this(cInfo, cs, tree2Tag, tag2Span);
+    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText, int initialOffset) {
+        this(cInfo, cs, tree2Tag, tag2Span, origText);
         this.initialOffset = initialOffset; //provide intial offset of this priter
     }
 
     public VeryPretty(Context context) {
-        this(context, getCodeStyle(null), null, null);
+        this(context, getCodeStyle(null), null, null, null);
     }
 
-    public VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
+    private VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
 	names = Names.instance(context);
 	enclClassName = names.empty;
         commentHandler = CommentHandlerService.instance(context);
@@ -176,6 +177,7 @@ public final class VeryPretty extends JCTree.Visitor {
         this.indentSize = cs.getIndentSize();
         this.tree2Tag = tree2Tag;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
+        this.origText = origText;
     }
 
     public void setInitialOffset(int offset) {
@@ -1288,6 +1290,15 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitLiteral(JCLiteral tree) {
+        long start, end;
+        if (   origUnit != null
+            && cInfo != null
+            && (start = cInfo.getTrees().getSourcePositions().getStartPosition(origUnit, tree)) >= 0 //#137564
+            && (end = cInfo.getTrees().getSourcePositions().getEndPosition(origUnit, tree)) >= 0
+            && origText != null) {
+            print(origText.substring((int) start, (int) end));
+            return ;
+        }
 	switch (tree.typetag) {
 	  case INT:
 	    print(tree.value.toString());
